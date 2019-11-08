@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.intentions.xml;
+package fr.adrienbrault.idea.symfonyplugin.intentions.xml;
 
 import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
@@ -9,11 +9,11 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.IncorrectOperationException;
 import com.intellij.util.containers.ContainerUtil;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
-import fr.adrienbrault.idea.symfony2plugin.intentions.php.XmlServiceArgumentIntention;
-import fr.adrienbrault.idea.symfony2plugin.intentions.ui.ServiceSuggestDialog;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.config.xml.XmlHelper;
+import fr.adrienbrault.idea.symfonyplugin.intentions.php.XmlServiceArgumentIntention;
+import fr.adrienbrault.idea.symfonyplugin.intentions.ui.ServiceSuggestDialog;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.ServiceUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 

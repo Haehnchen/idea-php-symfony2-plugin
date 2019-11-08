@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.asset;
+package fr.adrienbrault.idea.symfonyplugin.asset;
 
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;

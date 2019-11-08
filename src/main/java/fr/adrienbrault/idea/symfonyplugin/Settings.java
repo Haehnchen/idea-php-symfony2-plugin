@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin;
+package fr.adrienbrault.idea.symfonyplugin;
 
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.ServiceManager;
@@ -6,11 +6,11 @@ import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.XmlSerializerUtil;
-import fr.adrienbrault.idea.symfony2plugin.assistant.reference.MethodParameterSetting;
-import fr.adrienbrault.idea.symfony2plugin.assistant.signature.MethodSignatureSetting;
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
-import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutingFile;
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
+import fr.adrienbrault.idea.symfonyplugin.assistant.reference.MethodParameterSetting;
+import fr.adrienbrault.idea.symfonyplugin.assistant.signature.MethodSignatureSetting;
+import fr.adrienbrault.idea.symfonyplugin.dic.ContainerFile;
+import fr.adrienbrault.idea.symfonyplugin.routing.dict.RoutingFile;
+import fr.adrienbrault.idea.symfonyplugin.templating.path.TwigNamespaceSetting;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;

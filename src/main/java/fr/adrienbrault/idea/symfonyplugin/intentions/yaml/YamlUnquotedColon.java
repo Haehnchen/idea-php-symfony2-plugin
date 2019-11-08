@@ -1,18 +1,18 @@
-package fr.adrienbrault.idea.symfony2plugin.intentions.yaml;
+package fr.adrienbrault.idea.symfonyplugin.intentions.yaml;
 
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.util.SymfonyUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.util.SymfonyUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLElementTypes;
 import org.jetbrains.yaml.psi.YAMLCompoundValue;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
-import static fr.adrienbrault.idea.symfony2plugin.util.VersionUtil.productVersionGreaterThanOrEqual;
+import static fr.adrienbrault.idea.symfonyplugin.util.VersionUtil.productVersionGreaterThanOrEqual;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

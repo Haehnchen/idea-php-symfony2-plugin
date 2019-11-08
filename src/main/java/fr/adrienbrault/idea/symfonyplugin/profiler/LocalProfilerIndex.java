@@ -1,12 +1,12 @@
-package fr.adrienbrault.idea.symfony2plugin.profiler;
+package fr.adrienbrault.idea.symfonyplugin.profiler;
 
 import com.intellij.util.containers.ContainerUtil;
-import fr.adrienbrault.idea.symfony2plugin.profiler.collector.LocalDefaultDataCollector;
-import fr.adrienbrault.idea.symfony2plugin.profiler.collector.LocalMailCollector;
-import fr.adrienbrault.idea.symfony2plugin.profiler.dict.LocalProfilerRequest;
-import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface;
-import fr.adrienbrault.idea.symfony2plugin.profiler.reader.ReverseFileLineReader;
-import fr.adrienbrault.idea.symfony2plugin.profiler.utils.ProfilerUtil;
+import fr.adrienbrault.idea.symfonyplugin.profiler.collector.LocalDefaultDataCollector;
+import fr.adrienbrault.idea.symfonyplugin.profiler.collector.LocalMailCollector;
+import fr.adrienbrault.idea.symfonyplugin.profiler.dict.LocalProfilerRequest;
+import fr.adrienbrault.idea.symfonyplugin.profiler.dict.ProfilerRequestInterface;
+import fr.adrienbrault.idea.symfonyplugin.profiler.reader.ReverseFileLineReader;
+import fr.adrienbrault.idea.symfonyplugin.profiler.utils.ProfilerUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

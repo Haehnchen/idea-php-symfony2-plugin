@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating.path;
+package fr.adrienbrault.idea.symfonyplugin.tests.templating.path;
 
 import com.intellij.openapi.util.Condition;
 import com.intellij.util.containers.ContainerUtil;
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.templating.path.TwigPath;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -19,7 +19,7 @@ public class JsonFileIndexTwigNamespacesTest extends SymfonyLightCodeInsightFixt
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/path/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/templating/path/fixtures";
     }
 
     public void testThatNamespaceAndPathIsAddedToNamespaceList() {

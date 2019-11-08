@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder;
+package fr.adrienbrault.idea.symfonyplugin.templating.variable.resolver.holder;
 
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 

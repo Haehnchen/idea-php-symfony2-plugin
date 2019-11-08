@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.form.util;
+package fr.adrienbrault.idea.symfonyplugin.form.util;
 
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElement;
@@ -15,17 +15,17 @@ import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.elements.impl.PhpTypedElementImpl;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.form.FormTypeLookup;
-import fr.adrienbrault.idea.symfony2plugin.form.dict.EnumFormTypeSource;
-import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeClass;
-import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeServiceParser;
-import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.psi.PsiElementAssertUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.form.FormTypeLookup;
+import fr.adrienbrault.idea.symfonyplugin.form.dict.EnumFormTypeSource;
+import fr.adrienbrault.idea.symfonyplugin.form.dict.FormTypeClass;
+import fr.adrienbrault.idea.symfonyplugin.form.dict.FormTypeServiceParser;
+import fr.adrienbrault.idea.symfonyplugin.util.MethodMatcher;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfonyplugin.util.psi.PsiElementAssertUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.service.ServiceXmlParserFactory;
+import fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -518,7 +518,7 @@ public class FormUtil {
                                 className = className.substring(0, className.length() - 4);
                             }
 
-                            return fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(className);
+                            return fr.adrienbrault.idea.symfonyplugin.util.StringUtils.underscore(className);
                         }
                     }
                 }

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.intentions.php;
+package fr.adrienbrault.idea.symfonyplugin.intentions.php;
 
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
 import com.intellij.openapi.editor.Editor;
@@ -8,8 +8,8 @@ import com.intellij.util.IncorrectOperationException;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.action.generator.ServiceGenerateAction;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.action.generator.ServiceGenerateAction;
 import org.jetbrains.annotations.NotNull;
 
 /**

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating;
+package fr.adrienbrault.idea.symfonyplugin.templating;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.lang.xml.XMLLanguage;
@@ -9,11 +9,11 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlToken;
 import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionProvider;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionRegistrar;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionRegistrarParameter;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.translation.dict.TranslationUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 

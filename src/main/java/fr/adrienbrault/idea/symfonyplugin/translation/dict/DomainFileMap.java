@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.translation.dict;
+package fr.adrienbrault.idea.symfonyplugin.translation.dict;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;

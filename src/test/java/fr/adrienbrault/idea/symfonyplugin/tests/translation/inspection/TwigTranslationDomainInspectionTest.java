@@ -1,6 +1,6 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.translation.inspection;
+package fr.adrienbrault.idea.symfonyplugin.tests.translation.inspection;
 
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -13,7 +13,7 @@ public class TwigTranslationDomainInspectionTest extends SymfonyLightCodeInsight
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/translation/inspection/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/translation/inspection/fixtures";
     }
 
     public void testUnknownDomainIsInspected() {

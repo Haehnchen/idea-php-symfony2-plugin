@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.asset.provider;
+package fr.adrienbrault.idea.symfonyplugin.asset.provider;
 
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
@@ -7,12 +7,12 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.PlatformIcons;
 import com.intellij.util.ProcessingContext;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.asset.AssetLookupElement;
-import fr.adrienbrault.idea.symfony2plugin.asset.AssetDirectoryReader;
-import fr.adrienbrault.idea.symfony2plugin.asset.AssetFile;
-import fr.adrienbrault.idea.symfony2plugin.twig.assets.TwigNamedAssetsServiceParser;
-import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.asset.AssetLookupElement;
+import fr.adrienbrault.idea.symfonyplugin.asset.AssetDirectoryReader;
+import fr.adrienbrault.idea.symfonyplugin.asset.AssetFile;
+import fr.adrienbrault.idea.symfonyplugin.twig.assets.TwigNamedAssetsServiceParser;
+import fr.adrienbrault.idea.symfonyplugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
 
 /**

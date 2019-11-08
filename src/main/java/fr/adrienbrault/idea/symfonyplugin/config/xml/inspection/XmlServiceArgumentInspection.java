@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.config.xml.inspection;
+package fr.adrienbrault.idea.symfonyplugin.config.xml.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
@@ -9,11 +9,11 @@ import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlTokenType;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
-import fr.adrienbrault.idea.symfony2plugin.action.quickfix.AddServiceXmlArgumentLocalQuickFix;
-import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.action.ServiceActionUtil;
+import fr.adrienbrault.idea.symfonyplugin.action.quickfix.AddServiceXmlArgumentLocalQuickFix;
+import fr.adrienbrault.idea.symfonyplugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfonyplugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;

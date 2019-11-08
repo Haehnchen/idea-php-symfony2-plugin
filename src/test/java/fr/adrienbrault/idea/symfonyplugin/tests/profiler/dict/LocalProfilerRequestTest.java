@@ -1,6 +1,6 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.profiler.dict;
+package fr.adrienbrault.idea.symfonyplugin.tests.profiler.dict;
 
-import fr.adrienbrault.idea.symfony2plugin.profiler.dict.LocalProfilerRequest;
+import fr.adrienbrault.idea.symfonyplugin.profiler.dict.LocalProfilerRequest;
 import org.junit.Assert;
 import org.junit.Test;
 

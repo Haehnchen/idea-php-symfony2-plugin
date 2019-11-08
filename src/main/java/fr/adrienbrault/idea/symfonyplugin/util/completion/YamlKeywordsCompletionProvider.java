@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.util.completion;
+package fr.adrienbrault.idea.symfonyplugin.util.completion;
 
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
@@ -8,7 +8,7 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.util.ProcessingContext;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;

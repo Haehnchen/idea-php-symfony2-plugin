@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.config.yaml.inspection;
+package fr.adrienbrault.idea.symfonyplugin.tests.config.yaml.inspection;
 
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.config.yaml.inspection.EventMethodCallInspection
+ * @see fr.adrienbrault.idea.symfonyplugin.config.yaml.inspection.EventMethodCallInspection
  */
 public class EventMethodCallInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -15,7 +15,7 @@ public class EventMethodCallInspectionTest extends SymfonyLightCodeInsightFixtur
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/config/yaml/inspection/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/config/yaml/inspection/fixtures";
     }
 
     public void testThatYmlCallsProvidesMethodExistsCheck() {

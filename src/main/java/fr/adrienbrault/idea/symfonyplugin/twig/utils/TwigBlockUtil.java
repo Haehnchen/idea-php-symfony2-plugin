@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.twig.utils;
+package fr.adrienbrault.idea.symfonyplugin.twig.utils;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
@@ -9,11 +9,11 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.twig.TwigFile;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigBlockIndexExtension;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import fr.adrienbrault.idea.symfony2plugin.twig.loader.FileImplementsLazyLoader;
-import fr.adrienbrault.idea.symfony2plugin.twig.loader.FileOverwritesLazyLoader;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.TwigBlockIndexExtension;
+import fr.adrienbrault.idea.symfonyplugin.templating.dict.TwigBlock;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.twig.loader.FileImplementsLazyLoader;
+import fr.adrienbrault.idea.symfonyplugin.twig.loader.FileOverwritesLazyLoader;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.config.utils;
+package fr.adrienbrault.idea.symfonyplugin.config.utils;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
@@ -9,8 +9,8 @@ import com.intellij.psi.util.*;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.util.FilesystemUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.FilesystemUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.config;
+package fr.adrienbrault.idea.symfonyplugin.tests.config;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
@@ -7,9 +7,9 @@ import com.intellij.psi.PsiFile;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.config.EventDispatcherSubscriberUtil;
-import fr.adrienbrault.idea.symfony2plugin.config.dic.EventDispatcherSubscribedEvent;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.config.EventDispatcherSubscriberUtil;
+import fr.adrienbrault.idea.symfonyplugin.config.dic.EventDispatcherSubscribedEvent;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.util.Collection;
 
@@ -28,7 +28,7 @@ public class EventDispatcherSubscriberUtilTest extends SymfonyLightCodeInsightFi
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/config/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/config/fixtures";
     }
 
     /**

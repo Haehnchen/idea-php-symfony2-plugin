@@ -1,8 +1,8 @@
-package fr.adrienbrault.idea.symfony2plugin.dic.container.visitor;
+package fr.adrienbrault.idea.symfonyplugin.dic.container.visitor;
 
 import com.intellij.psi.PsiElement;
-import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.AttributeValueInterface;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ServiceFileDefaults;
+import fr.adrienbrault.idea.symfonyplugin.dic.attribute.value.AttributeValueInterface;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.dict.ServiceFileDefaults;
 import org.jetbrains.annotations.NotNull;
 
 /**

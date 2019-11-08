@@ -1,12 +1,12 @@
-package fr.adrienbrault.idea.symfony2plugin.assistant.reference;
+package fr.adrienbrault.idea.symfonyplugin.assistant.reference;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiReference;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.assistant.AssistantReferenceContributor;
-import fr.adrienbrault.idea.symfony2plugin.assistant.AssistantReferenceProvider;
+import fr.adrienbrault.idea.symfonyplugin.Settings;
+import fr.adrienbrault.idea.symfonyplugin.assistant.AssistantReferenceContributor;
+import fr.adrienbrault.idea.symfonyplugin.assistant.AssistantReferenceProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

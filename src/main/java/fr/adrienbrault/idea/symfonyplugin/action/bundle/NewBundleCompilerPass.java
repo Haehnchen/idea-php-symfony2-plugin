@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.action.bundle;
+package fr.adrienbrault.idea.symfonyplugin.action.bundle;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.Result;
@@ -8,10 +8,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.action.AbstractProjectDumbAwareAction;
-import fr.adrienbrault.idea.symfony2plugin.util.psi.PhpBundleFileFactory;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.action.AbstractProjectDumbAwareAction;
+import fr.adrienbrault.idea.symfonyplugin.util.psi.PhpBundleFileFactory;
 import org.jetbrains.annotations.NotNull;
 
 /**

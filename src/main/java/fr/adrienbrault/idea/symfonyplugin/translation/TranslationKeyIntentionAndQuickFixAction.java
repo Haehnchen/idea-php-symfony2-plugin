@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.translation;
+package fr.adrienbrault.idea.symfonyplugin.translation;
 
 import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInspection.IntentionAndQuickFixAction;
@@ -11,8 +11,8 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.ui.components.JBList;
-import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
-import fr.adrienbrault.idea.symfony2plugin.translation.util.TranslationInsertUtil;
+import fr.adrienbrault.idea.symfonyplugin.translation.dict.TranslationUtil;
+import fr.adrienbrault.idea.symfonyplugin.translation.util.TranslationInsertUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;

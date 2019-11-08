@@ -1,6 +1,6 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.dict;
+package fr.adrienbrault.idea.symfonyplugin.tests.doctrine.dict;
 
-import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModel;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.dict.DoctrineModel;
 import org.junit.Assert;
 import org.junit.Test;
 

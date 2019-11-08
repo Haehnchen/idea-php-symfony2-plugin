@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.completion.yaml;
+package fr.adrienbrault.idea.symfonyplugin.tests.completion.yaml;
 
 import com.intellij.codeInsight.completion.CompletionType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
 
 import java.util.Arrays;
@@ -10,12 +10,12 @@ import java.util.List;
 /**
  * @author Thomas Schulz <mail@king2500.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.completion.yaml.YamlCompletionContributor
+ * @see fr.adrienbrault.idea.symfonyplugin.completion.yaml.YamlCompletionContributor
  */
 public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtureTestCase {
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/completion/yaml/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/completion/yaml/fixtures";
     }
 
     public void testTagsCompletionContainsStandardTags() {

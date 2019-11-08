@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.templating;
+package fr.adrienbrault.idea.symfonyplugin.templating;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
 import org.jetbrains.annotations.NotNull;
 
 /**

@@ -1,15 +1,15 @@
-package fr.adrienbrault.idea.symfony2plugin.profiler;
+package fr.adrienbrault.idea.symfonyplugin.profiler;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.SimpleColoredComponent;
 import com.jetbrains.php.PhpIcons;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.profiler.collector.DefaultDataCollectorInterface;
-import fr.adrienbrault.idea.symfony2plugin.profiler.collector.MailCollectorInterface;
-import fr.adrienbrault.idea.symfony2plugin.profiler.dict.LocalProfilerRequest;
-import fr.adrienbrault.idea.symfony2plugin.profiler.dict.MailMessage;
-import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface;
-import fr.adrienbrault.idea.symfony2plugin.profiler.factory.ProfilerFactoryUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.profiler.collector.DefaultDataCollectorInterface;
+import fr.adrienbrault.idea.symfonyplugin.profiler.collector.MailCollectorInterface;
+import fr.adrienbrault.idea.symfonyplugin.profiler.dict.LocalProfilerRequest;
+import fr.adrienbrault.idea.symfonyplugin.profiler.dict.MailMessage;
+import fr.adrienbrault.idea.symfonyplugin.profiler.dict.ProfilerRequestInterface;
+import fr.adrienbrault.idea.symfonyplugin.profiler.factory.ProfilerFactoryUtil;
 import icons.TwigIcons;
 import org.jetbrains.annotations.NotNull;
 

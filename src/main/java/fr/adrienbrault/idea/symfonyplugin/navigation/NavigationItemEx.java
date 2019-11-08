@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.navigation;
+package fr.adrienbrault.idea.symfonyplugin.navigation;
 
 import com.intellij.ide.util.PsiNavigationSupport;
 import com.intellij.navigation.ItemPresentation;

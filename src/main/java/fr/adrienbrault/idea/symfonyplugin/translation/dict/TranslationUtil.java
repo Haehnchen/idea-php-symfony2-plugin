@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.translation.dict;
+package fr.adrienbrault.idea.symfonyplugin.translation.dict;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.extensions.ExtensionPointName;
@@ -10,13 +10,13 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.Consumer;
-import fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProvider;
-import fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProviderDict;
-import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
-import fr.adrienbrault.idea.symfony2plugin.translation.parser.DomainMappings;
-import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import fr.adrienbrault.idea.symfonyplugin.extension.TranslatorProvider;
+import fr.adrienbrault.idea.symfonyplugin.extension.TranslatorProviderDict;
+import fr.adrienbrault.idea.symfonyplugin.translation.TranslatorLookupElement;
+import fr.adrienbrault.idea.symfonyplugin.translation.parser.DomainMappings;
+import fr.adrienbrault.idea.symfonyplugin.util.MethodMatcher;
+import fr.adrienbrault.idea.symfonyplugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfonyplugin.util.service.ServiceXmlParserFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLScalar;
@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TranslationUtil {
-    public static final ExtensionPointName<TranslatorProvider> TRANSLATION_PROVIDER = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProvider");
+    public static final ExtensionPointName<TranslatorProvider> TRANSLATION_PROVIDER = new ExtensionPointName<>("fr.adrienbrault.idea.symfonyplugin.extension.TranslatorProvider");
 
     public static MethodMatcher.CallToSignature[] PHP_TRANSLATION_SIGNATURES = new MethodMatcher.CallToSignature[] {
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Translation\\TranslatorInterface", "trans"),

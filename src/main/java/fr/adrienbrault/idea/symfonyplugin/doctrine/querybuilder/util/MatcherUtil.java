@@ -1,8 +1,8 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.util;
+package fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.util;
 
 import com.intellij.psi.PsiElement;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.util.MethodMatcher;
 import org.jetbrains.annotations.Nullable;
 
 /**

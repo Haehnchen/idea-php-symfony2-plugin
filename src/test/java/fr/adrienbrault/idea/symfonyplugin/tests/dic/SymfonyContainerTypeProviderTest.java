@@ -1,13 +1,13 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.dic;
+package fr.adrienbrault.idea.symfonyplugin.tests.dic;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.elements.Method;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.dic.SymfonyContainerTypeProvider
+ * @see fr.adrienbrault.idea.symfonyplugin.dic.SymfonyContainerTypeProvider
  */
 public class SymfonyContainerTypeProviderTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -19,11 +19,11 @@ public class SymfonyContainerTypeProviderTest extends SymfonyLightCodeInsightFix
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/dic/fixtures";
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.dic.SymfonyContainerTypeProvider
+     * @see fr.adrienbrault.idea.symfonyplugin.dic.SymfonyContainerTypeProvider
      */
     public void testContainerServicePhpType() {
         assertPhpReferenceResolveTo(PhpFileType.INSTANCE,
@@ -49,7 +49,7 @@ public class SymfonyContainerTypeProviderTest extends SymfonyLightCodeInsightFix
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.dic.SymfonyContainerTypeProvider
+     * @see fr.adrienbrault.idea.symfonyplugin.dic.SymfonyContainerTypeProvider
      */
     public void testThatContainerServiceTypeResolvesOnFirstParameterAndAllowMultipleParameter() {
         assertPhpReferenceResolveTo(PhpFileType.INSTANCE,
@@ -61,7 +61,7 @@ public class SymfonyContainerTypeProviderTest extends SymfonyLightCodeInsightFix
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.dic.SymfonyContainerTypeProvider
+     * @see fr.adrienbrault.idea.symfonyplugin.dic.SymfonyContainerTypeProvider
      */
     public void testThatDuplicateServiceClassInstancesAreMerged() {
         assertPhpReferenceResolveTo(PhpFileType.INSTANCE,
@@ -80,7 +80,7 @@ public class SymfonyContainerTypeProviderTest extends SymfonyLightCodeInsightFix
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.dic.SymfonyContainerTypeProvider
+     * @see fr.adrienbrault.idea.symfonyplugin.dic.SymfonyContainerTypeProvider
      */
     public void testThatClassConstantResolves() {
         assertPhpReferenceResolveTo(PhpFileType.INSTANCE,

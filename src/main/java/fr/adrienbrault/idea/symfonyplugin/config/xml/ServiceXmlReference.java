@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.config.xml;
+package fr.adrienbrault.idea.symfonyplugin.config.xml;
 
 import com.intellij.psi.PsiElement;
-import fr.adrienbrault.idea.symfony2plugin.dic.AbstractServiceReference;
+import fr.adrienbrault.idea.symfonyplugin.dic.AbstractServiceReference;
 import org.jetbrains.annotations.NotNull;
 
 /**

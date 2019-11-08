@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.codeInsight.completion;
+package fr.adrienbrault.idea.symfonyplugin.codeInsight.completion;
 
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
@@ -7,12 +7,12 @@ import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProviderInterface;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProviderInterfaceEx;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProviderLookupArguments;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.utils.GotoCompletionUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionContributor;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionProviderInterface;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionProviderInterfaceEx;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionProviderLookupArguments;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.utils.GotoCompletionUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;

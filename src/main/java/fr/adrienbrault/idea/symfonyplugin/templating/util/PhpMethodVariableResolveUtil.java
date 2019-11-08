@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.util;
+package fr.adrienbrault.idea.symfonyplugin.templating.util;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
@@ -8,13 +8,13 @@ import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.*;
 import de.espend.idea.php.annotation.util.AnnotationUtil;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtension;
-import fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtensionParameter;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
-import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.extension.PluginConfigurationExtension;
+import fr.adrienbrault.idea.symfonyplugin.extension.PluginConfigurationExtensionParameter;
+import fr.adrienbrault.idea.symfonyplugin.templating.variable.dict.PsiVariable;
+import fr.adrienbrault.idea.symfonyplugin.util.AnnotationBackportUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PsiElementUtils;
 import kotlin.Triple;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -25,7 +25,7 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore;
+import static fr.adrienbrault.idea.symfonyplugin.util.StringUtils.underscore;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

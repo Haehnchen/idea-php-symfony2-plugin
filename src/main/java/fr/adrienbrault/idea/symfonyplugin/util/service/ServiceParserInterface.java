@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.util.service;
+package fr.adrienbrault.idea.symfonyplugin.util.service;
 
 import java.io.InputStream;
 

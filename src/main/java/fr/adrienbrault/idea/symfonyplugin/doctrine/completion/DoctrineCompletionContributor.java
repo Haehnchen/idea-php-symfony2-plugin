@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine.completion;
+package fr.adrienbrault.idea.symfonyplugin.doctrine.completion;
 
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElement;
@@ -9,12 +9,12 @@ import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.psi.elements.ConstantReference;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.completion.lookup.ClassConstantLookupElementAbstract;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.completion.lookup.ClassConstantLookupElementAbstract;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.EntityHelper;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.DoctrineModel;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;

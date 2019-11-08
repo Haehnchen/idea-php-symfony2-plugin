@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.intentions.php;
+package fr.adrienbrault.idea.symfonyplugin.intentions.php;
 
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
 import com.intellij.ide.highlighter.XmlFileType;
@@ -8,9 +8,9 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.IncorrectOperationException;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
-import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.action.ServiceActionUtil;
+import fr.adrienbrault.idea.symfonyplugin.stubs.ContainerCollectionResolver;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

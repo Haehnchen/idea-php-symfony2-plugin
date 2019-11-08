@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.doctrine;
+package fr.adrienbrault.idea.symfonyplugin.tests.doctrine;
 
 import com.intellij.openapi.util.Pair;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineUtil;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.DoctrineUtil;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.util.Collection;
 

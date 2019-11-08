@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.path.dict;
+package fr.adrienbrault.idea.symfonyplugin.templating.path.dict;
 
 import org.jetbrains.annotations.Nullable;
 

@@ -1,12 +1,12 @@
-package fr.adrienbrault.idea.symfony2plugin.config.xml;
+package fr.adrienbrault.idea.symfonyplugin.config.xml;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
 import com.intellij.psi.xml.XmlText;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.util.DotEnvUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.util.DotEnvUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.ServiceUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

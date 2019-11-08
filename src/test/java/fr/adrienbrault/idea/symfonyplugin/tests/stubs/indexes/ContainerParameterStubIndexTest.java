@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.stubs.indexes;
+package fr.adrienbrault.idea.symfonyplugin.tests.stubs.indexes;
 
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerParameterStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.ContainerParameterStubIndex;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerParameterStubIndex
+ * @see fr.adrienbrault.idea.symfonyplugin.stubs.indexes.ContainerParameterStubIndex
  */
 public class ContainerParameterStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -17,7 +17,7 @@ public class ContainerParameterStubIndexTest extends SymfonyLightCodeInsightFixt
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/stubs/indexes/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/stubs/indexes/fixtures";
     }
 
     public void testThatParameterOfYamlFileIsInIndex() {

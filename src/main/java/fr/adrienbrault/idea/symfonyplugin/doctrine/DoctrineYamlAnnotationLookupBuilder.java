@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine;
+package fr.adrienbrault.idea.symfonyplugin.doctrine;
 
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
@@ -9,9 +9,9 @@ import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;

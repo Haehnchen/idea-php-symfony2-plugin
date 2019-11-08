@@ -1,13 +1,13 @@
-package fr.adrienbrault.idea.symfony2plugin.asset;
+package fr.adrienbrault.idea.symfonyplugin.asset;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.psi.PsiDirectory;
-import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
+import fr.adrienbrault.idea.symfonyplugin.Settings;
+import fr.adrienbrault.idea.symfonyplugin.util.SymfonyBundleUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.SymfonyBundle;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

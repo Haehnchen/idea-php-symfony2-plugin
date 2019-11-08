@@ -1,15 +1,15 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.config.xml;
+package fr.adrienbrault.idea.symfonyplugin.tests.config.xml;
 
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.config.xml.XmlReferenceContributor
+ * @see fr.adrienbrault.idea.symfonyplugin.config.xml.XmlReferenceContributor
  */
 public class XmlReferenceContributorTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -21,7 +21,7 @@ public class XmlReferenceContributorTest extends SymfonyLightCodeInsightFixtureT
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/config/xml/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/config/xml/fixtures";
     }
 
     public void testThatAutowiringTypeReferenceToPhpClass() {

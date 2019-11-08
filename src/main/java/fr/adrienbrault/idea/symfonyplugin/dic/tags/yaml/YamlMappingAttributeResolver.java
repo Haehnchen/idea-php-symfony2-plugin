@@ -1,6 +1,6 @@
-package fr.adrienbrault.idea.symfony2plugin.dic.tags.yaml;
+package fr.adrienbrault.idea.symfonyplugin.dic.tags.yaml;
 
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLMapping;

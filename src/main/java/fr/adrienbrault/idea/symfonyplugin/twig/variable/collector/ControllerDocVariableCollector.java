@@ -1,15 +1,15 @@
-package fr.adrienbrault.idea.symfony2plugin.twig.variable.collector;
+package fr.adrienbrault.idea.symfonyplugin.twig.variable.collector;
 
 import com.intellij.psi.PsiComment;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.twig.TwigFile;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.PhpMethodVariableResolveUtil;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
-import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.PhpMethodVariableResolveUtil;
+import fr.adrienbrault.idea.symfonyplugin.templating.variable.TwigFileVariableCollector;
+import fr.adrienbrault.idea.symfonyplugin.templating.variable.TwigFileVariableCollectorParameter;
+import fr.adrienbrault.idea.symfonyplugin.templating.variable.dict.PsiVariable;
+import fr.adrienbrault.idea.symfonyplugin.util.controller.ControllerIndex;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

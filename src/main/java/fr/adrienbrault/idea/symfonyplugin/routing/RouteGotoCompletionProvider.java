@@ -1,9 +1,9 @@
-package fr.adrienbrault.idea.symfony2plugin.routing;
+package fr.adrienbrault.idea.symfonyplugin.routing;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.PsiElement;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.utils.GotoCompletionUtil;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionProvider;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.utils.GotoCompletionUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;

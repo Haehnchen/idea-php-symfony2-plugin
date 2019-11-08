@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.translation.provider;
+package fr.adrienbrault.idea.symfonyplugin.translation.provider;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -9,14 +9,14 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
-import fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProviderDict;
-import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TranslationStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.translation.TranslationIndex;
-import fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProvider;
-import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationCollector;
-import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationVisitor;
-import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
+import fr.adrienbrault.idea.symfonyplugin.extension.TranslatorProviderDict;
+import fr.adrienbrault.idea.symfonyplugin.stubs.SymfonyProcessors;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.TranslationStubIndex;
+import fr.adrienbrault.idea.symfonyplugin.translation.TranslationIndex;
+import fr.adrienbrault.idea.symfonyplugin.extension.TranslatorProvider;
+import fr.adrienbrault.idea.symfonyplugin.translation.collector.YamlTranslationCollector;
+import fr.adrienbrault.idea.symfonyplugin.translation.collector.YamlTranslationVisitor;
+import fr.adrienbrault.idea.symfonyplugin.translation.dict.TranslationUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLFile;
 

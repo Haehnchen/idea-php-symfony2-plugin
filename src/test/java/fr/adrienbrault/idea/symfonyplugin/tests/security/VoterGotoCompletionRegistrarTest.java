@@ -1,14 +1,14 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.security;
+package fr.adrienbrault.idea.symfonyplugin.tests.security;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.twig.TwigFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.security.VoterGotoCompletionRegistrar
+ * @see fr.adrienbrault.idea.symfonyplugin.security.VoterGotoCompletionRegistrar
  */
 public class VoterGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
@@ -19,7 +19,7 @@ public class VoterGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFix
     }
 
     protected String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/security/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/security/fixtures";
     }
 
     public void testTwigIsGrantedCompletion() {

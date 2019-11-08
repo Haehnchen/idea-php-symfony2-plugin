@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine;
+package fr.adrienbrault.idea.symfonyplugin.doctrine;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.project.Project;
@@ -7,14 +7,14 @@ import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.component.DocumentNamespacesParser;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesServiceParser;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineEntityLookupElement;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
-import fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProvider;
-import fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProviderParameter;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
-import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.component.DocumentNamespacesParser;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.component.EntityNamesServiceParser;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.dict.DoctrineEntityLookupElement;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.dict.DoctrineTypes;
+import fr.adrienbrault.idea.symfonyplugin.extension.DoctrineModelProvider;
+import fr.adrienbrault.idea.symfonyplugin.extension.DoctrineModelProviderParameter;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.DoctrineModel;
+import fr.adrienbrault.idea.symfonyplugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;

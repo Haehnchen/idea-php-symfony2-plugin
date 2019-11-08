@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.util;
+package fr.adrienbrault.idea.symfonyplugin.util;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
-import fr.adrienbrault.idea.symfony2plugin.Settings;
+import fr.adrienbrault.idea.symfonyplugin.Settings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

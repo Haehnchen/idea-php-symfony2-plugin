@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.dic;
+package fr.adrienbrault.idea.symfonyplugin.dic;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.PsiElement;
@@ -7,7 +7,7 @@ import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.PhpIndex;
-import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfonyplugin.stubs.ContainerCollectionResolver;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

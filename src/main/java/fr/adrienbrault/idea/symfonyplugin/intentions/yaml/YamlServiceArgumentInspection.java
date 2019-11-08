@@ -1,14 +1,14 @@
-package fr.adrienbrault.idea.symfony2plugin.intentions.yaml;
+package fr.adrienbrault.idea.symfonyplugin.intentions.yaml;
 
 import com.intellij.codeInspection.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiFile;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
-import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.action.ServiceActionUtil;
+import fr.adrienbrault.idea.symfonyplugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;

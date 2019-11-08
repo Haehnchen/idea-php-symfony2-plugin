@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.routing.inspection;
+package fr.adrienbrault.idea.symfonyplugin.tests.routing.inspection;
 
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.routing.inspection.DuplicateLocalRouteInspection
+ * @see fr.adrienbrault.idea.symfonyplugin.routing.inspection.DuplicateLocalRouteInspection
  */
 public class DuplicateLocalRouteInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
 

@@ -1,9 +1,9 @@
-package fr.adrienbrault.idea.symfony2plugin.config.xml.inspection;
+package fr.adrienbrault.idea.symfonyplugin.config.xml.inspection;
 
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiFile;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
 import org.jetbrains.annotations.NotNull;
 
 /**

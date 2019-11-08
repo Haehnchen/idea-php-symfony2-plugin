@@ -1,18 +1,18 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating;
+package fr.adrienbrault.idea.symfonyplugin.tests.templating;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.twig.TwigFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigLineMarkerProvider
+ * @see fr.adrienbrault.idea.symfonyplugin.templating.TwigLineMarkerProvider
  */
 public class TwigLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void testThatExtendsProvidesBlockLineMarker() {

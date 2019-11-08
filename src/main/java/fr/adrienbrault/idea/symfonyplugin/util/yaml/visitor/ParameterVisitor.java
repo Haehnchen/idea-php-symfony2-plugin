@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor;
+package fr.adrienbrault.idea.symfonyplugin.util.yaml.visitor;
 
 import org.jetbrains.annotations.NotNull;
 

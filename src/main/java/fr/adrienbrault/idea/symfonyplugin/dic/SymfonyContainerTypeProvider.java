@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.dic;
+package fr.adrienbrault.idea.symfonyplugin.dic;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
@@ -9,11 +9,11 @@ import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider3;
-import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
-import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpTypeProviderUtil;
+import fr.adrienbrault.idea.symfonyplugin.Settings;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.util.ServiceContainerUtil;
+import fr.adrienbrault.idea.symfonyplugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpTypeProviderUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;

@@ -1,12 +1,12 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.intentions.xml;
+package fr.adrienbrault.idea.symfonyplugin.tests.intentions.xml;
 
 import com.intellij.ide.highlighter.XmlFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.intentions.xml.XmlServiceSuggestIntention
+ * @see fr.adrienbrault.idea.symfonyplugin.intentions.xml.XmlServiceSuggestIntention
  */
 public class XmlServiceSuggestIntentionTest extends SymfonyLightCodeInsightFixtureTestCase {
 

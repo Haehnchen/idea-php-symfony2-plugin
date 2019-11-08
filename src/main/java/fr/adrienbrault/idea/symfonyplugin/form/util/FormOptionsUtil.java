@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.form.util;
+package fr.adrienbrault.idea.symfonyplugin.form.util;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
@@ -9,13 +9,13 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.form.dict.*;
-import fr.adrienbrault.idea.symfony2plugin.form.visitor.FormOptionLookupVisitor;
-import fr.adrienbrault.idea.symfony2plugin.form.visitor.FormOptionVisitor;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.form.dict.*;
+import fr.adrienbrault.idea.symfonyplugin.form.visitor.FormOptionLookupVisitor;
+import fr.adrienbrault.idea.symfonyplugin.form.visitor.FormOptionVisitor;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfonyplugin.util.service.ServiceXmlParserFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

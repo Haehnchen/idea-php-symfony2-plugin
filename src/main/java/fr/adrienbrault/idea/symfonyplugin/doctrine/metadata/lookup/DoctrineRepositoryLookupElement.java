@@ -1,9 +1,9 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.lookup;
+package fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.lookup;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 

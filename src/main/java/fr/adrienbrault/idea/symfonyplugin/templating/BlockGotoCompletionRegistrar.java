@@ -1,12 +1,12 @@
-package fr.adrienbrault.idea.symfony2plugin.templating;
+package fr.adrienbrault.idea.symfonyplugin.templating;
 
 import com.intellij.psi.PsiElement;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.*;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigBlockUtil;
-import fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigFileUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.*;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.twig.utils.TwigBlockUtil;
+import fr.adrienbrault.idea.symfonyplugin.twig.utils.TwigFileUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 

@@ -1,12 +1,12 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.metadata;
+package fr.adrienbrault.idea.symfonyplugin.tests.doctrine.metadata;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.PhpFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.ObjectRepositoryFindGotoCompletionRegistrar
+ * @see fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.ObjectRepositoryFindGotoCompletionRegistrar
  */
 public class ObjectRepositoryFindGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
@@ -15,7 +15,7 @@ public class ObjectRepositoryFindGotoCompletionRegistrarTest extends SymfonyLigh
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/doctrine/metadata/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/doctrine/metadata/fixtures";
     }
 
     public void testThatCompletionForDoctrineMetadataInArrayIsProvided() {

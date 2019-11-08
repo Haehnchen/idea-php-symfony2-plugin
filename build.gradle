@@ -53,7 +53,7 @@ publishPlugin {
     token System.getenv('IJ_TOKEN')
 }
 
-group 'fr.adrienbrault.idea.symfony2plugin'
+group 'fr.adrienbrault.idea.symfonyplugin'
 
 def details = versionDetails()
 if (details.isCleanTag) {

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.dic;
+package fr.adrienbrault.idea.symfonyplugin.dic;
 
 import com.intellij.codeInsight.daemon.GutterIconNavigationHandler;
 import com.intellij.codeInsight.navigation.NavigationUtil;

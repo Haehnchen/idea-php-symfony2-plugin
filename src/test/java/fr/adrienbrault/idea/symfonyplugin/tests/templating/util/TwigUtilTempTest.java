@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating.util;
+package fr.adrienbrault.idea.symfonyplugin.tests.templating.util;
 
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -6,11 +6,11 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
-import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyTempCodeInsightFixtureTestCase;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlPsiElementFactory;
+import fr.adrienbrault.idea.symfonyplugin.Settings;
+import fr.adrienbrault.idea.symfonyplugin.templating.path.TwigNamespaceSetting;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyTempCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlPsiElementFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLFile;
 
@@ -25,7 +25,7 @@ import java.util.List;
 public class TwigUtilTempTest extends SymfonyTempCodeInsightFixtureTestCase {
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getTemplateNameByOverwrite
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil#getTemplateNameByOverwrite
      */
     public void testTemplateOverwriteNameGeneration() {
         createFiles(
@@ -51,7 +51,7 @@ public class TwigUtilTempTest extends SymfonyTempCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getPresentableTemplateName
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil#getPresentableTemplateName
      */
     public void testGetPresentableTemplateName() {
         VirtualFile res = createFile("res/foo/foo.html.twig");

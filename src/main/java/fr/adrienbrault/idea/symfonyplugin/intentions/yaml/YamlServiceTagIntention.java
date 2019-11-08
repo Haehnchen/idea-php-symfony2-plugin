@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.intentions.yaml;
+package fr.adrienbrault.idea.symfonyplugin.intentions.yaml;
 
 import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
@@ -11,12 +11,12 @@ import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.IncorrectOperationException;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
-import fr.adrienbrault.idea.symfony2plugin.translation.util.TranslationInsertUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceTag;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfonyplugin.translation.util.TranslationInsertUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.ServiceTag;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

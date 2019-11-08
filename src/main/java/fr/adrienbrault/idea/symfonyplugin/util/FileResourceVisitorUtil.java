@@ -1,16 +1,16 @@
-package fr.adrienbrault.idea.symfony2plugin.util;
+package fr.adrienbrault.idea.symfonyplugin.util;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.Consumer;
-import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.AttributeValueInterface;
-import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.DummyAttributeValue;
-import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.XmlTagAttributeValue;
-import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.YamlKeyValueAttributeValue;
-import fr.adrienbrault.idea.symfony2plugin.stubs.dict.FileResource;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import fr.adrienbrault.idea.symfonyplugin.dic.attribute.value.AttributeValueInterface;
+import fr.adrienbrault.idea.symfonyplugin.dic.attribute.value.DummyAttributeValue;
+import fr.adrienbrault.idea.symfonyplugin.dic.attribute.value.XmlTagAttributeValue;
+import fr.adrienbrault.idea.symfonyplugin.dic.attribute.value.YamlKeyValueAttributeValue;
+import fr.adrienbrault.idea.symfonyplugin.stubs.dict.FileResource;
+import fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

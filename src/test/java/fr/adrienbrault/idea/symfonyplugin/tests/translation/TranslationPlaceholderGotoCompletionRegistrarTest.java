@@ -1,13 +1,13 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.translation;
+package fr.adrienbrault.idea.symfonyplugin.tests.translation;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.twig.TwigFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.translation.TranslationPlaceholderGotoCompletionRegistrar
+ * @see fr.adrienbrault.idea.symfonyplugin.translation.TranslationPlaceholderGotoCompletionRegistrar
  */
 public class TranslationPlaceholderGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
@@ -17,7 +17,7 @@ public class TranslationPlaceholderGotoCompletionRegistrarTest extends SymfonyLi
     }
 
     protected String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/translation/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/translation/fixtures";
     }
 
     public void testCompletionForTwigTransPlaceholder() {

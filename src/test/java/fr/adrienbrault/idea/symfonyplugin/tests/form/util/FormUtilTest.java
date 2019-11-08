@@ -1,13 +1,13 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.form.util;
+package fr.adrienbrault.idea.symfonyplugin.tests.form.util;
 
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.impl.ClassConstantReferenceImpl;
 import com.jetbrains.php.lang.psi.elements.impl.PhpTypedElementImpl;
 import com.jetbrains.php.lang.psi.elements.impl.StringLiteralExpressionImpl;
-import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeClass;
-import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.form.dict.FormTypeClass;
+import fr.adrienbrault.idea.symfonyplugin.form.util.FormUtil;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,7 +17,7 @@ import java.util.Map;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil
+ * @see fr.adrienbrault.idea.symfonyplugin.form.util.FormUtil
  */
 public class FormUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -27,7 +27,7 @@ public class FormUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     protected String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/form/util/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/form/util/fixtures";
     }
 
     @SuppressWarnings({"ConstantConditions"})

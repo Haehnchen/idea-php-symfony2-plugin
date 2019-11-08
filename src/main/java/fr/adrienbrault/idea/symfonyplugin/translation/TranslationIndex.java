@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.translation;
+package fr.adrienbrault.idea.symfonyplugin.translation;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
-import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationPsiParser;
-import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
+import fr.adrienbrault.idea.symfonyplugin.Settings;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.translation.parser.TranslationPsiParser;
+import fr.adrienbrault.idea.symfonyplugin.translation.parser.TranslationStringMap;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;

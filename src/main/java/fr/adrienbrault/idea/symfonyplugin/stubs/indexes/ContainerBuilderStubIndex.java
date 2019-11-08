@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
+package fr.adrienbrault.idea.symfonyplugin.stubs.indexes;
 
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.psi.PsiFile;
@@ -18,10 +18,10 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ContainerBuilderCall;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.dict.ContainerBuilderCall;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
 import gnu.trove.THashMap;
 import one.util.streamex.StreamEx;
 import org.apache.commons.lang.StringUtils;
@@ -33,11 +33,11 @@ import java.util.Set;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerBuilderStubIndex
+ * @see fr.adrienbrault.idea.symfonyplugin.stubs.indexes.ContainerBuilderStubIndex
  */
 public class ContainerBuilderStubIndex extends FileBasedIndexExtension<String, ContainerBuilderCall> {
 
-    public static final ID<String, ContainerBuilderCall> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.container_builder");
+    public static final ID<String, ContainerBuilderCall> KEY = ID.create("fr.adrienbrault.idea.symfonyplugin.container_builder");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
     private final static ObjectStreamDataExternalizer<ContainerBuilderCall> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
 

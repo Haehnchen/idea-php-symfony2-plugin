@@ -1,8 +1,8 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.dic;
+package fr.adrienbrault.idea.symfonyplugin.tests.dic;
 
-import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMap;
-import fr.adrienbrault.idea.symfony2plugin.dic.ServiceMapParser;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
+import fr.adrienbrault.idea.symfonyplugin.dic.ServiceMap;
+import fr.adrienbrault.idea.symfonyplugin.dic.ServiceMapParser;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.ServiceInterface;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -10,7 +10,7 @@ import java.io.ByteArrayInputStream;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
- * @see fr.adrienbrault.idea.symfony2plugin.dic.ServiceMapParser
+ * @see fr.adrienbrault.idea.symfonyplugin.dic.ServiceMapParser
  */
 public class ServiceMapParserTest extends Assert {
 

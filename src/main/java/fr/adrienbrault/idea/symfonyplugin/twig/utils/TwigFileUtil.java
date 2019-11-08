@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.twig.utils;
+package fr.adrienbrault.idea.symfonyplugin.twig.utils;
 
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
@@ -6,9 +6,9 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.twig.TwigFile;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigBlockIndexExtension;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.TwigBlockIndexExtension;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.TwigExtendsStubIndex;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;

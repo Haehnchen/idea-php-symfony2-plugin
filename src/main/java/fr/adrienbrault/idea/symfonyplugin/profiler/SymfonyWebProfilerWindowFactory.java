@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.profiler;
+package fr.adrienbrault.idea.symfonyplugin.profiler;
 
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
@@ -6,8 +6,8 @@ import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ex.ToolWindowEx;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;

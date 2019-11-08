@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.config.yaml.completion;
+package fr.adrienbrault.idea.symfonyplugin.tests.config.yaml.completion;
 
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.config.yaml.completion.ConfigCompletionProvider
+ * @see fr.adrienbrault.idea.symfonyplugin.config.yaml.completion.ConfigCompletionProvider
  */
 public class ConfigCompletionProviderTest extends SymfonyLightCodeInsightFixtureTestCase {
 

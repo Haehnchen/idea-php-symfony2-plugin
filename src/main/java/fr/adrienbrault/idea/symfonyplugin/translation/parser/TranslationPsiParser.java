@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.translation.parser;
+package fr.adrienbrault.idea.symfonyplugin.translation.parser;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.StreamUtil;
@@ -9,8 +9,8 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
 
 import java.io.File;
 import java.io.IOException;

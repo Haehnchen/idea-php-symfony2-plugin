@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating.assets;
+package fr.adrienbrault.idea.symfonyplugin.tests.templating.assets;
 
 import com.jetbrains.twig.TwigFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

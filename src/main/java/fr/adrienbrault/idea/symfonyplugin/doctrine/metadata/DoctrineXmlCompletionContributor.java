@@ -1,13 +1,13 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine.metadata;
+package fr.adrienbrault.idea.symfonyplugin.doctrine.metadata;
 
 import com.intellij.codeInsight.completion.*;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpClassCompletionProvider;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.util.DoctrineMetadataUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.completion.PhpClassCompletionProvider;
 import org.jetbrains.annotations.NotNull;
 
 /**

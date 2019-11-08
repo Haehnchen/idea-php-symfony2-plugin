@@ -1,15 +1,15 @@
-package fr.adrienbrault.idea.symfony2plugin.navigation.controller;
+package fr.adrienbrault.idea.symfonyplugin.navigation.controller;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.config.SymfonyPhpReferenceContributor;
-import fr.adrienbrault.idea.symfony2plugin.dic.RelatedPopupGotoLineMarker;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
-import fr.adrienbrault.idea.symfony2plugin.extension.ControllerActionGotoRelatedCollector;
-import fr.adrienbrault.idea.symfony2plugin.extension.ControllerActionGotoRelatedCollectorParameter;
-import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.config.SymfonyPhpReferenceContributor;
+import fr.adrienbrault.idea.symfonyplugin.dic.RelatedPopupGotoLineMarker;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.EntityHelper;
+import fr.adrienbrault.idea.symfonyplugin.extension.ControllerActionGotoRelatedCollector;
+import fr.adrienbrault.idea.symfonyplugin.extension.ControllerActionGotoRelatedCollectorParameter;
+import fr.adrienbrault.idea.symfonyplugin.util.MethodMatcher;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
 
 import java.util.ArrayList;
 import java.util.List;

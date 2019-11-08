@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.util.completion;
+package fr.adrienbrault.idea.symfonyplugin.util.completion;
 
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
@@ -9,14 +9,14 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.ProcessingContext;
 import com.intellij.util.indexing.FileBasedIndex;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.completion.lookup.ContainerTagLookupElement;
-import fr.adrienbrault.idea.symfony2plugin.dic.XmlTagParser;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ContainerBuilderCall;
-import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerBuilderStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesTagStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.completion.lookup.ContainerTagLookupElement;
+import fr.adrienbrault.idea.symfonyplugin.dic.XmlTagParser;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.dict.ContainerBuilderCall;
+import fr.adrienbrault.idea.symfonyplugin.stubs.SymfonyProcessors;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.ContainerBuilderStubIndex;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.ServicesTagStubIndex;
+import fr.adrienbrault.idea.symfonyplugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
 

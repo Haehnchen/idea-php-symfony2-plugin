@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict;
+package fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.dict;
 
 import org.jetbrains.annotations.Nullable;
 

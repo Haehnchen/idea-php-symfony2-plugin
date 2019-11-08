@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.completion;
+package fr.adrienbrault.idea.symfonyplugin.templating.completion;
 
 import com.intellij.codeInsight.completion.InsertionContext;
 import com.intellij.codeInsight.lookup.LookupElement;

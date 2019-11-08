@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.translation.dict;
+package fr.adrienbrault.idea.symfonyplugin.tests.translation.dict;
 
 import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.psi.PsiElement;
@@ -7,8 +7,8 @@ import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.containers.ContainerUtil;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.translation.dict.TranslationUtil;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -18,7 +18,7 @@ import java.util.Set;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil
+ * @see fr.adrienbrault.idea.symfonyplugin.translation.dict.TranslationUtil
  */
 public class TranslationUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -33,7 +33,7 @@ public class TranslationUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/translation/dict/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/translation/dict/fixtures";
     }
 
     public void testGetDomainFilePsiElements() {

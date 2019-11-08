@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
+package fr.adrienbrault.idea.symfonyplugin.stubs.indexes;
 
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.psi.PsiFile;
@@ -6,10 +6,10 @@ import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.StringSetDataExternalizer;
-import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationVisitor;
-import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.externalizer.StringSetDataExternalizer;
+import fr.adrienbrault.idea.symfonyplugin.translation.collector.YamlTranslationVisitor;
+import fr.adrienbrault.idea.symfonyplugin.translation.dict.TranslationUtil;
 import gnu.trove.THashMap;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -25,7 +25,7 @@ import java.util.*;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<String>> {
-    public static final ID<String, Set<String>> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.translations");
+    public static final ID<String, Set<String>> KEY = ID.create("fr.adrienbrault.idea.symfonyplugin.translations");
     private static final StringSetDataExternalizer DATA_EXTERNALIZER = new StringSetDataExternalizer();
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
 

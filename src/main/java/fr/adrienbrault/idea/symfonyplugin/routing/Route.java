@@ -1,6 +1,6 @@
-package fr.adrienbrault.idea.symfony2plugin.routing;
+package fr.adrienbrault.idea.symfonyplugin.routing;
 
-import fr.adrienbrault.idea.symfony2plugin.routing.dict.RouteInterface;
+import fr.adrienbrault.idea.symfonyplugin.routing.dict.RouteInterface;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

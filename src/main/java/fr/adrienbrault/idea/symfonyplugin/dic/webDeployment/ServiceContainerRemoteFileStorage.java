@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.dic.webDeployment;
+package fr.adrienbrault.idea.symfonyplugin.dic.webDeployment;
 
 import com.intellij.openapi.project.Project;
-import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.dic.webDeployment.dict.ServiceParameterStorage;
-import fr.adrienbrault.idea.symfony2plugin.webDeployment.storage.RemoteFileStorageInterface;
-import fr.adrienbrault.idea.symfony2plugin.webDeployment.utils.RemoteWebServerUtil;
+import fr.adrienbrault.idea.symfonyplugin.Settings;
+import fr.adrienbrault.idea.symfonyplugin.dic.webDeployment.dict.ServiceParameterStorage;
+import fr.adrienbrault.idea.symfonyplugin.webDeployment.storage.RemoteFileStorageInterface;
+import fr.adrienbrault.idea.symfonyplugin.webDeployment.utils.RemoteWebServerUtil;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
 import org.apache.sanselan.util.IOUtils;

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor;
+package fr.adrienbrault.idea.symfonyplugin.stubs.indexes.visitor;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
@@ -14,10 +14,10 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import de.espend.idea.php.annotation.util.AnnotationUtil;
-import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
-import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
-import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfonyplugin.routing.RouteHelper;
+import fr.adrienbrault.idea.symfonyplugin.stubs.dict.StubIndexedRoute;
+import fr.adrienbrault.idea.symfonyplugin.util.AnnotationBackportUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

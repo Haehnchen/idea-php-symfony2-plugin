@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.dic.intention;
+package fr.adrienbrault.idea.symfonyplugin.dic.intention;
 
 import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
@@ -14,9 +14,9 @@ import com.intellij.ui.components.JBList;
 import com.intellij.util.IncorrectOperationException;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
-import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
-import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
+import fr.adrienbrault.idea.symfonyplugin.action.ServiceActionUtil;
+import fr.adrienbrault.idea.symfonyplugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfonyplugin.stubs.ServiceIndexUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLKeyValue;

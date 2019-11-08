@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.ui;
+package fr.adrienbrault.idea.symfonyplugin.ui;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -12,12 +12,12 @@ import com.intellij.ui.table.TableView;
 import com.intellij.util.ui.ElementProducer;
 import com.intellij.util.ui.ListTableModel;
 import com.jetbrains.plugins.webDeployment.config.WebServerConfig;
-import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
-import fr.adrienbrault.idea.symfony2plugin.ui.utils.UiSettingsUtil;
-import fr.adrienbrault.idea.symfony2plugin.ui.utils.dict.UiPathColumnInfo;
-import fr.adrienbrault.idea.symfony2plugin.ui.utils.dict.WebServerFileDialogExtensionCallback;
-import fr.adrienbrault.idea.symfony2plugin.webDeployment.WebDeploymentUtil;
+import fr.adrienbrault.idea.symfonyplugin.Settings;
+import fr.adrienbrault.idea.symfonyplugin.dic.ContainerFile;
+import fr.adrienbrault.idea.symfonyplugin.ui.utils.UiSettingsUtil;
+import fr.adrienbrault.idea.symfonyplugin.ui.utils.dict.UiPathColumnInfo;
+import fr.adrienbrault.idea.symfonyplugin.ui.utils.dict.WebServerFileDialogExtensionCallback;
+import fr.adrienbrault.idea.symfonyplugin.webDeployment.WebDeploymentUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

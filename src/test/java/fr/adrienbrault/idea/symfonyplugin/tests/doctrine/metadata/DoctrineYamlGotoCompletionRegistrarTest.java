@@ -1,15 +1,15 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.metadata;
+package fr.adrienbrault.idea.symfonyplugin.tests.doctrine.metadata;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.DoctrineYamlGotoCompletionRegistrar
+ * @see fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.DoctrineYamlGotoCompletionRegistrar
  */
 public class DoctrineYamlGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -19,7 +19,7 @@ public class DoctrineYamlGotoCompletionRegistrarTest extends SymfonyLightCodeIns
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/doctrine/metadata/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/doctrine/metadata/fixtures";
     }
 
     public void testRepositoryClass() {

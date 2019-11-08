@@ -1,6 +1,6 @@
-package fr.adrienbrault.idea.symfony2plugin.stubs.dict;
+package fr.adrienbrault.idea.symfonyplugin.stubs.dict;
 
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacroTagInterface;
+import fr.adrienbrault.idea.symfonyplugin.templating.dict.TwigMacroTagInterface;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

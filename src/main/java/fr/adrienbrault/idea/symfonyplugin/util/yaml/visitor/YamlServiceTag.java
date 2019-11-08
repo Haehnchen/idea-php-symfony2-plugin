@@ -1,8 +1,8 @@
-package fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor;
+package fr.adrienbrault.idea.symfonyplugin.util.yaml.visitor;
 
-import fr.adrienbrault.idea.symfony2plugin.dic.tags.yaml.AttributeResolverInterface;
-import fr.adrienbrault.idea.symfony2plugin.dic.tags.ServiceTagInterface;
-import fr.adrienbrault.idea.symfony2plugin.dic.tags.yaml.YamlMappingAttributeResolver;
+import fr.adrienbrault.idea.symfonyplugin.dic.tags.yaml.AttributeResolverInterface;
+import fr.adrienbrault.idea.symfonyplugin.dic.tags.ServiceTagInterface;
+import fr.adrienbrault.idea.symfonyplugin.dic.tags.yaml.YamlMappingAttributeResolver;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLMapping;

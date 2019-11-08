@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
+package fr.adrienbrault.idea.symfonyplugin.stubs.indexes;
 
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.fileTypes.FileType;
@@ -9,11 +9,11 @@ import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
 import com.jetbrains.php.lang.PhpFileType;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineUtil;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModel;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelSerializable;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.DoctrineUtil;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.dict.DoctrineModel;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.dict.DoctrineModelSerializable;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
 import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
@@ -26,7 +26,7 @@ import java.util.Map;
  */
 public class DoctrineMetadataFileStubIndex extends FileBasedIndexExtension<String, DoctrineModelSerializable> {
 
-    public static final ID<String, DoctrineModelSerializable> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.doctrine_metadata");
+    public static final ID<String, DoctrineModelSerializable> KEY = ID.create("fr.adrienbrault.idea.symfonyplugin.doctrine_metadata");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
     private static ObjectStreamDataExternalizer<DoctrineModelSerializable> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
 

@@ -1,9 +1,9 @@
-package fr.adrienbrault.idea.symfony2plugin.ui.utils.dict;
+package fr.adrienbrault.idea.symfonyplugin.ui.utils.dict;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.util.ui.ColumnInfo;
-import fr.adrienbrault.idea.symfony2plugin.ui.dict.UiFilePathInterface;
-import fr.adrienbrault.idea.symfony2plugin.ui.utils.UiSettingsUtil;
+import fr.adrienbrault.idea.symfonyplugin.ui.dict.UiFilePathInterface;
+import fr.adrienbrault.idea.symfonyplugin.ui.utils.UiSettingsUtil;
 import org.jetbrains.annotations.Nullable;
 
 /**

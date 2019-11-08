@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.completion.lookup;
+package fr.adrienbrault.idea.symfonyplugin.completion.lookup;
 
 import com.intellij.codeInsight.completion.InsertionContext;
 import com.jetbrains.php.completion.PhpLookupElement;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.util.completion.annotations.AnnotationUseImporter;
+import fr.adrienbrault.idea.symfonyplugin.util.completion.annotations.AnnotationUseImporter;
 import org.jetbrains.annotations.NotNull;
 
 /**

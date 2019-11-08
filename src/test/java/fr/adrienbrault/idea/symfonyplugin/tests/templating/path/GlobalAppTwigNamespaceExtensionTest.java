@@ -1,17 +1,17 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating.path;
+package fr.adrienbrault.idea.symfonyplugin.tests.templating.path;
 
-import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtensionParameter;
-import fr.adrienbrault.idea.symfony2plugin.templating.path.GlobalAppTwigNamespaceExtension;
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyTempCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.Settings;
+import fr.adrienbrault.idea.symfonyplugin.extension.TwigNamespaceExtensionParameter;
+import fr.adrienbrault.idea.symfonyplugin.templating.path.GlobalAppTwigNamespaceExtension;
+import fr.adrienbrault.idea.symfonyplugin.templating.path.TwigPath;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyTempCodeInsightFixtureTestCase;
 
 import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.templating.path.GlobalAppTwigNamespaceExtension
+ * @see fr.adrienbrault.idea.symfonyplugin.templating.path.GlobalAppTwigNamespaceExtension
  */
 public class GlobalAppTwigNamespaceExtensionTest extends SymfonyTempCodeInsightFixtureTestCase {
     public void testThatBundleNamespacesAreAdded() {

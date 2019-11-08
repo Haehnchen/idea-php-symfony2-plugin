@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.completion.command;
+package fr.adrienbrault.idea.symfonyplugin.completion.command;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
@@ -6,12 +6,12 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
-import fr.adrienbrault.idea.symfony2plugin.util.CommandUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionProvider;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionRegistrar;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionRegistrarParameter;
+import fr.adrienbrault.idea.symfonyplugin.util.CommandUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.MethodMatcher;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 

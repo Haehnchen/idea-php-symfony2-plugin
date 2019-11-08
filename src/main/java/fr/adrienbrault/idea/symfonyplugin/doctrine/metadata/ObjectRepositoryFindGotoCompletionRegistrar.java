@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine.metadata;
+package fr.adrienbrault.idea.symfonyplugin.doctrine.metadata;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.PsiElement;
@@ -7,17 +7,17 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpExpression;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.utils.GotoCompletionUtil;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelFieldLookupElement;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelInterface;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionProvider;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionRegistrar;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionRegistrarParameter;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.utils.GotoCompletionUtil;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.EntityHelper;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.dict.DoctrineModelField;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.dict.DoctrineModelFieldLookupElement;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.dict.DoctrineModelInterface;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.util.DoctrineMetadataUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.MethodMatcher;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;

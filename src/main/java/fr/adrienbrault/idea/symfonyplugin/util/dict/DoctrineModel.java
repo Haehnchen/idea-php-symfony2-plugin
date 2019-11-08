@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.util.dict;
+package fr.adrienbrault.idea.symfonyplugin.util.dict;
 
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import org.jetbrains.annotations.NotNull;

@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.config.xml;
+package fr.adrienbrault.idea.symfonyplugin.config.xml;
 
 import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
 import com.intellij.psi.xml.XmlText;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.util.ServiceContainerUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 

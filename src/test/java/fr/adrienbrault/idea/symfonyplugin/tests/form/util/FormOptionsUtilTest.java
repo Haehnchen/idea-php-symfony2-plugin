@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.form.util;
+package fr.adrienbrault.idea.symfonyplugin.tests.form.util;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.util.containers.ContainerUtil;
@@ -6,12 +6,12 @@ import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.form.dict.FormClass;
-import fr.adrienbrault.idea.symfony2plugin.form.dict.FormClassEnum;
-import fr.adrienbrault.idea.symfony2plugin.form.dict.FormOptionEnum;
-import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil;
-import fr.adrienbrault.idea.symfony2plugin.form.visitor.FormOptionVisitor;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.form.dict.FormClass;
+import fr.adrienbrault.idea.symfonyplugin.form.dict.FormClassEnum;
+import fr.adrienbrault.idea.symfonyplugin.form.dict.FormOptionEnum;
+import fr.adrienbrault.idea.symfonyplugin.form.util.FormOptionsUtil;
+import fr.adrienbrault.idea.symfonyplugin.form.visitor.FormOptionVisitor;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -21,7 +21,7 @@ import java.util.Set;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil
+ * @see fr.adrienbrault.idea.symfonyplugin.form.util.FormOptionsUtil
  */
 public class FormOptionsUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -49,7 +49,7 @@ public class FormOptionsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     protected String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/form/util/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/form/util/fixtures";
     }
 
     /**

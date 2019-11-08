@@ -1,8 +1,8 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder;
+package fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder;
 
-import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderJoin;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderPropertyAlias;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderRelation;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.dict.QueryBuilderJoin;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.dict.QueryBuilderPropertyAlias;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.dict.QueryBuilderRelation;
 
 import java.util.*;
 

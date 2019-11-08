@@ -1,13 +1,13 @@
-package fr.adrienbrault.idea.symfony2plugin.twig.variable.collector;
+package fr.adrienbrault.idea.symfonyplugin.twig.variable.collector;
 
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.twig.variable.globals.TwigGlobalEnum;
-import fr.adrienbrault.idea.symfony2plugin.twig.variable.globals.TwigGlobalVariable;
-import fr.adrienbrault.idea.symfony2plugin.twig.variable.globals.TwigGlobalsServiceParser;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import fr.adrienbrault.idea.symfonyplugin.twig.variable.globals.TwigGlobalEnum;
+import fr.adrienbrault.idea.symfonyplugin.twig.variable.globals.TwigGlobalVariable;
+import fr.adrienbrault.idea.symfonyplugin.twig.variable.globals.TwigGlobalsServiceParser;
+import fr.adrienbrault.idea.symfonyplugin.templating.variable.TwigFileVariableCollector;
+import fr.adrienbrault.idea.symfonyplugin.templating.variable.TwigFileVariableCollectorParameter;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.service.ServiceXmlParserFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 

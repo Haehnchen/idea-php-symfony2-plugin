@@ -1,17 +1,17 @@
-package fr.adrienbrault.idea.symfony2plugin.security;
+package fr.adrienbrault.idea.symfonyplugin.security;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.utils.GotoCompletionUtil;
-import fr.adrienbrault.idea.symfony2plugin.security.utils.VoterUtil;
-import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
-import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionProvider;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionRegistrar;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionRegistrarParameter;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.utils.GotoCompletionUtil;
+import fr.adrienbrault.idea.symfonyplugin.security.utils.VoterUtil;
+import fr.adrienbrault.idea.symfonyplugin.templating.TwigPattern;
+import fr.adrienbrault.idea.symfonyplugin.util.MethodMatcher;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 

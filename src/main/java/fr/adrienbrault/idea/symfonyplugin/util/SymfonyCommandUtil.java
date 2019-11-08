@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.util;
+package fr.adrienbrault.idea.symfonyplugin.util;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
@@ -7,7 +7,7 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyCommand;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.SymfonyCommand;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

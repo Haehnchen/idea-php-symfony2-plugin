@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.external.locator;
+package fr.adrienbrault.idea.symfonyplugin.external.locator;
 
 import com.intellij.psi.PsiElement;
 import de.espend.idea.php.toolbox.extension.PhpToolboxTargetLocator;
 import de.espend.idea.php.toolbox.navigation.locator.TargetLocatorParameter;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.util.resource.FileResourceUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

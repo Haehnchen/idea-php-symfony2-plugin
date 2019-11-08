@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.config.component.parser;
+package fr.adrienbrault.idea.symfonyplugin.config.component.parser;
 
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;

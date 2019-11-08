@@ -1,13 +1,13 @@
-package fr.adrienbrault.idea.symfony2plugin.codeInsight.navigation;
+package fr.adrienbrault.idea.symfonyplugin.codeInsight.navigation;
 
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.psi.PsiElement;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProviderInterface;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.utils.GotoCompletionUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionContributor;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionProviderInterface;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.utils.GotoCompletionUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;

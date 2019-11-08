@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.path;
+package fr.adrienbrault.idea.symfonyplugin.templating.path;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

@@ -1,6 +1,6 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict;
+package fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.dict;
 
-import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.dict.DoctrineModelField;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

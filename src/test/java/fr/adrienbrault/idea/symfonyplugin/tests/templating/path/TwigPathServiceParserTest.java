@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating.path;
+package fr.adrienbrault.idea.symfonyplugin.tests.templating.path;
 
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathServiceParser;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.templating.path.TwigPathServiceParser;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -16,7 +16,7 @@ public class TwigPathServiceParserTest extends Assert {
     @Test
     public void testParse() throws Exception {
 
-        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/path/appDevDebugProjectContainer.xml");
+        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/templating/path/appDevDebugProjectContainer.xml");
 
         TwigPathServiceParser parser = new TwigPathServiceParser();
         parser.parser(new FileInputStream(testFile));

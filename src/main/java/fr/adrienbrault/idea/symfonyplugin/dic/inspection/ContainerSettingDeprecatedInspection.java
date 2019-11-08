@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.dic.inspection;
+package fr.adrienbrault.idea.symfonyplugin.dic.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
@@ -7,10 +7,10 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlTag;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.psi.PsiElementAssertUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.config.yaml.YamlElementPatternHelper;
+import fr.adrienbrault.idea.symfonyplugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfonyplugin.util.psi.PsiElementAssertUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLKeyValue;

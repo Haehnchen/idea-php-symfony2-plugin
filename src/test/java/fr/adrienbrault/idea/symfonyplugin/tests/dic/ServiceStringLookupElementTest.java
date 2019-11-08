@@ -1,14 +1,14 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.dic;
+package fr.adrienbrault.idea.symfonyplugin.tests.dic;
 
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
-import fr.adrienbrault.idea.symfony2plugin.dic.ServiceStringLookupElement;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.SerializableService;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.dic.ContainerService;
+import fr.adrienbrault.idea.symfonyplugin.dic.ServiceStringLookupElement;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.SerializableService;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.dic.ServiceStringLookupElement
+ * @see fr.adrienbrault.idea.symfonyplugin.dic.ServiceStringLookupElement
  */
 public class ServiceStringLookupElementTest extends SymfonyLightCodeInsightFixtureTestCase {
 

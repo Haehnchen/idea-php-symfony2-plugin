@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating;
+package fr.adrienbrault.idea.symfonyplugin.tests.templating;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -10,9 +10,9 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.elements.TwigBlockTag;
-import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.templating.TwigPattern;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateGoToDeclarationHandler
+ * @see fr.adrienbrault.idea.symfonyplugin.templating.TwigTemplateGoToDeclarationHandler
  */
 public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
@@ -30,11 +30,11 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/templating/fixtures";
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.TwigTemplateCompletionContributor
      */
     public void testBlockNavigation() {
         if(System.getenv("PHPSTORM_ENV") != null) return;
@@ -66,7 +66,7 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.TwigTemplateCompletionContributor
      */
     public void testBlockNavigationInEmbed() {
         if(System.getenv("PHPSTORM_ENV") != null) return;
@@ -97,7 +97,7 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateGoToDeclarationHandler
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.TwigTemplateGoToDeclarationHandler
      */
     public void testSimpleTestNavigationToExtension() {
         myFixture.copyFileToProject("TwigFilterExtension.php");

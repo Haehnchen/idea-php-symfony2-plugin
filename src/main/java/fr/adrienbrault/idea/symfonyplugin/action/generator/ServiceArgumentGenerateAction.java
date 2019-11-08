@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.action.generator;
+package fr.adrienbrault.idea.symfonyplugin.action.generator;
 
 import com.intellij.codeInsight.CodeInsightActionHandler;
 import com.intellij.codeInsight.actions.CodeInsightAction;
@@ -10,10 +10,10 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
-import fr.adrienbrault.idea.symfony2plugin.intentions.php.XmlServiceArgumentIntention;
-import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.action.ServiceActionUtil;
+import fr.adrienbrault.idea.symfonyplugin.intentions.php.XmlServiceArgumentIntention;
+import fr.adrienbrault.idea.symfonyplugin.stubs.ContainerCollectionResolver;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

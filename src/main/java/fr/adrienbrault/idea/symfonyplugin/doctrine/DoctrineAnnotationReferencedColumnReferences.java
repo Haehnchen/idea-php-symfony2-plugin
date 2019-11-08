@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine;
+package fr.adrienbrault.idea.symfonyplugin.doctrine;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.*;
@@ -14,10 +14,10 @@ import de.espend.idea.php.annotation.extension.PhpAnnotationReferenceProvider;
 import de.espend.idea.php.annotation.extension.parameter.AnnotationPropertyParameter;
 import de.espend.idea.php.annotation.extension.parameter.PhpAnnotationReferenceProviderParameter;
 import de.espend.idea.php.annotation.util.AnnotationUtil;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelFieldLookupElement;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.dict.DoctrineModelField;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.dict.DoctrineModelFieldLookupElement;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

@@ -1,12 +1,12 @@
-package fr.adrienbrault.idea.symfony2plugin.templating;
+package fr.adrienbrault.idea.symfonyplugin.templating;
 
 import com.intellij.codeInsight.completion.InsertionContext;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.jetbrains.php.completion.PhpLookupElement;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.completion.TwigTypeInsertHandler;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigTypeResolveUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.completion.TwigTypeInsertHandler;
 import org.jetbrains.annotations.NotNull;
 
 /**

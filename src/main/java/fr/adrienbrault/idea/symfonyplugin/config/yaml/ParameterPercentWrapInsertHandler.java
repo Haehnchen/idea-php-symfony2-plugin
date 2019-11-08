@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.config.yaml;
+package fr.adrienbrault.idea.symfonyplugin.config.yaml;
 
 import com.intellij.codeInsight.completion.InsertHandler;
 import com.intellij.codeInsight.completion.InsertionContext;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.PsiElement;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfonyplugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**

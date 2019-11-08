@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.extension;
+package fr.adrienbrault.idea.symfonyplugin.extension;
 
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.openapi.project.Project;

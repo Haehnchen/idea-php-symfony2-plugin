@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.util;
+package fr.adrienbrault.idea.symfonyplugin.tests.util;
 
 import com.intellij.openapi.util.Condition;
 import com.intellij.util.containers.ContainerUtil;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import fr.adrienbrault.idea.symfony2plugin.util.SymfonyCommandUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyCommand;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.util.SymfonyCommandUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.SymfonyCommand;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -17,7 +17,7 @@ public class SymfonyCommandUtilTest extends SymfonyLightCodeInsightFixtureTestCa
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/util/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/util/fixtures";
     }
 
     /**

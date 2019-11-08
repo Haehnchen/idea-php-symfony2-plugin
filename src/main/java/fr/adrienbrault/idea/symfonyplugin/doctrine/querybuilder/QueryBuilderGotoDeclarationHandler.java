@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder;
+package fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder;
 
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.openapi.actionSystem.DataContext;
@@ -7,12 +7,12 @@ import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderPropertyAlias;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderRelation;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.util.MatcherUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.dict.QueryBuilderPropertyAlias;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.dict.QueryBuilderRelation;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.util.MatcherUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.MethodMatcher;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 

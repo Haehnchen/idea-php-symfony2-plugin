@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.action;
+package fr.adrienbrault.idea.symfonyplugin.action;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;

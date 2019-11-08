@@ -1,14 +1,14 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.util;
+package fr.adrienbrault.idea.symfonyplugin.tests.util;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.elements.Method;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.util.EventDispatcherTypeProvider
+ * @see fr.adrienbrault.idea.symfonyplugin.util.EventDispatcherTypeProvider
  */
 public class EventDispatcherTypeProviderTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -18,11 +18,11 @@ public class EventDispatcherTypeProviderTest extends SymfonyLightCodeInsightFixt
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/util/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/util/fixtures";
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.EventDispatcherTypeProvider
+     * @see fr.adrienbrault.idea.symfonyplugin.util.EventDispatcherTypeProvider
      */
     public void testEventDispatcherTypeSignature() {
         assertPhpReferenceSignatureContains(PhpFileType.INSTANCE,
@@ -41,7 +41,7 @@ public class EventDispatcherTypeProviderTest extends SymfonyLightCodeInsightFixt
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.EventDispatcherTypeProvider
+     * @see fr.adrienbrault.idea.symfonyplugin.util.EventDispatcherTypeProvider
      */
     public void testEventDispatcherTypeSignatureWithVariableReferences() {
         assertPhpReferenceResolveTo(PhpFileType.INSTANCE,
@@ -54,7 +54,7 @@ public class EventDispatcherTypeProviderTest extends SymfonyLightCodeInsightFixt
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.EventDispatcherTypeProvider
+     * @see fr.adrienbrault.idea.symfonyplugin.util.EventDispatcherTypeProvider
      */
     public void testEventDispatcherTypeSignatureProvidesExtendsClassNavigation() {
         assertPhpReferenceResolveTo(PhpFileType.INSTANCE,
@@ -66,7 +66,7 @@ public class EventDispatcherTypeProviderTest extends SymfonyLightCodeInsightFixt
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.EventDispatcherTypeProvider
+     * @see fr.adrienbrault.idea.symfonyplugin.util.EventDispatcherTypeProvider
      */
     public void testEventDispatcherTypeSignatureNotSupported() {
         assertPhpReferenceSignatureContains(PhpFileType.INSTANCE,

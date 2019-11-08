@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.translation.form;
+package fr.adrienbrault.idea.symfonyplugin.translation.form;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
@@ -6,12 +6,12 @@ import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.TableView;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.action.comparator.PsiWeightListComparator;
-import fr.adrienbrault.idea.symfony2plugin.action.dict.TranslationFileModel;
-import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.action.comparator.PsiWeightListComparator;
+import fr.adrienbrault.idea.symfonyplugin.action.dict.TranslationFileModel;
+import fr.adrienbrault.idea.symfonyplugin.translation.dict.TranslationUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.SymfonyBundleUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.SymfonyBundle;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

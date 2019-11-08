@@ -1,16 +1,16 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.stubs;
+package fr.adrienbrault.idea.symfonyplugin.tests.stubs;
 
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
-import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.dic.ContainerParameter;
+import fr.adrienbrault.idea.symfonyplugin.dic.ContainerService;
+import fr.adrienbrault.idea.symfonyplugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
 
 import java.util.Set;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver
+ * @see fr.adrienbrault.idea.symfonyplugin.stubs.ContainerCollectionResolver
  */
 public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
@@ -58,7 +58,7 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/stubs/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/stubs/fixtures";
     }
 
     public void testCaseInsensitiveService() {

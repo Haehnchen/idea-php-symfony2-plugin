@@ -1,14 +1,14 @@
-package fr.adrienbrault.idea.symfony2plugin.translation.inspection;
+package fr.adrienbrault.idea.symfonyplugin.translation.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import fr.adrienbrault.idea.symfony2plugin.translation.TranslationKeyIntentionAndQuickFixAction;
-import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.templating.TwigPattern;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.translation.TranslationKeyIntentionAndQuickFixAction;
+import fr.adrienbrault.idea.symfonyplugin.translation.dict.TranslationUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -43,7 +43,7 @@ public class TwigTranslationKeyInspection extends LocalInspectionTool {
             }
 
             String text = psiElement.getText();
-            if(StringUtils.isBlank(text) || fr.adrienbrault.idea.symfony2plugin.util.StringUtils.isInterpolatedString(text)) {
+            if(StringUtils.isBlank(text) || fr.adrienbrault.idea.symfonyplugin.util.StringUtils.isInterpolatedString(text)) {
                 super.visitElement(psiElement);
                 return;
             }

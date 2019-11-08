@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.metadata.util;
+package fr.adrienbrault.idea.symfonyplugin.tests.doctrine.metadata.util;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.ide.highlighter.XmlFileType;
@@ -8,18 +8,18 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineManagerEnum;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.dict.DoctrineManagerEnum;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.dict.DoctrineMetadataModel;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.util.DoctrineMetadataUtil;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
 import org.jetbrains.yaml.YAMLFileType;
 
 import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil
+ * @see fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.util.DoctrineMetadataUtil
  */
 public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -33,18 +33,18 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/doctrine/metadata/util/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/doctrine/metadata/util/fixtures";
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil#findMetadataFiles
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.util.DoctrineMetadataUtil#findMetadataFiles
      */
     public void testFindMetadataFiles() {
         assertSize(1, DoctrineMetadataUtil.findMetadataFiles(getProject(), "Foo\\Bar"));
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil#getModelFields
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.util.DoctrineMetadataUtil#getModelFields
      */
     public void testGetModelFields() {
         DoctrineMetadataModel modelFields = DoctrineMetadataUtil.getModelFields(getProject(), "Foo\\Bar");
@@ -67,7 +67,7 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil#getModelFields
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.util.DoctrineMetadataUtil#getModelFields
      */
     public void testGetOrmXmlModelFields() {
         DoctrineMetadataModel modelFields = DoctrineMetadataUtil.getModelFields(getProject(), "Doctrine\\Tests\\ORM\\Mapping\\XmlUser");
@@ -91,7 +91,7 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil#getModelFields
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.util.DoctrineMetadataUtil#getModelFields
      */
     public void testGetOrmYmlModelFields() {
         DoctrineMetadataModel modelFields = DoctrineMetadataUtil.getModelFields(getProject(), "Doctrine\\Tests\\ORM\\Mapping\\YamlUser");
@@ -115,7 +115,7 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil#getClassRepository
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.util.DoctrineMetadataUtil#getClassRepository
      */
     public void testGetClassRepository() {
         assertEquals("Doctrine\\Tests\\ORM\\Mapping\\YamlUserRepository", DoctrineMetadataUtil.getClassRepository(getProject(), "Doctrine\\Tests\\ORM\\Mapping\\YamlUser").getPresentableFQN());
@@ -124,7 +124,7 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil#getTables
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.util.DoctrineMetadataUtil#getTables
      */
     public void testGetTables() {
 
@@ -142,7 +142,7 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil#getMetadataByTable
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.util.DoctrineMetadataUtil#getMetadataByTable
      */
     public void testGetMetadataByTable() {
         assertNotNull(DoctrineMetadataUtil.getMetadataByTable(getProject(), "cms_users").getField("id"));
@@ -150,7 +150,7 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil#getModels
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.util.DoctrineMetadataUtil#getModels
      */
     public void testGetModels() {
 
@@ -163,7 +163,7 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil#getObjectRepositoryLookupElements
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.util.DoctrineMetadataUtil#getObjectRepositoryLookupElements
      */
     public void testGetObjectRepositoryLookupElements() {
         assertNotNull(ContainerUtil.find(DoctrineMetadataUtil.getObjectRepositoryLookupElements(getProject()), new Condition<LookupElement>() {
@@ -175,7 +175,7 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil#findManagerByScope
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.util.DoctrineMetadataUtil#findManagerByScope
      */
     public void testFindManagerByScope() {
         for (Pair<DoctrineManagerEnum, String> pair : Arrays.asList(
@@ -193,7 +193,7 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil#findMetadataForRepositoryClass
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.util.DoctrineMetadataUtil#findMetadataForRepositoryClass
      */
     public void testFindMetadataForRepositoryClass() {
         Condition<VirtualFile> condition = new Condition<VirtualFile>() {
@@ -210,7 +210,7 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil#findModelNameInScope
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.util.DoctrineMetadataUtil#findModelNameInScope
      */
     public void testFindModelNameInScope() {
         for (String s : new String[]{
@@ -226,7 +226,7 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil#findModelNameInScope
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.util.DoctrineMetadataUtil#findModelNameInScope
      */
     public void testYamlFindModelNameInScope() {
         for (String s : new String[]{

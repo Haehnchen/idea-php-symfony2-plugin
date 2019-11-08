@@ -1,13 +1,13 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating;
+package fr.adrienbrault.idea.symfonyplugin.tests.templating;
 
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.PhpFileType;
-import fr.adrienbrault.idea.symfony2plugin.templating.RenderParameterGotoCompletionRegistrar;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.templating.RenderParameterGotoCompletionRegistrar;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.templating.RenderParameterGotoCompletionRegistrar
+ * @see fr.adrienbrault.idea.symfonyplugin.templating.RenderParameterGotoCompletionRegistrar
  */
 public class RenderParameterGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
@@ -16,7 +16,7 @@ public class RenderParameterGotoCompletionRegistrarTest extends SymfonyLightCode
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/templating/fixtures";
     }
 
     public void testTemplateNameExtractionForFunction() {

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.form;
+package fr.adrienbrault.idea.symfonyplugin.form;
 
 import com.jetbrains.php.completion.PhpLookupElement;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;

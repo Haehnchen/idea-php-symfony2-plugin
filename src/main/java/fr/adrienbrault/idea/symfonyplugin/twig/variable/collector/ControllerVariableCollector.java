@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.twig.variable.collector;
+package fr.adrienbrault.idea.symfonyplugin.twig.variable.collector;
 
 import com.intellij.psi.PsiFile;
 import com.jetbrains.twig.TwigFile;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.templating.variable.TwigFileVariableCollector;
+import fr.adrienbrault.idea.symfonyplugin.templating.variable.TwigFileVariableCollectorParameter;
+import fr.adrienbrault.idea.symfonyplugin.templating.variable.dict.PsiVariable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;

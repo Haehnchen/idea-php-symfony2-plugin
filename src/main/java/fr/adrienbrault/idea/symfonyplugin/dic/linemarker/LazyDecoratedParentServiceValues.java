@@ -1,8 +1,8 @@
-package fr.adrienbrault.idea.symfony2plugin.dic.linemarker;
+package fr.adrienbrault.idea.symfonyplugin.dic.linemarker;
 
 import com.intellij.openapi.project.Project;
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
-import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
+import fr.adrienbrault.idea.symfonyplugin.dic.ContainerService;
+import fr.adrienbrault.idea.symfonyplugin.stubs.ServiceIndexUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

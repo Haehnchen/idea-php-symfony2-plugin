@@ -1,6 +1,6 @@
-package fr.adrienbrault.idea.symfony2plugin.installer;
+package fr.adrienbrault.idea.symfonyplugin.installer;
 
-import fr.adrienbrault.idea.symfony2plugin.installer.dict.SymfonyInstallerVersion;
+import fr.adrienbrault.idea.symfonyplugin.installer.dict.SymfonyInstallerVersion;
 import org.jetbrains.annotations.NotNull;
 
 /**

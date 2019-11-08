@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.form;
+package fr.adrienbrault.idea.symfonyplugin.form;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiReferenceBase;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil;
+import fr.adrienbrault.idea.symfonyplugin.form.util.FormOptionsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating;
+package fr.adrienbrault.idea.symfonyplugin.tests.templating;
 
-import fr.adrienbrault.idea.symfony2plugin.twig.action.TwigTranslationGeneratorAction;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.twig.action.TwigTranslationGeneratorAction;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

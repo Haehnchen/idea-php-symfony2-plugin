@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating.twig;
+package fr.adrienbrault.idea.symfonyplugin.tests.templating.twig;
 
 import com.jetbrains.twig.TwigFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 public class TwigAppResourcesReferencesTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -16,7 +16,7 @@ public class TwigAppResourcesReferencesTest extends SymfonyLightCodeInsightFixtu
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateGoToDeclarationHandler
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.TwigTemplateGoToDeclarationHandler
      */
     public void testTwigTemplatesInsideTwigFileCompletion() {
         if(System.getenv("PHPSTORM_ENV") != null) return;
@@ -60,7 +60,7 @@ public class TwigAppResourcesReferencesTest extends SymfonyLightCodeInsightFixtu
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.TwigTemplateCompletionContributor
      */
     public void testTwigTemplatesInsideTwigFileNavigation() {
         if(System.getenv("PHPSTORM_ENV") != null) return;

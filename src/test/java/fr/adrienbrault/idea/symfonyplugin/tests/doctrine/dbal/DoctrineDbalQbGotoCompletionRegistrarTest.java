@@ -1,12 +1,12 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.dbal;
+package fr.adrienbrault.idea.symfonyplugin.tests.doctrine.dbal;
 
 import com.intellij.patterns.XmlPatterns;
 import com.jetbrains.php.lang.PhpFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dbal.DoctrineDbalQbGotoCompletionRegistrar
+ * @see fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.dbal.DoctrineDbalQbGotoCompletionRegistrar
  */
 public class DoctrineDbalQbGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -17,11 +17,11 @@ public class DoctrineDbalQbGotoCompletionRegistrarTest extends SymfonyLightCodeI
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/doctrine/dbal/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/doctrine/dbal/fixtures";
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dbal.DoctrineDbalQbGotoCompletionRegistrar
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.dbal.DoctrineDbalQbGotoCompletionRegistrar
      */
     public void testDBALTableNameCompletion() {
 
@@ -43,7 +43,7 @@ public class DoctrineDbalQbGotoCompletionRegistrarTest extends SymfonyLightCodeI
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dbal.DoctrineDbalQbGotoCompletionRegistrar
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.dbal.DoctrineDbalQbGotoCompletionRegistrar
      */
     public void testDBALTableNameNavigation() {
         for (String s : new String[]{"update", "insert", "from"}) {
@@ -62,7 +62,7 @@ public class DoctrineDbalQbGotoCompletionRegistrarTest extends SymfonyLightCodeI
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dbal.DoctrineDbalQbGotoCompletionRegistrar
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.dbal.DoctrineDbalQbGotoCompletionRegistrar
     */
     public void testDBALConnectionTableNameCompletion() {
         for (String s : new String[]{"insert", "update"}) {
@@ -75,7 +75,7 @@ public class DoctrineDbalQbGotoCompletionRegistrarTest extends SymfonyLightCodeI
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dbal.DoctrineDbalQbGotoCompletionRegistrar
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.dbal.DoctrineDbalQbGotoCompletionRegistrar
      */
     public void testDBALConnectionFieldArrayCompletion() {
         for (String s : new String[]{"insert", "update"}) {
@@ -94,7 +94,7 @@ public class DoctrineDbalQbGotoCompletionRegistrarTest extends SymfonyLightCodeI
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dbal.DoctrineDbalQbGotoCompletionRegistrar
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.dbal.DoctrineDbalQbGotoCompletionRegistrar
      */
     public void testDBALConnectionFieldArrayNavigation() {
         for (String s : new String[]{"insert", "update"}) {
@@ -113,7 +113,7 @@ public class DoctrineDbalQbGotoCompletionRegistrarTest extends SymfonyLightCodeI
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dbal.DoctrineDbalQbGotoCompletionRegistrar
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.dbal.DoctrineDbalQbGotoCompletionRegistrar
      */
     public void testDBALAliasRelationCompletion() {
         for (String s : new String[]{"innerJoin", "leftJoin", "join", "rightJoin"}) {

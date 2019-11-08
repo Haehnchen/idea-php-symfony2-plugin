@@ -1,13 +1,13 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.lang;
+package fr.adrienbrault.idea.symfonyplugin.tests.lang;
 
 import com.intellij.openapi.fileTypes.LanguageFileType;
 import com.intellij.psi.PsiElement;
 import com.intellij.testFramework.fixtures.InjectionTestFixture;
 import com.jetbrains.php.lang.PhpFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import junit.framework.TestCase;
 
-import static fr.adrienbrault.idea.symfony2plugin.lang.ParameterLanguageInjector.*;
+import static fr.adrienbrault.idea.symfonyplugin.lang.ParameterLanguageInjector.*;
 
 public class ParameterLanguageInjectorTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -21,7 +21,7 @@ public class ParameterLanguageInjectorTest extends SymfonyLightCodeInsightFixtur
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/lang/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/lang/fixtures";
     }
 
     public void testCssLanguageInjections() {

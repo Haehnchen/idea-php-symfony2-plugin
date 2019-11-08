@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.stubs.cache;
+package fr.adrienbrault.idea.symfonyplugin.stubs.cache;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
@@ -9,7 +9,7 @@ import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.psi.util.PsiModificationTracker;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.intellij.util.indexing.ID;
-import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
+import fr.adrienbrault.idea.symfonyplugin.stubs.SymfonyProcessors;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;

@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.action;
+package fr.adrienbrault.idea.symfonyplugin.tests.action;
 
-import fr.adrienbrault.idea.symfony2plugin.action.SymfonyContainerServiceBuilder;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.action.SymfonyContainerServiceBuilder;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

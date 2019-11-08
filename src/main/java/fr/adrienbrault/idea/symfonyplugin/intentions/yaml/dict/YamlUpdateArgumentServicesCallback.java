@@ -1,13 +1,13 @@
-package fr.adrienbrault.idea.symfony2plugin.intentions.yaml.dict;
+package fr.adrienbrault.idea.symfonyplugin.intentions.yaml.dict;
 
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
-import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
-import fr.adrienbrault.idea.symfony2plugin.translation.util.TranslationInsertUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import fr.adrienbrault.idea.symfonyplugin.action.ServiceActionUtil;
+import fr.adrienbrault.idea.symfonyplugin.translation.util.TranslationInsertUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.YAMLCompoundValue;

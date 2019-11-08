@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.config.doctrine;
+package fr.adrienbrault.idea.symfonyplugin.config.doctrine;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.util.containers.ContainerUtil;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.util.completion.annotations.AnnotationMethodInsertHandler;
-import fr.adrienbrault.idea.symfony2plugin.util.completion.annotations.AnnotationTagInsertHandler;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.util.completion.annotations.AnnotationMethodInsertHandler;
+import fr.adrienbrault.idea.symfonyplugin.util.completion.annotations.AnnotationTagInsertHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

@@ -1,14 +1,14 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.routing;
+package fr.adrienbrault.idea.symfonyplugin.tests.routing;
 
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiFile;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.routing.XmlLineMarkerProvider
+ * @see fr.adrienbrault.idea.symfonyplugin.routing.XmlLineMarkerProvider
  */
 public class XmlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -25,7 +25,7 @@ public class XmlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTes
     }
 
     protected String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/routing/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/routing/fixtures";
     }
 
     public void testThatResourceProvidesLineMarkerLineMarker() {

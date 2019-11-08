@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.config.component.parser;
+package fr.adrienbrault.idea.symfonyplugin.config.component.parser;
 
-import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterLookupElement;
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
+import fr.adrienbrault.idea.symfonyplugin.config.component.ParameterLookupElement;
+import fr.adrienbrault.idea.symfonyplugin.dic.ContainerParameter;
 import org.jetbrains.annotations.NotNull;
 
 /**

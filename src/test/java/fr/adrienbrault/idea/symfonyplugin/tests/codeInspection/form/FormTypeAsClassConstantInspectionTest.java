@@ -1,13 +1,13 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.codeInspection.form;
+package fr.adrienbrault.idea.symfonyplugin.tests.codeInspection.form;
 
 import com.jetbrains.php.lang.PhpFileType;
-import fr.adrienbrault.idea.symfony2plugin.codeInspection.form.FormTypeAsClassConstantInspection;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.codeInspection.form.FormTypeAsClassConstantInspection;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.codeInspection.form.FormTypeAsClassConstantInspection
+ * @see fr.adrienbrault.idea.symfonyplugin.codeInspection.form.FormTypeAsClassConstantInspection
  */
 public class FormTypeAsClassConstantInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -17,7 +17,7 @@ public class FormTypeAsClassConstantInspectionTest extends SymfonyLightCodeInsig
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/codeInspection/form/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/codeInspection/form/fixtures";
     }
 
     public void testThatFormNamesAreInspectedAsDeprecated() {

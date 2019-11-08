@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.translation;
+package fr.adrienbrault.idea.symfonyplugin.translation;
 
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemsHolder;
@@ -7,12 +7,12 @@ import com.intellij.psi.PsiElementVisitor;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.ParameterList;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
-import fr.adrienbrault.idea.symfony2plugin.translation.inspection.TwigTranslationKeyInspection;
-import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.translation.dict.TranslationUtil;
+import fr.adrienbrault.idea.symfonyplugin.translation.inspection.TwigTranslationKeyInspection;
+import fr.adrienbrault.idea.symfonyplugin.util.ParameterBag;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**

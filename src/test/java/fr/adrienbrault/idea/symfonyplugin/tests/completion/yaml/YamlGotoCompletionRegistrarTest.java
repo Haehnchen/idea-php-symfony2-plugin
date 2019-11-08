@@ -1,8 +1,8 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.completion.yaml;
+package fr.adrienbrault.idea.symfonyplugin.tests.completion.yaml;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
 
 import java.util.ArrayList;
@@ -10,7 +10,7 @@ import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.completion.yaml.YamlGotoCompletionRegistrar
+ * @see fr.adrienbrault.idea.symfonyplugin.completion.yaml.YamlGotoCompletionRegistrar
  */
 public class YamlGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
@@ -21,7 +21,7 @@ public class YamlGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixt
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/completion/yaml/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/completion/yaml/fixtures";
     }
 
     public void testThatRouteInsideRouteDefaultKeyCompletedAndNavigable() {

@@ -1,12 +1,12 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.form.action.generator;
+package fr.adrienbrault.idea.symfonyplugin.tests.form.action.generator;
 
 import com.jetbrains.php.lang.PhpFileType;
-import fr.adrienbrault.idea.symfony2plugin.form.action.generator.FormTypeConstantMigrationAction;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.form.action.generator.FormTypeConstantMigrationAction;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.form.action.generator.FormTypeConstantMigrationAction
+ * @see fr.adrienbrault.idea.symfonyplugin.form.action.generator.FormTypeConstantMigrationAction
  */
 public class FormTypeConstantMigrationActionTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
@@ -15,7 +15,7 @@ public class FormTypeConstantMigrationActionTest extends SymfonyLightCodeInsight
     }
 
     protected String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/form/action/generator/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/form/action/generator/fixtures";
     }
 
     public void testActionAvailableForFileScope() {

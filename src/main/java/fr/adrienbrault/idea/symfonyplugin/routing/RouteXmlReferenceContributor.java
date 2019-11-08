@@ -1,12 +1,12 @@
-package fr.adrienbrault.idea.symfony2plugin.routing;
+package fr.adrienbrault.idea.symfonyplugin.routing;
 
 import com.intellij.psi.*;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlText;
 import com.intellij.util.ProcessingContext;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
-import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.config.xml.XmlHelper;
+import fr.adrienbrault.idea.symfonyplugin.util.controller.ControllerIndex;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 

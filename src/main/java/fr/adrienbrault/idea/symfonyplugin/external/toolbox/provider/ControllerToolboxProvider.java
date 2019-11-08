@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.external.toolbox.provider;
+package fr.adrienbrault.idea.symfonyplugin.external.toolbox.provider;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.PsiElement;
@@ -7,9 +7,9 @@ import de.espend.idea.php.toolbox.completion.dict.PhpToolboxCompletionContributo
 import de.espend.idea.php.toolbox.extension.PhpToolboxProviderInterface;
 import de.espend.idea.php.toolbox.navigation.dict.PhpToolboxDeclarationHandlerParameter;
 import de.espend.idea.php.toolbox.provider.presentation.ProviderPresentation;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
-import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.routing.RouteHelper;
+import fr.adrienbrault.idea.symfonyplugin.util.controller.ControllerIndex;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

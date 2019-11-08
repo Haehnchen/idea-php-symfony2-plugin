@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.util.completion;
+package fr.adrienbrault.idea.symfonyplugin.util.completion;
 
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
@@ -12,8 +12,8 @@ import com.jetbrains.php.completion.PhpLookupElement;
 import com.jetbrains.php.completion.insert.PhpReferenceInsertHandler;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 
 /**

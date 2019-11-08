@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating.translation;
+package fr.adrienbrault.idea.symfonyplugin.tests.templating.translation;
 
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
+ * @see fr.adrienbrault.idea.symfonyplugin.templating.TwigTemplateCompletionContributor
  */
 abstract public class TwigTranslationFixturesTestCase extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -16,7 +16,7 @@ abstract public class TwigTranslationFixturesTestCase extends SymfonyLightCodeIn
     }
 
     protected String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/translation/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/templating/translation/fixtures";
     }
 
 }

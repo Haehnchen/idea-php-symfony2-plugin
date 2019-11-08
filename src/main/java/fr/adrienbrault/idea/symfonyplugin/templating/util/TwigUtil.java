@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.util;
+package fr.adrienbrault.idea.symfonyplugin.templating.util;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
@@ -33,33 +33,33 @@ import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.*;
 import de.espend.idea.php.annotation.util.AnnotationUtil;
-import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.action.comparator.ValueComparator;
-import fr.adrienbrault.idea.symfony2plugin.asset.AssetDirectoryReader;
-import fr.adrienbrault.idea.symfony2plugin.extension.TwigFileUsage;
-import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension;
-import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtensionParameter;
-import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
-import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateUsage;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpTwigTemplateUsageStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigBlockIndexExtension;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigMacroFunctionStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.templating.TemplateLookupElement;
-import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.*;
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
-import fr.adrienbrault.idea.symfony2plugin.twig.assets.TwigNamedAssetsServiceParser;
-import fr.adrienbrault.idea.symfony2plugin.util.FilesystemUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
-import fr.adrienbrault.idea.symfony2plugin.util.psi.PsiElementAssertUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import fr.adrienbrault.idea.symfonyplugin.Settings;
+import fr.adrienbrault.idea.symfonyplugin.action.comparator.ValueComparator;
+import fr.adrienbrault.idea.symfonyplugin.asset.AssetDirectoryReader;
+import fr.adrienbrault.idea.symfonyplugin.extension.TwigFileUsage;
+import fr.adrienbrault.idea.symfonyplugin.extension.TwigNamespaceExtension;
+import fr.adrienbrault.idea.symfonyplugin.extension.TwigNamespaceExtensionParameter;
+import fr.adrienbrault.idea.symfonyplugin.stubs.SymfonyProcessors;
+import fr.adrienbrault.idea.symfonyplugin.stubs.dict.TemplateUsage;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.PhpTwigTemplateUsageStubIndex;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.TwigBlockIndexExtension;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.TwigExtendsStubIndex;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.TwigMacroFunctionStubIndex;
+import fr.adrienbrault.idea.symfonyplugin.templating.TemplateLookupElement;
+import fr.adrienbrault.idea.symfonyplugin.templating.TwigPattern;
+import fr.adrienbrault.idea.symfonyplugin.templating.dict.*;
+import fr.adrienbrault.idea.symfonyplugin.templating.path.TwigNamespaceSetting;
+import fr.adrienbrault.idea.symfonyplugin.templating.path.TwigPath;
+import fr.adrienbrault.idea.symfonyplugin.templating.variable.dict.PsiVariable;
+import fr.adrienbrault.idea.symfonyplugin.twig.assets.TwigNamedAssetsServiceParser;
+import fr.adrienbrault.idea.symfonyplugin.util.FilesystemUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfonyplugin.util.SymfonyBundleUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.SymfonyBundle;
+import fr.adrienbrault.idea.symfonyplugin.util.psi.PsiElementAssertUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.service.ServiceXmlParserFactory;
+import fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper;
 import icons.TwigIcons;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -94,11 +94,11 @@ public class TwigUtil {
     }
 
     private static final ExtensionPointName<TwigNamespaceExtension> TWIG_NAMESPACE_EXTENSIONS = new ExtensionPointName<>(
-        "fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension"
+        "fr.adrienbrault.idea.symfonyplugin.extension.TwigNamespaceExtension"
     );
 
     private static final ExtensionPointName<TwigFileUsage> TWIG_FILE_USAGE_EXTENSIONS = new ExtensionPointName<>(
-        "fr.adrienbrault.idea.symfony2plugin.extension.TwigFileUsage"
+        "fr.adrienbrault.idea.symfonyplugin.extension.TwigFileUsage"
     );
 
     private static final Key<CachedValue<Map<String, Set<VirtualFile>>>> TEMPLATE_CACHE_TWIG = new Key<>("TEMPLATE_CACHE_TWIG");
@@ -2117,7 +2117,7 @@ public class TwigUtil {
     public static boolean isValidStringWithoutInterpolatedOrConcat(@NotNull PsiElement element) {
         String templateName = element.getText();
 
-        if(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.isInterpolatedString(templateName)) {
+        if(fr.adrienbrault.idea.symfonyplugin.util.StringUtils.isInterpolatedString(templateName)) {
             return false;
         }
 

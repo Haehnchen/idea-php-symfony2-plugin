@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict;
+package fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.dict;
 
 import org.jetbrains.annotations.Nullable;
 

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder;
+package fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder;
 
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
@@ -9,16 +9,16 @@ import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderPropertyAlias;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderRelation;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.processor.QueryBuilderChainProcessor;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.util.MatcherUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.dict.DoctrineModelField;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.dict.QueryBuilderPropertyAlias;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.dict.QueryBuilderRelation;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.processor.QueryBuilderChainProcessor;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.util.MatcherUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.MethodMatcher;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -226,7 +226,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                     // fill underscore and underscore completion
                     Set<String> strings = new HashSet<String>() {{
                         add(complete);
-                        add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.camelize(complete, true));
+                        add(fr.adrienbrault.idea.symfonyplugin.util.StringUtils.camelize(complete, true));
                     }};
 
                     for(String string: strings) {
@@ -264,8 +264,8 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
 
                                     Set<String> strings = new HashSet<String>() {{
                                         add(aliasName);
-                                        add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.camelize(aliasName, true));
-                                        add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(aliasName));
+                                        add(fr.adrienbrault.idea.symfonyplugin.util.StringUtils.camelize(aliasName, true));
+                                        add(fr.adrienbrault.idea.symfonyplugin.util.StringUtils.underscore(aliasName));
                                     }};
 
                                     for(String string: strings) {
@@ -422,7 +422,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
             // unique list for equal underscore or camelize
             Set<String> strings = new HashSet<>();
 
-            String underscore = fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(repoName.substring(endIndex + 1, repoName.length()));
+            String underscore = fr.adrienbrault.idea.symfonyplugin.util.StringUtils.underscore(repoName.substring(endIndex + 1, repoName.length()));
 
             // foo_bar => fb
             List<String> starting = new ArrayList<>();
@@ -434,7 +434,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
 
             strings.add(StringUtils.join(starting, ""));
             strings.add(underscore);
-            strings.add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.camelize(strings.iterator().next(), true));
+            strings.add(fr.adrienbrault.idea.symfonyplugin.util.StringUtils.camelize(strings.iterator().next(), true));
 
             for(String lookup: strings) {
                 completionResultSet.addElement(LookupElementBuilder.create(lookup));

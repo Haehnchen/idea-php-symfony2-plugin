@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.form.visitor;
+package fr.adrienbrault.idea.symfonyplugin.form.visitor;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.psi.PsiElement;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.form.dict.FormClass;
-import fr.adrienbrault.idea.symfony2plugin.form.dict.FormOptionEnum;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.form.dict.FormClass;
+import fr.adrienbrault.idea.symfonyplugin.form.dict.FormOptionEnum;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;

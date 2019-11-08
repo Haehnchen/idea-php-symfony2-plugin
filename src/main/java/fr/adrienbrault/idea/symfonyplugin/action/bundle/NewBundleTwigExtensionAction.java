@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.action.bundle;
+package fr.adrienbrault.idea.symfonyplugin.action.bundle;
 
 import com.intellij.openapi.application.Result;
 import com.intellij.openapi.command.WriteCommandAction;
@@ -6,8 +6,8 @@ import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.util.psi.PhpBundleFileFactory;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.util.psi.PhpBundleFileFactory;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -37,7 +37,7 @@ public class NewBundleTwigExtensionAction extends NewBundleFileActionAbstract {
 
                     final String finalName = name;
                     bundleFile = PhpBundleFileFactory.createBundleFile(phpClass, "twig_extension", "Twig\\Extension\\" + className, new HashMap<String, String>() {{
-                        put("name", fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(finalName));
+                        put("name", fr.adrienbrault.idea.symfonyplugin.util.StringUtils.underscore(finalName));
                     }});
 
                 } catch (Exception e) {

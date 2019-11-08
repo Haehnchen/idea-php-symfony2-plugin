@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.util.psi.matcher;
+package fr.adrienbrault.idea.symfonyplugin.util.psi.matcher;
 
 import com.intellij.openapi.util.Pair;
 import com.intellij.patterns.PlatformPatterns;
@@ -7,10 +7,10 @@ import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.patterns.PhpPatterns;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.PhpMethodReferenceCall;
-import fr.adrienbrault.idea.symfony2plugin.util.psi.PsiElementAssertUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.PhpMethodReferenceCall;
+import fr.adrienbrault.idea.symfonyplugin.util.psi.PsiElementAssertUtil;
 import org.apache.commons.lang.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

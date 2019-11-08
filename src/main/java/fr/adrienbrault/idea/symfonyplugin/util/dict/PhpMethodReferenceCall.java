@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.util.dict;
+package fr.adrienbrault.idea.symfonyplugin.util.dict;
 
 import org.jetbrains.annotations.NotNull;
 

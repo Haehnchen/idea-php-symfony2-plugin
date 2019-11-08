@@ -1,15 +1,15 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.form;
+package fr.adrienbrault.idea.symfonyplugin.tests.form;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.form.FormGotoCompletionRegistrar
+ * @see fr.adrienbrault.idea.symfonyplugin.form.FormGotoCompletionRegistrar
  */
 public class FormGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -23,7 +23,7 @@ public class FormGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixt
     }
 
     protected String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/form/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/form/fixtures";
     }
 
     public void testFormTypeCompletion() {

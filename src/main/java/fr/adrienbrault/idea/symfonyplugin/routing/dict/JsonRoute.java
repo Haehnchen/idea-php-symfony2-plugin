@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.routing.dict;
+package fr.adrienbrault.idea.symfonyplugin.routing.dict;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

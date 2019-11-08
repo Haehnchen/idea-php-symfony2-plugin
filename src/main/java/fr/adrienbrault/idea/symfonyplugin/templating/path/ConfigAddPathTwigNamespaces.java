@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.path;
+package fr.adrienbrault.idea.symfonyplugin.templating.path;
 
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
@@ -9,10 +9,10 @@ import com.intellij.psi.util.CachedValue;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.psi.util.PsiModificationTracker;
-import fr.adrienbrault.idea.symfony2plugin.config.utils.ConfigUtil;
-import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension;
-import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtensionParameter;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.config.utils.ConfigUtil;
+import fr.adrienbrault.idea.symfonyplugin.extension.TwigNamespaceExtension;
+import fr.adrienbrault.idea.symfonyplugin.extension.TwigNamespaceExtensionParameter;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLFile;
 

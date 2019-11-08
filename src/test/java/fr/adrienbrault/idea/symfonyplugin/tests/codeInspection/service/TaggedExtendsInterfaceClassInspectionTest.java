@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.codeInspection.service;
+package fr.adrienbrault.idea.symfonyplugin.tests.codeInspection.service;
 
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.codeInspection.service.TaggedExtendsInterfaceClassInspection
+ * @see fr.adrienbrault.idea.symfonyplugin.codeInspection.service.TaggedExtendsInterfaceClassInspection
  */
 public class TaggedExtendsInterfaceClassInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -16,7 +16,7 @@ public class TaggedExtendsInterfaceClassInspectionTest extends SymfonyLightCodeI
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/codeInspection/service/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/codeInspection/service/fixtures";
     }
 
     public void testThatKnownTagsShouldInspectionForMissingServiceClassImplementations() {

@@ -1,6 +1,6 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.dic;
+package fr.adrienbrault.idea.symfonyplugin.tests.dic;
 
-import fr.adrienbrault.idea.symfony2plugin.dic.XmlEventParser;
+import fr.adrienbrault.idea.symfonyplugin.dic.XmlEventParser;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -13,7 +13,7 @@ public class XmlEventParserTest extends Assert {
     @Test
     public void testParse() throws Exception {
 
-        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic/appDevDebugProjectContainer.xml");
+        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/dic/appDevDebugProjectContainer.xml");
 
         XmlEventParser serviceMapParser = new XmlEventParser();
         serviceMapParser.parser(new FileInputStream(testFile));

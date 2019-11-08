@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.config.utils;
+package fr.adrienbrault.idea.symfonyplugin.tests.config.utils;
 
-import fr.adrienbrault.idea.symfony2plugin.config.utils.ConfigUtil;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyTempCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.config.utils.ConfigUtil;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyTempCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.config.utils.ConfigUtil
+ * @see fr.adrienbrault.idea.symfonyplugin.config.utils.ConfigUtil
  */
 public class ConfigUtilTempTest extends SymfonyTempCodeInsightFixtureTestCase {
     /**

@@ -1,15 +1,15 @@
-package fr.adrienbrault.idea.symfony2plugin.util.completion;
+package fr.adrienbrault.idea.symfonyplugin.util.completion;
 
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterLookupElement;
-import fr.adrienbrault.idea.symfony2plugin.config.yaml.ParameterPercentWrapInsertHandler;
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
-import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.config.component.ParameterLookupElement;
+import fr.adrienbrault.idea.symfonyplugin.config.yaml.ParameterPercentWrapInsertHandler;
+import fr.adrienbrault.idea.symfonyplugin.dic.ContainerParameter;
+import fr.adrienbrault.idea.symfonyplugin.stubs.ContainerCollectionResolver;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.profiler.widget.action;
+package fr.adrienbrault.idea.symfonyplugin.profiler.widget.action;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -6,13 +6,13 @@ import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerIndexInterface;
-import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface;
-import fr.adrienbrault.idea.symfony2plugin.profiler.utils.ProfilerUtil;
-import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.profiler.ProfilerIndexInterface;
+import fr.adrienbrault.idea.symfonyplugin.profiler.dict.ProfilerRequestInterface;
+import fr.adrienbrault.idea.symfonyplugin.profiler.utils.ProfilerUtil;
+import fr.adrienbrault.idea.symfonyplugin.routing.RouteHelper;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.IdeHelper;
 import icons.TwigIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

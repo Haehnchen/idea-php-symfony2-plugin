@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.detector;
+package fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.detector;
 
 import com.intellij.openapi.project.Project;
 import com.jetbrains.php.lang.psi.elements.MethodReference;

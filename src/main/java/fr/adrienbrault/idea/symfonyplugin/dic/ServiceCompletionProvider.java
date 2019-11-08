@@ -1,17 +1,17 @@
-package fr.adrienbrault.idea.symfony2plugin.dic;
+package fr.adrienbrault.idea.symfonyplugin.dic;
 
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementWeigher;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.suggestion.ServiceSuggestionCollector;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.suggestion.XmlCallServiceSuggestionCollector;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.suggestion.XmlConstructServiceSuggestionCollector;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.suggestion.YamlConstructServiceSuggestionCollector;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
-import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.suggestion.ServiceSuggestionCollector;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.suggestion.XmlCallServiceSuggestionCollector;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.suggestion.XmlConstructServiceSuggestionCollector;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.suggestion.YamlConstructServiceSuggestionCollector;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.util.ServiceContainerUtil;
+import fr.adrienbrault.idea.symfonyplugin.stubs.ContainerCollectionResolver;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

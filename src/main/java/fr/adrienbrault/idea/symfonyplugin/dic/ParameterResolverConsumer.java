@@ -1,13 +1,13 @@
-package fr.adrienbrault.idea.symfony2plugin.dic;
+package fr.adrienbrault.idea.symfonyplugin.dic;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.util.Consumer;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.ParameterVisitor;
+import fr.adrienbrault.idea.symfonyplugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.yaml.visitor.ParameterVisitor;
 import org.jetbrains.annotations.NotNull;
 
 /**

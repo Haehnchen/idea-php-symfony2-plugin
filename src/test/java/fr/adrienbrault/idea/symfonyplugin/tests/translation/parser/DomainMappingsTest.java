@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.translation.parser;
+package fr.adrienbrault.idea.symfonyplugin.tests.translation.parser;
 
-import fr.adrienbrault.idea.symfony2plugin.translation.dict.DomainFileMap;
-import fr.adrienbrault.idea.symfony2plugin.translation.parser.DomainMappings;
+import fr.adrienbrault.idea.symfonyplugin.translation.dict.DomainFileMap;
+import fr.adrienbrault.idea.symfonyplugin.translation.parser.DomainMappings;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,7 +15,7 @@ public class DomainMappingsTest extends Assert {
 
     @Test
     public void testParser() throws FileNotFoundException {
-        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/translation/parser/appDevDebugProjectContainer.xml");
+        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/translation/parser/appDevDebugProjectContainer.xml");
 
         DomainMappings bla = new DomainMappings();
         bla.parser(new FileInputStream(testFile));

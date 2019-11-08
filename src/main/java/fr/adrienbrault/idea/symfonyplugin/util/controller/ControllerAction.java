@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.util.controller;
+package fr.adrienbrault.idea.symfonyplugin.util.controller;
 
 import com.jetbrains.php.lang.psi.elements.Method;
 import org.jetbrains.annotations.NotNull;

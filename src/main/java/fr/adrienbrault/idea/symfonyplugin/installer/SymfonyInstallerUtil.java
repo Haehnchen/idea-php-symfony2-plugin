@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.installer;
+package fr.adrienbrault.idea.symfonyplugin.installer;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -10,7 +10,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ArrayUtil;
 import com.jetbrains.php.util.PhpConfigurationUtil;
-import fr.adrienbrault.idea.symfony2plugin.installer.dict.SymfonyInstallerVersion;
+import fr.adrienbrault.idea.symfonyplugin.installer.dict.SymfonyInstallerVersion;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -171,7 +171,7 @@ public class SymfonyInstallerUtil {
         String userAgent = String.format("%s / %s / Symfony Plugin %s",
             ApplicationInfo.getInstance().getVersionName(),
             ApplicationInfo.getInstance().getBuild(),
-            PluginManager.getPlugin(PluginId.getId("fr.adrienbrault.idea.symfony2plugin")).getVersion()
+            PluginManager.getPlugin(PluginId.getId("fr.adrienbrault.idea.symfonyplugin")).getVersion()
         );
 
         try {

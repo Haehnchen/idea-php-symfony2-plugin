@@ -1,8 +1,8 @@
-package fr.adrienbrault.idea.symfony2plugin.form;
+package fr.adrienbrault.idea.symfonyplugin.form;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

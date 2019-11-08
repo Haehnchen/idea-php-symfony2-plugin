@@ -1,8 +1,8 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.dic.container.util;
+package fr.adrienbrault.idea.symfonyplugin.tests.dic.container.util;
 
 import com.intellij.psi.PsiFile;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.util.DotEnvUtil;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.util.DotEnvUtil;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -17,7 +17,7 @@ public class DotEnvUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic/container/util/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/dic/container/util/fixtures";
     }
 
     public void testGetEnvironmentVariables() {

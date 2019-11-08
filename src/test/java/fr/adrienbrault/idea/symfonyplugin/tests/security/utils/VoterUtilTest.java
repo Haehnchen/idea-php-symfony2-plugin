@@ -1,16 +1,16 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.security.utils;
+package fr.adrienbrault.idea.symfonyplugin.tests.security.utils;
 
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.ClassConstantReference;
-import fr.adrienbrault.idea.symfony2plugin.security.utils.VoterUtil;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.security.utils.VoterUtil;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.util.Set;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.security.utils.VoterUtil
+ * @see fr.adrienbrault.idea.symfonyplugin.security.utils.VoterUtil
  */
 public class VoterUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
@@ -20,7 +20,7 @@ public class VoterUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     protected String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/security/utils/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/security/utils/fixtures";
     }
 
     /**

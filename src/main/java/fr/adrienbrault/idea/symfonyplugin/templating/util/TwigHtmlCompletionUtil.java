@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.util;
+package fr.adrienbrault.idea.symfonyplugin.templating.util;
 
 import com.intellij.patterns.*;
 import com.intellij.psi.PsiElement;

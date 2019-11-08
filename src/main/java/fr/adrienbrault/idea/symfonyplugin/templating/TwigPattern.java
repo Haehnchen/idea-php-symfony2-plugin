@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating;
+package fr.adrienbrault.idea.symfonyplugin.templating;
 
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PatternCondition;
@@ -15,8 +15,8 @@ import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigBlockTag;
 import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigTypeResolveUtil;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

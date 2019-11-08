@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.dic.container.suggestion;
+package fr.adrienbrault.idea.symfonyplugin.dic.container.suggestion;
 
 import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInspection.LocalQuickFixAndIntentionActionOnPsiElement;
@@ -10,12 +10,12 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
-import fr.adrienbrault.idea.symfony2plugin.intentions.ui.ServiceSuggestDialog;
-import fr.adrienbrault.idea.symfony2plugin.intentions.xml.XmlServiceSuggestIntention;
-import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfonyplugin.dic.ContainerService;
+import fr.adrienbrault.idea.symfonyplugin.intentions.ui.ServiceSuggestDialog;
+import fr.adrienbrault.idea.symfonyplugin.intentions.xml.XmlServiceSuggestIntention;
+import fr.adrienbrault.idea.symfonyplugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.ServiceUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

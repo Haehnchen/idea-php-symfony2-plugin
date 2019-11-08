@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.form;
+package fr.adrienbrault.idea.symfonyplugin.tests.form;
 
 import com.jetbrains.php.lang.PhpFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil#getDefaultOptions
+ * @see fr.adrienbrault.idea.symfonyplugin.form.util.FormOptionsUtil#getDefaultOptions
  */
 public class FormArrayOptionTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -15,7 +15,7 @@ public class FormArrayOptionTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     protected String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/form/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/form/fixtures";
     }
 
     public void testFormOptionCompletion() {

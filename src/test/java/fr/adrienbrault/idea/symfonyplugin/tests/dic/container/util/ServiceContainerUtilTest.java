@@ -1,16 +1,16 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.dic.container.util;
+package fr.adrienbrault.idea.symfonyplugin.tests.dic.container.util;
 
 import com.google.gson.Gson;
 import com.intellij.openapi.util.Condition;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.containers.ContainerUtil;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceSerializable;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ServiceTypeHint;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
-import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.ServiceInterface;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.ServiceSerializable;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.dict.ServiceTypeHint;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.util.ServiceContainerUtil;
+import fr.adrienbrault.idea.symfonyplugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLScalar;
 
@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil
+ * @see fr.adrienbrault.idea.symfonyplugin.dic.container.util.ServiceContainerUtil
  */
 public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -40,7 +40,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic/container/util/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/dic/container/util/fixtures";
     }
 
     public void testDefaults() {
@@ -165,7 +165,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil#getServicesInFile
+     * @see fr.adrienbrault.idea.symfonyplugin.dic.container.util.ServiceContainerUtil#getServicesInFile
      */
     public void testYamlFileScopeDefaultsForSymfony33() {
         Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(myFixture.configureByFile("services3-3.yml"));
@@ -190,7 +190,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil#getServicesInFile
+     * @see fr.adrienbrault.idea.symfonyplugin.dic.container.util.ServiceContainerUtil#getServicesInFile
      */
     public void testXmlFileScopeDefaultsForSymfony33() {
         Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(myFixture.configureByFile("services3-3.xml"));
@@ -205,7 +205,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil#getYamlConstructorTypeHint
+     * @see fr.adrienbrault.idea.symfonyplugin.dic.container.util.ServiceContainerUtil#getYamlConstructorTypeHint
      */
     public void testGetYamlConstructorTypeHint() {
         myFixture.configureByText("test.yml", "" +
@@ -228,7 +228,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil#getYamlConstructorTypeHint
+     * @see fr.adrienbrault.idea.symfonyplugin.dic.container.util.ServiceContainerUtil#getYamlConstructorTypeHint
      */
     public void testGetYamlConstructorTypeHintForNamedArgument() {
         myFixture.configureByText("test.yml", "" +
@@ -252,7 +252,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil#getXmlConstructorTypeHint
+     * @see fr.adrienbrault.idea.symfonyplugin.dic.container.util.ServiceContainerUtil#getXmlConstructorTypeHint
      */
     public void testGetXmlConstructorTypeHint() {
         myFixture.configureByText("services.xml", "" +
@@ -275,7 +275,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil#getXmlCallTypeHint
+     * @see fr.adrienbrault.idea.symfonyplugin.dic.container.util.ServiceContainerUtil#getXmlCallTypeHint
      */
     public void testGetXmlCallTypeHint() {
         myFixture.configureByText("services.xml", "" +

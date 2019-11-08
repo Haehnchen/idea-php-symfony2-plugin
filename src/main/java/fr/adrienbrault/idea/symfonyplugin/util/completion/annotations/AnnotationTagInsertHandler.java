@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.util.completion.annotations;
+package fr.adrienbrault.idea.symfonyplugin.util.completion.annotations;
 
 import com.intellij.codeInsight.completion.InsertHandler;
 import com.intellij.codeInsight.completion.InsertionContext;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.jetbrains.php.completion.insert.PhpInsertHandlerUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.annotation.AnnotationIndex;
+import fr.adrienbrault.idea.symfonyplugin.util.annotation.AnnotationIndex;
 import org.jetbrains.annotations.NotNull;
 
 /**

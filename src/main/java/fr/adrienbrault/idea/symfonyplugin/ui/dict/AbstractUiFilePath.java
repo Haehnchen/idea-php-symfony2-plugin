@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.ui.dict;
+package fr.adrienbrault.idea.symfonyplugin.ui.dict;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;

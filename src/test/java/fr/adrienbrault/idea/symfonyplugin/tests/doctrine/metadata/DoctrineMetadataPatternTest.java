@@ -1,13 +1,13 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.metadata;
+package fr.adrienbrault.idea.symfonyplugin.tests.doctrine.metadata;
 
-import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.DoctrineMetadataPattern;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.DoctrineMetadataPattern;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.DoctrineMetadataPattern
+ * @see fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.DoctrineMetadataPattern
  */
 public class DoctrineMetadataPatternTest extends Assert {
 

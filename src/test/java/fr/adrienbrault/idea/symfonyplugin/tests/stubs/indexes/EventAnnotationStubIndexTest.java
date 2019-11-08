@@ -1,16 +1,16 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.stubs.indexes;
+package fr.adrienbrault.idea.symfonyplugin.tests.stubs.indexes;
 
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
-import fr.adrienbrault.idea.symfony2plugin.stubs.dict.DispatcherEvent;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.EventAnnotationStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.stubs.dict.DispatcherEvent;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.EventAnnotationStubIndex;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.stubs.indexes.EventAnnotationStubIndex
+ * @see fr.adrienbrault.idea.symfonyplugin.stubs.indexes.EventAnnotationStubIndex
  */
 public class EventAnnotationStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -21,7 +21,7 @@ public class EventAnnotationStubIndexTest extends SymfonyLightCodeInsightFixture
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/stubs/indexes/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/stubs/indexes/fixtures";
     }
 
     public void testInstanceExtractionOfDocComment() {

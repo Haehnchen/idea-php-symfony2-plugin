@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver;
+package fr.adrienbrault.idea.symfonyplugin.templating.variable.resolver;
 
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
+import fr.adrienbrault.idea.symfonyplugin.templating.variable.TwigTypeContainer;
+import fr.adrienbrault.idea.symfonyplugin.templating.variable.dict.PsiVariable;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;

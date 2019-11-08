@@ -1,12 +1,12 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating.variable.collector;
+package fr.adrienbrault.idea.symfonyplugin.tests.templating.variable.collector;
 
 import com.jetbrains.twig.TwigFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.FileDocVariableCollector
- * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil#findFileVariableDocBlock
+ * @see fr.adrienbrault.idea.symfonyplugin.templating.variable.collector.FileDocVariableCollector
+ * @see fr.adrienbrault.idea.symfonyplugin.templating.util.TwigTypeResolveUtil#findFileVariableDocBlock
  */
 public class FileDocVariableCollectorTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -56,8 +56,8 @@ public class FileDocVariableCollectorTest extends SymfonyLightCodeInsightFixture
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil#collectForArrayScopeVariables
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil#getForTagIdentifierAsString
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.util.TwigTypeResolveUtil#collectForArrayScopeVariables
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.util.TwigTypeResolveUtil#getForTagIdentifierAsString
      */
     public void testVarArrayIteration() {
 
@@ -159,7 +159,7 @@ public class FileDocVariableCollectorTest extends SymfonyLightCodeInsightFixture
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil#collectForArrayScopeVariables
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.util.TwigTypeResolveUtil#collectForArrayScopeVariables
      */
     public void testVarChainArrayIteration() {
 
@@ -182,7 +182,7 @@ public class FileDocVariableCollectorTest extends SymfonyLightCodeInsightFixture
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil#collectForArrayScopeVariables
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.util.TwigTypeResolveUtil#collectForArrayScopeVariables
      */
     public void testThatDuplicateScopeVariablesAreMerged() {
 

@@ -1,8 +1,8 @@
-package fr.adrienbrault.idea.symfony2plugin.form.dict;
+package fr.adrienbrault.idea.symfonyplugin.form.dict;
 
 import com.intellij.openapi.project.Project;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

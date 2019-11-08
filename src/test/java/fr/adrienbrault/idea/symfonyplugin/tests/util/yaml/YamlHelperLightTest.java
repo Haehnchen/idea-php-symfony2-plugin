@@ -1,15 +1,15 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.util.yaml;
+package fr.adrienbrault.idea.symfonyplugin.tests.util.yaml;
 
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.Parameter;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlPsiElementFactory;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlServiceTag;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlTagVisitor;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper;
+import fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlPsiElementFactory;
+import fr.adrienbrault.idea.symfonyplugin.util.yaml.visitor.YamlServiceTag;
+import fr.adrienbrault.idea.symfonyplugin.util.yaml.visitor.YamlTagVisitor;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
@@ -34,11 +34,11 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/util/yaml/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/util/yaml/fixtures";
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#visitTagsOnServiceDefinition
+     * @see fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper#visitTagsOnServiceDefinition
      */
     public void testVisitTagsOnServiceDefinition() {
 
@@ -61,7 +61,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#visitTagsOnServiceDefinition
+     * @see fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper#visitTagsOnServiceDefinition
      */
     public void testVisitTagsOnServiceDefinitionForSymfony33TagsShortcut() {
         YAMLKeyValue yamlKeyValue = YamlPsiElementFactory.createFromText(getProject(), YAMLKeyValue.class, "foo:\n" +
@@ -79,7 +79,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#visitTagsOnServiceDefinition
+     * @see fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper#visitTagsOnServiceDefinition
      */
     public void testVisitTagsOnServiceDefinitionWithQuote() {
 
@@ -97,7 +97,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#visitTagsOnServiceDefinition
+     * @see fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper#visitTagsOnServiceDefinition
      */
     public void testVisitTagsOnServiceDefinitionWithDoubleQuote() {
 
@@ -115,7 +115,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#findServiceInContext
+     * @see fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper#findServiceInContext
      */
     public void testFindServiceInContext() {
         assertEquals("foo", YamlHelper.findServiceInContext(myFixture.configureByText(YAMLFileType.YML, "" +
@@ -133,7 +133,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#getYamlKeyValueAsString
+     * @see fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper#getYamlKeyValueAsString
      */
     public void testGetYamlKeyValueAsString() {
 
@@ -152,7 +152,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#collectServiceTags
+     * @see fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper#collectServiceTags
      */
     public void testCollectServiceTags() {
 
@@ -168,7 +168,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#collectServiceTags
+     * @see fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper#collectServiceTags
      */
     public void testCollectServiceTagsForSymfony33TagsShortcut() {
 
@@ -187,7 +187,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#collectServiceTags
+     * @see fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper#collectServiceTags
      */
     public void testCollectServiceTagsForSymfony33TagsShortcutInline() {
         YAMLKeyValue fromText = YamlPsiElementFactory.createFromText(getProject(), YAMLKeyValue.class, "" +
@@ -203,7 +203,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#getYamlArrayOnSequenceOrArrayElements
+     * @see fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper#getYamlArrayOnSequenceOrArrayElements
      */
     public void testGetYamlArrayOnSequenceOrArrayElements() {
 
@@ -232,7 +232,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#getYamlArrayOnSequenceOrArrayElements
+     * @see fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper#getYamlArrayOnSequenceOrArrayElements
      */
     public void testGetYamlArrayOnSequenceOrArrayElementsForArray() {
 
@@ -253,7 +253,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#insertKeyIntoFile
+     * @see fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper#insertKeyIntoFile
      */
     public void testInsertKeyIntoFile() {
         YAMLFile yamlFile = (YAMLFile) myFixture.configureByText(YAMLFileType.YML, "" +
@@ -274,7 +274,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#insertKeyIntoFile
+     * @see fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper#insertKeyIntoFile
      */
     public void testInsertKeyIntoFileOnRoot() {
         YAMLFile yamlFile = (YAMLFile) myFixture.configureByText(YAMLFileType.YML, "" +
@@ -297,7 +297,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#insertKeyIntoFile
+     * @see fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper#insertKeyIntoFile
      * TODO empty file
      */
     public void skipTestInsertKeyIntoEmptyFile() {
@@ -317,7 +317,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#insertKeyIntoFile
+     * @see fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper#insertKeyIntoFile
      */
     public void testInsertKeyWithArrayValue() {
         YAMLFile yamlFile = (YAMLFile) myFixture.configureByText(YAMLFileType.YML, "" +
@@ -365,7 +365,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#insertKeyIntoFile
+     * @see fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper#insertKeyIntoFile
      */
     public void testInsertKeyValueWithMissingMainKeyInRoot() {
         YAMLFile yamlFile = (YAMLFile) myFixture.configureByText(YAMLFileType.YML, "foo: foo");
@@ -391,7 +391,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#visitServiceCall
+     * @see fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper#visitServiceCall
      */
     public void testVisitServiceCall() {
         myFixture.configureByText(YAMLFileType.YML, "services:\n" +
@@ -411,7 +411,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#visitServiceCall
+     * @see fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper#visitServiceCall
      */
     public void testVisitServiceCallForNamedServices() {
         myFixture.configureByText(YAMLFileType.YML, "services:\n" +
@@ -430,7 +430,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#visitServiceCallArgument
+     * @see fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper#visitServiceCallArgument
      */
     public void testVisitServiceCallArgument() {
         myFixture.configureByText(YAMLFileType.YML, "services:\n" +
@@ -452,7 +452,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#visitServiceCallArgument
+     * @see fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper#visitServiceCallArgument
      */
     public void testVisitServiceCallArgumentAsNamedService() {
         myFixture.configureByText(YAMLFileType.YML, "services:\n" +
@@ -473,7 +473,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#visitServiceCallArgumentMethodIndex
+     * @see fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper#visitServiceCallArgumentMethodIndex
      */
     public void testVisitServiceCallArgumentMethodIndex() {
         myFixture.configureByText(YAMLFileType.YML, "services:\n" +
@@ -493,7 +493,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#visitServiceCallArgumentMethodIndex
+     * @see fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper#visitServiceCallArgumentMethodIndex
      */
     public void testVisitServiceCallArgumentMethodIndexForNamedServices() {
         myFixture.configureByText(YAMLFileType.YML, "services:\n" +
@@ -512,7 +512,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#getIndentSpaceForFile
+     * @see fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper#getIndentSpaceForFile
      */
     public void testGetIndentSpaceForFile() {
         assertEquals(2, getIndentForTextContent("parameters:\n  foo: ~"));
@@ -526,7 +526,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#getServiceDefinitionClassFromTagMethod
+     * @see fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper#getServiceDefinitionClassFromTagMethod
      */
     public void testGetServiceDefinitionClassFromTagMethod() {
         myFixture.configureByText(YAMLFileType.YML, "" +

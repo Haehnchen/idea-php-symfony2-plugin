@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.intentions.ui;
+package fr.adrienbrault.idea.symfonyplugin.intentions.ui;
 
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;

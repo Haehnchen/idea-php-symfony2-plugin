@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.inspection;
+package fr.adrienbrault.idea.symfonyplugin.templating.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
@@ -7,11 +7,11 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.templating.TwigPattern;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigTypeResolveUtil;
+import fr.adrienbrault.idea.symfonyplugin.templating.variable.TwigTypeContainer;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.codeInspection.quickfix;
+package fr.adrienbrault.idea.symfonyplugin.codeInspection.quickfix;
 
 import com.intellij.codeInspection.LocalQuickFix;
 import com.intellij.codeInspection.ProblemDescriptor;
@@ -16,7 +16,7 @@ import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.jetbrains.php.lang.PhpCodeUtil;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.util.CodeUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.CodeUtil;
 import org.jetbrains.annotations.NotNull;
 
 /**

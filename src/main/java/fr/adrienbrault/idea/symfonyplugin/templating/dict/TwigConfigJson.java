@@ -1,6 +1,6 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.dict;
+package fr.adrienbrault.idea.symfonyplugin.templating.dict;
 
-import fr.adrienbrault.idea.symfony2plugin.templating.path.dict.TwigPathJson;
+import fr.adrienbrault.idea.symfonyplugin.templating.path.dict.TwigPathJson;
 
 import java.util.ArrayList;
 import java.util.Collection;

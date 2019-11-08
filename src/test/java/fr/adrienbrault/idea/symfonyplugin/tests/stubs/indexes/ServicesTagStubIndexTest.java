@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.stubs.indexes;
+package fr.adrienbrault.idea.symfonyplugin.tests.stubs.indexes;
 
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesTagStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.ServicesTagStubIndex;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
@@ -9,7 +9,7 @@ import java.util.Set;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesTagStubIndex
+ * @see fr.adrienbrault.idea.symfonyplugin.stubs.indexes.ServicesTagStubIndex
  */
 public class ServicesTagStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -21,7 +21,7 @@ public class ServicesTagStubIndexTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/stubs/indexes/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/stubs/indexes/fixtures";
     }
 
     public void testTaggedServiceInIndex() {

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.webDeployment.actions;
+package fr.adrienbrault.idea.symfonyplugin.webDeployment.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -9,9 +9,9 @@ import com.intellij.openapi.project.Project;
 import com.jetbrains.plugins.webDeployment.actions.WebDeploymentDataKeys;
 import com.jetbrains.plugins.webDeployment.config.Deployable;
 import com.jetbrains.plugins.webDeployment.config.PublishConfig;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.webDeployment.utils.RemoteWebServerUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.webDeployment.utils.RemoteWebServerUtil;
 import org.jetbrains.annotations.NotNull;
 
 /**

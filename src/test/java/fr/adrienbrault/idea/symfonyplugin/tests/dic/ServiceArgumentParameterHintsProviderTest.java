@@ -1,12 +1,12 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.dic;
+package fr.adrienbrault.idea.symfonyplugin.tests.dic;
 
 import com.intellij.codeInsight.hints.InlayInfo;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.containers.ContainerUtil;
-import fr.adrienbrault.idea.symfony2plugin.dic.ServiceArgumentParameterHintsProvider;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.dic.ServiceArgumentParameterHintsProvider;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
 
@@ -25,7 +25,7 @@ public class ServiceArgumentParameterHintsProviderTest extends SymfonyLightCodeI
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/dic/fixtures";
     }
 
     public void testXmlParameterTypeHintForIdAttribute() {

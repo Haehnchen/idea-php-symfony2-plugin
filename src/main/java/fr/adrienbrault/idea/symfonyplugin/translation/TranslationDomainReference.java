@@ -1,8 +1,8 @@
-package fr.adrienbrault.idea.symfony2plugin.translation;
+package fr.adrienbrault.idea.symfonyplugin.translation;
 
 import com.intellij.psi.*;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
+import fr.adrienbrault.idea.symfonyplugin.translation.dict.TranslationUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

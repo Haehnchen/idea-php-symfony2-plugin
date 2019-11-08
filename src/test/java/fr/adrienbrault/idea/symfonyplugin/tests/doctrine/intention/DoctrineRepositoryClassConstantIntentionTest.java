@@ -1,12 +1,12 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.intention;
+package fr.adrienbrault.idea.symfonyplugin.tests.doctrine.intention;
 
 import com.jetbrains.php.lang.PhpFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.doctrine.intention.DoctrineRepositoryClassConstantIntention
+ * @see fr.adrienbrault.idea.symfonyplugin.doctrine.intention.DoctrineRepositoryClassConstantIntention
  */
 public class DoctrineRepositoryClassConstantIntentionTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -16,7 +16,7 @@ public class DoctrineRepositoryClassConstantIntentionTest extends SymfonyLightCo
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/doctrine/intention/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/doctrine/intention/fixtures";
     }
 
     public void testIntentionIsAvailable() {

@@ -1,8 +1,8 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.dic.registrar;
+package fr.adrienbrault.idea.symfonyplugin.tests.dic.registrar;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.PhpFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
 
 /**
@@ -18,7 +18,7 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic/registrar/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/dic/registrar/fixtures";
     }
 
     public void testParameterContributor() {

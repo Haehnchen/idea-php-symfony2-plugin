@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.config;
+package fr.adrienbrault.idea.symfonyplugin.config;
 
 import com.intellij.codeInsight.completion.impl.CamelHumpMatcher;
 import com.intellij.codeInsight.lookup.LookupElement;
@@ -10,8 +10,8 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.completion.PhpClassLookupElement;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpClassReferenceInsertHandler;
+import fr.adrienbrault.idea.symfonyplugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfonyplugin.util.completion.PhpClassReferenceInsertHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

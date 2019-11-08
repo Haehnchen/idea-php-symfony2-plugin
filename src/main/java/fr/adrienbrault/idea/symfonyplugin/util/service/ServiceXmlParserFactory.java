@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.util.service;
+package fr.adrienbrault.idea.symfonyplugin.util.service;
 
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.extension.CompiledServiceBuilderArguments;
-import fr.adrienbrault.idea.symfony2plugin.extension.CompiledServiceBuilderFactory;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.extension.CompiledServiceBuilderArguments;
+import fr.adrienbrault.idea.symfonyplugin.extension.CompiledServiceBuilderFactory;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -27,7 +27,7 @@ public class ServiceXmlParserFactory {
 
     private Collection<CompiledServiceBuilderFactory.Builder> extensions = new ArrayList<>();
     private static final ExtensionPointName<CompiledServiceBuilderFactory> EXTENSIONS = new ExtensionPointName<>(
-        "fr.adrienbrault.idea.symfony2plugin.extension.CompiledServiceBuilderFactory"
+        "fr.adrienbrault.idea.symfonyplugin.extension.CompiledServiceBuilderFactory"
     );
 
     public ServiceXmlParserFactory(Project project) {

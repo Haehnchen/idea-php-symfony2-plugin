@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.stubs.indexes;
+package fr.adrienbrault.idea.symfonyplugin.tests.stubs.indexes;
 
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.containers.ArrayListSet;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TranslationStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.TranslationStubIndex;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
@@ -34,7 +34,7 @@ public class TranslationStubIndexTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/stubs/indexes/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/stubs/indexes/fixtures";
     }
 
     public void testThatDomainFromFileIsExtracted() {

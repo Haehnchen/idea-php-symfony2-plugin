@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.dic;
+package fr.adrienbrault.idea.symfonyplugin.dic;
 
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
@@ -10,10 +10,10 @@ import com.intellij.psi.PsiElement;
 import com.intellij.util.ConstantFunction;
 import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.psi.elements.Method;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.extension.ControllerActionGotoRelatedCollector;
-import fr.adrienbrault.idea.symfony2plugin.extension.ControllerActionGotoRelatedCollectorParameter;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.extension.ControllerActionGotoRelatedCollector;
+import fr.adrienbrault.idea.symfonyplugin.extension.ControllerActionGotoRelatedCollectorParameter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,7 +27,7 @@ import java.util.List;
  */
 public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
 
-    private static final ExtensionPointName<ControllerActionGotoRelatedCollector> EP_NAME = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.ControllerActionGotoRelatedCollector");
+    private static final ExtensionPointName<ControllerActionGotoRelatedCollector> EP_NAME = new ExtensionPointName<>("fr.adrienbrault.idea.symfonyplugin.extension.ControllerActionGotoRelatedCollector");
 
     @Nullable
     @Override

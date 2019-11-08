@@ -1,15 +1,15 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.util.yaml.visitor;
+package fr.adrienbrault.idea.symfonyplugin.tests.util.yaml.visitor;
 
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlPsiElementFactory;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlServiceTag;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlPsiElementFactory;
+import fr.adrienbrault.idea.symfonyplugin.util.yaml.visitor.YamlServiceTag;
 import org.jetbrains.yaml.psi.YAMLMapping;
 import org.jetbrains.yaml.psi.impl.YAMLHashImpl;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlServiceTag
+ * @see fr.adrienbrault.idea.symfonyplugin.util.yaml.visitor.YamlServiceTag
  */
 public class YamlServiceTagTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void testYmlTagAttributeExtraction() {

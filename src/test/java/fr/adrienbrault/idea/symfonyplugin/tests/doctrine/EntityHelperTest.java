@@ -1,12 +1,12 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.doctrine;
+package fr.adrienbrault.idea.symfonyplugin.tests.doctrine;
 
 import com.intellij.openapi.util.Condition;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.containers.ContainerUtil;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.EntityHelper;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.DoctrineModel;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.util.Collection;
@@ -15,7 +15,7 @@ import java.util.Map;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper
+ * @see fr.adrienbrault.idea.symfonyplugin.doctrine.EntityHelper
  */
 public class EntityHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -26,11 +26,11 @@ public class EntityHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/doctrine/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/doctrine/fixtures";
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper#getEntityRepositoryClass
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.EntityHelper#getEntityRepositoryClass
      */
     public void testGetEntityRepositoryClass() {
         assertEquals("FooBundle\\BarRepository", EntityHelper.getEntityRepositoryClass(getProject(), "FooBundle:Bar").getPresentableFQN());
@@ -38,14 +38,14 @@ public class EntityHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper#getEntityRepositoryClass
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.EntityHelper#getEntityRepositoryClass
      */
     public void testGetEntityRepositoryClassInSameNamespaceFallback() {
         assertEquals("FooBundle\\Entity\\Car\\BarRepository", EntityHelper.getEntityRepositoryClass(getProject(), "FooBundle:Car\\Bar").getPresentableFQN());
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper#resolveShortcutName
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.EntityHelper#resolveShortcutName
      */
     public void testResolveShortcutName() {
         assertEquals("FooBundle\\Entity\\Bar", EntityHelper.resolveShortcutName(getProject(), "FooBundle:Bar").getPresentableFQN());
@@ -65,7 +65,7 @@ public class EntityHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper#getModelClasses
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.EntityHelper#getModelClasses
      */
     public void testGetModelClasses() {
         Collection<DoctrineModel> modelClasses = EntityHelper.getModelClasses(getProject());
@@ -91,7 +91,7 @@ public class EntityHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper#getModelFieldTargets
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.EntityHelper#getModelFieldTargets
      */
     public void testGetModelFieldTargets() {
         PsiElement[] names = EntityHelper.getModelFieldTargets(PhpElementsUtil.getClass(getProject(), "FooBundle\\Entity\\Yaml"), "name");

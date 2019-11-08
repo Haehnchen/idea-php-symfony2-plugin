@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver;
+package fr.adrienbrault.idea.symfonyplugin.templating.variable.resolver;
 
 import com.intellij.openapi.project.Project;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.form.util.FormOptionsUtil;
+import fr.adrienbrault.idea.symfonyplugin.templating.variable.TwigTypeContainer;
+import fr.adrienbrault.idea.symfonyplugin.templating.variable.dict.PsiVariable;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.navigation;
+package fr.adrienbrault.idea.symfonyplugin.navigation;
 
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.navigation.GotoRelatedProvider;
@@ -6,8 +6,8 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.Method;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.dic.ControllerMethodLineMarkerProvider;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.dic.ControllerMethodLineMarkerProvider;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;

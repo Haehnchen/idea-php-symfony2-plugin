@@ -1,6 +1,6 @@
-package fr.adrienbrault.idea.symfony2plugin.action.comparator;
+package fr.adrienbrault.idea.symfonyplugin.action.comparator;
 
-import fr.adrienbrault.idea.symfony2plugin.action.dict.TranslationFileModel;
+import fr.adrienbrault.idea.symfonyplugin.action.dict.TranslationFileModel;
 
 import java.util.Comparator;
 

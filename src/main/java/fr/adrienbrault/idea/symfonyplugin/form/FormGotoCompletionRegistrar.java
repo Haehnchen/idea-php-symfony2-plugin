@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.form;
+package fr.adrienbrault.idea.symfonyplugin.form;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.patterns.PlatformPatterns;
@@ -8,19 +8,19 @@ import com.intellij.util.Processor;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
-import fr.adrienbrault.idea.symfony2plugin.form.gotoCompletion.TranslationDomainGotoCompletionProvider;
-import fr.adrienbrault.idea.symfony2plugin.form.gotoCompletion.TranslationGotoCompletionProvider;
-import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil;
-import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.SymfonyUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.PhpMethodReferenceCall;
-import fr.adrienbrault.idea.symfony2plugin.util.psi.PhpPsiMatcher;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionProvider;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionRegistrar;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionRegistrarParameter;
+import fr.adrienbrault.idea.symfonyplugin.form.gotoCompletion.TranslationDomainGotoCompletionProvider;
+import fr.adrienbrault.idea.symfonyplugin.form.gotoCompletion.TranslationGotoCompletionProvider;
+import fr.adrienbrault.idea.symfonyplugin.form.util.FormOptionsUtil;
+import fr.adrienbrault.idea.symfonyplugin.form.util.FormUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.MethodMatcher;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfonyplugin.util.SymfonyUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.PhpMethodReferenceCall;
+import fr.adrienbrault.idea.symfonyplugin.util.psi.PhpPsiMatcher;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

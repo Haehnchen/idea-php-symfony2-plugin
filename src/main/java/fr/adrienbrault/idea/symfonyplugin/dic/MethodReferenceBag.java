@@ -1,8 +1,8 @@
-package fr.adrienbrault.idea.symfony2plugin.dic;
+package fr.adrienbrault.idea.symfonyplugin.dic;
 
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.ParameterList;
-import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
+import fr.adrienbrault.idea.symfonyplugin.util.ParameterBag;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

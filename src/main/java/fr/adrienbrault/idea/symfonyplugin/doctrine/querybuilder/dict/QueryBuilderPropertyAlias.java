@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict;
+package fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.dict;
 
 import com.intellij.psi.PsiElement;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.dict.DoctrineModelField;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;

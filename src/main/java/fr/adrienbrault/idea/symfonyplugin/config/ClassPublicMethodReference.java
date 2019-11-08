@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.config;
+package fr.adrienbrault.idea.symfonyplugin.config;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.PsiElement;
@@ -8,9 +8,9 @@ import com.intellij.psi.ResolveResult;
 import com.jetbrains.php.completion.PhpLookupElement;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.ServiceUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

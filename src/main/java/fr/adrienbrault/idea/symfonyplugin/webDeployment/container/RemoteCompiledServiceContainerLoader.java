@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.webDeployment.container;
+package fr.adrienbrault.idea.symfonyplugin.webDeployment.container;
 
 import com.intellij.openapi.project.Project;
-import fr.adrienbrault.idea.symfony2plugin.dic.webDeployment.ServiceContainerRemoteFileStorage;
-import fr.adrienbrault.idea.symfony2plugin.extension.CompiledServiceBuilderArguments;
-import fr.adrienbrault.idea.symfony2plugin.extension.CompiledServiceBuilderFactory;
-import fr.adrienbrault.idea.symfony2plugin.webDeployment.utils.RemoteWebServerUtil;
+import fr.adrienbrault.idea.symfonyplugin.dic.webDeployment.ServiceContainerRemoteFileStorage;
+import fr.adrienbrault.idea.symfonyplugin.extension.CompiledServiceBuilderArguments;
+import fr.adrienbrault.idea.symfonyplugin.extension.CompiledServiceBuilderFactory;
+import fr.adrienbrault.idea.symfonyplugin.webDeployment.utils.RemoteWebServerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

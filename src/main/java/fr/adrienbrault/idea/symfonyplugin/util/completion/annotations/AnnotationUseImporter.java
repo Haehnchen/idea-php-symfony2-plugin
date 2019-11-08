@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.util.completion.annotations;
+package fr.adrienbrault.idea.symfonyplugin.util.completion.annotations;
 
 import com.intellij.codeInsight.completion.InsertionContext;
 import com.intellij.psi.PsiDocumentManager;

@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating.completion;
+package fr.adrienbrault.idea.symfonyplugin.tests.templating.completion;
 
 import com.jetbrains.twig.TwigFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.templating.completion.TwigHtmlCompletionContributor
+ * @see fr.adrienbrault.idea.symfonyplugin.templating.completion.TwigHtmlCompletionContributor
  */
 public class TwigHtmlCompletionContributorTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
@@ -16,7 +16,7 @@ public class TwigHtmlCompletionContributorTest extends SymfonyLightCodeInsightFi
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/completion/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/templating/completion/fixtures";
     }
 
     public void testThatRouteCompletionInsideHtmlMustProvidePrintPathBlock() {

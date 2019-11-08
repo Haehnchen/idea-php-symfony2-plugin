@@ -1,14 +1,14 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.completion.xml;
+package fr.adrienbrault.idea.symfonyplugin.tests.completion.xml;
 
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.completion.xml.XmlGotoCompletionRegistrar
+ * @see fr.adrienbrault.idea.symfonyplugin.completion.xml.XmlGotoCompletionRegistrar
  */
 public class XmlGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -21,7 +21,7 @@ public class XmlGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/completion/xml/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/completion/xml/fixtures";
     }
 
     public void testResourcesInsideSameDirectoryProvidesNavigation() {

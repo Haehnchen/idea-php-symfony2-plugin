@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.util;
+package fr.adrienbrault.idea.symfonyplugin.util;
 
 import com.intellij.ide.util.PsiNavigationSupport;
 import com.intellij.notification.Notification;
@@ -15,8 +15,8 @@ import com.intellij.pom.Navigatable;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.util.ui.UIUtil;
-import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.SettingsForm;
+import fr.adrienbrault.idea.symfonyplugin.Settings;
+import fr.adrienbrault.idea.symfonyplugin.SettingsForm;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.translation.parser;
+package fr.adrienbrault.idea.symfonyplugin.translation.parser;
 
 import org.jetbrains.annotations.Nullable;
 

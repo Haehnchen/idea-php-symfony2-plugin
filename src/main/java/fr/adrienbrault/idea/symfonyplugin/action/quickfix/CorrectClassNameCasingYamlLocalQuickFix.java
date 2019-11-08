@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.action.quickfix;
+package fr.adrienbrault.idea.symfonyplugin.action.quickfix;
 
 import com.intellij.codeInspection.LocalQuickFix;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlPsiElementFactory;
+import fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlPsiElementFactory;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLKeyValue;

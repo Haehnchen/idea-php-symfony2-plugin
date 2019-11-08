@@ -1,12 +1,12 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.routing;
+package fr.adrienbrault.idea.symfonyplugin.tests.routing;
 
 import com.intellij.ide.highlighter.XmlFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex
+ * @see fr.adrienbrault.idea.symfonyplugin.util.controller.ControllerIndex
  */
 public class RoutingDefinitionTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -35,7 +35,7 @@ public class RoutingDefinitionTest extends SymfonyLightCodeInsightFixtureTestCas
     }
 
     protected String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/routing/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/routing/fixtures";
     }
 
     public void testYamlCompletion() {

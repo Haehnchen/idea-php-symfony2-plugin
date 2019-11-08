@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.assistant.reference;
+package fr.adrienbrault.idea.symfonyplugin.assistant.reference;
 
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.patterns.PhpPatterns;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.assistant.AssistantReferenceContributor;
+import fr.adrienbrault.idea.symfonyplugin.assistant.AssistantReferenceContributor;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

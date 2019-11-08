@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.util.resource;
+package fr.adrienbrault.idea.symfonyplugin.util.resource;
 
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
@@ -13,12 +13,12 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIcons;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.FileResourcesIndex;
-import fr.adrienbrault.idea.symfony2plugin.util.FileResourceVisitorUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.FileResourcesIndex;
+import fr.adrienbrault.idea.symfonyplugin.util.FileResourceVisitorUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpIndexUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfonyplugin.util.SymfonyBundleUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.SymfonyBundle;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

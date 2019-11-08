@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.twig.annotation;
+package fr.adrienbrault.idea.symfonyplugin.tests.twig.annotation;
 
 import com.intellij.codeInsight.daemon.impl.AnnotationHolderImpl;
 import com.intellij.lang.annotation.AnnotationSession;
@@ -8,9 +8,9 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import de.espend.idea.php.annotation.extension.parameter.PhpAnnotationDocTagAnnotatorParameter;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import fr.adrienbrault.idea.symfony2plugin.twig.annotation.TemplateAnnotationAnnotator;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.twig.annotation.TemplateAnnotationAnnotator;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -23,7 +23,7 @@ public class TemplateAnnotationAnnotatorTest extends SymfonyLightCodeInsightFixt
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/twig/annotation/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/twig/annotation/fixtures";
     }
 
     /**

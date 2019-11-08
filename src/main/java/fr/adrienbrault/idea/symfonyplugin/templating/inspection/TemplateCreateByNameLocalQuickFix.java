@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.inspection;
+package fr.adrienbrault.idea.symfonyplugin.templating.inspection;
 
 import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInspection.IntentionAndQuickFixAction;
@@ -14,8 +14,8 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.ui.components.JBList;
 import com.jetbrains.twig.TwigFileType;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.IdeHelper;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.action.generator.naming;
+package fr.adrienbrault.idea.symfonyplugin.action.generator.naming;
 
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -65,7 +65,7 @@ public class DefaultServiceNameStrategy implements ServiceNameStrategyInterface 
 
     private String formatParts(@NotNull Collection<String> parts) {
         Collection<String> partString = parts.stream()
-            .map(fr.adrienbrault.idea.symfony2plugin.util.StringUtils::underscore)
+            .map(fr.adrienbrault.idea.symfonyplugin.util.StringUtils::underscore)
             .collect(Collectors.toCollection(ArrayList::new));
 
         return StringUtils.join(partString, ".");

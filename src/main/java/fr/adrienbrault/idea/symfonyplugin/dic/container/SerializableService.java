@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.dic.container;
+package fr.adrienbrault.idea.symfonyplugin.dic.container;
 
 import com.google.gson.annotations.SerializedName;
 import org.apache.commons.lang.builder.HashCodeBuilder;

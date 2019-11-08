@@ -1,6 +1,6 @@
-package fr.adrienbrault.idea.symfony2plugin.twig.assets;
+package fr.adrienbrault.idea.symfonyplugin.twig.assets;
 
-import fr.adrienbrault.idea.symfony2plugin.util.service.AbstractServiceParser;
+import fr.adrienbrault.idea.symfonyplugin.util.service.AbstractServiceParser;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Element;

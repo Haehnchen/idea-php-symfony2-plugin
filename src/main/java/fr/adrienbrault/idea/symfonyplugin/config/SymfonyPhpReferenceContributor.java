@@ -1,21 +1,21 @@
-package fr.adrienbrault.idea.symfony2plugin.config;
+package fr.adrienbrault.idea.symfonyplugin.config;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.*;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.dic.ConstraintPropertyReference;
-import fr.adrienbrault.idea.symfony2plugin.dic.ServiceReference;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
-import fr.adrienbrault.idea.symfony2plugin.templating.TemplateReference;
-import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
-import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.dic.ConstraintPropertyReference;
+import fr.adrienbrault.idea.symfonyplugin.dic.ServiceReference;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.EntityHelper;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.EntityReference;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.dict.DoctrineTypes;
+import fr.adrienbrault.idea.symfonyplugin.templating.TemplateReference;
+import fr.adrienbrault.idea.symfonyplugin.util.MethodMatcher;
+import fr.adrienbrault.idea.symfonyplugin.util.ParameterBag;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**

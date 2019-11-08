@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine;
+package fr.adrienbrault.idea.symfonyplugin.doctrine;
 
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
@@ -15,19 +15,19 @@ import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocParamTag;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.elements.impl.PhpNamedElementImpl;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.component.DocumentNamespacesParser;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesServiceParser;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
-import fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProvider;
-import fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProviderParameter;
-import fr.adrienbrault.idea.symfony2plugin.util.*;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
-import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.component.DocumentNamespacesParser;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.component.EntityNamesServiceParser;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.dict.DoctrineModelField;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.dict.DoctrineTypes;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.dict.DoctrineMetadataModel;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.util.DoctrineMetadataUtil;
+import fr.adrienbrault.idea.symfonyplugin.extension.DoctrineModelProvider;
+import fr.adrienbrault.idea.symfonyplugin.extension.DoctrineModelProviderParameter;
+import fr.adrienbrault.idea.symfonyplugin.util.*;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.DoctrineModel;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.SymfonyBundle;
+import fr.adrienbrault.idea.symfonyplugin.util.service.ServiceXmlParserFactory;
+import fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.*;
@@ -41,7 +41,7 @@ import java.util.regex.Pattern;
  */
 public class EntityHelper {
 
-    public static final ExtensionPointName<DoctrineModelProvider> MODEL_POINT_NAME = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProvider");
+    public static final ExtensionPointName<DoctrineModelProvider> MODEL_POINT_NAME = new ExtensionPointName<>("fr.adrienbrault.idea.symfonyplugin.extension.DoctrineModelProvider");
 
     final public static String[] ANNOTATION_FIELDS = new String[] {
         "\\Doctrine\\ORM\\Mapping\\Column",

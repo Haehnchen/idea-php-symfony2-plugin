@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.action.bundle;
+package fr.adrienbrault.idea.symfonyplugin.action.bundle;
 
 import com.intellij.ide.IdeView;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -11,8 +11,8 @@ import com.intellij.psi.PsiFile;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.util.FilesystemUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.FilesystemUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

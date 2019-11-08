@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.driver;
+package fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.driver;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;

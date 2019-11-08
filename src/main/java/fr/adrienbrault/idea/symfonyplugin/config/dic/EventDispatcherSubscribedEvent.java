@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.config.dic;
+package fr.adrienbrault.idea.symfonyplugin.config.dic;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

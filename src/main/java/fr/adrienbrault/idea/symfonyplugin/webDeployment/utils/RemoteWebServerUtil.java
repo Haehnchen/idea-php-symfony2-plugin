@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.webDeployment.utils;
+package fr.adrienbrault.idea.symfonyplugin.webDeployment.utils;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
@@ -13,10 +13,10 @@ import com.jetbrains.plugins.webDeployment.config.PublishConfig;
 import com.jetbrains.plugins.webDeployment.config.WebServerConfig;
 import com.jetbrains.plugins.webDeployment.connections.RemoteConnection;
 import com.jetbrains.plugins.webDeployment.connections.RemoteConnectionManager;
-import fr.adrienbrault.idea.symfony2plugin.dic.webDeployment.ServiceContainerRemoteFileStorage;
-import fr.adrienbrault.idea.symfony2plugin.routing.webDeployment.RoutingRemoteFileStorage;
-import fr.adrienbrault.idea.symfony2plugin.ui.dict.UiFilePathInterface;
-import fr.adrienbrault.idea.symfony2plugin.webDeployment.storage.RemoteFileStorageInterface;
+import fr.adrienbrault.idea.symfonyplugin.dic.webDeployment.ServiceContainerRemoteFileStorage;
+import fr.adrienbrault.idea.symfonyplugin.routing.webDeployment.RoutingRemoteFileStorage;
+import fr.adrienbrault.idea.symfonyplugin.ui.dict.UiFilePathInterface;
+import fr.adrienbrault.idea.symfonyplugin.webDeployment.storage.RemoteFileStorageInterface;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
 import org.jetbrains.annotations.NotNull;

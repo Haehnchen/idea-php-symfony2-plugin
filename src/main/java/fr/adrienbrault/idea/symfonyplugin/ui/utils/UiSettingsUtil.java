@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.ui.utils;
+package fr.adrienbrault.idea.symfonyplugin.ui.utils;
 
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
@@ -10,8 +10,8 @@ import com.jetbrains.plugins.webDeployment.config.Deployable;import com.jetbrain
 import com.jetbrains.plugins.webDeployment.config.PublishConfig;
 import com.jetbrains.plugins.webDeployment.config.WebServerConfig;
 import com.jetbrains.plugins.webDeployment.ui.ServerBrowserDialog;
-import fr.adrienbrault.idea.symfony2plugin.ui.dict.UiFilePathInterface;
-import fr.adrienbrault.idea.symfony2plugin.ui.dict.UiFilePathPresentable;
+import fr.adrienbrault.idea.symfonyplugin.ui.dict.UiFilePathInterface;
+import fr.adrienbrault.idea.symfonyplugin.ui.dict.UiFilePathPresentable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

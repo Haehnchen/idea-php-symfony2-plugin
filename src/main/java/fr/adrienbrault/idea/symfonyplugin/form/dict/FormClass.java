@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.form.dict;
+package fr.adrienbrault.idea.symfonyplugin.form.dict;
 
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import org.jetbrains.annotations.NotNull;

@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.routing;
+package fr.adrienbrault.idea.symfonyplugin.tests.routing;
 
 import com.jetbrains.twig.TwigFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
+ * @see fr.adrienbrault.idea.symfonyplugin.templating.TwigTemplateCompletionContributor
  */
 public class TwigRoutingCompletionContributorTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -16,7 +16,7 @@ public class TwigRoutingCompletionContributorTest extends SymfonyLightCodeInsigh
     }
 
     protected String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/routing/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/routing/fixtures";
     }
 
     public void testTwigPathCompletion() {

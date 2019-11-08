@@ -1,6 +1,6 @@
-package fr.adrienbrault.idea.symfony2plugin.stubs.dict;
+package fr.adrienbrault.idea.symfonyplugin.stubs.dict;
 
-import fr.adrienbrault.idea.symfony2plugin.routing.dict.RouteInterface;
+import fr.adrienbrault.idea.symfonyplugin.routing.dict.RouteInterface;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

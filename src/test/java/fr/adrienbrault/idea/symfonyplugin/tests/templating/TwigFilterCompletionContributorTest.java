@@ -1,13 +1,13 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating;
+package fr.adrienbrault.idea.symfonyplugin.tests.templating;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.elements.TwigElementTypes;
-import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
-import fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.templating.TwigPattern;
+import fr.adrienbrault.idea.symfonyplugin.templating.TwigTemplateCompletionContributor;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -22,7 +22,7 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/templating/fixtures";
     }
 
     public void testTwigExtensionFilterCompletion() {
@@ -52,7 +52,7 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor.TagTokenParserCompletionProvider
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.TwigTemplateCompletionContributor.TagTokenParserCompletionProvider
      */
     public void testTagTokenParserCompletionProvider() {
         assertCompletionContains(TwigFileType.INSTANCE, "{% <caret> %}", "foo_tag");
@@ -60,7 +60,7 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
 
     /**
      * @see TwigPattern#getAfterIsTokenPattern
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor.TwigSimpleTestParametersCompletionProvider
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.TwigTemplateCompletionContributor.TwigSimpleTestParametersCompletionProvider
      */
     public void testSimpleTestExtension() {
         assertCompletionContains(TwigFileType.INSTANCE, "{% if foo is <caret> %}", "bar_even");
@@ -72,7 +72,7 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
 
     /**
      * @see TwigPattern#getAfterOperatorPattern
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor.TwigSimpleTestParametersCompletionProvider
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.TwigTemplateCompletionContributor.TwigSimpleTestParametersCompletionProvider
      */
     public void testOperatorExtension() {
         assertCompletionContains(TwigFileType.INSTANCE, "{% if foo <caret> %}", "**", "-", "b-or", "b-xor", "ends with", "not", "or", "starts with");
@@ -103,7 +103,7 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.TwigTemplateCompletionContributor
      */
     public void testFunctionExtension() {
         assertNavigationContains(TwigFileType.INSTANCE, "{{ foo<caret>bar() }}", "Doctrine\\Bundle\\DoctrineBundle\\Twig\\DoctrineExtension::foobar");
@@ -114,7 +114,7 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.TwigTemplateCompletionContributor
      */
     public void testMacroFromImport() {
         // skip for _self resolving issue
@@ -129,7 +129,7 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.TwigTemplateCompletionContributor
      */
     public void testMacroFromImportAlias() {
         assertCompletionContains(TwigFileType.INSTANCE, "{% macro foo() %}{% endmacro %}{% from _self import foo as bar %}{{ <caret> }}", "bar");
@@ -137,7 +137,7 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.TwigTemplateCompletionContributor
      */
     public void testMacroImport() {
         assertCompletionContains(TwigFileType.INSTANCE, "{% macro foo() %}{% endmacro %}{% import _self as bar %}{{ <caret> }}", "bar.foo");
@@ -145,8 +145,8 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateGoToDeclarationHandler
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.TwigTemplateCompletionContributor
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.TwigTemplateGoToDeclarationHandler
      */
     public void testControllerReferences() {
         assertCompletionContains(TwigFileType.INSTANCE, "{{ controller('<caret>') }}", "FooBundle:Foo:bar");
@@ -169,8 +169,8 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateGoToDeclarationHandler
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.TwigTemplateCompletionContributor
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.TwigTemplateGoToDeclarationHandler
      */
     public void testSetTagIsAvailableForFunctionReferences() {
         assertCompletionContains(TwigFileType.INSTANCE, "{% set = <caret> %}", "json_bar");

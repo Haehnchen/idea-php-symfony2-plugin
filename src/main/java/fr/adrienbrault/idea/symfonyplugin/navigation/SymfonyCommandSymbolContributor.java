@@ -1,13 +1,13 @@
-package fr.adrienbrault.idea.symfony2plugin.navigation;
+package fr.adrienbrault.idea.symfonyplugin.navigation;
 
 import com.intellij.navigation.ChooseByNameContributor;
 import com.intellij.navigation.NavigationItem;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.ArrayUtil;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.util.SymfonyCommandUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyCommand;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.util.SymfonyCommandUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.SymfonyCommand;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin;
+package fr.adrienbrault.idea.symfonyplugin;
 
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.util.ui.UIUtil;

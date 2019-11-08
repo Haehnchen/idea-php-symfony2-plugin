@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.navigation;
+package fr.adrienbrault.idea.symfonyplugin.navigation;
 
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.folding.FoldingBuilderEx;
@@ -9,14 +9,14 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.config.SymfonyPhpReferenceContributor;
-import fr.adrienbrault.idea.symfony2plugin.routing.PhpRouteReferenceContributor;
-import fr.adrienbrault.idea.symfony2plugin.routing.Route;
-import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
+import fr.adrienbrault.idea.symfonyplugin.Settings;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.config.SymfonyPhpReferenceContributor;
+import fr.adrienbrault.idea.symfonyplugin.routing.PhpRouteReferenceContributor;
+import fr.adrienbrault.idea.symfonyplugin.routing.Route;
+import fr.adrienbrault.idea.symfonyplugin.routing.RouteHelper;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.MethodMatcher;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

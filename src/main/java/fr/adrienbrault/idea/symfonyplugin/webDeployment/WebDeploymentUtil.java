@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.webDeployment;
+package fr.adrienbrault.idea.symfonyplugin.webDeployment;
 
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
 import org.jetbrains.annotations.Nullable;
 
 /**

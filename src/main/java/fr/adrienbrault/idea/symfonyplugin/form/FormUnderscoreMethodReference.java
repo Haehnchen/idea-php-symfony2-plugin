@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.form;
+package fr.adrienbrault.idea.symfonyplugin.form;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.PsiElement;
@@ -8,7 +8,7 @@ import com.intellij.psi.ResolveResult;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.util.StringUtils;
+import fr.adrienbrault.idea.symfonyplugin.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;

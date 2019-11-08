@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.ui.utils;
+package fr.adrienbrault.idea.symfonyplugin.ui.utils;
 
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.editor.event.DocumentAdapter;

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine.dict;
+package fr.adrienbrault.idea.symfonyplugin.doctrine.dict;
 
 import java.util.HashMap;
 import java.util.Map;

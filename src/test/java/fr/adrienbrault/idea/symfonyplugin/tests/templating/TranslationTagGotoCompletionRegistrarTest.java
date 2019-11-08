@@ -1,9 +1,9 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating;
+package fr.adrienbrault.idea.symfonyplugin.tests.templating;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.twig.TwigFileType;
-import fr.adrienbrault.idea.symfony2plugin.templating.TranslationTagGotoCompletionRegistrar;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.templating.TranslationTagGotoCompletionRegistrar;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -17,7 +17,7 @@ public class TranslationTagGotoCompletionRegistrarTest extends SymfonyLightCodeI
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/templating/fixtures";
     }
 
     public void testThatTransTagProvidesCompletionForTagValue() {

@@ -1,14 +1,14 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.action.ui;
+package fr.adrienbrault.idea.symfonyplugin.tests.action.ui;
 
 import com.intellij.psi.PsiFile;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.action.ui.MethodParameter;
-import fr.adrienbrault.idea.symfony2plugin.action.ui.ServiceBuilder;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlPsiElementFactory;
+import fr.adrienbrault.idea.symfonyplugin.action.ui.MethodParameter;
+import fr.adrienbrault.idea.symfonyplugin.action.ui.ServiceBuilder;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlPsiElementFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,7 +24,7 @@ public class ServiceBuilderTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     protected String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/action/ui/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/action/ui/fixtures";
     }
 
     public void testBuildForClassWithoutParameter() {

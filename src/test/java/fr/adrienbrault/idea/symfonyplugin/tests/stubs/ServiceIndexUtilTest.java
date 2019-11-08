@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.stubs;
+package fr.adrienbrault.idea.symfonyplugin.tests.stubs;
 
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -6,10 +6,10 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.containers.ContainerUtil;
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
-import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.dic.ContainerService;
+import fr.adrienbrault.idea.symfonyplugin.stubs.ServiceIndexUtil;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
@@ -18,7 +18,7 @@ import java.util.Map;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil
+ * @see fr.adrienbrault.idea.symfonyplugin.stubs.ServiceIndexUtil
  */
 public class ServiceIndexUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     private VirtualFile ymlVirtualFile;
@@ -34,7 +34,7 @@ public class ServiceIndexUtilTest extends SymfonyLightCodeInsightFixtureTestCase
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/stubs/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/stubs/fixtures";
     }
 
     public void testFindServiceDefinitionsForStringInsideYaml() {

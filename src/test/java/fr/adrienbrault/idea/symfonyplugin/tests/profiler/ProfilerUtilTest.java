@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.profiler;
+package fr.adrienbrault.idea.symfonyplugin.tests.profiler;
 
 import com.intellij.psi.PsiFile;
-import fr.adrienbrault.idea.symfony2plugin.profiler.dict.LocalProfilerRequest;
-import fr.adrienbrault.idea.symfony2plugin.profiler.utils.ProfilerUtil;
-import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.profiler.dict.LocalProfilerRequest;
+import fr.adrienbrault.idea.symfonyplugin.profiler.utils.ProfilerUtil;
+import fr.adrienbrault.idea.symfonyplugin.profiler.dict.ProfilerRequestInterface;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.util.Collection;
 import java.util.Map;
@@ -20,7 +20,7 @@ public class ProfilerUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     protected String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/profiler/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/profiler/fixtures";
     }
 
     /**

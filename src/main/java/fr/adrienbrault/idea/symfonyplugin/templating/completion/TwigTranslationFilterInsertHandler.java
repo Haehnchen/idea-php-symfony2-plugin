@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.completion;
+package fr.adrienbrault.idea.symfonyplugin.templating.completion;
 
 import com.intellij.codeInsight.completion.InsertHandler;
 import com.intellij.codeInsight.completion.InsertionContext;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.completion.insert.PhpInsertHandlerUtil;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.translation.TranslatorLookupElement;
 import org.jetbrains.annotations.NotNull;
 
 /**

@@ -1,13 +1,13 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.dic;
+package fr.adrienbrault.idea.symfonyplugin.tests.dic;
 
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.patterns.PlatformPatterns;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.dic.TaggedParameterGotoCompletionRegistrar
+ * @see fr.adrienbrault.idea.symfonyplugin.dic.TaggedParameterGotoCompletionRegistrar
  */
 public class TaggedParameterGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
@@ -17,7 +17,7 @@ public class TaggedParameterGotoCompletionRegistrarTest extends SymfonyLightCode
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/dic/fixtures";
     }
 
     public void testThatYamlTaggedParameterProvidesNavigation() {

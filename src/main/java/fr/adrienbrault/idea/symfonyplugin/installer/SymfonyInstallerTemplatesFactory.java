@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.installer;
+package fr.adrienbrault.idea.symfonyplugin.installer;
 
 import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.platform.ProjectTemplate;

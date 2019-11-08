@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.path;
+package fr.adrienbrault.idea.symfonyplugin.templating.path;
 
 import com.intellij.openapi.vfs.VirtualFile;
-import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension;
-import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtensionParameter;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
+import fr.adrienbrault.idea.symfonyplugin.extension.TwigNamespaceExtension;
+import fr.adrienbrault.idea.symfonyplugin.extension.TwigNamespaceExtensionParameter;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.SymfonyBundleUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

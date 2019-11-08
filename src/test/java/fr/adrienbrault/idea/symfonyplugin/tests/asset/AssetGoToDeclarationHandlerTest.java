@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.asset;
+package fr.adrienbrault.idea.symfonyplugin.tests.asset;
 
 import com.jetbrains.twig.TwigFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -19,7 +19,7 @@ public class AssetGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixt
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.asset.AssetGoToDeclarationHandler
+     * @see fr.adrienbrault.idea.symfonyplugin.asset.AssetGoToDeclarationHandler
      */
     public void testGotoDeclarationTargetsTag() {
         if(System.getenv("PHPSTORM_ENV") != null) return;
@@ -54,7 +54,7 @@ public class AssetGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixt
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.asset.AssetGoToDeclarationHandler
+     * @see fr.adrienbrault.idea.symfonyplugin.asset.AssetGoToDeclarationHandler
      */
     public void testGotoDeclarationTargetsAsset() {
         if(System.getenv("PHPSTORM_ENV") != null) return;
@@ -71,7 +71,7 @@ public class AssetGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixt
         assertNavigationContainsFile(TwigFileType.INSTANCE, "{{ asset('foo<caret>.js') }}", "foo.js");
     }
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.asset.AssetGoToDeclarationHandler
+     * @see fr.adrienbrault.idea.symfonyplugin.asset.AssetGoToDeclarationHandler
      */
     public void testGotoDeclarationTargetsAssetInRoot() {
         if (System.getenv("PHPSTORM_ENV") != null) return;

@@ -1,16 +1,16 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.metadata.driver;
+package fr.adrienbrault.idea.symfonyplugin.tests.doctrine.metadata.driver;
 
 import com.intellij.psi.PsiFile;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.driver.DoctrineMappingDriverArguments;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.driver.DoctrinePhpMappingDriver;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.dict.DoctrineMetadataModel;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.driver.DoctrineMappingDriverArguments;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.driver.DoctrinePhpMappingDriver;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.driver.DoctrinePhpMappingDriver
+ * @see fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.driver.DoctrinePhpMappingDriver
  */
 public class DoctrinePhpMappingDriverTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -20,11 +20,11 @@ public class DoctrinePhpMappingDriverTest extends SymfonyLightCodeInsightFixture
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/doctrine/metadata/driver/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/doctrine/metadata/driver/fixtures";
     }
 
     /**
-     * @see DoctrinePhpMappingDriver#getMetadata(fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.driver.DoctrineMappingDriverArguments)
+     * @see DoctrinePhpMappingDriver#getMetadata(fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.driver.DoctrineMappingDriverArguments)
      */
     public void testPhpAnnotationsMetadata() {
 
@@ -46,7 +46,7 @@ public class DoctrinePhpMappingDriverTest extends SymfonyLightCodeInsightFixture
     }
 
     /**
-     * @see DoctrinePhpMappingDriver#getMetadata(fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.driver.DoctrineMappingDriverArguments)
+     * @see DoctrinePhpMappingDriver#getMetadata(fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.driver.DoctrineMappingDriverArguments)
      */
     public void testPhpFlowAnnotationsMetadata() {
         PsiFile psiFile = PhpPsiElementFactory.createPsiFileFromText(getProject(), "<?php $foo = null;");
@@ -62,7 +62,7 @@ public class DoctrinePhpMappingDriverTest extends SymfonyLightCodeInsightFixture
     }
 
     /**
-     * @see DoctrinePhpMappingDriver#getMetadata(fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.driver.DoctrineMappingDriverArguments)
+     * @see DoctrinePhpMappingDriver#getMetadata(fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.driver.DoctrineMappingDriverArguments)
      */
     public void testPhpTableAnnotationsMetadata() {
         assertEquals("FOO", createOrmMetadata().getTable());

@@ -1,6 +1,6 @@
-package fr.adrienbrault.idea.symfony2plugin.config.component.parser;
+package fr.adrienbrault.idea.symfonyplugin.config.component.parser;
 
-import fr.adrienbrault.idea.symfony2plugin.util.service.AbstractServiceParser;
+import fr.adrienbrault.idea.symfonyplugin.util.service.AbstractServiceParser;
 
 import java.io.InputStream;
 import java.util.Map;

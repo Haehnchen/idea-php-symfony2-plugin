@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.path;
+package fr.adrienbrault.idea.symfonyplugin.templating.path;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
@@ -14,12 +14,12 @@ import com.intellij.psi.util.CachedValue;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.psi.util.PsiModificationTracker;
-import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension;
-import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtensionParameter;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigConfigJson;
-import fr.adrienbrault.idea.symfony2plugin.templating.path.dict.TwigPathJson;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.VfsExUtil;
+import fr.adrienbrault.idea.symfonyplugin.extension.TwigNamespaceExtension;
+import fr.adrienbrault.idea.symfonyplugin.extension.TwigNamespaceExtensionParameter;
+import fr.adrienbrault.idea.symfonyplugin.templating.dict.TwigConfigJson;
+import fr.adrienbrault.idea.symfonyplugin.templating.path.dict.TwigPathJson;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.VfsExUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.codeInsight;
+package fr.adrienbrault.idea.symfonyplugin.codeInsight;
 
 import org.jetbrains.annotations.NotNull;
 

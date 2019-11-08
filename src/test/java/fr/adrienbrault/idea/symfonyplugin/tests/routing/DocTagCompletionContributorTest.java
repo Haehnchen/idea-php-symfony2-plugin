@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.routing;
+package fr.adrienbrault.idea.symfonyplugin.tests.routing;
 
 import com.jetbrains.php.lang.PhpFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.util.DocHashTagReferenceContributor
+ * @see fr.adrienbrault.idea.symfonyplugin.util.DocHashTagReferenceContributor
  */
 public class DocTagCompletionContributorTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -18,7 +18,7 @@ public class DocTagCompletionContributorTest extends SymfonyLightCodeInsightFixt
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/routing/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/routing/fixtures";
     }
 
     public void testRouteDocTagCompletion() {

@@ -1,13 +1,13 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.routing.inspection;
+package fr.adrienbrault.idea.symfonyplugin.tests.routing.inspection;
 
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.routing.inspection.RouteSettingDeprecatedInspection
+ * @see fr.adrienbrault.idea.symfonyplugin.routing.inspection.RouteSettingDeprecatedInspection
  */
 public class RouteSettingDeprecatedInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
 

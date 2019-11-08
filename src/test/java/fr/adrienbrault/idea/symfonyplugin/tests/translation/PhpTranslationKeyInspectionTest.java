@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.translation;
+package fr.adrienbrault.idea.symfonyplugin.tests.translation;
 
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import fr.adrienbrault.idea.symfony2plugin.translation.PhpTranslationKeyInspection;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.translation.PhpTranslationKeyInspection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -16,7 +16,7 @@ public class PhpTranslationKeyInspectionTest extends SymfonyLightCodeInsightFixt
     }
 
     protected String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/translation/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/translation/fixtures";
     }
 
     public void testThatPhpTransInspectionsAreProvided() {

@@ -1,8 +1,8 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.action.naming;
+package fr.adrienbrault.idea.symfonyplugin.tests.action.naming;
 
-import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.DefaultServiceNameStrategy;
-import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.ServiceNameStrategyParameter;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.action.generator.naming.DefaultServiceNameStrategy;
+import fr.adrienbrault.idea.symfonyplugin.action.generator.naming.ServiceNameStrategyParameter;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

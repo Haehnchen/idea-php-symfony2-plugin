@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine.dict;
+package fr.adrienbrault.idea.symfonyplugin.doctrine.dict;
 
 import com.google.gson.annotations.SerializedName;
 import org.apache.commons.lang.builder.HashCodeBuilder;

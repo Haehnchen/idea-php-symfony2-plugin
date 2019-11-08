@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.profiler.ui;
+package fr.adrienbrault.idea.symfonyplugin.profiler.ui;
 
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
@@ -8,7 +8,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import fr.adrienbrault.idea.symfony2plugin.Settings;
+import fr.adrienbrault.idea.symfonyplugin.Settings;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

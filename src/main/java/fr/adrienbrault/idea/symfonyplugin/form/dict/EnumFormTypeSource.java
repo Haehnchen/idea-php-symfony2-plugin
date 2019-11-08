@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.form.dict;
+package fr.adrienbrault.idea.symfonyplugin.form.dict;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

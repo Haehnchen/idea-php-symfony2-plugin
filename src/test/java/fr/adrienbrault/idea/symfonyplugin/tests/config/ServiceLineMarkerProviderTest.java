@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.config;
+package fr.adrienbrault.idea.symfonyplugin.tests.config;
 
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.patterns.PatternCondition;
@@ -8,7 +8,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
@@ -19,7 +19,7 @@ import java.util.Collection;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.config.ServiceLineMarkerProvider
+ * @see fr.adrienbrault.idea.symfonyplugin.config.ServiceLineMarkerProvider
  */
 public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -30,7 +30,7 @@ public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtur
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/config/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/config/fixtures";
     }
 
     public void testDoctrineModelLineMarker() {

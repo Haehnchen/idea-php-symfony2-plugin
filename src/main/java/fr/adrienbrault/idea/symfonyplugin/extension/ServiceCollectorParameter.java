@@ -1,8 +1,8 @@
-package fr.adrienbrault.idea.symfony2plugin.extension;
+package fr.adrienbrault.idea.symfonyplugin.extension;
 
 import com.intellij.openapi.project.Project;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.SerializableService;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.SerializableService;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.ServiceInterface;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;

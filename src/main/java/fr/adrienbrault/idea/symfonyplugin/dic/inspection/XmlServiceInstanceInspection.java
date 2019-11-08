@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.dic.inspection;
+package fr.adrienbrault.idea.symfonyplugin.dic.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
@@ -12,11 +12,11 @@ import com.intellij.psi.xml.XmlTag;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.suggestion.XmlServiceSuggestIntentionAction;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.config.xml.XmlHelper;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.suggestion.XmlServiceSuggestIntentionAction;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.ServiceUtil;
 import org.jetbrains.annotations.NotNull;
 
 /**

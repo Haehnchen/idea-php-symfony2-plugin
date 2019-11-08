@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.util;
+package fr.adrienbrault.idea.symfonyplugin.util;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.util.PsiTreeUtil;

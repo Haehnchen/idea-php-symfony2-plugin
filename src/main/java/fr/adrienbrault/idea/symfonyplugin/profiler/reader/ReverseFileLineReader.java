@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.profiler.reader;
+package fr.adrienbrault.idea.symfonyplugin.profiler.reader;
 
 import org.jetbrains.annotations.NotNull;
 

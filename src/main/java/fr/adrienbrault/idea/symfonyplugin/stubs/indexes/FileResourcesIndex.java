@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
+package fr.adrienbrault.idea.symfonyplugin.stubs.indexes;
 
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.psi.PsiFile;
@@ -6,10 +6,10 @@ import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.stubs.dict.FileResource;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
-import fr.adrienbrault.idea.symfony2plugin.util.FileResourceVisitorUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.stubs.dict.FileResource;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
+import fr.adrienbrault.idea.symfonyplugin.util.FileResourceVisitorUtil;
 import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
@@ -25,7 +25,7 @@ public class FileResourcesIndex extends FileBasedIndexExtension<String, FileReso
     private static int MAX_FILE_BYTE_SIZE = 1048576;
     private static ObjectStreamDataExternalizer<FileResource> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
 
-    public static final ID<String, FileResource> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.file_resources");
+    public static final ID<String, FileResource> KEY = ID.create("fr.adrienbrault.idea.symfonyplugin.file_resources");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
 
     @NotNull

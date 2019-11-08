@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dbal;
+package fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.dbal;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
@@ -7,16 +7,16 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.utils.GotoCompletionUtil;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionProvider;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionRegistrar;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionRegistrarParameter;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.utils.GotoCompletionUtil;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.dict.DoctrineModelField;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.dict.DoctrineMetadataModel;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.util.DoctrineMetadataUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.MethodMatcher;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -130,8 +130,8 @@ public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegi
 
             Set<String> aliasSet = new HashSet<>();
             aliasSet.add(value);
-            aliasSet.add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.camelize(value, true));
-            String underscore = fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(value);
+            aliasSet.add(fr.adrienbrault.idea.symfonyplugin.util.StringUtils.camelize(value, true));
+            String underscore = fr.adrienbrault.idea.symfonyplugin.util.StringUtils.underscore(value);
             aliasSet.add(underscore);
 
             if(value.length() > 0) {
@@ -152,8 +152,8 @@ public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegi
             }
 
             if(StringUtils.isNotBlank(this.fromAlias)) {
-                aliasSet.add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.camelize(this.fromAlias + "_" + value, true));
-                aliasSet.add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(this.fromAlias + "_" + value));
+                aliasSet.add(fr.adrienbrault.idea.symfonyplugin.util.StringUtils.camelize(this.fromAlias + "_" + value, true));
+                aliasSet.add(fr.adrienbrault.idea.symfonyplugin.util.StringUtils.underscore(this.fromAlias + "_" + value));
             }
 
             Collection<LookupElement> lookupElements = new ArrayList<>();

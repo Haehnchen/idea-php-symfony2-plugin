@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.dic.container.util;
+package fr.adrienbrault.idea.symfonyplugin.dic.container.util;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
@@ -11,7 +11,7 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.*;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLUtil;

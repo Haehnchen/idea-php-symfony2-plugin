@@ -1,9 +1,9 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.action.naming;
+package fr.adrienbrault.idea.symfonyplugin.tests.action.naming;
 
-import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.JavascriptServiceNameStrategy;
-import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.ServiceNameStrategyParameter;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.Settings;
+import fr.adrienbrault.idea.symfonyplugin.action.generator.naming.JavascriptServiceNameStrategy;
+import fr.adrienbrault.idea.symfonyplugin.action.generator.naming.ServiceNameStrategyParameter;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -16,7 +16,7 @@ public class JavascriptServiceNameStrategyTest extends SymfonyLightCodeInsightFi
     }
 
     protected String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/action/naming/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/action/naming/fixtures";
     }
 
     public void testGetServiceName() {

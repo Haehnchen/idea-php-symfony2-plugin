@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.profiler.utils;
+package fr.adrienbrault.idea.symfonyplugin.profiler.utils;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -11,9 +11,9 @@ import com.intellij.psi.impl.source.html.HtmlFileImpl;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlTagValue;
-import fr.adrienbrault.idea.symfony2plugin.profiler.collector.HttpDefaultDataCollector;
-import fr.adrienbrault.idea.symfony2plugin.profiler.dict.HttpProfilerRequest;
-import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface;
+import fr.adrienbrault.idea.symfonyplugin.profiler.collector.HttpDefaultDataCollector;
+import fr.adrienbrault.idea.symfonyplugin.profiler.dict.HttpProfilerRequest;
+import fr.adrienbrault.idea.symfonyplugin.profiler.dict.ProfilerRequestInterface;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;

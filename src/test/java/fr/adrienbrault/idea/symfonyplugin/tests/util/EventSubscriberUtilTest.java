@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.util;
+package fr.adrienbrault.idea.symfonyplugin.tests.util;
 
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import fr.adrienbrault.idea.symfony2plugin.util.EventSubscriberUtil;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.util.EventSubscriberUtil;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -14,7 +14,7 @@ public class EventSubscriberUtilTest extends SymfonyLightCodeInsightFixtureTestC
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/util/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/util/fixtures";
     }
 
     /**

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.dic.attribute.value;
+package fr.adrienbrault.idea.symfonyplugin.dic.attribute.value;
 
 import com.intellij.psi.xml.XmlTag;
 import org.apache.commons.lang.StringUtils;

@@ -1,9 +1,9 @@
-package fr.adrienbrault.idea.symfony2plugin.action.ui;
+package fr.adrienbrault.idea.symfonyplugin.action.ui;
 
 import com.intellij.openapi.project.Project;
-import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.JavascriptServiceNameStrategy;
+import fr.adrienbrault.idea.symfonyplugin.Settings;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.action.generator.naming.JavascriptServiceNameStrategy;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 

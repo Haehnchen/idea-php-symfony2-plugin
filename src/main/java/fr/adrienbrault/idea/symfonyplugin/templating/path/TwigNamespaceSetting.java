@@ -1,9 +1,9 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.path;
+package fr.adrienbrault.idea.symfonyplugin.templating.path;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.annotations.Attribute;
 import com.intellij.util.xmlb.annotations.Tag;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

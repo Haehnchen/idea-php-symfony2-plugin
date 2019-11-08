@@ -1,8 +1,8 @@
-package fr.adrienbrault.idea.symfony2plugin.stubs.util;
+package fr.adrienbrault.idea.symfonyplugin.stubs.util;
 
 import com.intellij.util.indexing.FileBasedIndex;
 import com.intellij.util.indexing.ID;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.*;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

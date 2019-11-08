@@ -1,6 +1,6 @@
-package fr.adrienbrault.idea.symfony2plugin.extension;
+package fr.adrienbrault.idea.symfonyplugin.extension;
 
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
+import fr.adrienbrault.idea.symfonyplugin.templating.path.TwigPath;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;

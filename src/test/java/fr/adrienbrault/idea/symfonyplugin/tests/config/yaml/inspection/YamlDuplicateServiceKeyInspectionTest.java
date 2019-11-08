@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.config.yaml.inspection;
+package fr.adrienbrault.idea.symfonyplugin.tests.config.yaml.inspection;
 
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.config.yaml.inspection.YamlDuplicateServiceKeyInspection
+ * @see fr.adrienbrault.idea.symfonyplugin.config.yaml.inspection.YamlDuplicateServiceKeyInspection
  */
 public class YamlDuplicateServiceKeyInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
 

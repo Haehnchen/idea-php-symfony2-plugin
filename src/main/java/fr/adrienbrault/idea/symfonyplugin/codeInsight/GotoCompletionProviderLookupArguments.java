@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.codeInsight;
+package fr.adrienbrault.idea.symfonyplugin.codeInsight;
 
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionResultSet;

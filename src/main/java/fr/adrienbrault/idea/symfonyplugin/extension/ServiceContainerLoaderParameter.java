@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.extension;
+package fr.adrienbrault.idea.symfonyplugin.extension;
 
 import com.intellij.openapi.project.Project;
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
+import fr.adrienbrault.idea.symfonyplugin.dic.ContainerFile;
 
 import java.util.Collection;
 

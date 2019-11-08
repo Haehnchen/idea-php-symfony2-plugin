@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.action.model;
+package fr.adrienbrault.idea.symfonyplugin.action.model;
 
 import com.intellij.ide.util.gotoByName.ContributorsBasedGotoByModel;
 import com.intellij.navigation.ChooseByNameContributor;

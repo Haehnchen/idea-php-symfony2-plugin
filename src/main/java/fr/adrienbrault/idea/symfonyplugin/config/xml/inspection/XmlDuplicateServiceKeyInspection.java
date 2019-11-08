@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.config.xml.inspection;
+package fr.adrienbrault.idea.symfonyplugin.config.xml.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
@@ -11,7 +11,7 @@ import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlDocument;
 import com.intellij.psi.xml.XmlTag;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.util;
+package fr.adrienbrault.idea.symfonyplugin.util;
 
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.openapi.project.Project;
@@ -26,8 +26,8 @@ import com.jetbrains.php.lang.psi.elements.impl.PhpDefineImpl;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.php.phpunit.PhpUnitUtil;
 import com.jetbrains.php.refactoring.PhpAliasImporter;
-import fr.adrienbrault.idea.symfony2plugin.dic.MethodReferenceBag;
-import fr.adrienbrault.idea.symfony2plugin.util.psi.PsiElementAssertUtil;
+import fr.adrienbrault.idea.symfonyplugin.dic.MethodReferenceBag;
+import fr.adrienbrault.idea.symfonyplugin.util.psi.PsiElementAssertUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -852,7 +852,7 @@ public class PhpElementsUtil {
         // search classes in current namespace and child namespaces
         for(PhpClass phpClass: PhpIndexUtil.getPhpClassInsideNamespace(psiElement.getProject(), namespace)) {
             String presentableFQN = phpClass.getPresentableFQN();
-            if(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.startWithEqualClassname(presentableFQN, beforeCursor)) {
+            if(fr.adrienbrault.idea.symfonyplugin.util.StringUtils.startWithEqualClassname(presentableFQN, beforeCursor)) {
                 visitor.visit(phpClass, presentableFQN, prefix);
             }
 

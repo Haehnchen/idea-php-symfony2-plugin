@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.translation.parser;
+package fr.adrienbrault.idea.symfonyplugin.translation.parser;
 
-import fr.adrienbrault.idea.symfony2plugin.translation.dict.DomainFileMap;
-import fr.adrienbrault.idea.symfony2plugin.util.service.AbstractServiceParser;
+import fr.adrienbrault.idea.symfonyplugin.translation.dict.DomainFileMap;
+import fr.adrienbrault.idea.symfonyplugin.util.service.AbstractServiceParser;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.installer;
+package fr.adrienbrault.idea.symfonyplugin.installer;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.ProjectManager;
@@ -6,7 +6,7 @@ import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.util.ui.UIUtil;
 import com.jetbrains.php.composer.InterpretersComboWithBrowseButton;
-import fr.adrienbrault.idea.symfony2plugin.installer.dict.SymfonyInstallerVersion;
+import fr.adrienbrault.idea.symfonyplugin.installer.dict.SymfonyInstallerVersion;
 import org.apache.commons.lang.StringUtils;
 import org.jdesktop.swingx.combobox.ListComboBoxModel;
 import org.jetbrains.annotations.Nullable;

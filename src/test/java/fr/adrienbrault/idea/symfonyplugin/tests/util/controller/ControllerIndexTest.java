@@ -1,8 +1,8 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.util.controller;
+package fr.adrienbrault.idea.symfonyplugin.tests.util.controller;
 
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerAction;
-import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.util.controller.ControllerAction;
+import fr.adrienbrault.idea.symfonyplugin.util.controller.ControllerIndex;
 
 import java.util.Collection;
 
@@ -17,7 +17,7 @@ public class ControllerIndexTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/util/controller/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/util/controller/fixtures";
     }
 
     public void testThatControllerActionsForBundlesAreGenerated() {

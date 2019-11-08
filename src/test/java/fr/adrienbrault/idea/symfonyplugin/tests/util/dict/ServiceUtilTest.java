@@ -1,14 +1,14 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.util.dict;
+package fr.adrienbrault.idea.symfonyplugin.tests.util.dict;
 
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.util.Condition;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.PhpFileType;
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
-import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfonyplugin.dic.ContainerService;
+import fr.adrienbrault.idea.symfonyplugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.ServiceUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -26,11 +26,11 @@ public class ServiceUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/util/dict/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/util/dict/fixtures";
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil#getPhpClassTags
+     * @see fr.adrienbrault.idea.symfonyplugin.util.dict.ServiceUtil#getPhpClassTags
      */
     public void testGetPhpClassTags() {
         Set<String> myTaggedClass = ServiceUtil.getPhpClassTags(PhpElementsUtil.getClass(getProject(), "MyTaggedClass"));
@@ -40,7 +40,7 @@ public class ServiceUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil#getServiceSuggestionForPhpClass
+     * @see fr.adrienbrault.idea.symfonyplugin.util.dict.ServiceUtil#getServiceSuggestionForPhpClass
      */
     public void testGetServiceSuggestionForPhpClass() {
 
@@ -71,7 +71,7 @@ public class ServiceUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil#getParameterParameters
+     * @see fr.adrienbrault.idea.symfonyplugin.util.dict.ServiceUtil#getParameterParameters
      */
     public void testGetParameterParameters() {
         myFixture.copyFileToProject("kernel_parameter.php");

@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.translation.intention;
+package fr.adrienbrault.idea.symfonyplugin.tests.translation.intention;
 
 import com.jetbrains.twig.TwigFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.translation.intention.TwigTranslationKeyIntention
+ * @see fr.adrienbrault.idea.symfonyplugin.translation.intention.TwigTranslationKeyIntention
  */
 public class TwigTranslationKeyIntentionTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
@@ -15,7 +15,7 @@ public class TwigTranslationKeyIntentionTest extends SymfonyLightCodeInsightFixt
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/translation/intention/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/translation/intention/fixtures";
     }
 
     public void testThatKeyAlreadyExistsAndProvidesIntentionForOtherDomains() {

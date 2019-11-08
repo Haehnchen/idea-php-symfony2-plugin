@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating.util;
+package fr.adrienbrault.idea.symfonyplugin.tests.templating.util;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.util.Pair;
@@ -16,12 +16,12 @@ import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacro;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacroTagInterface;
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.templating.dict.TwigBlock;
+import fr.adrienbrault.idea.symfonyplugin.templating.dict.TwigMacro;
+import fr.adrienbrault.idea.symfonyplugin.templating.dict.TwigMacroTagInterface;
+import fr.adrienbrault.idea.symfonyplugin.templating.path.TwigPath;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
@@ -42,11 +42,11 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/util/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/templating/util/fixtures";
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getTemplateNameByOverwrite
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil#getTemplateNameByOverwrite
      */
     public void testTemplateOverwriteNavigation() {
         if(System.getenv("PHPSTORM_ENV") != null) return;
@@ -57,7 +57,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#isValidStringWithoutInterpolatedOrConcat
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil#isValidStringWithoutInterpolatedOrConcat
      */
     public void testIsValidTemplateString() {
         assertFalse(TwigUtil.isValidStringWithoutInterpolatedOrConcat(createPsiElementAndFindString("{% include \"foo/#{segment.typeKey}.html.twig\" %}", TwigElementTypes.INCLUDE_TAG)));
@@ -69,7 +69,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertTrue(TwigUtil.isValidStringWithoutInterpolatedOrConcat(createPsiElementAndFindString("{% include \"foo.html.twig\" %}", TwigElementTypes.INCLUDE_TAG)));
     }
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getDomainTrans
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil#getDomainTrans
      */
     public void testGetDomainTrans() {
         String[] blocks = {
@@ -103,7 +103,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getCreateAbleTemplatePaths
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil#getCreateAbleTemplatePaths
      */
     public void testGetCreateAbleTemplatePaths() {
         myFixture.copyFileToProject("ide-twig.json", "ide-twig.json");
@@ -121,7 +121,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getTransDefaultDomainOnScope
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil#getTransDefaultDomainOnScope
      */
     public void testGetTwigFileTransDefaultDomainForFileScope() {
         PsiFile psiFile = myFixture.configureByText("foo.html.twig", "{% trans_default_domain \"foo\" %}{{ <caret> }}");
@@ -132,7 +132,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getTransDefaultDomainOnScope
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil#getTransDefaultDomainOnScope
      */
     public void testGetTwigFileTransDefaultDomainForEmbedScope() {
         PsiFile psiFile = myFixture.configureByText("foo.html.twig", "" +
@@ -150,7 +150,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getTransDefaultDomainOnScope
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil#getTransDefaultDomainOnScope
      */
     public void testGetTwigFileTransDefaultDomainForEmbedScopeInEmbedTag() {
         PsiFile psiFile = myFixture.configureByText("foo.html.twig", "" +
@@ -167,7 +167,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getTransDefaultDomainOnScope
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil#getTransDefaultDomainOnScope
      */
     public void testGetTwigFileTransDefaultDomainForEmbedScopeInEmbedTagWithNotMatch() {
         PsiFile psiFile = myFixture.configureByText("foo.html.twig", "" +
@@ -183,7 +183,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getElementOnTwigViewProvider
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil#getElementOnTwigViewProvider
      */
     public void testGetTransDefaultDomainOnInjectedElement() {
         myFixture.configureByText("foo.html.twig", "" +
@@ -199,7 +199,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getTransDefaultDomainOnScopeOrInjectedElement
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil#getTransDefaultDomainOnScopeOrInjectedElement
      */
     public void testGetTransDefaultDomainOnScopeOrInjectedElement() {
         myFixture.configureByText("foo.html.twig", "" +
@@ -223,7 +223,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getElementOnTwigViewProvider
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil#getElementOnTwigViewProvider
      */
     public void testGetTransDefaultDomainOnInjectedElementWithInvalidOversizesCaretOffset() {
         myFixture.configureByText("foo.html.twig", "<a href=\"#\">FOO<caret>BAR</a>");
@@ -240,7 +240,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getTwigFileMethodUsageOnIndex
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil#getTwigFileMethodUsageOnIndex
      */
     public void testGetTwigFileMethodUsageOnIndex() {
         myFixture.copyFileToProject("GetTwigFileMethodUsageOnIndex.php");
@@ -251,7 +251,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getFoldingTemplateName
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil#getFoldingTemplateName
      */
     public void testGetFoldingTemplateName() {
         assertEquals("Foo:edit", TwigUtil.getFoldingTemplateName("FooBundle:edit.html.twig"));
@@ -265,7 +265,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#visitTemplateIncludes
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil#visitTemplateIncludes
      */
     public void testVisitTemplateIncludes() {
         Collection<String> includes = new ArrayList<>();
@@ -294,7 +294,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getImportedMacros
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil#getImportedMacros
      */
     public void testGetImportedMacros() {
         PsiFile psiFile = PsiFileFactory.getInstance(getProject()).createFileFromText(TwigLanguage.INSTANCE,
@@ -339,7 +339,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getImportedMacrosNamespaces
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil#getImportedMacrosNamespaces
      */
     public void testGetImportedMacrosNamespaces() {
         PsiFile psiFile = PsiFileFactory.getInstance(getProject()).createFileFromText(TwigLanguage.INSTANCE,
@@ -353,7 +353,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getSetDeclaration
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil#getSetDeclaration
      */
     public void testGetSetDeclaration() {
         PsiFile psiFile = PsiFileFactory.getInstance(getProject()).createFileFromText(TwigLanguage.INSTANCE,
@@ -368,7 +368,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getImportedMacrosNamespaces
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil#getImportedMacrosNamespaces
      */
     public void testGetImportedMacrosNamespacesTargets() {
         PsiFile psiFile = PsiFileFactory.getInstance(getProject()).createFileFromText(TwigLanguage.INSTANCE,
@@ -382,7 +382,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getTwigMacroNameAndParameter
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil#getTwigMacroNameAndParameter
      */
     public void testGetTwigMacroNameAndParameter() {
         PsiElement psiElement = TwigElementFactory.createPsiElement(

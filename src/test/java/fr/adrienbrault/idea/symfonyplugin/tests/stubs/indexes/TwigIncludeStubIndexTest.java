@@ -1,12 +1,12 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.stubs.indexes;
+package fr.adrienbrault.idea.symfonyplugin.tests.stubs.indexes;
 
 import com.jetbrains.twig.TwigFileType;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigIncludeStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.TwigIncludeStubIndex;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigIncludeStubIndex
+ * @see fr.adrienbrault.idea.symfonyplugin.stubs.indexes.TwigIncludeStubIndex
  */
 public class TwigIncludeStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -42,7 +42,7 @@ public class TwigIncludeStubIndexTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigIncludeStubIndex#getIndexer()
+     * @see fr.adrienbrault.idea.symfonyplugin.stubs.indexes.TwigIncludeStubIndex#getIndexer()
      */
     public void testTemplateIncludeIndexer() {
         assertIndexContains(TwigIncludeStubIndex.KEY,

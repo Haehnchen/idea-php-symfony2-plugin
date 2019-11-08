@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.dic.container;
+package fr.adrienbrault.idea.symfonyplugin.dic.container;
 
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;

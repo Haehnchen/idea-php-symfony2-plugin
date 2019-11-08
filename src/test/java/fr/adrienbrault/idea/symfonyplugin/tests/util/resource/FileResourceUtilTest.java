@@ -1,15 +1,15 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.util.resource;
+package fr.adrienbrault.idea.symfonyplugin.tests.util.resource;
 
 import com.intellij.psi.PsiFile;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.util.resource.FileResourceUtil;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil
+ * @see fr.adrienbrault.idea.symfonyplugin.util.resource.FileResourceUtil
  */
 public class FileResourceUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -25,7 +25,7 @@ public class FileResourceUtilTest extends SymfonyLightCodeInsightFixtureTestCase
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/util/resource/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/util/resource/fixtures";
     }
 
     public void testGetFileResourceRefers() {

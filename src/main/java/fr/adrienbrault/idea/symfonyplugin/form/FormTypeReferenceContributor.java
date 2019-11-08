@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.form;
+package fr.adrienbrault.idea.symfonyplugin.form;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.*;
@@ -6,16 +6,16 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
-import fr.adrienbrault.idea.symfony2plugin.form.util.FormFieldNameReference;
-import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil;
-import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
-import fr.adrienbrault.idea.symfony2plugin.translation.TranslationReference;
-import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
-import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.EntityReference;
+import fr.adrienbrault.idea.symfonyplugin.form.util.FormFieldNameReference;
+import fr.adrienbrault.idea.symfonyplugin.form.util.FormOptionsUtil;
+import fr.adrienbrault.idea.symfonyplugin.form.util.FormUtil;
+import fr.adrienbrault.idea.symfonyplugin.translation.TranslationReference;
+import fr.adrienbrault.idea.symfonyplugin.util.MethodMatcher;
+import fr.adrienbrault.idea.symfonyplugin.util.ParameterBag;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

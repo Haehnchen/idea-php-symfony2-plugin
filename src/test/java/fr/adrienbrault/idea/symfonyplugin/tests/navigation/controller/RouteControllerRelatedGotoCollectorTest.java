@@ -1,12 +1,12 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.navigation.controller;
+package fr.adrienbrault.idea.symfonyplugin.tests.navigation.controller;
 
 import com.jetbrains.php.lang.PhpFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.navigation.controller.RouteControllerRelatedGotoCollector
+ * @see fr.adrienbrault.idea.symfonyplugin.navigation.controller.RouteControllerRelatedGotoCollector
  */
 public class RouteControllerRelatedGotoCollectorTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -16,7 +16,7 @@ public class RouteControllerRelatedGotoCollectorTest extends SymfonyLightCodeIns
     }
 
     protected String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/navigation/controller/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/navigation/controller/fixtures";
     }
 
     public void testThatControllerProvidesYamDefinitionNavigation() {

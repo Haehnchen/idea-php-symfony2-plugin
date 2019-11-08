@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.dic.container;
+package fr.adrienbrault.idea.symfonyplugin.tests.dic.container;
 
-import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.XmlService;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.ServiceInterface;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.XmlService;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 import org.junit.Test;
@@ -16,7 +16,7 @@ import java.io.StringReader;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.dic.container.XmlService
+ * @see fr.adrienbrault.idea.symfonyplugin.dic.container.XmlService
  */
 public class XmlServiceTest extends Assert {
     @Test

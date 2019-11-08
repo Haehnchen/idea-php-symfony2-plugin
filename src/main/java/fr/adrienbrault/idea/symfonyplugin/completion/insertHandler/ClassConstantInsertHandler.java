@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.completion.insertHandler;
+package fr.adrienbrault.idea.symfonyplugin.completion.insertHandler;
 
 import com.intellij.codeInsight.completion.InsertHandler;
 import com.intellij.codeInsight.completion.InsertionContext;

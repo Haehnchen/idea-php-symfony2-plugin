@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.webDeployment.storage;
+package fr.adrienbrault.idea.symfonyplugin.webDeployment.storage;
 
 import com.intellij.openapi.project.Project;
 import org.apache.commons.vfs2.FileObject;

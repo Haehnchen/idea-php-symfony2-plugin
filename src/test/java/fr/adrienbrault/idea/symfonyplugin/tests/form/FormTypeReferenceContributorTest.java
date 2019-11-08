@@ -1,14 +1,14 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.form;
+package fr.adrienbrault.idea.symfonyplugin.tests.form;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Method;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.form.FormTypeReferenceContributor
+ * @see fr.adrienbrault.idea.symfonyplugin.form.FormTypeReferenceContributor
  */
 public class FormTypeReferenceContributorTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
@@ -17,7 +17,7 @@ public class FormTypeReferenceContributorTest extends SymfonyLightCodeInsightFix
     }
 
     protected String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/form/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/form/fixtures";
     }
 
     public void testDataClassPropertyCompletion() {

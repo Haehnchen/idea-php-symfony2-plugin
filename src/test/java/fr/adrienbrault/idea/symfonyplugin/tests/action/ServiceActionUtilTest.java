@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.action;
+package fr.adrienbrault.idea.symfonyplugin.tests.action;
 
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlTag;
-import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.action.ServiceActionUtil;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
 /*

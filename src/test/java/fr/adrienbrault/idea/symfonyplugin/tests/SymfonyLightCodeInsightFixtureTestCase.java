@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.tests;
+package fr.adrienbrault.idea.symfonyplugin.tests;
 
 import com.intellij.codeInsight.completion.CodeCompletionHandlerBase;
 import com.intellij.codeInsight.completion.CompletionProgressIndicator;
@@ -45,7 +45,7 @@ import com.intellij.util.ui.UIUtil;
 import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpReference;
-import fr.adrienbrault.idea.symfony2plugin.Settings;
+import fr.adrienbrault.idea.symfonyplugin.Settings;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;

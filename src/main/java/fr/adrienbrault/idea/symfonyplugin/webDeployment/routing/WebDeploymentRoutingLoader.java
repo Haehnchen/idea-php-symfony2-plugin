@@ -1,9 +1,9 @@
-package fr.adrienbrault.idea.symfony2plugin.webDeployment.routing;
+package fr.adrienbrault.idea.symfonyplugin.webDeployment.routing;
 
-import fr.adrienbrault.idea.symfony2plugin.extension.RoutingLoader;
-import fr.adrienbrault.idea.symfony2plugin.extension.RoutingLoaderParameter;
-import fr.adrienbrault.idea.symfony2plugin.routing.webDeployment.RoutingRemoteFileStorage;
-import fr.adrienbrault.idea.symfony2plugin.webDeployment.utils.RemoteWebServerUtil;
+import fr.adrienbrault.idea.symfonyplugin.extension.RoutingLoader;
+import fr.adrienbrault.idea.symfonyplugin.extension.RoutingLoaderParameter;
+import fr.adrienbrault.idea.symfonyplugin.routing.webDeployment.RoutingRemoteFileStorage;
+import fr.adrienbrault.idea.symfonyplugin.webDeployment.utils.RemoteWebServerUtil;
 import org.jetbrains.annotations.NotNull;
 
 /**

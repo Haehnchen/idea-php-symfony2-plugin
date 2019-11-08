@@ -1,9 +1,9 @@
-package fr.adrienbrault.idea.symfony2plugin.dic.container.suggestion.utils;
+package fr.adrienbrault.idea.symfonyplugin.dic.container.suggestion.utils;
 
 import com.intellij.util.containers.ContainerUtil;
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ServiceTypeHint;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfonyplugin.dic.ContainerService;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.dict.ServiceTypeHint;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.ServiceUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

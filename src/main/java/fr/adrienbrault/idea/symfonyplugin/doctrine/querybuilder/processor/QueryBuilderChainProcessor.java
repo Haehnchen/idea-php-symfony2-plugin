@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.processor;
+package fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.processor;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

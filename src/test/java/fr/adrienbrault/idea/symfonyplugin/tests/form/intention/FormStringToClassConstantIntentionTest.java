@@ -1,12 +1,12 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.form.intention;
+package fr.adrienbrault.idea.symfonyplugin.tests.form.intention;
 
 import com.jetbrains.php.lang.PhpFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.form.intention.FormStringToClassConstantIntention
+ * @see fr.adrienbrault.idea.symfonyplugin.form.intention.FormStringToClassConstantIntention
  */
 public class FormStringToClassConstantIntentionTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -16,7 +16,7 @@ public class FormStringToClassConstantIntentionTest extends SymfonyLightCodeInsi
     }
 
     protected String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/form/intention/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/form/intention/fixtures";
     }
 
     public void testIntentionIsAvailable() {

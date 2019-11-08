@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.config.xml;
+package fr.adrienbrault.idea.symfonyplugin.config.xml;
 
 import com.intellij.patterns.*;
 import com.intellij.psi.PsiElement;
@@ -11,11 +11,11 @@ import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.dic.ParameterResolverConsumer;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.ParameterVisitor;
+import fr.adrienbrault.idea.symfonyplugin.dic.ParameterResolverConsumer;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper;
+import fr.adrienbrault.idea.symfonyplugin.util.yaml.visitor.ParameterVisitor;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.ui;
+package fr.adrienbrault.idea.symfonyplugin.ui;
 
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
@@ -8,10 +8,10 @@ import com.intellij.ui.table.TableView;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ElementProducer;
 import com.intellij.util.ui.ListTableModel;
-import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.Settings;
+import fr.adrienbrault.idea.symfonyplugin.templating.path.TwigNamespaceSetting;
+import fr.adrienbrault.idea.symfonyplugin.templating.path.TwigPath;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

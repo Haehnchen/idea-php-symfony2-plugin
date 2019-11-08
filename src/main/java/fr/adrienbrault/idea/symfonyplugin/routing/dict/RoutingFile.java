@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.routing.dict;
+package fr.adrienbrault.idea.symfonyplugin.routing.dict;
 
 import com.intellij.util.xmlb.annotations.Tag;
-import fr.adrienbrault.idea.symfony2plugin.ui.dict.AbstractUiFilePath;
+import fr.adrienbrault.idea.symfonyplugin.ui.dict.AbstractUiFilePath;
 import org.jetbrains.annotations.NotNull;
 
 /**

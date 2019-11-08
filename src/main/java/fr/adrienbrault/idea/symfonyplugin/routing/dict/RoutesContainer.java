@@ -1,6 +1,6 @@
-package fr.adrienbrault.idea.symfony2plugin.routing.dict;
+package fr.adrienbrault.idea.symfonyplugin.routing.dict;
 
-import fr.adrienbrault.idea.symfony2plugin.routing.Route;
+import fr.adrienbrault.idea.symfonyplugin.routing.Route;
 
 import java.util.HashMap;
 import java.util.Map;

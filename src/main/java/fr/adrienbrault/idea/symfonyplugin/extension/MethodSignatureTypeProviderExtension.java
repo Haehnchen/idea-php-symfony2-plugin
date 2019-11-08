@@ -1,6 +1,6 @@
-package fr.adrienbrault.idea.symfony2plugin.extension;
+package fr.adrienbrault.idea.symfonyplugin.extension;
 
-import fr.adrienbrault.idea.symfony2plugin.assistant.signature.MethodSignatureSetting;
+import fr.adrienbrault.idea.symfonyplugin.assistant.signature.MethodSignatureSetting;
 
 import java.util.Collection;
 

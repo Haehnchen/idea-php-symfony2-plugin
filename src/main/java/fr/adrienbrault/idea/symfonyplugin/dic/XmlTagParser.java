@@ -1,6 +1,6 @@
-package fr.adrienbrault.idea.symfony2plugin.dic;
+package fr.adrienbrault.idea.symfonyplugin.dic;
 
-import fr.adrienbrault.idea.symfony2plugin.util.service.AbstractServiceParser;
+import fr.adrienbrault.idea.symfonyplugin.util.service.AbstractServiceParser;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;

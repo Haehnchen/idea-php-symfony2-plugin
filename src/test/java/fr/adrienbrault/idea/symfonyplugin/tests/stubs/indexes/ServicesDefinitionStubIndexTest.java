@@ -1,15 +1,15 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.stubs.indexes;
+package fr.adrienbrault.idea.symfonyplugin.tests.stubs.indexes;
 
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.indexing.FileBasedIndexImpl;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.ServiceInterface;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.ServicesDefinitionStubIndex;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex
+ * @see fr.adrienbrault.idea.symfonyplugin.stubs.indexes.ServicesDefinitionStubIndex
  */
 public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -22,7 +22,7 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/stubs/indexes/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/stubs/indexes/fixtures";
     }
 
     public void testThatServiceIdOfYamlFileIsIndexed() {

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder;
+package fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
@@ -10,19 +10,19 @@ import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression;
 import com.jetbrains.php.lang.psi.elements.ClassConstantReference;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.detector.FormQueryBuilderRepositoryDetector;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.detector.QueryBuilderRepositoryDetector;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.detector.QueryBuilderRepositoryDetectorParameter;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderJoin;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderPropertyAlias;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderRelation;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.util.QueryBuilderUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpTypeProviderUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.EntityHelper;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.dict.DoctrineModelField;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.detector.FormQueryBuilderRepositoryDetector;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.detector.QueryBuilderRepositoryDetector;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.detector.QueryBuilderRepositoryDetectorParameter;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.dict.QueryBuilderJoin;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.dict.QueryBuilderPropertyAlias;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.dict.QueryBuilderRelation;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.util.QueryBuilderUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpTypeProviderUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.DoctrineModel;
 
 import java.util.*;
 import java.util.regex.Matcher;

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.profiler.widget;
+package fr.adrienbrault.idea.symfonyplugin.profiler.widget;
 
 import com.intellij.openapi.actionSystem.ActionGroup;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -14,11 +14,11 @@ import com.intellij.openapi.wm.StatusBarWidget;
 import com.intellij.openapi.wm.impl.status.EditorBasedWidget;
 import com.intellij.ui.popup.PopupFactoryImpl;
 import com.intellij.util.Consumer;
-import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerIndexInterface;
-import fr.adrienbrault.idea.symfony2plugin.profiler.collector.DefaultDataCollectorInterface;
-import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface;
-import fr.adrienbrault.idea.symfony2plugin.profiler.factory.ProfilerFactoryUtil;
-import fr.adrienbrault.idea.symfony2plugin.profiler.widget.action.SymfonyProfilerWidgetActions;
+import fr.adrienbrault.idea.symfonyplugin.profiler.ProfilerIndexInterface;
+import fr.adrienbrault.idea.symfonyplugin.profiler.collector.DefaultDataCollectorInterface;
+import fr.adrienbrault.idea.symfonyplugin.profiler.dict.ProfilerRequestInterface;
+import fr.adrienbrault.idea.symfonyplugin.profiler.factory.ProfilerFactoryUtil;
+import fr.adrienbrault.idea.symfonyplugin.profiler.widget.action.SymfonyProfilerWidgetActions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

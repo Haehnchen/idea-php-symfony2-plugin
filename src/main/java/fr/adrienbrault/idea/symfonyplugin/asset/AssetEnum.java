@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.asset;
+package fr.adrienbrault.idea.symfonyplugin.asset;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

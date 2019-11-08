@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.profiler;
+package fr.adrienbrault.idea.symfonyplugin.profiler;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ex.ToolWindowEx;

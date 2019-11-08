@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.routing.dic;
+package fr.adrienbrault.idea.symfonyplugin.routing.dic;
 
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import org.jetbrains.annotations.NotNull;

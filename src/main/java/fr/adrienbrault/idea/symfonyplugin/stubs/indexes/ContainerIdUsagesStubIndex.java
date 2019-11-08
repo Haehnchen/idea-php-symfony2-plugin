@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
+package fr.adrienbrault.idea.symfonyplugin.stubs.indexes;
 
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.psi.PsiElement;
@@ -11,8 +11,8 @@ import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorIntegerDescriptor;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
@@ -28,7 +28,7 @@ import java.util.Map;
  */
 public class ContainerIdUsagesStubIndex extends FileBasedIndexExtension<String, Integer> {
 
-    public static final ID<String, Integer> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.service_id_usage");
+    public static final ID<String, Integer> KEY = ID.create("fr.adrienbrault.idea.symfonyplugin.service_id_usage");
 
     @NotNull
     @Override

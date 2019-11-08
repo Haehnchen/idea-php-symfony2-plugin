@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.form.gotoCompletion;
+package fr.adrienbrault.idea.symfonyplugin.form.gotoCompletion;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.utils.GotoCompletionUtil;
-import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionProvider;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.utils.GotoCompletionUtil;
+import fr.adrienbrault.idea.symfonyplugin.translation.dict.TranslationUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

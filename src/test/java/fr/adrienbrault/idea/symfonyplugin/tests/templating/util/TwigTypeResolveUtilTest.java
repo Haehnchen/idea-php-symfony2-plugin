@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating.util;
+package fr.adrienbrault.idea.symfonyplugin.tests.templating.util;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -8,9 +8,9 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.TwigLanguage;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigTypeResolveUtil;
+import fr.adrienbrault.idea.symfonyplugin.templating.variable.dict.PsiVariable;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;

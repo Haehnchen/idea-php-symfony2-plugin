@@ -1,6 +1,6 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.config.component.parser;
+package fr.adrienbrault.idea.symfonyplugin.tests.config.component.parser;
 
-import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
+import fr.adrienbrault.idea.symfonyplugin.config.component.parser.ParameterServiceParser;
 import org.junit.Assert;
 import org.junit.Test;
 import java.io.File;
@@ -12,7 +12,7 @@ public class ParameterServiceParserTest extends Assert {
     @Test
     public void testParse() throws Exception {
 
-        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/config/component/parser/appDevDebugProjectContainer.xml");
+        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/config/component/parser/appDevDebugProjectContainer.xml");
         ParameterServiceParser parameterServiceParser = new ParameterServiceParser();
         parameterServiceParser.parser(new FileInputStream(testFile));
 

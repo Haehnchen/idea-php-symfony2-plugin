@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating.inspection;
+package fr.adrienbrault.idea.symfonyplugin.tests.templating.inspection;
 
-import fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigVariablePathInspection;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.templating.inspection.TwigVariablePathInspection;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -15,7 +15,7 @@ public class TwigVariablePathInspectionTest extends SymfonyLightCodeInsightFixtu
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/inspection/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/templating/inspection/fixtures";
     }
 
     public void testThatUnknownBeforeLeafTypeShouldNotProvideHighlight() {

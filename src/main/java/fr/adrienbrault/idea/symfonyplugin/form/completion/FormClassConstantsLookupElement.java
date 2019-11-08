@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.form.completion;
+package fr.adrienbrault.idea.symfonyplugin.form.completion;
 
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.completion.lookup.ClassConstantLookupElementAbstract;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.completion.lookup.ClassConstantLookupElementAbstract;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 

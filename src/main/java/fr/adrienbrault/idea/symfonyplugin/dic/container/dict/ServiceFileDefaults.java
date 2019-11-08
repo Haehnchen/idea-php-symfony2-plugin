@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.dic.container.dict;
+package fr.adrienbrault.idea.symfonyplugin.dic.container.dict;
 
 import org.jetbrains.annotations.Nullable;
 

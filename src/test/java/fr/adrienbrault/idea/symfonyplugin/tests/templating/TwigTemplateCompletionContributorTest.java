@@ -1,18 +1,18 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating;
+package fr.adrienbrault.idea.symfonyplugin.tests.templating;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.twig.TwigFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
+ * @see fr.adrienbrault.idea.symfonyplugin.templating.TwigTemplateCompletionContributor
  */
 public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -24,11 +24,11 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/templating/fixtures";
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.TwigTemplateCompletionContributor
      */
     public void testBlockCompletion() {
         if(System.getenv("PHPSTORM_ENV") != null) return;

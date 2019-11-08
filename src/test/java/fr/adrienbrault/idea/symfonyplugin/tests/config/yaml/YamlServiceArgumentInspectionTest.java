@@ -1,12 +1,12 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.config.yaml;
+package fr.adrienbrault.idea.symfonyplugin.tests.config.yaml;
 
-import fr.adrienbrault.idea.symfony2plugin.intentions.yaml.YamlServiceArgumentInspection;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.intentions.yaml.YamlServiceArgumentInspection;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.intentions.yaml.YamlServiceArgumentInspection
+ * @see fr.adrienbrault.idea.symfonyplugin.intentions.yaml.YamlServiceArgumentInspection
  */
 public class YamlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -16,7 +16,7 @@ public class YamlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFi
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/config/yaml/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/config/yaml/fixtures";
     }
 
     public void testMissingArgumentProvidesInspection() {

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.util.psi;
+package fr.adrienbrault.idea.symfonyplugin.util.psi;
 
 import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.openapi.editor.Editor;
@@ -21,8 +21,8 @@ import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.refactoring.PhpAliasImporter;
 import com.jetbrains.php.refactoring.PhpNameUtil;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

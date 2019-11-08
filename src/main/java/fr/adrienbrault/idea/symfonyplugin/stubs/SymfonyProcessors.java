@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.stubs;
+package fr.adrienbrault.idea.symfonyplugin.stubs;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.search.GlobalSearchScope;

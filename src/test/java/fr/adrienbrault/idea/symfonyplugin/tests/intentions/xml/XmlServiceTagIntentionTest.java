@@ -1,12 +1,12 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.intentions.xml;
+package fr.adrienbrault.idea.symfonyplugin.tests.intentions.xml;
 
 import com.intellij.ide.highlighter.XmlFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.intentions.xml.XmlServiceTagIntention
+ * @see fr.adrienbrault.idea.symfonyplugin.intentions.xml.XmlServiceTagIntention
  */
 public class XmlServiceTagIntentionTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -16,7 +16,7 @@ public class XmlServiceTagIntentionTest extends SymfonyLightCodeInsightFixtureTe
     }
 
     protected String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/intentions/xml/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/intentions/xml/fixtures";
     }
 
     public void testTagIntentionIsAvailable() {

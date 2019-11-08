@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
+package fr.adrienbrault.idea.symfonyplugin.stubs.indexes;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -13,11 +13,11 @@ import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import com.jetbrains.twig.elements.TwigExtendsTag;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.StringSetDataExternalizer;
-import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.externalizer.StringSetDataExternalizer;
+import fr.adrienbrault.idea.symfonyplugin.templating.TwigPattern;
+import fr.adrienbrault.idea.symfonyplugin.templating.dict.TwigBlock;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,7 +31,7 @@ import java.util.Set;
  */
 public class TwigBlockIndexExtension extends FileBasedIndexExtension<String, Set<String>> {
 
-    public static final ID<String, Set<String>> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.twig_block_names");
+    public static final ID<String, Set<String>> KEY = ID.create("fr.adrienbrault.idea.symfonyplugin.twig_block_names");
 
     private final KeyDescriptor<String> KEY_DESCRIPTOR = new EnumeratorStringDescriptor();
     private static final StringSetDataExternalizer DATA_EXTERNALIZER = new StringSetDataExternalizer();

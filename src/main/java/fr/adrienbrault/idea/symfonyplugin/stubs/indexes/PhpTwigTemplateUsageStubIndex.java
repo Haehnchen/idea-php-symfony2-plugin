@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
+package fr.adrienbrault.idea.symfonyplugin.stubs.indexes;
 
 import com.intellij.psi.PsiFile;
 import com.intellij.util.indexing.*;
@@ -7,10 +7,10 @@ import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.stubs.indexes.PhpConstantNameIndex;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateUsage;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.PhpMethodVariableResolveUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.stubs.dict.TemplateUsage;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.PhpMethodVariableResolveUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -21,7 +21,7 @@ import java.util.*;
  */
 public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<String, TemplateUsage> {
 
-    public static final ID<String, TemplateUsage> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.twig_php_usage");
+    public static final ID<String, TemplateUsage> KEY = ID.create("fr.adrienbrault.idea.symfonyplugin.twig_php_usage");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
     private static int MAX_FILE_BYTE_SIZE = 2097152;
     private static ObjectStreamDataExternalizer<TemplateUsage> EXTERNALIZER = new ObjectStreamDataExternalizer<>();

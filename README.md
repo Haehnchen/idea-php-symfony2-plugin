@@ -9,7 +9,7 @@ IntelliJ IDEA / PhpStorm Symfony Plugin
 Key                  | Value
 -------------------- | --------------------
 Plugin Url           | https://plugins.jetbrains.com/plugin/7219
-ID                   | fr.adrienbrault.idea.symfony2plugin
+ID                   | fr.adrienbrault.idea.symfonyplugin
 Changelog            | [CHANGELOG](CHANGELOG.md)
 Build and Deployment | [MAINTENANCE](MAINTENANCE.md)
 

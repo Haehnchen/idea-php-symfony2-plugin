@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.security;
+package fr.adrienbrault.idea.symfonyplugin.tests.security;
 
 import com.intellij.patterns.PlatformPatterns;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 public class IsGrantedAnnotationReferencesTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
@@ -12,7 +12,7 @@ public class IsGrantedAnnotationReferencesTest extends SymfonyLightCodeInsightFi
     }
 
     protected String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/security/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/security/fixtures";
     }
 
     public void testThatIsGrantedAnnotationProvidesCompletion() {

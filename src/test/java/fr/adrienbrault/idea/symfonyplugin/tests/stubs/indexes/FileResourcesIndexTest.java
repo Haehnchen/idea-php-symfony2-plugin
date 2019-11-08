@@ -1,18 +1,18 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.stubs.indexes;
+package fr.adrienbrault.idea.symfonyplugin.tests.stubs.indexes;
 
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
-import fr.adrienbrault.idea.symfony2plugin.stubs.dict.FileResource;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.FileResourcesIndex;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.stubs.dict.FileResource;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.FileResourcesIndex;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.stubs.indexes.FileResourcesIndex
+ * @see fr.adrienbrault.idea.symfonyplugin.stubs.indexes.FileResourcesIndex
  */
 public class FileResourcesIndexTest extends SymfonyLightCodeInsightFixtureTestCase {
 

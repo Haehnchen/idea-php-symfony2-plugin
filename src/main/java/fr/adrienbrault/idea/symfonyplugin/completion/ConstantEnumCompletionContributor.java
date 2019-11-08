@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.completion;
+package fr.adrienbrault.idea.symfonyplugin.completion;
 
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
@@ -7,12 +7,12 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.completion.constant.ConstantEnumCompletionProvider;
-import fr.adrienbrault.idea.symfony2plugin.completion.constant.EnumConstantFilter;
-import fr.adrienbrault.idea.symfony2plugin.completion.lookup.PhpConstantFieldPhpLookupElement;
-import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.completion.constant.ConstantEnumCompletionProvider;
+import fr.adrienbrault.idea.symfonyplugin.completion.constant.EnumConstantFilter;
+import fr.adrienbrault.idea.symfonyplugin.completion.lookup.PhpConstantFieldPhpLookupElement;
+import fr.adrienbrault.idea.symfonyplugin.util.MethodMatcher;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 
 /**

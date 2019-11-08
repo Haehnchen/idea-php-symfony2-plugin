@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.util;
+package fr.adrienbrault.idea.symfonyplugin.tests.util;
 
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
@@ -6,9 +6,9 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpTypeProviderUtil;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpTypeProviderUtil;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,7 +24,7 @@ public class PhpTypeProviderUtilTest extends SymfonyLightCodeInsightFixtureTestC
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/util/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/util/fixtures";
     }
 
     /**

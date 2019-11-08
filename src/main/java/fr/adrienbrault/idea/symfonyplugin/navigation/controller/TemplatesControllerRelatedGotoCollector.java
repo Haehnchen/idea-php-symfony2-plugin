@@ -1,12 +1,12 @@
-package fr.adrienbrault.idea.symfony2plugin.navigation.controller;
+package fr.adrienbrault.idea.symfonyplugin.navigation.controller;
 
 import com.intellij.psi.PsiFile;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.dic.RelatedPopupGotoLineMarker;
-import fr.adrienbrault.idea.symfony2plugin.extension.ControllerActionGotoRelatedCollector;
-import fr.adrienbrault.idea.symfony2plugin.extension.ControllerActionGotoRelatedCollectorParameter;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.PhpMethodVariableResolveUtil;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.dic.RelatedPopupGotoLineMarker;
+import fr.adrienbrault.idea.symfonyplugin.extension.ControllerActionGotoRelatedCollector;
+import fr.adrienbrault.idea.symfonyplugin.extension.ControllerActionGotoRelatedCollectorParameter;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.PhpMethodVariableResolveUtil;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
 import icons.TwigIcons;
 
 import java.util.HashSet;

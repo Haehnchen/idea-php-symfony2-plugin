@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.dic.container;
+package fr.adrienbrault.idea.symfonyplugin.dic.container;
 
 import java.io.Serializable;
 

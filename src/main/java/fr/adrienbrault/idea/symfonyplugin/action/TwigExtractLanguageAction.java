@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.action;
+package fr.adrienbrault.idea.symfonyplugin.action;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -15,14 +15,14 @@ import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.xml.XmlTokenType;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.twig.TwigFile;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.action.dict.TranslationFileModel;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
-import fr.adrienbrault.idea.symfony2plugin.translation.form.TranslatorKeyExtractorDialog;
-import fr.adrienbrault.idea.symfony2plugin.translation.util.TranslationInsertUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.action.dict.TranslationFileModel;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.translation.dict.TranslationUtil;
+import fr.adrienbrault.idea.symfonyplugin.translation.form.TranslatorKeyExtractorDialog;
+import fr.adrienbrault.idea.symfonyplugin.translation.util.TranslationInsertUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.IdeHelper;
 
 import java.awt.*;
 import java.util.*;

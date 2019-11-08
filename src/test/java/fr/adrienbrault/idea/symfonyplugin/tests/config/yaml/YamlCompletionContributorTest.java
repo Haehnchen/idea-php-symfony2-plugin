@@ -1,13 +1,13 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.config.yaml;
+package fr.adrienbrault.idea.symfonyplugin.tests.config.yaml;
 
 import com.jetbrains.php.lang.PhpFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlCompletionContributor
+ * @see fr.adrienbrault.idea.symfonyplugin.config.yaml.YamlCompletionContributor
  */
 public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -23,7 +23,7 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/config/yaml/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/config/yaml/fixtures";
     }
 
     public void testResourcesInsideSameDirectoryProvidesCompletion() {
@@ -34,7 +34,7 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlCompletionContributor.RepositoryClassCompletionProvider
+     * @see fr.adrienbrault.idea.symfonyplugin.config.yaml.YamlCompletionContributor.RepositoryClassCompletionProvider
      */
     public void testRepositoryClassCompletionProvider() {
         myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.driver;
+package fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.driver;
 
 import com.intellij.psi.PsiFile;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
@@ -6,11 +6,11 @@ import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
-import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.EntityHelper;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.dict.DoctrineModelField;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.dict.DoctrineMetadataModel;
+import fr.adrienbrault.idea.symfonyplugin.util.AnnotationBackportUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -37,7 +37,7 @@ public class DoctrinePhpMappingDriver implements DoctrineMappingDriverInterface 
         for (PhpClass phpClass : PhpElementsUtil.getClassesInterface(args.getProject(), args.getClassName())) {
 
             // remove duplicate code
-            // @TODO: fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper.getModelFields()
+            // @TODO: fr.adrienbrault.idea.symfonyplugin.doctrine.EntityHelper.getModelFields()
             PhpDocComment docComment = phpClass.getDocComment();
             if(docComment == null) {
                 continue;

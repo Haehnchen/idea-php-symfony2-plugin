@@ -1,14 +1,14 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.dic.linemarker;
+package fr.adrienbrault.idea.symfonyplugin.tests.dic.linemarker;
 
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFileFactory;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.dic.linemarker.XmlLineMarkerProvider
+ * @see fr.adrienbrault.idea.symfonyplugin.dic.linemarker.XmlLineMarkerProvider
  */
 public class XmlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
@@ -17,7 +17,7 @@ public class XmlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTes
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic/linemarker/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/dic/linemarker/fixtures";
     }
 
     public void testThatDecoratedServiceShouldProvideMarker() {

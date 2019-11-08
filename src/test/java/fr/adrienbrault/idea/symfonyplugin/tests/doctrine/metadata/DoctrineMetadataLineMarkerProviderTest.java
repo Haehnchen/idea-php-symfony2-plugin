@@ -1,16 +1,16 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.metadata;
+package fr.adrienbrault.idea.symfonyplugin.tests.doctrine.metadata;
 
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFileFactory;
 import com.jetbrains.php.lang.PhpFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.DoctrineMetadataLineMarkerProvider
+ * @see fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.DoctrineMetadataLineMarkerProvider
  */
 public class DoctrineMetadataLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -20,7 +20,7 @@ public class DoctrineMetadataLineMarkerProviderTest extends SymfonyLightCodeInsi
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/doctrine/metadata/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/doctrine/metadata/fixtures";
     }
 
     public void testTargetDocumentLineMarker() {

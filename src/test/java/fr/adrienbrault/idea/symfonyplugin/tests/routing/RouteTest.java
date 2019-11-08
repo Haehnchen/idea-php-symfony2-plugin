@@ -1,8 +1,8 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.routing;
+package fr.adrienbrault.idea.symfonyplugin.tests.routing;
 
 import com.google.common.collect.ImmutableMap;
-import fr.adrienbrault.idea.symfony2plugin.routing.Route;
-import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
+import fr.adrienbrault.idea.symfonyplugin.routing.Route;
+import fr.adrienbrault.idea.symfonyplugin.stubs.dict.StubIndexedRoute;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -10,7 +10,7 @@ import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.routing.Route
+ * @see fr.adrienbrault.idea.symfonyplugin.routing.Route
  */
 public class RouteTest extends Assert {
 

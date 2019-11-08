@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.codeInsight.utils;
+package fr.adrienbrault.idea.symfonyplugin.codeInsight.utils;
 
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.psi.PsiElement;
@@ -6,9 +6,9 @@ import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlText;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.twig.TwigTokenTypes;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionContributor;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionRegistrar;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionRegistrarParameter;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -22,7 +22,7 @@ import java.util.Collection;
  */
 public class GotoCompletionUtil {
 
-    private static final ExtensionPointName<GotoCompletionRegistrar> EXTENSIONS = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.GotoCompletionRegistrar");
+    private static final ExtensionPointName<GotoCompletionRegistrar> EXTENSIONS = new ExtensionPointName<>("fr.adrienbrault.idea.symfonyplugin.extension.GotoCompletionRegistrar");
 
     public static Collection<GotoCompletionContributor> getContributors(final PsiElement psiElement) {
 

@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.dic.xml;
+package fr.adrienbrault.idea.symfonyplugin.tests.dic.xml;
 
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.config.xml.XmlCompletionContributor
+ * @see fr.adrienbrault.idea.symfonyplugin.config.xml.XmlCompletionContributor
  */
 public class XmlDicInspectionsTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -24,7 +24,7 @@ public class XmlDicInspectionsTest extends SymfonyLightCodeInsightFixtureTestCas
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic/xml/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/dic/xml/fixtures";
     }
 
     public void testThatUnknownServiceIsHighlighted() {

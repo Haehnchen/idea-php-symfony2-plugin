@@ -1,14 +1,14 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.stubs.indexes;
+package fr.adrienbrault.idea.symfonyplugin.tests.stubs.indexes;
 
-import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelSerializable;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.DoctrineMetadataFileStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.dict.DoctrineModelSerializable;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.DoctrineMetadataFileStubIndex;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.stubs.indexes.DoctrineMetadataFileStubIndex
+ * @see fr.adrienbrault.idea.symfonyplugin.stubs.indexes.DoctrineMetadataFileStubIndex
  */
 public class DoctrineMetadataFileStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -40,11 +40,11 @@ public class DoctrineMetadataFileStubIndexTest extends SymfonyLightCodeInsightFi
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/stubs/indexes/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/stubs/indexes/fixtures";
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineUtil#getClassRepositoryPair
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.DoctrineUtil#getClassRepositoryPair
      */
     public void testXmlMetadata() {
         assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "Documents\\Xml\\MongoUser");
@@ -55,7 +55,7 @@ public class DoctrineMetadataFileStubIndexTest extends SymfonyLightCodeInsightFi
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineUtil#getClassRepositoryPair
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.DoctrineUtil#getClassRepositoryPair
      */
     public void testXmlMetadataInvalid() {
         myFixture.configureByText("doctrine.mongodb.xml", "" +
@@ -68,7 +68,7 @@ public class DoctrineMetadataFileStubIndexTest extends SymfonyLightCodeInsightFi
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineUtil#getClassRepositoryPair
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.DoctrineUtil#getClassRepositoryPair
      */
     public void testYamlMetadata() {
         myFixture.configureByFile("doctrine.yml");
@@ -80,7 +80,7 @@ public class DoctrineMetadataFileStubIndexTest extends SymfonyLightCodeInsightFi
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineUtil#getClassRepositoryPair
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.DoctrineUtil#getClassRepositoryPair
      */
     public void testYamlMetadataValidByFilename() {
         myFixture.configureByText("doctrine.orm.yml", "" +
@@ -92,7 +92,7 @@ public class DoctrineMetadataFileStubIndexTest extends SymfonyLightCodeInsightFi
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineUtil#getClassRepositoryPair
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.DoctrineUtil#getClassRepositoryPair
      */
     public void testYamlMetadataValidByStructure() {
         myFixture.configureByText("foo.yml", "" +
@@ -127,7 +127,7 @@ public class DoctrineMetadataFileStubIndexTest extends SymfonyLightCodeInsightFi
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineUtil#getClassRepositoryPair
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.DoctrineUtil#getClassRepositoryPair
      */
     public void testYamlMetadataInvalidByFilename() {
         myFixture.configureByText("doctrine_foo.yml", "" +
@@ -139,7 +139,7 @@ public class DoctrineMetadataFileStubIndexTest extends SymfonyLightCodeInsightFi
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineUtil#getClassRepositoryPair
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.DoctrineUtil#getClassRepositoryPair
      */
     public void testPhpOrmAnnotationMetadata() {
         assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "Doctrine\\Orm\\Annotation");
@@ -149,7 +149,7 @@ public class DoctrineMetadataFileStubIndexTest extends SymfonyLightCodeInsightFi
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineUtil#getClassRepositoryPair
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.DoctrineUtil#getClassRepositoryPair
      */
     public void testPhpOdmAnnotationMetadata() {
         // @TODO: implement

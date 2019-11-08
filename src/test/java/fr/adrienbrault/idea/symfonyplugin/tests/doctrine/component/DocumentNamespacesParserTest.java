@@ -1,6 +1,6 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.component;
+package fr.adrienbrault.idea.symfonyplugin.tests.doctrine.component;
 
-import fr.adrienbrault.idea.symfony2plugin.doctrine.component.DocumentNamespacesParser;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.component.DocumentNamespacesParser;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -16,7 +16,7 @@ public class DocumentNamespacesParserTest extends Assert {
     @Test
     public void testParse() throws Exception {
 
-        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/doctrine/component/appDevDebugProjectContainer.xml");
+        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/doctrine/component/appDevDebugProjectContainer.xml");
         DocumentNamespacesParser entityNamesServiceParser = new DocumentNamespacesParser();
         entityNamesServiceParser.parser(new FileInputStream(testFile));
         Map<String, String> map = entityNamesServiceParser.getNamespaceMap();

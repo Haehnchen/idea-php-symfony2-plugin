@@ -1,8 +1,8 @@
-package fr.adrienbrault.idea.symfony2plugin.util.psi;
+package fr.adrienbrault.idea.symfonyplugin.util.psi;
 
 import com.intellij.psi.PsiElement;
-import fr.adrienbrault.idea.symfony2plugin.util.psi.matcher.ArrayValueWithKeyAndMethodMatcher;
-import fr.adrienbrault.idea.symfony2plugin.util.psi.matcher.ArrayValueWithKeyAndNewExpressionMatcher;
+import fr.adrienbrault.idea.symfonyplugin.util.psi.matcher.ArrayValueWithKeyAndMethodMatcher;
+import fr.adrienbrault.idea.symfonyplugin.util.psi.matcher.ArrayValueWithKeyAndNewExpressionMatcher;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

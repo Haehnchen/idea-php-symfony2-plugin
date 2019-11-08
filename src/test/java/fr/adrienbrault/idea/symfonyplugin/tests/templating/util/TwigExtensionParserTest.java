@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating.util;
+package fr.adrienbrault.idea.symfonyplugin.tests.templating.util;
 
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigExtensionParser;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser
+ * @see fr.adrienbrault.idea.symfonyplugin.templating.util.TwigExtensionParser
  */
 public class TwigExtensionParserTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
@@ -15,7 +15,7 @@ public class TwigExtensionParserTest extends SymfonyLightCodeInsightFixtureTestC
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/util/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/templating/util/fixtures";
     }
 
     public void testExtensionAreCollected() {

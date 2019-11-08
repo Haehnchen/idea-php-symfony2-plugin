@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.dic.tags;
+package fr.adrienbrault.idea.symfonyplugin.dic.tags;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

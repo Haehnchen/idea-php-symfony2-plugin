@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.completion;
+package fr.adrienbrault.idea.symfonyplugin.completion;
 
 import com.intellij.codeInsight.completion.CompletionConfidence;
 import com.intellij.patterns.PlatformPatterns;
@@ -7,8 +7,8 @@ import com.intellij.psi.PsiFile;
 import com.intellij.util.ThreeState;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 
 /**

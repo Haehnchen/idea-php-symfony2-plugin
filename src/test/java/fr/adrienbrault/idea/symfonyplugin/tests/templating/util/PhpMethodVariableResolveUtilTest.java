@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating.util;
+package fr.adrienbrault.idea.symfonyplugin.tests.templating.util;
 
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.Function;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.PhpMethodVariableResolveUtil;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.PhpMethodVariableResolveUtil;
+import fr.adrienbrault.idea.symfonyplugin.templating.variable.dict.PsiVariable;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.util.Map;
 
@@ -20,7 +20,7 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/util/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/templating/util/fixtures";
     }
 
     /**

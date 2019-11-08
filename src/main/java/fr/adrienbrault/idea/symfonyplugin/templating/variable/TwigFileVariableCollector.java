@@ -1,6 +1,6 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.variable;
+package fr.adrienbrault.idea.symfonyplugin.templating.variable;
 
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
+import fr.adrienbrault.idea.symfonyplugin.templating.variable.dict.PsiVariable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;

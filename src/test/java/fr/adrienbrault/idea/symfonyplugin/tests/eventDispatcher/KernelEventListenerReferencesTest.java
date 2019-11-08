@@ -1,8 +1,8 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.eventDispatcher;
+package fr.adrienbrault.idea.symfonyplugin.tests.eventDispatcher;
 
 import com.intellij.ide.highlighter.XmlFileType;
 import com.jetbrains.php.lang.PhpFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
 
 /**
@@ -18,12 +18,12 @@ public class KernelEventListenerReferencesTest extends SymfonyLightCodeInsightFi
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/eventDispatcher/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/eventDispatcher/fixtures";
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.completion.EventCompletionProvider
-     * @see fr.adrienbrault.idea.symfony2plugin.config.dic.EventDispatcherEventReference
+     * @see fr.adrienbrault.idea.symfonyplugin.util.completion.EventCompletionProvider
+     * @see fr.adrienbrault.idea.symfonyplugin.config.dic.EventDispatcherEventReference
      */
     public void testKernelEventListenerTagOnIndexCompletion() {
         if(System.getenv("PHPSTORM_ENV") != null) return;

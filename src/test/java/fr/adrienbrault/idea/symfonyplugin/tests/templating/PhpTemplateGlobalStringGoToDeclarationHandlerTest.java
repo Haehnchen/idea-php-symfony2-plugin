@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating;
+package fr.adrienbrault.idea.symfonyplugin.tests.templating;
 
 import com.jetbrains.php.lang.PhpFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateGlobalStringGoToDeclarationHandler
+ * @see fr.adrienbrault.idea.symfonyplugin.templating.PhpTemplateGlobalStringGoToDeclarationHandler
  */
 public class PhpTemplateGlobalStringGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtureTestCase {
 

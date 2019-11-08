@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.util;
+package fr.adrienbrault.idea.symfonyplugin.templating.util;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Condition;
@@ -12,9 +12,9 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfonyplugin.templating.dict.TwigExtension;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

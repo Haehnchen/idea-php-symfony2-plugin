@@ -1,14 +1,14 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.profiler;
+package fr.adrienbrault.idea.symfonyplugin.tests.profiler;
 
-import fr.adrienbrault.idea.symfony2plugin.profiler.HttpProfilerIndex;
-import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.profiler.HttpProfilerIndex;
+import fr.adrienbrault.idea.symfonyplugin.profiler.dict.ProfilerRequestInterface;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.profiler.HttpProfilerIndex
+ * @see fr.adrienbrault.idea.symfonyplugin.profiler.HttpProfilerIndex
  */
 public class HttpProfilerIndexTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
@@ -16,7 +16,7 @@ public class HttpProfilerIndexTest extends SymfonyLightCodeInsightFixtureTestCas
     }
 
     protected String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/profiler/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/profiler/fixtures";
     }
 
     public void testGetUrlForRequest() {

@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.translation;
+package fr.adrienbrault.idea.symfonyplugin.tests.translation;
 
 import com.jetbrains.php.lang.PhpFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.translation.ValidatorTranslationGotoCompletionRegistrar
+ * @see fr.adrienbrault.idea.symfonyplugin.translation.ValidatorTranslationGotoCompletionRegistrar
  */
 public class ValidatorTranslationGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
@@ -15,7 +15,7 @@ public class ValidatorTranslationGotoCompletionRegistrarTest extends SymfonyLigh
     }
 
     protected String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/translation/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/translation/fixtures";
     }
 
     public void testThatMessageValueForConstraintProvideValidatorTranslations() {

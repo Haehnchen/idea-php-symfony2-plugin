@@ -1,8 +1,8 @@
-package fr.adrienbrault.idea.symfony2plugin.dic;
+package fr.adrienbrault.idea.symfonyplugin.dic;
 
-import fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector;
-import fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollectorParameter;
-import fr.adrienbrault.idea.symfony2plugin.util.SymfonyUtil;
+import fr.adrienbrault.idea.symfonyplugin.extension.ServiceCollector;
+import fr.adrienbrault.idea.symfonyplugin.extension.ServiceCollectorParameter;
+import fr.adrienbrault.idea.symfonyplugin.util.SymfonyUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;

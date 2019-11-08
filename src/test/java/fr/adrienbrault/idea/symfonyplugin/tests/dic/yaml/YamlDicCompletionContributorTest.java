@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.dic.yaml;
+package fr.adrienbrault.idea.symfonyplugin.tests.dic.yaml;
 
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlCompletionContributor
+ * @see fr.adrienbrault.idea.symfonyplugin.config.yaml.YamlCompletionContributor
  */
 public class YamlDicCompletionContributorTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -23,7 +23,7 @@ public class YamlDicCompletionContributorTest extends SymfonyLightCodeInsightFix
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/dic";
     }
 
     public void testServiceCompletion() {

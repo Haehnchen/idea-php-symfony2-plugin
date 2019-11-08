@@ -1,15 +1,15 @@
-package fr.adrienbrault.idea.symfony2plugin.completion.yaml;
+package fr.adrienbrault.idea.symfonyplugin.completion.yaml;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
-import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
-import fr.adrienbrault.idea.symfony2plugin.completion.DecoratedServiceCompletionProvider;
-import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
-import fr.adrienbrault.idea.symfony2plugin.routing.RouteGotoCompletionProvider;
-import fr.adrienbrault.idea.symfony2plugin.templating.TemplateGotoCompletionRegistrar;
-import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpConstGotoCompletionProvider;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionRegistrar;
+import fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionRegistrarParameter;
+import fr.adrienbrault.idea.symfonyplugin.completion.DecoratedServiceCompletionProvider;
+import fr.adrienbrault.idea.symfonyplugin.config.yaml.YamlElementPatternHelper;
+import fr.adrienbrault.idea.symfonyplugin.routing.RouteGotoCompletionProvider;
+import fr.adrienbrault.idea.symfonyplugin.templating.TemplateGotoCompletionRegistrar;
+import fr.adrienbrault.idea.symfonyplugin.util.completion.PhpConstGotoCompletionProvider;
+import fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLMapping;

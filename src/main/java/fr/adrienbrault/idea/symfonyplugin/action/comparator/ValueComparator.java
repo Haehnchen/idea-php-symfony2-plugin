@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.action.comparator;
+package fr.adrienbrault.idea.symfonyplugin.action.comparator;
 
 import java.util.Comparator;
 import java.util.Map;

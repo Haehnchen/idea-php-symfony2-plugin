@@ -1,8 +1,8 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.util;
+package fr.adrienbrault.idea.symfonyplugin.tests.util;
 
 import com.jetbrains.php.lang.PhpFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import fr.adrienbrault.idea.symfony2plugin.util.SymfonyUtil;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.util.SymfonyUtil;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

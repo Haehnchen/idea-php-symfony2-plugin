@@ -1,12 +1,12 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.security;
+package fr.adrienbrault.idea.symfonyplugin.tests.security;
 
 import com.intellij.patterns.PlatformPatterns;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.security.AnnotationExpressionGotoCompletionRegistrar
+ * @see fr.adrienbrault.idea.symfonyplugin.security.AnnotationExpressionGotoCompletionRegistrar
  */
 public class AnnotationExpressionGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
@@ -17,7 +17,7 @@ public class AnnotationExpressionGotoCompletionRegistrarTest extends SymfonyLigh
     }
 
     protected String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/security/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/security/fixtures";
     }
 
     public void testSecurityAnnotationProvidesCompletion() {

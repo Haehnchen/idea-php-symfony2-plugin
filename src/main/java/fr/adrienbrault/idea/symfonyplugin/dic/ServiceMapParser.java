@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.dic;
+package fr.adrienbrault.idea.symfonyplugin.dic;
 
-import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.XmlService;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.ServiceInterface;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.XmlService;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

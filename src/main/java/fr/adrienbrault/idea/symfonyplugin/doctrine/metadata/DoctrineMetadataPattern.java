@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine.metadata;
+package fr.adrienbrault.idea.symfonyplugin.doctrine.metadata;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;

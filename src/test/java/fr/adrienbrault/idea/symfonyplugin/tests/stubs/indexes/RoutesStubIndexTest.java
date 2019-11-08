@@ -1,16 +1,16 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.stubs.indexes;
+package fr.adrienbrault.idea.symfonyplugin.tests.stubs.indexes;
 
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.indexing.FileBasedIndex;
-import fr.adrienbrault.idea.symfony2plugin.routing.dict.RouteInterface;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.routing.dict.RouteInterface;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.RoutesStubIndex;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex
+ * @see fr.adrienbrault.idea.symfonyplugin.stubs.indexes.RoutesStubIndex
  */
 public class RoutesStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
@@ -22,11 +22,11 @@ public class RoutesStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/stubs/indexes/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/stubs/indexes/fixtures";
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex#getIndexer()
+     * @see fr.adrienbrault.idea.symfonyplugin.stubs.indexes.RoutesStubIndex#getIndexer()
      */
     public void testRouteIdIndex() {
         assertIndexContains(RoutesStubIndex.KEY,
@@ -40,7 +40,7 @@ public class RoutesStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex#getIndexer()
+     * @see fr.adrienbrault.idea.symfonyplugin.stubs.indexes.RoutesStubIndex#getIndexer()
      */
     public void testRouteValueIndex() {
         assertIndexContainsKeyWithValue(RoutesStubIndex.KEY, "foo_yaml_path",
@@ -49,7 +49,7 @@ public class RoutesStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex#getIndexer()
+     * @see fr.adrienbrault.idea.symfonyplugin.stubs.indexes.RoutesStubIndex#getIndexer()
      */
     public void testRouteValueWithMethodsInIndex() {
         assertIndexContainsKeyWithValue(RoutesStubIndex.KEY, "foo_yaml_pattern",
@@ -62,7 +62,7 @@ public class RoutesStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex#getIndexer()
+     * @see fr.adrienbrault.idea.symfonyplugin.stubs.indexes.RoutesStubIndex#getIndexer()
      */
     public void testRouteSlashesNormalized() {
         assertIndexContainsKeyWithValue(RoutesStubIndex.KEY, "foo_yaml_controller_normalized",
@@ -75,7 +75,7 @@ public class RoutesStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex#getIndexer()
+     * @see fr.adrienbrault.idea.symfonyplugin.stubs.indexes.RoutesStubIndex#getIndexer()
      */
     public void testControllerAsInvokeRoutingSupportsClassPatternForDefaults() {
         myFixture.configureByText(YAMLFileType.YML, "" +

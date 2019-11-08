@@ -1,12 +1,12 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.intentions.yaml;
+package fr.adrienbrault.idea.symfonyplugin.tests.intentions.yaml;
 
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.intentions.yaml.YamlServiceTagIntention
+ * @see fr.adrienbrault.idea.symfonyplugin.intentions.yaml.YamlServiceTagIntention
  */
 public class YamlServiceTagIntentionTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -16,7 +16,7 @@ public class YamlServiceTagIntentionTest extends SymfonyLightCodeInsightFixtureT
     }
 
     protected String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/intentions/yaml/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/intentions/yaml/fixtures";
     }
 
     public void testTagIntentionIsAvailable() {

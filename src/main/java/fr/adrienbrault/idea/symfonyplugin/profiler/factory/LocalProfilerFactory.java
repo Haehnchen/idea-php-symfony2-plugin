@@ -1,12 +1,12 @@
-package fr.adrienbrault.idea.symfony2plugin.profiler.factory;
+package fr.adrienbrault.idea.symfonyplugin.profiler.factory;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.profiler.LocalProfilerIndex;
-import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerIndexInterface;
+import fr.adrienbrault.idea.symfonyplugin.Settings;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.profiler.LocalProfilerIndex;
+import fr.adrienbrault.idea.symfonyplugin.profiler.ProfilerIndexInterface;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

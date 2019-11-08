@@ -1,9 +1,9 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.config.utils;
+package fr.adrienbrault.idea.symfonyplugin.tests.config.utils;
 
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.config.utils.ConfigUtil;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.config.utils.ConfigUtil;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -20,7 +20,7 @@ public class ConfigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/config/utils/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/config/utils/fixtures";
     }
 
     /**

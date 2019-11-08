@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer;
+package fr.adrienbrault.idea.symfonyplugin.stubs.indexes.externalizer;
 
 import com.intellij.util.io.DataExternalizer;
 import org.jetbrains.annotations.NotNull;

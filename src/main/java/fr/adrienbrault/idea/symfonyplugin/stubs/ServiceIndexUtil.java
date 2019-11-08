@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.stubs;
+package fr.adrienbrault.idea.symfonyplugin.stubs;
 
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.extensions.ExtensionPointName;
@@ -17,13 +17,13 @@ import com.intellij.psi.util.PsiModificationTracker;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
-import fr.adrienbrault.idea.symfony2plugin.dic.ClassServiceDefinitionTargetLazyValue;
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
-import fr.adrienbrault.idea.symfony2plugin.extension.ServiceDefinitionLocator;
-import fr.adrienbrault.idea.symfony2plugin.extension.ServiceDefinitionLocatorParameter;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import fr.adrienbrault.idea.symfonyplugin.config.xml.XmlHelper;
+import fr.adrienbrault.idea.symfonyplugin.dic.ClassServiceDefinitionTargetLazyValue;
+import fr.adrienbrault.idea.symfonyplugin.dic.ContainerService;
+import fr.adrienbrault.idea.symfonyplugin.extension.ServiceDefinitionLocator;
+import fr.adrienbrault.idea.symfonyplugin.extension.ServiceDefinitionLocatorParameter;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.ServicesDefinitionStubIndex;
+import fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLFileType;
@@ -40,7 +40,7 @@ public class ServiceIndexUtil {
     private static final Key<CachedValue<Map<String, Collection<ContainerService>>>> SERVICE_PARENT = new Key<>("SERVICE_PARENT");
 
     private static final ExtensionPointName<ServiceDefinitionLocator> EXTENSIONS = new ExtensionPointName<>(
-        "fr.adrienbrault.idea.symfony2plugin.extension.ServiceDefinitionLocator"
+        "fr.adrienbrault.idea.symfonyplugin.extension.ServiceDefinitionLocator"
     );
 
     private static VirtualFile[] findServiceDefinitionFiles(@NotNull Project project, @NotNull String serviceName) {

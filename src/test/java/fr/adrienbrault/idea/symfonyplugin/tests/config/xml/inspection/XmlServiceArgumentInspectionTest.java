@@ -1,12 +1,12 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.config.xml.inspection;
+package fr.adrienbrault.idea.symfonyplugin.tests.config.xml.inspection;
 
-import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.action.ServiceActionUtil;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.config.xml.inspection.XmlServiceArgumentInspection
+ * @see fr.adrienbrault.idea.symfonyplugin.config.xml.inspection.XmlServiceArgumentInspection
  */
 public class XmlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -16,7 +16,7 @@ public class XmlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFix
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/config/xml/inspection/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/config/xml/inspection/fixtures";
     }
 
     public void testMissingArgumentProvidesInspection() {

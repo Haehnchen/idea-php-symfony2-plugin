@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.util.psi;
+package fr.adrienbrault.idea.symfonyplugin.util.psi;
 
 import com.intellij.patterns.PatternCondition;
 import com.intellij.psi.PsiElement;

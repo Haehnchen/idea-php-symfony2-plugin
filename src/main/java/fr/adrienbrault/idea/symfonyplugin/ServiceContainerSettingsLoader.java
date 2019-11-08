@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin;
+package fr.adrienbrault.idea.symfonyplugin;
 
 import com.intellij.openapi.util.Condition;
 import com.intellij.util.containers.ContainerUtil;
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
-import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoader;
-import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoaderParameter;
+import fr.adrienbrault.idea.symfonyplugin.dic.ContainerFile;
+import fr.adrienbrault.idea.symfonyplugin.extension.ServiceContainerLoader;
+import fr.adrienbrault.idea.symfonyplugin.extension.ServiceContainerLoaderParameter;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.translation.provider;
+package fr.adrienbrault.idea.symfonyplugin.translation.provider;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -7,12 +7,12 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.indexing.FileBasedIndex;
-import fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProviderDict;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TranslationStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.translation.TranslationIndex;
-import fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProvider;
-import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfonyplugin.extension.TranslatorProviderDict;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.TranslationStubIndex;
+import fr.adrienbrault.idea.symfonyplugin.translation.TranslationIndex;
+import fr.adrienbrault.idea.symfonyplugin.extension.TranslatorProvider;
+import fr.adrienbrault.idea.symfonyplugin.translation.dict.TranslationUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.YAMLUtil;

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.action.ui;
+package fr.adrienbrault.idea.symfonyplugin.action.ui;
 
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.Parameter;

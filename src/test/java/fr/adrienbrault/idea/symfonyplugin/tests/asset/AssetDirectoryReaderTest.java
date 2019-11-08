@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.asset;
+package fr.adrienbrault.idea.symfonyplugin.tests.asset;
 
-import fr.adrienbrault.idea.symfony2plugin.asset.AssetDirectoryReader;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyTempCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.asset.AssetDirectoryReader;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyTempCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

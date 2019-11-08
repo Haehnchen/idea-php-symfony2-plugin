@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor;
+package fr.adrienbrault.idea.symfonyplugin.stubs.indexes.visitor;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.intellij.util.Processor;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
-import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.AnnotationBackportUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;

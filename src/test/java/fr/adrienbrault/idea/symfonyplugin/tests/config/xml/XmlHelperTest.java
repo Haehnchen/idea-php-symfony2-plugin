@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.config.xml;
+package fr.adrienbrault.idea.symfonyplugin.tests.config.xml;
 
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.psi.PsiElement;
@@ -6,15 +6,15 @@ import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.Parameter;
-import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.config.xml.XmlHelper;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper
+ * @see fr.adrienbrault.idea.symfonyplugin.config.xml.XmlHelper
  */
 public class XmlHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
@@ -24,7 +24,7 @@ public class XmlHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/config/xml/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/config/xml/fixtures";
     }
 
     /**

@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.ui;
+package fr.adrienbrault.idea.symfonyplugin.ui;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.ColoredListCellRenderer;
 import com.intellij.ui.table.TableView;
-import fr.adrienbrault.idea.symfony2plugin.assistant.signature.MethodSignatureSetting;
-import fr.adrienbrault.idea.symfony2plugin.assistant.signature.PhpTypeSignatureInterface;
-import fr.adrienbrault.idea.symfony2plugin.assistant.signature.PhpTypeSignatureTypes;
+import fr.adrienbrault.idea.symfonyplugin.assistant.signature.MethodSignatureSetting;
+import fr.adrienbrault.idea.symfonyplugin.assistant.signature.PhpTypeSignatureInterface;
+import fr.adrienbrault.idea.symfonyplugin.assistant.signature.PhpTypeSignatureTypes;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;

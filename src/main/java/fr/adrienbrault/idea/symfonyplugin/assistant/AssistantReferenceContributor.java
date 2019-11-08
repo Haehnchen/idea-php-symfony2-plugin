@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.assistant;
+package fr.adrienbrault.idea.symfonyplugin.assistant;
 
 import com.intellij.psi.PsiElement;
-import fr.adrienbrault.idea.symfony2plugin.assistant.reference.MethodParameterSetting;
+import fr.adrienbrault.idea.symfonyplugin.assistant.reference.MethodParameterSetting;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.dic.inspection;
+package fr.adrienbrault.idea.symfonyplugin.tests.dic.inspection;
 
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.dic.inspection.YamlXmlServiceInstanceInspection
+ * @see fr.adrienbrault.idea.symfonyplugin.dic.inspection.YamlXmlServiceInstanceInspection
  */
 public class YamlXmlServiceInstanceInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
@@ -14,7 +14,7 @@ public class YamlXmlServiceInstanceInspectionTest extends SymfonyLightCodeInsigh
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic/inspection/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/dic/inspection/fixtures";
     }
 
     public void testInspectionForConstructorArguments() {

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.variable;
+package fr.adrienbrault.idea.symfonyplugin.templating.variable;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;

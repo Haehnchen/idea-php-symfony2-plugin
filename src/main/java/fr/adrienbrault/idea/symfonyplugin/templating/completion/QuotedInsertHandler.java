@@ -1,9 +1,9 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.completion;
+package fr.adrienbrault.idea.symfonyplugin.templating.completion;
 
 import com.intellij.codeInsight.completion.InsertHandler;
 import com.intellij.codeInsight.completion.InsertionContext;
 import com.intellij.codeInsight.lookup.LookupElement;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.ResourceFileInsertHandler;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.ResourceFileInsertHandler;
 import org.jetbrains.annotations.NotNull;
 
 /**

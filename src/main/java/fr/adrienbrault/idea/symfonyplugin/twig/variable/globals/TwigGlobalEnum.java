@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.twig.variable.globals;
+package fr.adrienbrault.idea.symfonyplugin.twig.variable.globals;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

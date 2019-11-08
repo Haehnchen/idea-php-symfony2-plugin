@@ -1,8 +1,8 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.metadata.type;
+package fr.adrienbrault.idea.symfonyplugin.tests.doctrine.metadata.type;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,7 +10,7 @@ import java.util.Collection;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.type.DoctrineTypeGotoCompletionRegistrar
+ * @see fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.type.DoctrineTypeGotoCompletionRegistrar
  */
 public class DoctrineTypeGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -20,7 +20,7 @@ public class DoctrineTypeGotoCompletionRegistrarTest extends SymfonyLightCodeIns
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/doctrine/metadata/type/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/doctrine/metadata/type/fixtures";
     }
 
     public void testXmlTypes() {
@@ -133,7 +133,7 @@ public class DoctrineTypeGotoCompletionRegistrarTest extends SymfonyLightCodeIns
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.DoctrineMetadataPattern#getFieldName()
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.DoctrineMetadataPattern#getFieldName()
      */
     public void testPropertyFieldName() {
 
@@ -168,7 +168,7 @@ public class DoctrineTypeGotoCompletionRegistrarTest extends SymfonyLightCodeIns
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.DoctrineMetadataPattern#getFieldNameRelation()
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.DoctrineMetadataPattern#getFieldNameRelation()
      */
     public void testPropertyRelations() {
 
@@ -204,7 +204,7 @@ public class DoctrineTypeGotoCompletionRegistrarTest extends SymfonyLightCodeIns
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.DoctrineMetadataPattern#getYamlFieldName()
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.DoctrineMetadataPattern#getYamlFieldName()
      */
     public void testYamlPropertyFieldNameNavigation() {
 

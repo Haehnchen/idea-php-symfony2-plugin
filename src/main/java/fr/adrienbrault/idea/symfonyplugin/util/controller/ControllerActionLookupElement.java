@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.util.controller;
+package fr.adrienbrault.idea.symfonyplugin.util.controller;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;

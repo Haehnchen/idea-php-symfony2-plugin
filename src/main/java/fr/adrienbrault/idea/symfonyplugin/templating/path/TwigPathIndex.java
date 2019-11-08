@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.path;
+package fr.adrienbrault.idea.symfonyplugin.templating.path;
 
 import org.jetbrains.annotations.NotNull;
 

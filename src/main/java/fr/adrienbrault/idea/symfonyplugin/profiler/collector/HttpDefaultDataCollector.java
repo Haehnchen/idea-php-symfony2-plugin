@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.profiler.collector;
+package fr.adrienbrault.idea.symfonyplugin.profiler.collector;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

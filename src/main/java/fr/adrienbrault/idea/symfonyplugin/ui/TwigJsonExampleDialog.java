@@ -1,6 +1,6 @@
-package fr.adrienbrault.idea.symfony2plugin.ui;
+package fr.adrienbrault.idea.symfonyplugin.ui;
 
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;

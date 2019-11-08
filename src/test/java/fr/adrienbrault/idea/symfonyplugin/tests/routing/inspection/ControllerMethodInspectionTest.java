@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.routing.inspection;
+package fr.adrienbrault.idea.symfonyplugin.tests.routing.inspection;
 
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.routing.inspection.ControllerMethodInspection
+ * @see fr.adrienbrault.idea.symfonyplugin.routing.inspection.ControllerMethodInspection
  */
 public class ControllerMethodInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -17,7 +17,7 @@ public class ControllerMethodInspectionTest extends SymfonyLightCodeInsightFixtu
     }
 
     protected String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/routing/inspection/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/routing/inspection/fixtures";
     }
 
     public void testYamlClassControllerMethodNotFoundProvidesWarning() {

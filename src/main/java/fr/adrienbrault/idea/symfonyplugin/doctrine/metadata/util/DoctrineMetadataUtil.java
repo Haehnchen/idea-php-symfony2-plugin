@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util;
+package fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.util;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.lang.xml.XMLLanguage;
@@ -15,14 +15,14 @@ import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelInterface;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineManagerEnum;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.driver.*;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.lookup.DoctrineRepositoryLookupElement;
-import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.DoctrineMetadataFileStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.dict.DoctrineModelInterface;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.dict.DoctrineManagerEnum;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.dict.DoctrineMetadataModel;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.driver.*;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.lookup.DoctrineRepositoryLookupElement;
+import fr.adrienbrault.idea.symfonyplugin.stubs.cache.FileIndexCaches;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.DoctrineMetadataFileStubIndex;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

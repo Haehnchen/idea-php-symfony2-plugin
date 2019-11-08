@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.external.toolbox.provider;
+package fr.adrienbrault.idea.symfonyplugin.tests.external.toolbox.provider;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.util.containers.ContainerUtil;
@@ -8,8 +8,8 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import de.espend.idea.php.toolbox.navigation.dict.PhpToolboxDeclarationHandlerParameter;
 import de.espend.idea.php.toolbox.type.PhpToolboxTypeProviderArguments;
-import fr.adrienbrault.idea.symfony2plugin.external.toolbox.provider.ServiceToolboxProvider;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.external.toolbox.provider.ServiceToolboxProvider;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,7 +22,7 @@ public class ServiceToolboxProviderTest extends SymfonyLightCodeInsightFixtureTe
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/external/toolbox/provider/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/external/toolbox/provider/fixtures";
     }
 
     /**

@@ -1,5 +1,5 @@
 <idea-plugin url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
-    <id>fr.adrienbrault.idea.symfony2plugin</id>
+    <id>fr.adrienbrault.idea.symfonyplugin</id>
     <name>Symfony Support</name>
     <version>0.19.185</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
@@ -99,327 +99,327 @@
     <idea-version since-build="182.0"/>
 
     <extensions defaultExtensionNs="com.jetbrains.php">
-        <typeProvider3 implementation="fr.adrienbrault.idea.symfony2plugin.dic.SymfonyContainerTypeProvider"/>
-        <typeProvider3 implementation="fr.adrienbrault.idea.symfony2plugin.util.EventDispatcherTypeProvider"/>
-        <typeProvider3 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryTypeProvider"/>
-        <typeProvider3 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryResultTypeProvider"/>
-        <typeProvider3 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectManagerFindTypeProvider"/>
-        <typeProvider3 implementation="fr.adrienbrault.idea.symfony2plugin.assistant.signature.MethodSignatureTypeProvider"/>
+        <typeProvider3 implementation="fr.adrienbrault.idea.symfonyplugin.dic.SymfonyContainerTypeProvider"/>
+        <typeProvider3 implementation="fr.adrienbrault.idea.symfonyplugin.util.EventDispatcherTypeProvider"/>
+        <typeProvider3 implementation="fr.adrienbrault.idea.symfonyplugin.doctrine.ObjectRepositoryTypeProvider"/>
+        <typeProvider3 implementation="fr.adrienbrault.idea.symfonyplugin.doctrine.ObjectRepositoryResultTypeProvider"/>
+        <typeProvider3 implementation="fr.adrienbrault.idea.symfonyplugin.doctrine.ObjectManagerFindTypeProvider"/>
+        <typeProvider3 implementation="fr.adrienbrault.idea.symfonyplugin.assistant.signature.MethodSignatureTypeProvider"/>
         <libraryRoot id="symfony_meta" path="/symfony-meta/" runtime="false"/>
         <libraryRoot id="doctrine_meta" path="/doctrine-meta/" runtime="false"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
 
-        <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Settings"/>
+        <projectService serviceImplementation="fr.adrienbrault.idea.symfonyplugin.Settings"/>
 
-        <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.SettingsForm"
+        <projectConfigurable instance="fr.adrienbrault.idea.symfonyplugin.SettingsForm"
                              displayName="Symfony"
                              id="Symfony2.SettingsForm"
                              parentId="reference.webide.settings.project.settings.php"
                              nonDefaultProject="true"
                 />
 
-        <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.ui.TwigSettingsForm"
+        <projectConfigurable instance="fr.adrienbrault.idea.symfonyplugin.ui.TwigSettingsForm"
                              displayName="Twig / Template"
                              parentId="Symfony2.SettingsForm"
                              nonDefaultProject="true"
                 />
 
-        <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.ui.ContainerSettingsForm"
+        <projectConfigurable instance="fr.adrienbrault.idea.symfonyplugin.ui.ContainerSettingsForm"
                              displayName="Container"
                              parentId="Symfony2.SettingsForm"
                              id="Symfony2.ContainerSettingsForm"
                              nonDefaultProject="true"
                 />
 
-        <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.ui.MethodParameterReferenceSettingsForm"
+        <projectConfigurable instance="fr.adrienbrault.idea.symfonyplugin.ui.MethodParameterReferenceSettingsForm"
                              displayName="Method References"
                              parentId="Symfony2.SettingsForm"
                              id="Symfony2.MethodReferenceSettingsForm"
                              nonDefaultProject="true"
                 />
 
-        <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.ui.MethodSignatureTypeSettingsForm"
+        <projectConfigurable instance="fr.adrienbrault.idea.symfonyplugin.ui.MethodSignatureTypeSettingsForm"
                              displayName="Type Provider"
                              parentId="Symfony2.SettingsForm"
                              id="Symfony2.MethodSignatureTypeSettingsForm"
                              nonDefaultProject="true"
                 />
 
-        <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.ui.RoutingSettingsForm"
+        <projectConfigurable instance="fr.adrienbrault.idea.symfonyplugin.ui.RoutingSettingsForm"
                              displayName="Routing"
                              parentId="Symfony2.SettingsForm"
                              id="Symfony2.RoutingSettingsForm"
                              nonDefaultProject="true"
         />
 
-        <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.profiler.ui.ProfilerSettingsDialog"
+        <projectConfigurable instance="fr.adrienbrault.idea.symfonyplugin.profiler.ui.ProfilerSettingsDialog"
                              displayName="Profiler"
                              parentId="Symfony2.SettingsForm"
                              id="Symfony.ProfilerSettingsForm"
                              nonDefaultProject="true"
         />
 
-        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.config.SymfonyPhpReferenceContributor"/>
-        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.translation.TranslationReferenceContributor"/>
-        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.routing.PhpRouteReferenceContributor"/>
-        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.config.xml.XmlReferenceContributor"/>
-        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.config.php.PhpConfigReferenceContributor"/>
-        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.form.FormTypeReferenceContributor"/>
-        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.util.DocHashTagReferenceContributor"/>
-        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.util.MethodParameterReferenceContributor"/>
-        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.routing.RouteXmlReferenceContributor"/>
+        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfonyplugin.config.SymfonyPhpReferenceContributor"/>
+        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfonyplugin.translation.TranslationReferenceContributor"/>
+        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfonyplugin.routing.PhpRouteReferenceContributor"/>
+        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfonyplugin.config.xml.XmlReferenceContributor"/>
+        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfonyplugin.config.php.PhpConfigReferenceContributor"/>
+        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfonyplugin.form.FormTypeReferenceContributor"/>
+        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfonyplugin.util.DocHashTagReferenceContributor"/>
+        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfonyplugin.util.MethodParameterReferenceContributor"/>
+        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfonyplugin.routing.RouteXmlReferenceContributor"/>
 
-        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateGoToDeclarationHandler"/>
-        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlGoToDeclarationHandler"/>
-        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.asset.AssetGoToDeclarationHandler"/>
-        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateGlobalStringGoToDeclarationHandler"/>
-        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.config.PhpClassServiceGotoDeclarationHandler"/>
-        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.QueryBuilderGotoDeclarationHandler"/>
+        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfonyplugin.templating.TwigTemplateGoToDeclarationHandler"/>
+        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfonyplugin.config.yaml.YamlGoToDeclarationHandler"/>
+        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfonyplugin.asset.AssetGoToDeclarationHandler"/>
+        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfonyplugin.templating.PhpTemplateGlobalStringGoToDeclarationHandler"/>
+        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfonyplugin.config.PhpClassServiceGotoDeclarationHandler"/>
+        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.QueryBuilderGotoDeclarationHandler"/>
 
-        <completion.confidence language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.PhpParameterStringCompletionConfidence"
+        <completion.confidence language="PHP" implementationClass="fr.adrienbrault.idea.symfonyplugin.completion.PhpParameterStringCompletionConfidence"
                                id="asTrue" order="first"/>
 
-        <lang.foldingBuilder language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.navigation.PhpFoldingBuilder"/>
-        <lang.foldingBuilder language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.navigation.TwigFoldingBuilder"/>
+        <lang.foldingBuilder language="PHP" implementationClass="fr.adrienbrault.idea.symfonyplugin.navigation.PhpFoldingBuilder"/>
+        <lang.foldingBuilder language="Twig" implementationClass="fr.adrienbrault.idea.symfonyplugin.navigation.TwigFoldingBuilder"/>
 
-        <completion.contributor language="any" implementationClass="fr.adrienbrault.idea.symfony2plugin.codeInsight.completion.CompletionContributor"/>
-        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.codeInsight.navigation.GotoHandler"/>
+        <completion.contributor language="any" implementationClass="fr.adrienbrault.idea.symfonyplugin.codeInsight.completion.CompletionContributor"/>
+        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfonyplugin.codeInsight.navigation.GotoHandler"/>
 
-        <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.ConstantEnumCompletionContributor"/>
-        <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.QueryBuilderCompletionContributor"/>
+        <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfonyplugin.completion.ConstantEnumCompletionContributor"/>
+        <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.QueryBuilderCompletionContributor"/>
 
-        <completion.contributor language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.XmlCompletionContributor"/>
-        <completion.contributor language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor"/>
-        <completion.contributor language="HTML" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.completion.TwigHtmlCompletionContributor"/>
-        <completion.contributor language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlCompletionContributor"/>
-        <completion.contributor language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.yaml.YamlCompletionContributor"/>
+        <completion.contributor language="XML" implementationClass="fr.adrienbrault.idea.symfonyplugin.config.xml.XmlCompletionContributor"/>
+        <completion.contributor language="Twig" implementationClass="fr.adrienbrault.idea.symfonyplugin.templating.TwigTemplateCompletionContributor"/>
+        <completion.contributor language="HTML" implementationClass="fr.adrienbrault.idea.symfonyplugin.templating.completion.TwigHtmlCompletionContributor"/>
+        <completion.contributor language="yaml" implementationClass="fr.adrienbrault.idea.symfonyplugin.config.yaml.YamlCompletionContributor"/>
+        <completion.contributor language="yaml" implementationClass="fr.adrienbrault.idea.symfonyplugin.completion.yaml.YamlCompletionContributor"/>
 
-        <completion.contributor language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.DoctrineXmlCompletionContributor"/>
-        <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.form.completion.FormCompletionContributor"/>
-        <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.doctrine.completion.DoctrineCompletionContributor"/>
+        <completion.contributor language="XML" implementationClass="fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.DoctrineXmlCompletionContributor"/>
+        <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfonyplugin.form.completion.FormCompletionContributor"/>
+        <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfonyplugin.doctrine.completion.DoctrineCompletionContributor"/>
 
-        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex"/>
-        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex"/>
-        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex"/>
-        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerParameterStubIndex"/>
-        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TranslationStubIndex"/>
-        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigIncludeStubIndex"/>
-        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigMacroFunctionStubIndex"/>
-        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesTagStubIndex"/>
-        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpTwigTemplateUsageStubIndex"/>
-        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.DoctrineMetadataFileStubIndex"/>
-        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.FileResourcesIndex"/>
-        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerBuilderStubIndex"/>
-        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.EventAnnotationStubIndex"/>
-        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerIdUsagesStubIndex"/>
-        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigBlockIndexExtension"/>
+        <fileBasedIndex implementation="fr.adrienbrault.idea.symfonyplugin.stubs.indexes.RoutesStubIndex"/>
+        <fileBasedIndex implementation="fr.adrienbrault.idea.symfonyplugin.stubs.indexes.TwigExtendsStubIndex"/>
+        <fileBasedIndex implementation="fr.adrienbrault.idea.symfonyplugin.stubs.indexes.ServicesDefinitionStubIndex"/>
+        <fileBasedIndex implementation="fr.adrienbrault.idea.symfonyplugin.stubs.indexes.ContainerParameterStubIndex"/>
+        <fileBasedIndex implementation="fr.adrienbrault.idea.symfonyplugin.stubs.indexes.TranslationStubIndex"/>
+        <fileBasedIndex implementation="fr.adrienbrault.idea.symfonyplugin.stubs.indexes.TwigIncludeStubIndex"/>
+        <fileBasedIndex implementation="fr.adrienbrault.idea.symfonyplugin.stubs.indexes.TwigMacroFunctionStubIndex"/>
+        <fileBasedIndex implementation="fr.adrienbrault.idea.symfonyplugin.stubs.indexes.ServicesTagStubIndex"/>
+        <fileBasedIndex implementation="fr.adrienbrault.idea.symfonyplugin.stubs.indexes.PhpTwigTemplateUsageStubIndex"/>
+        <fileBasedIndex implementation="fr.adrienbrault.idea.symfonyplugin.stubs.indexes.DoctrineMetadataFileStubIndex"/>
+        <fileBasedIndex implementation="fr.adrienbrault.idea.symfonyplugin.stubs.indexes.FileResourcesIndex"/>
+        <fileBasedIndex implementation="fr.adrienbrault.idea.symfonyplugin.stubs.indexes.ContainerBuilderStubIndex"/>
+        <fileBasedIndex implementation="fr.adrienbrault.idea.symfonyplugin.stubs.indexes.EventAnnotationStubIndex"/>
+        <fileBasedIndex implementation="fr.adrienbrault.idea.symfonyplugin.stubs.indexes.ContainerIdUsagesStubIndex"/>
+        <fileBasedIndex implementation="fr.adrienbrault.idea.symfonyplugin.stubs.indexes.TwigBlockIndexExtension"/>
 
-        <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.ServiceLineMarkerProvider"/>
-        <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.ControllerMethodLineMarkerProvider"/>
-        <codeInsight.lineMarkerProvider language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigLineMarkerProvider"/>
-        <codeInsight.lineMarkerProvider language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.YamlLineMarkerProvider"/>
-        <codeInsight.lineMarkerProvider language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.XmlLineMarkerProvider"/>
-        <codeInsight.lineMarkerProvider language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.linemarker.XmlLineMarkerProvider"/>
-        <codeInsight.lineMarkerProvider language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.linemarker.YamlLineMarkerProvider"/>
-        <codeInsight.lineMarkerProvider language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.ConfigLineMarkerProvider"/>
-        <codeInsight.lineMarkerProvider language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.DoctrineMetadataLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfonyplugin.config.ServiceLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfonyplugin.dic.ControllerMethodLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="Twig" implementationClass="fr.adrienbrault.idea.symfonyplugin.templating.TwigLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="yaml" implementationClass="fr.adrienbrault.idea.symfonyplugin.routing.YamlLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="XML" implementationClass="fr.adrienbrault.idea.symfonyplugin.routing.XmlLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="XML" implementationClass="fr.adrienbrault.idea.symfonyplugin.dic.linemarker.XmlLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="yaml" implementationClass="fr.adrienbrault.idea.symfonyplugin.dic.linemarker.YamlLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="yaml" implementationClass="fr.adrienbrault.idea.symfonyplugin.config.ConfigLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="XML" implementationClass="fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.DoctrineMetadataLineMarkerProvider"/>
 
-        <gotoSymbolContributor implementation="fr.adrienbrault.idea.symfony2plugin.navigation.ServiceSymbolContributor"/>
-        <gotoSymbolContributor implementation="fr.adrienbrault.idea.symfony2plugin.navigation.RouteSymbolContributor"/>
-        <gotoSymbolContributor implementation="fr.adrienbrault.idea.symfony2plugin.navigation.SymfonyCommandSymbolContributor"/>
+        <gotoSymbolContributor implementation="fr.adrienbrault.idea.symfonyplugin.navigation.ServiceSymbolContributor"/>
+        <gotoSymbolContributor implementation="fr.adrienbrault.idea.symfonyplugin.navigation.RouteSymbolContributor"/>
+        <gotoSymbolContributor implementation="fr.adrienbrault.idea.symfonyplugin.navigation.SymfonyCommandSymbolContributor"/>
 
-        <gotoFileContributor implementation="fr.adrienbrault.idea.symfony2plugin.navigation.TemplateFileContributor"/>
+        <gotoFileContributor implementation="fr.adrienbrault.idea.symfonyplugin.navigation.TemplateFileContributor"/>
 
-        <gotoRelatedProvider implementation="fr.adrienbrault.idea.symfony2plugin.navigation.PhpGotoRelatedProvider"/>
+        <gotoRelatedProvider implementation="fr.adrienbrault.idea.symfonyplugin.navigation.PhpGotoRelatedProvider"/>
 
-        <directoryProjectGenerator implementation="fr.adrienbrault.idea.symfony2plugin.installer.SymfonyInstallerProjectGenerator"/>
-        <projectTemplatesFactory implementation="fr.adrienbrault.idea.symfony2plugin.installer.SymfonyInstallerTemplatesFactory"/>
+        <directoryProjectGenerator implementation="fr.adrienbrault.idea.symfonyplugin.installer.SymfonyInstallerProjectGenerator"/>
+        <projectTemplatesFactory implementation="fr.adrienbrault.idea.symfonyplugin.installer.SymfonyInstallerTemplatesFactory"/>
 
-        <codeInsight.parameterNameHints language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.ServiceArgumentParameterHintsProvider"/>
-        <codeInsight.parameterNameHints language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.ServiceArgumentParameterHintsProvider"/>
+        <codeInsight.parameterNameHints language="XML" implementationClass="fr.adrienbrault.idea.symfonyplugin.dic.ServiceArgumentParameterHintsProvider"/>
+        <codeInsight.parameterNameHints language="yaml" implementationClass="fr.adrienbrault.idea.symfonyplugin.dic.ServiceArgumentParameterHintsProvider"/>
 
-        <multiHostInjector implementation="fr.adrienbrault.idea.symfony2plugin.lang.ParameterLanguageInjector"/>
+        <multiHostInjector implementation="fr.adrienbrault.idea.symfonyplugin.lang.ParameterLanguageInjector"/>
 
         <localInspection groupPath="Symfony" shortName="PhpRouteMissingInspection" displayName="Route Missing"
                          groupName="Route"
                          enabledByDefault="true" level="WARNING"
                          language="PHP"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.PhpRouteMissingInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.routing.inspection.PhpRouteMissingInspection"/>
 
         <localInspection groupPath="Symfony" shortName="Symfony2YamlRouteDuplicateInspection" displayName="Duplicate Route"
                          groupName="Route"
                          enabledByDefault="true" level="WARNING"
                          language="yaml"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.DuplicateLocalRouteInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.routing.inspection.DuplicateLocalRouteInspection"/>
 
         <localInspection groupPath="Symfony" shortName="Symfony2YamlDuplicateServiceKeyInspection" displayName="Duplicate Key"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
                          language="yaml"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.inspection.YamlDuplicateServiceKeyInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.config.yaml.inspection.YamlDuplicateServiceKeyInspection"/>
 
         <localInspection groupPath="Symfony" shortName="Symfony2YamlDuplicateParameterKeyInspection" displayName="Duplicate Key"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
                          language="yaml"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.inspection.YamlDuplicateParameterKeyInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.config.yaml.inspection.YamlDuplicateParameterKeyInspection"/>
 
         <localInspection groupPath="Symfony" shortName="Symfony2XmlDuplicateServiceKeyInspection" displayName="Duplicate Key"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
                          language="XML"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.inspection.XmlDuplicateServiceKeyInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.config.xml.inspection.XmlDuplicateServiceKeyInspection"/>
 
         <localInspection groupPath="Symfony" shortName="Symfony2XmlDuplicateParameterKeyInspection" displayName="Duplicate Key"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
                          language="XML"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.inspection.XmlDuplicateParameterKeyInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.config.xml.inspection.XmlDuplicateParameterKeyInspection"/>
 
 
         <localInspection groupPath="Symfony" shortName="YamlControllerMethod" displayName="Missing Controller Action"
                          groupName="Route"
                          enabledByDefault="true" level="WARNING"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.ControllerMethodInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.routing.inspection.ControllerMethodInspection"/>
 
         <localInspection groupPath="Symfony" shortName="YamlDeprecatedClasses" displayName="Deprecated Class"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.codeInspection.service.ServiceDeprecatedClassesInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.codeInspection.service.ServiceDeprecatedClassesInspection"/>
 
         <localInspection groupPath="Symfony" shortName="TaggedExtendsInterfaceClass" displayName="Missing Tag extends/interface statement"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.codeInspection.service.TaggedExtendsInterfaceClassInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.codeInspection.service.TaggedExtendsInterfaceClassInspection"/>
 
         <localInspection groupPath="Symfony" shortName="EventMethodCall" displayName="Create Method"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.inspection.EventMethodCallInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.config.yaml.inspection.EventMethodCallInspection"/>
 
         <localInspection groupPath="Symfony" shortName="XmlServiceArgumentInspection" displayName="Symfony: XML Arguments"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
                          language="XML"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.inspection.XmlServiceArgumentInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.config.xml.inspection.XmlServiceArgumentInspection"/>
 
         <localInspection groupPath="Symfony" shortName="YamlServiceArgumentInspection" displayName="Symfony: Yaml Arguments"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
                          language="yaml"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.intentions.yaml.YamlServiceArgumentInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.intentions.yaml.YamlServiceArgumentInspection"/>
 
         <localInspection groupPath="Symfony" shortName="CaseSensitivityServiceInspection" displayName="Symfony: Container sensitivity"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.CaseSensitivityServiceInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.dic.inspection.CaseSensitivityServiceInspection"/>
 
         <localInspection groupPath="Symfony" shortName="RouteSettingDeprecatedInspection" displayName="Symfony: Route settings deprecated"
                          groupName="Route"
                          enabledByDefault="true" level="WARNING"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.RouteSettingDeprecatedInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.routing.inspection.RouteSettingDeprecatedInspection"/>
 
         <localInspection groupPath="Symfony" shortName="ContainerSettingDeprecatedInspection" displayName="Symfony: Container settings deprecated"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.ContainerSettingDeprecatedInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.dic.inspection.ContainerSettingDeprecatedInspection"/>
 
         <localInspection groupPath="Symfony" shortName="TwigVariablePathInspection" displayName="Field or method not found"
                          groupName="Twig"
                          enabledByDefault="true" level="WARNING"
                          language="Twig"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigVariablePathInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.templating.inspection.TwigVariablePathInspection"/>
 
         <localInspection groupPath="Symfony" shortName="TwigVariableDeprecatedInspection" displayName="Deprecated Twig variable"
                          groupName="Twig"
                          enabledByDefault="true" level="WARNING"
                          language="Twig"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigVariableDeprecatedInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.templating.inspection.TwigVariableDeprecatedInspection"/>
 
         <localInspection groupPath="Symfony" shortName="YamlQuotedEscapedInspection" displayName="Quoted issues"
                          groupName="Yaml"
                          enabledByDefault="true" level="WARNING"
                          language="yaml"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.intentions.yaml.YamlQuotedEscapedInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.intentions.yaml.YamlQuotedEscapedInspection"/>
 
         <localInspection groupPath="Symfony" shortName="YamlUnquotedColon" displayName="Colon in the unquoted mapping"
                          groupName="Yaml"
                          enabledByDefault="true" level="WARNING"
                          language="yaml"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.intentions.yaml.YamlUnquotedColon"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.intentions.yaml.YamlUnquotedColon"/>
 
         <localInspection groupPath="Symfony" shortName="FormTypeAsClassConstant" displayName="Fully-qualified class name (FQCN) in form types"
                          groupName="Form"
                          enabledByDefault="true" level="WARNING"
                          language="PHP"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.codeInspection.form.FormTypeAsClassConstantInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.codeInspection.form.FormTypeAsClassConstantInspection"/>
 
         <localInspection groupPath="Symfony" shortName="ContainerConstant" displayName="Constant not found"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.ContainerConstantInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.dic.inspection.ContainerConstantInspection"/>
 
         <localInspection groupPath="Symfony" shortName="TwigTranslationDomain" displayName="Twig: Missing translation domain"
                          groupName="Translation"
                          enabledByDefault="true" level="WARNING"
                          language="Twig"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.translation.inspection.TwigTranslationDomainInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.translation.inspection.TwigTranslationDomainInspection"/>
 
         <localInspection groupPath="Symfony" shortName="TwigTranslationKeyInspection" displayName="Twig: Missing translation key"
                          groupName="Translation"
                          enabledByDefault="true" level="WARNING"
                          language="Twig"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.translation.inspection.TwigTranslationKeyInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.translation.inspection.TwigTranslationKeyInspection"/>
 
         <localInspection groupPath="Symfony" shortName="PhpTranslationDomainInspection" displayName="PHP: Missing translation domain"
                          groupName="Translation"
                          enabledByDefault="true"
                          level="WARNING"
                          language="PHP"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.translation.PhpTranslationDomainInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.translation.PhpTranslationDomainInspection"/>
 
         <localInspection groupPath="Symfony" shortName="PhpTranslationKeyInspection" displayName="PHP: Missing translation key"
                          groupName="Translation"
                          enabledByDefault="true"
                          level="WARNING"
                          language="PHP"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.translation.PhpTranslationKeyInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.translation.PhpTranslationKeyInspection"/>
 
         <localInspection groupPath="Symfony" shortName="PhpTemplateMissingInspection" displayName="Twig: Template Missing"
                          groupName="Twig"
                          enabledByDefault="true"
                          level="WARNING"
                          language="PHP"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateMissingInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.templating.PhpTemplateMissingInspection"/>
 
         <localInspection groupPath="Symfony" shortName="MissingService" displayName="Missing Service"
                          groupName="Service"
                          enabledByDefault="true"
                          level="WARNING"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.MissingServiceInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.dic.inspection.MissingServiceInspection"/>
 
         <localInspection groupPath="Symfony" shortName="XmlServiceInstanceInspection" displayName="XML: Wrong Service Instance"
                          groupName="Service"
                          enabledByDefault="true"
                          level="WARNING"
                          language="XML"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.XmlServiceInstanceInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.dic.inspection.XmlServiceInstanceInspection"/>
 
         <localInspection groupPath="Symfony" shortName="YamlParameterInspection" displayName="Yaml: Missing Parameter"
                          groupName="Service"
                          enabledByDefault="true"
                          level="WARNING"
                          language="yaml"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.YamlParameterInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.dic.inspection.YamlParameterInspection"/>
 
         <localInspection groupPath="Symfony" shortName="YamlClassInspection" displayName="Yaml: Missing Class"
                          groupName="Service"
                          enabledByDefault="true"
                          level="WARNING"
                          language="yaml"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.YamlClassInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.dic.inspection.YamlClassInspection"/>
 
 
         <localInspection groupPath="Symfony" shortName="YamlXmlServiceInstanceInspection" displayName="Yaml: Wrong Service Instance"
@@ -427,176 +427,176 @@
                          enabledByDefault="true"
                          level="WARNING"
                          language="yaml"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.YamlXmlServiceInstanceInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.dic.inspection.YamlXmlServiceInstanceInspection"/>
 
         <localInspection groupPath="Symfony" shortName="TwigRouteInspection" displayName="Twig: Missing Route"
                          groupName="Route"
                          enabledByDefault="true"
                          level="WARNING"
                          language="Twig"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.TwigRouteMissingInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.routing.inspection.TwigRouteMissingInspection"/>
 
         <localInspection groupPath="Symfony" shortName="TwigTemplateMissingInspection" displayName="Twig: Missing Template"
                          groupName="Template"
                          enabledByDefault="true"
                          level="WARNING"
                          language="Twig"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigTemplateMissingInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.templating.inspection.TwigTemplateMissingInspection"/>
 
         <localInspection groupPath="Symfony" shortName="TwigAssetMissingInspection" displayName="Twig: Missing Asset"
                          groupName="Asset"
                          enabledByDefault="true"
                          level="WARNING"
                          language="Twig"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigAssetMissingInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.templating.inspection.TwigAssetMissingInspection"/>
 
         <localInspection groupPath="Symfony" shortName="TwigAssetsTagMissingInspection" displayName="Twig: Missing Asset"
                          groupName="Asset"
                          enabledByDefault="true"
                          level="WARNING"
                          language="Twig"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigAssetsTagMissingInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfonyplugin.templating.inspection.TwigAssetsTagMissingInspection"/>
 
         <intentionAction>
-            <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.PhpServiceIntention</className>
+            <className>fr.adrienbrault.idea.symfonyplugin.intentions.php.PhpServiceIntention</className>
             <category>PHP</category>
             <descriptionDirectoryName>Symfony2ConstructorCreateServer</descriptionDirectoryName>
         </intentionAction>
 
         <intentionAction>
-            <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.XmlServiceArgumentIntention</className>
+            <className>fr.adrienbrault.idea.symfonyplugin.intentions.php.XmlServiceArgumentIntention</className>
             <category>XML</category>
             <descriptionDirectoryName>XmlServiceArgumentIntention</descriptionDirectoryName>
         </intentionAction>
 
         <intentionAction>
-            <className>fr.adrienbrault.idea.symfony2plugin.intentions.xml.XmlServiceSuggestIntention</className>
+            <className>fr.adrienbrault.idea.symfonyplugin.intentions.xml.XmlServiceSuggestIntention</className>
             <category>XML</category>
             <descriptionDirectoryName>XmlServiceSuggestIntention</descriptionDirectoryName>
         </intentionAction>
 
         <intentionAction>
-            <className>fr.adrienbrault.idea.symfony2plugin.intentions.xml.XmlServiceTagIntention</className>
+            <className>fr.adrienbrault.idea.symfonyplugin.intentions.xml.XmlServiceTagIntention</className>
             <category>XML</category>
             <descriptionDirectoryName>SymfonyXmlServiceTagIntention</descriptionDirectoryName>
         </intentionAction>
 
         <intentionAction>
-            <className>fr.adrienbrault.idea.symfony2plugin.intentions.yaml.YamlServiceTagIntention</className>
+            <className>fr.adrienbrault.idea.symfonyplugin.intentions.yaml.YamlServiceTagIntention</className>
             <category>yaml</category>
             <descriptionDirectoryName>SymfonyYamlServiceTagIntention</descriptionDirectoryName>
         </intentionAction>
 
         <intentionAction>
-            <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.PhpBundleCompilerPassIntention</className>
+            <className>fr.adrienbrault.idea.symfonyplugin.intentions.php.PhpBundleCompilerPassIntention</className>
             <category>PHP</category>
             <descriptionDirectoryName>PhpBundleCompilerPassIntention</descriptionDirectoryName>
         </intentionAction>
 
         <intentionAction>
-            <className>fr.adrienbrault.idea.symfony2plugin.form.intention.FormStringToClassConstantIntention</className>
+            <className>fr.adrienbrault.idea.symfonyplugin.form.intention.FormStringToClassConstantIntention</className>
             <category>PHP</category>
             <descriptionDirectoryName>FormStringToClassConstantIntention</descriptionDirectoryName>
         </intentionAction>
 
         <intentionAction>
-            <className>fr.adrienbrault.idea.symfony2plugin.doctrine.intention.DoctrineRepositoryClassConstantIntention</className>
+            <className>fr.adrienbrault.idea.symfonyplugin.doctrine.intention.DoctrineRepositoryClassConstantIntention</className>
             <category>PHP</category>
             <descriptionDirectoryName>DoctrineRepositoryClassConstantIntention</descriptionDirectoryName>
         </intentionAction>
 
         <intentionAction>
-            <className>fr.adrienbrault.idea.symfony2plugin.translation.intention.TwigTranslationKeyIntention</className>
+            <className>fr.adrienbrault.idea.symfonyplugin.translation.intention.TwigTranslationKeyIntention</className>
             <category>Twig</category>
             <descriptionDirectoryName>TwigTranslationKeyIntention</descriptionDirectoryName>
         </intentionAction>
 
         <intentionAction>
-            <className>fr.adrienbrault.idea.symfony2plugin.dic.intention.PhpServiceArgumentIntention</className>
+            <className>fr.adrienbrault.idea.symfonyplugin.dic.intention.PhpServiceArgumentIntention</className>
             <category>PHP</category>
             <descriptionDirectoryName>DoctrineRepositoryClassConstantIntention</descriptionDirectoryName>
         </intentionAction>
 
         <!-- not ready to throw it out for all
         <toolWindow id="Web-Profiler" anchor="bottom" secondary="false"
-                    icon="/src/fr/adrienbrault/idea/symfony2plugin/icons/symfony_tool_window.png"
-                    factoryClass="fr.adrienbrault.idea.symfony2plugin.profiler.SymfonyWebProfilerWindowFactory"
-                    conditionClass="fr.adrienbrault.idea.symfony2plugin.profiler.SymfonyWebProfilerWindowFactory"
+                    icon="/src/fr/adrienbrault/idea/symfonyplugin/icons/symfony_tool_window.png"
+                    factoryClass="fr.adrienbrault.idea.symfonyplugin.profiler.SymfonyWebProfilerWindowFactory"
+                    conditionClass="fr.adrienbrault.idea.symfonyplugin.profiler.SymfonyWebProfilerWindowFactory"
                 />
         -->
 
     </extensions>
 
     <extensionPoints>
-        <extensionPoint name="extension.ServiceContainerLoader" interface="fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoader"/>
-        <extensionPoint name="extension.DoctrineModelProvider" interface="fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProvider"/>
-        <extensionPoint name="extension.MethodSignatureTypeProviderExtension" interface="fr.adrienbrault.idea.symfony2plugin.extension.MethodSignatureTypeProviderExtension"/>
-        <extensionPoint name="extension.MethodParameterReferenceContributorExtension" interface="fr.adrienbrault.idea.symfony2plugin.extension.MethodParameterReferenceContributorExtension"/>
-        <extensionPoint name="extension.ControllerActionGotoRelatedCollector" interface="fr.adrienbrault.idea.symfony2plugin.extension.ControllerActionGotoRelatedCollector"/>
-        <extensionPoint name="extension.GotoCompletionRegistrar" interface="fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar"/>
-        <extensionPoint name="extension.TwigNamespaceExtension" interface="fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension"/>
-        <extensionPoint name="extension.RoutingLoader" interface="fr.adrienbrault.idea.symfony2plugin.extension.RoutingLoader"/>
-        <extensionPoint name="extension.CompiledServiceBuilderFactory" interface="fr.adrienbrault.idea.symfony2plugin.extension.CompiledServiceBuilderFactory"/>
-        <extensionPoint name="extension.ServiceCollector" interface="fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector"/>
-        <extensionPoint name="extension.ServiceParameterCollector" interface="fr.adrienbrault.idea.symfony2plugin.extension.ServiceParameterCollector"/>
-        <extensionPoint name="extension.ServiceDefinitionLocator" interface="fr.adrienbrault.idea.symfony2plugin.extension.ServiceDefinitionLocator"/>
-        <extensionPoint name="extension.TwigVariableCollector" interface="fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector"/>
-        <extensionPoint name="extension.PluginConfigurationExtension" interface="fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtension"/>
-        <extensionPoint name="extension.TranslatorProvider" interface="fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProvider"/>
-        <extensionPoint name="extension.TwigFileUsage" interface="fr.adrienbrault.idea.symfony2plugin.extension.TwigFileUsage"/>
+        <extensionPoint name="extension.ServiceContainerLoader" interface="fr.adrienbrault.idea.symfonyplugin.extension.ServiceContainerLoader"/>
+        <extensionPoint name="extension.DoctrineModelProvider" interface="fr.adrienbrault.idea.symfonyplugin.extension.DoctrineModelProvider"/>
+        <extensionPoint name="extension.MethodSignatureTypeProviderExtension" interface="fr.adrienbrault.idea.symfonyplugin.extension.MethodSignatureTypeProviderExtension"/>
+        <extensionPoint name="extension.MethodParameterReferenceContributorExtension" interface="fr.adrienbrault.idea.symfonyplugin.extension.MethodParameterReferenceContributorExtension"/>
+        <extensionPoint name="extension.ControllerActionGotoRelatedCollector" interface="fr.adrienbrault.idea.symfonyplugin.extension.ControllerActionGotoRelatedCollector"/>
+        <extensionPoint name="extension.GotoCompletionRegistrar" interface="fr.adrienbrault.idea.symfonyplugin.codeInsight.GotoCompletionRegistrar"/>
+        <extensionPoint name="extension.TwigNamespaceExtension" interface="fr.adrienbrault.idea.symfonyplugin.extension.TwigNamespaceExtension"/>
+        <extensionPoint name="extension.RoutingLoader" interface="fr.adrienbrault.idea.symfonyplugin.extension.RoutingLoader"/>
+        <extensionPoint name="extension.CompiledServiceBuilderFactory" interface="fr.adrienbrault.idea.symfonyplugin.extension.CompiledServiceBuilderFactory"/>
+        <extensionPoint name="extension.ServiceCollector" interface="fr.adrienbrault.idea.symfonyplugin.extension.ServiceCollector"/>
+        <extensionPoint name="extension.ServiceParameterCollector" interface="fr.adrienbrault.idea.symfonyplugin.extension.ServiceParameterCollector"/>
+        <extensionPoint name="extension.ServiceDefinitionLocator" interface="fr.adrienbrault.idea.symfonyplugin.extension.ServiceDefinitionLocator"/>
+        <extensionPoint name="extension.TwigVariableCollector" interface="fr.adrienbrault.idea.symfonyplugin.templating.variable.TwigFileVariableCollector"/>
+        <extensionPoint name="extension.PluginConfigurationExtension" interface="fr.adrienbrault.idea.symfonyplugin.extension.PluginConfigurationExtension"/>
+        <extensionPoint name="extension.TranslatorProvider" interface="fr.adrienbrault.idea.symfonyplugin.extension.TranslatorProvider"/>
+        <extensionPoint name="extension.TwigFileUsage" interface="fr.adrienbrault.idea.symfonyplugin.extension.TwigFileUsage"/>
     </extensionPoints>
 
-    <extensions defaultExtensionNs="fr.adrienbrault.idea.symfony2plugin.extension">
-        <ServiceContainerLoader implementation="fr.adrienbrault.idea.symfony2plugin.ServiceContainerSettingsLoader"/>
+    <extensions defaultExtensionNs="fr.adrienbrault.idea.symfonyplugin.extension">
+        <ServiceContainerLoader implementation="fr.adrienbrault.idea.symfonyplugin.ServiceContainerSettingsLoader"/>
 
-        <ControllerActionGotoRelatedCollector implementation="fr.adrienbrault.idea.symfony2plugin.navigation.controller.RouteControllerRelatedGotoCollector"/>
-        <ControllerActionGotoRelatedCollector implementation="fr.adrienbrault.idea.symfony2plugin.navigation.controller.ModelsControllerRelatedGotoCollector"/>
-        <ControllerActionGotoRelatedCollector implementation="fr.adrienbrault.idea.symfony2plugin.navigation.controller.TemplatesControllerRelatedGotoCollector"/>
+        <ControllerActionGotoRelatedCollector implementation="fr.adrienbrault.idea.symfonyplugin.navigation.controller.RouteControllerRelatedGotoCollector"/>
+        <ControllerActionGotoRelatedCollector implementation="fr.adrienbrault.idea.symfonyplugin.navigation.controller.ModelsControllerRelatedGotoCollector"/>
+        <ControllerActionGotoRelatedCollector implementation="fr.adrienbrault.idea.symfonyplugin.navigation.controller.TemplatesControllerRelatedGotoCollector"/>
 
-        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.form.FormOptionGotoCompletionRegistrar"/>
-        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.templating.BlockGotoCompletionRegistrar"/>
-        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.templating.FilterGotoCompletionRegistrar"/>
-        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.templating.TranslationTagGotoCompletionRegistrar"/>
-        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.form.FormGotoCompletionRegistrar"/>
-        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.config.php.PhpEventDispatcherGotoCompletionRegistrar"/>
-        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.completion.command.PhpCommandGotoCompletionRegistrar"/>
-        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.completion.command.ConsoleHelperGotoCompletionRegistrar"/>
-        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.DoctrineXmlGotoCompletionRegistrar"/>
-        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dbal.DoctrineDbalQbGotoCompletionRegistrar"/>
-        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.type.DoctrineTypeGotoCompletionRegistrar"/>
-        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.DoctrineYamlGotoCompletionRegistrar"/>
-        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.ObjectRepositoryFindGotoCompletionRegistrar"/>
-        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.completion.xml.XmlGotoCompletionRegistrar"/>
-        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.dic.registrar.DicGotoCompletionRegistrar"/>
-        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.completion.yaml.YamlGotoCompletionRegistrar"/>
-        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.translation.ValidatorTranslationGotoCompletionRegistrar"/>
-        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.security.VoterGotoCompletionRegistrar"/>
-        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.translation.TranslationPlaceholderGotoCompletionRegistrar"/>
-        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.dic.TaggedParameterGotoCompletionRegistrar"/>
-        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.templating.RenderParameterGotoCompletionRegistrar"/>
-        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.security.AnnotationExpressionGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfonyplugin.form.FormOptionGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfonyplugin.templating.BlockGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfonyplugin.templating.FilterGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfonyplugin.templating.TranslationTagGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfonyplugin.form.FormGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfonyplugin.config.php.PhpEventDispatcherGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfonyplugin.completion.command.PhpCommandGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfonyplugin.completion.command.ConsoleHelperGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.DoctrineXmlGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.dbal.DoctrineDbalQbGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.type.DoctrineTypeGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.DoctrineYamlGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.ObjectRepositoryFindGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfonyplugin.completion.xml.XmlGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfonyplugin.dic.registrar.DicGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfonyplugin.completion.yaml.YamlGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfonyplugin.translation.ValidatorTranslationGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfonyplugin.security.VoterGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfonyplugin.translation.TranslationPlaceholderGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfonyplugin.dic.TaggedParameterGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfonyplugin.templating.RenderParameterGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfonyplugin.security.AnnotationExpressionGotoCompletionRegistrar"/>
 
-        <TwigNamespaceExtension implementation="fr.adrienbrault.idea.symfony2plugin.templating.path.JsonFileIndexTwigNamespaces"/>
-        <TwigNamespaceExtension implementation="fr.adrienbrault.idea.symfony2plugin.templating.path.ConfigAddPathTwigNamespaces"/>
-        <TwigNamespaceExtension implementation="fr.adrienbrault.idea.symfony2plugin.templating.path.ContainerTwigNamespaceExtension"/>
-        <TwigNamespaceExtension implementation="fr.adrienbrault.idea.symfony2plugin.templating.path.GlobalAppTwigNamespaceExtension"/>
-        <TwigNamespaceExtension implementation="fr.adrienbrault.idea.symfony2plugin.templating.path.BundleTwigNamespaceExtension"/>
-        <TwigNamespaceExtension implementation="fr.adrienbrault.idea.symfony2plugin.templating.path.BundleOverwriteNamespaceExtensions"/>
+        <TwigNamespaceExtension implementation="fr.adrienbrault.idea.symfonyplugin.templating.path.JsonFileIndexTwigNamespaces"/>
+        <TwigNamespaceExtension implementation="fr.adrienbrault.idea.symfonyplugin.templating.path.ConfigAddPathTwigNamespaces"/>
+        <TwigNamespaceExtension implementation="fr.adrienbrault.idea.symfonyplugin.templating.path.ContainerTwigNamespaceExtension"/>
+        <TwigNamespaceExtension implementation="fr.adrienbrault.idea.symfonyplugin.templating.path.GlobalAppTwigNamespaceExtension"/>
+        <TwigNamespaceExtension implementation="fr.adrienbrault.idea.symfonyplugin.templating.path.BundleTwigNamespaceExtension"/>
+        <TwigNamespaceExtension implementation="fr.adrienbrault.idea.symfonyplugin.templating.path.BundleOverwriteNamespaceExtensions"/>
 
-        <ServiceCollector implementation="fr.adrienbrault.idea.symfony2plugin.dic.DefaultServiceCollector"/>
+        <ServiceCollector implementation="fr.adrienbrault.idea.symfonyplugin.dic.DefaultServiceCollector"/>
 
-        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.StaticVariableCollector"/>
-        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.GlobalExtensionVariableCollector"/>
-        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.ControllerDocVariableCollector"/>
-        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.ServiceContainerGlobalVariableCollector"/>
-        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.FileDocVariableCollector"/>
-        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.ControllerVariableCollector"/>
-        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.IncludeVariableCollector"/>
-        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.MarcoScopeVariableCollector"/>
-        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.GlobalTwigConfigVariableCollector"/>
+        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfonyplugin.templating.variable.collector.StaticVariableCollector"/>
+        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfonyplugin.templating.variable.collector.GlobalExtensionVariableCollector"/>
+        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfonyplugin.twig.variable.collector.ControllerDocVariableCollector"/>
+        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfonyplugin.twig.variable.collector.ServiceContainerGlobalVariableCollector"/>
+        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfonyplugin.templating.variable.collector.FileDocVariableCollector"/>
+        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfonyplugin.twig.variable.collector.ControllerVariableCollector"/>
+        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfonyplugin.templating.variable.collector.IncludeVariableCollector"/>
+        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfonyplugin.templating.variable.collector.MarcoScopeVariableCollector"/>
+        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfonyplugin.twig.variable.collector.GlobalTwigConfigVariableCollector"/>
 
-        <TranslatorProvider implementation="fr.adrienbrault.idea.symfony2plugin.translation.provider.CompiledTranslatorProvider"/>
-        <TranslatorProvider implementation="fr.adrienbrault.idea.symfony2plugin.translation.provider.IndexTranslatorProvider"/>
+        <TranslatorProvider implementation="fr.adrienbrault.idea.symfonyplugin.translation.provider.CompiledTranslatorProvider"/>
+        <TranslatorProvider implementation="fr.adrienbrault.idea.symfonyplugin.translation.provider.IndexTranslatorProvider"/>
     </extensions>
 
     <depends>com.jetbrains.twig</depends>
@@ -610,88 +610,88 @@
     <depends optional="true" config-file="deployment-aware.xml">com.jetbrains.plugins.webDeployment</depends>
 
     <extensions defaultExtensionNs="de.espend.idea.php.annotation">
-        <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.twig.annotation.TemplateAnnotationReferences"/>
-        <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineAnnotationTargetEntityReferences"/>
-        <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.config.SymfonyAnnotationReferences"/>
-        <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineAnnotationReferencedColumnReferences"/>
-        <PhpAnnotationDocTagAnnotator implementation="fr.adrienbrault.idea.symfony2plugin.twig.annotation.TemplateAnnotationAnnotator"/>
-        <PhpAnnotationDocTagGotoHandler implementation="fr.adrienbrault.idea.symfony2plugin.twig.annotation.TemplateAnnotationGotoHandler"/>
+        <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfonyplugin.twig.annotation.TemplateAnnotationReferences"/>
+        <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfonyplugin.doctrine.DoctrineAnnotationTargetEntityReferences"/>
+        <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfonyplugin.config.SymfonyAnnotationReferences"/>
+        <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfonyplugin.doctrine.DoctrineAnnotationReferencedColumnReferences"/>
+        <PhpAnnotationDocTagAnnotator implementation="fr.adrienbrault.idea.symfonyplugin.twig.annotation.TemplateAnnotationAnnotator"/>
+        <PhpAnnotationDocTagGotoHandler implementation="fr.adrienbrault.idea.symfonyplugin.twig.annotation.TemplateAnnotationGotoHandler"/>
 
         <!-- @IsGranted -->
-        <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.security.IsGrantedAnnotationReferences"/>
+        <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfonyplugin.security.IsGrantedAnnotationReferences"/>
     </extensions>
 
     <extensions defaultExtensionNs="de.espend.idea.php.toolbox.extension">
-        <PhpToolboxProviderInterface implementation="fr.adrienbrault.idea.symfony2plugin.external.toolbox.provider.ServiceToolboxProvider"/>
-        <PhpToolboxProviderInterface implementation="fr.adrienbrault.idea.symfony2plugin.external.toolbox.provider.RoutesToolboxProvider"/>
-        <PhpToolboxProviderInterface implementation="fr.adrienbrault.idea.symfony2plugin.external.toolbox.provider.TwigToolboxProvider"/>
-        <PhpToolboxProviderInterface implementation="fr.adrienbrault.idea.symfony2plugin.external.toolbox.provider.TranslationDomainToolboxProvider"/>
-        <PhpToolboxProviderInterface implementation="fr.adrienbrault.idea.symfony2plugin.external.toolbox.provider.ServiceParameterToolboxProvider"/>
-        <PhpToolboxProviderInterface implementation="fr.adrienbrault.idea.symfony2plugin.external.toolbox.provider.DoctrineModelProvider"/>
-        <PhpToolboxProviderInterface implementation="fr.adrienbrault.idea.symfony2plugin.external.toolbox.provider.ControllerToolboxProvider"/>
+        <PhpToolboxProviderInterface implementation="fr.adrienbrault.idea.symfonyplugin.external.toolbox.provider.ServiceToolboxProvider"/>
+        <PhpToolboxProviderInterface implementation="fr.adrienbrault.idea.symfonyplugin.external.toolbox.provider.RoutesToolboxProvider"/>
+        <PhpToolboxProviderInterface implementation="fr.adrienbrault.idea.symfonyplugin.external.toolbox.provider.TwigToolboxProvider"/>
+        <PhpToolboxProviderInterface implementation="fr.adrienbrault.idea.symfonyplugin.external.toolbox.provider.TranslationDomainToolboxProvider"/>
+        <PhpToolboxProviderInterface implementation="fr.adrienbrault.idea.symfonyplugin.external.toolbox.provider.ServiceParameterToolboxProvider"/>
+        <PhpToolboxProviderInterface implementation="fr.adrienbrault.idea.symfonyplugin.external.toolbox.provider.DoctrineModelProvider"/>
+        <PhpToolboxProviderInterface implementation="fr.adrienbrault.idea.symfonyplugin.external.toolbox.provider.ControllerToolboxProvider"/>
 
-        <PhpToolboxTargetLocator implementation="fr.adrienbrault.idea.symfony2plugin.external.locator.TwigFileToolboxTargetLocator"/>
-        <PhpToolboxTargetLocator implementation="fr.adrienbrault.idea.symfony2plugin.external.locator.BundleFileToolboxTargetLocator"/>
+        <PhpToolboxTargetLocator implementation="fr.adrienbrault.idea.symfonyplugin.external.locator.TwigFileToolboxTargetLocator"/>
+        <PhpToolboxTargetLocator implementation="fr.adrienbrault.idea.symfonyplugin.external.locator.BundleFileToolboxTargetLocator"/>
     </extensions>
 
     <project-components>
         <component>
-            <implementation-class>fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent</implementation-class>
+            <implementation-class>fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent</implementation-class>
         </component>
     </project-components>
 
     <actions>
 
-        <action id="Symfony.Menu" class="fr.adrienbrault.idea.symfony2plugin.action.SymfonyContainerServiceBuilder">
+        <action id="Symfony.Menu" class="fr.adrienbrault.idea.symfonyplugin.action.SymfonyContainerServiceBuilder">
             <add-to-group group-id="EditorPopupMenu"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
 
-        <action id="Symfony.TwigLanugage" class="fr.adrienbrault.idea.symfony2plugin.action.TwigExtractLanguageAction">
+        <action id="Symfony.TwigLanugage" class="fr.adrienbrault.idea.symfonyplugin.action.TwigExtractLanguageAction">
             <add-to-group group-id="EditorPopupMenu"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
 
-        <action id="Symfony2.ServiceGenerator" class="fr.adrienbrault.idea.symfony2plugin.action.generator.ServiceGenerateAction" text="Generate Service" icon="SymfonyIcons.Symfony">
+        <action id="Symfony2.ServiceGenerator" class="fr.adrienbrault.idea.symfonyplugin.action.generator.ServiceGenerateAction" text="Generate Service" icon="SymfonyIcons.Symfony">
             <add-to-group group-id="GenerateGroup" anchor="last" />
         </action>
 
-        <action id="Symfony2.ServiceArgumentGenerator" class="fr.adrienbrault.idea.symfony2plugin.action.generator.ServiceArgumentGenerateAction" text="Generate Arguments" icon="SymfonyIcons.Symfony">
+        <action id="Symfony2.ServiceArgumentGenerator" class="fr.adrienbrault.idea.symfonyplugin.action.generator.ServiceArgumentGenerateAction" text="Generate Arguments" icon="SymfonyIcons.Symfony">
             <add-to-group group-id="GenerateGroup" anchor="last" />
         </action>
 
-        <action id="Symfony2.PhpCompilerPassGenerateGenerator" class="fr.adrienbrault.idea.symfony2plugin.action.generator.PhpBundleCompilerPassGenerateAction" text="CompilerPass" icon="SymfonyIcons.Symfony">
+        <action id="Symfony2.PhpCompilerPassGenerateGenerator" class="fr.adrienbrault.idea.symfonyplugin.action.generator.PhpBundleCompilerPassGenerateAction" text="CompilerPass" icon="SymfonyIcons.Symfony">
             <add-to-group group-id="GenerateGroup" anchor="last" />
         </action>
 
-        <action id="Symfony2.FormTypeMigrationGenerator" class="fr.adrienbrault.idea.symfony2plugin.form.action.generator.FormTypeConstantMigrationAction" text="Class constants migration" icon="SymfonyIcons.FormType">
+        <action id="Symfony2.FormTypeMigrationGenerator" class="fr.adrienbrault.idea.symfonyplugin.form.action.generator.FormTypeConstantMigrationAction" text="Class constants migration" icon="SymfonyIcons.FormType">
             <add-to-group group-id="GenerateGroup" anchor="last" />
         </action>
 
-        <action id="Symfony.TwigTranslationGenerator" class="fr.adrienbrault.idea.symfony2plugin.twig.action.TwigTranslationGeneratorAction" text="Translation" icon="SymfonyIcons.Translation">
+        <action id="Symfony.TwigTranslationGenerator" class="fr.adrienbrault.idea.symfonyplugin.twig.action.TwigTranslationGeneratorAction" text="Translation" icon="SymfonyIcons.Translation">
             <add-to-group group-id="GenerateGroup" anchor="last" />
         </action>
 
         <group id="Symfony2Group" text="Symfony" popup="false">
             <group id="Symfony2GroupService" class="com.intellij.ide.actions.NonTrivialActionGroup" text="Service" popup="true" icon="SymfonyIcons.Symfony">
-                <action id="Symfony2NewXmlService" class="fr.adrienbrault.idea.symfony2plugin.action.NewXmlServiceAction"/>
-                <action id="Symfony2NewYamlService" class="fr.adrienbrault.idea.symfony2plugin.action.NewYamlServiceAction"/>
+                <action id="Symfony2NewXmlService" class="fr.adrienbrault.idea.symfonyplugin.action.NewXmlServiceAction"/>
+                <action id="Symfony2NewYamlService" class="fr.adrienbrault.idea.symfonyplugin.action.NewYamlServiceAction"/>
             </group>
             <separator/>
-            <action id="Symfony2NewControllerService" class="fr.adrienbrault.idea.symfony2plugin.action.bundle.NewBundleControllerAction"/>
-            <action id="SymfonyBundleCompilerPass" class="fr.adrienbrault.idea.symfony2plugin.action.bundle.NewBundleCompilerPass"/>
-            <action id="SymfonyBundleFormAction" class="fr.adrienbrault.idea.symfony2plugin.action.bundle.NewBundleFormAction"/>
-            <action id="SymfonyBundleTwigExtensionAction" class="fr.adrienbrault.idea.symfony2plugin.action.bundle.NewBundleTwigExtensionAction"/>
-            <action id="SymfonyBundleCommandAction" class="fr.adrienbrault.idea.symfony2plugin.action.bundle.NewBundleCommandAction"/>
+            <action id="Symfony2NewControllerService" class="fr.adrienbrault.idea.symfonyplugin.action.bundle.NewBundleControllerAction"/>
+            <action id="SymfonyBundleCompilerPass" class="fr.adrienbrault.idea.symfonyplugin.action.bundle.NewBundleCompilerPass"/>
+            <action id="SymfonyBundleFormAction" class="fr.adrienbrault.idea.symfonyplugin.action.bundle.NewBundleFormAction"/>
+            <action id="SymfonyBundleTwigExtensionAction" class="fr.adrienbrault.idea.symfonyplugin.action.bundle.NewBundleTwigExtensionAction"/>
+            <action id="SymfonyBundleCommandAction" class="fr.adrienbrault.idea.symfonyplugin.action.bundle.NewBundleCommandAction"/>
             <add-to-group group-id="NewGroup" anchor="last"/>
         </group>
 
-        <action id="SymfonyWebTestCaseGenerator" class="fr.adrienbrault.idea.symfony2plugin.action.bundle.WebTestCaseGeneratorAction">
+        <action id="SymfonyWebTestCaseGenerator" class="fr.adrienbrault.idea.symfonyplugin.action.bundle.WebTestCaseGeneratorAction">
             <!-- <add-to-group group-id="PhpUnitNewGroup" anchor="last"/> DROP in Phpstorm 2017.3 -->
             <add-to-group group-id="NewGroup" anchor="last"/>
         </action>
 
-        <action id="Symfony2Symbols" class="fr.adrienbrault.idea.symfony2plugin.action.SymfonySymbolSearchAction" text="Symfony Symbol..." icon="SymfonyIcons.Symfony">
+        <action id="Symfony2Symbols" class="fr.adrienbrault.idea.symfonyplugin.action.SymfonySymbolSearchAction" text="Symfony Symbol..." icon="SymfonyIcons.Symfony">
             <add-to-group group-id="GoToTargetEx"/>
         </action>
 

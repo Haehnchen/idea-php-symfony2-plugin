@@ -1,6 +1,6 @@
 package icons;
 
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
 import javax.swing.*;
 
 public class SymfonyIcons {

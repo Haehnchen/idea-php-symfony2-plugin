@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.translation.collector;
+package fr.adrienbrault.idea.symfonyplugin.translation.collector;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLKeyValue;

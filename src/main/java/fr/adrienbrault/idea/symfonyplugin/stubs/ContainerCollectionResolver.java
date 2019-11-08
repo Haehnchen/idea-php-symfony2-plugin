@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.stubs;
+package fr.adrienbrault.idea.symfonyplugin.stubs;
 
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
@@ -6,22 +6,22 @@ import com.intellij.openapi.util.Key;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.CachedValue;
 import com.intellij.util.indexing.FileBasedIndex;
-import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
-import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceSerializable;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ContainerBuilderCall;
-import fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollectorParameter;
-import fr.adrienbrault.idea.symfony2plugin.extension.ServiceParameterCollector;
-import fr.adrienbrault.idea.symfony2plugin.extension.ServiceParameterCollectorParameter;
-import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerBuilderStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerParameterStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import fr.adrienbrault.idea.symfonyplugin.config.component.parser.ParameterServiceParser;
+import fr.adrienbrault.idea.symfonyplugin.dic.ContainerParameter;
+import fr.adrienbrault.idea.symfonyplugin.dic.ContainerService;
+import fr.adrienbrault.idea.symfonyplugin.dic.XmlServiceParser;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.ServiceInterface;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.ServiceSerializable;
+import fr.adrienbrault.idea.symfonyplugin.dic.container.dict.ContainerBuilderCall;
+import fr.adrienbrault.idea.symfonyplugin.extension.ServiceCollectorParameter;
+import fr.adrienbrault.idea.symfonyplugin.extension.ServiceParameterCollector;
+import fr.adrienbrault.idea.symfonyplugin.extension.ServiceParameterCollectorParameter;
+import fr.adrienbrault.idea.symfonyplugin.stubs.cache.FileIndexCaches;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.ContainerBuilderStubIndex;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.ContainerParameterStubIndex;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.ServicesDefinitionStubIndex;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.service.ServiceXmlParserFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -39,12 +39,12 @@ public class ContainerCollectionResolver {
     private static final Key<CachedValue<Set<String>>> SERVICE_CONTAINER_INDEX_NAMES = new Key<>("SYMFONY_SERVICE_CONTAINER_INDEX_NAMES");
     private static final Key<CachedValue<Set<String>>> SERVICE_PARAMETER_INDEX_NAMES = new Key<>("SERVICE_PARAMETER_INDEX_NAMES");
 
-    private static final ExtensionPointName<fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector> EXTENSIONS = new ExtensionPointName<>(
-        "fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector"
+    private static final ExtensionPointName<fr.adrienbrault.idea.symfonyplugin.extension.ServiceCollector> EXTENSIONS = new ExtensionPointName<>(
+        "fr.adrienbrault.idea.symfonyplugin.extension.ServiceCollector"
     );
 
-    private static final ExtensionPointName<fr.adrienbrault.idea.symfony2plugin.extension.ServiceParameterCollector> EXTENSIONS_PARAMETER = new ExtensionPointName<>(
-        "fr.adrienbrault.idea.symfony2plugin.extension.ServiceParameterCollector"
+    private static final ExtensionPointName<fr.adrienbrault.idea.symfonyplugin.extension.ServiceParameterCollector> EXTENSIONS_PARAMETER = new ExtensionPointName<>(
+        "fr.adrienbrault.idea.symfonyplugin.extension.ServiceParameterCollector"
     );
 
     public static Collection<String> getServiceNames(@NotNull Project project) {
@@ -188,7 +188,7 @@ public class ContainerCollectionResolver {
             // Extension points
             ServiceCollectorParameter.Service parameter = null;
             Collection<ServiceInterface> exps = new ArrayList<>();
-            for (fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector collectorEx : EXTENSIONS.getExtensions()) {
+            for (fr.adrienbrault.idea.symfonyplugin.extension.ServiceCollector collectorEx : EXTENSIONS.getExtensions()) {
                 if(parameter == null) {
                     parameter = new ServiceCollectorParameter.Service(project, exps);
                 }
@@ -330,7 +330,7 @@ public class ContainerCollectionResolver {
 
             // Extension points
             ServiceCollectorParameter.Id parameter = null;
-            for (fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector collectorEx : EXTENSIONS.getExtensions()) {
+            for (fr.adrienbrault.idea.symfonyplugin.extension.ServiceCollector collectorEx : EXTENSIONS.getExtensions()) {
                 if(parameter == null) {
                     parameter = new ServiceCollectorParameter.Id(project, serviceNames);
                 }

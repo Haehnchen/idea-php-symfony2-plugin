@@ -1,6 +1,6 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.util;
+package fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.util;
 
-import fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryTypeProvider;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.ObjectRepositoryTypeProvider;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;

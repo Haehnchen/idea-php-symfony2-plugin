@@ -1,6 +1,6 @@
-package fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.driver;
+package fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.driver;
 
-import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.metadata.dict.DoctrineMetadataModel;
 import org.jetbrains.annotations.NotNull;
 
 /**

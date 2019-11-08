@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.variable.collector;
+package fr.adrienbrault.idea.symfonyplugin.templating.variable.collector;
 
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
+import fr.adrienbrault.idea.symfonyplugin.templating.variable.TwigFileVariableCollector;
+import fr.adrienbrault.idea.symfonyplugin.templating.variable.TwigFileVariableCollectorParameter;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;

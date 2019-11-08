@@ -1,9 +1,9 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.completion;
+package fr.adrienbrault.idea.symfonyplugin.templating.completion;
 
 import com.intellij.codeInsight.completion.InsertHandler;
 import com.intellij.codeInsight.completion.InsertionContext;
 import com.jetbrains.php.completion.insert.PhpInsertHandlerUtil;
-import fr.adrienbrault.idea.symfony2plugin.asset.AssetLookupElement;
+import fr.adrienbrault.idea.symfonyplugin.asset.AssetLookupElement;
 import org.jetbrains.annotations.NotNull;
 
 /**

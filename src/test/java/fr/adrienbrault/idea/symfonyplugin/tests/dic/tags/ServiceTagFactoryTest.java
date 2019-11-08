@@ -1,16 +1,16 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.dic.tags;
+package fr.adrienbrault.idea.symfonyplugin.tests.dic.tags;
 
 import com.intellij.psi.PsiElement;
-import fr.adrienbrault.idea.symfony2plugin.dic.tags.ServiceTagFactory;
-import fr.adrienbrault.idea.symfony2plugin.dic.tags.ServiceTagInterface;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.dic.tags.ServiceTagFactory;
+import fr.adrienbrault.idea.symfonyplugin.dic.tags.ServiceTagInterface;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
 
 import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.dic.tags.ServiceTagFactory
+ * @see fr.adrienbrault.idea.symfonyplugin.dic.tags.ServiceTagFactory
  */
 public class ServiceTagFactoryTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void testServiceTagFactoryCreationForYaml() {

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.tests;
+package fr.adrienbrault.idea.symfonyplugin.tests;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
@@ -7,7 +7,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.UsefulTestCase;
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
 import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory;
-import fr.adrienbrault.idea.symfony2plugin.Settings;
+import fr.adrienbrault.idea.symfonyplugin.Settings;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;

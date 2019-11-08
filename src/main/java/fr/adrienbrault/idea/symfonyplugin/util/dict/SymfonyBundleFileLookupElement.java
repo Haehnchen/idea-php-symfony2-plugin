@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.util.dict;
+package fr.adrienbrault.idea.symfonyplugin.util.dict;
 
 import com.intellij.codeInsight.completion.InsertHandler;
 import com.intellij.codeInsight.completion.InsertionContext;

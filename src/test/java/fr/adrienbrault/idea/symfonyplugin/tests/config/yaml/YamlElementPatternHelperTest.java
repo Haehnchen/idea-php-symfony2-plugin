@@ -1,18 +1,18 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.config.yaml;
+package fr.adrienbrault.idea.symfonyplugin.tests.config.yaml;
 
 import com.intellij.psi.PsiElement;
-import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.config.yaml.YamlElementPatternHelper;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper
+ * @see fr.adrienbrault.idea.symfonyplugin.config.yaml.YamlElementPatternHelper
  */
 public class YamlElementPatternHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/config/yaml/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/config/yaml/fixtures";
     }
 
     private String[] dataProviders() {

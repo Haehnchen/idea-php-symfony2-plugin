@@ -1,9 +1,9 @@
-package fr.adrienbrault.idea.symfony2plugin.assistant.signature;
+package fr.adrienbrault.idea.symfonyplugin.assistant.signature;
 
 import com.intellij.util.xmlb.annotations.Attribute;
 import com.intellij.util.xmlb.annotations.Tag;
-import fr.adrienbrault.idea.symfony2plugin.assistant.AssistantPsiReferenceContributor;
-import fr.adrienbrault.idea.symfony2plugin.assistant.reference.DefaultReferenceProvider;
+import fr.adrienbrault.idea.symfonyplugin.assistant.AssistantPsiReferenceContributor;
+import fr.adrienbrault.idea.symfonyplugin.assistant.reference.DefaultReferenceProvider;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

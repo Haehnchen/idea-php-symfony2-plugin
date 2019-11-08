@@ -1,6 +1,6 @@
-package fr.adrienbrault.idea.symfony2plugin.twig.variable.globals;
+package fr.adrienbrault.idea.symfonyplugin.twig.variable.globals;
 
-import fr.adrienbrault.idea.symfony2plugin.util.service.AbstractServiceParser;
+import fr.adrienbrault.idea.symfonyplugin.util.service.AbstractServiceParser;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 

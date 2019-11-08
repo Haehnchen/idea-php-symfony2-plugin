@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating.inspection;
+package fr.adrienbrault.idea.symfonyplugin.tests.templating.inspection;
 
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigTemplateMissingInspection
+ * @see fr.adrienbrault.idea.symfonyplugin.templating.inspection.TwigTemplateMissingInspection
  */
 public class TwigTemplateMissingInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void testThatUnknownTemplatesAreHighlighted() {

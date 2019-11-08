@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.installer;
+package fr.adrienbrault.idea.symfonyplugin.tests.installer;
 
-import fr.adrienbrault.idea.symfony2plugin.installer.SymfonyInstallerUtil;
-import fr.adrienbrault.idea.symfony2plugin.installer.dict.SymfonyInstallerVersion;
+import fr.adrienbrault.idea.symfonyplugin.installer.SymfonyInstallerUtil;
+import fr.adrienbrault.idea.symfonyplugin.installer.dict.SymfonyInstallerVersion;
 import org.junit.Assert;
 import org.junit.Test;
 

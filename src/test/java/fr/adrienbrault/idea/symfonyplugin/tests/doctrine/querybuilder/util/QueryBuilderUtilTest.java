@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.querybuilder.util;
+package fr.adrienbrault.idea.symfonyplugin.tests.doctrine.querybuilder.util;
 
-import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.util.QueryBuilderUtil;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.querybuilder.util.QueryBuilderUtil;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.util.Collection;
 

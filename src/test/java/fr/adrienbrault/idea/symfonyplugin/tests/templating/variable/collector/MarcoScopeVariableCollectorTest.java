@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating.variable.collector;
+package fr.adrienbrault.idea.symfonyplugin.tests.templating.variable.collector;
 
 import com.jetbrains.twig.TwigFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.MarcoScopeVariableCollector
+ * @see fr.adrienbrault.idea.symfonyplugin.templating.variable.collector.MarcoScopeVariableCollector
  */
 public class MarcoScopeVariableCollectorTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void testThatMacroProvidesCompletion() {

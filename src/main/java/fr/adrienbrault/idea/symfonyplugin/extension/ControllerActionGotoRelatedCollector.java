@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.extension;
+package fr.adrienbrault.idea.symfonyplugin.extension;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.twig.action;
+package fr.adrienbrault.idea.symfonyplugin.twig.action;
 
 import com.intellij.codeInsight.CodeInsightActionHandler;
 import com.intellij.codeInsight.actions.CodeInsightAction;
@@ -13,9 +13,9 @@ import com.intellij.psi.impl.source.html.HtmlFileImpl;
 import com.intellij.ui.components.JBList;
 import com.jetbrains.php.completion.insert.PhpInsertHandlerUtil;
 import com.jetbrains.twig.TwigFile;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.translation.dict.TranslationUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.util;
+package fr.adrienbrault.idea.symfonyplugin.util;
 
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
@@ -9,11 +9,11 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.util.ProcessingContext;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.BundleFile;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.ResourceFileInsertHandler;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundleFileLookupElement;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.BundleFile;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.ResourceFileInsertHandler;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.SymfonyBundle;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.SymfonyBundleFileLookupElement;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

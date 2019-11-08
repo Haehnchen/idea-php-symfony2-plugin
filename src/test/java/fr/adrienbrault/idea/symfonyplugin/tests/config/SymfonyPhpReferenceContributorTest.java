@@ -1,12 +1,12 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.config;
+package fr.adrienbrault.idea.symfonyplugin.tests.config;
 
 import com.jetbrains.php.lang.PhpFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.config.SymfonyPhpReferenceContributor
+ * @see fr.adrienbrault.idea.symfonyplugin.config.SymfonyPhpReferenceContributor
  */
 public class SymfonyPhpReferenceContributorTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -17,7 +17,7 @@ public class SymfonyPhpReferenceContributorTest extends SymfonyLightCodeInsightF
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/config/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/config/fixtures";
     }
 
     public void testThatPrivateServiceAreNotInCompletionListForContainerGet() {

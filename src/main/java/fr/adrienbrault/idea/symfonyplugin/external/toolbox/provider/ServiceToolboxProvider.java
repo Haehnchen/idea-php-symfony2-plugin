@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.external.toolbox.provider;
+package fr.adrienbrault.idea.symfonyplugin.external.toolbox.provider;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.PsiElement;
@@ -11,12 +11,12 @@ import de.espend.idea.php.toolbox.provider.presentation.ProviderParameter;
 import de.espend.idea.php.toolbox.provider.presentation.ProviderPresentation;
 import de.espend.idea.php.toolbox.type.PhpToolboxTypeProviderArguments;
 import de.espend.idea.php.toolbox.type.PhpToolboxTypeProviderInterface;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
-import fr.adrienbrault.idea.symfony2plugin.dic.ServiceStringLookupElement;
-import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.dic.ContainerService;
+import fr.adrienbrault.idea.symfonyplugin.dic.ServiceStringLookupElement;
+import fr.adrienbrault.idea.symfonyplugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.ServiceUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

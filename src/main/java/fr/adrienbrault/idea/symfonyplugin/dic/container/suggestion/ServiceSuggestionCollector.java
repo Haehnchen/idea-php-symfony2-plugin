@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.dic.container.suggestion;
+package fr.adrienbrault.idea.symfonyplugin.dic.container.suggestion;
 
 import com.intellij.psi.PsiElement;
-import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
+import fr.adrienbrault.idea.symfonyplugin.dic.ContainerService;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;

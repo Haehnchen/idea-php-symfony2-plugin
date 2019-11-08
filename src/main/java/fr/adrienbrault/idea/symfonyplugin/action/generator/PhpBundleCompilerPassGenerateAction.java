@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.action.generator;
+package fr.adrienbrault.idea.symfonyplugin.action.generator;
 
 import com.intellij.codeInsight.CodeInsightActionHandler;
 import com.intellij.codeInsight.actions.CodeInsightAction;
@@ -8,8 +8,8 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiUtilBase;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.util.psi.PhpBundleFileFactory;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.util.psi.PhpBundleFileFactory;
 import org.jetbrains.annotations.NotNull;
 
 /**

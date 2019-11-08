@@ -1,9 +1,9 @@
-package fr.adrienbrault.idea.symfony2plugin.assistant;
+package fr.adrienbrault.idea.symfonyplugin.assistant;
 
 import com.intellij.psi.PsiReference;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.assistant.reference.MethodParameterSetting;
+import fr.adrienbrault.idea.symfonyplugin.assistant.reference.MethodParameterSetting;
 
 import java.util.List;
 

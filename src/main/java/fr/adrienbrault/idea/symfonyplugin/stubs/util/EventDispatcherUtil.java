@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.stubs.util;
+package fr.adrienbrault.idea.symfonyplugin.stubs.util;
 
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;

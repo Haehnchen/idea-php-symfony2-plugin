@@ -1,8 +1,8 @@
-package fr.adrienbrault.idea.symfony2plugin.action.dict;
+package fr.adrienbrault.idea.symfonyplugin.action.dict;
 
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.psi.PsiFile;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.SymfonyBundle;
 import org.jetbrains.annotations.Nullable;
 
 /**

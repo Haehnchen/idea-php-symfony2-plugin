@@ -1,13 +1,13 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.completion;
+package fr.adrienbrault.idea.symfonyplugin.tests.doctrine.completion;
 
 import com.jetbrains.php.lang.PhpFileType;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.doctrine.completion.DoctrineCompletionContributor
+ * @see fr.adrienbrault.idea.symfonyplugin.doctrine.completion.DoctrineCompletionContributor
  */
 public class DoctrineCompletionContributorTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -17,7 +17,7 @@ public class DoctrineCompletionContributorTest extends SymfonyLightCodeInsightFi
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/doctrine/completion/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/doctrine/completion/fixtures";
     }
 
     public void testClassConstantsCompletionWithoutNamespace() {

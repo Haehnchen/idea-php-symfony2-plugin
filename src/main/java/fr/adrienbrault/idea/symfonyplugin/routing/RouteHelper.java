@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.routing;
+package fr.adrienbrault.idea.symfonyplugin.routing;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
@@ -27,24 +27,24 @@ import com.jetbrains.php.refactoring.PhpNameUtil;
 import de.espend.idea.php.annotation.dict.PhpDocCommentAnnotation;
 import de.espend.idea.php.annotation.dict.PhpDocTagAnnotation;
 import de.espend.idea.php.annotation.util.AnnotationUtil;
-import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.extension.RoutingLoader;
-import fr.adrienbrault.idea.symfony2plugin.extension.RoutingLoaderParameter;
-import fr.adrienbrault.idea.symfony2plugin.routing.dic.ControllerClassOnShortcutReturn;
-import fr.adrienbrault.idea.symfony2plugin.routing.dic.ServiceRouteContainer;
-import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutesContainer;
-import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutingFile;
-import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
-import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.util.*;
-import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerAction;
-import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import fr.adrienbrault.idea.symfonyplugin.Settings;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.extension.RoutingLoader;
+import fr.adrienbrault.idea.symfonyplugin.extension.RoutingLoaderParameter;
+import fr.adrienbrault.idea.symfonyplugin.routing.dic.ControllerClassOnShortcutReturn;
+import fr.adrienbrault.idea.symfonyplugin.routing.dic.ServiceRouteContainer;
+import fr.adrienbrault.idea.symfonyplugin.routing.dict.RoutesContainer;
+import fr.adrienbrault.idea.symfonyplugin.routing.dict.RoutingFile;
+import fr.adrienbrault.idea.symfonyplugin.stubs.SymfonyProcessors;
+import fr.adrienbrault.idea.symfonyplugin.stubs.dict.StubIndexedRoute;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.RoutesStubIndex;
+import fr.adrienbrault.idea.symfonyplugin.util.*;
+import fr.adrienbrault.idea.symfonyplugin.util.controller.ControllerAction;
+import fr.adrienbrault.idea.symfonyplugin.util.controller.ControllerIndex;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.dict.SymfonyBundle;
+import fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -70,7 +70,7 @@ public class RouteHelper {
     public static Map<Project, Map<String, RoutesContainer>> COMPILED_CACHE = new HashMap<>();
 
     private static final ExtensionPointName<RoutingLoader> ROUTING_LOADER = new ExtensionPointName<>(
-        "fr.adrienbrault.idea.symfony2plugin.extension.RoutingLoader"
+        "fr.adrienbrault.idea.symfonyplugin.extension.RoutingLoader"
     );
 
     public static LookupElement[] getRouteParameterLookupElements(@NotNull Project project, @NotNull String routeName) {

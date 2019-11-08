@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.completion;
+package fr.adrienbrault.idea.symfonyplugin.templating.completion;
 
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElement;
@@ -6,16 +6,16 @@ import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.asset.AssetLookupElement;
-import fr.adrienbrault.idea.symfony2plugin.asset.AssetDirectoryReader;
-import fr.adrienbrault.idea.symfony2plugin.asset.AssetFile;
-import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
-import fr.adrienbrault.idea.symfony2plugin.routing.RouteLookupElement;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHtmlCompletionUtil;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
-import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.asset.AssetLookupElement;
+import fr.adrienbrault.idea.symfonyplugin.asset.AssetDirectoryReader;
+import fr.adrienbrault.idea.symfonyplugin.asset.AssetFile;
+import fr.adrienbrault.idea.symfonyplugin.routing.RouteHelper;
+import fr.adrienbrault.idea.symfonyplugin.routing.RouteLookupElement;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigHtmlCompletionUtil;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.translation.TranslatorLookupElement;
+import fr.adrienbrault.idea.symfonyplugin.translation.dict.TranslationUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;

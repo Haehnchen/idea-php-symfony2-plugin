@@ -1,8 +1,8 @@
-package fr.adrienbrault.idea.symfony2plugin.assistant.reference;
+package fr.adrienbrault.idea.symfonyplugin.assistant.reference;
 
 import com.intellij.util.xmlb.annotations.Attribute;
 import com.intellij.util.xmlb.annotations.Tag;
-import fr.adrienbrault.idea.symfony2plugin.assistant.AssistantPsiReferenceContributor;
+import fr.adrienbrault.idea.symfonyplugin.assistant.AssistantPsiReferenceContributor;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

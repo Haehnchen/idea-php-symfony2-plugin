@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.variable.dict;
+package fr.adrienbrault.idea.symfonyplugin.templating.variable.dict;
 
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;

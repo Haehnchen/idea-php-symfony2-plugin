@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.completion.constant;
+package fr.adrienbrault.idea.symfonyplugin.completion.constant;
 
 import org.jetbrains.annotations.Nullable;
 

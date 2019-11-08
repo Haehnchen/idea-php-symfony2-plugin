@@ -1,9 +1,9 @@
-package fr.adrienbrault.idea.symfony2plugin.profiler.factory;
+package fr.adrienbrault.idea.symfonyplugin.profiler.factory;
 
 import com.intellij.openapi.project.Project;
-import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.profiler.HttpProfilerIndex;
-import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerIndexInterface;
+import fr.adrienbrault.idea.symfonyplugin.Settings;
+import fr.adrienbrault.idea.symfonyplugin.profiler.HttpProfilerIndex;
+import fr.adrienbrault.idea.symfonyplugin.profiler.ProfilerIndexInterface;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

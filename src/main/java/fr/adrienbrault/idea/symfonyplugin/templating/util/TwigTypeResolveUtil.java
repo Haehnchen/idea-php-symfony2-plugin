@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.util;
+package fr.adrienbrault.idea.symfonyplugin.templating.util;
 
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
@@ -19,17 +19,17 @@ import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
-import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormFieldResolver;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormVarsResolver;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.TwigTypeResolver;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import fr.adrienbrault.idea.symfonyplugin.templating.TwigPattern;
+import fr.adrienbrault.idea.symfonyplugin.templating.variable.TwigFileVariableCollector;
+import fr.adrienbrault.idea.symfonyplugin.templating.variable.TwigFileVariableCollectorParameter;
+import fr.adrienbrault.idea.symfonyplugin.templating.variable.TwigTypeContainer;
+import fr.adrienbrault.idea.symfonyplugin.templating.variable.dict.PsiVariable;
+import fr.adrienbrault.idea.symfonyplugin.templating.variable.resolver.FormFieldResolver;
+import fr.adrienbrault.idea.symfonyplugin.templating.variable.resolver.FormVarsResolver;
+import fr.adrienbrault.idea.symfonyplugin.templating.variable.resolver.TwigTypeResolver;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -76,7 +76,7 @@ public class TwigTypeResolveUtil {
     private static String[] PROPERTY_SHORTCUTS = new String[] {"get", "is", "has"};
 
     private static final ExtensionPointName<TwigFileVariableCollector> TWIG_FILE_VARIABLE_COLLECTORS = new ExtensionPointName<>(
-        "fr.adrienbrault.idea.symfony2plugin.extension.TwigVariableCollector"
+        "fr.adrienbrault.idea.symfonyplugin.extension.TwigVariableCollector"
     );
 
     private static TwigTypeResolver[] TWIG_TYPE_RESOLVERS = new TwigTypeResolver[] {

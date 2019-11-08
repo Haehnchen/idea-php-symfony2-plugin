@@ -1,6 +1,6 @@
-package fr.adrienbrault.idea.symfony2plugin.dic.attribute.value;
+package fr.adrienbrault.idea.symfonyplugin.dic.attribute.value;
 
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

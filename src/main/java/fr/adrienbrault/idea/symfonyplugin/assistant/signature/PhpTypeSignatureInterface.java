@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.assistant.signature;
+package fr.adrienbrault.idea.symfonyplugin.assistant.signature;
 
 import com.intellij.openapi.project.Project;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;

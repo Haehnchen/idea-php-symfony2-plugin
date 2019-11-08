@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.action.quickfix;
+package fr.adrienbrault.idea.symfonyplugin.action.quickfix;
 
 import com.intellij.codeInspection.LocalQuickFix;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlTag;
-import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
+import fr.adrienbrault.idea.symfonyplugin.action.ServiceActionUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;

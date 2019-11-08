@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.dic.webDeployment.dict;
+package fr.adrienbrault.idea.symfonyplugin.dic.webDeployment.dict;
 
 import org.jetbrains.annotations.NotNull;
 

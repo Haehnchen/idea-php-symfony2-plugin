@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.navigation;
+package fr.adrienbrault.idea.symfonyplugin.navigation;
 
 import com.intellij.navigation.ChooseByNameContributor;
 import com.intellij.navigation.NavigationItem;
 import com.intellij.openapi.project.Project;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.templating.util.TwigUtil;
 import icons.TwigIcons;
 import org.jetbrains.annotations.NotNull;
 

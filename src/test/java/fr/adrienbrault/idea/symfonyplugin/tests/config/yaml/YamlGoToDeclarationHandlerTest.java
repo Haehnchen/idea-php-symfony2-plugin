@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.config.yaml;
+package fr.adrienbrault.idea.symfonyplugin.tests.config.yaml;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
@@ -7,14 +7,14 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlGoToDeclarationHandler
+ * @see fr.adrienbrault.idea.symfonyplugin.config.yaml.YamlGoToDeclarationHandler
  */
 public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -32,7 +32,7 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/config/yaml/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/config/yaml/fixtures";
     }
 
     public void testGlobalServiceName() {

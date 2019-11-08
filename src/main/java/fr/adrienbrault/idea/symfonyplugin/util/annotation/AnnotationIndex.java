@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.util.annotation;
+package fr.adrienbrault.idea.symfonyplugin.util.annotation;
 
 import java.util.HashMap;
 

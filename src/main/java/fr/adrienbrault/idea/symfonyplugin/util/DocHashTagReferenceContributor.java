@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.util;
+package fr.adrienbrault.idea.symfonyplugin.util;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.*;
@@ -6,16 +6,16 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocParamTag;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.config.PhpClassReference;
-import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterReference;
-import fr.adrienbrault.idea.symfony2plugin.dic.ServiceReference;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
-import fr.adrienbrault.idea.symfony2plugin.form.FormTypeReference;
-import fr.adrienbrault.idea.symfony2plugin.routing.RouteReference;
-import fr.adrienbrault.idea.symfony2plugin.templating.TemplateReference;
-import fr.adrienbrault.idea.symfony2plugin.translation.TranslationDomainReference;
-import fr.adrienbrault.idea.symfony2plugin.translation.TranslationReference;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.config.PhpClassReference;
+import fr.adrienbrault.idea.symfonyplugin.config.component.ParameterReference;
+import fr.adrienbrault.idea.symfonyplugin.dic.ServiceReference;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.EntityReference;
+import fr.adrienbrault.idea.symfonyplugin.form.FormTypeReference;
+import fr.adrienbrault.idea.symfonyplugin.routing.RouteReference;
+import fr.adrienbrault.idea.symfonyplugin.templating.TemplateReference;
+import fr.adrienbrault.idea.symfonyplugin.translation.TranslationDomainReference;
+import fr.adrienbrault.idea.symfonyplugin.translation.TranslationReference;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

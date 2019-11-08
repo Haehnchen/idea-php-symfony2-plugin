@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.assistant;
+package fr.adrienbrault.idea.symfonyplugin.assistant;
 
 import com.intellij.psi.PsiReference;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;

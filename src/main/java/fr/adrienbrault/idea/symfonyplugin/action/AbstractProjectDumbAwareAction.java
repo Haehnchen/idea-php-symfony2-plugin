@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.action;
+package fr.adrienbrault.idea.symfonyplugin.action;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
 
 import javax.swing.*;
 

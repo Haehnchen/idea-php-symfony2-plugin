@@ -1,6 +1,6 @@
-package fr.adrienbrault.idea.symfony2plugin.profiler.collector;
+package fr.adrienbrault.idea.symfonyplugin.profiler.collector;
 
-import fr.adrienbrault.idea.symfony2plugin.profiler.dict.MailMessage;
+import fr.adrienbrault.idea.symfonyplugin.profiler.dict.MailMessage;
 import org.intellij.lang.annotations.RegExp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

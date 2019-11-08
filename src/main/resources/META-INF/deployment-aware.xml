@@ -2,7 +2,7 @@
     <actions>
 
         <action id="SymfonyWebDeploymentDownload"
-                class="fr.adrienbrault.idea.symfony2plugin.webDeployment.actions.SymfonyWebDeploymentDownloadAction">
+                class="fr.adrienbrault.idea.symfonyplugin.webDeployment.actions.SymfonyWebDeploymentDownloadAction">
 
             <add-to-group group-id="PublishGroup" anchor="after" relative-to-action="PublishGroup.Download"/>
             <add-to-group group-id="RemoteHostViewPopupMenu" anchor="after" relative-to-action="PublishGroup.Download"/>
@@ -10,14 +10,14 @@
 
     </actions>
 
-    <extensions defaultExtensionNs="fr.adrienbrault.idea.symfony2plugin.extension">
-        <RoutingLoader implementation="fr.adrienbrault.idea.symfony2plugin.webDeployment.routing.WebDeploymentRoutingLoader"/>
-        <CompiledServiceBuilderFactory implementation="fr.adrienbrault.idea.symfony2plugin.webDeployment.container.RemoteCompiledServiceContainerLoader"/>
+    <extensions defaultExtensionNs="fr.adrienbrault.idea.symfonyplugin.extension">
+        <RoutingLoader implementation="fr.adrienbrault.idea.symfonyplugin.webDeployment.routing.WebDeploymentRoutingLoader"/>
+        <CompiledServiceBuilderFactory implementation="fr.adrienbrault.idea.symfonyplugin.webDeployment.container.RemoteCompiledServiceContainerLoader"/>
     </extensions>
 
     <project-components>
         <component>
-            <implementation-class>fr.adrienbrault.idea.symfony2plugin.webDeployment.WebDeploymentProjectComponent</implementation-class>
+            <implementation-class>fr.adrienbrault.idea.symfonyplugin.webDeployment.WebDeploymentProjectComponent</implementation-class>
         </component>
     </project-components>
 

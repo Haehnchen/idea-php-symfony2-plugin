@@ -1,18 +1,18 @@
-package fr.adrienbrault.idea.symfony2plugin.assistant.reference;
+package fr.adrienbrault.idea.symfonyplugin.assistant.reference;
 
 import com.intellij.psi.PsiReference;
-import fr.adrienbrault.idea.symfony2plugin.assistant.AssistantReferenceProvider;
-import fr.adrienbrault.idea.symfony2plugin.config.PhpClassReference;
-import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterReference;
-import fr.adrienbrault.idea.symfony2plugin.dic.ServiceReference;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
-import fr.adrienbrault.idea.symfony2plugin.form.FormDefaultOptionsKeyReference;
-import fr.adrienbrault.idea.symfony2plugin.form.FormTypeReference;
-import fr.adrienbrault.idea.symfony2plugin.routing.RouteReference;
-import fr.adrienbrault.idea.symfony2plugin.templating.TemplateReference;
-import fr.adrienbrault.idea.symfony2plugin.translation.TranslationDomainReference;
-import fr.adrienbrault.idea.symfony2plugin.translation.TranslationReference;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfonyplugin.assistant.AssistantReferenceProvider;
+import fr.adrienbrault.idea.symfonyplugin.config.PhpClassReference;
+import fr.adrienbrault.idea.symfonyplugin.config.component.ParameterReference;
+import fr.adrienbrault.idea.symfonyplugin.dic.ServiceReference;
+import fr.adrienbrault.idea.symfonyplugin.doctrine.EntityReference;
+import fr.adrienbrault.idea.symfonyplugin.form.FormDefaultOptionsKeyReference;
+import fr.adrienbrault.idea.symfonyplugin.form.FormTypeReference;
+import fr.adrienbrault.idea.symfonyplugin.routing.RouteReference;
+import fr.adrienbrault.idea.symfonyplugin.templating.TemplateReference;
+import fr.adrienbrault.idea.symfonyplugin.translation.TranslationDomainReference;
+import fr.adrienbrault.idea.symfonyplugin.translation.TranslationReference;
+import fr.adrienbrault.idea.symfonyplugin.util.PsiElementUtils;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

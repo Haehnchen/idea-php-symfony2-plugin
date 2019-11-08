@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.completion.yaml;
+package fr.adrienbrault.idea.symfonyplugin.completion.yaml;
 
 import com.intellij.codeInsight.completion.CompletionContributor;
 import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.psi.PsiElement;
-import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
-import fr.adrienbrault.idea.symfony2plugin.util.completion.YamlKeywordsCompletionProvider;
-import fr.adrienbrault.idea.symfony2plugin.util.completion.YamlTagCompletionProvider;
+import fr.adrienbrault.idea.symfonyplugin.config.yaml.YamlElementPatternHelper;
+import fr.adrienbrault.idea.symfonyplugin.util.completion.YamlKeywordsCompletionProvider;
+import fr.adrienbrault.idea.symfonyplugin.util.completion.YamlTagCompletionProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.YAMLSequence;

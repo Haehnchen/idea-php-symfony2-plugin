@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.util.yaml;
+package fr.adrienbrault.idea.symfonyplugin.util.yaml;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Ref;

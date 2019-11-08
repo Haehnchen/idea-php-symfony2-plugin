@@ -1,13 +1,13 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.util;
+package fr.adrienbrault.idea.symfonyplugin.tests.util;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.util.MethodMatcher;
+import fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,11 +23,11 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/util/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/util/fixtures";
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#getMethodParameterTypeHint
+     * @see fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil#getMethodParameterTypeHint
      */
     public void testGetMethodParameterClassHint() {
         assertEquals("\\DateTime", PhpElementsUtil.getMethodParameterTypeHint(
@@ -44,7 +44,7 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#getArrayKeyValueMap
+     * @see fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil#getArrayKeyValueMap
      */
     public void testGetArrayKeyValueMap() {
         assertEquals("foo", PhpElementsUtil.getArrayKeyValueMap(PhpPsiElementFactory.createPhpPsiFromText(getProject(), ArrayCreationExpression.class, "$foo = ['foo' => 'foo'];")).get("foo"));
@@ -55,7 +55,7 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#getFirstVariableTypeInScope(Variable)
+     * @see fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil#getFirstVariableTypeInScope(Variable)
      */
     public void testGetFirstVariableTypeInScope() {
         PsiElement psiElement = myFixture.configureByText(PhpFileType.INSTANCE, "<?php" +
@@ -74,7 +74,7 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#getFirstVariableTypeInScope(Variable)
+     * @see fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil#getFirstVariableTypeInScope(Variable)
      */
     public void testGetFirstVariableTypeInScopeNotFound() {
         PsiElement psiElement = myFixture.configureByText(PhpFileType.INSTANCE, "<?php" +
@@ -87,7 +87,7 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#getClassInsideNamespaceScope
+     * @see fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil#getClassInsideNamespaceScope
      */
     public void testGetClassInsideNamespaceScope() {
         assertNotNull(PhpElementsUtil.getClassInsideNamespaceScope(getProject(), "Foo\\Foo", "\\Foo\\Bar"));
@@ -101,7 +101,7 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#isInstanceOf
+     * @see fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil#isInstanceOf
      */
     public void testIsInstanceOf() {
         myFixture.copyFileToProject("InstanceOf.php");
@@ -135,7 +135,7 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#insertUseIfNecessary
+     * @see fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil#insertUseIfNecessary
      */
     public void testUseImports() {
         assertEquals("Bar", PhpElementsUtil.insertUseIfNecessary(PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpClass.class, "<?php\n" +
@@ -157,7 +157,7 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#getVariableReferencesInScope
+     * @see fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil#getVariableReferencesInScope
      */
     public void testGetVariableReferencesInScopeForVariable() {
         myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
@@ -184,7 +184,7 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#getVariableReferencesInScope
+     * @see fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil#getVariableReferencesInScope
      */
     public void testGetVariableReferencesInScopeForVariableDeclaration() {
         myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
@@ -211,7 +211,7 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#getParameterListArrayValuePattern
+     * @see fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil#getParameterListArrayValuePattern
      */
     public void testGetParameterListArrayValuePattern() {
         String[] strings = {
@@ -238,7 +238,7 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#getStringValue
+     * @see fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil#getStringValue
      */
     public void testGetStringValueForStringValue() {
         myFixture.configureByText(PhpFileType.INSTANCE, "<?php $foo = 'foo<caret>bar';");
@@ -247,7 +247,7 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#getStringValue
+     * @see fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil#getStringValue
      */
     public void testGetStringValueForClassConstants() {
         myFixture.configureByText(PhpFileType.INSTANCE, "<?php class Foobar {};\n $foo = Foobar::cl<caret>ass;");
@@ -257,7 +257,7 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#getStringValue
+     * @see fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil#getStringValue
      */
     public void testGetStringValueForFieldWithClassConstants() {
         myFixture.configureByText(PhpFileType.INSTANCE, "<?php class Foobar { var $x = Foobar::class;\n function test() { $foo = $this-><caret>x; } };\n ");
@@ -267,7 +267,7 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#getConstructorArgumentByName
+     * @see fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil#getConstructorArgumentByName
      */
     public void testGetConstructorArgumentByName() {
         PhpClass phpClass = PhpPsiElementFactory.createFromText(getProject(), PhpClass.class, "<?php class Foobar { function __construct($foo, $foobar) {} };\n ");
@@ -278,7 +278,7 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#isMethodInstanceOf
+     * @see fr.adrienbrault.idea.symfonyplugin.util.PhpElementsUtil#isMethodInstanceOf
      */
     public void testIsMethodInstanceOf() {
         assertTrue(PhpElementsUtil.isMethodInstanceOf(

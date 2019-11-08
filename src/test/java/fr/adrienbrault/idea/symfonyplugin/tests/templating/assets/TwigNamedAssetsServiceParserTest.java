@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating.assets;
+package fr.adrienbrault.idea.symfonyplugin.tests.templating.assets;
 
 import com.intellij.testFramework.UsefulTestCase;
-import fr.adrienbrault.idea.symfony2plugin.twig.assets.TwigNamedAssetsServiceParser;
+import fr.adrienbrault.idea.symfonyplugin.twig.assets.TwigNamedAssetsServiceParser;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,7 +15,7 @@ public class TwigNamedAssetsServiceParserTest extends UsefulTestCase {
 
     public void testParse() throws Exception {
 
-        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/assets/appDevDebugProjectContainer.xml");
+        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/templating/assets/appDevDebugProjectContainer.xml");
 
         TwigNamedAssetsServiceParser parser = new TwigNamedAssetsServiceParser();
         parser.parser(new FileInputStream(testFile));

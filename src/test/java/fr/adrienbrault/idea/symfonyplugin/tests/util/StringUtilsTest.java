@@ -1,6 +1,6 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.util;
+package fr.adrienbrault.idea.symfonyplugin.tests.util;
 
-import fr.adrienbrault.idea.symfony2plugin.util.StringUtils;
+import fr.adrienbrault.idea.symfonyplugin.util.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 

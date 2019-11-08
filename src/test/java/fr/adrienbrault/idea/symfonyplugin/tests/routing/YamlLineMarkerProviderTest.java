@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.routing;
+package fr.adrienbrault.idea.symfonyplugin.tests.routing;
 
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.php.lang.PhpFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
 
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import java.util.Collection;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
- * @see fr.adrienbrault.idea.symfony2plugin.routing.YamlLineMarkerProvider
+ * @see fr.adrienbrault.idea.symfonyplugin.routing.YamlLineMarkerProvider
  */
 public class YamlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -29,7 +29,7 @@ public class YamlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTe
     }
 
     protected String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/routing/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/routing/fixtures";
     }
 
     public void testDoctrineFirstLineModelNavigation() {

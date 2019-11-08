@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.action.generator.naming;
+package fr.adrienbrault.idea.symfonyplugin.action.generator.naming;
 
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;

@@ -1,7 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.ui.utils.dict;
+package fr.adrienbrault.idea.symfonyplugin.ui.utils.dict;
 
 import com.jetbrains.plugins.webDeployment.config.WebServerConfig;
-import fr.adrienbrault.idea.symfony2plugin.ui.utils.UiSettingsUtil;
+import fr.adrienbrault.idea.symfonyplugin.ui.utils.UiSettingsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;

@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
+package fr.adrienbrault.idea.symfonyplugin.stubs.indexes;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
@@ -18,11 +18,11 @@ import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.php.lang.psi.elements.impl.ClassConstImpl;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.stubs.dict.DispatcherEvent;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
-import fr.adrienbrault.idea.symfony2plugin.stubs.util.EventDispatcherUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfonyplugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfonyplugin.stubs.dict.DispatcherEvent;
+import fr.adrienbrault.idea.symfonyplugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
+import fr.adrienbrault.idea.symfonyplugin.stubs.util.EventDispatcherUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,7 +34,7 @@ import java.util.Map;
  */
 public class EventAnnotationStubIndex extends FileBasedIndexExtension<String, DispatcherEvent> {
 
-    public static final ID<String, DispatcherEvent> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.events_annotation");
+    public static final ID<String, DispatcherEvent> KEY = ID.create("fr.adrienbrault.idea.symfonyplugin.events_annotation");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
     private static ObjectStreamDataExternalizer<DispatcherEvent> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
 

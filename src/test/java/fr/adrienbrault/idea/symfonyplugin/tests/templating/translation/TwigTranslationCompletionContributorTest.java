@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating.translation;
+package fr.adrienbrault.idea.symfonyplugin.tests.templating.translation;
 
 import com.jetbrains.twig.TwigFileType;
-import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
+import fr.adrienbrault.idea.symfonyplugin.templating.TwigPattern;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
+ * @see fr.adrienbrault.idea.symfonyplugin.templating.TwigTemplateCompletionContributor
  */
 public class TwigTranslationCompletionContributorTest extends TwigTranslationFixturesTestCase {
 
@@ -75,7 +75,7 @@ public class TwigTranslationCompletionContributorTest extends TwigTranslationFix
 
     /**
      * @see TwigPattern#getTransDefaultDomainPattern
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
+     * @see fr.adrienbrault.idea.symfonyplugin.templating.TwigTemplateCompletionContributor
      */
     public void testTwigTransDefaultDomainDomainCompletion() {
         assertCompletionContains(TwigFileType.INSTANCE, "{% trans_default_domain '<caret>' %}", "interchange");

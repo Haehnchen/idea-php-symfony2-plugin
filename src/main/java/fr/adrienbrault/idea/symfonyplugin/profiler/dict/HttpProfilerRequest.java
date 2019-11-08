@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.profiler.dict;
+package fr.adrienbrault.idea.symfonyplugin.profiler.dict;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

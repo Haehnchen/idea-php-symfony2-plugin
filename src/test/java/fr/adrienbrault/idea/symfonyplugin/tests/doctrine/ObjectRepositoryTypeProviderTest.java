@@ -1,9 +1,9 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.doctrine;
+package fr.adrienbrault.idea.symfonyplugin.tests.doctrine;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.elements.Method;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -16,11 +16,11 @@ public class ObjectRepositoryTypeProviderTest extends SymfonyLightCodeInsightFix
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/doctrine/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/doctrine/fixtures";
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryTypeProvider
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.ObjectRepositoryTypeProvider
      */
     public void testGetRepositoryResolveByRepository() {
         assertPhpReferenceResolveTo(PhpFileType.INSTANCE,
@@ -47,7 +47,7 @@ public class ObjectRepositoryTypeProviderTest extends SymfonyLightCodeInsightFix
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryTypeProvider
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.ObjectRepositoryTypeProvider
      */
     public void testGetRepositoryResolveByRepositoryApiClassConstantCompatibility() {
         String result = "#M#" + '\u0151' + "#M#C\\Doctrine\\Common\\Persistence\\ObjectManager.getRepository" + '\u0185' + "#K#C\\Foo\\Bar.class.bar";
@@ -60,7 +60,7 @@ public class ObjectRepositoryTypeProviderTest extends SymfonyLightCodeInsightFix
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryTypeProvider
+     * @see fr.adrienbrault.idea.symfonyplugin.doctrine.ObjectRepositoryTypeProvider
      */
     public void testGetRepositoryFallbackToPhpType() {
         assertPhpReferenceResolveTo(PhpFileType.INSTANCE,

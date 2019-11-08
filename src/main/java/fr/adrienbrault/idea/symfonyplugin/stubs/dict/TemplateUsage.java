@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.stubs.dict;
+package fr.adrienbrault.idea.symfonyplugin.stubs.dict;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.jetbrains.annotations.NotNull;

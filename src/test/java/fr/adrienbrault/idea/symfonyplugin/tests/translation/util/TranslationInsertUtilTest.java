@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.translation.util;
+package fr.adrienbrault.idea.symfonyplugin.tests.translation.util;
 
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.application.ApplicationManager;
@@ -6,9 +6,9 @@ import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.xml.XmlFile;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import fr.adrienbrault.idea.symfony2plugin.translation.util.TranslationInsertUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlPsiElementFactory;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.translation.util.TranslationInsertUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.yaml.YamlPsiElementFactory;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

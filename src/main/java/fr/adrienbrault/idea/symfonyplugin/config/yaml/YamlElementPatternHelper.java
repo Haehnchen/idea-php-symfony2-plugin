@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.config.yaml;
+package fr.adrienbrault.idea.symfonyplugin.config.yaml;
 
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.*;
@@ -9,8 +9,8 @@ import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.twig.TwigTokenTypes;
-import fr.adrienbrault.idea.symfony2plugin.util.VfsExUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.psi.ParentPathPatternCondition;
+import fr.adrienbrault.idea.symfonyplugin.util.VfsExUtil;
+import fr.adrienbrault.idea.symfonyplugin.util.psi.ParentPathPatternCondition;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;

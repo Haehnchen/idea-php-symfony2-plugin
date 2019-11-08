@@ -1,11 +1,11 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.dic.container.suggestion;
+package fr.adrienbrault.idea.symfonyplugin.tests.dic.container.suggestion;
 
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.dic.container.suggestion.YamlConstructServiceSuggestionCollector
+ * @see fr.adrienbrault.idea.symfonyplugin.dic.container.suggestion.YamlConstructServiceSuggestionCollector
  */
 public class YamlConstructServiceSuggestionCollectorTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -16,7 +16,7 @@ public class YamlConstructServiceSuggestionCollectorTest extends SymfonyLightCod
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic/container/suggestion/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfonyplugin/tests/dic/container/suggestion/fixtures";
     }
 
     public void testConstructorArguments() {

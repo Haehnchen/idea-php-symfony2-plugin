@@ -1,10 +1,10 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating.path;
+package fr.adrienbrault.idea.symfonyplugin.tests.templating.path;
 
-import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyTempCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfonyplugin.templating.path.TwigPath;
+import fr.adrienbrault.idea.symfonyplugin.tests.SymfonyTempCodeInsightFixtureTestCase;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath#TwigPath
+ * @see fr.adrienbrault.idea.symfonyplugin.templating.path.TwigPath#TwigPath
  */
 public class TwigPathTempTest extends SymfonyTempCodeInsightFixtureTestCase {
     public void testRelativePathResolving() {
