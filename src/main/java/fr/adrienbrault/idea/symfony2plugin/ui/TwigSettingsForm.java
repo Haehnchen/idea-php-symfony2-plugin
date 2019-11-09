@@ -2,7 +2,9 @@ package fr.adrienbrault.idea.symfony2plugin.ui;
 
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.TableView;
 import com.intellij.util.ui.ColumnInfo;
@@ -47,6 +49,12 @@ public class TwigSettingsForm implements Configurable {
         // @TODO: remove this check, moved init stuff out of constructor
         // dont load on project less context
         if(this.project == null) {
+            return;
+        }
+
+        if (DumbService.getInstance(project).isDumb()) {
+            this.tableView.getEmptyText().setText("Not available while indexing. Please re-open this screen when ready.");
+
             return;
         }
 

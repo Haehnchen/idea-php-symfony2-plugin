@@ -74,6 +74,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore;
+
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -150,21 +152,39 @@ public class TwigUtil {
         templateFolderName = templateFolderName.replace("\\", "/");
 
         String shortcutName;
+        String shortcutNameForOldNotation;
 
         // Foobar without (.html.twig)
         String templateName = className.substring(0, className.lastIndexOf("Controller"));
 
         if(methodName.equals("__invoke")) {
-            // AppBundle::Foobar.html.twig
+            // AppBundle::foo_bar.html.twig
             shortcutName = String.format(
+                "%s::%s%s",
+                symfonyBundle.getName(),
+                underscore(templateFolderName),
+                underscore(templateName)
+            );
+
+            // AppBundle::FooBar.html.twig
+            shortcutNameForOldNotation = String.format(
                 "%s::%s%s",
                 symfonyBundle.getName(),
                 templateFolderName,
                 templateName
             );
         } else {
-            // FooBundle:Foobar:foobar.html.twig
+            // FooBundle:foo_bar:foo_bar.html.twig
             shortcutName = String.format(
+                "%s:%s%s:%s",
+                symfonyBundle.getName(),
+                underscore(templateFolderName),
+                underscore(templateName),
+                underscore(StringUtils.removeEnd(methodName, "Action"))
+            );
+
+            // FooBundle:FooBar:fooBar.html.twig
+            shortcutNameForOldNotation = String.format(
                 "%s:%s%s:%s",
                 symfonyBundle.getName(),
                 templateFolderName,
@@ -179,6 +199,9 @@ public class TwigUtil {
             shortcutName + ".html.twig",
             shortcutName + ".json.twig",
             shortcutName + ".xml.twig",
+            shortcutNameForOldNotation + ".html.twig",
+            shortcutNameForOldNotation + ".json.twig",
+            shortcutNameForOldNotation + ".xml.twig",
         };
     }
 

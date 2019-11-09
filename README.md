@@ -42,8 +42,14 @@ Autocomplete (or something else) is not working! Help! :open_mouth:
 Building, debugging and other
 --------------------
 
-* Open the project in IntelliJ, and follow the steps here : http://confluence.jetbrains.com/display/PhpStorm/Setting-up+environment+for+PhpStorm+plugin+development
-* Want to donate? nice go [here](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=5ZTGW6H4Y7MT8)
+* Install IntelliJ IDEA (Community Edition works fine)
+* Open this project
+* Choose `View > Tool Windows > Gradle`
+* Double click `idea-php-symfony2-plugin > Tasks > intellij > runIdle`
+
+If you are having difficulties, consult the documentation: http://confluence.jetbrains.com/display/PhpStorm/Setting-up+environment+for+PhpStorm+plugin+development
+
+* Want to sponsor my development? Nice! You can sponsor me via [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=5ZTGW6H4Y7MT8) or via [Github](https://github.com/sponsors/Haehnchen). Github matches your donation so the total donation will be doubled. 
 
 What? Something still does not work? Damn! :cry:
 ------------------------------------------------

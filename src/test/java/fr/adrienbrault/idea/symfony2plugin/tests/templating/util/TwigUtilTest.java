@@ -422,9 +422,9 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
             List<String> strings = Arrays.asList(TwigUtil.getControllerMethodShortcut((Method) psiElement.getParent()));
 
-            assertContainsElements(strings, "FooBundle:Foobar:" + string[1] + ".html.twig");
-            assertContainsElements(strings, "FooBundle:Foobar:" + string[1] + ".json.twig");
-            assertContainsElements(strings, "FooBundle:Foobar:" + string[1] + ".xml.twig");
+            assertContainsElements(strings, "FooBundle:foobar:" + string[1] + ".html.twig");
+            assertContainsElements(strings, "FooBundle:foobar:" + string[1] + ".json.twig");
+            assertContainsElements(strings, "FooBundle:foobar:" + string[1] + ".xml.twig");
         }
     }
 
@@ -444,9 +444,30 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         List<String> strings = Arrays.asList(TwigUtil.getControllerMethodShortcut((Method) psiElement.getParent()));
 
-        assertContainsElements(strings, "FooBundle::Foobar.html.twig");
-        assertContainsElements(strings, "FooBundle::Foobar.json.twig");
-        assertContainsElements(strings, "FooBundle::Foobar.xml.twig");
+        assertContainsElements(strings, "FooBundle::foobar.html.twig");
+        assertContainsElements(strings, "FooBundle::foobar.json.twig");
+        assertContainsElements(strings, "FooBundle::foobar.xml.twig");
+    }
+
+    public void testGetControllerMethodShortcutForInvokeWithSnakeCase() {
+        myFixture.copyFileToProject("controller_method.php");
+
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace FooBundle\\Controller;\n" +
+            "class FooBarController\n" +
+            "{\n" +
+            "   public function __in<caret>voke() {}\n" +
+            "" +
+            "}\n"
+        );
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+
+        List<String> strings = Arrays.asList(TwigUtil.getControllerMethodShortcut((Method) psiElement.getParent()));
+
+        assertContainsElements(strings, "FooBundle::foo_bar.html.twig");
+        assertContainsElements(strings, "FooBundle::foo_bar.json.twig");
+        assertContainsElements(strings, "FooBundle::foo_bar.xml.twig");
     }
 
     public void testFindTwigFileController() {
