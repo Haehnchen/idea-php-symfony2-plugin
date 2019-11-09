@@ -4,6 +4,7 @@ import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.TextBrowseFolderListener;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -58,7 +59,7 @@ public class TwigNamespaceDialog extends JDialog {
 
         buttonCancel.addActionListener(e -> onCancel());
 
-        namespacePath.getButton().addMouseListener(createPathButtonMouseListener(namespacePath.getTextField(), FileChooserDescriptorFactory.createSingleFolderDescriptor()));
+        namespacePath.addBrowseFolderListener(createBrowseFolderListener(namespacePath.getTextField(), FileChooserDescriptorFactory.createSingleFolderDescriptor()));
 
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
@@ -112,19 +113,15 @@ public class TwigNamespaceDialog extends JDialog {
         dispose();
     }
 
-    private MouseListener createPathButtonMouseListener(final JTextField textField, final FileChooserDescriptor fileChooserDescriptor) {
-        return new MouseListener() {
+    private TextBrowseFolderListener createBrowseFolderListener(final JTextField textField, final FileChooserDescriptor fileChooserDescriptor) {
+        return new TextBrowseFolderListener(fileChooserDescriptor) {
             @Override
-            public void mouseClicked(MouseEvent mouseEvent) {
-            }
-
-            @Override
-            public void mousePressed(MouseEvent mouseEvent) {
+            public void actionPerformed(ActionEvent e) {
                 VirtualFile projectDirectory = project.getBaseDir();
                 VirtualFile selectedFile = FileChooser.chooseFile(
-                    fileChooserDescriptor,
-                    project,
-                    VfsUtil.findRelativeFile(textField.getText(), projectDirectory)
+                        fileChooserDescriptor,
+                        project,
+                        VfsUtil.findRelativeFile(textField.getText(), projectDirectory)
                 );
 
                 if (null == selectedFile) {
@@ -138,21 +135,8 @@ public class TwigNamespaceDialog extends JDialog {
 
                 textField.setText(path);
             }
-
-            @Override
-            public void mouseReleased(MouseEvent mouseEvent) {
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent mouseEvent) {
-            }
-
-            @Override
-            public void mouseExited(MouseEvent mouseEvent) {
-            }
         };
     }
-
 
     private class ChangeDocumentListener implements DocumentListener {
         @Override
