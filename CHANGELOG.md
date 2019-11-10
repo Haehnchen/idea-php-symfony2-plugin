@@ -14,6 +14,12 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.19.186
+* Twig settings are not available while indexing (Ruud Kamphuis) [#1393](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1393)
+* Fix browse folder buttons (Ruud Kamphuis) [#1392](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1392)
+* WebDeploymentIcons.Download will be removed soon (Elena Shaverdova) [#1390](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1390)
+* Support new snake_case templates (Ruud Kamphuis) [#1389](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1389)
+
 ## 0.19.185
 * Add support for Twig apply tag filters (Daniel Espendiller) [#1388](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1388)
 
