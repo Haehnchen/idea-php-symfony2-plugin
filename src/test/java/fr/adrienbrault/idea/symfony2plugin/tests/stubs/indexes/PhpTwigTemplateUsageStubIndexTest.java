@@ -28,6 +28,7 @@ public class PhpTwigTemplateUsageStubIndexTest extends SymfonyLightCodeInsightFi
             "       $foo->render($foobar ?? self::FOO_COALESCE);\n" +
             "       $foo->render('@!Foo/overwrite.html.twig');\n" +
             "       $foo->renderView('foo-renderView.html.twig');\n" +
+            "       $foo->renderView($t = 'foo-var-assignment-expression.html.twig');\n" +
             "       $foo->renderResponse('foo-renderResponse.html.twig');\n" +
             "       $foo->render(self::FOO);\n" +
             "       $foo->render($var);\n" +
@@ -46,7 +47,8 @@ public class PhpTwigTemplateUsageStubIndexTest extends SymfonyLightCodeInsightFi
             PhpTwigTemplateUsageStubIndex.KEY,
             "foo-render.html.twig", "foo-renderView.html.twig", "foo-renderResponse.html.twig",
             "@Foo/overwrite.html.twig", "const.html.twig", "var.html.twig", "private.html.twig", "foobar-render.twig",
-            "foo-render-ternary.html.twig", "const-ternary.html.twig", "foo-render-coalesce.html.twig", "const-coalesce.html.twig"
+            "foo-render-ternary.html.twig", "const-ternary.html.twig", "foo-render-coalesce.html.twig", "const-coalesce.html.twig",
+            "foo-var-assignment-expression.html.twig"
         );
 
         assertIndexContainsKeyWithValue(PhpTwigTemplateUsageStubIndex.KEY, "foo-render.html.twig", value ->
