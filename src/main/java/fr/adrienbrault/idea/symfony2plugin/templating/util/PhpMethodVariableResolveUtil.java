@@ -327,6 +327,12 @@ public class PhpMethodVariableResolveUtil {
                         resolvePhpReference(methodReference, phpPsiElement);
                     }
                 }
+            } else if(parameters[0] instanceof AssignmentExpression) {
+                // $this->render($template = 'foo.html.twig')
+                PhpPsiElement value = ((AssignmentExpression) parameters[0]).getValue();
+                if(value != null) {
+                    resolveString(methodReference, value);
+                }
             } else if(parameters[0] instanceof PhpReference) {
                 resolvePhpReference(methodReference, parameters[0]);
             } else if(parameters[0] instanceof BinaryExpression) {
