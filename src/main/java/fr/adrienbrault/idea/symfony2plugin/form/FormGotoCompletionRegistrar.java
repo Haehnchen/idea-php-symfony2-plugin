@@ -99,6 +99,9 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
                 // Symfony 3.3 / 3.4
                 .withSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "createForm")
 
+                // Symfony 4
+                .withSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "createForm")
+
                 .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "create")
                 .withSignature("\\Symfony\\Component\\Form\\FormFactory", "createBuilder")
                 .match();

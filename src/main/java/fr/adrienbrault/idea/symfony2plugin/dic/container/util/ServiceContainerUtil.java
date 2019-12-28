@@ -50,6 +50,9 @@ public class ServiceContainerUtil {
 
         // Symfony 3.3 / 3.4
         new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "get"),
+
+        // Symfony 4
+        new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "get"),
     };
 
     private static String[] LOWER_PRIORITY = new String[] {

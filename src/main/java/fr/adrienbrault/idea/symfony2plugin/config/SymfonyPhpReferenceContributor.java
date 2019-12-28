@@ -31,6 +31,10 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
         new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "get"),
         new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "has"),
 
+        // Symfony 4
+        new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "get"),
+        new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "has"),
+
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "get"),
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "has"),
         new MethodMatcher.CallToSignature("\\Psr\\Container\\ContainerInterface", "get"),
@@ -69,6 +73,11 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
         new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "render"),
         new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "renderView"),
         new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "stream"),
+
+        // Symfony 4
+        new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "render"),
+        new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "stream"),
+        new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "renderView"),
 
         new MethodMatcher.CallToSignature("\\Twig_Environment", "render"),
         new MethodMatcher.CallToSignature("\\Twig_Environment", "loadTemplate"),

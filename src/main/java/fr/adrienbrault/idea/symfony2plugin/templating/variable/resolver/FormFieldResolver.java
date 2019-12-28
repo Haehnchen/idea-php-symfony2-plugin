@@ -81,7 +81,12 @@ public class FormFieldResolver implements TwigTypeResolver {
     }
 
     private static void attachFormFields(@Nullable MethodReference methodReference, @NotNull Collection<TwigTypeContainer> targets) {
-        if(methodReference != null && PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "createForm"), new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "createForm"))) {
+        if(methodReference != null && PhpElementsUtil.isMethodReferenceInstanceOf(
+            methodReference,
+            new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "createForm"),
+            new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "createForm"),
+            new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "createForm")
+        )) {
             PsiElement formType = PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 0);
             if(formType != null) {
                 PhpClass phpClass = FormUtil.getFormTypeClassOnParameter(formType);

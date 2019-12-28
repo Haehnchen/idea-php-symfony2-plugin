@@ -25,6 +25,10 @@ public class PhpRouteReferenceContributor extends PsiReferenceContributor {
         new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "generateUrl"),
         new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "redirectToRoute"),
 
+        // Symfony 4
+        new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "generateUrl"),
+        new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "redirectToRoute"),
+
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface", "generate"),
 
     };
@@ -33,7 +37,10 @@ public class PhpRouteReferenceContributor extends PsiReferenceContributor {
         new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "forward"),
 
         // Symfony 3.3 / 3.4
-        new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "forward")
+        new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "forward"),
+
+        // Symfony 4
+        new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "forward"),
     };
 
     @Override

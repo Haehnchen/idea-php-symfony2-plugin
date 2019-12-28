@@ -31,6 +31,9 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
 
             // Symfony 3.3 / 3.4
             .addCall("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "has")
+
+            // Symfony 4
+            .addCall("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "has")
         );
 
         psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.getMethodWithFirstStringPattern(), new PhpStringLiteralExpressionReference(ServiceIndexedReference.class)
