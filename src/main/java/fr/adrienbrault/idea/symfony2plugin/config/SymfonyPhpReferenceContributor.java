@@ -75,6 +75,14 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
         new MethodMatcher.CallToSignature("\\Twig_Environment", "display"),
         new MethodMatcher.CallToSignature("\\Twig_Environment", "isTemplateFresh"),
         new MethodMatcher.CallToSignature("\\Twig_Environment", "resolveTemplate"), // @TODO: also "is_array($names)"
+
+        new MethodMatcher.CallToSignature("\\Twig\\Environment", "render"),
+        new MethodMatcher.CallToSignature("\\Twig\\Environment", "load"),
+        new MethodMatcher.CallToSignature("\\Twig\\Environment", "loadTemplate"),
+        new MethodMatcher.CallToSignature("\\Twig\\Environment", "getTemplateClass"),
+        new MethodMatcher.CallToSignature("\\Twig\\Environment", "display"),
+        new MethodMatcher.CallToSignature("\\Twig\\Environment", "isTemplateFresh"),
+        new MethodMatcher.CallToSignature("\\Twig\\Environment", "resolveTemplate"), // @TODO: also "is_array($names)"
     };
 
     @Override
