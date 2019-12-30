@@ -45,8 +45,10 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
         new MethodMatcher.CallToSignature("\\Doctrine\\Common\\Persistence\\ManagerRegistry", "getRepository"),
         new MethodMatcher.CallToSignature("\\Doctrine\\Common\\Persistence\\ObjectManager", "getRepository"),
         new MethodMatcher.CallToSignature("\\Doctrine\\Persistence\\ManagerRegistry", "getRepository"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\Persistence\\ObjectManager", "getRepository"),
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\EntityManager", "getReference"),
         new MethodMatcher.CallToSignature("\\Doctrine\\Common\\Persistence\\ManagerRegistry", "getManagerForClass"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\Persistence\\ManagerRegistry", "getManagerForClass"),
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "update"),
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "delete"),
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "from"),
@@ -161,6 +163,7 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
 
                     MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement, 0)
                         .withSignature("\\Doctrine\\Common\\Persistence\\ObjectManager", "find")
+                        .withSignature("\\Doctrine\\Persistence\\ObjectManager", "find")
                         .match();
 
                     if(methodMatchParameter == null) {

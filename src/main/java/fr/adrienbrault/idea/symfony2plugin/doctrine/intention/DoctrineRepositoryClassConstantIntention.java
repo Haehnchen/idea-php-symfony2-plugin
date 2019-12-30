@@ -57,6 +57,7 @@ public class DoctrineRepositoryClassConstantIntention extends PsiElementBaseInte
 
         return null != new MethodMatcher.StringParameterMatcher(parent, 0)
             .withSignature(SymfonyPhpReferenceContributor.REPOSITORY_SIGNATURES)
+            .withSignature("Doctrine\\Persistence\\ObjectManager", "find")
             .withSignature("Doctrine\\Common\\Persistence\\ObjectManager", "find") // @TODO: missing somewhere
             .match();
     }

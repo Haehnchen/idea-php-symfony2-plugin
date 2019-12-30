@@ -85,7 +85,10 @@ public class ObjectManagerFindTypeProvider implements PhpTypeProvider3 {
             return Collections.emptySet();
         }
 
-        if (!PhpElementsUtil.isMethodInstanceOf((Method) phpNamedElement, "\\Doctrine\\Common\\Persistence\\ObjectManager", "find")) {
+        if (!(
+            PhpElementsUtil.isMethodInstanceOf((Method) phpNamedElement, "\\Doctrine\\Common\\Persistence\\ObjectManager", "find") ||
+            PhpElementsUtil.isMethodInstanceOf((Method) phpNamedElement, "\\Doctrine\\Persistence\\ObjectManager", "find")
+        )) {
             return Collections.emptySet();
         }
 

@@ -758,6 +758,10 @@ public class EntityHelper {
 
         PhpClass repositoryInterface = PhpElementsUtil.getInterface(PhpIndex.getInstance(project), DoctrineTypes.REPOSITORY_INTERFACE);
 
+        if(repositoryInterface == null) {
+            repositoryInterface = PhpElementsUtil.getInterface(PhpIndex.getInstance(project), "\\Doctrine\\Persistence\\ObjectRepository");
+        }
+
         Collection<DoctrineModel> models = new ArrayList<>();
         for (Map.Entry<String, String> entry : shortcutNames.entrySet()) {
             for(PhpClass phpClass: PhpIndexUtil.getPhpClassInsideNamespace(project, entry.getValue())) {

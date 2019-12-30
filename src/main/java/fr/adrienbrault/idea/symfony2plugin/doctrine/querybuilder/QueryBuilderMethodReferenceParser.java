@@ -257,7 +257,13 @@ public class QueryBuilderMethodReferenceParser {
         if(rootAlias != null && repository == null) {
             MethodReference methodReference = methodReferences.iterator().next();
             PhpClass phpClass = PsiTreeUtil.getParentOfType(methodReference, PhpClass.class);
-            if(phpClass != null && PhpElementsUtil.isInstanceOf(phpClass, "\\Doctrine\\Common\\Persistence\\ObjectRepository")) {
+            if(
+                phpClass != null &&
+                (
+                    PhpElementsUtil.isInstanceOf(phpClass, "\\Doctrine\\Common\\Persistence\\ObjectRepository") ||
+                    PhpElementsUtil.isInstanceOf(phpClass, "\\Doctrine\\Persistence\\ObjectRepository")
+                )
+            ) {
                 for(DoctrineModel model: EntityHelper.getModelClasses(project)) {
                     String className = model.getPhpClass().getPresentableFQN();
                     PhpClass resolvedRepoName = EntityHelper.getEntityRepositoryClass(project, className);
