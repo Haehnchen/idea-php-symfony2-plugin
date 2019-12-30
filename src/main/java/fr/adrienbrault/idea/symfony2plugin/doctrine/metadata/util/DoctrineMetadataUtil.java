@@ -47,7 +47,11 @@ public class DoctrineMetadataUtil {
 
     @NotNull
     public static Collection<LookupElement> getObjectRepositoryLookupElements(@NotNull Project project) {
-        return new ArrayList<>(DoctrineRepositoryLookupElement.create(PhpIndex.getInstance(project).getAllSubclasses("\\Doctrine\\Common\\Persistence\\ObjectRepository")));
+        PhpIndex index = PhpIndex.getInstance(project);
+        Collection<PhpClass> collection = index.getAllSubclasses("\\Doctrine\\Common\\Persistence\\ObjectRepository");
+        collection.addAll(index.getAllSubclasses("\\Doctrine\\Persistence\\ObjectRepository"));
+
+        return new ArrayList<>(DoctrineRepositoryLookupElement.create(collection));
     }
 
     /**

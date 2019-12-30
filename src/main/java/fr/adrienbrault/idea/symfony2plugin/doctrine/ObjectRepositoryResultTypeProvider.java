@@ -32,6 +32,10 @@ public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider3 {
         new MethodMatcher.CallToSignature("\\Doctrine\\Common\\Persistence\\ObjectRepository", "findOneBy"),
         new MethodMatcher.CallToSignature("\\Doctrine\\Common\\Persistence\\ObjectRepository", "findAll"),
         new MethodMatcher.CallToSignature("\\Doctrine\\Common\\Persistence\\ObjectRepository", "findBy"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\Persistence\\ObjectRepository", "find"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\Persistence\\ObjectRepository", "findOneBy"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\Persistence\\ObjectRepository", "findAll"),
+        new MethodMatcher.CallToSignature("\\Doctrine\\Persistence\\ObjectRepository", "findBy"),
     };
 
     final static char TRIM_KEY = '\u0184';
