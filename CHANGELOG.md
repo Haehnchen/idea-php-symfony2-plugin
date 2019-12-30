@@ -15,10 +15,10 @@ Changelog
 * 0.9.x: PhpStorm 6 (no support)
 
 ## 0.19.187
-* Support shortcuts instances of "Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController" (Daniel Espendiller) [#1401](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1401) [#1405](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1405)
-* Support Symfony5 / DoctrineBundle 2 persistence library interface (Daniel Espendiller) [#1401](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1401) [#1404](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1404)
-* Support indexing of template assignment expression for Twig template names (Daniel Espendiller) [#1400](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1400)
-* Added support for namespaced Twig classes (Marcel Rummens) [#1394](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1394)
+* Support shortcuts instances of "Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController" (Daniel Espendiller) [#1401](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1401) [#1405](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/1405)
+* Support Symfony5 / DoctrineBundle 2 persistence library interface (Daniel Espendiller) [#1401](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1401) [#1404](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/1404)
+* Support indexing of template assignment expression for Twig template names (Daniel Espendiller) [#1400](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/1400)
+* Added support for namespaced Twig classes (Marcel Rummens) [#1394](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/1394)
 
 ## 0.19.186
 * Twig settings are not available while indexing (Ruud Kamphuis) [#1393](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1393)
