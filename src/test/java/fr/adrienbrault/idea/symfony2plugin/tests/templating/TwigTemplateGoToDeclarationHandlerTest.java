@@ -1,8 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating;
 
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Function;
@@ -13,9 +10,7 @@ import com.jetbrains.twig.elements.TwigBlockTag;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.util.regex.Pattern;
 
 /**
@@ -197,6 +192,21 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
             TwigFileType.INSTANCE,
             "{% set foo = foo<caret>_test() %}", PlatformPatterns.psiElement(Function.class).withName("foo_test")
         );
+
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{% if foo<caret>_test() %}{% endif %}", PlatformPatterns.psiElement(Function.class).withName("foo_test")
+        );
+
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{% if %}{% else foo<caret>_test() %}{% endif %}", PlatformPatterns.psiElement(Function.class).withName("foo_test")
+        );
+
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{% if %}{% elseif foo<caret>_test() %}{% endif %}", PlatformPatterns.psiElement(Function.class).withName("foo_test")
+        );
     }
 
     public void testTokenTagNavigation() {
@@ -204,25 +214,5 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
             TwigFileType.INSTANCE,
             "{% tag_<caret>foobar 'foo' %}", PlatformPatterns.psiElement()
         );
-    }
-
-    private void createWorkaroundFile(@NotNull String file, @NotNull String content) {
-
-        try {
-            createDummyFiles(file);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // build pseudo file with block
-        final VirtualFile relativeFile = VfsUtil.findRelativeFile(getProject().getBaseDir(), file.split("/"));
-        ApplicationManager.getApplication().runWriteAction(() -> {
-            try {
-                relativeFile.setBinaryContent(content.getBytes());
-            } catch (IOException e2) {
-                e2.printStackTrace();
-            }
-            relativeFile.refresh(false, false);
-        });
     }
 }

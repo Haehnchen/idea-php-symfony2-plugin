@@ -49,7 +49,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
     @Nullable
     @Override
     public PsiElement[] getGotoDeclarationTargets(PsiElement psiElement, int offset, Editor editor) {
-        if(!Symfony2ProjectComponent.isEnabled(psiElement) || !PlatformPatterns.psiElement().withLanguage(TwigLanguage.INSTANCE).accepts(psiElement)) {
+        if (!Symfony2ProjectComponent.isEnabled(psiElement) || !PlatformPatterns.psiElement().withLanguage(TwigLanguage.INSTANCE).accepts(psiElement)) {
             return null;
         }
 
@@ -63,7 +63,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             targets.addAll(getRouteParameterGoTo(psiElement));
         }
 
-        if(TwigPattern.getTemplateFileReferenceTagPattern().accepts(psiElement) || TwigPattern.getPrintBlockOrTagFunctionPattern("include", "source").accepts(psiElement)) {
+        if (TwigPattern.getTemplateFileReferenceTagPattern().accepts(psiElement) || TwigPattern.getPrintBlockOrTagFunctionPattern("include", "source").accepts(psiElement)) {
             // support: {% include() %}, {{ include() }}
             targets.addAll(getTwigFiles(psiElement, offset));
         } else if (PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT).withText(PlatformPatterns.string().endsWith(".twig")).accepts(psiElement)) {
@@ -72,7 +72,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             targets.addAll(getTwigFiles(psiElement, offset));
         }
 
-        if(TwigPattern.getAutocompletableRoutePattern().accepts(psiElement)) {
+        if (TwigPattern.getAutocompletableRoutePattern().accepts(psiElement)) {
             targets.addAll(getRouteGoTo(psiElement));
         }
 
@@ -80,7 +80,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         // tricky way to get the function string trans(...)
         if (TwigPattern.getTransDomainPattern().accepts(psiElement)) {
             PsiElement psiElementTrans = PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice")));
-            if(psiElementTrans != null && TwigUtil.getTwigMethodString(psiElementTrans) != null) {
+            if (psiElementTrans != null && TwigUtil.getTwigMethodString(psiElementTrans) != null) {
                 targets.addAll(getTranslationDomainGoto(psiElement));
             }
         }
@@ -95,15 +95,15 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             targets.addAll(getTranslationKeyGoTo(psiElement));
         }
 
-        if(TwigPattern.getPrintBlockOrTagFunctionPattern("controller").accepts(psiElement) || TwigPattern.getStringAfterTagNamePattern("render").accepts(psiElement)) {
+        if (TwigPattern.getPrintBlockOrTagFunctionPattern("controller").accepts(psiElement) || TwigPattern.getStringAfterTagNamePattern("render").accepts(psiElement)) {
             targets.addAll(getControllerGoTo(psiElement));
         }
 
-        if(TwigPattern.getTransDefaultDomainPattern().accepts(psiElement)) {
+        if (TwigPattern.getTransDefaultDomainPattern().accepts(psiElement)) {
             targets.addAll(TranslationUtil.getDomainPsiFiles(psiElement.getProject(), psiElement.getText()));
         }
 
-        if(PlatformPatterns.or(TwigPattern.getFilterPattern(), TwigPattern.getApplyFilterPattern()).accepts(psiElement)) {
+        if (PlatformPatterns.or(TwigPattern.getFilterPattern(), TwigPattern.getApplyFilterPattern()).accepts(psiElement)) {
             targets.addAll(getFilterGoTo(psiElement));
         }
 
@@ -113,9 +113,12 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             targets.addAll(getAfterIsToken(psiElement));
         }
 
-        // {{ goto_me() }}
+        // {{ goto<caret>_me() }}
+        // {% if goto<caret>_me() %}
+        // {% set foo = foo<caret>_test() %}
         if (TwigPattern.getPrintBlockFunctionPattern().accepts(psiElement)) {
             targets.addAll(this.getMacros(psiElement));
+            targets.addAll(this.getFunctions(psiElement));
         }
 
         // {% from 'boo.html.twig' import goto_me %}
@@ -134,59 +137,45 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             targets.addAll(getSets(psiElement));
         }
 
-        // {{ function( }}
-        // {{ function }}
-        if (PlatformPatterns
-            .psiElement(TwigTokenTypes.IDENTIFIER)
-            .withParent(PlatformPatterns.or(
-                PlatformPatterns.psiElement(TwigElementTypes.PRINT_BLOCK),
-                PlatformPatterns.psiElement(TwigElementTypes.SET_TAG),
-
-                PlatformPatterns.psiElement(TwigElementTypes.FUNCTION_CALL)
-            )).withLanguage(TwigLanguage.INSTANCE).accepts(psiElement)) {
-
-            targets.addAll(this.getFunctions(psiElement));
-        }
-
         // {{ foo.fo<caret>o }}
-        if(TwigPattern.getTypeCompletionPattern().accepts(psiElement)
+        if (TwigPattern.getTypeCompletionPattern().accepts(psiElement)
             || TwigPattern.getPrintBlockFunctionPattern().accepts(psiElement)
             || TwigPattern.getVariableTypePattern().accepts(psiElement))
         {
             targets.addAll(getTypeGoto(psiElement));
         }
 
-        if(TwigPattern.getTwigDocBlockMatchPattern(ControllerDocVariableCollector.DOC_PATTERN).accepts(psiElement)) {
+        if (TwigPattern.getTwigDocBlockMatchPattern(ControllerDocVariableCollector.DOC_PATTERN).accepts(psiElement)) {
             targets.addAll(getControllerNameGoto(psiElement));
         }
 
         // {{ parent() }}
-        if(TwigPattern.getParentFunctionPattern().accepts(psiElement)) {
+        if (TwigPattern.getParentFunctionPattern().accepts(psiElement)) {
             targets.addAll(getParentGoto(psiElement));
         }
 
         // constant('Post::PUBLISHED')
-        if(TwigPattern.getPrintBlockOrTagFunctionPattern("constant").accepts(psiElement)) {
+        if (TwigPattern.getPrintBlockOrTagFunctionPattern("constant").accepts(psiElement)) {
             targets.addAll(getConstantGoto(psiElement));
         }
 
         // {# @var user \Foo #}
-        if(TwigPattern.getTwigTypeDocBlockPattern().accepts(psiElement)) {
+        if (TwigPattern.getTwigTypeDocBlockPattern().accepts(psiElement)) {
             targets.addAll(getVarClassGoto(psiElement));
         }
 
         // {# @see Foo.html.twig #}
         // {# @see \Class #}
-        if(TwigPattern.getTwigDocSeePattern().accepts(psiElement)) {
+        if (TwigPattern.getTwigDocSeePattern().accepts(psiElement)) {
             targets.addAll(getSeeDocTagTargets(psiElement));
         }
 
         // {% FOO_TOKEN %}
-        if(TwigPattern.getTagTokenBlockPattern().accepts(psiElement)) {
+        if (TwigPattern.getTagTokenBlockPattern().accepts(psiElement)) {
             targets.addAll(getTokenTargets(psiElement));
         }
 
-        return targets.toArray(new PsiElement[targets.size()]);
+        return targets.toArray(new PsiElement[0]);
     }
 
     /**
