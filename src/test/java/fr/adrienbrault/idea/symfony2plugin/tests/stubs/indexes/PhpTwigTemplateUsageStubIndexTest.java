@@ -29,6 +29,7 @@ public class PhpTwigTemplateUsageStubIndexTest extends SymfonyLightCodeInsightFi
             "       $foo->render('@!Foo/overwrite.html.twig');\n" +
             "       $foo->renderView('foo-renderView.html.twig');\n" +
             "       $foo->renderView($t = 'foo-var-assignment-expression.html.twig');\n" +
+            "       $foo->renderView($t = $foo->foo());\n" +
             "       $foo->renderResponse('foo-renderResponse.html.twig');\n" +
             "       $foo->render(self::FOO);\n" +
             "       $foo->render($var);\n" +

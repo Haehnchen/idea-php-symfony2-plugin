@@ -313,7 +313,7 @@ public class PhpMethodVariableResolveUtil {
             }
 
             if (parameters[0] instanceof StringLiteralExpression) {
-                resolveString(methodReference, parameters[0]);
+                addStringLiteralScope(methodReference, (StringLiteralExpression) parameters[0]);
             } else if(parameters[0] instanceof TernaryExpression) {
                 // render(true === true ? 'foo.twig.html' : 'foobar.twig.html')
                 for (PhpPsiElement phpPsiElement : new PhpPsiElement[]{((TernaryExpression) parameters[0]).getTrueVariant(), ((TernaryExpression) parameters[0]).getFalseVariant()}) {
@@ -322,7 +322,7 @@ public class PhpMethodVariableResolveUtil {
                     }
 
                     if (phpPsiElement instanceof StringLiteralExpression) {
-                        resolveString(methodReference, phpPsiElement);
+                        addStringLiteralScope(methodReference, (StringLiteralExpression) phpPsiElement);
                     } else if(phpPsiElement instanceof PhpReference) {
                         resolvePhpReference(methodReference, phpPsiElement);
                     }
@@ -330,8 +330,8 @@ public class PhpMethodVariableResolveUtil {
             } else if(parameters[0] instanceof AssignmentExpression) {
                 // $this->render($template = 'foo.html.twig')
                 PhpPsiElement value = ((AssignmentExpression) parameters[0]).getValue();
-                if(value != null) {
-                    resolveString(methodReference, value);
+                if(value instanceof StringLiteralExpression) {
+                    addStringLiteralScope(methodReference, (StringLiteralExpression) value);
                 }
             } else if(parameters[0] instanceof PhpReference) {
                 resolvePhpReference(methodReference, parameters[0]);
@@ -340,26 +340,11 @@ public class PhpMethodVariableResolveUtil {
                 PsiElement phpPsiElement = ((BinaryExpression) parameters[0]).getRightOperand();
 
                 if (phpPsiElement instanceof StringLiteralExpression) {
-                    resolveString(methodReference, phpPsiElement);
+                    addStringLiteralScope(methodReference, (StringLiteralExpression) phpPsiElement);
                 } else if(phpPsiElement instanceof PhpReference) {
                     resolvePhpReference(methodReference, phpPsiElement);
                 }
             }
-        }
-
-        private void resolveString(@NotNull MethodReference methodReference, PsiElement parameter) {
-            // foo('foo.html.twig')
-            String contents = ((StringLiteralExpression) parameter).getContents();
-            if (StringUtils.isBlank(contents) || !contents.endsWith(".twig")) {
-                return;
-            }
-
-            Function parentOfType = PsiTreeUtil.getParentOfType(methodReference, Function.class);
-            if(parentOfType == null) {
-                return;
-            }
-
-            addTemplateWithScope(contents, parentOfType, methodReference);
         }
 
         private void resolvePhpReference(@NotNull MethodReference methodReference, PsiElement parameter) {
