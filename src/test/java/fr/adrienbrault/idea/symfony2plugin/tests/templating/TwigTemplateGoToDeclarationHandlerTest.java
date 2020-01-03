@@ -214,5 +214,10 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
             TwigFileType.INSTANCE,
             "{% tag_<caret>foobar 'foo' %}", PlatformPatterns.psiElement()
         );
+
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{% tag_foobar 'foo' %}{% endtag_<caret>foobar %}", PlatformPatterns.psiElement()
+        );
     }
 }

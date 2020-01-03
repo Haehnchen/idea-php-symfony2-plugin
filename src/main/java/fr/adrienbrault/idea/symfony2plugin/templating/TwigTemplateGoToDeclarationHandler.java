@@ -548,7 +548,11 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         Collection<PsiElement> targets = new ArrayList<>();
 
         TwigUtil.visitTokenParsers(psiElement.getProject(), pair -> {
-            if(tagName.equalsIgnoreCase(pair.getFirst())) {
+            // support direct tag name or ending tag
+            // {% tag_name %}
+            // {% endtag_name %}
+            String currentTagName = pair.getFirst();
+            if(tagName.equalsIgnoreCase(currentTagName) || (tagName.toLowerCase().startsWith("end") && currentTagName.equalsIgnoreCase(tagName.substring(3)))) {
                 targets.add(pair.getSecond());
             }
         });
@@ -558,7 +562,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
 
     @Nullable
     @Override
-    public String getActionText(DataContext dataContext) {
+    public String getActionText(@NotNull DataContext dataContext) {
         return null;
     }
 }
