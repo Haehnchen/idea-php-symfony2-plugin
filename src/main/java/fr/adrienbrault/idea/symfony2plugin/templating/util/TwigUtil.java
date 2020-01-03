@@ -61,6 +61,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.psi.PsiElementAssertUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import icons.TwigIcons;
+import kotlin.Triple;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -2515,7 +2516,7 @@ public class TwigUtil {
      * Visit Twig TokenParser
      * eg. {% my_token %}
      */
-    public static void visitTokenParsers(@NotNull Project project, @NotNull Consumer<Pair<String, PsiElement>> consumer) {
+    public static void visitTokenParsers(@NotNull Project project, @NotNull Consumer<Triple<String, PsiElement, Method>> consumer) {
         Set<PhpClass> allSubclasses = new HashSet<>();
 
         PhpIndex phpIndex = PhpIndex.getInstance(project);
@@ -2542,7 +2543,7 @@ public class TwigUtil {
                 if(returnValue instanceof StringLiteralExpression) {
                     String contents = ((StringLiteralExpression) returnValue).getContents();
                     if(StringUtils.isNotBlank(contents)) {
-                        consumer.consume(Pair.create(contents, returnValue));
+                        consumer.consume(new Triple<>(contents, returnValue, getTag));
                     }
                 }
             }

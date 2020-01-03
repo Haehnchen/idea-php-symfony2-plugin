@@ -339,6 +339,12 @@
                          language="Twig"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigVariableDeprecatedInspection"/>
 
+        <localInspection groupPath="Symfony" shortName="TwigExtensionDeprecatedInspection" displayName="Deprecated Twig Extension"
+                         groupName="Twig"
+                         enabledByDefault="true" level="WARNING"
+                         language="Twig"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigExtensionDeprecatedInspection"/>
+
         <localInspection groupPath="Symfony" shortName="YamlQuotedEscapedInspection" displayName="Quoted issues"
                          groupName="Yaml"
                          enabledByDefault="true" level="WARNING"
