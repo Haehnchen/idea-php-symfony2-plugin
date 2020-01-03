@@ -521,7 +521,6 @@ public class TwigPattern {
     public static ElementPattern<PsiElement> getTagTokenBlockPattern() {
         return PlatformPatterns
             .psiElement(TwigTokenTypes.TAG_NAME)
-                .withParent(PlatformPatterns.psiElement(TwigElementTypes.TAG))
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
