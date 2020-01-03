@@ -575,6 +575,7 @@ public class TwigPattern {
             PlatformPatterns.psiElement(TwigElementTypes.SET_TAG),
             PlatformPatterns.psiElement(TwigElementTypes.ELSE_TAG),
             PlatformPatterns.psiElement(TwigElementTypes.ELSEIF_TAG),
+            PlatformPatterns.psiElement(TwigElementTypes.FOR_TAG),
 
             // PhpStorm 2017.3.2: {{ asset('') }}
             PlatformPatterns.psiElement(TwigElementTypes.FUNCTION_CALL)
