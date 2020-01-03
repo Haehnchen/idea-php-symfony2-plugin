@@ -34,6 +34,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -148,7 +149,7 @@ public class TwigTypeResolveUtil {
         Collection<List<TwigTypeContainer>> previousElements = new ArrayList<>();
         previousElements.add(new ArrayList<>(type));
 
-        String[] typeNames = types.toArray(new String[types.size()]);
+        String[] typeNames = types.toArray(new String[0]);
         for (int i = 1; i <= typeNames.length - 1; i++ ) {
             type = resolveTwigMethodName(type, typeNames[i], previousElements);
             previousElements.add(new ArrayList<>(type));
@@ -252,7 +253,16 @@ public class TwigTypeResolveUtil {
 
         TwigFileVariableCollectorParameter collectorParameter = new TwigFileVariableCollectorParameter(psiElement, visitedFiles);
         for(TwigFileVariableCollector collector: TWIG_FILE_VARIABLE_COLLECTORS.getExtensions()) {
-            collector.collect(collectorParameter, globalVars);
+            Map<String, Set<String>> globalVarsScope = new HashMap<>();
+            collector.collect(collectorParameter, globalVarsScope);
+
+            // @TODO: resolve this in change extension point, so that its only possible to provide data and dont give full scope to break / overwrite other variables
+            globalVarsScope.forEach((s, strings) -> {
+                globalVars.putIfAbsent(s, new HashSet<>());
+                globalVars.get(s).addAll(strings);
+            });
+
+            // @TODO: provide merge for multiple matches
             collector.collectPsiVariables(collectorParameter, controllerVars);
         }
 
