@@ -207,6 +207,16 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
             TwigFileType.INSTANCE,
             "{% if %}{% elseif foo<caret>_test() %}{% endif %}", PlatformPatterns.psiElement(Function.class).withName("foo_test")
         );
+
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{% for user in foo<caret>_test() %}{% endfor %}", PlatformPatterns.psiElement(Function.class).withName("foo_test")
+        );
+
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{% for user in users if foo<caret>_test() %}{% endfor %}", PlatformPatterns.psiElement(Function.class).withName("foo_test")
+        );
     }
 
     public void testTokenTagNavigation() {
