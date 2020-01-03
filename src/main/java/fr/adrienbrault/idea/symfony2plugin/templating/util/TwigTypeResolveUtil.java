@@ -23,6 +23,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.StaticVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormFieldResolver;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormVarsResolver;
@@ -34,7 +35,6 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -442,10 +442,18 @@ public class TwigTypeResolveUtil {
             if(phpNamedElement.getPhpNamedElement() != null) {
                 for(PhpNamedElement target : getTwigPhpNameTargets(phpNamedElement.getPhpNamedElement(), typeName)) {
                     PhpType phpType = target.getType();
-                    for(String typeString: phpType.getTypes()) {
-                        PhpNamedElement phpNamedElement1 = PhpElementsUtil.getClassInterface(phpNamedElement.getPhpNamedElement().getProject(), typeString);
-                        if(phpNamedElement1 != null) {
-                            phpNamedElements.add(new TwigTypeContainer(phpNamedElement1));
+
+                    // @TODO: provide extension
+                    // custom resolving for Twig here: "app.user" => can also be a general solution just support the "getToken()->getUser()"
+                    if (target instanceof Method && StaticVariableCollector.isUserMethod((Method) target)) {
+                        phpNamedElements.addAll(getApplicationUserImplementations(target.getProject()));
+                    }
+
+                    // @TODO: use full resolving for object, that would allow using TypeProviders and core PhpStorm feature
+                    for (String typeString: phpType.filterPrimitives().getTypes()) {
+                        PhpClass phpClass = PhpElementsUtil.getClassInterface(phpNamedElement.getPhpNamedElement().getProject(), typeString);
+                        if(phpClass != null) {
+                            phpNamedElements.add(new TwigTypeContainer(phpClass));
                         }
                     }
                 }
@@ -458,6 +466,19 @@ public class TwigTypeResolveUtil {
         }
 
         return phpNamedElements;
+    }
+
+    /**
+     * Get possible suitable UserInterface implementation from the application scope
+     */
+    @NotNull
+    private static Collection<TwigTypeContainer> getApplicationUserImplementations(@NotNull Project project) {
+        return PhpIndex.getInstance(project)
+            .getAllSubclasses("\\Symfony\\Component\\Security\\Core\\User\\UserInterface")
+            .stream()
+            .filter(phpClass -> !phpClass.isInterface()) // filter out implementation like AdvancedUserInterface
+            .map(TwigTypeContainer::new)
+            .collect(Collectors.toList());
     }
 
     private static Set<String> resolveTwigMethodName(Project project, Collection<String> previousElement, String typeName) {
