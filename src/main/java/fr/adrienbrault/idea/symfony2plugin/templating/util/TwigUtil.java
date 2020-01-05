@@ -2745,7 +2745,7 @@ public class TwigUtil {
         return lookupElements;
     }
 
-    public static void visitTemplateExtends(@NotNull TwigFile twigFile, Consumer<Pair<String, PsiElement>> consumer) {
+    public static void visitTemplateExtends(@NotNull TwigFile twigFile,@NotNull Consumer<Pair<String, PsiElement>> consumer) {
         twigFile.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
             @Override
             public void visitElement(PsiElement element) {
@@ -2768,6 +2768,39 @@ public class TwigUtil {
                 super.visitElement(element);
             }
         });
+    }
+
+    /**
+     * Visit each "controller()" with its normalized parameter
+     */
+    public static void visitControllerFunctions(@NotNull PsiFile psiFile,@NotNull Consumer<Pair<String, PsiElement>> consumer) {
+        //
+        PsiElement[] psiElements = PsiTreeUtil.collectElements(psiFile, psiElement -> {
+            if (psiElement.getNode().getElementType() != TwigElementTypes.FUNCTION_CALL) {
+                return false;
+            }
+
+            PsiElement firstChild = psiElement.getFirstChild();
+            if (firstChild.getNode().getElementType() != TwigTokenTypes.IDENTIFIER) {
+                return false;
+            }
+
+            return "controller".equalsIgnoreCase(firstChild.getText());
+        });
+
+        // find parameter: controller("foobar::action")
+        for (PsiElement functionCall: psiElements) {
+            PsiElement includeTag = PsiElementUtils.getChildrenOfType(functionCall, TwigPattern.getPrintBlockOrTagFunctionPattern("controller"));
+            if(includeTag != null) {
+                String controllerName = includeTag.getText();
+                if(StringUtils.isNotBlank(controllerName)) {
+                    // escaping
+                    // "Foobar\\Test"
+                    String replace = StringUtils.stripStart(controllerName.replace("\\\\", "\\"), "\\");
+                    consumer.consume(Pair.create(replace, includeTag));
+                }
+            }
+        }
     }
 
     public static class DomainScope {

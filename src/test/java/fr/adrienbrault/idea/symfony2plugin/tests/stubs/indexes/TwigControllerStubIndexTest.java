@@ -15,11 +15,13 @@ public class TwigControllerStubIndexTest extends SymfonyLightCodeInsightFixtureT
         myFixture.configureByText(TwigFileType.INSTANCE, "" +
             "{{ controller('test::action') }}\n" +
             "{{ controller      ('test::action2') }}\n" +
-            "{{ controller    ('te\\\\st::action3') }}\n"
+            "{{ controller    ('te\\\\st::action3') }}\n" +
+            "{{ controller    ('\\te\\\\st::action4') }}\n" +
+            "{{ controller    ('\\\\te\\\\st::action5') }}\n"
         );
     }
 
     public void testTemplateIncludeIndexer() {
-        assertIndexContains(TwigControllerStubIndex.KEY, "test::action", "test::action2", "te\\st::action3");
+        assertIndexContains(TwigControllerStubIndex.KEY, "test::action", "test::action2", "te\\st::action3", "te\\st::action4", "te\\st::action5");
     }
 }
