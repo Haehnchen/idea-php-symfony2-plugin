@@ -14,6 +14,17 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.19.188
+* Provide controller render navigation from PHP controller to its template (Daniel Espendiller) [#1418](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1418)
+* Support user implementation resolving for Twig "app.user" usages (Daniel Espendiller) [#1416](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1416)
+* Support multiple Twig global types on same variable like "app" (Daniel Espendiller) [#1415](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1415)
+* Provide deprecated inspection for Twig token tags on PhpClass (Daniel Espendiller) [#1414](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1414)
+* Support Twig functions in "for" statements (Daniel Espendiller) [#1413](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1413)
+* Remove parent check for Twig tags to fix force implemented token TAG by PhpStorm like spaceless; support end tags to be navigation targets (Daniel Espendiller) [#1412](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1412)
+* Fix template usage extraction issues with inline method reference using wrong type cast [#1410](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1410) (Daniel Espendiller)
+* Support Twig function navigation inside IF statement (Daniel Espendiller) [#1408](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1408)
+* Attempt to use new persistance namespaces without breaking BC (Jakub Caban) [#1407](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1407)
+
 ## 0.19.187
 * Support shortcuts instances of "Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController" (Daniel Espendiller) [#1401](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1401) [#1405](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/1405)
 * Support Symfony5 / DoctrineBundle 2 persistence library interface (Daniel Espendiller) [#1401](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1401) [#1404](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/1404)

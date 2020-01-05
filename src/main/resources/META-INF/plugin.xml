@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Support</name>
-    <version>0.19.187</version>
+    <version>0.19.188</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
 
     <description><![CDATA[
@@ -559,6 +559,7 @@
         <ControllerActionGotoRelatedCollector implementation="fr.adrienbrault.idea.symfony2plugin.navigation.controller.RouteControllerRelatedGotoCollector"/>
         <ControllerActionGotoRelatedCollector implementation="fr.adrienbrault.idea.symfony2plugin.navigation.controller.ModelsControllerRelatedGotoCollector"/>
         <ControllerActionGotoRelatedCollector implementation="fr.adrienbrault.idea.symfony2plugin.navigation.controller.TemplatesControllerRelatedGotoCollector"/>
+        <ControllerActionGotoRelatedCollector implementation="fr.adrienbrault.idea.symfony2plugin.navigation.controller.TwigControllerUsageControllerRelatedGotoCollector"/>
 
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.form.FormOptionGotoCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.templating.BlockGotoCompletionRegistrar"/>
