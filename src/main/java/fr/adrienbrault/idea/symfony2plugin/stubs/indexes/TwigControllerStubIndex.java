@@ -1,8 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
@@ -10,15 +8,12 @@ import com.intellij.util.io.KeyDescriptor;
 import com.intellij.util.io.VoidDataExternalizer;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
-import com.jetbrains.twig.TwigTokenTypes;
-import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import gnu.trove.THashMap;
-import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -41,44 +36,13 @@ public class TwigControllerStubIndex extends FileBasedIndexExtension<String, Voi
     @Override
     public DataIndexer<String, Void, FileContent> getIndexer() {
         return inputData -> {
-            final Map<String, Void> map = new THashMap<>();
-
             PsiFile psiFile = inputData.getPsiFile();
-            if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject())) {
-                return map;
+            if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject()) || !(psiFile instanceof TwigFile)) {
+                return Collections.emptyMap();
             }
 
-            if(!(psiFile instanceof TwigFile)) {
-                return map;
-            }
-
-            // collect: controller()
-            PsiElement[] psiElements = PsiTreeUtil.collectElements(psiFile, psiElement -> {
-                if (psiElement.getNode().getElementType() != TwigElementTypes.FUNCTION_CALL) {
-                    return false;
-                }
-
-                PsiElement firstChild = psiElement.getFirstChild();
-                if (firstChild.getNode().getElementType() != TwigTokenTypes.IDENTIFIER) {
-                    return false;
-                }
-
-                return "controller".equalsIgnoreCase(firstChild.getText());
-            });
-
-            // find parameter: controller("foobar::action")
-            for (PsiElement functionCall: psiElements) {
-                PsiElement includeTag = PsiElementUtils.getChildrenOfType(functionCall, TwigPattern.getPrintBlockOrTagFunctionPattern("controller"));
-                if(includeTag != null) {
-                    String controllerName = includeTag.getText();
-                    if(StringUtils.isNotBlank(controllerName)) {
-                        // escaping
-                        // "Foobar\\Test"
-                        map.put(controllerName.replace("\\\\", "\\"), null);
-                    }
-                }
-            }
-
+            final Map<String, Void> map = new THashMap<>();
+            TwigUtil.visitControllerFunctions(psiFile, pair -> map.put(pair.getFirst(), null));
             return map;
         };
 
