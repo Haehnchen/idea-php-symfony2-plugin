@@ -161,12 +161,16 @@ public class ConfigUtil {
 
     /**
      * app/config[..].yml
+     * app/config[..].yaml
      * config/packages/twig.yml
+     * config/packages/twig.yaml
      */
     public static Collection<VirtualFile> getConfigurations(@NotNull Project project, @NotNull String packageName) {
         Collection<String[]> paths = Arrays.asList(
             new String[] {"config", "packages", packageName +".yml"},
-            new String[] {"config", "packages", packageName, "config.yaml"}
+            new String[] {"config", "packages", packageName +".yaml"},
+            new String[] {"config", "packages", packageName, "config.yaml"},
+            new String[] {"config", "packages", packageName, "config.yml"}
         );
 
         Collection<VirtualFile> virtualFiles = new HashSet<>();
