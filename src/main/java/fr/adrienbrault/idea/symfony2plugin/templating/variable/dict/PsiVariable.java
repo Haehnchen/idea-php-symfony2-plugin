@@ -4,7 +4,8 @@ import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collections;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -12,22 +13,25 @@ import java.util.Set;
  */
 public class PsiVariable {
     @NotNull
-    final private Set<String> types;
+    final private Set<String> types = new HashSet<>();
 
-    @Nullable
-    private PsiElement psiElement;
+    @NotNull
+    final private Collection<PsiElement> psiElements = new HashSet<>();
 
     public PsiVariable(@NotNull Set<String> types, @Nullable PsiElement psiElement) {
-        this.types = types;
-        this.psiElement = psiElement;
+        this.types.addAll(types);
+        this.psiElements.add(psiElement);
     }
 
     public PsiVariable(@NotNull Set<String> types) {
-        this.types = types;
+        this.types.addAll(types);
     }
 
     public PsiVariable(@NotNull String type) {
-        this.types = Collections.singleton(type);
+        this.types.add(type);
+    }
+
+    public PsiVariable() {
     }
 
     @NotNull
@@ -37,6 +41,22 @@ public class PsiVariable {
 
     @Nullable
     public PsiElement getElement() {
-        return psiElement;
+        if (psiElements.size() > 0) {
+            return psiElements.iterator().next();
+        }
+
+        return null;
+    }
+
+    public void addElements(@NotNull PsiElement psiElement) {
+        this.psiElements.add(psiElement);
+    }
+
+    public void addTypes(@NotNull Collection<String> types) {
+        this.types.addAll(types);
+    }
+
+    public void addType(@NotNull String type) {
+        this.types.add(type);
     }
 }

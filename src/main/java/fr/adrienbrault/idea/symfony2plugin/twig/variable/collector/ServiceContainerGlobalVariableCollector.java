@@ -11,10 +11,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -23,17 +20,21 @@ public class ServiceContainerGlobalVariableCollector implements TwigFileVariable
 
     @Override
     public void collect(@NotNull TwigFileVariableCollectorParameter parameter, @NotNull Map<String, Set<String>> variables) {
+        Map<String, Set<String>> map = new HashMap<>();
+
         TwigGlobalsServiceParser twigPathServiceParser = ServiceXmlParserFactory.getInstance(parameter.getProject(), TwigGlobalsServiceParser.class);
         for(Map.Entry<String, TwigGlobalVariable> globalVariableEntry: twigPathServiceParser.getTwigGlobals().entrySet()) {
             if(globalVariableEntry.getValue().getTwigGlobalEnum() == TwigGlobalEnum.SERVICE) {
                 String serviceName = globalVariableEntry.getValue().getValue();
                 PhpClass phpClass = ServiceUtil.getServiceClass(parameter.getProject(), serviceName);
                 if(phpClass != null) {
-                    variables.put(globalVariableEntry.getKey(), new HashSet<>(Collections.singletonList(
-                        StringUtils.stripStart(phpClass.getFQN(), "\\")
-                    )));
+                    String key = globalVariableEntry.getKey();
+                    map.putIfAbsent(key, new HashSet<>());
+                    map.get(key).add("\\" + StringUtils.stripStart(phpClass.getFQN(), "\\"));
                 }
             }
         }
+
+        variables.putAll(map);
     }
 }

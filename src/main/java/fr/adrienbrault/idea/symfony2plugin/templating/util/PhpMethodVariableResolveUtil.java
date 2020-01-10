@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
+import com.intellij.openapi.util.Pair;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -171,11 +172,15 @@ public class PhpMethodVariableResolveUtil {
             PsiElement parent = scopeVar.getParent();
             if (parent instanceof ArrayAccessExpression) {
                 // $template['variable'] = $foo
-                collectedTypes.putAll(getTypesOnArrayIndex((ArrayAccessExpression) parent));
+                Pair<String, PsiVariable> pair = getTypesOnArrayIndex((ArrayAccessExpression) parent);
+                if (pair != null) {
+                    collectedTypes.put(pair.getFirst(), pair.getSecond());
+                }
             } else if (parent instanceof AssignmentExpression) {
                 // array('foo' => $var)
-                if (((AssignmentExpression) parent).getValue() instanceof ArrayCreationExpression) {
-                    collectedTypes.putAll(getTypesOnArrayHash((ArrayCreationExpression) ((AssignmentExpression) parent).getValue()));
+                PhpPsiElement value = ((AssignmentExpression) parent).getValue();
+                if (value instanceof ArrayCreationExpression) {
+                    collectedTypes.putAll(getTypesOnArrayHash((ArrayCreationExpression) value));
                 }
             }
         }
@@ -186,10 +191,8 @@ public class PhpMethodVariableResolveUtil {
     /**
      * $template['var'] = $foo
      */
-    private static Map<String, PsiVariable> getTypesOnArrayIndex(ArrayAccessExpression arrayAccessExpression) {
-
-        Map<String, PsiVariable> collectedTypes = new HashMap<>();
-
+    @Nullable
+    private static Pair<String, PsiVariable> getTypesOnArrayIndex(@NotNull ArrayAccessExpression arrayAccessExpression) {
         ArrayIndex arrayIndex = arrayAccessExpression.getIndex();
         if(arrayIndex != null && arrayIndex.getValue() instanceof StringLiteralExpression) {
 
@@ -203,28 +206,23 @@ public class PhpMethodVariableResolveUtil {
                     variableTypes.addAll(((PhpTypedElement) arrayValue).getType().getTypes());
                 }
 
-                collectedTypes.put(variableName, new PsiVariable(variableTypes, ((AssignmentExpression) parent).getValue()));
-
+                return Pair.create(variableName, new PsiVariable(variableTypes, ((AssignmentExpression) parent).getValue()));
             } else {
-                collectedTypes.put(variableName, new PsiVariable(variableTypes, null));
+                return Pair.create(variableName, new PsiVariable(variableTypes));
             }
-
-
         }
 
-        return collectedTypes;
+        return null;
     }
 
     /**
      *  array('foo' => $var, 'bar' => $bar)
      */
-    public static Map<String, PsiVariable> getTypesOnArrayHash(ArrayCreationExpression arrayCreationExpression) {
-
+    public static Map<String, PsiVariable> getTypesOnArrayHash(@NotNull ArrayCreationExpression arrayCreationExpression) {
         Map<String, PsiVariable> collectedTypes = new HashMap<>();
 
         for(ArrayHashElement arrayHashElement: arrayCreationExpression.getHashElements()) {
             if(arrayHashElement.getKey() instanceof StringLiteralExpression) {
-
                 String variableName = ((StringLiteralExpression) arrayHashElement.getKey()).getContents();
                 Set<String> variableTypes = new HashSet<>();
 
@@ -233,7 +231,6 @@ public class PhpMethodVariableResolveUtil {
                 }
 
                 collectedTypes.put(variableName, new PsiVariable(variableTypes, arrayHashElement.getValue()));
-
             }
         }
 
