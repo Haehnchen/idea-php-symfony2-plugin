@@ -14,6 +14,10 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.19.189
+* Provide resolving of Twig globals and variables with multiple types and targets (Daniel Espendiller) [#1421](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1421)
+* Support also "yaml" for config files to extract the globals (Daniel Espendiller) [#1420](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1420)
+
 ## 0.19.188
 * Provide controller render navigation from PHP controller to its template (Daniel Espendiller) [#1418](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1418)
 * Support user implementation resolving for Twig "app.user" usages (Daniel Espendiller) [#1416](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1416)
