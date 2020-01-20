@@ -17,3 +17,11 @@ namespace Symfony\Component\DependencyInjection
         }
     }
 }
+
+namespace Symfony\Component\Messenger\Handler
+{
+    interface MessageSubscriberInterface
+    {
+        public static function getHandledMessages(): iterable;
+    }
+}
