@@ -2,7 +2,7 @@
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Support</name>
     <version>0.19.189</version>
-    <vendor email="daniel@espendiller.net" url="http://espend.de">Daniel Espendiller</vendor>
+    <vendor email="daniel@espendiller.net" url="http://espend.de?p=fr.adrienbrault.idea.symfony2plugin">Daniel Espendiller</vendor>
 
     <description><![CDATA[
 <p>Support for Symfony framework / components.</p>
@@ -19,7 +19,7 @@
     <li>(Optional) Configure a default project connection in "Remote Hosts Access / Remote Hosts" to enable support for remote files in plugin settings</li>
     <li>(Optional) Ignore Symfony "cache" directory because of duplicate classes "Settings -> Project -> Directories"</li>
     <li>(Optional) Install <a href="https://plugins.jetbrains.com/plugin/8133">PHP Toolbox</a></li>
-    <li>(Optional) To support <b>XLIFF translations</b> add "*.xlf" / "*.xliff" to XML "Editor" -> "File Types"</li>
+    <li>(Optional) For <b>XLIFF translations</b> key navigation install <a href="https://plugins.jetbrains.com/plugin/13673">Localization</a> or add "*.xlf" / "*.xliff" to XML "Editor" -> "File Types"</li>
 </ul>
 
 <h2>Features</h2>
@@ -82,11 +82,12 @@
 
 <h2>Related Plugins</h2>
 <ul>
-    <li><a href="http://plugins.jetbrains.com/plugin/7320">PHP Annotations</a></li>
-    <li><a href="http://plugins.jetbrains.com/plugin/7487">Drupal Symfony Bridge</a></li>
-    <li><a href="http://plugins.jetbrains.com/plugin/7532">Laravel Plugin</a></li>
-    <li><a href="http://plugins.jetbrains.com/plugin/7410">Shopware Plugin</a></li>
-    <li><a href="http://plugins.jetbrains.com/plugin/8133">PHP Toolbox</a></li>
+    <li><a href="https://plugins.jetbrains.com/plugin/7320">PHP Annotations</a></li>
+    <li><a href="https://plugins.jetbrains.com/plugin/13673">Localization</a></li>
+    <li><a href="https://plugins.jetbrains.com/plugin/7487">Drupal Symfony Bridge</a></li>
+    <li><a href="https://plugins.jetbrains.com/plugin/7532">Laravel Plugin</a></li>
+    <li><a href="https://plugins.jetbrains.com/plugin/7410">Shopware Plugin</a></li>
+    <li><a href="https://plugins.jetbrains.com/plugin/8133">PHP Toolbox</a></li>
 </ul>
 
 <h2><a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/contributors">Contributors</a></h2>
