@@ -102,6 +102,14 @@ public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider4 {
 
         repositorySignature = repositorySignature.substring(1, nextMethodCall);
 
+        if (repositorySignature.startsWith("#K#C")) {
+            repositorySignature = repositorySignature.substring(4);
+        }
+
+        if (repositorySignature.contains(".class")) {
+            repositorySignature = repositorySignature.substring(0, repositorySignature.indexOf(".class"));
+        }
+
         return new PhpType().add("#" + this.getKey() + refSignature + TRIM_KEY + repositorySignature);
     }
 
