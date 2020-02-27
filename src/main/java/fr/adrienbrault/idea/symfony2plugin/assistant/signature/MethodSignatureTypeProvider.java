@@ -11,6 +11,7 @@ import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider3;
+import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider4;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.extension.MethodSignatureTypeProviderExtension;
 import fr.adrienbrault.idea.symfony2plugin.extension.MethodSignatureTypeProviderParameter;
@@ -27,7 +28,7 @@ import java.util.Set;
  * @author Adrien Brault <adrien.brault@gmail.com>
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class MethodSignatureTypeProvider implements PhpTypeProvider3 {
+public class MethodSignatureTypeProvider implements PhpTypeProvider4 {
 
     final static char TRIM_KEY = '\u0181';
     private static final ExtensionPointName<MethodSignatureTypeProviderExtension> EXTENSIONS = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.MethodSignatureTypeProviderExtension");
@@ -118,6 +119,11 @@ public class MethodSignatureTypeProvider implements PhpTypeProvider3 {
         }
 
         return matchedSignatures;
+    }
+
+    @Override
+    public PhpType complete(String expression, Project project) {
+        return null;
     }
 
     @Override

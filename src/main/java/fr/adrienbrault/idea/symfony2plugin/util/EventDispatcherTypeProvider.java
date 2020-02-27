@@ -6,6 +6,7 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider3;
+import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider4;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -17,7 +18,7 @@ import java.util.Set;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class EventDispatcherTypeProvider implements PhpTypeProvider3 {
+public class EventDispatcherTypeProvider implements PhpTypeProvider4 {
 
     private static char TRIM_KEY = '\u0197';
 
@@ -74,6 +75,11 @@ public class EventDispatcherTypeProvider implements PhpTypeProvider3 {
         }
 
         return new PhpType().add("#" + this.getKey() + refSignature + TRIM_KEY + signature);
+    }
+
+    @Override
+    public PhpType complete(String expression, Project project) {
+        return null;
     }
 
     @Override
