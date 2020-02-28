@@ -10,6 +10,7 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
+import com.jetbrains.php.lang.psi.elements.impl.MethodImpl;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider4;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
@@ -102,15 +103,9 @@ public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider4 {
 
         repositorySignature = repositorySignature.substring(1, nextMethodCall);
 
-        if (repositorySignature.startsWith("#K#C")) {
-            repositorySignature = repositorySignature.substring(4);
-        }
+        String signature = "#" + this.getKey() + refSignature.substring(0, refSignature.indexOf("|")) + TRIM_KEY + repositorySignature;
 
-        if (repositorySignature.contains(".class")) {
-            repositorySignature = repositorySignature.substring(0, repositorySignature.indexOf(".class"));
-        }
-
-        return new PhpType().add("#" + this.getKey() + refSignature + TRIM_KEY + repositorySignature);
+        return new PhpType().add(signature);
     }
 
     @Override
@@ -155,8 +150,10 @@ public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider4 {
 
         String name = method.getName();
         if(name.equals("findAll") || name.equals("findBy")) {
-            method.getType().add(phpClass.getFQN() + "[]");
-            return phpNamedElementCollections;
+            Method m = new MethodImpl(method.getNode());
+            m.getType().add(phpClass.getFQN() + "[]");
+
+            return PhpTypeProviderUtil.mergeSignatureResults(phpNamedElementCollections, m);
         }
 
         return PhpTypeProviderUtil.mergeSignatureResults(phpNamedElementCollections, phpClass);
