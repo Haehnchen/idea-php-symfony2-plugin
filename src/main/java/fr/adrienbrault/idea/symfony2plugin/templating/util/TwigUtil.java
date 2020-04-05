@@ -1897,31 +1897,42 @@ public class TwigUtil {
         Collection<Pair<String, String>> paths = new ArrayList<>();
 
         for (Pair<String, String> pair : getTwigPathFromYamlConfig(yamlFile)) {
-            String second = pair.getSecond();
+            // normalize path; just to be error prune
+            String namespacePath = pair.getSecond().replace("\\", "/").replaceAll("/+", "/");
+            String namespace = pair.getFirst();
 
-            if(second.startsWith("%kernel.root_dir%")) {
+            if(namespacePath.startsWith("%kernel.root_dir%")) {
                 // %kernel.root_dir%/../app
                 // %kernel.root_dir%/foo
                 for (VirtualFile appDir : FilesystemUtil.getAppDirectories(yamlFile.getProject())) {
-                    String path = StringUtils.stripStart(second.substring("%kernel.root_dir%".length()), "/");
+                    String path = StringUtils.stripStart(namespacePath.substring("%kernel.root_dir%".length()), "/");
 
                     VirtualFile relativeFile = VfsUtil.findRelativeFile(appDir, path.split("/"));
                     if(relativeFile != null) {
                         String relativePath = VfsUtil.getRelativePath(relativeFile, baseDir, '/');
                         if(relativePath != null) {
-                            paths.add(Pair.create(pair.getFirst(), relativePath));
+                            paths.add(Pair.create(namespace, relativePath));
                         }
                     }
                 }
-            } else if(second.startsWith("%kernel.project_dir%")) {
+            } else if(namespacePath.startsWith("%kernel.project_dir%")) {
                 // '%kernel.root_dir%/test'
-                String path = StringUtils.stripStart(second.substring("%kernel.project_dir%".length()), "/");
+                String path = StringUtils.stripStart(namespacePath.substring("%kernel.project_dir%".length()), "/");
 
-                VirtualFile relativeFile = VfsUtil.findRelativeFile(yamlFile.getProject().getBaseDir(), path.split("/"));
+                VirtualFile relativeFile = VfsUtil.findRelativeFile(baseDir, path.split("/"));
                 if(relativeFile != null) {
                     String relativePath = VfsUtil.getRelativePath(relativeFile, baseDir, '/');
                     if(relativePath != null) {
-                        paths.add(Pair.create(pair.getFirst(), relativePath));
+                        paths.add(Pair.create(namespace, relativePath));
+                    }
+                }
+            } else if(!namespacePath.startsWith("/") && !namespacePath.startsWith("\\")) {
+                // 'test/foo'
+                VirtualFile relativeFile = VfsUtil.findRelativeFile(baseDir, namespacePath.split("/"));
+                if(relativeFile != null) {
+                    String relativePath = VfsUtil.getRelativePath(relativeFile, baseDir, '/');
+                    if(relativePath != null) {
+                        paths.add(Pair.create(namespace, relativePath));
                     }
                 }
             }
