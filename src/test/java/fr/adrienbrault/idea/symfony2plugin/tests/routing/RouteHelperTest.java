@@ -265,6 +265,23 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
+     * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#getRoutesInsideUrlGeneratorFile
+     */
+    public void testGetRoutesInsideUrlGeneratorFileUrlGeneratorRoutes() {
+        Map<String, Route> routes = RouteHelper.getRoutesInsideUrlGeneratorFile(getProject(), myFixture.copyFileToProject("url_generating_routes.php"));
+
+        Route previewError = routes.get("_preview_error");
+        assertEquals("error_controller::preview", previewError.getController());
+        assertContainsElements(previewError.getDefaults().keySet(), "_format", "_controller");
+        assertContainsElements(previewError.getRequirements().keySet(), "code");
+        assertContainsElements(previewError.getVariables(), "code", "_format");
+
+        Route profiler = routes.get("_profiler");
+        assertEquals("web_profiler.controller.profiler::panelAction", profiler.getController());
+        assertContainsElements(profiler.getVariables(), "token");
+    }
+
+    /**
      * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#convertMethodToRouteShortcutControllerName
      */
     public void testConvertMethodToRouteShortcutControllerName() {

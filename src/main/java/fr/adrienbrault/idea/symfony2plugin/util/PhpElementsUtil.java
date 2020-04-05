@@ -115,8 +115,37 @@ public class PhpElementsUtil {
         Map<String, PsiElement> keys = new HashMap<>();
         for (PsiElement child : arrayValues) {
             String stringValue = PhpElementsUtil.getStringValue(child.getFirstChild());
-            if(stringValue != null && StringUtils.isNotBlank(stringValue)) {
+            if(StringUtils.isNotBlank(stringValue)) {
                 keys.put(stringValue, child);
+            }
+        }
+
+        return keys;
+    }
+
+    /**
+     * array('foo' => FOO.class, 'foo1' => 'bar', 1 => 'foo')
+     */
+    @NotNull
+    static public Map<String, PsiElement> getArrayKeyValueMapWithValueAsPsiElement(@NotNull ArrayCreationExpression arrayCreationExpression) {
+        HashMap<String, PsiElement> keys = new HashMap<>();
+
+        for(ArrayHashElement arrayHashElement: arrayCreationExpression.getHashElements()) {
+            PhpPsiElement child = arrayHashElement.getKey();
+            if(child != null && ((child instanceof StringLiteralExpression) || PhpPatterns.psiElement(PhpElementTypes.NUMBER).accepts(child))) {
+
+                String key;
+                if(child instanceof StringLiteralExpression) {
+                    key = ((StringLiteralExpression) child).getContents();
+                } else {
+                    key = child.getText();
+                }
+
+                if(key == null || StringUtils.isBlank(key)) {
+                    continue;
+                }
+
+                keys.put(key, arrayHashElement.getValue());
             }
         }
 
