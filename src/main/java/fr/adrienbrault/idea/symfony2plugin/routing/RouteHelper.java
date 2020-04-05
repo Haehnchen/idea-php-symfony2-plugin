@@ -247,14 +247,6 @@ public class RouteHelper {
         return null;
     }
 
-    private static <E> ArrayList<E> makeCollection(Iterable<E> iter) {
-        ArrayList<E> list = new ArrayList<>();
-        for (E item : iter) {
-            list.add(item);
-        }
-        return list;
-    }
-
     private static String getPath(Project project, String path) {
         if (!FileUtil.isAbsolute(path)) { // Project relative path
             path = project.getBasePath() + "/" + path;
@@ -344,7 +336,6 @@ public class RouteHelper {
         return getRoutesInsideUrlGeneratorFile(psiFile);
     }
 
-
     /**
      * Temporary or remote files dont support "isInstanceOf", check for string implementation first
      */
@@ -368,9 +359,30 @@ public class RouteHelper {
 
     @NotNull
     public static Map<String, Route> getRoutesInsideUrlGeneratorFile(@NotNull PsiFile psiFile) {
-
         Map<String, Route> routes = new HashMap<>();
 
+        // Symfony >= 4
+        // extract the routes on a return statement
+        // return [['route'] => [...]]
+        for (PhpReturn phpReturn : PsiTreeUtil.findChildrenOfType(psiFile, PhpReturn.class)) {
+            PsiElement argument = phpReturn.getArgument();
+            if (!(argument instanceof ArrayCreationExpression)) {
+                continue;
+            }
+
+            // get only the inside arrays
+            // [[..], [..]] => [..], [..]
+            for (Map.Entry<String, PsiElement> routeArray : PhpElementsUtil.getArrayKeyValueMapWithValueAsPsiElement((ArrayCreationExpression) argument).entrySet()) {
+                List<ArrayCreationExpression> routeArrayOptions = new ArrayList<>();
+                for (PhpPsiElement routeOption : PsiTreeUtil.getChildrenOfTypeAsList(routeArray.getValue(), PhpPsiElement.class)) {
+                    routeArrayOptions.add(PsiTreeUtil.getChildOfType(routeOption, ArrayCreationExpression.class));
+                }
+
+                routes.put(routeArray.getKey(), convertRouteConfigForReturnArray(routeArray.getKey(), routeArrayOptions));
+            }
+        }
+
+        // Symfony < 4
         // heavy stuff here, to get nested routing array :)
         // list($variables, $defaults, $requirements, $tokens, $hostTokens)
         Collection<PhpClass> phpClasses = PsiTreeUtil.findChildrenOfType(psiFile, PhpClass.class);
@@ -454,9 +466,60 @@ public class RouteHelper {
         }
     }
 
+    /**
+     * Used in Symfony > 4 where routes are wrapped into a return array
+     */
+    @NotNull
+    private static Route convertRouteConfigForReturnArray(@NotNull String routeName, @NotNull List<ArrayCreationExpression> hashElementCollection) {
+        Set<String> variables = new HashSet<>();
+        if(hashElementCollection.size() >= 1 && hashElementCollection.get(0) != null) {
+            ArrayCreationExpression value = hashElementCollection.get(0);
+            if(value != null) {
+                variables.addAll(PhpElementsUtil.getArrayValuesAsString(value));
+            }
+        }
+
+        Map<String, String> defaults = new HashMap<>();
+        if(hashElementCollection.size() >= 2 && hashElementCollection.get(1) != null) {
+            ArrayCreationExpression value = hashElementCollection.get(1);
+            if(value != null) {
+                defaults = PhpElementsUtil.getArrayKeyValueMap(value);
+            }
+        }
+
+        Map<String, String>requirements = new HashMap<>();
+        if(hashElementCollection.size() >= 3 && hashElementCollection.get(2) != null) {
+            ArrayCreationExpression value = hashElementCollection.get(2);
+            if(value != null) {
+                requirements = PhpElementsUtil.getArrayKeyValueMap(value);
+            }
+        }
+
+        List<Collection<String>> tokens = new ArrayList<>();
+        if(hashElementCollection.size() >= 4 && hashElementCollection.get(3) != null) {
+            ArrayCreationExpression tokenArray = hashElementCollection.get(3);
+            if(tokenArray != null) {
+                for(ArrayHashElement tokenArrayConfig: tokenArray.getHashElements()) {
+                    if(tokenArrayConfig.getValue() instanceof ArrayCreationExpression) {
+                        Map<String, String> arrayKeyValueMap = PhpElementsUtil.getArrayKeyValueMap((ArrayCreationExpression) tokenArrayConfig.getValue());
+                        tokens.add(arrayKeyValueMap.values());
+                    }
+                }
+            }
+
+        }
+
+        // hostTokens = 4 need them?
+        return new Route(routeName, variables, defaults, requirements, tokens);
+    }
+
+    /**
+     * Used in Symfony < 4 where routes are wrapped into a class
+     */
     @NotNull
     private static Route convertRouteConfig(@NotNull String routeName, @NotNull ArrayCreationExpression hashValue) {
-        List<ArrayHashElement> hashElementCollection = makeCollection(hashValue.getHashElements());
+        List<ArrayHashElement> hashElementCollection = new ArrayList<>();
+        hashValue.getHashElements().forEach(hashElementCollection::add);
 
         Set<String> variables = new HashSet<>();
         if(hashElementCollection.size() >= 1 && hashElementCollection.get(0).getValue() instanceof ArrayCreationExpression) {

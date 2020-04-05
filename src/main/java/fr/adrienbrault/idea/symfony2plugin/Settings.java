@@ -30,6 +30,7 @@ public class Settings implements PersistentStateComponent<Settings> {
         "var/cache/dev/appDevDebugProjectContainer.xml",
         "var/cache/dev/srcDevDebugProjectContainer.xml",
         "var/cache/dev/srcApp_KernelDevDebugContainer.xml",
+        "var/cache/dev/App_KernelDevDebugContainer.xml" // Symfony => 4 + flex
     };
 
     // Default Symfony 2, 3 and 4 paths
@@ -38,6 +39,7 @@ public class Settings implements PersistentStateComponent<Settings> {
         "var/cache/dev/appDevUrlGenerator.php",
         "var/cache/dev/appDevDebugProjectContainerUrlGenerator.php",
         "var/cache/dev/srcDevDebugProjectContainerUrlGenerator.php",
+        "var/cache/dev/url_matching_routes.php", // Symfony >= 4
     };
 
     public static String DEFAULT_TRANSLATION_PATH = "app/cache/dev/translations";
