@@ -1,11 +1,15 @@
 package fr.adrienbrault.idea.symfony2plugin.dic.container.util;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.ModificationTracker;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.util.*;
 import com.intellij.psi.xml.*;
 import com.intellij.util.Consumer;
 import com.intellij.util.indexing.FileBasedIndex;
@@ -37,7 +41,10 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.*;
 
+import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -54,6 +61,11 @@ public class ServiceContainerUtil {
         // Symfony 4
         new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "get"),
     };
+
+    private static ModificationTracker TIMED_MODIFICATION_TRACKER = new TimeSecondModificationTracker(60);
+
+    private static final Key<CachedValue<Collection<String>>> SYMFONY_COMPILED_TIMED_SERVICE_WATCHER = new Key<>("SYMFONY_COMPILED_TIMED_SERVICE_WATCHER");
+    private static final Key<CachedValue<Collection<String>>> SYMFONY_COMPILED_SERVICE_WATCHER = new Key<>("SYMFONY_COMPILED_SERVICE_WATCHER");
 
     private static String[] LOWER_PRIORITY = new String[] {
         "debug", "default", "abstract", "inner", "chain", "decorate", "delegat"
@@ -626,5 +638,101 @@ public class ServiceContainerUtil {
         );
 
         return myIds;
+    }
+
+    /**
+     * Provide a modification on nearest second value
+     */
+    private static class TimeSecondModificationTracker implements ModificationTracker {
+        private final int expiresAfter;
+
+        public TimeSecondModificationTracker(int expiresAfter) {
+            this.expiresAfter = expiresAfter;
+        }
+
+        @Override
+        public long getModificationCount() {
+            long unixTime = Instant.now().getEpochSecond();
+            return roundNearest(unixTime);
+        }
+
+        private long roundNearest(long n)  {
+            // Smaller multiple
+            long a = (n / this.expiresAfter) * this.expiresAfter;
+
+            // Larger multiple
+            long b = a + this.expiresAfter;
+
+            // Return of closest of two
+            return (n - a > b - n) ? b : a;
+        }
+    }
+
+    /**
+     * Find compiled and cache it until any psi change occur
+     *
+     * - "app/cache/dev/appDevDebugProjectContainer.xml"
+     * - ...
+     */
+    public static Collection<String> getContainerFiles(@NotNull Project project) {
+        return CachedValuesManager.getManager(project)
+            .getCachedValue(
+                project,
+                SYMFONY_COMPILED_SERVICE_WATCHER,
+                () -> CachedValueProvider.Result.create(getContainerFilesInner(project), PsiModificationTracker.MODIFICATION_COUNT),
+                false
+            );
+    }
+
+    /**
+     * Find possible compiled service file with seconds cache
+     *
+     * - "app/cache/dev/appDevDebugProjectContainer.xml"
+     * - "var/cache/dev/appDevDebugProjectContainer.xml"
+     * - "var/cache/dev/srcDevDebugProjectContainer.xml"
+     * - "var/cache/dev/srcApp_KernelDevDebugContainer.xml"
+     * - "var/cache/dev/App_KernelDevDebugContainer.xml" // Symfony => 4 + flex
+     * - "app/cache/dev_392373729/appDevDebugProjectContainer.xml"
+     */
+    private static Collection<String> getContainerFilesInner(@NotNull Project project) {
+        return CachedValuesManager.getManager(project).getCachedValue(project, SYMFONY_COMPILED_TIMED_SERVICE_WATCHER, () -> {
+            Set<String> files = new HashSet<>();
+
+            // several Symfony cache folder structures
+            for (String root : new String[] {"var/cache", "app/cache"}) {
+                VirtualFile baseDir = project.getBaseDir();
+
+                VirtualFile relativeFile = VfsUtil.findRelativeFile(root, baseDir);
+                if (relativeFile == null) {
+                    continue;
+                }
+
+                // find a dev folder eg: "dev_392373729" or just "dev"
+                Set<VirtualFile> devFolders = Stream.of(relativeFile.getChildren())
+                    .filter(virtualFile -> virtualFile.isDirectory() && virtualFile.getName().toLowerCase().startsWith("dev"))
+                    .collect(Collectors.toSet());
+
+                for (VirtualFile devFolder : devFolders) {
+                    Set<String> debugContainers = Stream.of(devFolder.getChildren())
+                        .filter(virtualFile -> {
+                            if (!"xml".equalsIgnoreCase(virtualFile.getExtension())) {
+                                return false;
+                            }
+
+                            // Some examples: App_KernelDevDebugContainer, appDevDebugProjectContainer
+                            String filename = virtualFile.getName().toLowerCase();
+                            return filename.contains("debugcontainer")
+                                || (filename.contains("debug") && filename.contains("container"))
+                                || (filename.contains("kernel") && filename.contains("container"));
+                        })
+                        .map(virtualFile -> VfsUtil.getRelativePath(virtualFile, baseDir, '/'))
+                        .collect(Collectors.toSet());
+
+                    files.addAll(debugContainers);
+                }
+            }
+
+            return CachedValueProvider.Result.create(files, TIMED_MODIFICATION_TRACKER);
+        }, false);
     }
 }

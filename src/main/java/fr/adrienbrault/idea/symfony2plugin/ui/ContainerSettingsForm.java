@@ -14,6 +14,7 @@ import com.intellij.util.ui.ListTableModel;
 import com.jetbrains.plugins.webDeployment.config.WebServerConfig;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.UiSettingsUtil;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.dict.UiPathColumnInfo;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.dict.WebServerFileDialogExtensionCallback;
@@ -68,7 +69,7 @@ public class ContainerSettingsForm implements Configurable {
                 resetContainerList();
 
                 // add default path
-                for (String defaultContainerPath : Settings.DEFAULT_CONTAINER_PATHS) {
+                for (String defaultContainerPath : ServiceContainerUtil.getContainerFiles(project)) {
                     ContainerSettingsForm.this.modelList.addRow(new ContainerFile(defaultContainerPath));
                 }
 
