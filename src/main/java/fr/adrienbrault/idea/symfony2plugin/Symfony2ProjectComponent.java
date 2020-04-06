@@ -12,6 +12,7 @@ import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtension;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoader;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoaderParameter;
@@ -110,7 +111,7 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         }
 
         if(containerFiles.size() == 0) {
-            for (String s : Settings.DEFAULT_CONTAINER_PATHS) {
+            for (String s : ServiceContainerUtil.getContainerFiles(project)) {
                 containerFiles.add(new ContainerFile(s));
             }
         }
