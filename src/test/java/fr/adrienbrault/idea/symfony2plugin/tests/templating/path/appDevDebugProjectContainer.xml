@@ -20,5 +20,17 @@
               <argument>app/Resources/views</argument>
           </call>
       </service>
+
+      <service id="twig.loader.native_filesystem" class="Symfony\Bundle\TwigBundle\Loader\NativeFilesystemLoader" public="false">
+          <tag name="twig.loader"/>
+          <call method="addPath">
+              <argument>/app/vendor/symfony/twig-bundle/Resources/views2</argument>
+              <argument>Twig2</argument>
+          </call>
+          <call method="addPath">
+              <argument>/app/vendor/symfony/twig-bundle/Resources/views2</argument>
+              <argument>!Twig2</argument>
+          </call>
+      </service>
   </services>
 </container>

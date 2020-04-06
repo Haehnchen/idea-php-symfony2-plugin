@@ -16,7 +16,7 @@ public class TwigPathServiceParser extends AbstractServiceParser {
 
     @Override
     public String getXPathFilter() {
-        return "/container/services/service[@id='twig.loader']//call[@method='addPath']";
+        return "/container/services/service[@id[starts-with(.,'twig.loader')]]//call[@method='addPath']";
     }
 
     public synchronized void parser(InputStream file) {
@@ -34,7 +34,12 @@ public class TwigPathServiceParser extends AbstractServiceParser {
             if(arguments.getLength() == 1) {
                 twigPathIndex.addPath(new TwigPath(arguments.item(0).getTextContent()));
             } else if(arguments.getLength() == 2) {
-                twigPathIndex.addPath(new TwigPath(arguments.item(0).getTextContent(), arguments.item(1).getTextContent()));
+                String namespace = arguments.item(1).getTextContent();
+
+                // we ignore overwrites; they are added also without "!", so just skip it
+                if (!namespace.startsWith("!")) {
+                    twigPathIndex.addPath(new TwigPath(arguments.item(0).getTextContent(), namespace));
+                }
             }
         }
     }

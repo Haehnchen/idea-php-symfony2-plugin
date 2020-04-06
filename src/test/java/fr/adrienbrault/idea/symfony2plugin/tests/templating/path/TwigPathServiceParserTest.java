@@ -12,10 +12,8 @@ import java.io.FileInputStream;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TwigPathServiceParserTest extends Assert {
-
     @Test
     public void testParse() throws Exception {
-
         File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/path/appDevDebugProjectContainer.xml");
 
         TwigPathServiceParser parser = new TwigPathServiceParser();
@@ -27,6 +25,7 @@ public class TwigPathServiceParserTest extends Assert {
         assertEquals("vendor\\symfony\\symfony\\src\\Symfony\\Bridge\\Twig/Resources/views/Form", parser.getTwigPathIndex().getNamespacePaths(TwigUtil.MAIN).get(0).getPath());
         assertEquals("app/Resources/views", parser.getTwigPathIndex().getNamespacePaths(TwigUtil.MAIN).get(1).getPath());
 
+        assertEquals("/app/vendor/symfony/twig-bundle/Resources/views2", parser.getTwigPathIndex().getNamespacePaths("Twig2").get(0).getPath());
+        assertEquals(0, parser.getTwigPathIndex().getNamespacePaths("!Twig2").size());
     }
-
 }
