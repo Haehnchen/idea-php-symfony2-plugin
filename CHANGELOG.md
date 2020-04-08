@@ -14,6 +14,12 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.19.190
+* Support changes in path extraction for "twig.loader" (Daniel Espendiller)
+* Support more use cases for compiled service path detection (Daniel Espendiller)
+* Provide relative path support for Twig paths configuration via yaml (Daniel Espendiller)
+* Provide support for compiled Symfony 4 / 5 route names (Daniel Espendiller)
+
 ## 0.19.189
 * Provide resolving of Twig globals and variables with multiple types and targets (Daniel Espendiller) [#1421](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1421)
 * Support also "yaml" for config files to extract the globals (Daniel Espendiller) [#1420](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1420)
