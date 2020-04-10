@@ -4,21 +4,16 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.xml.XmlFile;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
+import fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProvider;
 import fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProviderDict;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TranslationStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.translation.TranslationIndex;
-import fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProvider;
-import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationCollector;
-import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationVisitor;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.yaml.psi.YAMLFile;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -64,48 +59,15 @@ public class IndexTranslatorProvider implements TranslatorProvider {
     public Collection<PsiElement> getTranslationTargets(@NotNull Project project, @NotNull String translationKey, @NotNull String domain) {
         Collection<PsiElement> psiFoundElements = new ArrayList<>();
 
-        // collect on index
-        final YamlTranslationCollector translationCollector = (keyName, yamlKeyValue) -> {
-            if (keyName.equals(translationKey)) {
-
-                // multiline "line values" are not resolve properly on psiElements use key as fallback target
-                PsiElement valuePsiElement = yamlKeyValue.getValue();
-                psiFoundElements.add(valuePsiElement != null ? valuePsiElement : yamlKeyValue);
-
-                return false;
-            }
-
-            return true;
-        };
-
+        Collection<VirtualFile> files = new HashSet<>();
         FileBasedIndex.getInstance().getFilesWithKey(TranslationStubIndex.KEY, new HashSet<>(Collections.singletonList(domain)), virtualFile -> {
-            // prevent duplicate targets and dont walk same file twice
-            // if(virtualFilesFound.contains(virtualFile)) {
-            //    return true;
-            // }
-
-            PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
-            if(psiFile == null) {
-                return true;
-            }
-
-            if(psiFile instanceof YAMLFile) {
-                YamlTranslationVisitor.collectFileTranslations((YAMLFile) psiFile, translationCollector);
-            } else if(TranslationUtil.isSupportedXlfFile(psiFile)) {
-                // fine: xlf registered as XML file. try to find source value
-                psiFoundElements.addAll(TranslationUtil.getTargetForXlfAsXmlFile((XmlFile) psiFile, translationKey));
-            } else if(("xlf".equalsIgnoreCase(virtualFile.getExtension()) || "xliff".equalsIgnoreCase(virtualFile.getExtension()))) {
-                // xlf are plain text because not supported by jetbrains
-                // for now we can only set file target
-                psiFoundElements.addAll(FileBasedIndex.getInstance()
-                    .getValues(TranslationStubIndex.KEY, domain, GlobalSearchScope.filesScope(project, Collections.singletonList(virtualFile))).stream()
-                    .filter(string -> string.contains(translationKey)).map(string -> psiFile)
-                    .collect(Collectors.toList())
-                );
-            }
-
+            files.add(virtualFile);
             return true;
         }, GlobalSearchScope.allScope(project));
+
+        for (PsiFile psiFile : PsiElementUtils.convertVirtualFilesToPsiFiles(project, files)) {
+            psiFoundElements.addAll(TranslationUtil.getTranslationKeyTargetInsideFile(psiFile, domain, translationKey));
+        }
 
         return psiFoundElements;
     }

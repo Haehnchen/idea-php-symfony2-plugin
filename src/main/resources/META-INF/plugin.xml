@@ -606,6 +606,7 @@
 
         <TranslatorProvider implementation="fr.adrienbrault.idea.symfony2plugin.translation.provider.CompiledTranslatorProvider"/>
         <TranslatorProvider implementation="fr.adrienbrault.idea.symfony2plugin.translation.provider.IndexTranslatorProvider"/>
+        <TranslatorProvider implementation="fr.adrienbrault.idea.symfony2plugin.translation.provider.CompiledContainerTranslatorProvider"/>
     </extensions>
 
     <depends>com.jetbrains.twig</depends>
