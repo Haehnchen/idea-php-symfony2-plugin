@@ -32,6 +32,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerIdUsagesStubIn
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.TimeSecondModificationTracker;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.psi.PsiElementAssertUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
@@ -41,7 +42,6 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.*;
 
-import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -61,8 +61,6 @@ public class ServiceContainerUtil {
         // Symfony 4
         new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "get"),
     };
-
-    private static ModificationTracker TIMED_MODIFICATION_TRACKER = new TimeSecondModificationTracker(60);
 
     private static final Key<CachedValue<Collection<String>>> SYMFONY_COMPILED_TIMED_SERVICE_WATCHER = new Key<>("SYMFONY_COMPILED_TIMED_SERVICE_WATCHER");
     private static final Key<CachedValue<Collection<String>>> SYMFONY_COMPILED_SERVICE_WATCHER = new Key<>("SYMFONY_COMPILED_SERVICE_WATCHER");
@@ -641,34 +639,6 @@ public class ServiceContainerUtil {
     }
 
     /**
-     * Provide a modification on nearest second value
-     */
-    private static class TimeSecondModificationTracker implements ModificationTracker {
-        private final int expiresAfter;
-
-        public TimeSecondModificationTracker(int expiresAfter) {
-            this.expiresAfter = expiresAfter;
-        }
-
-        @Override
-        public long getModificationCount() {
-            long unixTime = Instant.now().getEpochSecond();
-            return roundNearest(unixTime);
-        }
-
-        private long roundNearest(long n)  {
-            // Smaller multiple
-            long a = (n / this.expiresAfter) * this.expiresAfter;
-
-            // Larger multiple
-            long b = a + this.expiresAfter;
-
-            // Return of closest of two
-            return (n - a > b - n) ? b : a;
-        }
-    }
-
-    /**
      * Find compiled and cache it until any psi change occur
      *
      * - "app/cache/dev/appDevDebugProjectContainer.xml"
@@ -732,7 +702,7 @@ public class ServiceContainerUtil {
                 }
             }
 
-            return CachedValueProvider.Result.create(files, TIMED_MODIFICATION_TRACKER);
+            return CachedValueProvider.Result.create(files, TimeSecondModificationTracker.TIMED_MODIFICATION_TRACKER_60);
         }, false);
     }
 }
