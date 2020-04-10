@@ -80,5 +80,57 @@
       </call>
     </service>
 
+      <service id="translator.default" class="Symfony\Bundle\FrameworkBundle\Translation\Translator" public="false">
+          <tag name="kernel.locale_aware"/>
+          <argument type="service" id=".service_locator.V.o0zE7"/>
+          <argument type="service" id="translator.formatter.default"/>
+          <argument>en-GB</argument>
+          <argument type="collection">
+              <argument key="translation.loader.php" type="collection">
+                  <argument>php</argument>
+              </argument>
+              <argument key="translation.loader.yml" type="collection">
+                  <argument>yaml</argument>
+                  <argument>yml</argument>
+              </argument>
+              <argument key="translation.loader.xliff" type="collection">
+                  <argument>xlf</argument>
+                  <argument>xliff</argument>
+              </argument>
+          </argument>
+          <argument type="collection">
+              <argument key="cache_dir">/app/var/cache/dev/translations</argument>
+              <argument key="debug">true</argument>
+              <argument key="resource_files" type="collection">
+                  <argument key="af" type="collection">
+                      <argument>/app/vendor/symfony/validator/Resources/translations/foobar_domain1.af.xlf</argument>
+                  </argument>
+                  <argument key="ar" type="collection">
+                      <argument>/app/vendor/symfony/validator/Resources/translations/foobar_domain2.ar.xlf</argument>
+                      <argument>/app/vendor/symfony/security-core/Resources/translations/foobar_domain3.ar.xlf</argument>
+                  </argument>
+                  <argument key="pt_PT" type="collection">
+                      <argument>/home/daniel/projects/symfony5/vendor/symfony/security-core/Resources/translations/foobar_domain4.pt_PT.xlf</argument>
+                  </argument>
+              </argument>
+              <argument key="scanned_directories" type="collection">
+                  <argument>/app/vendor/symfony/validator/Resources/translations</argument>
+              </argument>
+              <argument key="cache_vary" type="collection">
+                  <argument key="scanned_directories" type="collection">
+                      <argument>vendor/symfony/validator/Resources/translations</argument>
+                  </argument>
+              </argument>
+          </argument>
+          <call method="setConfigCacheFactory">
+              <argument type="service" id="config_cache_factory"/>
+          </call>
+          <call method="setFallbackLocales">
+              <argument type="collection">
+                  <argument>en_GB</argument>
+                  <argument>en</argument>
+              </argument>
+          </call>
+      </service>
   </services>
 </container>
