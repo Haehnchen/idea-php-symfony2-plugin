@@ -625,23 +625,21 @@ public class YamlHelper {
      * @param yamlKeyValue the service key value to find the "tags" key on
      * @return tag names
      */
-    @Nullable
+    @NotNull
     public static Set<String> collectServiceTags(@NotNull YAMLKeyValue yamlKeyValue) {
-
         YAMLKeyValue tagsKeyValue = YamlHelper.getYamlKeyValue(yamlKeyValue, "tags");
         if(tagsKeyValue == null) {
-            return null;
+            return Collections.emptySet();
         }
 
         PsiElement tagsCompound = tagsKeyValue.getValue();
         if(!(tagsCompound instanceof YAMLSequence)) {
-            return null;
+            return Collections.emptySet();
         }
 
         Set<String> tags = new HashSet<>();
 
         for (YAMLSequenceItem yamlSequenceItem : ((YAMLSequence) tagsCompound).getItems()) {
-
             YAMLValue value = yamlSequenceItem.getValue();
             if(value instanceof YAMLMapping) {
                 // tags:
@@ -662,6 +660,26 @@ public class YamlHelper {
         }
 
         return tags;
+    }
+
+    /**
+     * acme_demo.form.type.gender:
+     *  class: espend\Form\TypeBundle\Form\FooType
+     *  tags:
+     *   - { name: foo  }
+     */
+    @NotNull
+    public static Collection<YAMLKeyValue> getTaggedServices(@NotNull YAMLFile yamlFile, @NotNull String tag) {
+        Collection<YAMLKeyValue> yamlKeyValues = new HashSet<>();
+
+        for (YAMLKeyValue yamlServiceKeyValue : YamlHelper.getQualifiedKeyValuesInFile(yamlFile, "services")) {
+            Set<String> serviceTagMap = YamlHelper.collectServiceTags(yamlServiceKeyValue);
+            if (serviceTagMap.contains(tag)) {
+                yamlKeyValues.add(yamlServiceKeyValue);
+            }
+        }
+
+        return yamlKeyValues;
     }
 
     /**

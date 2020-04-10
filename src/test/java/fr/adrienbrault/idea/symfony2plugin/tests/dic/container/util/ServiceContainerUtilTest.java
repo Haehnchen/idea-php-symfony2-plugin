@@ -4,7 +4,9 @@ import com.google.gson.Gson;
 import com.intellij.openapi.util.Condition;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.util.Consumer;
 import com.intellij.util.containers.ContainerUtil;
+import com.jetbrains.php.lang.psi.elements.Parameter;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceSerializable;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ServiceTypeHint;
@@ -12,10 +14,12 @@ import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUt
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLScalar;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -297,6 +301,26 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
 
         assertEquals(1, typeHint.getIndex());
         assertEquals("setFoo", typeHint.getMethod().getName());
+    }
+
+    public void testVisitNamedArguments() {
+        PsiFile psiFile = myFixture.configureByText("test.yml", "" +
+            "services:\n" +
+            "   NamedArgument\\Foobar:\n" +
+            "       arguments: []\n" +
+            "" +
+            "   App\\Controller\\:\n" +
+            "       resource: '../src/Controller'\n" +
+            "       tags: ['controller.service_arguments']\n"
+        );
+
+        Collection<String> arguments = new HashSet<>();
+        ServiceContainerUtil.visitNamedArguments(psiFile, parameter -> arguments.add(parameter.getName()));
+
+        assertTrue(arguments.contains("foobar"));
+
+        assertTrue(arguments.contains("foobarString"));
+        assertFalse(arguments.contains("private"));
     }
 
     private static class MyStringServiceInterfaceCondition implements Condition<ServiceInterface> {

@@ -115,20 +115,16 @@ public class TaggedExtendsInterfaceClassInspection extends LocalInspectionTool {
                         PsiElement serviceKeyValue = yamlCompoundValue.getParent();
                         if(serviceKeyValue instanceof YAMLKeyValue) {
                             Set<String> tags = YamlHelper.collectServiceTags((YAMLKeyValue) serviceKeyValue);
-                            if(tags != null && tags.size() > 0) {
+                            if(tags.size() > 0) {
                                 registerTaggedProblems(element, tags, text, holder, this.lazyServiceCollector);
                             }
                         }
-
                     }
                 }
-
             }
-
 
             super.visitElement(element);
         }
-
     }
 
     private void registerTaggedProblems(@NotNull PsiElement source, @NotNull Set<String> tags, @NotNull String serviceClass, @NotNull ProblemsHolder holder, @NotNull ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector) {

@@ -19,6 +19,7 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
+import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.AttributeValueInterface;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.XmlTagAttributeValue;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.YamlKeyValueAttributeValue;
@@ -29,10 +30,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ServiceTypeHint;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.visitor.ServiceConsumer;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerIdUsagesStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.TimeSecondModificationTracker;
+import fr.adrienbrault.idea.symfony2plugin.util.*;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.psi.PsiElementAssertUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
@@ -43,6 +41,7 @@ import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.*;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -421,18 +420,46 @@ public class ServiceContainerUtil {
      */
     public static void visitNamedArguments(@NotNull PsiFile psiFile, @NotNull Consumer<Parameter> processor) {
         if (psiFile instanceof YAMLFile) {
+            Collection<Parameter> parameters = new HashSet<>();
+
+            // direct service definition
             for (PhpClass phpClass : YamlHelper.getPhpClassesInYamlFile((YAMLFile) psiFile, new ContainerCollectionResolver.LazyServiceCollector(psiFile.getProject()))) {
                 Method constructor = phpClass.getConstructor();
                 if (constructor == null) {
                     continue;
                 }
 
-                Arrays.stream(constructor.getParameters()).forEach(processor::consume);
+                parameters.addAll(Arrays.asList(constructor.getParameters()));
             }
+
+            for (YAMLKeyValue taggedService : YamlHelper.getTaggedServices((YAMLFile) psiFile, "controller.service_arguments")) {
+                PsiElement key = taggedService.getKey();
+                if (key == null) {
+                    continue;
+                }
+
+                String keyText = key.getText();
+                if (StringUtils.isBlank(keyText)) {
+                    continue;
+                }
+
+                // App\Controller\ => \App\Controller
+                String namespace = StringUtils.strip(keyText, "\\");
+                for (PhpClass phpClass : PhpIndexUtil.getPhpClassInsideNamespace(psiFile.getProject(), "\\" + namespace)) {
+                    // find all parameters on public methods; this are possible actions
+
+                    // maybe filter actions and public methods in a suitable way?
+                    phpClass.getMethods().stream()
+                        .filter(method -> method.getAccess().isPublic() && !method.getName().startsWith("set"))
+                        .forEach(method -> Collections.addAll(parameters, method.getParameters()));
+                }
+            }
+
+            parameters.forEach(processor::consume);
         }
     }
 
-    /**
+    /*
      * Symfony 3.3: "class" is optional; use service name for its it
      *
      * Foo\Bar:
