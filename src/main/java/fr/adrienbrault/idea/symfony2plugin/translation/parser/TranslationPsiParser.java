@@ -11,6 +11,7 @@ import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,31 +21,31 @@ import java.util.Collection;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TranslationPsiParser {
+    @NotNull
+    private final Project project;
 
-    private Project project;
+    @NotNull
+    private final Collection<File> paths;
+
+    @NotNull final
     private TranslationStringMap translationStringMap;
 
-    public TranslationPsiParser(Project project) {
+    public TranslationPsiParser(@NotNull Project project, @NotNull Collection<File> paths) {
         this.project = project;
+        this.paths = paths;
         this.translationStringMap = new TranslationStringMap();
     }
 
-    public TranslationStringMap parsePathMatcher(String path) {
+    public TranslationStringMap parsePathMatcher() {
+        for (File path : paths) {
+            File[] files = path.listFiles((directory, s) -> s.startsWith("catalogue") && s.endsWith("php"));
+            if(null == files || files.length == 0) {
+                continue;
+            }
 
-        File file = new File(path);
-        File[] files = file.listFiles();
-
-        if(null == files) {
-            return this.translationStringMap;
-        }
-
-        for (final File fileEntry : files) {
-            if (!fileEntry.isDirectory()) {
-                String fileName = fileEntry.getName();
-                if(fileName.startsWith("catalogue") && fileName.endsWith("php")) {
-                    this.parse(fileEntry);
-                    this.translationStringMap.addFile(fileName, fileEntry.lastModified());
-                }
+            for (final File fileEntry : files) {
+                this.parse(fileEntry);
+                this.translationStringMap.addFile(fileEntry.getName(), fileEntry.lastModified());
             }
         }
 
@@ -52,7 +53,6 @@ public class TranslationPsiParser {
     }
 
     public void parse(File file) {
-
         VirtualFile virtualFile = VfsUtil.findFileByIoFile(file, true);
         if(virtualFile == null) {
             Symfony2ProjectComponent.getLogger().info("VfsUtil missing translation: " + file.getPath());
@@ -82,17 +82,12 @@ public class TranslationPsiParser {
                     if(phpClass != null && PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Translation\\MessageCatalogueInterface")) {
                         this.getTranslationMessages(newExpression);
                     }
-
                 }
-
             }
-
         }
-
     }
 
     private void getTranslationMessages(NewExpression newExpression) {
-
         // first parameter hold our huge translation arrays
         PsiElement[] parameters = newExpression.getParameters();
         if(parameters.length < 2 || !(parameters[1] instanceof ArrayCreationExpression)) {
@@ -111,11 +106,8 @@ public class TranslationPsiParser {
                 if(arrayValue instanceof ArrayCreationExpression) {
                     getTransKeys(transDomain, (ArrayCreationExpression) arrayValue);
                 }
-
             }
-
         }
-
     }
 
     private void getTransKeys(String domain, ArrayCreationExpression translationArray) {
@@ -127,7 +119,5 @@ public class TranslationPsiParser {
                 this.translationStringMap.addString(domain, transKey);
             }
         }
-
     }
-
 }
