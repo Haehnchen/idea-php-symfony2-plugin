@@ -79,5 +79,6 @@
         <argument>FOSUserBundle</argument>
       </call>
     </service>
+
   </services>
 </container>

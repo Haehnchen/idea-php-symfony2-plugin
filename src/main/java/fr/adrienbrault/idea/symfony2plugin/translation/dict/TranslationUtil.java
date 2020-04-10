@@ -7,18 +7,23 @@ import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.Consumer;
+import com.intellij.util.indexing.FileBasedIndex;
 import fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProvider;
 import fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProviderDict;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TranslationStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
+import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationVisitor;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.DomainMappings;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLScalar;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
@@ -57,10 +62,9 @@ public class TranslationUtil {
         "//xliff/file/unit/segment/source"
     };
 
-    static public VirtualFile[] getDomainFilePsiElements(Project project, String domainName) {
-
+    public static Collection<VirtualFile> getDomainFilesFromCompiledContainer(@NotNull Project project, @NotNull String domainName) {
         DomainMappings domainMappings = ServiceXmlParserFactory.getInstance(project, DomainMappings.class);
-        List<VirtualFile> virtualFiles = new ArrayList<>();
+        Collection<VirtualFile> virtualFiles = new ArrayList<>();
 
         for(DomainFileMap domain: domainMappings.getDomainFileMaps()) {
             if(domain.getDomain().equals(domainName)) {
@@ -71,7 +75,78 @@ public class TranslationUtil {
             }
         }
 
-        return virtualFiles.toArray(new VirtualFile[virtualFiles.size()]);
+        return virtualFiles;
+    }
+
+    /**
+     * Get targets for translation based on the domain path inside the compiled container
+     *
+     * TODO: completely remove this? support translation paths from service compiler
+     */
+    public static Collection<PsiElement> getTranslationKeyFromCompiledContainerDomain(@NotNull Project project, @NotNull String domain, @NotNull String translationKey) {
+        Collection<PsiElement> psiFoundElements = new ArrayList<>();
+
+        // search for available domain files
+        for(PsiFile psiFile : PsiElementUtils.convertVirtualFilesToPsiFiles(project, TranslationUtil.getDomainFilesFromCompiledContainer(project, domain))) {
+            psiFoundElements.addAll(getTranslationKeyTargetInsideFile(psiFile, domain, translationKey));
+        }
+
+        return psiFoundElements;
+    }
+
+    public static boolean hasDomainInsideCompiledContainer(@NotNull Project project, @NotNull String domainName) {
+        DomainMappings domainMappings = ServiceXmlParserFactory.getInstance(project, DomainMappings.class);
+        for(DomainFileMap domain: domainMappings.getDomainFileMaps()) {
+            if(domain.getDomain().equals(domainName)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    static public Collection<String> getDomainsFromContainer(@NotNull Project project) {
+        DomainMappings domainMappings = ServiceXmlParserFactory.getInstance(project, DomainMappings.class);
+
+        return domainMappings.getDomainFileMaps().stream()
+            .map(DomainFileMap::getDomain)
+            .collect(Collectors.toSet());
+    }
+
+    /**
+     * Find a target translation key based on all supported formats
+     */
+    public static Collection<PsiElement> getTranslationKeyTargetInsideFile(@NotNull PsiFile psiFile, @NotNull String domain, @NotNull String translationKey) {
+        Set<PsiElement> elements = new HashSet<>();
+
+        if(psiFile instanceof YAMLFile) {
+            // collect on yaml keys
+            YamlTranslationVisitor.collectFileTranslations((YAMLFile) psiFile, (keyName, yamlKeyValue) -> {
+                if (keyName.equals(translationKey)) {
+                    // multiline "line values" are not resolve properly on psiElements use key as fallback target
+                    PsiElement valuePsiElement = yamlKeyValue.getValue();
+                    elements.add(valuePsiElement != null ? valuePsiElement : yamlKeyValue);
+
+                    return false;
+                }
+
+                return true;
+            });
+        } else if(TranslationUtil.isSupportedXlfFile(psiFile)) {
+            // fine: xlf registered as XML file. try to find source value
+            elements.addAll(TranslationUtil.getTargetForXlfAsXmlFile((XmlFile) psiFile, translationKey));
+        } else if(("xlf".equalsIgnoreCase(psiFile.getVirtualFile().getExtension()) || "xliff".equalsIgnoreCase(psiFile.getVirtualFile().getExtension()))) {
+            // xlf are plain text because not supported by jetbrains
+            // for now we can only set file target
+            Project project = psiFile.getProject();
+            elements.addAll(FileBasedIndex.getInstance()
+                .getValues(TranslationStubIndex.KEY, domain, GlobalSearchScope.filesScope(project, Collections.singletonList(psiFile.getVirtualFile()))).stream()
+                .filter(string -> string.contains(translationKey)).map(string -> psiFile)
+                .collect(Collectors.toList())
+            );
+        }
+
+        return elements;
     }
 
     public static PsiElement[] getTranslationPsiElements(@NotNull Project project, @NotNull String translationKey, @NotNull String domain) {
