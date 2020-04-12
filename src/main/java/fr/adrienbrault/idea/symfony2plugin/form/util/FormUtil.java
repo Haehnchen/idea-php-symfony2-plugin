@@ -222,12 +222,12 @@ public class FormUtil {
      */
     @NotNull
     public static Map<String, Set<String>> getTags(@NotNull YAMLFile yamlFile) {
-
         Map<String, Set<String>> map = new HashMap<>();
+
         for(YAMLKeyValue yamlServiceKeyValue : YamlHelper.getQualifiedKeyValuesInFile(yamlFile, "services")) {
             String serviceName = yamlServiceKeyValue.getName();
             Set<String> serviceTagMap = YamlHelper.collectServiceTags(yamlServiceKeyValue);
-            if(serviceTagMap != null && serviceTagMap.size() > 0) {
+            if(serviceTagMap.size() > 0) {
                 map.put(serviceName, serviceTagMap);
             }
         }
@@ -235,8 +235,7 @@ public class FormUtil {
         return map;
     }
 
-    public static Map<String, Set<String>> getTags(XmlFile psiFile) {
-
+    public static Map<String, Set<String>> getTags(@NotNull XmlFile psiFile) {
         Map<String, Set<String>> map = new HashMap<>();
 
         XmlDocumentImpl document = PsiTreeUtil.getChildOfType(psiFile, XmlDocumentImpl.class);

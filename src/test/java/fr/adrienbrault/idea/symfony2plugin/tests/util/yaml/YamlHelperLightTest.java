@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.util.yaml;
 
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.Parameter;
@@ -192,7 +193,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
     public void testCollectServiceTagsForSymfony33TagsShortcutInline() {
         YAMLKeyValue fromText = YamlPsiElementFactory.createFromText(getProject(), YAMLKeyValue.class, "" +
             "foo:\n" +
-            "  tags: [routing.loader_tags_3, routing.loader_tags_4]\n"
+            "  tags: [routing.loader_tags_3, routing.loader_tags_4, 'routing.loader_tags_5']\n"
         );
 
         assertNotNull(fromText);
@@ -200,6 +201,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
 
         assertContainsElements(collection, "routing.loader_tags_3");
         assertContainsElements(collection, "routing.loader_tags_4");
+        assertContainsElements(collection, "routing.loader_tags_5");
     }
 
     /**
@@ -549,6 +551,25 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
 
         psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
         assertEquals("ClassName\\Foo", YamlHelper.getServiceDefinitionClassFromTagMethod(psiElement));
+    }
+
+    public void testGetTaggedServices() {
+        PsiFile psiFile = myFixture.configureByText(YAMLFileType.YML, "" +
+            "services:\n" +
+            "   foobar:\n" +
+            "       class: ClassName\\Foo\n" +
+            "       tags:\n" +
+            "           - { name: crossHint.test_222 }\n" +
+            "   foobar2:\n" +
+            "       class: ClassName\\Foo\n" +
+            "       tags: [ 'test.11' ]\n"
+        );
+
+        Collection<YAMLKeyValue> taggedServices1 = YamlHelper.getTaggedServices((YAMLFile) psiFile, "crossHint.test_222");
+        assertTrue(taggedServices1.stream().anyMatch(yamlKeyValue -> "foobar".equals(yamlKeyValue.getKey().getText())));
+
+        Collection<YAMLKeyValue> taggedServices2 = YamlHelper.getTaggedServices((YAMLFile) psiFile, "test.11");
+        assertTrue(taggedServices2.stream().anyMatch(yamlKeyValue -> "foobar2".equals(yamlKeyValue.getKey().getText())));
     }
 
     private int getIndentForTextContent(@NotNull String content) {
