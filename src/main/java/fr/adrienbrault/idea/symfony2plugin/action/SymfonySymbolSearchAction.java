@@ -166,8 +166,7 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
             }
 
             // Twig Extensions
-            TwigExtensionParser twigExtensionParser = new TwigExtensionParser(project);
-            for (Map<String, TwigExtension> extensionMap : Arrays.asList(twigExtensionParser.getFilters(), twigExtensionParser.getFunctions())) {
+            for (Map<String, TwigExtension> extensionMap : Arrays.asList(TwigExtensionParser.getFilters(project), TwigExtensionParser.getFunctions(project))) {
                 for(String twigFilter: extensionMap.keySet()) {
                     processor.process(twigFilter);
                 }
@@ -248,8 +247,7 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
             }
 
             // Twig Extensions
-            TwigExtensionParser twigExtensionParser = new TwigExtensionParser(project);
-            for (Map<String, TwigExtension> extensionMap : Arrays.asList(twigExtensionParser.getFilters(), twigExtensionParser.getFunctions())) {
+            for (Map<String, TwigExtension> extensionMap : Arrays.asList(TwigExtensionParser.getFilters(project), TwigExtensionParser.getFunctions(project))) {
                 for(Map.Entry<String, TwigExtension> twigFunc: extensionMap.entrySet()) {
                     if(twigFunc.getKey().equals(name)) {
                         TwigExtension twigExtension = twigFunc.getValue();
@@ -275,7 +273,7 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
         }
     }
 
-    class MyGotoCallback extends GotoActionBase.GotoActionCallback<FileType> {
+    static class MyGotoCallback extends GotoActionBase.GotoActionCallback<FileType> {
         @Override
         public void elementChosen(ChooseByNamePopup popup, Object element) {
             if(element instanceof NavigationItem) {

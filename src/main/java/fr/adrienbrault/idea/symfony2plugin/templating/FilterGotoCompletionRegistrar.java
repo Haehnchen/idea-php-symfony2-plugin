@@ -46,7 +46,7 @@ public class FilterGotoCompletionRegistrar implements GotoCompletionRegistrar {
         public Collection<LookupElement> getLookupElements() {
             Collection<LookupElement> lookupElements = new ArrayList<>();
 
-            for (Map.Entry<String, TwigExtension> extension : new TwigExtensionParser(getProject()).getFilters().entrySet()) {
+            for (Map.Entry<String, TwigExtension> extension : TwigExtensionParser.getFilters(getProject()).entrySet()) {
                 lookupElements.add(new TwigExtensionLookupElement(getProject(), extension.getKey(), extension.getValue()));
             }
 
@@ -63,7 +63,7 @@ public class FilterGotoCompletionRegistrar implements GotoCompletionRegistrar {
 
             Collection<PsiElement> targets = new ArrayList<>();
 
-            for (Map.Entry<String, TwigExtension> extension : new TwigExtensionParser(getProject()).getFilters().entrySet()) {
+            for (Map.Entry<String, TwigExtension> extension : TwigExtensionParser.getFilters(getProject()).entrySet()) {
                 if(!text.equals(extension.getKey())) {
                     continue;
                 }

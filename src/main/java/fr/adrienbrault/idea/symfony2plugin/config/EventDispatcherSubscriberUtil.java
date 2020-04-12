@@ -50,16 +50,12 @@ public class EventDispatcherSubscriberUtil {
 
     @NotNull
     public static Collection<EventDispatcherSubscribedEvent> getSubscribedEvents(final @NotNull Project project) {
-
-        CachedValue<Collection<EventDispatcherSubscribedEvent>> cache = project.getUserData(EVENT_SUBSCRIBERS);
-        if (cache == null) {
-            cache = CachedValuesManager.getManager(project).createCachedValue(() ->
-                CachedValueProvider.Result.create(getSubscribedEventsProxy(project), PsiModificationTracker.MODIFICATION_COUNT), false
-            );
-            project.putUserData(EVENT_SUBSCRIBERS, cache);
-        }
-
-        return cache.getValue();
+        return CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            EVENT_SUBSCRIBERS,
+            () -> CachedValueProvider.Result.create(getSubscribedEventsProxy(project), PsiModificationTracker.MODIFICATION_COUNT),
+            false
+        );
     }
 
     @NotNull

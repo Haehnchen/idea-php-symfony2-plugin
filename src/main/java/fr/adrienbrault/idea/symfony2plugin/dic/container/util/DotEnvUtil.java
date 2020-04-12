@@ -62,9 +62,10 @@ public class DotEnvUtil {
 
     @NotNull
     public static Collection<String> getEnvironmentVariables(@NotNull Project project) {
-        CachedValue<Set<String>> cache = project.getUserData(DOT_ENV_VARIABLE_CACHE);
-        if (cache == null) {
-            cache = CachedValuesManager.getManager(project).createCachedValue(() -> {
+        return CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            DOT_ENV_VARIABLE_CACHE,
+            () -> {
                 Set<String> items = new HashSet<>();
 
                 DotEnvUtil.visitEnvironment(project, pair ->
@@ -72,12 +73,9 @@ public class DotEnvUtil {
                 );
 
                 return CachedValueProvider.Result.create(items, PsiModificationTracker.MODIFICATION_COUNT);
-                }, false
-            );
-            project.putUserData(DOT_ENV_VARIABLE_CACHE, cache);
-        }
-
-        return cache.getValue();
+            },
+            false
+        );
     }
 
     @NotNull

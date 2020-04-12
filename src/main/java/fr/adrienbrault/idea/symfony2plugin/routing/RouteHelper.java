@@ -1045,17 +1045,12 @@ public class RouteHelper {
 
     @NotNull
     synchronized public static Map<String, Route> getAllRoutes(final @NotNull Project project) {
-        CachedValue<Map<String, Route>> cache = project.getUserData(ROUTE_CACHE);
-
-        if (cache == null) {
-            cache = CachedValuesManager.getManager(project).createCachedValue(() ->
-                CachedValueProvider.Result.create(getAllRoutesProxy(project), PsiModificationTracker.MODIFICATION_COUNT),
-                false
-            );
-            project.putUserData(ROUTE_CACHE, cache);
-        }
-
-        return cache.getValue();
+        return CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            ROUTE_CACHE,
+            () -> CachedValueProvider.Result.create(getAllRoutesProxy(project), PsiModificationTracker.MODIFICATION_COUNT),
+            false
+        );
     }
 
     @NotNull

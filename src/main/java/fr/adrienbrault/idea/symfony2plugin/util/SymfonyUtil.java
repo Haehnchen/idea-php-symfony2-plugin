@@ -26,17 +26,14 @@ public class SymfonyUtil {
     private static final Key<CachedValue<Set<String>>> CACHE = new Key<>("SYMFONY_VERSION_CACHE");
 
     private static boolean compare(@NotNull Project project, @NotNull String version, @NotNull Comparator comparator) {
+        Set<String> cache = CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            CACHE,
+            () -> CachedValueProvider.Result.create(getVersions(project), PsiModificationTracker.MODIFICATION_COUNT),
+            false
+        );
 
-        CachedValue<Set<String>> cache = project.getUserData(CACHE);
-        if (cache == null) {
-            cache = CachedValuesManager.getManager(project).createCachedValue(() ->
-                CachedValueProvider.Result.create(getVersions(project), PsiModificationTracker.MODIFICATION_COUNT),
-                false
-            );
-            project.putUserData(CACHE, cache);
-        }
-
-        for (String s : cache.getValue()) {
+        for (String s : cache) {
             if(comparator.accepts(s)) {
                 return true;
             }

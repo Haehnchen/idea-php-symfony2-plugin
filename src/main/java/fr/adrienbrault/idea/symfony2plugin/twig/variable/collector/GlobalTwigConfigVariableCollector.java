@@ -42,16 +42,12 @@ public class GlobalTwigConfigVariableCollector implements TwigFileVariableCollec
 
     @NotNull
     private Map<String, PsiVariable> getGlobals(@NotNull Project project) {
-        CachedValue<Map<String, PsiVariable>> cache = project.getUserData(CACHE);
-
-        if (cache == null) {
-            cache = CachedValuesManager.getManager(project).createCachedValue(() ->
-                CachedValueProvider.Result.create(getGlobalsInner(project), PsiModificationTracker.MODIFICATION_COUNT), false
-            );
-            project.putUserData(CACHE, cache);
-        }
-
-        return cache.getValue();
+        return CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            CACHE,
+            () -> CachedValueProvider.Result.create(getGlobalsInner(project), PsiModificationTracker.MODIFICATION_COUNT),
+            false
+        );
     }
 
     @NotNull

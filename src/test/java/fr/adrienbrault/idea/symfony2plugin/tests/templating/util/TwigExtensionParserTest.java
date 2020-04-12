@@ -19,103 +19,95 @@ public class TwigExtensionParserTest extends SymfonyLightCodeInsightFixtureTestC
     }
 
     public void testExtensionAreCollected() {
-        TwigExtensionParser extensionParser = new TwigExtensionParser(getProject());
-
         assertEquals(
             "#M#C\\Twig\\Extensions.foobar",
-            extensionParser.getFilters().get("trans").getSignature()
+            TwigExtensionParser.getFilters(getProject()).get("trans").getSignature()
         );
 
         assertEquals(
             "#Fmax",
-            extensionParser.getFunctions().get("max").getSignature()
+            TwigExtensionParser.getFunctions(getProject()).get("max").getSignature()
         );
 
         assertEquals(
             "SIMPLE_TEST",
-            extensionParser.getSimpleTest().get("my_test").getType()
+            TwigExtensionParser.getSimpleTest(getProject()).get("my_test").getType()
         );
 
         assertEquals(
             "#M#C\\My_Node_Test.compile",
-            extensionParser.getSimpleTest().get("my_test").getSignature()
+            TwigExtensionParser.getSimpleTest(getProject()).get("my_test").getSignature()
         );
 
         assertEquals(
             "#Ffoo_test",
-            extensionParser.getSimpleTest().get("my_test_2").getSignature()
+            TwigExtensionParser.getSimpleTest(getProject()).get("my_test_2").getSignature()
         );
 
         assertEquals(
             "OPERATOR",
-            extensionParser.getOperators().get("not").getType()
+            TwigExtensionParser.getOperators(getProject()).get("not").getType()
         );
 
         assertEquals(
             "OPERATOR",
-            extensionParser.getOperators().get("or").getType()
+            TwigExtensionParser.getOperators(getProject()).get("or").getType()
         );
     }
 
     public void testExtensionAreCollectedForDeprecated() {
-        TwigExtensionParser extensionParser = new TwigExtensionParser(getProject());
-
         assertEquals(
             "#M#C\\Symfony\\Bridge\\Twig\\Node\\FormEnctypeNode.compile",
-            extensionParser.getFunctions().get("form_enctype").getSignature()
+            TwigExtensionParser.getFunctions(getProject()).get("form_enctype").getSignature()
         );
 
         assertEquals(
             "#M#C\\Twig\\Extensions.foobar",
-            extensionParser.getFunctions().get("hwi_oauth_login_url").getSignature()
+            TwigExtensionParser.getFunctions(getProject()).get("hwi_oauth_login_url").getSignature()
         );
 
         assertEquals(
             "#M#C\\Twig\\Extensions.foobar",
-            extensionParser.getFilters().get("doctrine_minify_query").getSignature()
+            TwigExtensionParser.getFilters(getProject()).get("doctrine_minify_query").getSignature()
         );
 
         assertEquals(
             "#Ffoobar",
-            extensionParser.getFilters().get("localizeddate").getSignature()
+            TwigExtensionParser.getFilters(getProject()).get("localizeddate").getSignature()
         );
     }
 
     public void testExtensionAreCollectedForVersion2() {
-        TwigExtensionParser extensionParser = new TwigExtensionParser(getProject());
-
         assertEquals(
             "#M#C\\Twig\\Extensions.foobar",
-            extensionParser.getFilters().get("trans_2").getSignature()
+            TwigExtensionParser.getFilters(getProject()).get("trans_2").getSignature()
         );
 
         assertEquals(
             "#Fmax",
-            extensionParser.getFunctions().get("max_2").getSignature()
+            TwigExtensionParser.getFunctions(getProject()).get("max_2").getSignature()
         );
 
         assertEquals(
             "#Ffoo_test",
-            extensionParser.getSimpleTest().get("iterable_2").getSignature()
+            TwigExtensionParser.getSimpleTest(getProject()).get("iterable_2").getSignature()
         );
     }
 
     public void testExtensionAreCollectedForVersion3() {
-        TwigExtensionParser extensionParser = new TwigExtensionParser(getProject());
-
         assertEquals(
             "#M#C\\Twig\\Extensions.foobar",
-            extensionParser.getFilters().get("trans_3").getSignature()
+            TwigExtensionParser.getFilters(getProject()).get("trans_3").getSignature()
         );
 
         assertEquals(
             "#Fmax",
-            extensionParser.getFunctions().get("max_3").getSignature()
+            TwigExtensionParser.getFunctions(getProject()).get("max_3").getSignature()
         );
 
         assertEquals(
             "#Ffoo_test",
-            extensionParser.getSimpleTest().get("iterable_3").getSignature()
+            TwigExtensionParser.getSimpleTest(getProject()).get("iterable_3").getSignature()
         );
     }
 }
