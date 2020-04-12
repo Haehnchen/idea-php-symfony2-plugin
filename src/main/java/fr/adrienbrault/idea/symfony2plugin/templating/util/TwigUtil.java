@@ -912,23 +912,20 @@ public class TwigUtil {
         // cache twig and all files,
         // only PHP files we dont need to cache
         if(!usePhp) {
-            // cache twig files only, most use case
-            CachedValue<Map<String, Set<VirtualFile>>> cache = project.getUserData(TEMPLATE_CACHE_TWIG);
-            if (cache == null) {
-                cache = CachedValuesManager.getManager(project).createCachedValue(new MyAllTemplateFileMapCachedValueProvider(project), false);
-                project.putUserData(TEMPLATE_CACHE_TWIG, cache);
-            }
-
-            templateMapProxy = cache.getValue();
+            templateMapProxy = CachedValuesManager.getManager(project).getCachedValue(
+                project,
+                TEMPLATE_CACHE_TWIG,
+                new MyAllTemplateFileMapCachedValueProvider(project),
+                false
+            );
         } else {
             // cache all files
-            CachedValue<Map<String, Set<VirtualFile>>> cache = project.getUserData(TEMPLATE_CACHE_ALL);
-            if (cache == null) {
-                cache = CachedValuesManager.getManager(project).createCachedValue(new MyAllTemplateFileMapCachedValueProvider(project, true), false);
-                project.putUserData(TEMPLATE_CACHE_ALL, cache);
-            }
-
-            templateMapProxy = cache.getValue();
+            templateMapProxy = CachedValuesManager.getManager(project).getCachedValue(
+                project,
+                TEMPLATE_CACHE_ALL,
+                new MyAllTemplateFileMapCachedValueProvider(project, true),
+                false
+            );
         }
 
         return templateMapProxy;

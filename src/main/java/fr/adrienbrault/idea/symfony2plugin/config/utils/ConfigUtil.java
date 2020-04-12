@@ -30,17 +30,12 @@ public class ConfigUtil {
      */
     @NotNull
     public static Map<String, Collection<String>> getTreeSignatures(@NotNull Project project) {
-        CachedValue<Map<String, Collection<String>>> cache = project.getUserData(TREE_SIGNATURE_CACHE);
-
-        if (cache == null) {
-            cache = CachedValuesManager.getManager(project).createCachedValue(() ->
-                    CachedValueProvider.Result.create(visitTreeSignatures(project), PsiModificationTracker.MODIFICATION_COUNT)
-                , false);
-
-            project.putUserData(TREE_SIGNATURE_CACHE, cache);
-        }
-
-        return cache.getValue();
+        return CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            TREE_SIGNATURE_CACHE,
+            () -> CachedValueProvider.Result.create(visitTreeSignatures(project), PsiModificationTracker.MODIFICATION_COUNT),
+            false
+        );
     }
 
     @NotNull

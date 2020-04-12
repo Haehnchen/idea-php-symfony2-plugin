@@ -111,10 +111,10 @@ public class DoctrineMetadataUtil {
 
     @NotNull
     public static Collection<VirtualFile> findMetadataForRepositoryClass(final @NotNull Project project, @NotNull String repositoryClass) {
-
-        CachedValue<Map<String, Collection<String>>> cache = project.getUserData(DOCTRINE_REPOSITORY_CACHE);
-        if(cache == null) {
-            cache = CachedValuesManager.getManager(project).createCachedValue(() -> {
+        Map<String, Collection<String>> cache = CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            DOCTRINE_REPOSITORY_CACHE,
+            () -> {
                 Map<String, Collection<String>> repositoryMap = new HashMap<>();
                 for (String key : FileIndexCaches.getIndexKeysCache(project, CLASS_KEYS, DoctrineMetadataFileStubIndex.KEY)) {
                     for (DoctrineModelInterface repositoryDefinition : FileBasedIndex.getInstance().getValues(DoctrineMetadataFileStubIndex.KEY, key, GlobalSearchScope.allScope(project))) {
@@ -135,19 +135,18 @@ public class DoctrineMetadataUtil {
                 }
 
                 return CachedValueProvider.Result.create(repositoryMap, PsiModificationTracker.MODIFICATION_COUNT);
-            }, false);
-
-            project.putUserData(DOCTRINE_REPOSITORY_CACHE, cache);
-        }
+            },
+            false
+        );
 
         repositoryClass = StringUtils.stripStart(repositoryClass,"\\");
-        if(!cache.getValue().containsKey(repositoryClass)) {
+        if(!cache.containsKey(repositoryClass)) {
             return Collections.emptyList();
         }
 
         Set<VirtualFile> virtualFiles = new HashSet<>();
 
-        for (String s : cache.getValue().get(repositoryClass)) {
+        for (String s : cache.get(repositoryClass)) {
             virtualFiles.addAll(
                 FileBasedIndex.getInstance().getContainingFiles(DoctrineMetadataFileStubIndex.KEY, s, GlobalSearchScope.allScope(project))
             );

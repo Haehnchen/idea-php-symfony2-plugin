@@ -590,18 +590,12 @@ public class ServiceUtil {
      */
     @NotNull
     public static Collection<String> getParameterParameters(@NotNull Project project) {
-        CachedValue<Collection<String>> cache = project.getUserData(KERNEL_PARAMETER_CACHE);
-
-        if(cache == null) {
-            cache = CachedValuesManager.getManager(project).createCachedValue(() ->
-                CachedValueProvider.Result.create(getParameterParametersInner(project), PsiModificationTracker.MODIFICATION_COUNT),
-                false
-            );
-
-            project.putUserData(KERNEL_PARAMETER_CACHE, cache);
-        }
-
-        return cache.getValue();
+        return CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            KERNEL_PARAMETER_CACHE,
+            () -> CachedValueProvider.Result.create(getParameterParametersInner(project), PsiModificationTracker.MODIFICATION_COUNT),
+            false
+        );
     }
 
     @NotNull

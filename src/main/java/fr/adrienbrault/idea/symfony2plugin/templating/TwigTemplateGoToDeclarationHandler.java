@@ -211,7 +211,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
 
         Collection<PsiElement> psiElements = new ArrayList<>();
 
-        for (Map.Entry<String, TwigExtension> entry : new TwigExtensionParser(psiElement.getProject()).getSimpleTest().entrySet()) {
+        for (Map.Entry<String, TwigExtension> entry : TwigExtensionParser.getSimpleTest(psiElement.getProject()).entrySet()) {
             for (String item : items) {
                 if(entry.getKey().equalsIgnoreCase(item)) {
                     psiElements.addAll(Arrays.asList(
@@ -259,7 +259,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
 
     @NotNull
     private Collection<PsiElement> getFilterGoTo(@NotNull  PsiElement psiElement) {
-        Map<String, TwigExtension> filters = new TwigExtensionParser(psiElement.getProject()).getFilters();
+        Map<String, TwigExtension> filters = TwigExtensionParser.getFilters(psiElement.getProject());
 
         if(!filters.containsKey(psiElement.getText())) {
             return Collections.emptyList();
@@ -445,7 +445,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
 
     @NotNull
     private Collection<PsiElement> getFunctions(@NotNull PsiElement psiElement) {
-        Map<String, TwigExtension> functions = new TwigExtensionParser(psiElement.getProject()).getFunctions();
+        Map<String, TwigExtension> functions = TwigExtensionParser.getFunctions(psiElement.getProject());
 
         String funcName = psiElement.getText();
         if(!functions.containsKey(funcName)) {

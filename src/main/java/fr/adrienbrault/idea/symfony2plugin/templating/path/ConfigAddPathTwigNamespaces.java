@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.path;
 
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -13,6 +14,7 @@ import fr.adrienbrault.idea.symfony2plugin.config.utils.ConfigUtil;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtensionParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLFile;
 
@@ -36,29 +38,27 @@ public class ConfigAddPathTwigNamespaces implements TwigNamespaceExtension {
     @NotNull
     @Override
     public Collection<TwigPath> getNamespaces(@NotNull TwigNamespaceExtensionParameter parameter) {
-        CachedValue<Collection<TwigPath>> cache = parameter.getProject().getUserData(CACHE);
-        if (cache == null) {
-            cache = CachedValuesManager.getManager(parameter.getProject()).createCachedValue(() ->
-                    CachedValueProvider.Result.create(getTwigPaths(parameter), PsiModificationTracker.MODIFICATION_COUNT),
-                false
-            );
+        Project project = parameter.getProject();
 
-            parameter.getProject().putUserData(CACHE, cache);
-        }
-
-        return cache.getValue();
+        return CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            CACHE,
+            () -> CachedValueProvider.Result.create(getTwigPaths(project), PsiModificationTracker.MODIFICATION_COUNT),
+            false
+        );
     }
 
     @NotNull
-    private Collection<TwigPath> getTwigPaths(@NotNull TwigNamespaceExtensionParameter parameter) {
+    private static Collection<TwigPath> getTwigPaths(@NotNull Project project) {
         Collection<TwigPath> twigPaths = new ArrayList<>();
 
-        for (VirtualFile file : ConfigUtil.getConfigurations(parameter.getProject(), "twig")) {
-            PsiFile psiFile = PsiManager.getInstance(parameter.getProject()).findFile(file);
-            if(!(psiFile instanceof YAMLFile)) {
-                continue;
-            }
+        // file config files a eg ".../app/..." or "../packages/..."
+        Collection<PsiFile> psiFiles = PsiElementUtils.convertVirtualFilesToPsiFiles(
+            project,
+            ConfigUtil.getConfigurations(project, "twig")
+        );
 
+        for (PsiFile psiFile : psiFiles) {
             for (Pair<String, String> stringStringPair : TwigUtil.getTwigPathFromYamlConfigResolved((YAMLFile) psiFile)) {
                 // default path
                 String first = stringStringPair.getFirst();

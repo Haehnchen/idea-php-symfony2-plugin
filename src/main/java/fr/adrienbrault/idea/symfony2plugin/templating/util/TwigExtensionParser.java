@@ -35,120 +35,52 @@ public class TwigExtensionParser  {
     private static final Key<CachedValue<Map<String, TwigExtension>>> FILTERS_CACHE = new Key<>("TWIG_EXTENSIONS_FILTERS");
     private static final Key<CachedValue<Map<String, TwigExtension>>> OPERATORS_CACHE = new Key<>("TWIG_EXTENSIONS_OPERATORS");
 
-    @NotNull
-    private Project project;
-
-    private Map<String, TwigExtension> functions;
-    private Map<String, TwigExtension> simpleTest;
-    private Map<String, TwigExtension> filters;
-    private Map<String, TwigExtension> operators;
-
-    public TwigExtensionParser(@NotNull Project project) {
-        this.project = project;
-    }
-
-    @NotNull
-    public Map<String, TwigExtension> getFunctions() {
-        if(functions == null) {
-            this.parseElementType(TwigElementType.METHOD);
-        }
-        return functions;
-    }
-
-    @NotNull
-    public Map<String, TwigExtension> getFilters() {
-        if(filters == null) {
-            this.parseElementType(TwigElementType.FILTER);
-        }
-        return filters;
-    }
-
-    @NotNull
-    public Map<String, TwigExtension> getSimpleTest() {
-        if(simpleTest == null) {
-            this.parseElementType(TwigElementType.SIMPLE_TEST);
-        }
-        return simpleTest;
-    }
-
-    @NotNull
-    public Map<String, TwigExtension> getOperators() {
-        if(operators == null) {
-            this.parseElementType(TwigElementType.OPERATOR);
-        }
-        return operators;
-    }
-
-    private enum TwigElementType {
-        FILTER, METHOD, SIMPLE_TEST, OPERATOR
-    }
-
     public enum TwigExtensionType {
         FUNCTION_METHOD, FUNCTION_NODE, SIMPLE_FUNCTION, FILTER, SIMPLE_TEST, OPERATOR
     }
 
-    private void parseElementType(@NotNull TwigElementType type) {
-
-        if(type.equals(TwigElementType.FILTER)) {
-
-            CachedValue<Map<String, TwigExtension>> cache = project.getUserData(FILTERS_CACHE);
-            if(cache == null) {
-                cache = CachedValuesManager.getManager(project).createCachedValue(() ->
-                    CachedValueProvider.Result.create(parseFilters(TwigUtil.getTwigExtensionClasses(project)), PsiModificationTracker.MODIFICATION_COUNT),
-                    false
-                );
-
-                project.putUserData(FILTERS_CACHE, cache);
-            }
-
-            this.filters = cache.getValue();
-
-        } else if(type.equals(TwigElementType.METHOD)) {
-
-            CachedValue<Map<String, TwigExtension>> cache = project.getUserData(FUNCTION_CACHE);
-            if(cache == null) {
-                cache = CachedValuesManager.getManager(project).createCachedValue(() ->
-                    CachedValueProvider.Result.create(parseFunctions(TwigUtil.getTwigExtensionClasses(project)), PsiModificationTracker.MODIFICATION_COUNT),
-                    false
-                );
-
-                project.putUserData(FUNCTION_CACHE, cache);
-            }
-
-            this.functions = cache.getValue();
-
-        } else if(type.equals(TwigElementType.SIMPLE_TEST)) {
-
-            CachedValue<Map<String, TwigExtension>> cache = project.getUserData(TEST_CACHE);
-            if(cache == null) {
-                cache = CachedValuesManager.getManager(project).createCachedValue(() ->
-                    CachedValueProvider.Result.create(parseTests(TwigUtil.getTwigExtensionClasses(project)), PsiModificationTracker.MODIFICATION_COUNT),
-                    false
-                );
-
-                project.putUserData(TEST_CACHE, cache);
-            }
-
-            this.simpleTest = cache.getValue();
-
-        } else if(type.equals(TwigElementType.OPERATOR)) {
-
-            CachedValue<Map<String, TwigExtension>> cache = project.getUserData(OPERATORS_CACHE);
-            if(cache == null) {
-                cache = CachedValuesManager.getManager(project).createCachedValue(() ->
-                    CachedValueProvider.Result.create(parseOperators(TwigUtil.getTwigExtensionClasses(project)), PsiModificationTracker.MODIFICATION_COUNT),
-                    false
-                );
-
-                project.putUserData(OPERATORS_CACHE, cache);
-            }
-
-            this.operators = cache.getValue();
-        }
+    @NotNull
+    public static Map<String, TwigExtension> getFunctions(@NotNull Project project) {
+        return CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            FUNCTION_CACHE,
+            () -> CachedValueProvider.Result.create(parseFunctions(TwigUtil.getTwigExtensionClasses(project)), PsiModificationTracker.MODIFICATION_COUNT),
+            false
+        );
     }
 
     @NotNull
-    private Map<String, TwigExtension> parseFilters(@NotNull Collection<PhpClass> phpClasses) {
+    public static Map<String, TwigExtension> getFilters(@NotNull Project project) {
+        return CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            FILTERS_CACHE,
+            () -> CachedValueProvider.Result.create(parseFilters(TwigUtil.getTwigExtensionClasses(project)), PsiModificationTracker.MODIFICATION_COUNT),
+            false
+        );
+    }
+
+    @NotNull
+    public static Map<String, TwigExtension> getSimpleTest(@NotNull Project project) {
+        return CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            TEST_CACHE,
+            () -> CachedValueProvider.Result.create(parseTests(TwigUtil.getTwigExtensionClasses(project)), PsiModificationTracker.MODIFICATION_COUNT),
+            false
+        );
+    }
+
+    @NotNull
+    public static Map<String, TwigExtension> getOperators(@NotNull Project project) {
+        return CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            OPERATORS_CACHE,
+            () -> CachedValueProvider.Result.create(parseOperators(TwigUtil.getTwigExtensionClasses(project)), PsiModificationTracker.MODIFICATION_COUNT),
+            false
+        );
+    }
+
+    @NotNull
+    private static Map<String, TwigExtension> parseFilters(@NotNull Collection<PhpClass> phpClasses) {
         Map<String, TwigExtension> extensions = new HashMap<>();
 
         for(PhpClass phpClass : phpClasses) {
@@ -162,7 +94,7 @@ public class TwigExtensionParser  {
     }
 
     @NotNull
-    private Map<String, TwigExtension> parseFunctions(@NotNull Collection<PhpClass> phpClasses) {
+    private static Map<String, TwigExtension> parseFunctions(@NotNull Collection<PhpClass> phpClasses) {
         Map<String, TwigExtension> extensions = new HashMap<>();
 
         for(PhpClass phpClass : phpClasses) {
@@ -176,7 +108,7 @@ public class TwigExtensionParser  {
     }
 
     @NotNull
-    private Map<String, TwigExtension> parseTests(@NotNull Collection<PhpClass> phpClasses) {
+    private static Map<String, TwigExtension> parseTests(@NotNull Collection<PhpClass> phpClasses) {
         Map<String, TwigExtension> extensions = new HashMap<>();
 
         for(PhpClass phpClass : phpClasses) {
@@ -190,7 +122,7 @@ public class TwigExtensionParser  {
     }
 
     @NotNull
-    private Map<String, TwigExtension> parseOperators(@NotNull Collection<PhpClass> phpClasses) {
+    private static Map<String, TwigExtension> parseOperators(@NotNull Collection<PhpClass> phpClasses) {
         Map<String, TwigExtension> extensions = new HashMap<>();
 
         for(PhpClass phpClass : phpClasses) {
@@ -203,7 +135,7 @@ public class TwigExtensionParser  {
         return extensions;
     }
 
-    private void parseFunctions(@NotNull Method method, @NotNull Map<String, TwigExtension> filters) {
+    private static void parseFunctions(@NotNull Method method, @NotNull Map<String, TwigExtension> filters) {
         final PhpClass containingClass = method.getContainingClass();
         if(containingClass == null) {
             return;
@@ -251,7 +183,7 @@ public class TwigExtensionParser  {
         return null;
     }
 
-    private void parseFilter(@NotNull Method method, @NotNull Map<String, TwigExtension> filters) {
+    private static void parseFilter(@NotNull Method method, @NotNull Map<String, TwigExtension> filters) {
         final PhpClass containingClass = method.getContainingClass();
         if(containingClass == null) {
             return;
@@ -260,7 +192,7 @@ public class TwigExtensionParser  {
         method.acceptChildren(new TwigFilterVisitor(method, filters, containingClass));
     }
 
-    private void parseOperators(@NotNull Method method, @NotNull Map<String, TwigExtension> filters) {
+    private static void parseOperators(@NotNull Method method, @NotNull Map<String, TwigExtension> filters) {
         final PhpClass containingClass = method.getContainingClass();
         if(containingClass == null) {
             return;
@@ -285,7 +217,11 @@ public class TwigExtensionParser  {
             if(firstPsiChild instanceof ArrayCreationExpression) {
 
                 // twig core returns nested array with 2 items array creation elements
-                List<PsiElement> arrayValues = PhpPsiUtil.getChildren(firstPsiChild, new PsiElementTypCondition());
+                List<PsiElement> arrayValues = PhpPsiUtil.getChildren(
+                    firstPsiChild,
+                    psiElement -> psiElement.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE
+                );
+
                 if(arrayValues.size() > 0) {
                     for (PsiElement psiElement : arrayValues) {
 
@@ -300,7 +236,7 @@ public class TwigExtensionParser  {
                             for (ArrayHashElement arrayHashElement : PsiTreeUtil.findChildrenOfType(arrayValue, ArrayHashElement.class)) {
                                 PhpPsiElement key = arrayHashElement.getKey();
                                 String stringValue = PhpElementsUtil.getStringValue(key);
-                                if(stringValue != null && StringUtils.isNotBlank(stringValue)) {
+                                if(StringUtils.isNotBlank(stringValue)) {
                                     filters.put(stringValue, new TwigExtension(TwigExtensionType.OPERATOR));
                                 }
                             }
@@ -639,13 +575,6 @@ public class TwigExtensionParser  {
                     }
                 }
             }
-        }
-    }
-
-    private static class PsiElementTypCondition implements Condition<PsiElement> {
-        @Override
-        public boolean value(PsiElement psiElement) {
-            return psiElement.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE;
         }
     }
 }

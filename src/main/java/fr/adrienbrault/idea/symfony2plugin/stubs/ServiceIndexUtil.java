@@ -167,17 +167,12 @@ public class ServiceIndexUtil {
 
     @NotNull
     public static Map<String, Collection<ContainerService>> getDecoratedServices(@NotNull Project project) {
-        CachedValue<Map<String, Collection<ContainerService>>> cache = project.getUserData(SERVICE_DECORATION_CACHE);
-
-        if (cache == null) {
-            cache = CachedValuesManager.getManager(project).createCachedValue(() ->
-                CachedValueProvider.Result.create(getDecoratedServicesInner(project), PsiModificationTracker.MODIFICATION_COUNT)
-            , false);
-
-            project.putUserData(SERVICE_DECORATION_CACHE, cache);
-        }
-
-        return cache.getValue();
+        return CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            SERVICE_DECORATION_CACHE,
+            () -> CachedValueProvider.Result.create(getDecoratedServicesInner(project), PsiModificationTracker.MODIFICATION_COUNT),
+            false
+        );
     }
 
     @NotNull
@@ -209,17 +204,12 @@ public class ServiceIndexUtil {
      */
     @NotNull
     public static Map<String, Collection<ContainerService>> getParentServices(@NotNull Project project) {
-        CachedValue<Map<String, Collection<ContainerService>>> cache = project.getUserData(SERVICE_PARENT);
-
-        if (cache == null) {
-            cache = CachedValuesManager.getManager(project).createCachedValue(() ->
-                    CachedValueProvider.Result.create(getParentServicesInner(project), PsiModificationTracker.MODIFICATION_COUNT)
-                , false);
-
-            project.putUserData(SERVICE_PARENT, cache);
-        }
-
-        return cache.getValue();
+        return CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            SERVICE_PARENT,
+            () -> CachedValueProvider.Result.create(getParentServicesInner(project), PsiModificationTracker.MODIFICATION_COUNT),
+            false
+        );
     }
 
     /**

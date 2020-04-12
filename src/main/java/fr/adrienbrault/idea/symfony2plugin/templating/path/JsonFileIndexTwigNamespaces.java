@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.templating.path;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -36,26 +37,21 @@ public class JsonFileIndexTwigNamespaces implements TwigNamespaceExtension {
     @NotNull
     @Override
     public Collection<TwigPath> getNamespaces(final @NotNull TwigNamespaceExtensionParameter parameter) {
+        Project project = parameter.getProject();
 
-        CachedValue<Collection<TwigPath>> cache = parameter.getProject().getUserData(CACHE);
-        if (cache == null) {
-            cache = CachedValuesManager.getManager(parameter.getProject()).createCachedValue(() ->
-                CachedValueProvider.Result.create(getNamespacesInner(parameter), PsiModificationTracker.MODIFICATION_COUNT),
-                false
-            );
-
-            parameter.getProject().putUserData(CACHE, cache);
-        }
-
-        return cache.getValue();
+        return CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            CACHE,
+            () -> CachedValueProvider.Result.create(getNamespacesInner(project), PsiModificationTracker.MODIFICATION_COUNT),
+            false
+        );
     }
 
     @NotNull
-    private Collection<TwigPath> getNamespacesInner(@NotNull TwigNamespaceExtensionParameter parameter) {
-
+    private static Collection<TwigPath> getNamespacesInner(@NotNull Project project) {
         Collection<TwigPath> twigPaths = new ArrayList<>();
 
-        for (final PsiFile psiFile : FilenameIndex.getFilesByName(parameter.getProject(), "ide-twig.json", GlobalSearchScope.allScope(parameter.getProject()))) {
+        for (final PsiFile psiFile : FilenameIndex.getFilesByName(project, "ide-twig.json", GlobalSearchScope.allScope(project))) {
             Collection<TwigPath> cachedValue = CachedValuesManager.getCachedValue(psiFile, new MyJsonCachedValueProvider(psiFile));
             if(cachedValue != null) {
                 twigPaths.addAll(cachedValue);
