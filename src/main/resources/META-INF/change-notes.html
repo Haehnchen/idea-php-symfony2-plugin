@@ -1,8 +1,10 @@
 <html>
 <ul>
-    <li>Support changes in path extraction for "twig.loader" (Daniel Espendiller)</li>
-    <li>Support more use cases for compiled service path detection (Daniel Espendiller)</li>
-    <li>Provide relative path support for Twig paths configuration via yaml (Daniel Espendiller)</li>
-    <li>Provide support for compiled Symfony 4 / 5 route names (Daniel Espendiller)</li>
+    <li>Filter out service id which are random like service_locator from compiled service container file (Daniel Espendiller)</li>
+    <li>Replace CachedValuesManager#createCachedValue usage with direct fetch and build result API #getCachedValue (Daniel Espendiller)</li>
+    <li>Take "controller.service_arguments" for yaml named arguments of controller binding into account (Daniel Espendiller)</li>
+    <li>Support usage of translation domain adding "resource_files" compiled debug container (Daniel Espendiller)</li>
+    <li>Refactored the compiled translation target handling based on container debug file (Daniel Espendiller)</li>
+    <li>Provide better detection for translation directory inside based on the cached "translations" folder (Daniel Espendiller)</li>
 </ul>
 </html>

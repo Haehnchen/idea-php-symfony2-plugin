@@ -14,6 +14,14 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.19.191
+* Filter out service id which are random like service\_locator from compiled service container file (Daniel Espendiller)
+* Replace CachedValuesManager#createCachedValue usage with direct fetch and build result API #getCachedValue (Daniel Espendiller)
+* Take "controller.service\_arguments" for yaml named arguments of controller binding into account (Daniel Espendiller)
+* Support usage of translation domain adding "resource\_files" compiled debug container (Daniel Espendiller)
+* Refactored the compiled translation target handling based on container debug file (Daniel Espendiller)
+* Provide better detection for translation directory inside based on the cached "translations" folder (Daniel Espendiller)
+
 ## 0.19.190
 * Support changes in path extraction for "twig.loader" (Daniel Espendiller)
 * Support more use cases for compiled service path detection (Daniel Espendiller)
