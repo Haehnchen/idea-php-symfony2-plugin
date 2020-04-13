@@ -95,6 +95,25 @@ public class XmlService implements ServiceInterface {
             return null;
         }
 
+        // <service id="Psr\Log\LoggerInterface $securityLogger" alias="monolog.logger.security"/>
+        if (id.contains(" $") && id.matches("^.*\\s\\$.*$")) {
+            return null;
+        }
+
+        if (id.startsWith(".")) {
+            // <service id=".service_locator.XSes1R5" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
+            // <service id=".service_locator.tHpW6v3" alias=".service_locator.Y7gDuDN" public="false"/>
+            if (id.startsWith(".service_locator") && id.matches("^\\.service_locator.*\\.[\\w_]+$")) {
+                return null;
+            }
+
+            // <service id=".1_ArrayCache~kSL.YwK" class="Doctrine\Common\Cache\ArrayCache" public="false"/>
+            // <service id=".2_~NpzP6Xn" public="false">
+            if (id.matches("^\\.[\\w]+_.*\\.[\\w_]+$") || id.matches("^\\.[\\w]+_~[\\w_]+$")) {
+                return null;
+            }
+        }
+
         XmlService xmlService = new XmlService(id);
 
         String aClass = node.getAttribute("class");
@@ -103,7 +122,7 @@ public class XmlService implements ServiceInterface {
         }
 
         String isPublic = node.getAttribute("public");
-        if(isPublic != null && "false".equalsIgnoreCase(isPublic)) {
+        if("false".equalsIgnoreCase(isPublic)) {
             xmlService.isPublic = false;
         }
 
