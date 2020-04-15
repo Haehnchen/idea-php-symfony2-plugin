@@ -780,6 +780,10 @@ public class YamlElementPatternHelper {
      *  _defaults:
      *      bind:
      *          $<caret>
+     *
+     *  my.service:
+     *      arguments:
+     *          $<caret>
      */
     static ElementPattern<PsiElement> getNamedDefaultBindPattern() {
         // "__defaults" key
@@ -798,18 +802,26 @@ public class YamlElementPatternHelper {
             }
         }).withParent(defaultsKey));
 
+        // "arguments" bind
+        PsiElementPattern.Capture<YAMLMapping> argumentsKey = PlatformPatterns.psiElement(YAMLMapping.class).withParent(PlatformPatterns.psiElement(YAMLKeyValue.class).with(new PatternCondition<YAMLKeyValue>("KeyText") {
+            @Override
+            public boolean accepts(@NotNull YAMLKeyValue yamlKeyValue, ProcessingContext context) {
+                return "arguments".equals(yamlKeyValue.getKeyText());
+            }
+        }));
+
         // complete code
         // bind:
         // $<caret>: ''
         PsiElementPattern.Capture<PsiElement> argumentPattern = PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_KEY).withText(PlatformPatterns.string().startsWith("$")).withParent(
-            PlatformPatterns.psiElement(YAMLKeyValue.class).withParent(bindKey)
+            PlatformPatterns.psiElement(YAMLKeyValue.class).withParent(PlatformPatterns.or(bindKey, argumentsKey))
         );
 
         // incomplete code
         // bind:
         // $<caret>
         PsiElementPattern.Capture<PsiElement> incompleteCodePattern = PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).withText(PlatformPatterns.string().startsWith("$")).withParent(
-            PlatformPatterns.psiElement(YAMLScalar.class).withParent(bindKey)
+            PlatformPatterns.psiElement(YAMLScalar.class).withParent(PlatformPatterns.or(bindKey, argumentsKey))
         );
 
         return PlatformPatterns.or(argumentPattern, incompleteCodePattern);

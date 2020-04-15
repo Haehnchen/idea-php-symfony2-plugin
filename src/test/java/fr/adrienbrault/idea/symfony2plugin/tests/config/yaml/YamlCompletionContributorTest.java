@@ -307,4 +307,14 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
             "$i"
         );
     }
+
+    public void testNamedArgumentCompletionForServiceArguments() {
+        assertCompletionContains(YAMLFileType.YML, "" +
+                "services:\n" +
+                "  Foo\\Bar:\n" +
+                "    arguments:\n" +
+                "      $<caret>: ~\n",
+            "$i"
+        );
+    }
 }
