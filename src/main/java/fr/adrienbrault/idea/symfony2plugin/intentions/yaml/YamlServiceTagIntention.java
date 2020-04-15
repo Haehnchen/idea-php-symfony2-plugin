@@ -149,7 +149,17 @@ public class YamlServiceTagIntention extends PsiElementBaseIntentionAction {
     private static Pair<PhpClass, Set<String>> invoke(@NotNull Project project, @NotNull YAMLKeyValue serviceKeyValue) {
 
         String aClass = YamlHelper.getYamlKeyValueAsString(serviceKeyValue, "class");
-        if(aClass == null|| StringUtils.isBlank(aClass)) {
+        if(aClass == null || StringUtils.isBlank(aClass)) {
+            PsiElement key = serviceKeyValue.getKey();
+            if (key != null) {
+                String text = key.getText();
+                if (StringUtils.isNotBlank(text) && YamlHelper.isClassServiceId(text)) {
+                    aClass = text;
+                }
+            }
+        }
+
+        if(aClass == null) {
             return null;
         }
 
