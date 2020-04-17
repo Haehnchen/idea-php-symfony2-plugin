@@ -578,7 +578,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
 
         final List<PsiElement> elements = collectPsiElementsRecursive(psiElement);
 
-        for (LineMarkerProvider lineMarkerProvider : LineMarkerProviders.INSTANCE.allForLanguage(psiElement.getLanguage())) {
+        for (LineMarkerProvider lineMarkerProvider : LineMarkerProviders.getInstance().allForLanguage(psiElement.getLanguage())) {
             Collection<LineMarkerInfo> lineMarkerInfos = new ArrayList<LineMarkerInfo>();
             lineMarkerProvider.collectSlowLineMarkers(elements, lineMarkerInfos);
 
@@ -600,7 +600,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeIn
 
         final List<PsiElement> elements = collectPsiElementsRecursive(psiElement);
 
-        for (LineMarkerProvider lineMarkerProvider : LineMarkerProviders.INSTANCE.allForLanguage(psiElement.getLanguage())) {
+        for (LineMarkerProvider lineMarkerProvider : LineMarkerProviders.getInstance().allForLanguage(psiElement.getLanguage())) {
             Collection<LineMarkerInfo> lineMarkerInfos = new ArrayList<LineMarkerInfo>();
             lineMarkerProvider.collectSlowLineMarkers(elements, lineMarkerInfos);
 

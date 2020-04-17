@@ -132,7 +132,7 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
         }
 
         @Override
-        public void processNames(@NotNull Processor<String> processor, @NotNull GlobalSearchScope scope, @Nullable IdFilter filter) {
+        public void processNames(@NotNull Processor<? super String> processor, @NotNull GlobalSearchScope scope, @Nullable IdFilter filter) {
             for(String name: getServiceCollector().getServices().keySet()) {
                 processor.process(name);
             }
@@ -174,7 +174,7 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
         }
 
         @Override
-        public void processElementsWithName(@NotNull String name, @NotNull Processor<NavigationItem> processor, @NotNull FindSymbolParameters parameters) {
+        public void processElementsWithName(@NotNull String name, @NotNull Processor<? super NavigationItem> processor, @NotNull FindSymbolParameters parameters) {
 
             for(ContainerService containerService: getServiceCollector().collect()) {
                 if(containerService.getName().equals(name)) {
