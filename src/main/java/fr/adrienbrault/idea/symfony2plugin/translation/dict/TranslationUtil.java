@@ -54,6 +54,8 @@ public class TranslationUtil {
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Translation\\TranslatorInterface", "transChoice"),
         new MethodMatcher.CallToSignature("\\Symfony\\Contracts\\Translation\\TranslatorInterface", "trans"),
         new MethodMatcher.CallToSignature("\\Symfony\\Contracts\\Translation\\TranslatorInterface", "transChoice")
+        new MethodMatcher.CallToSignature("\\Symfony\Bundle\\FrameworkBundle\\Templating\\Helper\\TranslatorHelper", "trans"),
+        new MethodMatcher.CallToSignature("\\Symfony\Bundle\\FrameworkBundle\\Templating\\Helper\\TranslatorHelper", "transChoice")
     };
 
     private static final String[] XLIFF_XPATH = {
