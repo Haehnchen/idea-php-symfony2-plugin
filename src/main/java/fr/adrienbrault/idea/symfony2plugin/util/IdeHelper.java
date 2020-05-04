@@ -24,7 +24,10 @@ import org.jetbrains.annotations.Nullable;
 import java.awt.*;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Arrays;
+import java.util.*;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -123,7 +126,7 @@ public class IdeHelper {
 
     public static void notifyEnableMessage(final Project project) {
 
-        Notification notification = new Notification("Symfony Plugin", "Symfony Plugin", "Enable the Symfony Plugin <a href=\"enable\">with auto configuration now</a>, open <a href=\"config\">Project Settings</a> or <a href=\"dismiss\">dismiss</a> further messages", NotificationType.INFORMATION, (notification1, event) -> {
+        Notification notification = new Notification("Symfony Support", "Symfony", "Enable the Symfony Plugin <a href=\"enable\">with auto configuration now</a>, open <a href=\"config\">Project Settings</a> or <a href=\"dismiss\">dismiss</a> further messages", NotificationType.INFORMATION, (notification1, event) -> {
 
             // handle html click events
             if("config".equals(event.getDescription())) {
@@ -131,8 +134,16 @@ public class IdeHelper {
                 // open settings dialog and show panel
                 SettingsForm.show(project);
             } else if("enable".equals(event.getDescription())) {
-                enablePluginAndConfigure(project);
-                Notifications.Bus.notify(new Notification("Symfony Plugin", "Symfony Plugin", "Plugin enabled", NotificationType.INFORMATION), project);
+                Collection<String> messages = enablePluginAndConfigure(project);
+
+                String message = "Plugin enabled";
+
+                if (!messages.isEmpty()) {
+                    List<String> collect = messages.stream().map(s -> "<br> - " + s).collect(Collectors.toList());
+                    message += StringUtils.join(collect, "");
+                }
+
+                Notifications.Bus.notify(new Notification("Symfony Support", "Symfony", message, NotificationType.INFORMATION), project);
             } else if("dismiss".equals(event.getDescription())) {
 
                 // user doesnt want to show notification again
@@ -145,18 +156,36 @@ public class IdeHelper {
         Notifications.Bus.notify(notification, project);
     }
 
-    public static void enablePluginAndConfigure(@NotNull Project project) {
+    public static Collection<String> enablePluginAndConfigure(@NotNull Project project) {
         Settings.getInstance(project).pluginEnabled = true;
 
+        Collection<String> messages = new ArrayList<>();
+
+        Set<String> versions = SymfonyUtil.getVersions(project);
+        if (!versions.isEmpty()) {
+            messages.add("Symfony Version: " + versions.iterator().next());
+        }
+
         // Symfony 3.0 structure
-        if(VfsUtil.findRelativeFile(ProjectUtil.getProjectDir(project), "var", "cache") != null) {
+        if (VfsUtil.findRelativeFile(ProjectUtil.getProjectDir(project), "var", "cache") != null) {
             Settings.getInstance(project).pathToTranslation = "var/cache/dev/translations";
+            messages.add("Translations: var/cache/dev/translations");
         }
 
         // Symfony 4.0 structure
-        if(VfsUtil.findRelativeFile(ProjectUtil.getProjectDir(project), "public") != null) {
+        if (VfsUtil.findRelativeFile(ProjectUtil.getProjectDir(project), "public") != null) {
             Settings.getInstance(project).directoryToWeb = "public";
+            messages.add("Web Directory: public");
         }
+
+        // There no clean version when "FooBar:Foo:foo.html.twig" was dropped or deprecated
+        // So we disable it in the 4 branch by default; following with a default switch to "false" soon
+        if (SymfonyUtil.isVersionGreaterThenEquals(project, "4.0")) {
+            Settings.getInstance(project).twigBundleNamespaceSupport = false;
+            messages.add("Twig: Bundle names disabled");
+        }
+
+        return messages;
     }
 
     public static void navigateToPsiElement(@NotNull PsiElement psiElement) {

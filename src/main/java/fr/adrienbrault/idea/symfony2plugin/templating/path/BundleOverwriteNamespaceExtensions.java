@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * "app/Resources/ParentBundle/Resources/views"
@@ -19,6 +20,10 @@ public class BundleOverwriteNamespaceExtensions implements TwigNamespaceExtensio
     @NotNull
     @Override
     public Collection<TwigPath> getNamespaces(@NotNull TwigNamespaceExtensionParameter parameter) {
+        if (!TwigUtil.hasBundleNamespaceSupport(parameter.getProject())) {
+            return Collections.emptyList();
+        }
+
         Collection<TwigPath> twigPaths = new ArrayList<>();
 
         new SymfonyBundleUtil(parameter.getProject()).getParentBundles().forEach((key, virtualFile) -> {

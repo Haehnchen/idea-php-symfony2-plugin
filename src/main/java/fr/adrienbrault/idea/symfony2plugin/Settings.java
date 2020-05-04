@@ -56,6 +56,8 @@ public class Settings implements PersistentStateComponent<Settings> {
     public boolean codeFoldingTwigTemplate = true;
     public boolean codeFoldingTwigConstant = true;
 
+    public boolean twigBundleNamespaceSupport = true;
+
     public boolean dismissEnableNotification = false;
 
     public boolean profilerLocalEnabled = false;
