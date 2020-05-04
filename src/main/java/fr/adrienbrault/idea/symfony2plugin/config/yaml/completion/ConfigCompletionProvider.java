@@ -12,6 +12,7 @@ import com.intellij.util.ProcessingContext;
 import com.intellij.util.containers.ContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.apache.xerces.dom.CommentImpl;
@@ -81,7 +82,7 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
         // reverse to get top most item first
         Collections.reverse(items);
 
-        Document document = getConfigTemplate(element.getProject().getBaseDir());
+        Document document = getConfigTemplate(ProjectUtil.getProjectDir(element));
         if(document == null) {
             return;
         }
@@ -332,7 +333,7 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
 
     private void attachRootConfig(CompletionResultSet completionResultSet, PsiElement element) {
 
-        Document document = getConfigTemplate(element.getProject().getBaseDir());
+        Document document = getConfigTemplate(ProjectUtil.getProjectDir(element));
         if(document == null) {
             return;
         }

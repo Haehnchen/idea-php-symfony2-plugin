@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.util.xmlb.annotations.Attribute;
+import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -17,7 +18,7 @@ public abstract class AbstractUiFilePath implements UiFilePathInterface {
 
     public boolean exists(@NotNull Project project) {
         if (!FileUtil.isAbsolute(this.path)) {
-            return VfsUtil.findRelativeFile(this.path, project.getBaseDir()) != null;
+            return VfsUtil.findRelativeFile(this.path, ProjectUtil.getProjectDir(project)) != null;
         }
 
         return new File(this.path).exists();

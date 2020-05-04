@@ -11,6 +11,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.table.TableView;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
@@ -117,7 +118,7 @@ public class TwigNamespaceDialog extends JDialog {
         return new TextBrowseFolderListener(fileChooserDescriptor) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                VirtualFile projectDirectory = project.getBaseDir();
+                VirtualFile projectDirectory = ProjectUtil.getProjectDir(project);
                 VirtualFile selectedFile = FileChooser.chooseFile(
                         fileChooserDescriptor,
                         project,

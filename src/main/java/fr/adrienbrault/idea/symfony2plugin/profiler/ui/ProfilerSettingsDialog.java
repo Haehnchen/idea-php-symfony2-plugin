@@ -11,6 +11,7 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
+import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -114,7 +115,7 @@ public class ProfilerSettingsDialog implements Configurable {
         return new TextBrowseFolderListener(fileChooserDescriptor) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                VirtualFile projectDirectory = project.getBaseDir();
+                VirtualFile projectDirectory = ProjectUtil.getProjectDir(project);
 
                 String text = textField.getText();
                 VirtualFile toSelect = VfsUtil.findRelativeFile(text, projectDirectory);

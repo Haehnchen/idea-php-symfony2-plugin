@@ -697,7 +697,7 @@ public class ServiceContainerUtil {
 
             // several Symfony cache folder structures
             for (String root : new String[] {"var/cache", "app/cache"}) {
-                VirtualFile baseDir = project.getBaseDir();
+                VirtualFile baseDir = ProjectUtil.getProjectDir(project);
 
                 VirtualFile relativeFile = VfsUtil.findRelativeFile(root, baseDir);
                 if (relativeFile == null) {

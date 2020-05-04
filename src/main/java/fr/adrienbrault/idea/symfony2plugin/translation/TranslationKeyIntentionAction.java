@@ -11,6 +11,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.util.IncorrectOperationException;
 import fr.adrienbrault.idea.symfony2plugin.translation.util.TranslationInsertUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -41,7 +42,7 @@ public class TranslationKeyIntentionAction extends BaseIntentionAction {
         VirtualFile virtualFile = psiFile.getVirtualFile();
         if(virtualFile != null) {
             filename = virtualFile.getPath();
-            String relativePath = VfsUtil.getRelativePath(virtualFile, psiFile.getProject().getBaseDir(), '/');
+            String relativePath = VfsUtil.getRelativePath(virtualFile, ProjectUtil.getProjectDir(psiFile), '/');
             if(relativePath != null) {
                 filename =  relativePath;
             }

@@ -18,6 +18,7 @@ import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.AnnotationRouteElementWalkingVisitor;
+import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
@@ -123,7 +124,7 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, StubIndexed
             return false;
         }
 
-        VirtualFile baseDir = inputData.getProject().getBaseDir();
+        VirtualFile baseDir = ProjectUtil.getProjectDir(psiFile);
         if(baseDir == null) {
             return false;
         }

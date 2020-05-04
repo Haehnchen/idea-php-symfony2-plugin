@@ -15,6 +15,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationPsiParser;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
+import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.TimeSecondModificationTracker;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -113,7 +114,7 @@ public class TranslationIndex {
             }
         }
 
-        VirtualFile baseDir = project.getBaseDir();
+        VirtualFile baseDir = ProjectUtil.getProjectDir(project);
 
         for (String containerFile : ServiceContainerUtil.getContainerFiles(project)) {
             // resolve the file

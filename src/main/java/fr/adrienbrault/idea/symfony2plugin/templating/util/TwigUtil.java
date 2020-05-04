@@ -52,10 +52,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.twig.assets.TwigNamedAssetsServiceParser;
-import fr.adrienbrault.idea.symfony2plugin.util.FilesystemUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.*;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.psi.PsiElementAssertUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
@@ -885,7 +882,7 @@ public class TwigUtil {
             return templateName;
         }
 
-        String relativePath = VfsUtil.getRelativePath(currentFile, psiElement.getProject().getBaseDir(), '/');
+        String relativePath = VfsUtil.getRelativePath(currentFile, ProjectUtil.getProjectDir(psiElement), '/');
         return relativePath != null ? relativePath : currentFile.getPath();
 
     }
@@ -1505,7 +1502,7 @@ public class TwigUtil {
      */
     @NotNull
     public static Collection<LookupElement> getTwigLookupElements(@NotNull Project project) {
-        VirtualFile baseDir = project.getBaseDir();
+        VirtualFile baseDir = ProjectUtil.getProjectDir(project);
 
         return getTemplateMap(project).entrySet()
             .stream()
@@ -1521,7 +1518,7 @@ public class TwigUtil {
      */
     @NotNull
     public static Collection<LookupElement> getAllTemplateLookupElements(@NotNull Project project) {
-        VirtualFile baseDir = project.getBaseDir();
+        VirtualFile baseDir = ProjectUtil.getProjectDir(project);
 
         return getTemplateMap(project, true).entrySet()
             .stream()
@@ -1889,7 +1886,7 @@ public class TwigUtil {
      */
     @NotNull
     public static Collection<Pair<String, String>> getTwigPathFromYamlConfigResolved(@NotNull YAMLFile yamlFile) {
-        VirtualFile baseDir = yamlFile.getProject().getBaseDir();
+        VirtualFile baseDir = ProjectUtil.getProjectDir(yamlFile);
 
         Collection<Pair<String, String>> paths = new ArrayList<>();
 
@@ -2106,7 +2103,7 @@ public class TwigUtil {
     @Nullable
     public static String getTemplateNameByOverwrite(@NotNull Project project, @NotNull VirtualFile virtualFile) {
 
-        String relativePath = VfsUtil.getRelativePath(virtualFile, project.getBaseDir());
+        String relativePath = VfsUtil.getRelativePath(virtualFile, ProjectUtil.getProjectDir(project));
         if(relativePath == null) {
             return null;
         }

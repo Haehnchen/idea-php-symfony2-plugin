@@ -10,6 +10,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.StringSetDataExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationVisitor;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import gnu.trove.THashMap;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -82,7 +83,7 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
                 // dont index all yaml files; valid:
                 //  - "Resources/translations"
                 //  - "translations/[.../]foo.de.yml"
-                String relativePath = VfsUtil.getRelativePath(inputData.getFile(), psiFile.getProject().getBaseDir(), '/');
+                String relativePath = VfsUtil.getRelativePath(inputData.getFile(), ProjectUtil.getProjectDir(psiFile), '/');
                 if(relativePath != null) {
                     return relativePath.contains("/translations") || relativePath.startsWith("translations/");
                 }
@@ -96,7 +97,7 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
             @NotNull
             private Map<String, Set<String>> getXlfStringMap(@NotNull FileContent inputData) {
                 // testing files are not that nice
-                String relativePath = VfsUtil.getRelativePath(inputData.getFile(), inputData.getProject().getBaseDir(), '/');
+                String relativePath = VfsUtil.getRelativePath(inputData.getFile(), ProjectUtil.getProjectDir(inputData.getPsiFile()), '/');
                 if(relativePath != null && (relativePath.contains("/Test/") || relativePath.contains("/Tests/") || relativePath.contains("/Fixture/") || relativePath.contains("/Fixtures/"))) {
                     return Collections.emptyMap();
                 }

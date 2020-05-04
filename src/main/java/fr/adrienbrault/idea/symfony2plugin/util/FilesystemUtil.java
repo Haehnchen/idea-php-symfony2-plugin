@@ -55,7 +55,7 @@ public class FilesystemUtil {
         } else {
             // relative path resolve
             VirtualFile globalDirectory = VfsUtil.findRelativeFile(
-                project.getBaseDir(),
+                ProjectUtil.getProjectDir(project),
                 directoryToApp.replace("\\", "/").split("/")
             );
 
@@ -65,7 +65,7 @@ public class FilesystemUtil {
         }
 
         // global "app" in root
-        VirtualFile templates = VfsUtil.findRelativeFile(project.getBaseDir(), "app");
+        VirtualFile templates = VfsUtil.findRelativeFile(ProjectUtil.getProjectDir(project), "app");
         if(templates != null) {
             virtualFiles.add(templates);
         }

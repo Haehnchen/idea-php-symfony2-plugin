@@ -149,12 +149,12 @@ public class IdeHelper {
         Settings.getInstance(project).pluginEnabled = true;
 
         // Symfony 3.0 structure
-        if(VfsUtil.findRelativeFile(project.getBaseDir(), "var", "cache") != null) {
+        if(VfsUtil.findRelativeFile(ProjectUtil.getProjectDir(project), "var", "cache") != null) {
             Settings.getInstance(project).pathToTranslation = "var/cache/dev/translations";
         }
 
         // Symfony 4.0 structure
-        if(VfsUtil.findRelativeFile(project.getBaseDir(), "public") != null) {
+        if(VfsUtil.findRelativeFile(ProjectUtil.getProjectDir(project), "public") != null) {
             Settings.getInstance(project).directoryToWeb = "public";
         }
     }

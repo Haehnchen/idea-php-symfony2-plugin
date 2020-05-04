@@ -6,6 +6,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.psi.PsiDirectory;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
+import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.apache.commons.lang.StringUtils;
@@ -42,9 +43,8 @@ public class AssetDirectoryReader {
 
     @Nullable
     private static VirtualFile getProjectAssetRoot(@NotNull Project project) {
-        VirtualFile projectDirectory = project.getBaseDir();
         String webDirectoryName = Settings.getInstance(project).directoryToWeb;
-        return VfsUtil.findRelativeFile(projectDirectory, webDirectoryName.split("/"));
+        return VfsUtil.findRelativeFile(ProjectUtil.getProjectDir(project), webDirectoryName.split("/"));
     }
 
     @NotNull

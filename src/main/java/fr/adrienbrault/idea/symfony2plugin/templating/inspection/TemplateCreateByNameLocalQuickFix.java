@@ -16,6 +16,7 @@ import com.intellij.ui.components.JBList;
 import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
+import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -102,12 +103,12 @@ public class TemplateCreateByNameLocalQuickFix extends IntentionAndQuickFixActio
 
         int i = relativePath.lastIndexOf("/");
         if(i > 0) {
-            relativeBlockScopeFile = VfsUtil.findRelativeFile(project.getBaseDir(), relativePath.substring(0, i).split("/"));
+            relativeBlockScopeFile = VfsUtil.findRelativeFile(ProjectUtil.getProjectDir(project), relativePath.substring(0, i).split("/"));
         }
 
         String content = TwigUtil.buildStringFromTwigCreateContainer(project, relativeBlockScopeFile);
 
-        IdeHelper.RunnableCreateAndOpenFile runnableCreateAndOpenFile = IdeHelper.getRunnableCreateAndOpenFile(project, TwigFileType.INSTANCE, project.getBaseDir(), relativePath);
+        IdeHelper.RunnableCreateAndOpenFile runnableCreateAndOpenFile = IdeHelper.getRunnableCreateAndOpenFile(project, TwigFileType.INSTANCE, ProjectUtil.getProjectDir(project), relativePath);
         if(content != null) {
             runnableCreateAndOpenFile.setContent(content);
         }

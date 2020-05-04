@@ -5,6 +5,7 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -84,13 +85,13 @@ public class TwigPath implements Comparable<TwigPath> {
             return null;
         }
 
-        return VfsUtil.getRelativePath(virtualFile, project.getBaseDir(), '/');
+        return VfsUtil.getRelativePath(virtualFile, ProjectUtil.getProjectDir(project), '/');
     }
 
     @Nullable
     public VirtualFile getDirectory(@NotNull Project project) {
         if(!FileUtil.isAbsolute(path)) {
-            return VfsUtil.findRelativeFile(path, project.getBaseDir());
+            return VfsUtil.findRelativeFile(path, ProjectUtil.getProjectDir(project));
         } else {
             VirtualFile fileByIoFile = VfsUtil.findFileByIoFile(new File(path), true);
             if(fileByIoFile != null) {

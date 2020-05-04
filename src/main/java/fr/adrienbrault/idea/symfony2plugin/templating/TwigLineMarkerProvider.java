@@ -32,6 +32,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.twig.loader.FileImplementsLazyLoader;
 import fr.adrienbrault.idea.symfony2plugin.twig.loader.FileOverwritesLazyLoader;
 import fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigBlockUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import icons.TwigIcons;
 import org.apache.commons.lang.StringUtils;
@@ -310,7 +311,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         protected String getContainerText(PsiElement psiElement, String s) {
             // relative path else fallback to default name extraction
             PsiFile containingFile = psiElement.getContainingFile();
-            String relativePath = VfsUtil.getRelativePath(containingFile.getVirtualFile(), psiElement.getProject().getBaseDir(), '/');
+            String relativePath = VfsUtil.getRelativePath(containingFile.getVirtualFile(), ProjectUtil.getProjectDir(psiElement), '/');
             return relativePath != null ? relativePath : SymbolPresentationUtil.getSymbolContainerText(psiElement);
         }
 

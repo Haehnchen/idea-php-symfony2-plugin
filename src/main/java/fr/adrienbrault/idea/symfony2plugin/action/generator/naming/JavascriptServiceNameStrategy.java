@@ -7,6 +7,7 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -54,7 +55,7 @@ public class JavascriptServiceNameStrategy implements ServiceNameStrategyInterfa
 
         PhpClass aClass = PhpElementsUtil.getClass(project, className);
         if(aClass != null) {
-            String relativePath = VfsUtil.getRelativePath(aClass.getContainingFile().getVirtualFile(), project.getBaseDir(), '/');
+            String relativePath = VfsUtil.getRelativePath(aClass.getContainingFile().getVirtualFile(), ProjectUtil.getProjectDir(aClass), '/');
             if(relativePath != null) {
                 jsonObject.addProperty("relativePath", relativePath);
             }

@@ -13,6 +13,7 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import fr.adrienbrault.idea.symfony2plugin.stubs.util.IndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
+import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import fr.adrienbrault.idea.symfony2plugin.webDeployment.WebDeploymentUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -175,7 +176,7 @@ public class SettingsForm implements Configurable {
         return new TextBrowseFolderListener(fileChooserDescriptor) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                VirtualFile projectDirectory = project.getBaseDir();
+                VirtualFile projectDirectory = ProjectUtil.getProjectDir(project);
                 VirtualFile selectedFile = FileChooser.chooseFile(
                     fileChooserDescriptor,
                     project,
