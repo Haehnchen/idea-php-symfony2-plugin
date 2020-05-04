@@ -4,7 +4,6 @@ import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.TableView;
 import com.intellij.util.ui.ColumnInfo;
@@ -35,6 +34,7 @@ public class TwigSettingsForm implements Configurable {
     private JPanel panelTableView;
     private JButton resetToDefault;
     private JButton buttonJsonExample;
+    private JCheckBox chkTwigBundleNamespaceSupport;
     private TableView<TwigPath> tableView;
     private Project project;
     private boolean changed = false;
@@ -169,6 +169,7 @@ public class TwigSettingsForm implements Configurable {
             }
         }
 
+        getSettings().twigBundleNamespaceSupport = chkTwigBundleNamespaceSupport.isSelected();
         getSettings().twigNamespaces = twigPaths;
         this.changed = false;
     }
@@ -189,7 +190,12 @@ public class TwigSettingsForm implements Configurable {
     public void reset() {
         this.resetList();
         this.attachItems();
+        this.updateUIFromSettings();
         this.changed = false;
+    }
+
+    private void updateUIFromSettings() {
+        this.chkTwigBundleNamespaceSupport.setSelected(getSettings().twigBundleNamespaceSupport);
     }
 
     @Override

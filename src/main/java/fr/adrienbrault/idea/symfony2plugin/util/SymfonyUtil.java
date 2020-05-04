@@ -43,7 +43,7 @@ public class SymfonyUtil {
     }
 
     @NotNull
-    private static Set<String> getVersions(@NotNull Project project) {
+    public static Set<String> getVersions(@NotNull Project project) {
         Set<String> versions = new HashSet<>();
 
         for (PhpClass phpClass : PhpElementsUtil.getClassesInterface(project, "Symfony\\Component\\HttpKernel\\Kernel")) {

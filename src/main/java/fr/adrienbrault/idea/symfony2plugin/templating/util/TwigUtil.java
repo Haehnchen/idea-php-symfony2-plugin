@@ -2562,6 +2562,14 @@ public class TwigUtil {
         visitTemplateVariables(scope, consumer, 3);
     }
 
+
+    /**
+     * Check if Twig pathes should be filled with the Bundle naming strategy "FooBar:Foo:Test"
+     */
+    public static boolean hasBundleNamespaceSupport(@NotNull Project project) {
+        return Settings.getInstance(project).twigBundleNamespaceSupport;
+    }
+
     /**
      * Proxy to consume every given scope
      */
