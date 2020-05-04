@@ -13,6 +13,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.ui.components.JBList;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.util.TranslationInsertUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -66,7 +67,7 @@ public class TranslationKeyIntentionAndQuickFixAction extends IntentionAndQuickF
         // try to find suitable presentable filename
         String filename = virtualFile.getPath();
 
-        String relativePath = VfsUtil.getRelativePath(virtualFile, project.getBaseDir(), '/');
+        String relativePath = VfsUtil.getRelativePath(virtualFile, ProjectUtil.getProjectDir(project), '/');
         if(relativePath != null) {
             filename =  relativePath;
         }
@@ -84,7 +85,7 @@ public class TranslationKeyIntentionAndQuickFixAction extends IntentionAndQuickF
 
         for(PsiFile translationPsiFile: this.domainCollector.collect(project, key, domain)) {
             if(translationPsiFile instanceof YAMLFile || TranslationUtil.isSupportedXlfFile(translationPsiFile)) {
-                String relativePath = VfsUtil.getRelativePath(translationPsiFile.getVirtualFile(), project.getBaseDir(), '/');
+                String relativePath = VfsUtil.getRelativePath(translationPsiFile.getVirtualFile(), ProjectUtil.getProjectDir(project), '/');
 
                 // sort collection. eg vendor last
                 if(relativePath != null && (relativePath.startsWith("app") || relativePath.startsWith("src"))) {

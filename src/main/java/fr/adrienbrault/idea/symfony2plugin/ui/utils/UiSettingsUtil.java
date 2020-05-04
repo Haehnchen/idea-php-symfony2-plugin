@@ -12,6 +12,7 @@ import com.jetbrains.plugins.webDeployment.config.WebServerConfig;
 import com.jetbrains.plugins.webDeployment.ui.ServerBrowserDialog;
 import fr.adrienbrault.idea.symfony2plugin.ui.dict.UiFilePathInterface;
 import fr.adrienbrault.idea.symfony2plugin.ui.dict.UiFilePathPresentable;
+import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,7 +30,7 @@ public class UiSettingsUtil {
 
     @Nullable
     public static String getPathDialog(@NotNull Project project, @NotNull FileType fileType, @Nullable String current) {
-        VirtualFile projectDirectory = project.getBaseDir();
+        VirtualFile projectDirectory = ProjectUtil.getProjectDir(project);
 
         VirtualFile selectedFileBefore = null;
         if(current != null) {

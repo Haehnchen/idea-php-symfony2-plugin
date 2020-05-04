@@ -19,6 +19,7 @@ import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoaderParam
 import fr.adrienbrault.idea.symfony2plugin.profiler.widget.SymfonyProfilerWidget;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
+import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -129,7 +130,7 @@ public class Symfony2ProjectComponent implements ProjectComponent {
     private void checkProject() {
         if(!this.isEnabled()
             && !Settings.getInstance(project).dismissEnableNotification
-            && VfsUtil.findRelativeFile(this.project.getBaseDir(), "vendor", "symfony") != null
+            && VfsUtil.findRelativeFile(ProjectUtil.getProjectDir(this.project), "vendor", "symfony") != null
             ) {
 
             IdeHelper.notifyEnableMessage(project);
@@ -155,12 +156,12 @@ public class Symfony2ProjectComponent implements ProjectComponent {
             return true;
         }
 
-        if(VfsUtil.findRelativeFile(project.getBaseDir(), "vendor", "symfony") != null) {
+        if(VfsUtil.findRelativeFile(ProjectUtil.getProjectDir(project), "vendor", "symfony") != null) {
             return true;
         }
 
         // drupal8; this should not really here
-        if(VfsUtil.findRelativeFile(project.getBaseDir(), "core", "vendor", "symfony") != null) {
+        if(VfsUtil.findRelativeFile(ProjectUtil.getProjectDir(project), "core", "vendor", "symfony") != null) {
             return true;
         }
 

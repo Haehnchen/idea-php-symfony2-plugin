@@ -11,6 +11,7 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.*;
+import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -102,7 +103,7 @@ public class DotEnvUtil {
         }
 
         // search root directory for all ".env*" files
-        VirtualFile projectDir = VfsUtil.findRelativeFile(project.getBaseDir());
+        VirtualFile projectDir = VfsUtil.findRelativeFile(ProjectUtil.getProjectDir(project));
         if (projectDir != null) {
             for (VirtualFile child : projectDir.getChildren()) {
                 if (child.getName().startsWith(".env")) {

@@ -22,6 +22,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ContainerBuilderCall;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import gnu.trove.THashMap;
 import one.util.streamex.StreamEx;
 import org.apache.commons.lang.StringUtils;
@@ -123,7 +124,7 @@ public class ContainerBuilderStubIndex extends FileBasedIndexExtension<String, C
         }
 
         // is Test file in path name
-        String relativePath = VfsUtil.getRelativePath(inputData.getFile(), psiFile.getProject().getBaseDir(), '/');
+        String relativePath = VfsUtil.getRelativePath(inputData.getFile(), ProjectUtil.getProjectDir(psiFile), '/');
         if(relativePath != null && (relativePath.contains("/Test/") || relativePath.contains("/Tests/") || relativePath.contains("/Fixture/") || relativePath.contains("/Fixtures/"))) {
             return false;
         }

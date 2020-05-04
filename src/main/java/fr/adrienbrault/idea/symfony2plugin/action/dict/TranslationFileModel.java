@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.action.dict;
 
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.psi.PsiFile;
+import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,7 +35,7 @@ public class TranslationFileModel {
 
     @Nullable
     public String getRelativePath() {
-        return VfsUtil.getRelativePath(psiFile.getVirtualFile(), psiFile.getProject().getBaseDir(), '/');
+        return VfsUtil.getRelativePath(psiFile.getVirtualFile(), ProjectUtil.getProjectDir(psiFile), '/');
     }
 
     public String getDomain() {

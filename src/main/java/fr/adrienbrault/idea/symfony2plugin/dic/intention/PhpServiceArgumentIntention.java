@@ -17,6 +17,7 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
@@ -54,7 +55,7 @@ public class PhpServiceArgumentIntention extends PsiElementBaseIntentionAction {
         Map<String, PsiElement> map = new HashMap<>();
 
         for (PsiElement element : psiElements) {
-            map.put(VfsUtil.getRelativePath(element.getContainingFile().getVirtualFile(), element.getProject().getBaseDir()), element);
+            map.put(VfsUtil.getRelativePath(element.getContainingFile().getVirtualFile(), ProjectUtil.getProjectDir(element)), element);
         }
 
         final JBList<String> list = new JBList<>(map.keySet());
@@ -96,7 +97,7 @@ public class PhpServiceArgumentIntention extends PsiElementBaseIntentionAction {
             return;
         }
 
-        String relativePath = VfsUtil.getRelativePath(psiElement.getContainingFile().getVirtualFile(), psiElement.getProject().getBaseDir());
+        String relativePath = VfsUtil.getRelativePath(psiElement.getContainingFile().getVirtualFile(), ProjectUtil.getProjectDir(psiElement));
         if (relativePath == null) {
             relativePath = "n/a";
         }

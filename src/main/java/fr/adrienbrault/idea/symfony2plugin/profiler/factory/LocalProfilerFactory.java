@@ -7,6 +7,7 @@ import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.profiler.LocalProfilerIndex;
 import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerIndexInterface;
+import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -47,7 +48,7 @@ public class LocalProfilerFactory implements ProfilerFactoryInterface {
             return getCsvIndex(project);
         }
 
-        VirtualFile relativeFile = VfsUtil.findRelativeFile(project.getBaseDir(), profilerCsvPath.replace("\\", "/").split("/"));
+        VirtualFile relativeFile = VfsUtil.findRelativeFile(ProjectUtil.getProjectDir(project), profilerCsvPath.replace("\\", "/").split("/"));
         if (relativeFile != null) {
             return VfsUtil.virtualToIoFile(relativeFile);
         }

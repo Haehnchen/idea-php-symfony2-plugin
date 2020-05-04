@@ -16,6 +16,6 @@ public class VfsExUtil {
         if(ApplicationManager.getApplication().isUnitTestMode()) {
             return virtualFile.getPath();
         }
-        return VfsUtil.getRelativePath(virtualFile, project.getBaseDir());
+        return VfsUtil.getRelativePath(virtualFile, ProjectUtil.getProjectDir(project));
     }
 }
