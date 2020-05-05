@@ -155,7 +155,8 @@ public class TwigSettingsForm implements Configurable {
 
     @Override
     public boolean isModified() {
-        return this.changed;
+        return this.changed
+            || getSettings().twigBundleNamespaceSupport != chkTwigBundleNamespaceSupport.isSelected();
     }
 
     @Override
