@@ -1,10 +1,11 @@
 <html>
 <ul>
-    <li>Filter out service id which are random like service_locator from compiled service container file (Daniel Espendiller)</li>
-    <li>Replace CachedValuesManager#createCachedValue usage with direct fetch and build result API #getCachedValue (Daniel Espendiller)</li>
-    <li>Take "controller.service_arguments" for yaml named arguments of controller binding into account (Daniel Espendiller)</li>
-    <li>Support usage of translation domain adding "resource_files" compiled debug container (Daniel Espendiller)</li>
-    <li>Refactored the compiled translation target handling based on container debug file (Daniel Espendiller)</li>
-    <li>Provide better detection for translation directory inside based on the cached "translations" folder (Daniel Espendiller)</li>
+    <li>Allow to disable Twig bundle namespace and support in autoconfigure (Daniel Espendiller)</li>
+    <li>Wrapped the deprecated "getBaseDir" for getting the project root directory (Daniel Espendiller)</li>
+    <li>Bundle ending is not needed for Twig namespaces (Daniel Espendiller)</li>
+    <li>Added reference and inspection support for TranslatorHelper (<a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1420">#1454</a>) (Thomas Schulz)</li>
+    <li>Add support for service class inside tag adding indention (Daniel Espendiller)</li>
+    <li>Provide completion support for named argument inside yaml arguments context (Daniel Espendiller)</li>
+    <li>Add support for autocompletion inside the MessageSubscriberInterface::getHandledMessages method (Stefano Arlandini)</li>
 </ul>
 </html>

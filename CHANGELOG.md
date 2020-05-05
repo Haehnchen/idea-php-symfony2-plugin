@@ -14,6 +14,15 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.19.192
+* Allow to disable Twig bundle namespace and support in autoconfigure (Daniel Espendiller)
+* Wrapped the deprecated "getBaseDir" for getting the project root directory (Daniel Espendiller)
+* Bundle ending is not needed for Twig namespaces (Daniel Espendiller)
+* Added reference and inspection support for TranslatorHelper ([#1454](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1420)) (Thomas Schulz)
+* Add support for service class inside tag adding indention (Daniel Espendiller)
+* Provide completion support for named argument inside yaml arguments context (Daniel Espendiller)
+* Add support for autocompletion inside the MessageSubscriberInterface::getHandledMessages method (Stefano Arlandini)
+
 ## 0.19.191
 * Filter out service id which are random like service\_locator from compiled service container file (Daniel Espendiller)
 * Replace CachedValuesManager#createCachedValue usage with direct fetch and build result API #getCachedValue (Daniel Espendiller)
