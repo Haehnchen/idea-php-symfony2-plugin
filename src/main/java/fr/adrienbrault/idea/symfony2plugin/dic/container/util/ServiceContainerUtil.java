@@ -625,9 +625,19 @@ public class ServiceContainerUtil {
         return usage;
     }
 
-    public static boolean isLowerPriority(String name) {
-        for(String lowerName: LOWER_PRIORITY) {
-            if(name.contains(lowerName)) {
+    /**
+     * Move services done which are possible "garbage" or should not be taken like ".debug"
+     *
+     * - ".1_~NpzP6Xn"
+     *  - ".debug."
+     *  - "router.debug"
+     */
+    public static boolean isLowerPriority(@NotNull String name) {
+        for (String lowerName: LOWER_PRIORITY) {
+            // reduce the
+            // - ".1_~NpzP6Xn"
+            // -
+            if (name.startsWith(".") || name.contains("~") || name.toLowerCase().contains(lowerName)) {
                 return true;
             }
         }

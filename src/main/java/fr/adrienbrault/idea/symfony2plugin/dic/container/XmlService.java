@@ -103,13 +103,13 @@ public class XmlService implements ServiceInterface {
         if (id.startsWith(".")) {
             // <service id=".service_locator.XSes1R5" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
             // <service id=".service_locator.tHpW6v3" alias=".service_locator.Y7gDuDN" public="false"/>
-            if (id.startsWith(".service_locator") && id.matches("^\\.service_locator.*\\.[\\w_]+$")) {
+            if (id.startsWith(".service_locator.") || id.startsWith(".abstract.") || id.startsWith(".instanceof.") || id.startsWith(".debug.") || id.startsWith(".errored.")) {
                 return null;
             }
 
             // <service id=".1_ArrayCache~kSL.YwK" class="Doctrine\Common\Cache\ArrayCache" public="false"/>
             // <service id=".2_~NpzP6Xn" public="false">
-            if (id.matches("^\\.[\\w]+_.*\\.[\\w_]+$") || id.matches("^\\.[\\w]+_~[\\w_]+$")) {
+            if (id.matches("^\\.[\\w-]+~.*$")) {
                 return null;
             }
         }
