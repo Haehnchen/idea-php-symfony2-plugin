@@ -124,7 +124,7 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, StubIndexed
             return false;
         }
 
-        VirtualFile baseDir = ProjectUtil.getProjectDir(psiFile);
+        VirtualFile baseDir = ProjectUtil.getProjectDir(inputData.getProject());
         if(baseDir == null) {
             return false;
         }

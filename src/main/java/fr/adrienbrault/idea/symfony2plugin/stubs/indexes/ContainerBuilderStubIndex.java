@@ -124,7 +124,7 @@ public class ContainerBuilderStubIndex extends FileBasedIndexExtension<String, C
         }
 
         // is Test file in path name
-        String relativePath = VfsUtil.getRelativePath(inputData.getFile(), ProjectUtil.getProjectDir(psiFile), '/');
+        String relativePath = VfsUtil.getRelativePath(inputData.getFile(), ProjectUtil.getProjectDir(inputData.getProject()), '/');
         if(relativePath != null && (relativePath.contains("/Test/") || relativePath.contains("/Tests/") || relativePath.contains("/Fixture/") || relativePath.contains("/Fixtures/"))) {
             return false;
         }
