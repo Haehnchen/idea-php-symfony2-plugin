@@ -83,7 +83,7 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
                 // dont index all yaml files; valid:
                 //  - "Resources/translations"
                 //  - "translations/[.../]foo.de.yml"
-                String relativePath = VfsUtil.getRelativePath(inputData.getFile(), ProjectUtil.getProjectDir(psiFile), '/');
+                String relativePath = VfsUtil.getRelativePath(inputData.getFile(), ProjectUtil.getProjectDir(inputData.getProject()), '/');
                 if(relativePath != null) {
                     return relativePath.contains("/translations") || relativePath.startsWith("translations/");
                 }
@@ -97,7 +97,7 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
             @NotNull
             private Map<String, Set<String>> getXlfStringMap(@NotNull FileContent inputData) {
                 // testing files are not that nice
-                String relativePath = VfsUtil.getRelativePath(inputData.getFile(), ProjectUtil.getProjectDir(inputData.getPsiFile()), '/');
+                String relativePath = VfsUtil.getRelativePath(inputData.getFile(), ProjectUtil.getProjectDir(inputData.getProject()), '/');
                 if(relativePath != null && (relativePath.contains("/Test/") || relativePath.contains("/Tests/") || relativePath.contains("/Fixture/") || relativePath.contains("/Fixtures/"))) {
                     return Collections.emptyMap();
                 }

@@ -102,7 +102,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
 
         // possible fixture or test file
         // to support also library paths, only filter them on project files
-        String relativePath = VfsUtil.getRelativePath(inputData.getFile(), ProjectUtil.getProjectDir(psiFile), '/');
+        String relativePath = VfsUtil.getRelativePath(inputData.getFile(), ProjectUtil.getProjectDir(inputData.getProject()), '/');
         if(relativePath != null && (relativePath.contains("/Test/") || relativePath.contains("/Tests/") || relativePath.contains("/Fixture/") || relativePath.contains("/Fixtures/"))) {
             return false;
         }
