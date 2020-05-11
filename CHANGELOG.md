@@ -14,6 +14,10 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.19.193
+* Filter some special debug service and move the into lower priority (Daniel Espendiller)
+* Extract project directory from the file context; use directly the project to prevent "com.intellij.util.indexing.FileContentImpl$IllegalDataException: Cannot obtain text for binary file type : Unknown" on xlf files #1459 (Daniel Espendiller)
+
 ## 0.19.192
 * Allow to disable Twig bundle namespace and support in autoconfigure (Daniel Espendiller)
 * Wrapped the deprecated "getBaseDir" for getting the project root directory (Daniel Espendiller)

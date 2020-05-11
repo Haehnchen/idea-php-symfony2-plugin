@@ -1,11 +1,6 @@
 <html>
 <ul>
-    <li>Allow to disable Twig bundle namespace and support in autoconfigure (Daniel Espendiller)</li>
-    <li>Wrapped the deprecated "getBaseDir" for getting the project root directory (Daniel Espendiller)</li>
-    <li>Bundle ending is not needed for Twig namespaces (Daniel Espendiller)</li>
-    <li>Added reference and inspection support for TranslatorHelper (<a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1420">#1454</a>) (Thomas Schulz)</li>
-    <li>Add support for service class inside tag adding indention (Daniel Espendiller)</li>
-    <li>Provide completion support for named argument inside yaml arguments context (Daniel Espendiller)</li>
-    <li>Add support for autocompletion inside the MessageSubscriberInterface::getHandledMessages method (Stefano Arlandini)</li>
+    <li>Filter some special debug service and move the into lower priority (Daniel Espendiller)</li>
+    <li>Extract project directory from the file context; use directly the project to prevent "com.intellij.util.indexing.FileContentImpl$IllegalDataException: Cannot obtain text for binary file type : Unknown" on xlf files #1459 (Daniel Espendiller)</li>
 </ul>
 </html>
