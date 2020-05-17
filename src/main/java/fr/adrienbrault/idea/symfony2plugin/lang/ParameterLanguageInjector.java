@@ -40,17 +40,29 @@ public class ParameterLanguageInjector implements MultiHostInjector {
             new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query", "setDQL"),
     };
 
+    private static final MethodMatcher.CallToSignature[] RESET_INJECTION_SIGNATURES = {
+        new MethodMatcher.CallToSignature("\\Symfony\\Component\\Console\\Output\\OutputInterface", "write"),
+        new MethodMatcher.CallToSignature("\\Symfony\\Component\\Console\\Output\\OutputInterface", "writeln"),
+        new MethodMatcher.CallToSignature("\\Symfony\\Component\\Console\\Output\\Output", "write"),
+        new MethodMatcher.CallToSignature("\\Symfony\\Component\\Console\\Output\\Output", "writeln"),
+        new MethodMatcher.CallToSignature("\\Symfony\\Component\\Console\\Formatter\\OutputFormatter", "escape"),
+        new MethodMatcher.CallToSignature("\\Symfony\\Component\\Console\\Formatter\\OutputFormatter", "escapeTrailingBackslash"),
+        new MethodMatcher.CallToSignature("\\Symfony\\Component\\Console\\Formatter\\OutputFormatterInterface", "format"),
+    };
+
     private final MethodLanguageInjection[] LANGUAGE_INJECTIONS = {
             new MethodLanguageInjection(LANGUAGE_ID_CSS, "@media all { ", " }", CSS_SELECTOR_SIGNATURES),
             new MethodLanguageInjection(LANGUAGE_ID_XPATH, null, null, XPATH_SIGNATURES),
             new MethodLanguageInjection(LANGUAGE_ID_JSON, null, null, JSON_SIGNATURES),
             new MethodLanguageInjection(LANGUAGE_ID_DQL, null, null, DQL_SIGNATURES),
+            new MethodLanguageInjection(LANGUAGE_ID_TEXT, null, null, RESET_INJECTION_SIGNATURES),
     };
 
     public static final String LANGUAGE_ID_CSS = "CSS";
     public static final String LANGUAGE_ID_XPATH = "XPath";
     public static final String LANGUAGE_ID_JSON = "JSON";
     public static final String LANGUAGE_ID_DQL = "DQL";
+    public static final String LANGUAGE_ID_TEXT = "TEXT";
 
     private static final String DQL_VARIABLE_NAME = "dql";
 
@@ -97,6 +109,10 @@ public class ParameterLanguageInjector implements MultiHostInjector {
             // JsonResponse::fromJsonString('...')
             if (parent instanceof MethodReference) {
                 if (PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) parent, languageInjection.getSignatures())) {
+                    // Only "overwrite" language injection to "TEXT" when XML-like characters in literal
+                    if (LANGUAGE_ID_TEXT.equals(language.getID()) && !expr.getContents().contains("<")) {
+                        return;
+                    }
                     injectLanguage(registrar, expr, language, languageInjection);
                     return;
                 }
