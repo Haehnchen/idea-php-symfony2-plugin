@@ -15,6 +15,8 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocParamTag;
 import com.jetbrains.php.lang.psi.elements.*;
+import de.espend.idea.php.annotation.dict.PhpDocCommentAnnotation;
+import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.DocumentNamespacesParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
@@ -406,11 +408,12 @@ public class EntityHelper {
         PhpDocComment docComment = phpClass.getDocComment();
         if(docComment != null) {
             if(AnnotationBackportUtil.hasReference(docComment, "\\Doctrine\\ORM\\Mapping\\Entity")) {
+                Map<String, String> useImportMap = AnnotationUtil.getUseImportMap(docComment);
                 for(Field field: phpClass.getFields()) {
-                    if(!field.isConstant()) {
-                        if(AnnotationBackportUtil.hasReference(field.getDocComment(), ANNOTATION_FIELDS)) {
+                    if (!field.isConstant()) {
+                        if (AnnotationBackportUtil.hasReference(field.getDocComment(), ANNOTATION_FIELDS)) {
                             DoctrineModelField modelField = new DoctrineModelField(field.getName());
-                            attachAnnotationInformation(field, modelField.addTarget(field));
+                            attachAnnotationInformation(phpClass, field, modelField.addTarget(field), useImportMap);
                             modelFields.add(modelField);
                         }
                     }
@@ -633,11 +636,10 @@ public class EntityHelper {
 
         }
 
-        return results.toArray(new PsiElement[results.size()]);
+        return results.toArray(new PsiElement[0]);
     }
 
-    public static void attachAnnotationInformation(Field field, DoctrineModelField doctrineModelField) {
-
+    public static void attachAnnotationInformation(@NotNull PhpClass phpClass, @NotNull Field field, @NotNull DoctrineModelField doctrineModelField, @NotNull Map<String, String> useImportMap) {
         // we already have that without regular expression
         // @TODO: de.espend.idea.php.annotation.util.AnnotationUtil.getPhpDocCommentAnnotationContainer()
         // fully require plugin now?
@@ -664,10 +666,24 @@ public class EntityHelper {
             doctrineModelField.setRelationType(matcher.group(1));
 
             // targetEntity name
-            matcher = Pattern.compile("targetEntity[\\s]*=[\\s]*[\"|']([\\w_\\\\]+)[\"|']").matcher(text);
-            if (matcher.find()) {
-                doctrineModelField.setRelation(matcher.group(1));
-            } else {
+            Matcher[] matches = new Matcher[] {
+                Pattern.compile("targetEntity\\s*=\\s*\"([^\"]*)\"").matcher(text), // targetEntity="Foobar"
+                Pattern.compile("targetEntity\\s*=\\s*([^\\s:]*)::class").matcher(text), // targetEntity=Foobar::class
+            };
+
+            boolean matched = false;
+            for (Matcher targetEntityMatch : matches) {
+                if (targetEntityMatch.find()) {
+                    matched = true;
+
+                    String group = targetEntityMatch.group(1);
+                    if (org.apache.commons.lang.StringUtils.isNotBlank(group)) {
+                        doctrineModelField.setRelation(AnnotationBackportUtil.getFqnClassNameFromScope(phpClass, group, useImportMap));
+                    }
+                }
+            }
+
+            if (!matched) {
                 // @TODO: external split
                 // FLOW shortcut:
                 // @var "\DateTime" is targetEntity
