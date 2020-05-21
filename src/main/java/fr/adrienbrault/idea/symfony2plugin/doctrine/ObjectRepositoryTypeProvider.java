@@ -9,7 +9,7 @@ import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
-import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider3;
+import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider4;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -23,8 +23,8 @@ import java.util.Set;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class ObjectRepositoryTypeProvider implements PhpTypeProvider3 {
-    private static MethodMatcher.CallToSignature[] GET_REPOSITORIES_SIGNATURES = new MethodMatcher.CallToSignature[] {
+public class ObjectRepositoryTypeProvider implements PhpTypeProvider4 {
+    private static final MethodMatcher.CallToSignature[] GET_REPOSITORIES_SIGNATURES = new MethodMatcher.CallToSignature[] {
         new MethodMatcher.CallToSignature("\\Doctrine\\Common\\Persistence\\ManagerRegistry", "getRepository"),
         new MethodMatcher.CallToSignature("\\Doctrine\\Common\\Persistence\\ObjectManager", "getRepository"),
         new MethodMatcher.CallToSignature("\\Doctrine\\Persistence\\ManagerRegistry", "getRepository"),
@@ -57,6 +57,12 @@ public class ObjectRepositoryTypeProvider implements PhpTypeProvider3 {
 
         String signature = PhpTypeProviderUtil.getReferenceSignatureByFirstParameter((MethodReference) e, TRIM_KEY);
         return signature == null ? null : new PhpType().add("#" + this.getKey() + signature);
+    }
+
+    @Nullable
+    @Override
+    public PhpType complete(String s, Project project) {
+        return null;
     }
 
     @Override
