@@ -46,17 +46,6 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getTemplateNameByOverwrite
-     */
-    public void testTemplateOverwriteNavigation() {
-        if(System.getenv("PHPSTORM_ENV") != null) return;
-
-        assertNavigationContainsFile(TwigFileType.INSTANCE, "{% extends '<caret>TwigUtilIntegrationBundle:layout.html.twig' %}", "/views/layout.html.twig");
-        assertNavigationContainsFile(TwigFileType.INSTANCE, "{% extends '<caret>TwigUtilIntegrationBundle:Foo/layout.html.twig' %}", "/views/Foo/layout.html.twig");
-        assertNavigationContainsFile(TwigFileType.INSTANCE, "{% extends '<caret>TwigUtilIntegrationBundle:Foo/Bar/layout.html.twig' %}", "/views/Foo/Bar/layout.html.twig");
-    }
-
-    /**
      * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#isValidStringWithoutInterpolatedOrConcat
      */
     public void testIsValidTemplateString() {
