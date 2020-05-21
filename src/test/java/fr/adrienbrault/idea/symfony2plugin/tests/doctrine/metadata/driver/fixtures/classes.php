@@ -14,17 +14,51 @@ namespace TYPO3\Flow\Annotations {
     class Entity {};
 }
 
+namespace Doctrine\Orm\MyTrait {
+    use Doctrine\ORM\Mapping AS ORM;
+    use Doctrine\Apple;
+
+    trait EntityTrait
+    {
+        /**
+         * @ORM\ManyToOne(targetEntity=Apple::class)
+         */
+        public $appleTrait;
+
+        /**
+         * @ORM\Column(type="string")
+         */
+        private $emailTrait;
+    }
+}
+
+namespace Doctrine\Orm\MyExtends {
+    use Doctrine\ORM\Mapping AS ORM;
+    use Doctrine\FooBar;
+
+    abstract class EntityExtends
+    {
+        /**
+         * @ORM\ManyToOne(targetEntity=FooBar::class)
+         */
+        public $appleExtends;
+    }
+}
+
 namespace Doctrine\Orm {
 
     use Doctrine\ORM\Mapping AS ORM;
     use Doctrine\Egg as SelfAlias;
     use Doctrine\Egg;
+    use Doctrine\Orm\MyExtends\EntityExtends;
+    use Doctrine\Orm\MyTrait\EntityTrait;
 
     /**
      * @ORM\Entity()
      * @ORM\Table(name="FOO")
      */
-    class Annotation {
+    class Annotation extends EntityExtends {
+        use EntityTrait;
 
         /**
          * @ORM\Column(type="string")
@@ -61,7 +95,6 @@ namespace Doctrine\Orm {
          */
         public $eggSelfAlias;
     };
-
 }
 
 namespace Doctrine\Flow\Orm {
