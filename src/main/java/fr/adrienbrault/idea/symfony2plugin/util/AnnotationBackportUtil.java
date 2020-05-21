@@ -276,7 +276,8 @@ public class AnnotationBackportUtil {
      *
      * @param shortClassName Foobar
      */
-    public static String getFqnClassNameFromScope(@NotNull PhpClass phpClass, @NotNull String shortClassName) {
+    @NotNull
+    public static String getFqnClassNameFromScope(@NotNull PhpClass phpClass, @NotNull String shortClassName, @NotNull Map<String, String> useImportMap) {
         String classNameScope = phpClass.getFQN();
         if(!classNameScope.startsWith("\\")) {
             classNameScope = "\\" + classNameScope;
@@ -284,18 +285,6 @@ public class AnnotationBackportUtil {
 
         // its already on the global namespace: "\Exception"
         if (shortClassName.startsWith("\\")) {
-            return shortClassName;
-        }
-
-        // @TODO: better scope? we dont need a doc comment
-        PhpDocComment docComment = phpClass.getDocComment();
-        if (docComment == null) {
-            return shortClassName;
-        }
-
-        Map<String, String> useImportMap = AnnotationUtil.getUseImportMap(docComment);
-        // not use statement so stop here
-        if (useImportMap.size() == 0) {
             return shortClassName;
         }
 
@@ -316,5 +305,26 @@ public class AnnotationBackportUtil {
 
         // strip the last namespace part and replace it with ours: "Foobar\Bar" => "Foobar\OurShortClass"
         return StringUtils.substringBeforeLast(classNameScope, "\\") + "\\" + shortClassName;
+    }
+
+    /**
+     * Generate a full FQN class name out of a given short class name with respecting current namespace and use scope
+     *
+     * - "Foobar" needs to have its use statement attached
+     * - No use statement match its on the same namespace as the class
+     *
+     * TODO: find a core function for this
+     *
+     * @param shortClassName Foobar
+     */
+    @NotNull
+    public static String getFqnClassNameFromScope(@NotNull PhpClass phpClass, @NotNull String shortClassName) {
+        // @TODO: better scope? we dont need a doc comment
+        PhpDocComment docComment = phpClass.getDocComment();
+        if (docComment == null) {
+            return shortClassName;
+        }
+
+        return getFqnClassNameFromScope(phpClass, shortClassName, AnnotationUtil.getUseImportMap(docComment));
     }
 }

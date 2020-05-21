@@ -17,6 +17,8 @@ namespace TYPO3\Flow\Annotations {
 namespace Doctrine\Orm {
 
     use Doctrine\ORM\Mapping AS ORM;
+    use Doctrine\Egg as SelfAlias;
+    use Doctrine\Egg;
 
     /**
      * @ORM\Entity()
@@ -48,6 +50,16 @@ namespace Doctrine\Orm {
          * @ORM\ManyToMany(targetEntity="Egg")
          */
         public $egg;
+
+        /**
+         * @ORM\ManyToMany(targetEntity=Egg::class)
+         */
+        public $eggClass;
+
+        /**
+         * @ORM\ManyToMany(targetEntity=SelfAlias::class)
+         */
+        public $eggSelfAlias;
     };
 
 }
