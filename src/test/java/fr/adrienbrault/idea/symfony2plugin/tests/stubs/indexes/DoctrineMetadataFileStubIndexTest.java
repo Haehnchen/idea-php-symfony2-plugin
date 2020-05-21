@@ -145,7 +145,7 @@ public class DoctrineMetadataFileStubIndexTest extends SymfonyLightCodeInsightFi
         assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "Doctrine\\Orm\\Annotation");
         assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "Doctrine\\Flow\\Orm\\Annotation");
 
-        assertIndexContainsKeyWithValue(DoctrineMetadataFileStubIndex.KEY, "Doctrine\\Orm\\Annotation", new IndexValueRepositoryClassEquals("Foo"));
+        assertIndexContainsKeyWithValue(DoctrineMetadataFileStubIndex.KEY, "Doctrine\\Orm\\Annotation", new IndexValueRepositoryClassEquals("Doctrine\\Orm\\Foo"));
     }
 
     /**
