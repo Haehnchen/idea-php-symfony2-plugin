@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.stubs.cache;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.ModificationTracker;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.CachedValue;
 import com.intellij.psi.util.CachedValueProvider;
@@ -78,13 +79,17 @@ public class FileIndexCaches {
     /**
      * There several methods that just need to check for names, as they also needed for value extraction, so cache them also
      */
-    static public synchronized Set<String> getIndexKeysCache(@NotNull final Project project, @NotNull Key<CachedValue<Set<String>>> dataHolderKey, @NotNull final ID<String, ?> ID) {
+    static public synchronized Set<String> getIndexKeysCache(@NotNull final Project project, @NotNull Key<CachedValue<Set<String>>> dataHolderKey, @NotNull final ID<String, ?> id) {
         return CachedValuesManager.getManager(project).getCachedValue(
             project,
             dataHolderKey,
-            () -> CachedValueProvider.Result.create(SymfonyProcessors.createResult(project, ID), PsiModificationTracker.MODIFICATION_COUNT),
+            () -> CachedValueProvider.Result.create(SymfonyProcessors.createResult(project, id), getModificationTrackerForIndexId(project, id)),
             false
         );
     }
 
+    @NotNull
+    private static ModificationTracker getModificationTrackerForIndexId(@NotNull Project project, @NotNull final ID<?, ?> id) {
+        return () -> FileBasedIndex.getInstance().getIndexModificationStamp(id, project);
+    }
 }
