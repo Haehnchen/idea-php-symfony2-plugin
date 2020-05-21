@@ -20,33 +20,6 @@ import java.util.*;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TwigUtilTempTest extends SymfonyTempCodeInsightFixtureTestCase {
-
-    /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getTemplateNameByOverwrite
-     */
-    public void testTemplateOverwriteNameGeneration() {
-        createFiles(
-            "app/Resources/TwigUtilIntegrationBundle/views/layout.html.twig",
-            "app/Resources/TwigUtilIntegrationBundle/views/Foo/layout.html.twig",
-            "app/Resources/TwigUtilIntegrationBundle/views/Foo/Bar/layout.html.twig"
-        );
-
-        assertEquals(
-            "TwigUtilIntegrationBundle:layout.html.twig",
-            TwigUtil.getTemplateNameByOverwrite(getProject(), VfsUtil.findRelativeFile(getProject().getBaseDir(), "app/Resources/TwigUtilIntegrationBundle/views/layout.html.twig".split("/")))
-        );
-
-        assertEquals(
-            "TwigUtilIntegrationBundle:Foo/layout.html.twig",
-            TwigUtil.getTemplateNameByOverwrite(getProject(), VfsUtil.findRelativeFile(getProject().getBaseDir(), "app/Resources/TwigUtilIntegrationBundle/views/Foo/layout.html.twig".split("/")))
-        );
-
-        assertEquals(
-            "TwigUtilIntegrationBundle:Foo/Bar/layout.html.twig",
-            TwigUtil.getTemplateNameByOverwrite(getProject(), VfsUtil.findRelativeFile(getProject().getBaseDir(), "app/Resources/TwigUtilIntegrationBundle/views/Foo/Bar/layout.html.twig".split("/")))
-        );
-    }
-
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#getPresentableTemplateName
      */
