@@ -31,6 +31,7 @@ public class DoctrinePhpMappingDriverTest extends SymfonyLightCodeInsightFixture
         DoctrineMetadataModel metadata = createOrmMetadata();
 
         assertEquals("string", metadata.getField("email").getTypeName());
+        assertEquals("string", metadata.getField("emailTrait").getTypeName());
 
         assertEquals("OneToMany", metadata.getField("phonenumbers").getRelationType());
         assertEquals("\\Doctrine\\Orm\\Phonenumber", metadata.getField("phonenumbers").getRelation());
@@ -52,6 +53,12 @@ public class DoctrinePhpMappingDriverTest extends SymfonyLightCodeInsightFixture
 
         assertEquals("ManyToMany", metadata.getField("eggSelfAlias").getRelationType());
         assertEquals("\\Doctrine\\Egg", metadata.getField("eggSelfAlias").getRelation());
+
+        assertEquals("ManyToOne", metadata.getField("appleTrait").getRelationType());
+        assertEquals("\\Doctrine\\Apple", metadata.getField("appleTrait").getRelation());
+
+        assertEquals("ManyToOne", metadata.getField("appleExtends").getRelationType());
+        assertEquals("\\Doctrine\\FooBar", metadata.getField("appleExtends").getRelation());
     }
 
     /**
