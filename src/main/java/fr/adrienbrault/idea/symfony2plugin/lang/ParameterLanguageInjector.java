@@ -3,7 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.lang;
 import com.intellij.lang.Language;
 import com.intellij.lang.injection.MultiHostInjector;
 import com.intellij.lang.injection.MultiHostRegistrar;
-import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLanguageInjectionHost;
 import com.jetbrains.php.lang.psi.elements.*;
@@ -12,6 +11,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
@@ -41,10 +41,10 @@ public class ParameterLanguageInjector implements MultiHostInjector {
     };
 
     private final MethodLanguageInjection[] LANGUAGE_INJECTIONS = {
-            new MethodLanguageInjection(LANGUAGE_ID_CSS, "@media all { ", " }", CSS_SELECTOR_SIGNATURES),
-            new MethodLanguageInjection(LANGUAGE_ID_XPATH, null, null, XPATH_SIGNATURES),
-            new MethodLanguageInjection(LANGUAGE_ID_JSON, null, null, JSON_SIGNATURES),
-            new MethodLanguageInjection(LANGUAGE_ID_DQL, null, null, DQL_SIGNATURES),
+        new MethodLanguageInjection(LANGUAGE_ID_CSS, "@media all { ", " }", CSS_SELECTOR_SIGNATURES),
+        new MethodLanguageInjection(LANGUAGE_ID_XPATH, null, null, XPATH_SIGNATURES),
+        new MethodLanguageInjection(LANGUAGE_ID_JSON, null, null, JSON_SIGNATURES),
+        new MethodLanguageInjection(LANGUAGE_ID_DQL, null, null, DQL_SIGNATURES),
     };
 
     public static final String LANGUAGE_ID_CSS = "CSS";
@@ -88,26 +88,23 @@ public class ParameterLanguageInjector implements MultiHostInjector {
         }
 
         for (MethodLanguageInjection languageInjection : LANGUAGE_INJECTIONS) {
-            Language language = languageInjection.getLanguage();
-            if (language == null) {
-                continue;
-            }
             // $crawler->filter('...')
             // $em->createQuery('...')
             // JsonResponse::fromJsonString('...')
             if (parent instanceof MethodReference) {
                 if (PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) parent, languageInjection.getSignatures())) {
-                    injectLanguage(registrar, expr, language, languageInjection);
+                    injectLanguage(registrar, expr, languageInjection);
                     return;
                 }
             }
             // $dql = "...";
             else if (parent instanceof AssignmentExpression) {
-                if (LANGUAGE_ID_DQL.equals(language.getID())) {
+                Language language = languageInjection.getLanguage();
+                if (language != null && LANGUAGE_ID_DQL.equals(language.getID())) {
                     PhpPsiElement variable = ((AssignmentExpression) parent).getVariable();
                     if (variable instanceof Variable) {
                         if (DQL_VARIABLE_NAME.equals(variable.getName())) {
-                            injectLanguage(registrar, expr, language, languageInjection);
+                            injectLanguage(registrar, expr, languageInjection);
                             return;
                         }
                     }
@@ -117,28 +114,33 @@ public class ParameterLanguageInjector implements MultiHostInjector {
 
     }
 
-    private void injectLanguage(@NotNull MultiHostRegistrar registrar, @NotNull StringLiteralExpressionImpl element, Language language, MethodLanguageInjection languageInjection) {
+    private void injectLanguage(@NotNull MultiHostRegistrar registrar, @NotNull StringLiteralExpressionImpl element, MethodLanguageInjection languageInjection) {
+        Language language = languageInjection.getLanguage();
+        if (language == null) {
+            return;
+        }
+
         registrar.startInjecting(language)
-                .addPlace(languageInjection.getPrefix(), languageInjection.getSuffix(), element, element.getValueRange())
-                .doneInjecting();
+            .addPlace(languageInjection.getPrefix(), languageInjection.getSuffix(), element, element.getValueRange())
+            .doneInjecting();
     }
 
-    private class MethodLanguageInjection {
-        private final Language language;
+    private static class MethodLanguageInjection {
+        private final String language;
         private final String prefix;
         private final String suffix;
         private final MethodMatcher.CallToSignature[] signatures;
 
-        MethodLanguageInjection(@NotNull String languageId, String prefix, String suffix, MethodMatcher.CallToSignature[] signatures) {
-
-            this.language = Language.findLanguageByID(languageId);
+        MethodLanguageInjection(String languageId, String prefix, String suffix, MethodMatcher.CallToSignature[] signatures) {
+            this.language = languageId;
             this.prefix = prefix;
             this.suffix = suffix;
             this.signatures = signatures;
         }
 
+        @Nullable
         public Language getLanguage() {
-            return language;
+            return Language.findLanguageByID(this.language);
         }
 
         public String getPrefix() {

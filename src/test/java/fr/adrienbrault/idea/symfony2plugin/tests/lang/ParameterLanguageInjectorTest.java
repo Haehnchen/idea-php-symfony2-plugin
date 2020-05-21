@@ -24,7 +24,8 @@ public class ParameterLanguageInjectorTest extends SymfonyLightCodeInsightFixtur
         return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/lang/fixtures";
     }
 
-    public void testCssLanguageInjections() {
+    public void skipTestCssLanguageInjections() {
+        // skip as we dont have CSS module in >= 2020 test builds
         String base = "<?php $c = new \\Symfony\\Component\\DomCrawler\\Crawler();\n";
         assertInjectedLangAtCaret(PhpFileType.INSTANCE, base + "$c->filter('html > bo<caret>dy');", LANGUAGE_ID_CSS);
         assertInjectedLangAtCaret(PhpFileType.INSTANCE, base + "$c->filter('<caret>');", LANGUAGE_ID_CSS);
