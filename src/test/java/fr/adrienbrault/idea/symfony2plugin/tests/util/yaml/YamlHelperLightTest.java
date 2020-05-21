@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.util.yaml;
 
-import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.Function;
@@ -339,31 +338,16 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
 
         YamlHelper.insertKeyIntoFile(yamlFile, yamlKeyValue, "services");
 
-        ApplicationInfo instance = ApplicationInfo.getInstance();
-        String minorVersion = instance.getMinorVersionMainPart();
-        if (instance.getMajorVersion().equals("2019") || (instance.getMajorVersion().equals("2018") && Integer.valueOf(minorVersion) >= 3)) {
-            assertEquals("" +
-                            "services:\n" +
-                            "   foo:\n" +
-                            "       car: test\n" +
-                            "   my_service:\n" +
-                            "     class: foo\n" +
-                            "     tag:\n" +
-                            "       - foo",
-                    yamlFile.getText()
-            );
-        } else {
-            assertEquals("" +
-                            "services:\n" +
-                            "   foo:\n" +
-                            "       car: test\n" +
-                            "   my_service:\n" +
-                            "     class: foo\n" +
-                            "     tag:\n" +
-                            "     - foo",
-                    yamlFile.getText()
-            );
-        }
+        String text = yamlFile.getText();
+        assertEquals("services:\n" +
+                "   foo:\n" +
+                "       car: test\n" +
+                "   my_service:\n" +
+                "     class: foo\n" +
+                "     tag:\n" +
+                "       - foo",
+            text
+        );
     }
 
     /**
