@@ -9,7 +9,7 @@ import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
-import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider3;
+import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider4;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpTypeProviderUtil;
@@ -24,7 +24,7 @@ import java.util.Set;
  *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class ObjectManagerFindTypeProvider implements PhpTypeProvider3 {
+public class ObjectManagerFindTypeProvider implements PhpTypeProvider4 {
 
     final static char TRIM_KEY = '\u0183';
 
@@ -59,6 +59,12 @@ public class ObjectManagerFindTypeProvider implements PhpTypeProvider3 {
             }
         }
 
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public PhpType complete(String s, Project project) {
         return null;
     }
 

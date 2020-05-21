@@ -8,7 +8,7 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
-import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider3;
+import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider4;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
@@ -24,8 +24,8 @@ import java.util.Set;
  * @author Adrien Brault <adrien.brault@gmail.com>
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class SymfonyContainerTypeProvider implements PhpTypeProvider3 {
-    private static char TRIM_KEY = '\u0182';
+public class SymfonyContainerTypeProvider implements PhpTypeProvider4 {
+    private static final char TRIM_KEY = '\u0182';
 
     @Override
     public char getKey() {
@@ -46,6 +46,12 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider3 {
 
         String signature = PhpTypeProviderUtil.getReferenceSignatureByFirstParameter((MethodReference) e, TRIM_KEY);
         return signature == null ? null : new PhpType().add("#" + this.getKey() + signature);
+    }
+
+    @Nullable
+    @Override
+    public PhpType complete(String s, Project project) {
+        return null;
     }
 
     @Override
