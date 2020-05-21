@@ -5,10 +5,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.UsefulTestCase;
-import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
-import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory;
+import com.intellij.testFramework.fixtures.*;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
-import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,6 +17,12 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
+ * Exactly the same as LightCodeInsightFixtureTestCase except uses TempDirTestFixtureImpl instead of LightTempDirTestFixtureImpl.
+ * This is because the light temp dir stuff fails to work in some cases because it's in-memory file system protocol "temp:" is
+ * invalid in the eyes of the URL class, which causes URL exceptions.  For instance, the Json manifold creates a URL from the resource files.
+ *
+ * see https://www.programcreek.com/java-api-examples/?code=manifold-systems/manifold-ij/manifold-ij-master/src/test/java/manifold/ij/SomewhatLightCodeInsightFixtureTestCase.java
+ *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 abstract public class SymfonyTempCodeInsightFixtureTestCase extends UsefulTestCase {
@@ -30,9 +34,13 @@ abstract public class SymfonyTempCodeInsightFixtureTestCase extends UsefulTestCa
     public void setUp() throws Exception {
         super.setUp();
 
-        myFixture = IdeaTestFixtureFactory.getFixtureFactory()
-            .createFixtureBuilder(RandomStringUtils.randomAlphanumeric(20))
-            .getFixture();
+        TestFixtureBuilder<IdeaProjectTestFixture> fixtureBuilder = IdeaTestFixtureFactory.getFixtureFactory()
+            .createLightFixtureBuilder(new DefaultLightProjectDescriptor());
+
+        myFixture = JavaTestFixtureFactory.getFixtureFactory().createCodeInsightFixture(
+            fixtureBuilder.getFixture(),
+            IdeaTestFixtureFactory.getFixtureFactory().createTempDirTestFixture()
+        );
 
         myFixture.setUp();
 

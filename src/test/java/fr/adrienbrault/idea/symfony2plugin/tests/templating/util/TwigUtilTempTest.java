@@ -1,7 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.util;
 
 import com.intellij.openapi.util.Pair;
-import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiFile;

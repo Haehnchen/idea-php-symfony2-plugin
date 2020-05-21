@@ -393,17 +393,17 @@ public class RouteHelper {
 
             // Symfony < 2.8
             // static private $declaredRoutes = array(...)
-            for(Field field: phpClass.getFields()) {
-                if(!field.getName().equals("declaredRoutes")) {
-                    continue;
-                }
+            // only "getOwnFields" is uncached and dont breaks; find* methods are cached resulting in exceptions
+            Field[] ownFields = phpClass.getOwnFields();
+            for (Field ownField : ownFields) {
+                if ("declaredRoutes".equals(ownField.getName())) {
+                    PsiElement defaultValue = ownField.getDefaultValue();
+                    if(!(defaultValue instanceof ArrayCreationExpression)) {
+                        continue;
+                    }
 
-                PsiElement defaultValue = field.getDefaultValue();
-                if(!(defaultValue instanceof ArrayCreationExpression)) {
-                    continue;
+                    collectRoutesOnArrayCreation(routes, (ArrayCreationExpression) defaultValue);
                 }
-
-                collectRoutesOnArrayCreation(routes, (ArrayCreationExpression) defaultValue);
             }
 
             // Symfony >= 2.8
