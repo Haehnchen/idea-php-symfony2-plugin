@@ -33,8 +33,8 @@ public class EntityHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
      * @see fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper#getEntityRepositoryClass
      */
     public void testGetEntityRepositoryClass() {
-        assertEquals("FooBundle\\BarRepository", EntityHelper.getEntityRepositoryClass(getProject(), "FooBundle:Bar").getPresentableFQN());
-        assertEquals("FooBundle\\BarRepository", EntityHelper.getEntityRepositoryClass(getProject(), "FooBundle\\Entity\\Bar").getPresentableFQN());
+        assertEquals("FooBundle\\Entity\\BarRepository", EntityHelper.getEntityRepositoryClass(getProject(), "FooBundle:Bar").getPresentableFQN());
+        assertEquals("FooBundle\\Entity\\BarRepository", EntityHelper.getEntityRepositoryClass(getProject(), "FooBundle\\Entity\\Bar").getPresentableFQN());
     }
 
     /**
@@ -42,6 +42,26 @@ public class EntityHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
      */
     public void testGetEntityRepositoryClassInSameNamespaceFallback() {
         assertEquals("FooBundle\\Entity\\Car\\BarRepository", EntityHelper.getEntityRepositoryClass(getProject(), "FooBundle:Car\\Bar").getPresentableFQN());
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper#getEntityRepositoryClass
+     */
+    public void testGetEntityRepositoryClassAaClassConstant() {
+        assertEquals(
+            "FooBundle\\Entity\\BarRepository",
+            EntityHelper.getEntityRepositoryClass(getProject(), "FooBundle\\Entity\\Bar2").getPresentableFQN()
+        );
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper#getEntityRepositoryClass
+     */
+    public void testGetEntityRepositoryClassAaClassConstantWithAlias() {
+        assertEquals(
+            "FooBundle\\Entity\\BarRepository",
+            EntityHelper.getEntityRepositoryClass(getProject(), "FooBundle\\Entity\\Bar3").getPresentableFQN()
+        );
     }
 
     /**

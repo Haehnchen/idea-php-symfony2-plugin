@@ -20,11 +20,26 @@ namespace FooBundle\Entity
 
     use Doctrine\Common\Persistence\ObjectRepository;
     use Doctrine\ORM\Mapping AS ORM;
+    use FooBundle\Entity AS FooAlias;
 
     /**
-     * @ORM\Entity(repositoryClass="FooBundle\BarRepository")
+     * @ORM\Entity(repositoryClass="BarRepository")
      */
     class Bar
+    {
+    }
+
+    /**
+     * @ORM\Entity(repositoryClass=BarRepository::class)
+     */
+    class Bar2
+    {
+    }
+
+    /**
+     * @ORM\Entity(repositoryClass=FooAlias\BarRepository::class)
+     */
+    class Bar3
     {
     }
 

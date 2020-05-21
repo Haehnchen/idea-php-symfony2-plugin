@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.doctrine;
 
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -14,7 +15,6 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocParamTag;
 import com.jetbrains.php.lang.psi.elements.*;
-import com.jetbrains.php.lang.psi.elements.impl.PhpNamedElementImpl;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.DocumentNamespacesParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
@@ -57,25 +57,13 @@ public class EntityHelper {
      * Resolve shortcut and namespaces classes for current phpclass and attached modelname
      */
     @Nullable
-    public static PhpClass getAnnotationRepositoryClass(@NotNull PhpClass phpClass, @NotNull String modelName) {
-
+    public static String getAnnotationRepositoryClass(@NotNull PhpClass phpClass, @NotNull String modelName) {
         // \ns\Class fine we dont need to resolve classname we are in global context
         if(modelName.startsWith("\\")) {
-            return PhpElementsUtil.getClassInterface(phpClass.getProject(), modelName);
+            return modelName;
         }
 
-        // repositoryClass="Classname" pre-append namespace here
-        PhpNamedElementImpl phpNamedElementImpl = PsiTreeUtil.getParentOfType(phpClass, PhpNamedElementImpl.class);
-        if(phpNamedElementImpl != null) {
-            String className = phpNamedElementImpl.getFQN() + "\\" +  modelName;
-            PhpClass namespaceClass = PhpElementsUtil.getClassInterface(phpClass.getProject(), className);
-            if(namespaceClass != null) {
-                return namespaceClass;
-            }
-        }
-
-        // repositoryClass="Classname\Test" trailing backslash can be stripped
-        return  PhpElementsUtil.getClassInterface(phpClass.getProject(), modelName);
+        return AnnotationBackportUtil.getFqnClassNameFromScope(phpClass, modelName);
     }
 
     /**
@@ -86,7 +74,6 @@ public class EntityHelper {
      */
     @Nullable
     public static PhpClass getEntityRepositoryClass(@NotNull Project project, @NotNull String shortcutName) {
-
         PhpClass phpClass = resolveShortcutName(project, shortcutName);
         if(phpClass == null) {
             return null;
@@ -98,17 +85,17 @@ public class EntityHelper {
             return classRepository;
         }
 
-        // @TODO: deprecated code
         // search on annotations
         PhpDocComment docAnnotation = phpClass.getDocComment();
         if(docAnnotation != null) {
-
-            // search for repositoryClass="Foo\Bar\RegisterRepository"
+            // search for repositoryClass="Foo\Bar\RegisterRepository"; repositoryClass=Foo\Bar\RegisterRepository::class
             // @MongoDB\Document; @ORM\Entity
-            String docAnnotationText = docAnnotation.getText();
-            Matcher matcher = Pattern.compile("repositoryClass[\\s]*=[\\s]*[\"|'](.*)[\"|']").matcher(docAnnotationText);
-            if (matcher.find()) {
-                return getAnnotationRepositoryClass(phpClass, matcher.group(1));
+            Collection<Pair<String, String>> classRepositoryPair = DoctrineUtil.getClassRepositoryPair(docAnnotation);
+            if (!classRepositoryPair.isEmpty()) {
+                Pair<String, String> next = classRepositoryPair.iterator().next();
+                if (next.getSecond() != null) {
+                    return PhpElementsUtil.getClassInterface(project, next.getSecond());
+                }
             }
         }
 

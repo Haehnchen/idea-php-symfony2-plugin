@@ -36,7 +36,7 @@ public class DoctrineUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         Pair<String, String> next = classRepositoryPair.iterator().next();
 
         assertEquals("Foo\\Apple", next.getFirst());
-        assertEquals("MyBundle\\Entity\\Repository\\AddressRepository", next.getSecond());
+        assertEquals("Foo\\MyBundle\\Entity\\Repository\\AddressRepository", next.getSecond());
     }
 
     /**
@@ -65,5 +65,60 @@ public class DoctrineUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         assertEquals("Foo\\Apple", next.getFirst());
         assertEquals("Foobar", next.getSecond());
+    }
+
+    public void testGetClassRepositoryPairForClassConstanta() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace Bar;\n" +
+            "" +
+            "class Foobar {};\n"
+        );
+
+        PsiFile psiFileFromText = PhpPsiElementFactory.createPsiFileFromText(getProject(), "<?php\n" +
+            "\n" +
+            "namespace Foo;\n" +
+            "\n" +
+            "use Doctrine\\ORM\\Mapping as ORM;\n" +
+            "use Bar\\Foobar;\n" +
+            "use Bar\\Foobar as Car;\n" +
+            "use Bar as BarAlias;\n" +
+            "" +
+            "\n" +
+            "/**\n" +
+            " * @ORM\\Entity(repositoryClass=Foobar::class)\n" +
+            " */\n" +
+            "class Apple {}\n" +
+            "" +
+            "/**\n" +
+            " * @ORM\\Entity(repositoryClass=Car::class)\n" +
+            " */\n" +
+            "class Banana {}\n" +
+            "/**\n" +
+            " * @ORM\\Entity(repositoryClass=\\Bar\\Foobar::class)\n" +
+            " */\n" +
+            "class Yellow {}\n" +
+            "/**\n" +
+            " * @ORM\\Entity(repositoryClass=BarAlias\\Foobar::class)\n" +
+            " */\n" +
+            "class Red {}\n" +
+            "/**\n" +
+            " * @ORM\\Entity(repositoryClass=\"BarAlias\\Foobar\")\n" +
+            " */\n" +
+            "class Black {}\n"
+        );
+
+        Collection<Pair<String, String>> classRepositoryPair = DoctrineUtil.getClassRepositoryPair(psiFileFromText);
+
+        Pair<String, String> apple = classRepositoryPair.stream().filter(stringStringPair -> "Foo\\Apple".equals(stringStringPair.getFirst())).findFirst().get();
+        assertEquals("Bar\\Foobar", apple.getSecond());
+
+        Pair<String, String> banana = classRepositoryPair.stream().filter(stringStringPair -> "Foo\\Banana".equals(stringStringPair.getFirst())).findFirst().get();
+        assertEquals("Bar\\Foobar", banana.getSecond());
+
+        Pair<String, String> yellow = classRepositoryPair.stream().filter(stringStringPair -> "Foo\\Yellow".equals(stringStringPair.getFirst())).findFirst().get();
+        assertEquals("Bar\\Foobar", yellow.getSecond());
+
+        Pair<String, String> black = classRepositoryPair.stream().filter(stringStringPair -> "Foo\\Black".equals(stringStringPair.getFirst())).findFirst().get();
+        assertEquals("Bar\\Foobar", yellow.getSecond());
     }
 }

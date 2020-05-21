@@ -29,7 +29,7 @@ namespace Foo
     use Doctrine\ORM\Mapping AS ORM;
 
     /**
-     * @ORM\Entity(repositoryClass="Foo\Repository\BarRepository")
+     * @ORM\Entity(repositoryClass="\Foo\Repository\BarRepository")
      */
     class Bar {
 
