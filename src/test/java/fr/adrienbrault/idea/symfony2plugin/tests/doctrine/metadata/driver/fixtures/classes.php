@@ -94,6 +94,11 @@ namespace Doctrine\Orm {
          * @ORM\ManyToMany(targetEntity=SelfAlias::class)
          */
         public $eggSelfAlias;
+
+        /**
+         * @ORM\ManyToMany(targetEntity=SelfAlias\Foo\Bar::class)
+         */
+        public $eggSelfAliasFooBar;
     };
 }
 

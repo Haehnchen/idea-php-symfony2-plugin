@@ -43,16 +43,19 @@ public class DoctrinePhpMappingDriverTest extends SymfonyLightCodeInsightFixture
         assertEquals("\\Doctrine\\Orm\\Apple", metadata.getField("apple").getRelation());
 
         assertEquals("ManyToMany", metadata.getField("egg").getRelationType());
-        assertEquals("\\Doctrine\\Egg", metadata.getField("egg").getRelation());
+        assertEquals("\\Doctrine\\Orm\\Egg", metadata.getField("egg").getRelation());
 
         assertEquals("ManyToMany", metadata.getField("egg").getRelationType());
-        assertEquals("\\Doctrine\\Egg", metadata.getField("egg").getRelation());
+        assertEquals("\\Doctrine\\Orm\\Egg", metadata.getField("egg").getRelation());
 
         assertEquals("ManyToMany", metadata.getField("eggClass").getRelationType());
         assertEquals("\\Doctrine\\Egg", metadata.getField("eggClass").getRelation());
 
         assertEquals("ManyToMany", metadata.getField("eggSelfAlias").getRelationType());
         assertEquals("\\Doctrine\\Egg", metadata.getField("eggSelfAlias").getRelation());
+
+        assertEquals("ManyToMany", metadata.getField("eggSelfAliasFooBar").getRelationType());
+        assertEquals("\\Doctrine\\Egg\\Foo\\Bar", metadata.getField("eggSelfAliasFooBar").getRelation());
 
         assertEquals("ManyToOne", metadata.getField("appleTrait").getRelationType());
         assertEquals("\\Doctrine\\Apple", metadata.getField("appleTrait").getRelation());

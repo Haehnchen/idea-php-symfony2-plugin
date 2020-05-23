@@ -10,12 +10,12 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocParamTag;
 import com.jetbrains.php.lang.psi.elements.*;
-import de.espend.idea.php.annotation.dict.PhpDocCommentAnnotation;
 import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.DocumentNamespacesParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesServiceParser;
@@ -664,26 +664,11 @@ public class EntityHelper {
         matcher = Pattern.compile("((Many|One)To(Many|One))\\(").matcher(text);
         if (matcher.find()) {
             doctrineModelField.setRelationType(matcher.group(1));
+            String clazz = resolveDoctrineLikePropertyClass(phpClass, text, "targetEntity", aVoid -> useImportMap);
 
-            // targetEntity name
-            Matcher[] matches = new Matcher[] {
-                Pattern.compile("targetEntity\\s*=\\s*\"([^\"]*)\"").matcher(text), // targetEntity="Foobar"
-                Pattern.compile("targetEntity\\s*=\\s*([^\\s:]*)::class").matcher(text), // targetEntity=Foobar::class
-            };
-
-            boolean matched = false;
-            for (Matcher targetEntityMatch : matches) {
-                if (targetEntityMatch.find()) {
-                    matched = true;
-
-                    String group = targetEntityMatch.group(1);
-                    if (org.apache.commons.lang.StringUtils.isNotBlank(group)) {
-                        doctrineModelField.setRelation(AnnotationBackportUtil.getFqnClassNameFromScope(phpClass, group, useImportMap));
-                    }
-                }
-            }
-
-            if (!matched) {
+            if (clazz != null) {
+                doctrineModelField.setRelation(clazz);
+            } else {
                 // @TODO: external split
                 // FLOW shortcut:
                 // @var "\DateTime" is targetEntity
@@ -814,4 +799,40 @@ public class EntityHelper {
         return missingMap;
     }
 
+    /**
+     * Resolve class instances from annotation based on the class context.
+     *
+     * 'repositoryClass="Foo"', 'repostoryClass=Foo::class'
+     *
+     * - "Foo\Bar" is resolved as a "\Foo\Bar" on Doctrine
+     * - "Bar" append to the namespace name
+     */
+    public static String resolveDoctrineLikePropertyClass(@NotNull PhpClass phpClass, @NotNull String text, @NotNull String propertyName, @NotNull Function<Void, Map<String, String>> useImportMap) {
+        Map<String, Matcher> matches = new HashMap<String, Matcher>() {{
+            put("string", Pattern.compile(propertyName + "\\s*=\\s*\"([^\"]*)\"").matcher(text)); // targetEntity="Foobar"
+            put("class", Pattern.compile(propertyName + "\\s*=\\s*([^\\s:]*)::class").matcher(text));  // targetEntity=Foobar::class
+        }};
+
+        for (Map.Entry<String, Matcher> pair : matches.entrySet()) {
+            Matcher targetEntityMatch = pair.getValue();
+            if (!targetEntityMatch.find()) {
+                continue;
+            }
+
+            String targetEntity = targetEntityMatch.group(1);
+            if (org.apache.commons.lang.StringUtils.isBlank(targetEntity)) {
+                continue;
+            }
+
+            if ("class".equals(pair.getKey())) {
+                return AnnotationBackportUtil.getFqnClassNameFromScope(phpClass, targetEntity, useImportMap.fun(null));
+            }
+
+            return targetEntity.contains("\\")
+                ? targetEntity // "Foo\Bar" is resolved as a "\Foo\Bar" on Doctrine
+                : phpClass.getNamespaceName() + targetEntity; // "Bar" append to the namespace name
+        }
+
+        return null;
+    }
 }
