@@ -765,8 +765,7 @@ public class EntityHelper {
     }
 
     public static boolean isEntity(PhpClass entityClass, PhpClass repositoryClass) {
-
-        if(entityClass.isAbstract() || entityClass.isInterface()) {
+        if(entityClass.isAbstract() || entityClass.isInterface() || entityClass.isTrait()) {
             return false;
         }
 
