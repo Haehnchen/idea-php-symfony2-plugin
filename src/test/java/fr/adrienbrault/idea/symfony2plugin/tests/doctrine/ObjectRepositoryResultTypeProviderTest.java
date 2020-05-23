@@ -59,4 +59,20 @@ public class ObjectRepositoryResultTypeProviderTest extends SymfonyLightCodeInsi
             PlatformPatterns.psiElement(Method.class).withName("getId")
         );
     }
+
+    public void testThatClassAsStringIsResolvedForMagicMethods() {
+        assertPhpReferenceResolveTo(PhpFileType.INSTANCE,
+            "<?php" +
+                "/** @var \\Doctrine\\Common\\Persistence\\ObjectManager $om */\n" +
+                "$om->getRepository('\\Foo\\Bar')->findOneByName('foobar')->get<caret>Id();",
+            PlatformPatterns.psiElement(Method.class).withName("getId")
+        );
+
+        assertPhpReferenceResolveTo(PhpFileType.INSTANCE,
+            "<?php" +
+                "/** @var \\Doctrine\\Common\\Persistence\\ObjectManager $om */\n" +
+                "$om->getRepository('\\Foo\\Bar')->findByName('foobar')[0]->get<caret>Id();",
+            PlatformPatterns.psiElement(Method.class).withName("getId")
+        );
+    }
 }

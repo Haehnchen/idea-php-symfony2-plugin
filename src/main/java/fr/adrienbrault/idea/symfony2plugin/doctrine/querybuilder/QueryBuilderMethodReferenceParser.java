@@ -23,6 +23,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpTypeProviderUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -184,7 +185,13 @@ public class QueryBuilderMethodReferenceParser {
     }
 
 
-    private Map<String, String> findRootDefinition(Collection<MethodReference> methodReferences) {
+    /**
+     *
+     * @param methodReferences
+     * @return
+     */
+    @NotNull
+    private Map<String, String> findRootDefinition(@NotNull Collection<MethodReference> methodReferences) {
 
         Map<String, String> roots = new HashMap<>();
 
