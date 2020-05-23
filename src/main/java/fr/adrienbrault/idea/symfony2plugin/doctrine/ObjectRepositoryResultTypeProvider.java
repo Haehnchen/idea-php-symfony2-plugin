@@ -16,10 +16,8 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpTypeProviderUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -63,7 +61,8 @@ public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider4 {
         }
 
         String methodRefName = methodRef.getName();
-        if(null == methodRefName || !Arrays.asList(new String[] {"find", "findOneBy", "findAll", "findBy"}).contains(methodRefName)) {
+
+        if(null == methodRefName || (!Arrays.asList(new String[] {"find", "findAll"}).contains(methodRefName) && !methodRefName.startsWith("findOneBy") && !methodRefName.startsWith("findBy"))) {
             return null;
         }
 
@@ -109,7 +108,7 @@ public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider4 {
 
         PhpIndex phpIndex = PhpIndex.getInstance(project);
 
-        Collection<? extends PhpNamedElement> typeSignature = PhpTypeProviderUtil.getTypeSignature(phpIndex, originalSignature);
+        Collection<? extends PhpNamedElement> typeSignature = getTypeSignatureMagic(phpIndex, originalSignature);
 
         // ->getRepository(SecondaryMarket::class)->findAll() => "findAll", but only if its a instance of this method;
         // so non Doctrine method are already filtered
@@ -124,7 +123,7 @@ public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider4 {
         PhpType phpType = new PhpType();
 
         resolveMethods.stream()
-            .map(name -> name.equals("findAll") || name.equals("findBy") ? phpClass.getFQN() + "[]" : phpClass.getFQN())
+            .map(name -> name.equals("findAll") || name.startsWith("findBy") ? phpClass.getFQN() + "[]" : phpClass.getFQN())
             .collect(Collectors.toSet())
             .forEach(phpType::add);
 
@@ -146,5 +145,34 @@ public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider4 {
         }
 
         return methods;
+    }
+
+    /**
+     * We can have multiple types inside a TypeProvider; split them on "|" so that we dont get empty types
+     *
+     * #M#x#M#C\FooBar.get?doctrine.odm.mongodb.document_manager.getRepository|
+     * #M#x#M#C\FooBar.get?doctrine.odm.mongodb.document_manager.getRepository
+     */
+    @NotNull
+    private static Collection<? extends PhpNamedElement> getTypeSignatureMagic(@NotNull PhpIndex phpIndex, @NotNull String signature) {
+        // magic method resolving; we need to have the ObjectRepository method which does not exists for magic methods, so strip it
+        // #M#x#M#C\FooBar.get?doctrine.odm.mongodb.document_manager.findByName => findBy
+        // #M#x#M#C\FooBar.get?doctrine.odm.mongodb.document_manager.findOneBy => findOne
+        Collection<PhpNamedElement> elements = new HashSet<>();
+        for (String s : signature.split("\\|")) {
+            int i = s.lastIndexOf(".");
+            if (i > 0) {
+                String substring = s.substring(i + 1);
+                if (substring.startsWith("findOneBy")) {
+                    s = s.substring(0, i + 1) + "findOneBy";
+                } else if(substring.startsWith("findBy")) {
+                    s = s.substring(0, i + 1) + "findBy";
+                }
+            }
+
+            elements.addAll(phpIndex.getBySignature(s, null, 0));
+        }
+
+        return elements;
     }
 }

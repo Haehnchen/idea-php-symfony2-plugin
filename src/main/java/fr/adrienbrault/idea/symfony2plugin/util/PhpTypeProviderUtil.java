@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -172,7 +173,7 @@ public class PhpTypeProviderUtil {
             return phpIndex.getBySignature(signature, null, 0);
         }
 
-        Collection<PhpNamedElement> elements = new ArrayList<>();
+        Collection<PhpNamedElement> elements = new HashSet<>();
         for (String s : signature.split("\\|")) {
             elements.addAll(phpIndex.getBySignature(s, null, 0));
         }
