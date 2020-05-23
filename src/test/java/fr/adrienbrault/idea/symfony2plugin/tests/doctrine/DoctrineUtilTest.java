@@ -36,7 +36,7 @@ public class DoctrineUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         Pair<String, String> next = classRepositoryPair.iterator().next();
 
         assertEquals("Foo\\Apple", next.getFirst());
-        assertEquals("Foo\\MyBundle\\Entity\\Repository\\AddressRepository", next.getSecond());
+        assertEquals("MyBundle\\Entity\\Repository\\AddressRepository", next.getSecond());
     }
 
     /**
@@ -104,7 +104,11 @@ public class DoctrineUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
             "/**\n" +
             " * @ORM\\Entity(repositoryClass=\"BarAlias\\Foobar\")\n" +
             " */\n" +
-            "class Black {}\n"
+            "class Black {}\n" +
+            "/**\n" +
+            " * @ORM\\Entity(repositoryClass=\"Foobar\")\n" +
+            " */\n" +
+            "class White {}\n"
         );
 
         Collection<Pair<String, String>> classRepositoryPair = DoctrineUtil.getClassRepositoryPair(psiFileFromText);
@@ -119,6 +123,9 @@ public class DoctrineUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertEquals("Bar\\Foobar", yellow.getSecond());
 
         Pair<String, String> black = classRepositoryPair.stream().filter(stringStringPair -> "Foo\\Black".equals(stringStringPair.getFirst())).findFirst().get();
-        assertEquals("Bar\\Foobar", yellow.getSecond());
+        assertEquals("BarAlias\\Foobar", black.getSecond());
+
+        Pair<String, String> white = classRepositoryPair.stream().filter(stringStringPair -> "Foo\\White".equals(stringStringPair.getFirst())).findFirst().get();
+        assertEquals("Foo\\Foobar", white.getSecond());
     }
 }

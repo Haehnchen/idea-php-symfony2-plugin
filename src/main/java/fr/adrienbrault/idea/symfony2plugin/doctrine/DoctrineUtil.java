@@ -14,6 +14,7 @@ import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
+import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.AnnotationElementWalkingVisitor;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
@@ -26,8 +27,6 @@ import org.jetbrains.yaml.psi.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -151,28 +150,19 @@ public class DoctrineUtil {
         // @TODO: use annotation plugin
         // repositoryClass="Foobar"
         String text = phpDocAttributeList.getText();
-        Matcher[] matches = new Matcher[] {
-            Pattern.compile("repositoryClass\\s*=\\s*\"([^\"]*)\"").matcher(text), // repositoryClass="Foobar"
-            Pattern.compile("repositoryClass\\s*=\\s*([^\\s:]*)::class").matcher(text), // repositoryClass=Foobar::class
-        };
 
-        for (Matcher matcher : matches) {
-            if (!matcher.find()) {
-                continue;
-            }
+        String repositoryClass = EntityHelper.resolveDoctrineLikePropertyClass(
+            phpClass,
+            text,
+            "repositoryClass",
+            aVoid -> AnnotationUtil.getUseImportMap(phpDocTag)
+        );
 
-            String group = matcher.group(1);
-            if (StringUtils.isBlank(group)) {
-                continue;
-            }
-
-            String clazz = EntityHelper.getAnnotationRepositoryClass(phpClass, group);
-            if(clazz != null) {
-                return StringUtils.stripStart(clazz, "\\");
-            }
+        if (repositoryClass == null) {
+            return null;
         }
 
-        return null;
+        return StringUtils.stripStart(repositoryClass, "\\");
     }
 
     /**
