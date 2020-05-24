@@ -6,10 +6,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
-import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression;
-import com.jetbrains.php.lang.psi.elements.ClassConstantReference;
-import com.jetbrains.php.lang.psi.elements.MethodReference;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.detector.FormQueryBuilderRepositoryDetector;
@@ -61,7 +58,6 @@ public class QueryBuilderMethodReferenceParser {
         }
 
         for(MethodReference methodReference: methodReferences) {
-
             String name = methodReference.getName();
             if(name != null) {
                 collectParameter(qb, methodReference, name);
@@ -69,7 +65,6 @@ public class QueryBuilderMethodReferenceParser {
                 collectSelects(qb, methodReference, name);
                 collectSelectInForm(qb, methodReference, name);
             }
-
         }
 
         // first tableMap entry is root, we add several initial data
@@ -184,24 +179,29 @@ public class QueryBuilderMethodReferenceParser {
 
     }
 
-
     /**
+     * Extract model from context
      *
-     * @param methodReferences
-     * @return
+     * ```
+     * getRepository('Foo')->createQueryBuilder('test')
+     * ```
+     *
+     * ```
+     * public function __construct(RegistryInterface $registry)
+     * {
+     *  parent::__construct($registry, Entity::class);
+     * }
+     * ```
      */
     @NotNull
     private Map<String, String> findRootDefinition(@NotNull Collection<MethodReference> methodReferences) {
-
-        Map<String, String> roots = new HashMap<>();
-
         if(methodReferences.size() == 0) {
-            return roots;
+            return Collections.emptyMap();
         }
 
+        Map<String, String> roots = new HashMap<>();
         String rootAlias = null;
         String repository = null;
-
 
         for(MethodReference methodReference: methodReferences) {
             String methodReferenceName = methodReference.getName();
@@ -259,11 +259,38 @@ public class QueryBuilderMethodReferenceParser {
             roots.put(repository, rootAlias);
         }
 
+        // public function __construct(RegistryInterface $registry)
+        //   parent::__construct($registry, Entity::class);
+        if(rootAlias != null && repository == null) {
+            MethodReference methodReference = methodReferences.iterator().next();
+            PhpClass phpClass = PsiTreeUtil.getParentOfType(methodReference, PhpClass.class);
+
+            if(phpClass != null && PhpElementsUtil.isInstanceOf(phpClass, "\\Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository")) {
+                Method constructor = phpClass.getConstructor();
+                if (constructor != null) {
+                    for (MethodReference reference : PsiTreeUtil.findChildrenOfType(constructor, MethodReference.class)) {
+                        if ("__construct".equals(reference.getName())) {
+                            PsiElement[] parameters = reference.getParameters();
+                            if (parameters.length > 1) {
+                                PsiElement parameter = parameters[1];
+                                String stringValue = PhpElementsUtil.getStringValue(parameter);
+                                if (stringValue != null) {
+                                    roots.put(stringValue, rootAlias);
+                                    return roots;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         // we found a alias but not a repository name, so try a scope search if we are inside repository class
         // class implements \Doctrine\Common\Persistence\ObjectRepository, so search for model name of "repositoryClass"
         if(rootAlias != null && repository == null) {
             MethodReference methodReference = methodReferences.iterator().next();
             PhpClass phpClass = PsiTreeUtil.getParentOfType(methodReference, PhpClass.class);
+
             if(
                 phpClass != null &&
                 (
@@ -280,7 +307,6 @@ public class QueryBuilderMethodReferenceParser {
                     }
                 }
             }
-
         }
 
         // search on PhpTypeProvider
