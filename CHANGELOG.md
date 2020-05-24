@@ -2,7 +2,8 @@ Changelog
 =========
 
 # Version names
-* 0.19.x: PhpStorm 2019.2+
+* 0.20.x: PhpStorm 2020.x
+* 0.19.x: PhpStorm 2019.2+ (no support)
 * 0.18.x: PhpStorm 2019.1+ (no support)
 * 0.17.x: PhpStorm 2018.2+ (no support)
 * 0.16.x: PhpStorm 2017.3.2+ (no support)
@@ -13,6 +14,19 @@ Changelog
 * 0.11.x: PhpStorm 8, 9, 10 (no support)
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
+
+## 0.20.194
+* Support direct type resolving "ObjectRepository:find\*" usages without having getRepository having in same context (Daniel Espendiller)
+* Support querybuilder model resolving parent constructor call of ServiceEntityRepository (Daniel Espendiller)
+* Ignore trait class in Doctrine Entity folder (Daniel Espendiller)
+* Support type resolving for magic Doctrine methods "findBy\*" "findOneBy\*" #149 (Daniel Espendiller)
+* Support traits and extends class resolving in Doctrine annotation metadata (Daniel Espendiller)
+* Doctrine ORM target entity should support class constant resolving #1468 (Daniel Espendiller)
+* Refactor Doctrine repositoryClass fetching via class constants to support Symfony 5.1 maker bundle style #1468 (Daniel Espendiller)
+* Migrate all type provider to "PhpTypeProvider4" extension (Daniel Espendiller)
+* Use getIndexModificationStamp to cache index result based on it index change key (Daniel Espendiller)
+* Remove support for PhpStorm versions < "2020.1" (Daniel Espendiller)
+* Migrate Doctrine entity type resolving for "find\*" methods #1434 (Daniel Espendiller)
 
 ## 0.19.193
 * Filter some special debug service and move the into lower priority (Daniel Espendiller)
