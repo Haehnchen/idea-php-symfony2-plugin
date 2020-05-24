@@ -105,7 +105,10 @@
         <typeProvider4 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryTypeProvider"/>
         <typeProvider4 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryResultTypeProvider"/>
         <typeProvider4 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectManagerFindTypeProvider"/>
+        <typeProvider4 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectManagerFindContextTypeProvider"/>
         <typeProvider4 implementation="fr.adrienbrault.idea.symfony2plugin.assistant.signature.MethodSignatureTypeProvider"/>
+
+
         <libraryRoot id="symfony_meta" path="/symfony-meta/" runtime="false"/>
         <libraryRoot id="doctrine_meta" path="/doctrine-meta/" runtime="false"/>
     </extensions>
