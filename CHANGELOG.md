@@ -15,6 +15,9 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.20.195
+* Fix possible long signature truncate and split on type resolver for repository find* (Daniel Espendiller)
+
 ## 0.20.194
 * Support direct type resolving "ObjectRepository:find\*" usages without having getRepository having in same context (Daniel Espendiller)
 * Support querybuilder model resolving parent constructor call of ServiceEntityRepository (Daniel Espendiller)

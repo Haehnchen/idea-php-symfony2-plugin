@@ -1,15 +1,5 @@
 <html>
 <ul>
-    <li>Support direct type resolving "ObjectRepository:find*" usages without having getRepository having in same context (Daniel Espendiller)</li>
-    <li>Support querybuilder model resolving parent constructor call of ServiceEntityRepository (Daniel Espendiller)</li>
-    <li>Ignore trait class in Doctrine Entity folder (Daniel Espendiller)</li>
-    <li>Support type resolving for magic Doctrine methods "findBy*" "findOneBy*" #149 (Daniel Espendiller)</li>
-    <li>Support traits and extends class resolving in Doctrine annotation metadata (Daniel Espendiller)</li>
-    <li>Doctrine ORM target entity should support class constant resolving #1468 (Daniel Espendiller)</li>
-    <li>Refactor Doctrine repositoryClass fetching via class constants to support Symfony 5.1 maker bundle style #1468 (Daniel Espendiller)</li>
-    <li>Migrate all type provider to "PhpTypeProvider4" extension (Daniel Espendiller)</li>
-    <li>Use getIndexModificationStamp to cache index result based on it index change key (Daniel Espendiller)</li>
-    <li>Remove support for PhpStorm versions < "2020.1" (Daniel Espendiller)</li>
-    <li>Migrate Doctrine entity type resolving for "find*" methods #1434 (Daniel Espendiller)</li>
+    <li>Fix possible long signature truncate and split on type resolver for repository find* (Daniel Espendiller)</li>
 </ul>
 </html>
