@@ -76,6 +76,9 @@ public class ObjectManagerFindContextTypeProvider implements PhpTypeProvider4 {
     @Override
     public PhpType complete(String s, Project project) {
         String[] split = s.substring(2).split(String.valueOf(TRIM_KEY));
+        if (split.length < 2) {
+            return null;
+        }
 
         String signature = split[0];
         String methodName = split[1];
