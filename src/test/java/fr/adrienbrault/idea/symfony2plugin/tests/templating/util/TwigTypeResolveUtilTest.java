@@ -54,9 +54,9 @@ public class TwigTypeResolveUtilTest extends SymfonyLightCodeInsightFixtureTestC
     }
 
     public void testReqExForInlineDocVariables() {
-        assertMatches("{# @var foo_1 \\AppBundle\\Entity\\MeterValueDTO #}", TwigTypeResolveUtil.DOC_TYPE_PATTERN_SINGLE);
-        assertMatches("{# @var \\AppBundle\\Entity\\MeterValueDTO foo_1 #}", TwigTypeResolveUtil.DOC_TYPE_PATTERN_SINGLE);
-        assertMatches("{# foo_1 \\AppBundle\\Entity\\MeterValueDTO #}", TwigTypeResolveUtil.DOC_TYPE_PATTERN_SINGLE);
+        assertMatches("@var foo_1 \\AppBundle\\Entity\\MeterValueDTO", TwigTypeResolveUtil.DOC_TYPE_PATTERN_SINGLE);
+        assertMatches("@var \\AppBundle\\Entity\\MeterValueDTO foo_1", TwigTypeResolveUtil.DOC_TYPE_PATTERN_SINGLE);
+        assertMatches("foo_1 \\AppBundle\\Entity\\MeterValueDTO", TwigTypeResolveUtil.DOC_TYPE_PATTERN_SINGLE);
     }
 
     /**
