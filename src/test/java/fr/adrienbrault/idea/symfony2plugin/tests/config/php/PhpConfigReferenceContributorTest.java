@@ -12,6 +12,7 @@ public class PhpConfigReferenceContributorTest extends SymfonyLightCodeInsightFi
         super.setUp();
         myFixture.copyFileToProject("classes.php");
         myFixture.copyFileToProject("tags.yml");
+        myFixture.copyFileToProject("services.yml");
     }
 
     public String getTestDataPath() {

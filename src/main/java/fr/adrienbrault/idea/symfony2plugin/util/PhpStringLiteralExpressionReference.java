@@ -69,9 +69,9 @@ public class PhpStringLiteralExpressionReference extends PsiReferenceProvider {
         return new PsiReference[0];
     }
 
-    private class Call {
-        private String className;
-        private String methodName;
+    private static class Call {
+        private final String className;
+        private final String methodName;
         private int index = 0;
 
         public Call(String className, String methodName) {

@@ -3,10 +3,12 @@ package fr.adrienbrault.idea.symfony2plugin.util;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.openapi.project.Project;
 import com.intellij.patterns.ElementPattern;
+import com.intellij.patterns.PatternCondition;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.ProcessingContext;
 import com.intellij.util.Processor;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.codeInsight.PhpCodeInsightUtil;
@@ -29,6 +31,7 @@ import com.jetbrains.php.refactoring.PhpAliasImporter;
 import fr.adrienbrault.idea.symfony2plugin.dic.MethodReferenceBag;
 import fr.adrienbrault.idea.symfony2plugin.util.psi.PsiElementAssertUtil;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -291,6 +294,26 @@ public class PhpElementsUtil {
                     )
                     .withParent(
                         PlatformPatterns.psiElement(PhpElementTypes.METHOD_REFERENCE)
+                    )
+            )
+            .withLanguage(PhpLanguage.INSTANCE);
+    }
+
+    static public PsiElementPattern.Capture<StringLiteralExpression> getFunctionWithFirstStringPattern(@NotNull String... functionName) {
+        return PlatformPatterns
+            .psiElement(StringLiteralExpression.class)
+            .withParent(
+                PlatformPatterns.psiElement(ParameterList.class)
+                    .withFirstChild(
+                        PlatformPatterns.psiElement(PhpElementTypes.STRING)
+                    )
+                    .withParent(
+                        PlatformPatterns.psiElement(FunctionReference.class).with(new PatternCondition<FunctionReference>("function match") {
+                            @Override
+                            public boolean accepts(@NotNull FunctionReference functionReference, ProcessingContext processingContext) {
+                                return ArrayUtils.contains(functionName, functionReference.getName());
+                            }
+                        })
                     )
             )
             .withLanguage(PhpLanguage.INSTANCE);
