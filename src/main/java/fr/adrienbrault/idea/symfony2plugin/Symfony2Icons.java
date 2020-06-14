@@ -61,6 +61,7 @@ public class Symfony2Icons {
     public static final Icon TWIG_LINE_MARKER = IconLoader.getIcon("/icons/twig_line_marker.png");
     public static final Icon TWIG_LINE_OVERWRITE = IconLoader.getIcon("/icons/overwrite.png");
 
+    public static final Icon TWIG_CONTROLLER_FILE = IconLoader.getIcon("/icons/twig_controller_file.png");
     public static final Icon TWIG_EXTENDS_FILE = IconLoader.getIcon("/icons/twig_extends_file.png");
     public static final Icon TWIG_IMPLEMENTS_FILE = IconLoader.getIcon("/icons/twig_implements_file.png");
 
