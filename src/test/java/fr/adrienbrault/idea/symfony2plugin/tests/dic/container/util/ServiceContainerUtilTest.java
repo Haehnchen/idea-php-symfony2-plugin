@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -112,6 +113,24 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
                 new Gson().toJson(bar)
             );
         }
+    }
+
+    public void testPhpServicesAreInIndex() {
+        PsiFile phpFile = myFixture.configureByFile("services.php");
+
+        Collection<ServiceSerializable> servicesInFile = ServiceContainerUtil.getServicesInFile(phpFile);
+
+        ServiceSerializable translationWarmer = servicesInFile.stream().filter(s -> "translator.default".equals(s.getId())).findFirst().get();
+        assertEquals(
+            "Symfony\\Bundle\\FrameworkBundle\\Translation\\Translator",
+            translationWarmer.getClassName()
+        );
+
+        ServiceSerializable translationReader = servicesInFile.stream().filter(s -> "Symfony\\Contracts\\Translation\\TranslatorInterface".equals(s.getId())).findFirst().get();
+        assertEquals(
+            "translator",
+            translationReader.getAlias()
+        );
     }
 
     public void testThatDefaultValueAreNullAndNotSerialized() {

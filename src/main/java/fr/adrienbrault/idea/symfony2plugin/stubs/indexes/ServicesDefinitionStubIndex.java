@@ -7,6 +7,7 @@ import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
+import com.jetbrains.php.lang.PhpFileType;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceSerializable;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
@@ -74,7 +75,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
     @Override
     public FileBasedIndex.InputFilter getInputFilter() {
         return file ->
-            file.getFileType() == XmlFileType.INSTANCE || file.getFileType() == YAMLFileType.YML;
+            file.getFileType() == XmlFileType.INSTANCE || file.getFileType() == YAMLFileType.YML || file.getFileType() == PhpFileType.INSTANCE;
     }
 
     @Override
@@ -84,7 +85,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
 
     @Override
     public int getVersion() {
-        return 4;
+        return 5;
     }
 
     public static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {
@@ -96,7 +97,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
 
         // container file need to be xml file, eg xsd filetypes are not valid
         String extension = inputData.getFile().getExtension();
-        if(extension == null || !(extension.equalsIgnoreCase("xml") || extension.equalsIgnoreCase("yml") || extension.equalsIgnoreCase("yaml"))) {
+        if(extension == null || !(extension.equalsIgnoreCase("xml") || extension.equalsIgnoreCase("yml") || extension.equalsIgnoreCase("yaml") || extension.equalsIgnoreCase("php"))) {
             return false;
         }
 

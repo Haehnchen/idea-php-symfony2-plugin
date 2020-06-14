@@ -19,6 +19,7 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services.xml"));
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services.yml"));
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services.yaml"));
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services.php"));
     }
 
     public String getTestDataPath() {
@@ -43,6 +44,11 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
 
         assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.xml_id.private").getClassName());
         assertEquals(false, getFirstValue("foo.xml_id.private").isPublic());
+    }
+
+    public void testThatServiceIdOfPhpFileIsIndexed() {
+        assertIndexContains(ServicesDefinitionStubIndex.KEY, "twig.command.debug");
+        assertIndexContains(ServicesDefinitionStubIndex.KEY, "twig.command.debug_alias");
     }
 
     public void testServiceIdOfYmlWithDeprecatedShortcut() {
