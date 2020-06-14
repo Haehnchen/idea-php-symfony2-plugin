@@ -15,6 +15,12 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.20.196
+* Ignore Doctrine repository return type provider on magic method pattern if already in repository [#1481](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1481) (Daniel Espendiller)
+* Provide custom Twig file overlay to indicate "extends" and attached controller template types [#1485](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1485) (Daniel Espendiller)
+* Index service definition for PHP files (Daniel Espendiller)
+* Support global Symfony DIC function: "service" and "param" (Daniel Espendiller)
+
 ## 0.20.195
 * Fix possible long signature truncate and split on type resolver for repository find* (Daniel Espendiller)
 
