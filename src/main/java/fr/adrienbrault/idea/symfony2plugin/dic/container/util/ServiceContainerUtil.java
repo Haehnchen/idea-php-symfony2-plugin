@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.dic.container.util;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
-import com.intellij.openapi.util.ModificationTracker;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
@@ -14,13 +13,12 @@ import com.intellij.psi.xml.*;
 import com.intellij.util.Consumer;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.lang.psi.elements.Field;
-import com.jetbrains.php.lang.psi.elements.Method;
-import com.jetbrains.php.lang.psi.elements.Parameter;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.PhpFile;
+import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.refactoring.PhpNamespaceBraceConverter;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
-import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.AttributeValueInterface;
+import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.PhpKeyValueAttributeValue;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.XmlTagAttributeValue;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.YamlKeyValueAttributeValue;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.SerializableService;
@@ -41,7 +39,6 @@ import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.*;
 
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -112,6 +109,11 @@ public class ServiceContainerUtil {
                     serializableService.setIsDeprecated(serviceConsumer.attributes().getBoolean("deprecated"));
                 }
 
+                services.add(serializableService);
+            });
+        } else if (psiFile instanceof PhpFile) {
+            visitFile((PhpFile) psiFile, serviceConsumer -> {
+                SerializableService serializableService = createService(serviceConsumer);
                 services.add(serializableService);
             });
         }
@@ -239,6 +241,119 @@ public class ServiceContainerUtil {
         }
     }
 
+    @Nullable
+    private static String getStringValueIndexSafe(@NotNull PsiElement psiElement) {
+        String serviceClass = null;
+        if (psiElement instanceof StringLiteralExpression) {
+            serviceClass = ((StringLiteralExpression) psiElement).getContents();
+        } else if(psiElement instanceof ClassConstantReference) {
+            serviceClass = PhpElementsUtil.getClassConstantPhpFqn((ClassConstantReference) psiElement);
+        }
+
+        return StringUtils.isNotBlank(serviceClass)
+            ? serviceClass
+            : null;
+    }
+
+    /**
+     * return static function (ContainerConfigurator $container) { ... }
+     */
+    @NotNull
+    private static Collection<Function> getPhpContainerConfiguratorFunctions(@NotNull PhpFile phpFile) {
+        Collection<Function> functions = new HashSet<>();
+
+        for (PhpNamespace phpNamespace : PhpNamespaceBraceConverter.getAllNamespaces(phpFile)) {
+            // its used for all service files:
+            // namespace \Symfony\Component\DependencyInjection\Loader\Configurator { ... }
+            String fqn = phpNamespace.getFQN();
+            if (!fqn.equals("\\Symfony\\Component\\DependencyInjection\\Loader\\Configurator")) {
+                continue;
+            }
+
+            for (PhpReturn phpReturn : PsiTreeUtil.collectElementsOfType(phpNamespace, PhpReturn.class)) {
+                for (Function function : PsiTreeUtil.collectElementsOfType(phpReturn, Function.class)) {
+                    Parameter parameter = function.getParameter(0);
+                    if (parameter == null) {
+                        continue;
+                    }
+
+                    // \Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator
+                    if(parameter.getLocalType().getTypes().stream().noneMatch(s -> s.contains("\\ContainerConfigurator"))) {
+                        continue;
+                    }
+
+                    functions.add(function);
+                }
+            }
+        }
+
+        return functions;
+    }
+
+    /**
+     * Services as PHP definition
+     *
+     * "namespace Symfony\Component\DependencyInjection\Loader\Configurator;"
+     * "..."
+     * "return static function (ContainerConfigurator $container) { ... }"
+     */
+    public static void visitFile(@NotNull PhpFile phpFile, @NotNull Consumer<ServiceConsumer> consumer) {
+        for (Function function : getPhpContainerConfiguratorFunctions(phpFile)) {
+            // we only want "set" and "alias" methods
+            PsiElement[] methodReferences = PsiTreeUtil.collectElements(
+                function,
+                psiElement -> psiElement instanceof MethodReference && ("set".equals(((MethodReference) psiElement).getName()) || "alias".equals(((MethodReference) psiElement).getName()))
+            );
+
+            for (PsiElement psiElement : methodReferences) {
+                // ->set('translator.default', Translator::class)
+                if (psiElement instanceof MethodReference && "set".equals(((MethodReference) psiElement).getName())) {
+                    PsiElement[] parameters = ((MethodReference) psiElement).getParameters();
+                    String serviceName = null;
+                    if (parameters.length >= 1) {
+                        serviceName = getStringValueIndexSafe(parameters[0]);
+                    }
+
+                    if (StringUtils.isBlank(serviceName)) {
+                        continue;
+                    }
+
+                    Map<String, String> keyValue = new HashMap<>();
+                    if (parameters.length >= 2) {
+                        String serviceClass = getStringValueIndexSafe(parameters[1]);
+                        if (StringUtils.isNotBlank(serviceClass)) {
+                            keyValue.put("class", serviceClass);
+                        }
+                    }
+
+                    consumer.consume(new ServiceConsumer(psiElement, serviceName, new PhpKeyValueAttributeValue(psiElement, keyValue), ServiceFileDefaults.EMPTY));
+                }
+
+                // ->alias(TranslatorInterface::class, 'translator')
+                if (psiElement instanceof MethodReference && "alias".equals(((MethodReference) psiElement).getName())) {
+                    PsiElement[] parameters = ((MethodReference) psiElement).getParameters();
+                    String serviceName = null;
+                    if (parameters.length >= 1) {
+                        serviceName = getStringValueIndexSafe(parameters[0]);
+                    }
+
+                    if (StringUtils.isBlank(serviceName)) {
+                        continue;
+                    }
+
+                    Map<String, String> keyValue = new HashMap<>();
+                    if (parameters.length >= 2) {
+                        String serviceClass = getStringValueIndexSafe(parameters[1]);
+                        if (StringUtils.isNotBlank(serviceClass)) {
+                            keyValue.put("alias", serviceClass);
+                        }
+                    }
+
+                    consumer.consume(new ServiceConsumer(psiElement, serviceName, new PhpKeyValueAttributeValue(psiElement, keyValue), ServiceFileDefaults.EMPTY));
+                }
+            }
+        }
+    }
 
     /**
      * Extract default values for services tag scope
