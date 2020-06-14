@@ -12,6 +12,7 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
 public class ObjectRepositoryResultTypeProviderTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
         super.setUp();
+        myFixture.copyFileToProject("ObjectRepositoryResultTypeProvider.orm.yml");
         myFixture.copyFileToProject("ObjectRepositoryResultTypeProvider.php");
     }
 
@@ -72,6 +73,24 @@ public class ObjectRepositoryResultTypeProviderTest extends SymfonyLightCodeInsi
             "<?php" +
                 "/** @var \\Doctrine\\Common\\Persistence\\ObjectManager $om */\n" +
                 "$om->getRepository('\\Foo\\Bar')->findByName('foobar')[0]->get<caret>Id();",
+            PlatformPatterns.psiElement(Method.class).withName("getId")
+        );
+    }
+
+    public void testThatClassAsStringIsResolvedForMagicMethodsButNotWhenAlreadyExists() {
+        // do nothing at all here; use type from the method it self
+        assertPhpReferenceResolveTo(PhpFileType.INSTANCE,
+            "<?php" +
+                "/** @var \\Doctrine\\Common\\Persistence\\ObjectManager $om */\n" +
+                "$om->getRepository('\\Foo\\Bar')->findOneByFancyStuff('foobar')[0]->get<caret>Id();",
+            PlatformPatterns.psiElement(Method.class).withName("getId")
+        );
+
+        // repository class exists but method is magic
+        assertPhpReferenceResolveTo(PhpFileType.INSTANCE,
+            "<?php" +
+                "/** @var \\Doctrine\\Common\\Persistence\\ObjectManager $om */\n" +
+                "$om->getRepository('\\Foo\\Bar')->findOneByFancyStuffNotMagic('foobar')->get<caret>Id();",
             PlatformPatterns.psiElement(Method.class).withName("getId")
         );
     }
