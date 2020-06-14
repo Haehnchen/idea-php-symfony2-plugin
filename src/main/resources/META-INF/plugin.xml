@@ -246,6 +246,7 @@
         <codeInsight.parameterNameHints language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.ServiceArgumentParameterHintsProvider"/>
 
         <multiHostInjector implementation="fr.adrienbrault.idea.symfony2plugin.lang.ParameterLanguageInjector"/>
+        <iconProvider implementation="fr.adrienbrault.idea.symfony2plugin.twig.icon.TwigIconProvider"/>
 
         <localInspection groupPath="Symfony" shortName="PhpRouteMissingInspection" displayName="Route Missing"
                          groupName="Route"
