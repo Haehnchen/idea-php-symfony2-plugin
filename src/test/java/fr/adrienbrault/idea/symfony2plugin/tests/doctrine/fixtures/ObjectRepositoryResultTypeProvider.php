@@ -2,11 +2,23 @@
 
 namespace Foo
 {
+    use Doctrine\Common\Persistence\ObjectRepository;
+
     class Bar
     {
         public function getId()
         {
         }
+    }
+
+    class BarRepository implements ObjectRepository
+    {
+        public function find() {}
+
+        /**
+         * @return Bar[]
+         */
+        public function findOneByFancyStuff() {}
     }
 }
 
