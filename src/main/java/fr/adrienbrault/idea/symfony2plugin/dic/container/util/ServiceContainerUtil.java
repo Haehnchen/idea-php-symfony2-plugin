@@ -182,7 +182,9 @@ public class ServiceContainerUtil {
             .setIsAbstract(anAbstract)
             .setIsAutowire(attributes.getBoolean("autowire", serviceConsumer.getDefaults().isAutowire()))
             .setIsLazy(attributes.getBoolean("lazy"))
-            .setIsPublic(attributes.getBoolean("public", serviceConsumer.getDefaults().isPublic()));
+            .setIsPublic(attributes.getBoolean("public", serviceConsumer.getDefaults().isPublic()))
+            .setResource(attributes.getString("resource"))
+            .setExclude(attributes.getString("exclude"));
     }
 
     /**
@@ -227,14 +229,26 @@ public class ServiceContainerUtil {
                         // <defaults autowire="true" public="false" />
                         ServiceFileDefaults defaults = createDefaults(servicesTag);
 
-                        for(XmlTag serviceTag: servicesTag.findSubTags("service")) {
+                        for (XmlTag serviceTag: servicesTag.findSubTags("service")) {
                             String serviceId = serviceTag.getAttributeValue("id");
-                            if(StringUtils.isBlank(serviceId)) {
+                            if (StringUtils.isBlank(serviceId)) {
                                 continue;
                             }
 
                             consumer.consume(new ServiceConsumer(serviceTag, serviceId, new XmlTagAttributeValue(serviceTag), defaults));
-                       }
+                        }
+
+                        // <prototype namespace="App\"
+                        //    resource="../src/*"
+                        //    exclude="../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php}"/>
+                        for (XmlTag serviceTag: servicesTag.findSubTags("prototype")) {
+                            String namespace = serviceTag.getAttributeValue("namespace");
+                            if (StringUtils.isBlank(namespace)) {
+                                continue;
+                            }
+
+                            consumer.consume(new ServiceConsumer(serviceTag, namespace, new XmlTagAttributeValue(serviceTag), defaults));
+                        }
                     }
                 }
             }
