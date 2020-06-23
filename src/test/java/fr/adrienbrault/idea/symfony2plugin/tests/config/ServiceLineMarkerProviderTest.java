@@ -207,4 +207,36 @@ public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtur
                 "}"
         ), new LineMarker.ToolTipEqualsAssert("Navigate to constraint"));
     }
+
+    public void testThatAutowireConstructorIsGivenALineMarker() {
+        myFixture.configureByText(YAMLFileType.YML,
+            "services:\n" +
+                "  Service\\YamlBar: " +
+                "       autowire: true\n\n"
+        );
+
+        assertLineMarker(PhpPsiElementFactory.createPsiFileFromText(getProject(), "<?php\n" +
+            "namespace Service {\n" +
+            "    class YamlBar {\n" +
+            "       function __construct() {}\n" +
+            "   }\n" +
+            "}"
+        ), markerInfo -> markerInfo.getLineMarkerTooltip() != null && markerInfo.getLineMarkerTooltip().toLowerCase().contains("autowire"));
+
+        myFixture.configureByText(YAMLFileType.YML,
+            "services:\n" +
+                "  _defaults:\n" +
+                "    autowire: true\n" +
+                "" +
+                "  Service\\YamlBarDefault: ~\n"
+        );
+
+        assertLineMarker(PhpPsiElementFactory.createPsiFileFromText(getProject(), "<?php\n" +
+            "namespace Service {\n" +
+            "    class YamlBarDefault {\n" +
+            "       function __construct() {}\n" +
+            "   }\n" +
+            "}"
+        ), markerInfo -> markerInfo.getLineMarkerTooltip() != null && markerInfo.getLineMarkerTooltip().toLowerCase().contains("autowire"));
+    }
 }

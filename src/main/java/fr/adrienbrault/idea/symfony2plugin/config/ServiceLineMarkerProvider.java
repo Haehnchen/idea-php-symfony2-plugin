@@ -4,6 +4,7 @@ import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.openapi.util.Pair;
@@ -74,6 +75,10 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
                 this.repositoryClassMarker(psiElement, results);
                 this.validatorClassMarker(psiElement, results);
                 this.constraintValidatorClassMarker(psiElement, results);
+            }
+
+            if(PhpElementsUtil.getClassMethodNamePattern().accepts(psiElement)) {
+                this.autowireConstructorMarker(psiElement, results);
             }
 
             if(psiElement instanceof PhpFile) {
@@ -307,10 +312,70 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         results.add(builder.createLineMarkerInfo(psiElement));
     }
 
+    private void autowireConstructorMarker(PsiElement psiElement, Collection<LineMarkerInfo> results) {
+        PsiElement method = psiElement.getParent();
+        if (!(method instanceof Method)) {
+            return;
+        }
+
+        if (!"__construct".equals(((Method) method).getName())) {
+            return;
+        }
+
+        PhpClass phpClass = ((Method) method).getContainingClass();
+        if (phpClass == null) {
+            return;
+        }
+
+        boolean isAutowire = false;
+
+        Pair<ClassServiceDefinitionTargetLazyValue, Collection<ContainerService>> serviceDefinitionsOfResource = ServiceIndexUtil.findServiceDefinitionsOfResourceLazy(phpClass);
+        if (serviceDefinitionsOfResource != null) {
+            for (ContainerService containerService : serviceDefinitionsOfResource.getSecond()) {
+                ServiceInterface service = containerService.getService();
+                if (service == null) {
+                    continue;
+                }
+
+                if (service.isAutowire()) {
+                    isAutowire = true;
+                    break;
+                }
+            }
+        }
+
+        // direct service
+        if (!isAutowire) {
+            ContainerCollectionResolver.ServiceCollector serviceCollector = ContainerCollectionResolver.ServiceCollector.create(phpClass.getProject());
+            for (String convertClassNameToService : serviceCollector.convertClassNameToServices(phpClass.getFQN())) {
+                ContainerService containerService = serviceCollector.getServices().get(convertClassNameToService);
+                if (containerService == null) {
+                    continue;
+                }
+
+                ServiceInterface service = containerService.getService();
+                if (service != null && service.isAutowire()) {
+                    isAutowire = true;
+                    break;
+                }
+            }
+        }
+
+        if (!isAutowire) {
+            return;
+        }
+
+        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(AllIcons.Nodes.Plugin)
+            .setTargets(new MyCollectionNotNullLazyValue(Collections.emptyList()))
+            .setTooltipText("Symfony: <a href=\"https://symfony.com/doc/current/service_container/autowiring.html\">Autowire available</a>");
+
+        results.add(builder.createLineMarkerInfo(psiElement));
+    }
+
     private static class MyCollectionNotNullLazyValue extends NotNullLazyValue<Collection<? extends PsiElement>> {
         private final Collection<ClassServiceDefinitionTargetLazyValue> targets;
 
-        public MyCollectionNotNullLazyValue(Collection<ClassServiceDefinitionTargetLazyValue> targets) {
+        public MyCollectionNotNullLazyValue(@NotNull Collection<ClassServiceDefinitionTargetLazyValue> targets) {
             this.targets = targets;
         }
 
