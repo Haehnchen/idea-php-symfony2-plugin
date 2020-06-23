@@ -7,10 +7,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -21,25 +18,33 @@ public class ClassServiceDefinitionTargetLazyValue extends NotNullLazyValue<Coll
     private final Project project;
 
     @NotNull
-    private final String fqnClass;
+    private final Collection<String> fqnClasses;
+
+    public ClassServiceDefinitionTargetLazyValue(@NotNull Project project, @NotNull Collection<String> fqnClasses) {
+        this.project = project;
+        this.fqnClasses = fqnClasses;
+    }
 
     public ClassServiceDefinitionTargetLazyValue(@NotNull Project project, @NotNull String fqnClass) {
         this.project = project;
-        this.fqnClass = fqnClass;
+        this.fqnClasses = Collections.singletonList(fqnClass);
     }
 
     @NotNull
     @Override
     protected Collection<? extends PsiElement> compute() {
-
-        Set<String> serviceNames = ContainerCollectionResolver.ServiceCollector.create(project).convertClassNameToServices(fqnClass);
-        if(serviceNames.size() == 0) {
-            return Collections.emptyList();
-        }
+        ContainerCollectionResolver.ServiceCollector serviceCollector = ContainerCollectionResolver.ServiceCollector.create(project);
 
         Collection<PsiElement> psiElements = new ArrayList<>();
-        for(String serviceName: serviceNames) {
-            psiElements.addAll(ServiceIndexUtil.findServiceDefinitions(project, serviceName));
+        for (String fqnClass : fqnClasses) {
+            Set<String> serviceNames = serviceCollector.convertClassNameToServices(fqnClass);
+            if (serviceNames.size() == 0) {
+                continue;
+            }
+
+            for (String serviceName: serviceNames) {
+                psiElements.addAll(ServiceIndexUtil.findServiceDefinitions(project, serviceName));
+            }
         }
 
         return psiElements;

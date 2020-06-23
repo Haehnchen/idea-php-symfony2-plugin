@@ -35,4 +35,10 @@ public interface ServiceInterface {
 
     @Nullable
     String getDecorationInnerName();
+
+    @Nullable
+    String getResource();
+
+    @Nullable
+    String getExclude();
 }

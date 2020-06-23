@@ -1,3 +1,7 @@
 services:
     foo.yaml_id:
         class: AppBundle\Controller\DefaultController
+
+    App\Controller\:
+        resource: '../src/Controller'
+        exclude: '../src/{Entity,Tests}'

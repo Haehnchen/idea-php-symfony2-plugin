@@ -5,6 +5,7 @@ import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.NotNullLazyValue;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -20,16 +21,22 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.ClassServiceDefinitionTargetLazyValue;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceDefinitionLocator;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceDefinitionLocatorParameter;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLFile;
 
+import java.nio.file.FileSystems;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -43,7 +50,7 @@ public class ServiceIndexUtil {
         "fr.adrienbrault.idea.symfony2plugin.extension.ServiceDefinitionLocator"
     );
 
-    private static VirtualFile[] findServiceDefinitionFiles(@NotNull Project project, @NotNull String serviceName) {
+    public static VirtualFile[] findServiceDefinitionFiles(@NotNull Project project, @NotNull String serviceName) {
 
         final List<VirtualFile> virtualFiles = new ArrayList<>();
 
@@ -148,6 +155,114 @@ public class ServiceIndexUtil {
         }
 
         return new ClassServiceDefinitionTargetLazyValue(phpClass.getProject(), phpClassName);
+    }
+
+    /**
+     * "..src/Foo/{Foo,Foobar.php}"
+     *
+     */
+    public static boolean matchesResourcesGlob(@NotNull VirtualFile serviceFileAsBase, @NotNull VirtualFile phpClassFile, @NotNull String resource, @Nullable String exclude) {
+        String replace = resource.replace("\\\\", "/");
+
+        VirtualFile serviceFile = serviceFileAsBase.getParent();
+        String[] split = replace.split("/");
+        String[] split2 = split;
+        for (String s : split) {
+            if (s.equals("..")) {
+                split2 = Arrays.copyOfRange(split2, 1, split2.length);
+                serviceFile = serviceFile.getParent();
+            } else {
+                break;
+            }
+        }
+
+        if (serviceFile == null) {
+            return false;
+        }
+
+        if (split2[split2.length - 1].equals("*")) {
+            split2[split2.length - 1] = "**";
+        }
+
+        String path = serviceFile.getPath() + "/" + StringUtils.join(split2, "/");
+        String path1 = phpClassFile.getPath();
+
+        if (exclude == null) {
+            return isMatchingGlobResource(path, path1);
+        }
+
+        return isMatchingGlobResource(path, path1)
+            && !matchesResourcesGlob(serviceFileAsBase, phpClassFile, exclude, null);
+    }
+
+    @Nullable
+    public static Pair<ClassServiceDefinitionTargetLazyValue, Collection<ContainerService>> findServiceDefinitionsOfResourceLazy(@NotNull PhpClass phpClass) {
+        String fqn = StringUtils.stripStart(phpClass.getFQN(), "\\");
+
+        String[] namespaceParts = fqn.split("\\\\");
+
+        // search for namespaces - "Foo\\FooBar\\Bar":
+        //  - Foo\\
+        //  - Foo\\FooBar\\
+        Set<String> namespaces = IntStream.range(0, namespaceParts.length - 1)
+            .mapToObj(i -> StringUtils.join(Arrays.copyOf(namespaceParts, i + 1), "\\") + "\\")
+            .collect(Collectors.toSet());
+
+        ContainerCollectionResolver.ServiceCollector serviceCollector = ContainerCollectionResolver.ServiceCollector.create(phpClass.getProject());
+
+        // "Foo\\"
+        Set<String> serviceNames = namespaces.stream()
+            .filter(namespace -> serviceCollector.convertClassNameToServices(namespace).size() > 0)
+            .collect(Collectors.toSet());
+
+        Collection<ContainerService> namespaceServices = new HashSet<>();
+        Collection<String> namespaceTargets = new HashSet<>();
+        for (String s : serviceNames) {
+            ContainerService containerService = serviceCollector.getServices().get(s);
+            if (containerService == null) {
+                continue;
+            }
+
+            ServiceInterface service = containerService.getService();
+            if (service == null) {
+                continue;
+            }
+
+            String resource = service.getResource();
+            if (resource == null) {
+                continue;
+            }
+
+            VirtualFile[] serviceDefinitionFiles = ServiceIndexUtil.findServiceDefinitionFiles(phpClass.getProject(), s);
+            for (VirtualFile virtualFile : serviceDefinitionFiles) {
+                if (matchesResourcesGlob(virtualFile, phpClass.getContainingFile().getVirtualFile(), resource, service.getExclude())) {
+                    namespaceServices.add(containerService);
+                    namespaceTargets.add(s);
+                }
+            }
+        }
+
+        if (!namespaceTargets.isEmpty()) {
+            return Pair.create(new ClassServiceDefinitionTargetLazyValue(phpClass.getProject(), namespaceTargets), namespaceServices);
+        }
+
+        return null;
+    }
+
+    /**
+     * Glob matching of resource / exclude pattern: "src/{Entity,Tests,Kernel.php}"
+     *
+     * @param glob src/{Entity,Tests,Kernel.php}
+     * @param path src/Entity/Foo.php
+     */
+    private static boolean isMatchingGlobResource(@NotNull String glob, @NotNull String path) {
+        // "src/{Entity,Tests,Kernel.php}"
+        // We must match files also: "src/Entity/Foo.php"
+        if (!glob.endsWith("**")) {
+            glob += "**";
+        }
+
+        return FileSystems.getDefault().getPathMatcher("glob:" + glob).matches(Paths.get(path));
     }
 
     /**

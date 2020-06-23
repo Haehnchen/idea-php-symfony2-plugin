@@ -30,6 +30,9 @@
                  decoration-inner-name="espend.my_bar_customer_inner.inner_foo">
         </service>
 
+        <prototype namespace="App\Xml\"
+                   resource="../src/*"
+                   exclude="../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php}"/>
     </services>
 
 </container>

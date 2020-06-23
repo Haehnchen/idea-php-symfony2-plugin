@@ -85,7 +85,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
 
     @Override
     public int getVersion() {
-        return 5;
+        return 6;
     }
 
     public static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {

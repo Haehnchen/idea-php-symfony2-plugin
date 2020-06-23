@@ -167,6 +167,25 @@ public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtur
         })));
     }
 
+    public void testYamlServiceLineMarkerForResources() {
+        myFixture.configureByText(YAMLFileType.YML,
+            "services:\n" +
+                "  Service\\Bar\\:\n" +
+                "    resource: '../src/Service'"
+        );
+
+        assertLineMarker(PhpPsiElementFactory.createPsiFileFromText(getProject(), "<?php\n" +
+            "namespace Service\\Bar {\n" +
+            "    class FooBar {}\n" +
+            "}"
+        ), new LineMarker.TargetAcceptsPattern("Navigate to definition", PlatformPatterns.psiElement(YAMLKeyValue.class).with(new PatternCondition<YAMLKeyValue>("KeyText") {
+            @Override
+            public boolean accepts(@NotNull YAMLKeyValue yamlKeyValue, ProcessingContext processingContext) {
+                return yamlKeyValue.getKeyText().equals("foo");
+            }
+        })));
+    }
+
     public void testYamlServiceLineMarkerForClassName() {
         myFixture.configureByText(YAMLFileType.YML,
             "services:\n" +

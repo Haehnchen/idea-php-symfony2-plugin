@@ -5,11 +5,14 @@ import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.NotNullLazyValue;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.ui.LayeredIcon;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
@@ -17,20 +20,23 @@ import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.ClassServiceDefinitionTargetLazyValue;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import javax.swing.*;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -78,23 +84,69 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
     }
 
     private void classNameMarker(PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
-
         PsiElement phpClassContext = psiElement.getContext();
         if(!(phpClassContext instanceof PhpClass)) {
             return;
         }
 
+        Icon serviceLineMarker = Symfony2Icons.SERVICE_LINE_MARKER;
+        Collection<ClassServiceDefinitionTargetLazyValue> targets = new ArrayList<>();
+        Collection<String> tags = new HashSet<>();
+
+        // a direct service match
         ClassServiceDefinitionTargetLazyValue psiElements = ServiceIndexUtil.findServiceDefinitionsLazy((PhpClass) phpClassContext);
-        if(psiElements == null) {
+        if (psiElements != null) {
+            targets.add(psiElements);
+
+            // tags
+            ContainerCollectionResolver.ServiceCollector serviceCollector = ContainerCollectionResolver.ServiceCollector.create(psiElement.getProject());
+            for (String convertClassNameToService : serviceCollector.convertClassNameToServices(((PhpClass) phpClassContext).getFQN())) {
+                tags.addAll(ServiceUtil.getServiceTags(phpClassContext.getProject(), convertClassNameToService));
+            }
+        }
+
+        // via resource include
+        boolean hasResourceIcon = false;
+        Pair<ClassServiceDefinitionTargetLazyValue, Collection<ContainerService>> serviceDefinitionsOfResource = ServiceIndexUtil.findServiceDefinitionsOfResourceLazy((PhpClass) phpClassContext);
+        if (serviceDefinitionsOfResource != null) {
+            LayeredIcon serviceLineMarkerLayer = new LayeredIcon(serviceLineMarker, Symfony2Icons.TWIG_CONTROLLER_FILE);
+            serviceLineMarkerLayer.setIcon(Symfony2Icons.TWIG_CONTROLLER_FILE, 1, SwingConstants.NORTH_WEST);
+            hasResourceIcon = true;
+
+            serviceLineMarker = serviceLineMarkerLayer;
+            targets.add(serviceDefinitionsOfResource.getFirst());
+
+            // tags
+            for (ContainerService containerService : serviceDefinitionsOfResource.getSecond()) {
+                ServiceInterface service = containerService.getService();
+                if (service != null) {
+                    tags.addAll(ServiceUtil.getServiceTags(phpClassContext.getProject(), service.getId()));
+                }
+            }
+        }
+
+        if (targets.isEmpty()) {
             return;
         }
 
-        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.SERVICE_LINE_MARKER).
-            setTargets(psiElements).
-            setTooltipText("Navigate to definition");
+        if (!tags.isEmpty()) {
+            LayeredIcon serviceLineMarkerLayer = new LayeredIcon(serviceLineMarker, Symfony2Icons.TWIG_EXTENDS_FILE);
+
+            // icon should be below first one
+            if (hasResourceIcon) {
+                serviceLineMarkerLayer.setIcon(Symfony2Icons.TWIG_EXTENDS_FILE, 1, 0, Symfony2Icons.TWIG_EXTENDS_FILE.getIconHeight() + 1);
+            } else {
+                serviceLineMarkerLayer.setIcon(Symfony2Icons.TWIG_EXTENDS_FILE, 1, SwingConstants.NORTH_WEST);
+            }
+
+            serviceLineMarker = serviceLineMarkerLayer;
+        }
+
+        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(serviceLineMarker)
+            .setTargets(new MyCollectionNotNullLazyValue(targets))
+            .setTooltipText("Navigate to definition");
 
         result.add(builder.createLineMarkerInfo(psiElement));
-
     }
 
     private void entityClassMarker(PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
@@ -253,6 +305,22 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
             setTooltipText("Navigate to constraint");
 
         results.add(builder.createLineMarkerInfo(psiElement));
+    }
+
+    private static class MyCollectionNotNullLazyValue extends NotNullLazyValue<Collection<? extends PsiElement>> {
+        private final Collection<ClassServiceDefinitionTargetLazyValue> targets;
+
+        public MyCollectionNotNullLazyValue(Collection<ClassServiceDefinitionTargetLazyValue> targets) {
+            this.targets = targets;
+        }
+
+        @NotNull
+        @Override
+        protected Collection<? extends PsiElement> compute() {
+            Collection<PsiElement> myTargets = new HashSet<>();
+            targets.stream().map(NotNullLazyValue::getValue).forEach(myTargets::addAll);
+            return myTargets;
+        }
     }
 }
 

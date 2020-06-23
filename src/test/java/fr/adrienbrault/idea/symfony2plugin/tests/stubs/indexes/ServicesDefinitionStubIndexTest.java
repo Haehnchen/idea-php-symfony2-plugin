@@ -1,7 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.stubs.indexes;
 
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.util.indexing.FileBasedIndexImpl;
+import com.intellij.util.indexing.FileBasedIndex;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
@@ -71,7 +71,23 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
         assertEquals("espend.my_bar_customer_inner.inner_foo", getFirstValue("espend.my_bar_customer_inner.inner_foo").getId());
     }
 
+    public void testThatResourceAndExcludeAttributesAreExtractedForYaml() {
+        ServiceInterface firstValue = getFirstValue("app\\controller\\");
+
+        assertEquals("App\\Controller\\", firstValue.getId());
+        assertEquals("../src/Controller", firstValue.getResource());
+        assertEquals("../src/{Entity,Tests}", firstValue.getExclude());
+    }
+
+    public void testThatResourceAndExcludeAttributesAreExtractedForXml() {
+        ServiceInterface firstValue = getFirstValue("app\\xml\\");
+
+        assertEquals("App\\Xml\\", firstValue.getId());
+        assertEquals("../src/*", firstValue.getResource());
+        assertEquals("../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php}", firstValue.getExclude());
+    }
+
     private ServiceInterface getFirstValue(@NotNull String key) {
-        return FileBasedIndexImpl.getInstance().getValues(ServicesDefinitionStubIndex.KEY, key, GlobalSearchScope.allScope(getProject())).get(0);
+        return FileBasedIndex.getInstance().getValues(ServicesDefinitionStubIndex.KEY, key, GlobalSearchScope.allScope(getProject())).get(0);
     }
 }

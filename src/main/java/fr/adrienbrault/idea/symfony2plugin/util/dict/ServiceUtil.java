@@ -303,6 +303,21 @@ public class ServiceUtil {
         return service;
     }
 
+    @NotNull
+    public static Set<String> getServiceTags(@NotNull Project project, @NotNull String serviceId) {
+        Set<String> service = new HashSet<>();
+
+        for(Set<String> strings: FileBasedIndex.getInstance().getValues(ServicesTagStubIndex.KEY, serviceId, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML))) {
+            service.addAll(strings);
+        }
+
+        for(Set<String> strings: FileBasedIndex.getInstance().getValues(ServicesTagStubIndex.KEY, serviceId.toLowerCase(), GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML))) {
+            service.addAll(strings);
+        }
+
+        return service;
+    }
+
     public static Collection<PhpClass> getTaggedClasses(@NotNull Project project, @NotNull String tagName) {
 
         List<PhpClass> phpClasses = new ArrayList<>();
