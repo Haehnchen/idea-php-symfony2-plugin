@@ -88,6 +88,18 @@ public class XmlService implements ServiceInterface {
     }
 
     @Nullable
+    @Override
+    public String getResource() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public String getExclude() {
+        return null;
+    }
+
+    @Nullable
     public static XmlService createFromXml(@NotNull Element node) {
         // empty id does not interest us
         String id = node.getAttribute("id");
