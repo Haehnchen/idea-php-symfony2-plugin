@@ -352,6 +352,20 @@ public class PhpElementsUtil {
     }
 
     /**
+     * class Foo { function "test" {} }
+     */
+    static public PsiElementPattern.Capture<PsiElement> getClassMethodNamePattern() {
+        return PlatformPatterns
+            .psiElement(PhpTokenTypes.IDENTIFIER)
+            .afterLeafSkipping(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(PhpTokenTypes.kwFUNCTION)
+            )
+            .withParent(Method.class)
+            .withLanguage(PhpLanguage.INSTANCE);
+    }
+
+    /**
      * return 'value' inside class method
      */
     static public ElementPattern<PhpExpression> getMethodReturnPattern() {
