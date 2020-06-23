@@ -3,6 +3,8 @@ package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.patterns.StandardPatterns;
@@ -23,6 +25,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
@@ -491,12 +494,47 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
         PsiElement parent = psiElement.getParent();
         if(parent instanceof YAMLKeyValue) {
             String valueText = ((YAMLKeyValue) parent).getKeyText();
-            if(StringUtils.isNotBlank(valueText)) {
-                return new ArrayList<>(PhpElementsUtil.getClassesInterface(psiElement.getProject(), valueText));
+            if (StringUtils.isNotBlank(valueText)) {
+                Collection<PsiElement> targets = new HashSet<>();
+
+                // My<caret>Class\:
+                //   resource: '....'
+                //   exclude: '....'
+                if (valueText.endsWith("\\")) {
+                    String resource = YamlHelper.getYamlKeyValueAsString((YAMLKeyValue) parent, "resource");
+                    if (resource != null) {
+                        String exclude = YamlHelper.getYamlKeyValueAsString((YAMLKeyValue) parent, "exclude");
+                        targets.addAll(getPhpClassFromResources(psiElement.getProject(), valueText, psiElement.getContainingFile().getVirtualFile(), resource, exclude));
+                    }
+                }
+
+                targets.addAll(PhpElementsUtil.getClassesInterface(psiElement.getProject(), valueText));
+
+                return targets;
             }
         }
 
         return Collections.emptyList();
+    }
+
+    @NotNull
+    private Collection<PhpClass> getPhpClassFromResources(@NotNull Project project, @NotNull String namespace, @NotNull VirtualFile source, @NotNull String resource, @Nullable String exclude) {
+        Collection<PhpClass> phpClasses = new HashSet<>();
+
+        for (PhpClass phpClass : PhpIndexUtil.getPhpClassInsideNamespace(project, "\\" + StringUtils.strip(namespace, "\\"))) {
+            boolean classMatchesGlob = ServiceIndexUtil.matchesResourcesGlob(
+                source,
+                phpClass.getContainingFile().getVirtualFile(),
+                resource,
+                exclude
+            );
+
+            if (classMatchesGlob) {
+                phpClasses.add(phpClass);
+            }
+        }
+
+        return phpClasses;
     }
 
     @Nullable
