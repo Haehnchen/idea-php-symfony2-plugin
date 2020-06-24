@@ -32,12 +32,16 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
+import icons.ExternalSystemIcons;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -94,7 +98,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        Icon serviceLineMarker = Symfony2Icons.SERVICE_LINE_MARKER;
+        Icon serviceLineMarker = ExternalSystemIcons.Task;
         Collection<ClassServiceDefinitionTargetLazyValue> targets = new ArrayList<>();
         Collection<String> tags = new HashSet<>();
 
@@ -111,12 +115,10 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         }
 
         // via resource include
-        boolean hasResourceIcon = false;
         Pair<ClassServiceDefinitionTargetLazyValue, Collection<ContainerService>> serviceDefinitionsOfResource = ServiceIndexUtil.findServiceDefinitionsOfResourceLazy((PhpClass) phpClassContext);
         if (serviceDefinitionsOfResource != null) {
-            LayeredIcon serviceLineMarkerLayer = new LayeredIcon(serviceLineMarker, Symfony2Icons.TWIG_CONTROLLER_FILE);
-            serviceLineMarkerLayer.setIcon(Symfony2Icons.TWIG_CONTROLLER_FILE, 1, SwingConstants.NORTH_WEST);
-            hasResourceIcon = true;
+            LayeredIcon serviceLineMarkerLayer = new LayeredIcon(serviceLineMarker, AllIcons.Modules.SourceRootFileLayer);
+            serviceLineMarkerLayer.setIcon(AllIcons.Modules.SourceRootFileLayer, 1, SwingConstants.CENTER);
 
             serviceLineMarker = serviceLineMarkerLayer;
             targets.add(serviceDefinitionsOfResource.getFirst());
@@ -135,14 +137,8 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         }
 
         if (!tags.isEmpty()) {
-            LayeredIcon serviceLineMarkerLayer = new LayeredIcon(serviceLineMarker, Symfony2Icons.TWIG_EXTENDS_FILE);
-
-            // icon should be below first one
-            if (hasResourceIcon) {
-                serviceLineMarkerLayer.setIcon(Symfony2Icons.TWIG_EXTENDS_FILE, 1, 0, Symfony2Icons.TWIG_EXTENDS_FILE.getIconHeight() + 1);
-            } else {
-                serviceLineMarkerLayer.setIcon(Symfony2Icons.TWIG_EXTENDS_FILE, 1, SwingConstants.NORTH_WEST);
-            }
+            LayeredIcon serviceLineMarkerLayer = new LayeredIcon(serviceLineMarker, AllIcons.Nodes.TabPin);
+            serviceLineMarkerLayer.setIcon(AllIcons.Nodes.TabPin, 1, SwingConstants.CENTER);
 
             serviceLineMarker = serviceLineMarkerLayer;
         }
@@ -318,7 +314,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        if (!"__construct".equals(((Method) method).getName())) {
+        if (!"__construct".equals(((Method) method).getName()) || !((Method) method).getAccess().isPublic()) {
             return;
         }
 
@@ -328,6 +324,8 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         }
 
         boolean isAutowire = false;
+
+        Collection<ClassServiceDefinitionTargetLazyValue> targets = new ArrayList<>();
 
         Pair<ClassServiceDefinitionTargetLazyValue, Collection<ContainerService>> serviceDefinitionsOfResource = ServiceIndexUtil.findServiceDefinitionsOfResourceLazy(phpClass);
         if (serviceDefinitionsOfResource != null) {
@@ -339,7 +337,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
 
                 if (service.isAutowire()) {
                     isAutowire = true;
-                    break;
+                    targets.add(serviceDefinitionsOfResource.getFirst());
                 }
             }
         }
@@ -356,7 +354,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
                 ServiceInterface service = containerService.getService();
                 if (service != null && service.isAutowire()) {
                     isAutowire = true;
-                    break;
+                    targets.add(new ClassServiceDefinitionTargetLazyValue(phpClass.getProject(), convertClassNameToService));
                 }
             }
         }
@@ -366,7 +364,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         }
 
         NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(AllIcons.Nodes.Plugin)
-            .setTargets(new MyCollectionNotNullLazyValue(Collections.emptyList()))
+            .setTargets(new MyCollectionNotNullLazyValue(targets))
             .setTooltipText("Symfony: <a href=\"https://symfony.com/doc/current/service_container/autowiring.html\">Autowire available</a>");
 
         results.add(builder.createLineMarkerInfo(psiElement));
