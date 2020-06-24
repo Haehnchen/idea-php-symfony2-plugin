@@ -32,6 +32,10 @@
         <rowspec value="center:max(d;4px):noGrow"/>
         <rowspec value="top:4dlu:noGrow"/>
         <rowspec value="center:max(d;4px):noGrow"/>
+        <rowspec value="top:4dlu:noGrow"/>
+        <rowspec value="center:max(d;4px):noGrow"/>
+        <rowspec value="top:4dlu:noGrow"/>
+        <rowspec value="center:max(d;4px):noGrow"/>
         <colspec value="fill:max(d;4px):noGrow"/>
         <colspec value="left:4dlu:noGrow"/>
         <colspec value="fill:d:grow"/>
@@ -205,6 +209,25 @@
             </constraints>
             <properties>
               <text value="Download remote files (exp.)"/>
+            </properties>
+          </component>
+          <component id="24207" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="24" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <forms/>
+            </constraints>
+            <properties>
+              <text value="Custom Features"/>
+            </properties>
+          </component>
+          <component id="bcf9" class="javax.swing.JCheckBox" binding="featureTwigIcon">
+            <constraints>
+              <grid row="26" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <forms/>
+            </constraints>
+            <properties>
+              <text value="Twig Icon Decoration"/>
+              <toolTipText value="Decorate Twig file icons with layer to show possible content type"/>
             </properties>
           </component>
         </children>

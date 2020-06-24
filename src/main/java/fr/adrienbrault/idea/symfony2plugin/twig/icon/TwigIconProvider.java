@@ -8,6 +8,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.ui.LayeredIcon;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.elements.TwigExtendsTag;
+import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
@@ -23,7 +24,7 @@ import javax.swing.*;
  */
 public class TwigIconProvider extends IconProvider {
     public Icon getIcon(@NotNull PsiElement element, @Iconable.IconFlags int flags) {
-        if (!(element instanceof TwigFile) || !Symfony2ProjectComponent.isEnabled(element.getProject()) || DumbService.getInstance(element.getProject()).isDumb()) {
+        if (!(element instanceof TwigFile) || !Settings.getInstance(element.getProject()).featureTwigIcon || !Symfony2ProjectComponent.isEnabled(element.getProject()) || DumbService.getInstance(element.getProject()).isDumb()) {
             return null;
         }
 
