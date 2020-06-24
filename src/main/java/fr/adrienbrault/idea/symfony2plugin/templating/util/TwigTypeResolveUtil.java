@@ -69,9 +69,9 @@ public class TwigTypeResolveUtil {
 
     // for supporting completion and navigation of one line element
     public static final String[] DOC_TYPE_PATTERN_SINGLE  = new String[] {
-        "\\{#[\\s]+(?<var>[\\w]+)[\\s]+(?<class>[\\w\\\\\\[\\]]+)[\\s]+#}",
-        "\\{#[\\s]+"+ DOC_TYPE_PATTERN_CLASS_SECOND + "[\\s]+#}",
-        "\\{#[\\s]+"+ DOC_TYPE_PATTERN_CLASS_FIRST + "[\\s]+#}",
+        "^(?<var>[\\w]+)[\\s]+(?<class>[\\w\\\\\\[\\]]+)[\\s]*$",
+        DOC_TYPE_PATTERN_CLASS_SECOND,
+        DOC_TYPE_PATTERN_CLASS_FIRST
     };
 
     private static String[] PROPERTY_SHORTCUTS = new String[] {"get", "is", "has"};

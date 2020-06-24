@@ -48,7 +48,7 @@ public class TwigPattern {
         PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE)
     );
 
-    public static final String DOC_SEE_REGEX  = "\\{#[\\s]+@see[\\s]+([-@\\./\\:\\w\\\\\\[\\]]+)[\\s]*#}";
+    public static final String DOC_SEE_REGEX  = "@see[\\s]+([-@\\./\\:\\w\\\\\\[\\]]+)[\\s]*";
 
     /**
      * {% trans with {'%name%': 'Fabien'} from "app" %}
@@ -869,7 +869,7 @@ public class TwigPattern {
         Collection<ElementPattern> patterns = new ArrayList<>();
 
         for (String s : TwigTypeResolveUtil.DOC_TYPE_PATTERN_SINGLE) {
-            patterns.add(PlatformPatterns.psiComment().withText(PlatformPatterns.string().matches(s)).withLanguage(TwigLanguage.INSTANCE));
+            patterns.add(PlatformPatterns.psiElement(TwigTokenTypes.COMMENT_TEXT).withText(PlatformPatterns.string().matches(s)).withLanguage(TwigLanguage.INSTANCE));
         }
 
         return PlatformPatterns.or(patterns.toArray(new ElementPattern[patterns.size()]));
@@ -881,10 +881,10 @@ public class TwigPattern {
      * {# \Class #}
      */
     @NotNull
-    public static ElementPattern<PsiComment> getTwigDocSeePattern() {
+    public static ElementPattern<PsiElement> getTwigDocSeePattern() {
         return PlatformPatterns.or(
-            PlatformPatterns.psiComment().withText(PlatformPatterns.string().matches(DOC_SEE_REGEX)).withLanguage(TwigLanguage.INSTANCE),
-            PlatformPatterns.psiComment().withText(PlatformPatterns.string().matches(TwigUtil.DOC_SEE_REGEX_WITHOUT_SEE)).withLanguage(TwigLanguage.INSTANCE)
+            PlatformPatterns.psiElement(TwigTokenTypes.COMMENT_TEXT).withText(PlatformPatterns.string().matches(DOC_SEE_REGEX)).withLanguage(TwigLanguage.INSTANCE),
+            PlatformPatterns.psiElement(TwigTokenTypes.COMMENT_TEXT).withText(PlatformPatterns.string().matches(TwigUtil.DOC_SEE_REGEX_WITHOUT_SEE)).withLanguage(TwigLanguage.INSTANCE)
         );
     }
 
