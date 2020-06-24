@@ -217,19 +217,25 @@ public class ContainerCollectionResolver {
                     String classValue = service.getClassName();
 
                     // duplicate services
-                    if(this.services.containsKey(serviceName)) {
+                    ContainerService containerService = this.services.get(serviceName);
+                    if (containerService != null) {
                         if(classValue == null) {
                             continue;
                         }
 
-                        String compiledClassName = this.services.get(serviceName).getClassName();
-                        if(classValue.equalsIgnoreCase(compiledClassName)) {
-                            continue;
+                        String classValueResolve = classValue;
+                        String compiledClassName = containerService.getClassName();
+                        if(!classValue.equalsIgnoreCase(compiledClassName)) {
+                            String resolvedClassValue = getParameterCollector().resolve(classValue);
+                            if(resolvedClassValue != null && !StringUtils.isBlank(classValue) && !resolvedClassValue.equalsIgnoreCase(compiledClassName)) {
+                                containerService.addClassName(resolvedClassValue);
+                                classValueResolve = resolvedClassValue;
+                            }
                         }
 
-                        String resolvedClassValue = getParameterCollector().resolve(classValue);
-                        if(resolvedClassValue != null && !StringUtils.isBlank(classValue) && !resolvedClassValue.equalsIgnoreCase(compiledClassName)) {
-                            this.services.get(serviceName).addClassName(resolvedClassValue);
+                        // compiled container done have a value
+                        if (containerService.getService() == null) {
+                            this.services.put(serviceName, new ContainerService(service, classValueResolve));
                         }
 
                         continue;
