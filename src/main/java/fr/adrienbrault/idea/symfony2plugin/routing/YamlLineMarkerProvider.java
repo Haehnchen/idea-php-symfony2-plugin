@@ -28,7 +28,7 @@ import java.util.List;
 public class YamlLineMarkerProvider implements LineMarkerProvider {
 
     @Override
-    public void collectSlowLineMarkers(@NotNull List<PsiElement> psiElements, @NotNull Collection<LineMarkerInfo> lineMarkerInfos) {
+    public void collectSlowLineMarkers(@NotNull List<? extends PsiElement> psiElements, @NotNull Collection<? super LineMarkerInfo<?>> lineMarkerInfos) {
         if(psiElements.size() == 0 || !Symfony2ProjectComponent.isEnabled(psiElements.get(0))) {
             return;
         }
@@ -47,7 +47,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
         }
     }
 
-    private void attachEntityClass(@NotNull Collection<LineMarkerInfo> lineMarkerInfos, @NotNull PsiElement psiElement) {
+    private void attachEntityClass(@NotNull Collection<? super LineMarkerInfo<?>> lineMarkerInfos, @NotNull PsiElement psiElement) {
         if(psiElement.getNode().getElementType() != YAMLTokenTypes.SCALAR_KEY) {
             return;
         }
@@ -89,7 +89,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
      *   defaults: { _controller: "Bundle:Foo:Bar" }
      *   controller: "Bundle:Foo:Bar"
      */
-    private void attachRouteActions(@NotNull Collection<LineMarkerInfo> lineMarkerInfos, @NotNull PsiElement psiElement) {
+    private void attachRouteActions(@NotNull Collection<? super LineMarkerInfo<?>> lineMarkerInfos, @NotNull PsiElement psiElement) {
         if(psiElement.getNode().getElementType() != YAMLTokenTypes.SCALAR_KEY) {
             return;
         }
@@ -114,7 +114,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
 
     @Nullable
     @Override
-    public LineMarkerInfo getLineMarkerInfo(@NotNull PsiElement psiElement) {
+    public LineMarkerInfo<?> getLineMarkerInfo(@NotNull PsiElement psiElement) {
         return null;
     }
 
@@ -124,7 +124,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
      * foo:
      *   targetEntity: Class
      */
-    private void attachRelationClass(@NotNull Collection<LineMarkerInfo> lineMarkerInfos, @NotNull PsiElement psiElement) {
+    private void attachRelationClass(@NotNull Collection<? super LineMarkerInfo<?>> lineMarkerInfos, @NotNull PsiElement psiElement) {
         if(psiElement.getNode().getElementType() != YAMLTokenTypes.SCALAR_KEY) {
             return;
         }

@@ -23,12 +23,12 @@ import java.util.List;
 public class XmlLineMarkerProvider implements LineMarkerProvider {
     @Nullable
     @Override
-    public LineMarkerInfo getLineMarkerInfo(@NotNull PsiElement psiElement) {
+    public LineMarkerInfo<?> getLineMarkerInfo(@NotNull PsiElement psiElement) {
         return null;
     }
 
     @Override
-    public void collectSlowLineMarkers(@NotNull List<PsiElement> psiElements, @NotNull Collection<LineMarkerInfo> result) {
+    public void collectSlowLineMarkers(@NotNull List<? extends PsiElement> psiElements, @NotNull Collection<? super LineMarkerInfo<?>> result) {
         if(psiElements.size() == 0 || !Symfony2ProjectComponent.isEnabled(psiElements.get(0))) {
             return;
         }
@@ -57,7 +57,7 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
     /**
      * <service id="foo"/>
      */
-    private void visitServiceId(@NotNull PsiElement leafTarget, @NotNull XmlTag xmlTag, @NotNull Collection<LineMarkerInfo> result, @NotNull LazyDecoratedParentServiceValues lazyDecoratedParentServiceValues) {
+    private void visitServiceId(@NotNull PsiElement leafTarget, @NotNull XmlTag xmlTag, @NotNull Collection<? super LineMarkerInfo<?>> result, @NotNull LazyDecoratedParentServiceValues lazyDecoratedParentServiceValues) {
         String id = xmlTag.getAttributeValue("id");
         if(StringUtils.isBlank(id)) {
             return;

@@ -39,12 +39,12 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
 
     @Nullable
     @Override
-    public LineMarkerInfo getLineMarkerInfo(@NotNull PsiElement element) {
+    public LineMarkerInfo<?> getLineMarkerInfo(@NotNull PsiElement element) {
         return null;
     }
 
     @Override
-    public void collectSlowLineMarkers(@NotNull List<PsiElement> psiElements, @NotNull Collection<LineMarkerInfo> results) {
+    public void collectSlowLineMarkers(@NotNull List<? extends PsiElement> psiElements, @NotNull Collection<? super LineMarkerInfo<?>> results) {
 
         // we need project element; so get it from first item
         if(psiElements.size() == 0) {
@@ -77,7 +77,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
 
     }
 
-    private void classNameMarker(PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
+    private void classNameMarker(PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo<?>> result) {
 
         PsiElement phpClassContext = psiElement.getContext();
         if(!(phpClassContext instanceof PhpClass)) {
@@ -97,7 +97,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
 
     }
 
-    private void entityClassMarker(PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
+    private void entityClassMarker(PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo<?>> result) {
 
         PsiElement phpClassContext = psiElement.getContext();
         if(!(phpClassContext instanceof PhpClass)) {
@@ -133,7 +133,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         result.add(builder.createLineMarkerInfo(psiElement));
     }
 
-    private void repositoryClassMarker(PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
+    private void repositoryClassMarker(PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo<?>> result) {
 
         PsiElement phpClassContext = psiElement.getContext();
         if(!(phpClassContext instanceof PhpClass)) {
@@ -161,7 +161,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         result.add(builder.createLineMarkerInfo(psiElement));
     }
 
-    private void formNameMarker(PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
+    private void formNameMarker(PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo<?>> result) {
 
         if(!(psiElement instanceof StringLiteralExpression)) {
             return;
@@ -193,7 +193,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
 
     }
 
-    private void routeAnnotationFileResource(@NotNull PsiFile psiFile, Collection<? super RelatedItemLineMarkerInfo> results) {
+    private void routeAnnotationFileResource(@NotNull PsiFile psiFile, Collection<? super RelatedItemLineMarkerInfo<?>> results) {
         RelatedItemLineMarkerInfo<PsiElement> lineMarker = FileResourceUtil.getFileImplementsLineMarkerInFolderScope(psiFile);
         if(lineMarker != null) {
             results.add(lineMarker);
@@ -203,7 +203,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
     /**
      * Constraints in same namespace and validateBy service name
      */
-    private void validatorClassMarker(PsiElement psiElement, Collection<LineMarkerInfo> results) {
+    private void validatorClassMarker(PsiElement psiElement, Collection<? super LineMarkerInfo<?>> results) {
         PsiElement phpClassContext = psiElement.getContext();
         if(!(phpClassContext instanceof PhpClass) || !PhpElementsUtil.isInstanceOf((PhpClass) phpClassContext, "\\Symfony\\Component\\Validator\\Constraint")) {
             return;
@@ -229,7 +229,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
     /**
      * "FooValidator" back to "Foo" constraint
      */
-    private void constraintValidatorClassMarker(PsiElement psiElement, Collection<LineMarkerInfo> results) {
+    private void constraintValidatorClassMarker(PsiElement psiElement, Collection<? super LineMarkerInfo<?>> results) {
         PsiElement phpClass = psiElement.getContext();
         if(!(phpClass instanceof PhpClass) || !PhpElementsUtil.isInstanceOf((PhpClass) phpClass, "Symfony\\Component\\Validator\\ConstraintValidatorInterface")) {
             return;

@@ -26,7 +26,7 @@ import java.util.List;
 public class XmlLineMarkerProvider implements LineMarkerProvider {
 
     @Override
-    public void collectSlowLineMarkers(@NotNull List<PsiElement> psiElements, @NotNull Collection<LineMarkerInfo> lineMarkerInfos) {
+    public void collectSlowLineMarkers(@NotNull List<? extends PsiElement> psiElements, @NotNull Collection<? super LineMarkerInfo<?>> lineMarkerInfos) {
         if(psiElements.size() == 0 || !Symfony2ProjectComponent.isEnabled(psiElements.get(0))) {
             return;
         }
@@ -44,7 +44,7 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
 
     }
 
-    private void attachRouteActions(@NotNull PsiElement psiElement, @NotNull Collection<LineMarkerInfo> lineMarkerInfos) {
+    private void attachRouteActions(@NotNull PsiElement psiElement, @NotNull Collection<? super LineMarkerInfo<?>> lineMarkerInfos) {
         PsiElement xmlTag = psiElement.getParent();
         if(!(xmlTag instanceof XmlTag) || !Pattern.getRouteTag().accepts(xmlTag)) {
             return;
@@ -65,7 +65,7 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
 
     @Nullable
     @Override
-    public LineMarkerInfo getLineMarkerInfo(@NotNull PsiElement psiElement) {
+    public LineMarkerInfo<?> getLineMarkerInfo(@NotNull PsiElement psiElement) {
         return null;
     }
 
