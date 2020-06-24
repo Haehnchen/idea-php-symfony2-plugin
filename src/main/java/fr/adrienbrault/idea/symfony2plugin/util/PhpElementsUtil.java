@@ -33,6 +33,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -1013,24 +1014,23 @@ public class PhpElementsUtil {
      *
      * function foo(\FooClass $class)
      */
-    @Nullable
-    public static String getMethodParameterTypeHint(@NotNull Method method) {
+    @NotNull
+    public static Collection<String> getMethodParameterTypeHints(@NotNull Method method) {
         ParameterList childOfType = PsiTreeUtil.getChildOfType(method, ParameterList.class);
         if(childOfType == null) {
-            return null;
+            return Collections.emptyList();
         }
 
         PsiElement[] parameters = childOfType.getParameters();
         if(parameters.length == 0) {
-            return null;
+            return Collections.emptyList();
         }
-
-        ClassReference classReference = PsiTreeUtil.getChildOfType(parameters[0], ClassReference.class);
-        if(classReference == null) {
-            return null;
-        }
-
-        return classReference.getFQN();
+        
+        PhpTypeDeclaration typeDeclaration = PsiTreeUtil.getChildOfType(parameters[0], PhpTypeDeclaration.class);
+        if (typeDeclaration == null) return Collections.emptyList();
+        return typeDeclaration.getClassReferences().stream()
+            .map(PhpReference::getFQN)
+            .collect(Collectors.toList());
     }
 
     /**

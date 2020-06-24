@@ -10,7 +10,9 @@ import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -27,18 +29,22 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#getMethodParameterTypeHint
+     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#getMethodParameterTypeHints
      */
     public void testGetMethodParameterClassHint() {
-        assertEquals("\\DateTime", PhpElementsUtil.getMethodParameterTypeHint(
+        assertEquals(Collections.singletonList("\\DateTime"), PhpElementsUtil.getMethodParameterTypeHints(
             PhpPsiElementFactory.createMethod(getProject(), "function foo(\\DateTime $e) {}")
         ));
 
-        assertEquals("\\Iterator", PhpElementsUtil.getMethodParameterTypeHint(
+        assertEquals(Arrays.asList("\\DateTime", "\\DateInterval"), PhpElementsUtil.getMethodParameterTypeHints(
+            PhpPsiElementFactory.createMethod(getProject(), "function foo(\\DateTime|\\DateInterval $e) {}")
+        ));
+
+        assertEquals(Collections.singletonList("\\Iterator"), PhpElementsUtil.getMethodParameterTypeHints(
             PhpPsiElementFactory.createMethod(getProject(), "function foo(/* foo */ \\Iterator $a, \\DateTime $b")
         ));
 
-        assertNull(PhpElementsUtil.getMethodParameterTypeHint(
+        assertEmpty(PhpElementsUtil.getMethodParameterTypeHints(
             PhpPsiElementFactory.createMethod(getProject(), "function foo(/* foo */ $a, \\DateTime $b")
         ));
     }
