@@ -6,6 +6,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
+import java.util.Collection;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -28,5 +30,11 @@ public class YamlKeyValueAttributeValue extends AttributeValueAbstract {
         }
 
         return value;
+    }
+
+    @NotNull
+    @Override
+    public Collection<String> getTags() {
+        return YamlHelper.collectServiceTags(yamlKeyValue);
     }
 }

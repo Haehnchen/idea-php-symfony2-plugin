@@ -109,7 +109,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
         for (PsiFile psiFile : new PsiFile[]{xmlFile, ymlFile}) {
             ServiceInterface bar = ContainerUtil.find(ServiceContainerUtil.getServicesInFile(psiFile), MyStringServiceInterfaceCondition.create("non.defaults"));
             assertEquals(
-                "{\"id\":\"non.defaults\",\"class\":\"DateTime\",\"public\":false,\"lazy\":true,\"abstract\":true,\"autowire\":true,\"deprecated\":true,\"alias\":\"foo\",\"decorates\":\"foo\",\"decoration_inner_name\":\"foo\",\"parent\":\"foo\"}",
+                "{\"id\":\"non.defaults\",\"class\":\"DateTime\",\"public\":false,\"lazy\":true,\"abstract\":true,\"autowire\":true,\"deprecated\":true,\"alias\":\"foo\",\"decorates\":\"foo\",\"decoration_inner_name\":\"foo\",\"parent\":\"foo\",\"tags\":[]}",
                 new Gson().toJson(bar)
             );
         }
@@ -137,7 +137,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
         for (PsiFile psiFile : new PsiFile[]{xmlFile, ymlFile}) {
             ServiceInterface bar = ContainerUtil.find(ServiceContainerUtil.getServicesInFile(psiFile), MyStringServiceInterfaceCondition.create("defaults"));
             assertEquals(
-                "{\"id\":\"defaults\",\"class\":\"DateTime\"}",
+                "{\"id\":\"defaults\",\"class\":\"DateTime\",\"tags\":[]}",
                 new Gson().toJson(bar)
             );
         }

@@ -26,3 +26,17 @@ services:
 
     foo.yml_id.deprecated_bool:
         deprecated: true
+
+    foo.tagged.yaml_type:
+        class: AppBundle\Controller\DefaultController
+        tags:
+            - { name: yaml_type_tag }
+
+    foo.tagged.yaml_type2:
+        class: AppBundle\Controller\DefaultController
+        tags: [ yaml_type_tag2, yaml_type_tag21 ]
+
+    foo.tagged.yaml_type3:
+        class: AppBundle\Controller\DefaultController
+        tags:
+            - yaml_type_tag3

@@ -12,6 +12,7 @@ import org.xml.sax.InputSource;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.StringReader;
+import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -43,6 +44,15 @@ public class XmlServiceTest extends Assert {
         assertNull(
             createServiceFromTag("<service class=\"foobar\"/>")
         );
+    }
+
+    @Test
+    public void testThatTagsAreExtracted() {
+        ServiceInterface serviceFromTag = createServiceFromTag("<service id=\"foobar\"><tag name=\"foo_tag\"/><argument type=\"service\" id=\"foo_argument\"/></service>");
+
+        Collection<String> tags = serviceFromTag.getTags();
+        assertEquals(1, tags.size());
+        assertArrayEquals(new String[] {"foo_tag"}, tags.toArray(new String[0]));
     }
 
     private ServiceInterface createServiceFromTag(@NotNull String content) {

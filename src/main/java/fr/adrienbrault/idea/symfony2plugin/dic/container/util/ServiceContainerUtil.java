@@ -184,7 +184,8 @@ public class ServiceContainerUtil {
             .setIsLazy(attributes.getBoolean("lazy"))
             .setIsPublic(attributes.getBoolean("public", serviceConsumer.getDefaults().isPublic()))
             .setResource(attributes.getString("resource"))
-            .setExclude(attributes.getString("exclude"));
+            .setExclude(attributes.getString("exclude"))
+            .setTags(attributes.getTags());
     }
 
     /**

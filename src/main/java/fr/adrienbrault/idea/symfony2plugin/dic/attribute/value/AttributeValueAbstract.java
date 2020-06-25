@@ -4,6 +4,9 @@ import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
+import java.util.Collections;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -37,6 +40,12 @@ abstract class AttributeValueAbstract implements AttributeValueInterface {
     public Boolean getBoolean(@NotNull String key, @Nullable Boolean defaultValue) {
         Boolean aBoolean = getBoolean(key);
         return aBoolean != null ? aBoolean : defaultValue;
+    }
+
+    @NotNull
+    @Override
+    public Collection<String> getTags() {
+        return Collections.emptyList();
     }
 
     @Nullable

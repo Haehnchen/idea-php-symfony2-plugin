@@ -3,6 +3,8 @@ package fr.adrienbrault.idea.symfony2plugin.dic.container;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -41,4 +43,7 @@ public interface ServiceInterface {
 
     @Nullable
     String getExclude();
+
+    @NotNull
+    Collection<String> getTags();
 }

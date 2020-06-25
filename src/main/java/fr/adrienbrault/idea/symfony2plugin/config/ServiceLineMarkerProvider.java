@@ -111,6 +111,14 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
             ContainerCollectionResolver.ServiceCollector serviceCollector = ContainerCollectionResolver.ServiceCollector.create(psiElement.getProject());
             for (String convertClassNameToService : serviceCollector.convertClassNameToServices(((PhpClass) phpClassContext).getFQN())) {
                 tags.addAll(ServiceUtil.getServiceTags(phpClassContext.getProject(), convertClassNameToService));
+
+                ContainerService containerService = serviceCollector.getServices().get(convertClassNameToService);
+                if (containerService != null) {
+                    ServiceInterface service = containerService.getService();
+                    if (service != null) {
+                        tags.addAll(service.getTags());
+                    }
+                }
             }
         }
 
