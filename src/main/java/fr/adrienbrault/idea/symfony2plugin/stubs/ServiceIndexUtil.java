@@ -166,10 +166,10 @@ public class ServiceIndexUtil {
 
         VirtualFile serviceFile = serviceFileAsBase.getParent();
         String[] split = replace.split("/");
-        String[] split2 = split;
+        String[] replacePathParts = split;
         for (String s : split) {
             if (s.equals("..")) {
-                split2 = Arrays.copyOfRange(split2, 1, split2.length);
+                replacePathParts = Arrays.copyOfRange(replacePathParts, 1, replacePathParts.length);
                 serviceFile = serviceFile.getParent();
             } else {
                 break;
@@ -180,18 +180,23 @@ public class ServiceIndexUtil {
             return false;
         }
 
-        if (split2[split2.length - 1].equals("*")) {
-            split2[split2.length - 1] = "**";
+        // ending one wildcard must be *
+        // "src/*" => "src/**"
+        String path = (serviceFile.getPath() + "/" + StringUtils.join(replacePathParts, "/"))
+            .replaceAll("[^*]([*])$", "**");
+
+        // force "**" at the end
+        if (!path.endsWith("*")) {
+            path += "**";
         }
 
-        String path = serviceFile.getPath() + "/" + StringUtils.join(split2, "/");
-        String path1 = phpClassFile.getPath();
+        String phpClassPath = phpClassFile.getPath();
 
         if (exclude == null) {
-            return isMatchingGlobResource(path, path1);
+            return isMatchingGlobResource(path, phpClassPath);
         }
 
-        return isMatchingGlobResource(path, path1)
+        return isMatchingGlobResource(path, phpClassPath)
             && !matchesResourcesGlob(serviceFileAsBase, phpClassFile, exclude, null);
     }
 
