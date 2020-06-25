@@ -17,6 +17,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLFile;
+import org.yaml.snakeyaml.Yaml;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -59,6 +60,10 @@ public class ConfigAddPathTwigNamespaces implements TwigNamespaceExtension {
         );
 
         for (PsiFile psiFile : psiFiles) {
+            if (!(psiFile instanceof YAMLFile)) {
+                continue;
+            }
+
             for (Pair<String, String> stringStringPair : TwigUtil.getTwigPathFromYamlConfigResolved((YAMLFile) psiFile)) {
                 // default path
                 String first = stringStringPair.getFirst();
