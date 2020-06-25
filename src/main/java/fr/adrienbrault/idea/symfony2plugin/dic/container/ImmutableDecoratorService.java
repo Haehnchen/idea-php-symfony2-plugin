@@ -3,6 +3,8 @@ package fr.adrienbrault.idea.symfony2plugin.dic.container;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  *
@@ -87,5 +89,11 @@ public class ImmutableDecoratorService implements ServiceInterface {
     @Override
     public String getExclude() {
         return service.getExclude();
+    }
+
+    @NotNull
+    @Override
+    public Collection<String> getTags() {
+        return service.getTags();
     }
 }

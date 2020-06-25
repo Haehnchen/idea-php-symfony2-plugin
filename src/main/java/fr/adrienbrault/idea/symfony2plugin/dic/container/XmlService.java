@@ -4,6 +4,10 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
+import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * Create a service definition on a compiled debug xml file
@@ -21,6 +25,9 @@ public class XmlService implements ServiceInterface {
     private boolean isPublic = true;
 
     private String alias = null;
+
+    @NotNull
+    private Collection<String> tags = new HashSet<>();
 
     private XmlService(@NotNull String id) {
         this.id = id;
@@ -99,6 +106,12 @@ public class XmlService implements ServiceInterface {
         return null;
     }
 
+    @NotNull
+    @Override
+    public Collection<String> getTags() {
+        return this.tags;
+    }
+
     @Nullable
     public static XmlService createFromXml(@NotNull Element node) {
         // empty id does not interest us
@@ -142,6 +155,21 @@ public class XmlService implements ServiceInterface {
         if(StringUtils.isNotBlank(alias)) {
             xmlService.alias = alias;
         }
+
+        // <tag name="xml_type_tag"/>
+        Collection<String> myTags = new HashSet<>();
+        NodeList tags = node.getElementsByTagName("tag");
+        int numTags = tags.getLength();
+        for (int i = 0; i < numTags; i++) {
+            Element section = (Element) tags.item(i);
+
+            String name = section.getAttribute("name");
+            if (StringUtils.isNotBlank(name)) {
+                myTags.add(name);
+            }
+        }
+
+        xmlService.tags = myTags;
 
         return xmlService;
     }

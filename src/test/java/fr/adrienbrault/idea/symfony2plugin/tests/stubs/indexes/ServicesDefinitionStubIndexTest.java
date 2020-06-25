@@ -87,6 +87,24 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
         assertEquals("../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php}", firstValue.getExclude());
     }
 
+    public void testThatTagAreInIndexForYaml() {
+        ServiceInterface firstValue = getFirstValue("foo.tagged.yaml_type");
+        assertContainsElements(firstValue.getTags(), "yaml_type_tag");
+
+        firstValue = getFirstValue("foo.tagged.yaml_type2");
+        assertContainsElements(firstValue.getTags(), "yaml_type_tag2");
+        assertContainsElements(firstValue.getTags(), "yaml_type_tag21");
+
+        firstValue = getFirstValue("foo.tagged.yaml_type3");
+        assertContainsElements(firstValue.getTags(), "yaml_type_tag3");
+    }
+
+    public void testThatTagAreInIndexForXml() {
+        ServiceInterface firstValue = getFirstValue("foo.tagged.xml_type");
+
+        assertContainsElements(firstValue.getTags(), "xml_type_tag");
+    }
+
     private ServiceInterface getFirstValue(@NotNull String key) {
         return FileBasedIndex.getInstance().getValues(ServicesDefinitionStubIndex.KEY, key, GlobalSearchScope.allScope(getProject())).get(0);
     }

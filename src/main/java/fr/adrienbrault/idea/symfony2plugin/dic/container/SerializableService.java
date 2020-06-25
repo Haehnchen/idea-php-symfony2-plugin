@@ -5,6 +5,8 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Objects;
 
 /**
@@ -61,6 +63,10 @@ public class SerializableService implements ServiceSerializable {
     @Nullable
     @SerializedName("exclude")
     private String exclude;
+
+    @NotNull
+    @SerializedName("tags")
+    private Collection<String> tags = new HashSet<>();
 
     public SerializableService(@NotNull String id) {
         this.id = id;
@@ -189,6 +195,17 @@ public class SerializableService implements ServiceSerializable {
         return this.exclude;
     }
 
+    @NotNull
+    @Override
+    public Collection<String> getTags() {
+        return tags;
+    }
+
+    public SerializableService setTags(@NotNull Collection<String> tags) {
+        this.tags = tags;
+        return this;
+    }
+
     public SerializableService setResource(@Nullable String resource) {
         this.resource = resource;
         return this;
@@ -216,6 +233,7 @@ public class SerializableService implements ServiceSerializable {
             .append(this.parent)
             .append(this.resource)
             .append(this.exclude)
+            .append(new HashSet<>(this.tags))
             .toHashCode()
         ;
     }
@@ -236,7 +254,8 @@ public class SerializableService implements ServiceSerializable {
             Objects.equals(((SerializableService) obj).decorationInnerName, this.decorationInnerName) &&
             Objects.equals(((SerializableService) obj).parent, this.parent) &&
             Objects.equals(((SerializableService) obj).resource, this.resource) &&
-            Objects.equals(((SerializableService) obj).exclude, this.exclude)
+            Objects.equals(((SerializableService) obj).exclude, this.exclude) &&
+            Objects.equals(new HashSet<>(((SerializableService) obj).tags), new HashSet<>(this.tags))
         ;
     }
 }
