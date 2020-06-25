@@ -40,10 +40,20 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
     public void testThatServiceIdOfXmlFileIsIndexed() {
         assertIndexContains(ServicesDefinitionStubIndex.KEY, "foo.xml_id");
 
-        assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.xml_id").getClassName());
+        ServiceInterface firstValue = getFirstValue("foo.xml_id");
+        assertEquals("AppBundle\\Controller\\DefaultController", firstValue.getClassName());
+        assertTrue(firstValue.isAutowire());
 
-        assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.xml_id.private").getClassName());
-        assertEquals(false, getFirstValue("foo.xml_id.private").isPublic());
+        ServiceInterface firstValue1 = getFirstValue("foo.xml_id.private");
+        assertEquals("AppBundle\\Controller\\DefaultController", firstValue1.getClassName());
+        assertFalse(firstValue1.isPublic());
+        assertFalse(firstValue1.isAutowire());
+
+        ServiceInterface firstValue2 = getFirstValue("foo.xml_id.invalid_autowire");
+        assertFalse(firstValue2.isAutowire());
+
+        ServiceInterface firstValue3 = getFirstValue("my\\fooclass");
+        assertTrue(firstValue3.isAutowire());
     }
 
     public void testThatServiceIdOfPhpFileIsIndexed() {
