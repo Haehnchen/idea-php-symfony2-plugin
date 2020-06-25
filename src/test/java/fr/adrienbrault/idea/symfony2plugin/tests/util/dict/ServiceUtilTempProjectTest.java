@@ -55,4 +55,30 @@ public class ServiceUtilTempProjectTest extends SymfonyTempCodeInsightFixtureTes
         assertTrue(ServiceIndexUtil.matchesResourcesGlob(file, file2, "../../*", null));
         assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, "../../*", "../../Bar"));
     }
+
+    public void testPossibleResourceCondition() {
+        VirtualFile file = createFile(
+            "src/Foo/Resources/config/services.yml",
+            "services:\n" +
+                "    App\\:\n" +
+                "        resource: ''\n"
+        );
+
+        VirtualFile file2 = createFile(
+            "src/Foo/Bar/Bar.php",
+            "<?php\n" +
+                "namespace App\\Foobar;\n" +
+                "class Bar {}\n"
+        );
+
+        assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, "", ""));
+        assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, "src", "src"));
+        assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, "/aaa", "/aaaa"));
+        assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, "/", "/"));
+        assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, "a", "/"));
+        assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, "", null));
+        assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, "src", null));
+        assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, "/", null));
+        assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, "..", ".."));
+    }
 }
