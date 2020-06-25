@@ -51,4 +51,16 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
             );
         }
     }
+
+    public void testParameterContributorFor() {
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "param('<caret>')",
+            "foo"
+        );
+
+        assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
+                "param('fo<caret>o')",
+            PlatformPatterns.psiElement()
+        );
+    }
 }

@@ -84,6 +84,22 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
             }
         );
 
+        // service('<caret>'), ref('<caret>') (ref is deprecated)
+        psiReferenceRegistrar.registerReferenceProvider(
+            PhpElementsUtil.getFunctionWithFirstStringPattern("service", "ref"),
+            new PsiReferenceProvider() {
+                @NotNull
+                @Override
+                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+                    if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
+                        return new PsiReference[0];
+                    }
+
+                    return new PsiReference[]{ new ServiceReference((StringLiteralExpression) psiElement, true) };
+                }
+            }
+        );
+
         psiReferenceRegistrar.registerReferenceProvider(
             PlatformPatterns.psiElement(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE),
             new PsiReferenceProvider() {

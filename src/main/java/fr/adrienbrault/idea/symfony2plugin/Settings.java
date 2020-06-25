@@ -11,6 +11,7 @@ import fr.adrienbrault.idea.symfony2plugin.assistant.signature.MethodSignatureSe
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutingFile;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -55,6 +56,7 @@ public class Settings implements PersistentStateComponent<Settings> {
     public boolean codeFoldingTwigRoute = true;
     public boolean codeFoldingTwigTemplate = true;
     public boolean codeFoldingTwigConstant = true;
+    public boolean featureTwigIcon = true;
 
     public boolean twigBundleNamespaceSupport = true;
 
@@ -103,7 +105,7 @@ public class Settings implements PersistentStateComponent<Settings> {
     }
 
     @Override
-    public void loadState(Settings settings) {
+    public void loadState(@NotNull Settings settings) {
         XmlSerializerUtil.copyBean(settings, this);
     }
 }

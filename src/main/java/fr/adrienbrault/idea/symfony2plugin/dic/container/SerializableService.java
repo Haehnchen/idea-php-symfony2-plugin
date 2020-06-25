@@ -54,6 +54,14 @@ public class SerializableService implements ServiceSerializable {
     @Nullable
     private String parent;
 
+    @Nullable
+    @SerializedName("resource")
+    private String resource;
+
+    @Nullable
+    @SerializedName("exclude")
+    private String exclude;
+
     public SerializableService(@NotNull String id) {
         this.id = id;
     }
@@ -169,6 +177,28 @@ public class SerializableService implements ServiceSerializable {
         return this;
     }
 
+    @Nullable
+    @Override
+    public String getResource() {
+        return this.resource;
+    }
+
+    @Nullable
+    @Override
+    public String getExclude() {
+        return this.exclude;
+    }
+
+    public SerializableService setResource(@Nullable String resource) {
+        this.resource = resource;
+        return this;
+    }
+
+    public SerializableService setExclude(@Nullable String exclude) {
+        this.exclude = exclude;
+        return this;
+    }
+
     @Override
     public int hashCode() {
         return new HashCodeBuilder()
@@ -184,6 +214,8 @@ public class SerializableService implements ServiceSerializable {
             .append(this.decorates)
             .append(this.decorationInnerName)
             .append(this.parent)
+            .append(this.resource)
+            .append(this.exclude)
             .toHashCode()
         ;
     }
@@ -202,7 +234,9 @@ public class SerializableService implements ServiceSerializable {
             Objects.equals(((SerializableService) obj).alias, this.alias) &&
             Objects.equals(((SerializableService) obj).decorates, this.decorates) &&
             Objects.equals(((SerializableService) obj).decorationInnerName, this.decorationInnerName) &&
-            Objects.equals(((SerializableService) obj).parent, this.parent)
+            Objects.equals(((SerializableService) obj).parent, this.parent) &&
+            Objects.equals(((SerializableService) obj).resource, this.resource) &&
+            Objects.equals(((SerializableService) obj).exclude, this.exclude)
         ;
     }
 }

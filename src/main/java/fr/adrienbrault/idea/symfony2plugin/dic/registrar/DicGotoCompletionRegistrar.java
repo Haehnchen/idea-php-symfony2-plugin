@@ -1,7 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.dic.registrar;
 
 import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.patterns.XmlPatterns;
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
@@ -28,10 +28,9 @@ public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
 
     @Override
     public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
-
         // getParameter('FOO')
         registrar.register(
-            XmlPatterns.psiElement().withParent(PhpElementsUtil.getMethodWithFirstStringPattern()), psiElement -> {
+            PlatformPatterns.psiElement().withParent(PhpElementsUtil.getMethodWithFirstStringPattern()), psiElement -> {
 
                 PsiElement context = psiElement.getContext();
                 if (!(context instanceof StringLiteralExpression)) {
@@ -52,6 +51,17 @@ public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
             }
         );
 
+        // param('<caret>')
+        registrar.register(
+            PlatformPatterns.psiElement().withParent(PhpElementsUtil.getFunctionWithFirstStringPattern("param")), psiElement -> {
+                PsiElement context = psiElement.getContext();
+                if (!(context instanceof StringLiteralExpression)) {
+                    return null;
+                }
+
+                return new ParameterContributor((StringLiteralExpression) context);
+            }
+        );
     }
 
     private static class ParameterContributor extends GotoCompletionProvider {

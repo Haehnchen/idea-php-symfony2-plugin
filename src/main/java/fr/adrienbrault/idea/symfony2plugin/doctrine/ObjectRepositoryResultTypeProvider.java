@@ -39,6 +39,13 @@ public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider4 {
         new MethodMatcher.CallToSignature("\\Doctrine\\Persistence\\ObjectRepository", "findBy"),
     };
 
+    private static Set<String> MANAGED_FIND_METHOD = new HashSet<String>() {{
+        add("find");
+        add("findOneBy");
+        add("findAll");
+        add("findBy");
+    }};
+
     final static char TRIM_KEY = '\u0184';
 
     @Override
@@ -162,6 +169,24 @@ public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider4 {
         for (String s : signature.split("\\|")) {
             int i = s.lastIndexOf(".");
             if (i > 0) {
+                // method already exists in repository use it
+                for (PhpNamedElement phpNamedElement : phpIndex.getBySignature(s, null, 0)) {
+                    if (phpNamedElement instanceof Method) {
+                        if (MANAGED_FIND_METHOD.contains(phpNamedElement.getName())) {
+                            continue;
+                        }
+
+                        // we got into the repository itself so stop here; was not overwritten by repository class
+                        PhpClass containingClass = ((Method) phpNamedElement).getContainingClass();
+                        if (PhpElementsUtil.isEqualClassName(containingClass, "\\Doctrine\\Persistence\\ObjectRepository") || PhpElementsUtil.isEqualClassName(containingClass, "\\Doctrine\\Common\\Persistence\\ObjectRepository")) {
+                            continue;
+                        }
+
+                        return Collections.emptyList();
+                    }
+                }
+
+                // strip field name from the method name "findOneByName" => "findOneBy"
                 String substring = s.substring(i + 1);
                 if (substring.startsWith("findOneBy")) {
                     s = s.substring(0, i + 1) + "findOneBy";
