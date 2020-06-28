@@ -43,7 +43,7 @@ public class FileIndexCaches {
                     items.put(service, fileBasedIndex.getValues(ID, service, scope))
                 );
 
-                return CachedValueProvider.Result.create(items, PsiModificationTracker.MODIFICATION_COUNT);
+                return CachedValueProvider.Result.create(items, getModificationTrackerForIndexId(project, ID));
             },
             false
         );
@@ -70,7 +70,7 @@ public class FileIndexCaches {
                     strings.put(parameterName, fileBasedIndex.getValues(ID, parameterName, scope));
                 });
 
-                return CachedValueProvider.Result.create(strings, PsiModificationTracker.MODIFICATION_COUNT);
+                return CachedValueProvider.Result.create(strings, getModificationTrackerForIndexId(project, ID));
             },
             false
         );
