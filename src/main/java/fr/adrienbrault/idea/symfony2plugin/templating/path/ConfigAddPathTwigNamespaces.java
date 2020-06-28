@@ -3,9 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.templating.path;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.CachedValue;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
@@ -17,10 +15,10 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLFile;
-import org.yaml.snakeyaml.Yaml;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.stream.Collectors;
 
 /**
  * Extract Twig path of config.yml
@@ -34,24 +32,29 @@ import java.util.Collection;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class ConfigAddPathTwigNamespaces implements TwigNamespaceExtension {
-    private static final Key<CachedValue<Collection<TwigPath>>> CACHE = new Key<>("TWIG_CONFIG_ADD_PATH_CACHE");
+    private static final Key<CachedValue<Collection<Pair<String, String>>>> CACHE = new Key<>("TWIG_CONFIG_ADD_PATH_CACHE");
 
     @NotNull
     @Override
     public Collection<TwigPath> getNamespaces(@NotNull TwigNamespaceExtensionParameter parameter) {
         Project project = parameter.getProject();
 
-        return CachedValuesManager.getManager(project).getCachedValue(
+        Collection<Pair<String, String>> cachedValue = CachedValuesManager.getManager(project).getCachedValue(
             project,
             CACHE,
             () -> CachedValueProvider.Result.create(getTwigPaths(project), PsiModificationTracker.MODIFICATION_COUNT),
             false
         );
+
+        // TwigPath is not cache able as it right now; we need to build it here
+        return cachedValue.stream()
+            .map(p -> new TwigPath(p.getFirst(), p.getSecond(), TwigUtil.NamespaceType.ADD_PATH, true))
+            .collect(Collectors.toList());
     }
 
     @NotNull
-    private static Collection<TwigPath> getTwigPaths(@NotNull Project project) {
-        Collection<TwigPath> twigPaths = new ArrayList<>();
+    private static Collection<Pair<String, String>> getTwigPaths(@NotNull Project project) {
+        Collection<Pair<String, String>> twigPathNamespace = new HashSet<>();
 
         // file config files a eg ".../app/..." or "../packages/..."
         Collection<PsiFile> psiFiles = PsiElementUtils.convertVirtualFilesToPsiFiles(
@@ -71,10 +74,10 @@ public class ConfigAddPathTwigNamespaces implements TwigNamespaceExtension {
                     first = TwigUtil.MAIN;
                 }
 
-                twigPaths.add(new TwigPath(stringStringPair.getSecond(), first, TwigUtil.NamespaceType.ADD_PATH, true));
+                twigPathNamespace.add(Pair.create(stringStringPair.getSecond(), first));
             }
         }
 
-        return twigPaths;
+        return twigPathNamespace;
     }
 }
