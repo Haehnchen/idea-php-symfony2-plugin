@@ -15,6 +15,13 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.20.198
+* Fix TwigPath caching issue on extracting config path from yaml file [#1358](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1358) [#1506](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1506) (Daniel Espendiller)
+* Use Service index key as cache indicator (Daniel Espendiller)
+* Fix configuration file resolving for YAML file on startup: "class org.jetbrains.plugins.textmate.psi.TextMateFile cannot be cast to class org.jetbrains.yaml.psi.YAMLFile" [#1492](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1492) (Daniel Espendiller)
+* Index tag attributes of services (Daniel Espendiller)
+* Fix possible array issues on service resource linemarker (Daniel Espendiller)
+
 ## 0.20.197
 * Provide checkbox to disable Twig file icon decoration [#1485](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1485) (Daniel Espendiller)
 * Enrich compile service data with metadata indexer to support configuration like autowire (Daniel Espendiller)
