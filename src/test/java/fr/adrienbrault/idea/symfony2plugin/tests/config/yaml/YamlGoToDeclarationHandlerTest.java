@@ -170,9 +170,17 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
     public void testNavigateToClassServiceAsKeyForSymfony33() {
         assertNavigationMatch("services.yml", "" +
             "services:\n" +
-            "    Fo<caret>o\\Bar: ~\n" +
+            "    Fo<caret>o\\Bar: ~\n",
             PlatformPatterns.psiElement(PhpClass.class)
         );
+
+        assertNavigationMatch(YAMLFileType.YML, "" +
+            "services:\n" +
+            "\n" +
+            "    _instanceof:\n" +
+            "        Fo<caret>o\\Bar:\n" +
+            "            tags: ['console.command']",
+            PlatformPatterns.psiElement(PhpClass.class));
     }
 
     public void testNavigateForCallsMethodIsProvided() {
