@@ -15,6 +15,11 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.20.199
+* Support constraint translation message navigation and completion in annotations (Daniel Espendiller)
+* Provide linemarker for yaml service resource (Daniel Espendiller)
+* Add navigation for services inside "\_instanceof" yaml keys (Daniel Espendiller)
+
 ## 0.20.198
 * Fix TwigPath caching issue on extracting config path from yaml file [#1358](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1358) [#1506](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1506) (Daniel Espendiller)
 * Use Service index key as cache indicator (Daniel Espendiller)
