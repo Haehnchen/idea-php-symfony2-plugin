@@ -21,6 +21,8 @@ import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.*;
 import org.jetbrains.yaml.psi.impl.YAMLPlainTextImpl;
 
+import java.util.Arrays;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -36,7 +38,7 @@ public class YamlElementPatternHelper {
     /**
      * services: ~
      */
-    private static PatternCondition<YAMLKeyValue> YAML_KEY_SERVICES = new YAMLKeyValuePatternCondition("services");
+    private static final PatternCondition<YAMLKeyValue> YAML_KEY_SERVICES = new YAMLKeyValuePatternCondition("services", "_instanceof");
 
     /**
      * config.yml, config_dev.yml,
@@ -861,16 +863,17 @@ public class YamlElementPatternHelper {
 
     private static class YAMLKeyValuePatternCondition extends PatternCondition<YAMLKeyValue> {
         @NotNull
-        private final String keyText;
+        private final String[] keyText;
 
-        YAMLKeyValuePatternCondition(@NotNull String keyText) {
-            super("yaml " + keyText +" key");
+        YAMLKeyValuePatternCondition(@NotNull String... keyText) {
+            super("yaml " + Arrays.toString(keyText) +" key");
             this.keyText = keyText;
         }
 
         @Override
         public boolean accepts(@NotNull YAMLKeyValue yamlKeyValue, ProcessingContext processingContext) {
-            return this.keyText.equals(yamlKeyValue.getKeyText());
+            return Arrays.stream(this.keyText)
+                .anyMatch(s -> s.equals(yamlKeyValue.getKeyText()));
         }
     }
 }

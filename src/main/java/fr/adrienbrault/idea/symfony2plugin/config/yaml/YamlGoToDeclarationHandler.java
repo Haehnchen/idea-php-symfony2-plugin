@@ -175,6 +175,8 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
             targets.addAll(getFactoryStringGoto(psiElement));
         }
 
+        // _instanceof:
+        //   My<caret>Class: ~
         // services:
         //   My<caret>Class: ~
         if(YamlElementPatternHelper.getServicesKeyPattern().accepts(psiElement)) {
