@@ -634,6 +634,10 @@
 
         <!-- @IsGranted -->
         <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.security.IsGrantedAnnotationReferences"/>
+
+        <!-- @FooConstraint(message="sss") -->
+        <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.translation.annotation.ConstraintMessageAnnotationReferences"/>
+        <PhpAnnotationCompletionProvider implementation="fr.adrienbrault.idea.symfony2plugin.translation.annotation.ConstraintMessageAnnotationReferences"/>
     </extensions>
 
     <extensions defaultExtensionNs="de.espend.idea.php.toolbox.extension">
