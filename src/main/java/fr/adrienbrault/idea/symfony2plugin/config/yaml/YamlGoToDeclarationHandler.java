@@ -492,35 +492,42 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
      * services:
      *   My<caret>Class: ~
      */
-    private Collection<PsiElement> getClassesForServiceKey(@NotNull PsiElement psiElement) {
+    private static Collection<PsiElement> getClassesForServiceKey(@NotNull PsiElement psiElement) {
         PsiElement parent = psiElement.getParent();
         if(parent instanceof YAMLKeyValue) {
-            String valueText = ((YAMLKeyValue) parent).getKeyText();
-            if (StringUtils.isNotBlank(valueText)) {
-                Collection<PsiElement> targets = new HashSet<>();
-
-                // My<caret>Class\:
-                //   resource: '....'
-                //   exclude: '....'
-                if (valueText.endsWith("\\")) {
-                    String resource = YamlHelper.getYamlKeyValueAsString((YAMLKeyValue) parent, "resource");
-                    if (resource != null) {
-                        String exclude = YamlHelper.getYamlKeyValueAsString((YAMLKeyValue) parent, "exclude");
-                        targets.addAll(getPhpClassFromResources(psiElement.getProject(), valueText, psiElement.getContainingFile().getVirtualFile(), resource, exclude));
-                    }
-                }
-
-                targets.addAll(PhpElementsUtil.getClassesInterface(psiElement.getProject(), valueText));
-
-                return targets;
-            }
+            return getClassesForServiceKey((YAMLKeyValue) parent);
         }
 
         return Collections.emptyList();
     }
 
     @NotNull
-    private Collection<PhpClass> getPhpClassFromResources(@NotNull Project project, @NotNull String namespace, @NotNull VirtualFile source, @NotNull String resource, @Nullable String exclude) {
+    public static Collection<PsiElement> getClassesForServiceKey(@NotNull YAMLKeyValue yamlKeyValue) {
+        String valueText = yamlKeyValue.getKeyText();
+        if (StringUtils.isBlank(valueText)) {
+            return Collections.emptyList();
+        }
+
+        Collection<PsiElement> targets = new HashSet<>();
+
+        // My<caret>Class\:
+        //   resource: '....'
+        //   exclude: '....'
+        if (valueText.endsWith("\\")) {
+            String resource = YamlHelper.getYamlKeyValueAsString(yamlKeyValue, "resource");
+            if (resource != null) {
+                String exclude = YamlHelper.getYamlKeyValueAsString(yamlKeyValue, "exclude");
+                targets.addAll(getPhpClassFromResources(yamlKeyValue.getProject(), valueText, yamlKeyValue.getContainingFile().getVirtualFile(), resource, exclude));
+            }
+        }
+
+        targets.addAll(PhpElementsUtil.getClassesInterface(yamlKeyValue.getProject(), valueText));
+
+        return targets;
+    }
+
+    @NotNull
+    private static Collection<PhpClass> getPhpClassFromResources(@NotNull Project project, @NotNull String namespace, @NotNull VirtualFile source, @NotNull String resource, @Nullable String exclude) {
         Collection<PhpClass> phpClasses = new HashSet<>();
 
         for (PhpClass phpClass : PhpIndexUtil.getPhpClassInsideNamespace(project, "\\" + StringUtils.strip(namespace, "\\"))) {

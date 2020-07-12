@@ -64,6 +64,15 @@ public class YamlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTe
         );
     }
 
+    public void testThatServiceResourceIsHavingLinemarker() {
+        assertLineMarker(createYamlFile("" +
+                "services:\n" +
+                "    App\\Controller\\:\n" +
+                "        resource: '../src/Controller'\n"),
+            new LineMarker.ToolTipEqualsAssert("Navigate to class")
+        );
+    }
+
     @NotNull
     private PsiElement createYamlFile(@NotNull String content) {
         return PsiFileFactory.getInstance(getProject()).createFileFromText("DUMMY__." + YAMLFileType.YML.getDefaultExtension(), YAMLFileType.YML, content);
