@@ -203,6 +203,10 @@ public class ServiceIndexUtil {
 
     @Nullable
     public static Pair<ClassServiceDefinitionTargetLazyValue, Collection<ContainerService>> findServiceDefinitionsOfResourceLazy(@NotNull PhpClass phpClass) {
+        if (phpClass.isInterface() || phpClass.isAbstract()) {
+            return null;
+        }
+
         String fqn = StringUtils.stripStart(phpClass.getFQN(), "\\");
 
         String[] namespaceParts = fqn.split("\\\\");
