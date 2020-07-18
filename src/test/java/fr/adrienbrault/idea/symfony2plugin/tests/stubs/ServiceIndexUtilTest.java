@@ -6,6 +6,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.containers.ContainerUtil;
+import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
@@ -23,6 +24,7 @@ import java.util.Map;
 public class ServiceIndexUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     private VirtualFile ymlVirtualFile;
     private VirtualFile xmlVirtualFile;
+    private VirtualFile phpVirtualFile;
 
     public void setUp() throws Exception {
         super.setUp();
@@ -31,6 +33,7 @@ public class ServiceIndexUtilTest extends SymfonyLightCodeInsightFixtureTestCase
 
         ymlVirtualFile = myFixture.copyFileToProject("services.yml");
         xmlVirtualFile = myFixture.copyFileToProject("services.xml");
+        phpVirtualFile = myFixture.copyFileToProject("services.php");
     }
 
     public String getTestDataPath() {
@@ -69,6 +72,13 @@ public class ServiceIndexUtilTest extends SymfonyLightCodeInsightFixtureTestCase
         assertNotNull(ContainerUtil.find(
             ServiceIndexUtil.findServiceDefinitions(PhpElementsUtil.getClass(getProject(), "My\\Foo\\Service\\Targets")),
             new MyXmlTagCondition("foo.xml_id")
+        ));
+    }
+
+    public void testFindServiceDefinitionsForPhpClassInsidePhp() {
+        assertNotNull(ContainerUtil.find(
+            ServiceIndexUtil.findServiceDefinitions(PhpElementsUtil.getClass(getProject(), "My\\Foo\\Service\\PhpTargets")),
+            new MyPhpCondition("php_twig.command.debug")
         ));
     }
 
@@ -142,6 +152,20 @@ public class ServiceIndexUtilTest extends SymfonyLightCodeInsightFixtureTestCase
         @Override
         public boolean value(PsiElement psiElement) {
             return psiElement instanceof XmlTag && this.key.equals(((XmlTag) psiElement).getAttributeValue(this.attr));
+        }
+    }
+
+    private static class MyPhpCondition implements Condition<PsiElement> {
+        @NotNull
+        private final String id;
+
+        public MyPhpCondition(@NotNull String id) {
+            this.id = id;
+        }
+
+        @Override
+        public boolean value(PsiElement psiElement) {
+            return psiElement instanceof StringLiteralExpression && this.id.equalsIgnoreCase(((StringLiteralExpression) psiElement).getContents());
         }
     }
 }

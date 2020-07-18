@@ -18,11 +18,13 @@ import com.intellij.psi.util.PsiModificationTracker;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.lang.PhpFileType;
+import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.ClassServiceDefinitionTargetLazyValue;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceDefinitionLocator;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceDefinitionLocatorParameter;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
@@ -58,9 +60,9 @@ public class ServiceIndexUtil {
         FileBasedIndex.getInstance().getFilesWithKey(ServicesDefinitionStubIndex.KEY, new HashSet<>(Collections.singletonList(serviceName.toLowerCase())), virtualFile -> {
             virtualFiles.add(virtualFile);
             return true;
-        }, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), XmlFileType.INSTANCE, YAMLFileType.YML));
+        }, getRestrictedFileTypesScope(project));
 
-        return virtualFiles.toArray(new VirtualFile[virtualFiles.size()]);
+        return virtualFiles.toArray(new VirtualFile[0]);
 
     }
 
@@ -78,15 +80,18 @@ public class ServiceIndexUtil {
                 if(servicePsiElement != null) {
                     items.add(servicePsiElement);
                 }
-            }
-
-            if(psiFile instanceof XmlFile) {
+            } else if(psiFile instanceof XmlFile) {
                 PsiElement servicePsiElement = XmlHelper.getLocalServiceName(psiFile, serviceName);
                 if(servicePsiElement != null) {
                     items.add(servicePsiElement);
                 }
+            } else if(psiFile instanceof PhpFile) {
+                ServiceContainerUtil.visitFile((PhpFile) psiFile, service -> {
+                    if (serviceName.equalsIgnoreCase(service.getServiceId())) {
+                        items.add(service.getPsiElement());
+                    }
+                });
             }
-
         }
 
         // extension points
