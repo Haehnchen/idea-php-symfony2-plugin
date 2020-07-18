@@ -94,7 +94,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
 
     private void classNameMarker(PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
         PsiElement phpClassContext = psiElement.getContext();
-        if(!(phpClassContext instanceof PhpClass)) {
+        if(!(phpClassContext instanceof PhpClass) || ((PhpClass) phpClassContext).isAbstract()) {
             return;
         }
 
@@ -327,7 +327,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         }
 
         PhpClass phpClass = ((Method) method).getContainingClass();
-        if (phpClass == null) {
+        if (phpClass == null || phpClass.isAbstract() || phpClass.isInterface()) {
             return;
         }
 
