@@ -34,6 +34,9 @@ public class ServiceUtilTempProjectTest extends SymfonyTempCodeInsightFixtureTes
         assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, "../src/*", "../src/*"));
         assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, "../src/*", "../src/{Foobar,Kernel.php}"));
         assertTrue(ServiceIndexUtil.matchesResourcesGlob(file, file2, "../src/*", "../src/{Migrations,Kernel.php}"));
+
+        // nested: not supported and must not break in exception
+        assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, "../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php,Service/{IspConfiguration,DataCollection}}", null));
     }
 
     public void testServiceResourcesWithDepth() {

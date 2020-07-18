@@ -38,6 +38,7 @@ import org.jetbrains.yaml.psi.YAMLFile;
 import java.nio.file.FileSystems;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -287,7 +288,12 @@ public class ServiceIndexUtil {
             glob += "**";
         }
 
-        return FileSystems.getDefault().getPathMatcher("glob:" + glob).matches(Paths.get(path));
+        // nested types not support by java glob implementation so just catch the exception: "../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php,Service/{IspConfiguration,DataCollection}}"
+        try {
+            return FileSystems.getDefault().getPathMatcher("glob:" + glob).matches(Paths.get(path));
+        } catch (PatternSyntaxException e) {
+            return false;
+        }
     }
 
     /**
