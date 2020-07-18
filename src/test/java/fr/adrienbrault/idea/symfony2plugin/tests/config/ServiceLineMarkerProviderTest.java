@@ -94,12 +94,15 @@ public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtur
             PsiFile psiFile = myFixture.configureByText("foo.php", "");
             assertLineMarker(
                 psiFile,
-                new LineMarker.ToolTipEqualsAssert("Navigate to resource")
+                new LineMarker.ToolTipEqualsAssert("Symfony: <a href=\"https://symfony.com/doc/current/routing.html#creating-routes-as-annotations\">Annotation Routing</a>")
             );
 
             assertLineMarker(
                 psiFile,
-                new LineMarker.TargetAcceptsPattern("Navigate to resource", XmlPatterns.xmlTag().withName("import").withAttributeValue("resource", provider[0]))
+                new LineMarker.TargetAcceptsPattern(
+                    "Symfony: <a href=\"https://symfony.com/doc/current/routing.html#creating-routes-as-annotations\">Annotation Routing</a>",
+                    XmlPatterns.xmlTag().withName("import").withAttributeValue("resource", provider[0])
+                )
             );
         }
     }
