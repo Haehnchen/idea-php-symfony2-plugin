@@ -341,7 +341,7 @@ public class ServiceContainerUtil {
                         }
                     }
 
-                    consumer.consume(new ServiceConsumer(psiElement, serviceName, new PhpKeyValueAttributeValue(psiElement, keyValue), ServiceFileDefaults.EMPTY));
+                    consumer.consume(new ServiceConsumer(parameters[0], serviceName, new PhpKeyValueAttributeValue(psiElement, keyValue), ServiceFileDefaults.EMPTY));
                 }
 
                 // ->alias(TranslatorInterface::class, 'translator')
@@ -364,7 +364,7 @@ public class ServiceContainerUtil {
                         }
                     }
 
-                    consumer.consume(new ServiceConsumer(psiElement, serviceName, new PhpKeyValueAttributeValue(psiElement, keyValue), ServiceFileDefaults.EMPTY));
+                    consumer.consume(new ServiceConsumer(parameters[0], serviceName, new PhpKeyValueAttributeValue(psiElement, keyValue), ServiceFileDefaults.EMPTY));
                 }
             }
         }
