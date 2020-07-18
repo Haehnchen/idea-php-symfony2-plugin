@@ -12,6 +12,9 @@ import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.Consumer;
 import com.intellij.util.indexing.FileBasedIndex;
+import com.jetbrains.php.lang.psi.elements.Field;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProvider;
 import fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProviderDict;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TranslationStubIndex;
@@ -19,6 +22,7 @@ import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationVisitor;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.DomainMappings;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.apache.commons.lang.StringUtils;
@@ -416,6 +420,24 @@ public class TranslationUtil {
         }
 
         return placeholder;
+    }
+
+    /**
+     * class FooConstraint extends \Symfony\Component\Validator\Constraint
+     * public $message = 'This value should not be blank.';
+     * public $messageFoo = 'This value should not be blank.';
+     */
+    public static boolean isConstraintPropertyField(@NotNull StringLiteralExpression psiElement) {
+        PsiElement field = psiElement.getParent();
+        if (field instanceof Field) {
+            PhpClass containingClass = ((Field) field).getContainingClass();
+            if (containingClass != null && PhpElementsUtil.isInstanceOf(containingClass, "\\Symfony\\Component\\Validator\\Constraint")) {
+                String name = ((Field) field).getName();
+                return name.startsWith("message");
+            }
+        }
+
+        return false;
     }
 
     private static void visitNodes(@NotNull String xpath, @NotNull Document document, @NotNull Consumer<Pair<String, Node>> consumer) {

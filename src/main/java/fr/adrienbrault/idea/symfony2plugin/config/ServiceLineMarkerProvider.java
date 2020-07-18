@@ -28,6 +28,8 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetada
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
+import fr.adrienbrault.idea.symfony2plugin.translation.ConstraintMessageGotoCompletionRegistrar;
+import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
@@ -38,10 +40,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -88,8 +87,12 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
             if(psiElement instanceof PhpFile) {
                 routeAnnotationFileResource((PhpFile) psiElement, results);
             }
-        }
 
+            // public $message = 'This value should not be blank.';
+            if (ConstraintMessageGotoCompletionRegistrar.getConstraintPropertyMessagePattern().accepts(psiElement)) {
+                this.constraintMessagePropertyMarker(psiElement, results);
+            }
+        }
     }
 
     private void classNameMarker(PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo> result) {
@@ -376,6 +379,28 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
             .setTooltipText("Symfony: <a href=\"https://symfony.com/doc/current/service_container/autowiring.html\">Autowire available</a>");
 
         results.add(builder.createLineMarkerInfo(psiElement));
+    }
+
+    private void constraintMessagePropertyMarker(@NotNull PsiElement psiElement, @NotNull Collection<LineMarkerInfo> results) {
+        PsiElement parent = psiElement.getParent();
+        if (parent instanceof StringLiteralExpression && TranslationUtil.isConstraintPropertyField((StringLiteralExpression) parent)) {
+            String contents = ((StringLiteralExpression) parent).getContents();
+            PsiElement[] validators = TranslationUtil.getTranslationPsiElements(psiElement.getProject(), contents, "validators");
+
+            if (validators.length > 0) {
+                NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.TRANSLATION)
+                    .setTargets(new NotNullLazyValue<Collection<? extends PsiElement>>() {
+                        @NotNull
+                        @Override
+                        protected Collection<? extends PsiElement> compute() {
+                            return Arrays.asList(TranslationUtil.getTranslationPsiElements(psiElement.getProject(), contents, "validators"));
+                        }
+                    })
+                    .setTooltipText("Navigate to translation");
+
+                results.add(builder.createLineMarkerInfo(psiElement));
+            }
+        }
     }
 
     private static class MyCollectionNotNullLazyValue extends NotNullLazyValue<Collection<? extends PsiElement>> {

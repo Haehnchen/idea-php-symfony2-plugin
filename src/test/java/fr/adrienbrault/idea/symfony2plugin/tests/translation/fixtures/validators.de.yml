@@ -1,2 +1,3 @@
 foo_yaml:
   symfony.great: 'YAML Symfony2 is really great'
+validator_message: 'YAML Symfony2 is really great'
