@@ -15,6 +15,13 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.20.200
+* Change annotation controller icon and provide link to Symfony documentation (Daniel Espendiller)
+* Catch exception for nested resource glob resource syntax [#1517](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1517) (Daniel Espendiller)
+* Provide navigation targets for service definition inside php files (Daniel Espendiller)
+* Provide navigation, completion and linemarker for "Constraint::message\*" properties (Daniel Espendiller)
+* Dont mark abstract classes inside service linemarker (Daniel Espendiller)
+
 ## 0.20.199
 * Support constraint translation message navigation and completion in annotations (Daniel Espendiller)
 * Provide linemarker for yaml service resource (Daniel Espendiller)
