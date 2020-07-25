@@ -20,6 +20,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 
 /**
@@ -555,6 +556,15 @@ public class TwigPattern {
 
     static ElementPattern<PsiElement> getPrintBlockFunctionPattern() {
         return PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withParent(getFunctionCallScopePattern()).withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    static ElementPattern<PsiElement> getFunctionPattern(@NotNull String ...functionName) {
+        return PlatformPatterns.psiElement(TwigElementTypes.FUNCTION_CALL).withText(PlatformPatterns.string().with(new PatternCondition<String>("Twig: Function call") {
+            @Override
+            public boolean accepts(@NotNull String s, ProcessingContext processingContext) {
+                return Arrays.stream(functionName).anyMatch(s::startsWith);
+            }
+        }));
     }
 
     /**

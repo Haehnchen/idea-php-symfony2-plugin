@@ -27,6 +27,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder.FormDataHolder;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigBlockUtil;
 import fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.ControllerDocVariableCollector;
@@ -413,8 +414,8 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
     }
 
     @NotNull
-    private Collection<PsiElement> getTypeGoto(@NotNull PsiElement psiElement) {
-        Collection<PsiElement> targetPsiElements = new ArrayList<>();
+    public static Collection<PsiElement> getTypeGoto(@NotNull PsiElement psiElement) {
+        Collection<PsiElement> targetPsiElements = new HashSet<>();
 
         // class, class.method, class.method.method
         // click on first item is our class name
@@ -435,6 +436,16 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
                 for(TwigTypeContainer twigTypeContainer: types) {
                     if(twigTypeContainer.getPhpNamedElement() != null) {
                         targetPsiElements.addAll(TwigTypeResolveUtil.getTwigPhpNameTargets(twigTypeContainer.getPhpNamedElement(), text));
+                    }
+
+                    // form
+                    // @TODO: provide extension
+                    if (text.equals(twigTypeContainer.getStringElement())) {
+                        Object dataHolder = twigTypeContainer.getDataHolder();
+                        if (dataHolder instanceof FormDataHolder) {
+                            // @TODO: resolve the to field itself
+                            targetPsiElements.add(((FormDataHolder) dataHolder).getFormType());
+                        }
                     }
                 }
             }

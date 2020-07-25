@@ -33,6 +33,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder.FormDataHolder;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigFileUtil;
 import fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.ControllerDocVariableCollector;
@@ -534,7 +535,18 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 }
 
                 if(twigTypeContainer.getStringElement() != null) {
-                    resultSet.addElement(LookupElementBuilder.create(twigTypeContainer.getStringElement()));
+                    LookupElementBuilder lookupElement = LookupElementBuilder.create(twigTypeContainer.getStringElement());
+
+                    // form
+                    Object dataHolder = twigTypeContainer.getDataHolder();
+                    if (dataHolder instanceof FormDataHolder) {
+                        lookupElement = lookupElement.withIcon(Symfony2Icons.FORM_TYPE);
+
+                        lookupElement = lookupElement.withTypeText(((FormDataHolder) dataHolder).getPhpClass().getName());
+                        lookupElement = lookupElement.withTailText("(" + ((FormDataHolder) dataHolder).getFormType().getName() + ")", true);
+                    }
+
+                    resultSet.addElement(lookupElement);
                 }
             }
         }
