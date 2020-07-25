@@ -80,28 +80,45 @@ public class FormFieldResolver implements TwigTypeResolver {
     }
 
     private static void attachFormFields(@Nullable MethodReference methodReference, @NotNull Collection<TwigTypeContainer> targets) {
-        if(methodReference != null && PhpElementsUtil.isMethodReferenceInstanceOf(
+        if (methodReference == null) {
+            return;
+        }
+
+        int index = -1;
+
+        if (PhpElementsUtil.isMethodReferenceInstanceOf(
             methodReference,
             new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "createForm"),
             new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "createForm"),
             new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "createForm"),
             new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "create")
         )) {
-            PsiElement formType = PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 0);
-            if(formType != null) {
-                PhpClass phpClass = FormUtil.getFormTypeClassOnParameter(formType);
+            index = 0;
+        } else if (PhpElementsUtil.isMethodReferenceInstanceOf(
+            methodReference,
+            new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamed")
+        )) {
+            index = 1;
+        }
 
-                if(phpClass == null) {
-                    return;
-                }
+        if (index < 0) {
+            return;
+        }
 
-                Method method = phpClass.findMethodByName("buildForm");
-                if(method == null) {
-                    return;
-                }
+        PsiElement formType = PsiElementUtils.getMethodParameterPsiElementAt(methodReference, index);
+        if(formType != null) {
+            PhpClass phpClass = FormUtil.getFormTypeClassOnParameter(formType);
 
-                targets.addAll(getTwigTypeContainer(method, phpClass));
+            if(phpClass == null) {
+                return;
             }
+
+            Method method = phpClass.findMethodByName("buildForm");
+            if(method == null) {
+                return;
+            }
+
+            targets.addAll(getTwigTypeContainer(method, phpClass));
         }
     }
 
