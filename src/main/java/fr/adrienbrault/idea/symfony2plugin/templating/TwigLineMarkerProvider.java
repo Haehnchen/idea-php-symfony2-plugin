@@ -11,6 +11,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
@@ -20,18 +21,24 @@ import com.intellij.util.ConstantFunction;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.lang.psi.elements.Function;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
+import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.RelatedPopupGotoLineMarker;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigIncludeStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder.FormDataHolder;
 import fr.adrienbrault.idea.symfony2plugin.twig.loader.FileImplementsLazyLoader;
 import fr.adrienbrault.idea.symfony2plugin.twig.loader.FileOverwritesLazyLoader;
 import fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigBlockUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import icons.TwigIcons;
@@ -95,6 +102,11 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
                 }
 
                 LineMarkerInfo lineOverwrites = attachBlockOverwrites(psiElement, fileOverwritesLazyLoader);
+                if(lineOverwrites != null) {
+                    results.add(lineOverwrites);
+                }
+            } else if(TwigPattern.getFunctionPattern("form_start", "form").accepts(psiElement)) {
+                LineMarkerInfo lineOverwrites = attachFormType(psiElement);
                 if(lineOverwrites != null) {
                     results.add(lineOverwrites);
                 }
@@ -291,6 +303,41 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             .setCellRenderer(new MyBlockListCellRenderer());
 
         return builder.createLineMarkerInfo(psiElement);
+    }
+
+    @Nullable
+    private LineMarkerInfo attachFormType(@NotNull PsiElement psiElement) {
+        PsiElement firstChild = psiElement.getFirstChild();
+        if (firstChild == null) {
+            return null;
+        }
+
+        PsiElement nextSiblingOfType = PsiElementUtils.getNextSiblingOfType(firstChild, PlatformPatterns.psiElement().withElementType(TwigTokenTypes.IDENTIFIER).afterLeaf(PlatformPatterns.psiElement(TwigTokenTypes.LBRACE)));
+        if (nextSiblingOfType == null) {
+            return null;
+        }
+
+        Collection<TwigTypeContainer> twigTypeContainers = TwigTypeResolveUtil.resolveTwigMethodName(nextSiblingOfType, TwigTypeResolveUtil.formatPsiTypeNameWithCurrent(nextSiblingOfType));
+
+        Collection<PhpClass> phpClasses = new HashSet<>();
+
+        for (TwigTypeContainer twigTypeContainer : twigTypeContainers) {
+            Object dataHolder = twigTypeContainer.getDataHolder();
+            if (dataHolder instanceof FormDataHolder && PhpElementsUtil.isInstanceOf(((FormDataHolder) dataHolder).getFormType(), "\\Symfony\\Component\\Form\\FormTypeInterface")) {
+                phpClasses.add(((FormDataHolder) dataHolder).getFormType());
+            }
+        }
+
+        if (phpClasses.isEmpty()) {
+            return null;
+        }
+
+        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.FORM_TYPE_LINE_MARKER)
+            .setTargets(phpClasses)
+            .setTooltipText("Overwrites")
+            .setCellRenderer(new MyBlockListCellRenderer());
+
+        return builder.createLineMarkerInfo(firstChild);
     }
 
     @Nullable
