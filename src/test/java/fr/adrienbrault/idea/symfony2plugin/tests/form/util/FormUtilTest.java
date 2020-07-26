@@ -1,7 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.form.util;
 
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
+import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.php.lang.psi.elements.impl.ClassConstantReferenceImpl;
 import com.jetbrains.php.lang.psi.elements.impl.PhpTypedElementImpl;
 import com.jetbrains.php.lang.psi.elements.impl.StringLiteralExpressionImpl;
@@ -9,10 +11,8 @@ import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeClass;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -287,5 +287,64 @@ public class FormUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         );
 
         assertContainsElements(FormUtil.getFormExtendedType(phpClass), "Foobar", "test");
+    }
+
+    public void testThatFormFieldsOfBuildFormForGetFormBuilderTypes() {
+        Method method = PhpPsiElementFactory.createFromText(getProject(), Method.class, "<?php\n" +
+            "class Foobar\n" +
+            "{\n" +
+            "   public public function buildForm(\\Symfony\\Component\\Form\\FormBuilderInterface $builder, array $options)\n" +
+            "   {\n" +
+            "       $builder\n" +
+            "            ->add('task', TextType::class)\n" +
+            "            ->add('dueDate', DateType::class)\n" +
+            "            ->add('save', SubmitType::class)\n" +
+            "        ;" +
+            "   }\n" +
+            "}\n"
+        );
+
+        Set<String> collect = Arrays.stream(FormUtil.getFormBuilderTypes(method))
+            .map(methodReference -> ((StringLiteralExpression) Objects.requireNonNull(methodReference.getParameter(0))).getContents())
+            .collect(Collectors.toSet());
+
+        assertContainsElements(collect, "task");
+        assertContainsElements(collect, "dueDate");
+        assertContainsElements(collect, "save");
+    }
+
+    public void testThatFormFieldsOfBuildFormForGetFormBuilderTypesForCodeFlow() {
+        Method method = PhpPsiElementFactory.createFromText(getProject(), Method.class, "<?php\n" +
+            "class Foobar\n" +
+            "{\n" +
+            "   public function foo(array $options, \\Symfony\\Component\\Form\\FormBuilderInterface $builder2)\n" +
+            "   {\n" +
+            "       $builder2->add('builder2');\n" +
+            "       $builder->addEventListener('foo', function (\\Symfony\\Component\\Form\\FormEvent $event) {\n" +
+            "           $form = $event->getForm();\n" +
+            "           $form->add('email2');\n" +
+            "       });" +
+            "   }\n" +
+            "   public public function buildForm(\\Symfony\\Component\\Form\\FormBuilderInterface $builder, array $options)\n" +
+            "   {\n" +
+            "       $builder->addEventListener('foo', function (\\Symfony\\Component\\Form\\FormEvent $event) {\n" +
+            "           $form = $event->getForm();\n" +
+            "           $form->add('email');\n" +
+            "       });" +
+            "       $builder->add('task', TextType::class);\n" +
+            "       $this->foo([], $builder);\n" +
+            "   }\n" +
+            "}\n"
+        );
+
+        Set<String> collect = Arrays.stream(FormUtil.getFormBuilderTypes(method))
+            .map(methodReference -> ((StringLiteralExpression) Objects.requireNonNull(methodReference.getParameter(0))).getContents())
+            .collect(Collectors.toSet());
+
+        assertContainsElements(collect, "email");
+        assertContainsElements(collect, "task");
+
+        assertContainsElements(collect, "email2");
+        assertContainsElements(collect, "builder2");
     }
 }

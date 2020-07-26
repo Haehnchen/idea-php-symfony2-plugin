@@ -6,6 +6,7 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.impl.source.xml.XmlDocumentImpl;
+import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
@@ -80,25 +81,54 @@ public class FormUtil {
         return lookupElements;
     }
 
-    public static MethodReference[] getFormBuilderTypes(Method method) {
-        List<MethodReference> methodReferences = new ArrayList<>();
-
-        PsiTreeUtil.collectElements(method, methodReference -> {
+    public static MethodReference[] getFormBuilderTypes(@NotNull Method method) {
+        PsiElementFilter filter = methodReference -> {
             if (methodReference instanceof MethodReference) {
                 String methodName = ((MethodReference) methodReference).getName();
                 if (methodName != null && (methodName.equals("add") || methodName.equals("create"))) {
-                    if(PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) methodReference, FormUtil.PHP_FORM_BUILDER_SIGNATURES)) {
-                        methodReferences.add((MethodReference) methodReference);
-                        return true;
-                    }
+                    return PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) methodReference, FormUtil.PHP_FORM_BUILDER_SIGNATURES);
                 }
             }
 
             return false;
-        });
+        };
 
-        return methodReferences.toArray(new MethodReference[methodReferences.size()]);
+        Collection<PsiElement> methodReferences = new HashSet<>(Arrays.asList(PsiTreeUtil.collectElements(method, filter)));
 
+        // some code flow detection for sub methods
+        if ("buildForm".equals(method.getName())) {
+            for (Parameter parameter : method.getParameters()) {
+                boolean isFormBuilder = parameter.getType().getTypes().stream()
+                    .noneMatch(s -> StringUtils.stripStart(s, "\\").equalsIgnoreCase("Symfony\\Component\\Form\\FormBuilderInterface"));
+
+                if (isFormBuilder) {
+                    continue;
+                }
+
+                String text = parameter.getName();
+                PsiElement[] psiElements = PsiTreeUtil.collectElements(method, psiElement -> psiElement instanceof Variable && text.equals(((Variable) psiElement).getName()));
+
+                for (PsiElement psiElement : psiElements) {
+                    PsiElement parameterList = psiElement.getParent();
+                    if (!(parameterList instanceof ParameterList)) {
+                        continue;
+                    }
+                    PsiElement methodReference = parameterList.getParent();
+                    if (!(methodReference instanceof MethodReference)) {
+                        continue;
+                    }
+
+                    PsiElement resolve = ((MethodReference) methodReference).resolve();
+                    if (!(resolve instanceof Method)) {
+                        continue;
+                    }
+
+                    Collections.addAll(methodReferences, PsiTreeUtil.collectElements(resolve, filter));
+                }
+            }
+        }
+
+        return methodReferences.stream().map(psiElement -> (MethodReference) psiElement).toArray(MethodReference[]::new);
     }
 
     /**

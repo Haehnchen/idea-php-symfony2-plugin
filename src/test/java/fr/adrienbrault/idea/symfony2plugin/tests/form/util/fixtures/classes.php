@@ -26,4 +26,26 @@ namespace Form\FormType
 namespace Symfony\Component\Form
 {
     interface FormTypeInterface {}
+    interface FormBuilderInterface
+    {
+        /**
+         * @return FormBuilderInterface
+         */
+        public function add();
+    }
+
+    interface FormInterface {
+        public function add();
+        public function create();
+    }
+
+    class FormEvent extends Event
+    {
+        /**
+         * @return FormInterface
+         */
+        public function getForm()
+        {
+        }
+    }
 }
