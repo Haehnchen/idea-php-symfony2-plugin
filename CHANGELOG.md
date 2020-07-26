@@ -15,6 +15,11 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.20.201
+*   Use simple code flow for formBuilder field extraction (Daniel Espendiller)
+*   Support form type extraction of FormFactoryInterface::createNamed inside Twig type resolving (Daniel Espendiller)
+*   Provide form type linemarker inside Twig templates and provide navigation and extended completion for form fields (Daniel Espendiller)
+
 ## 0.20.200
 * Change annotation controller icon and provide link to Symfony documentation (Daniel Espendiller)
 * Catch exception for nested resource glob resource syntax [#1517](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1517) (Daniel Espendiller)
