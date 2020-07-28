@@ -334,7 +334,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
 
         NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.FORM_TYPE_LINE_MARKER)
             .setTargets(phpClasses)
-            .setTooltipText("Overwrites")
+            .setTooltipText("Navigate to Form")
             .setCellRenderer(new MyBlockListCellRenderer());
 
         return builder.createLineMarkerInfo(firstChild);
