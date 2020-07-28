@@ -562,7 +562,7 @@ public class TwigPattern {
         return PlatformPatterns.psiElement(TwigElementTypes.FUNCTION_CALL).withText(PlatformPatterns.string().with(new PatternCondition<String>("Twig: Function call") {
             @Override
             public boolean accepts(@NotNull String s, ProcessingContext processingContext) {
-                return Arrays.stream(functionName).anyMatch(s::startsWith);
+                return Arrays.asList(functionName).contains(s);
             }
         }));
     }
