@@ -69,6 +69,23 @@ public class TwigPatternTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern#getFunctionPattern
+     */
+    public void testgetFunctionPattern() {
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getFunctionPattern("form").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ for<caret>m(test) }}").getParent()
+        ));
+
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getFunctionPattern("form").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ for<caret>m     (test) }}").getParent()
+        ));
+
+        assertFalse(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getFunctionPattern("f").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ for<caret>m(test) }}").getParent()
+        ));
+    }
+
+    /**
      * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern#getFunctionWithFirstParameterAsArrayPattern
      */
     public void testGetFunctionWithFirstParameterAsArrayPattern() {
