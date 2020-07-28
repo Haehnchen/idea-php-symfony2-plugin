@@ -558,11 +558,15 @@ public class TwigPattern {
         return PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withParent(getFunctionCallScopePattern()).withLanguage(TwigLanguage.INSTANCE);
     }
 
-    static ElementPattern<PsiElement> getFunctionPattern(@NotNull String ...functionName) {
+    public static ElementPattern<PsiElement> getFunctionPattern(@NotNull String ...functionName) {
         return PlatformPatterns.psiElement(TwigElementTypes.FUNCTION_CALL).withText(PlatformPatterns.string().with(new PatternCondition<String>("Twig: Function call") {
             @Override
-            public boolean accepts(@NotNull String s, ProcessingContext processingContext) {
-                return Arrays.asList(functionName).contains(s);
+            public boolean accepts(@NotNull String function, ProcessingContext processingContext) {
+                String funcWithoutSpace = function.replaceAll(" +", "");
+
+                return Arrays.stream(functionName).anyMatch(wantFunction ->
+                    funcWithoutSpace.startsWith(wantFunction + "(") || funcWithoutSpace.equals(wantFunction)
+                );
             }
         }));
     }
