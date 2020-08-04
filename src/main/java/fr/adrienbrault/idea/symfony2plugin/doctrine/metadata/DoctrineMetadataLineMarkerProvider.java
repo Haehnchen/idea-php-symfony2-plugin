@@ -25,12 +25,12 @@ public class DoctrineMetadataLineMarkerProvider implements LineMarkerProvider {
 
     @Nullable
     @Override
-    public LineMarkerInfo getLineMarkerInfo(@NotNull PsiElement element) {
+    public LineMarkerInfo<?> getLineMarkerInfo(@NotNull PsiElement element) {
         return null;
     }
 
     @Override
-    public void collectSlowLineMarkers(@NotNull List<PsiElement> psiElements, @NotNull Collection<LineMarkerInfo> results) {
+    public void collectSlowLineMarkers(@NotNull List<? extends PsiElement> psiElements, @NotNull Collection<? super LineMarkerInfo<?>> results) {
         // we need project element; so get it from first item
         if(psiElements.size() == 0) {
             return;
@@ -53,7 +53,7 @@ public class DoctrineMetadataLineMarkerProvider implements LineMarkerProvider {
         }
     }
 
-    private void attachXmlRelationMarker(@NotNull PsiElement target, @NotNull XmlAttributeValue psiElement, @NotNull Collection<LineMarkerInfo> results) {
+    private void attachXmlRelationMarker(@NotNull PsiElement target, @NotNull XmlAttributeValue psiElement, @NotNull Collection<? super LineMarkerInfo<?>> results) {
         String value = psiElement.getValue();
         if(StringUtils.isBlank(value)) {
             return;

@@ -19,11 +19,13 @@ namespace {
         {
             return array(
                 'pre.foo' => 'preFoo',
+                'union.types' => 'unionTypes',
                 'kernel.request' => 'FOO',
             );
         }
 
         public function preFoo(\DateTime $d) {}
+        public function unionTypes(\DateTime|\DateInterval $d) {}
     }
 }
 

@@ -54,7 +54,7 @@ import java.util.*;
  */
 public class TwigLineMarkerProvider implements LineMarkerProvider {
     @Override
-    public void collectSlowLineMarkers(@NotNull List<PsiElement> psiElements, @NotNull Collection<LineMarkerInfo> results) {
+    public void collectSlowLineMarkers(@NotNull List<? extends PsiElement> psiElements, @NotNull Collection<? super LineMarkerInfo<?>> results) {
         if(psiElements.size() == 0 || !Symfony2ProjectComponent.isEnabled(psiElements.get(0))) {
             return;
         }
@@ -69,18 +69,18 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
 
                 // find foreign file references tags like:
                 // include, embed, source, from, import, ...
-                LineMarkerInfo lineIncludes = attachIncludes((TwigFile) psiElement);
+                LineMarkerInfo<?> lineIncludes = attachIncludes((TwigFile) psiElement);
                 if(lineIncludes != null) {
                     results.add(lineIncludes);
                 }
 
-                LineMarkerInfo extending = attachExtends((TwigFile) psiElement);
+                LineMarkerInfo<?> extending = attachExtends((TwigFile) psiElement);
                 if(extending != null) {
                     results.add(extending);
                 }
 
                 // eg bundle overwrites
-                LineMarkerInfo overwrites = attachOverwrites((TwigFile) psiElement);
+                LineMarkerInfo<?> overwrites = attachOverwrites((TwigFile) psiElement);
                 if(overwrites != null) {
                     results.add(overwrites);
                 }
@@ -92,7 +92,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
                     implementsMap.put(virtualFile, new FileImplementsLazyLoader(psiElement.getProject(), virtualFile));
                 }
 
-                LineMarkerInfo lineImpl = attachBlockImplements(psiElement, implementsMap.get(virtualFile));
+                LineMarkerInfo<?> lineImpl = attachBlockImplements(psiElement, implementsMap.get(virtualFile));
                 if(lineImpl != null) {
                     results.add(lineImpl);
                 }
@@ -101,12 +101,12 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
                     fileOverwritesLazyLoader = new FileOverwritesLazyLoader(psiElements.get(0).getProject());
                 }
 
-                LineMarkerInfo lineOverwrites = attachBlockOverwrites(psiElement, fileOverwritesLazyLoader);
+                LineMarkerInfo<?> lineOverwrites = attachBlockOverwrites(psiElement, fileOverwritesLazyLoader);
                 if(lineOverwrites != null) {
                     results.add(lineOverwrites);
                 }
             } else if(TwigPattern.getFunctionPattern("form_start", "form").accepts(psiElement)) {
-                LineMarkerInfo lineOverwrites = attachFormType(psiElement);
+                LineMarkerInfo<?> lineOverwrites = attachFormType(psiElement);
                 if(lineOverwrites != null) {
                     results.add(lineOverwrites);
                 }
@@ -114,7 +114,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         }
     }
 
-    private void attachController(@NotNull TwigFile twigFile, @NotNull Collection<? super RelatedItemLineMarkerInfo> result) {
+    private void attachController(@NotNull TwigFile twigFile, @NotNull Collection<? super RelatedItemLineMarkerInfo<?>> result) {
 
         Set<Function> methods = new HashSet<>();
 
@@ -134,7 +134,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
     }
 
     @Nullable
-    private LineMarkerInfo attachIncludes(@NotNull TwigFile twigFile) {
+    private LineMarkerInfo<?> attachIncludes(@NotNull TwigFile twigFile) {
         Collection<String> templateNames = TwigUtil.getTemplateNamesForFile(twigFile);
 
         boolean found = false;
@@ -165,7 +165,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
     }
 
     @Nullable
-    private LineMarkerInfo attachExtends(@NotNull TwigFile twigFile) {
+    private LineMarkerInfo<?> attachExtends(@NotNull TwigFile twigFile) {
         Collection<String> templateNames = TwigUtil.getTemplateNamesForFile(twigFile);
 
         boolean found = false;
@@ -196,7 +196,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
     }
 
     @Nullable
-    private LineMarkerInfo attachOverwrites(@NotNull TwigFile twigFile) {
+    private LineMarkerInfo<?> attachOverwrites(@NotNull TwigFile twigFile) {
         Collection<PsiFile> targets = new ArrayList<>();
 
         for (String templateName: TwigUtil.getTemplateNamesForFile(twigFile)) {
@@ -222,7 +222,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         return getRelatedPopover("Overwrites", "Overwrite", twigFile, gotoRelatedItems, Symfony2Icons.TWIG_LINE_OVERWRITE);
     }
 
-    private LineMarkerInfo getRelatedPopover(String singleItemTitle, String singleItemTooltipPrefix, PsiElement lineMarkerTarget, List<GotoRelatedItem> gotoRelatedItems, Icon icon) {
+    private LineMarkerInfo<?> getRelatedPopover(String singleItemTitle, String singleItemTooltipPrefix, PsiElement lineMarkerTarget, List<GotoRelatedItem> gotoRelatedItems, Icon icon) {
 
         // single item has no popup
         String title = singleItemTitle;
@@ -245,7 +245,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
     }
 
     @Nullable
-    private LineMarkerInfo attachBlockImplements(@NotNull PsiElement psiElement, @NotNull FileImplementsLazyLoader implementsLazyLoader) {
+    private LineMarkerInfo<?> attachBlockImplements(@NotNull PsiElement psiElement, @NotNull FileImplementsLazyLoader implementsLazyLoader) {
         if(!TwigBlockUtil.hasBlockImplementations(psiElement, implementsLazyLoader)) {
             return null;
         }
@@ -292,7 +292,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
     }
 
     @Nullable
-    private LineMarkerInfo attachBlockOverwrites(@NotNull PsiElement psiElement, @NotNull FileOverwritesLazyLoader loader) {
+    private LineMarkerInfo<?> attachBlockOverwrites(@NotNull PsiElement psiElement, @NotNull FileOverwritesLazyLoader loader) {
         if(!TwigBlockUtil.hasBlockOverwrites(psiElement, loader)) {
             return null;
         }
@@ -306,7 +306,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
     }
 
     @Nullable
-    private LineMarkerInfo attachFormType(@NotNull PsiElement psiElement) {
+    private LineMarkerInfo<?> attachFormType(@NotNull PsiElement psiElement) {
         PsiElement firstChild = psiElement.getFirstChild();
         if (firstChild == null) {
             return null;
@@ -342,7 +342,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
 
     @Nullable
     @Override
-    public LineMarkerInfo getLineMarkerInfo(@NotNull PsiElement psiElement) {
+    public LineMarkerInfo<?> getLineMarkerInfo(@NotNull PsiElement psiElement) {
         return null;
     }
 

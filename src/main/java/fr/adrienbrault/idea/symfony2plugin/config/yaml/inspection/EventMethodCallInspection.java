@@ -36,6 +36,9 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.*;
 
+import java.util.Collection;
+import java.util.stream.Collectors;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -199,18 +202,24 @@ public class EventMethodCallInspection extends LocalInspectionTool {
                 return null;
             }
 
-            String taggedEventMethodParameter = EventSubscriberUtil.getTaggedEventMethodParameter(problemDescriptor.getPsiElement().getProject(), eventName);
-            if (taggedEventMethodParameter == null) {
+            Collection<String> taggedEventMethodParameter = EventSubscriberUtil.getTaggedEventMethodParameter(problemDescriptor.getPsiElement().getProject(), eventName);
+            if (taggedEventMethodParameter.isEmpty()) {
                 return null;
             }
 
-            String qualifiedName = AnnotationBackportUtil.getQualifiedName(phpClass, taggedEventMethodParameter);
-            if (qualifiedName != null && !qualifiedName.equals(StringUtils.stripStart(taggedEventMethodParameter, "\\"))) {
+            return taggedEventMethodParameter.stream()
+                .map(fqn -> importIfNecessary(phpClass, fqn))
+                .collect(Collectors.joining("|"));
+        }
+
+        private String importIfNecessary(@NotNull PhpClass phpClass, String fqn) {
+            String qualifiedName = AnnotationBackportUtil.getQualifiedName(phpClass, fqn);
+            if (qualifiedName != null && !qualifiedName.equals(StringUtils.stripStart(fqn, "\\"))) {
                 // class already imported
                 return qualifiedName;
             }
 
-            return PhpElementsUtil.insertUseIfNecessary(phpClass, taggedEventMethodParameter);
+            return PhpElementsUtil.insertUseIfNecessary(phpClass, fqn);
         }
     }
 
