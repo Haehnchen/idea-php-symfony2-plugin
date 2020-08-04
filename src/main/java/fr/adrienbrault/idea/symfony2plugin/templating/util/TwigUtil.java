@@ -79,7 +79,7 @@ import static fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TwigUtil {
-    public static final String DOC_SEE_REGEX_WITHOUT_SEE  = "\\{#[\\s]+([-@\\./\\:\\w\\\\\\[\\]]+)[\\s]*#}";
+    public static final String DOC_SEE_REGEX_WITHOUT_SEE  = "([-@\\./\\:\\w\\\\\\[\\]]+)[\\s]*";
 
     /**
      * Twig namespace for "non namespace"; its also a reserved value in Twig library

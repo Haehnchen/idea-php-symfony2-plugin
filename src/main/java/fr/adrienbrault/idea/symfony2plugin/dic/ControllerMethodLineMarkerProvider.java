@@ -31,12 +31,12 @@ public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
 
     @Nullable
     @Override
-    public LineMarkerInfo getLineMarkerInfo(@NotNull PsiElement psiElement) {
+    public LineMarkerInfo<?> getLineMarkerInfo(@NotNull PsiElement psiElement) {
         return null;
     }
 
     @Nullable
-    public LineMarkerInfo collect(PsiElement psiElement) {
+    public LineMarkerInfo<?> collect(PsiElement psiElement) {
         if(!Symfony2ProjectComponent.isEnabled(psiElement) || psiElement.getNode().getElementType() != PhpTokenTypes.IDENTIFIER) {
             return null;
         }
@@ -102,10 +102,10 @@ public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
     }
 
     @Override
-    public void collectSlowLineMarkers(@NotNull List<PsiElement> psiElements, @NotNull Collection<LineMarkerInfo> results) {
+    public void collectSlowLineMarkers(@NotNull List<? extends PsiElement> psiElements, @NotNull Collection<? super LineMarkerInfo<?>> results) {
 
         for(PsiElement psiElement: psiElements) {
-            LineMarkerInfo lineMarkerInfo = collect(psiElement);
+            LineMarkerInfo<?> lineMarkerInfo = collect(psiElement);
             if(lineMarkerInfo != null) {
                 results.add(lineMarkerInfo);
             }
