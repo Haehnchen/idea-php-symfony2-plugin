@@ -381,7 +381,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         results.add(builder.createLineMarkerInfo(psiElement));
     }
 
-    private void constraintMessagePropertyMarker(@NotNull PsiElement psiElement, @NotNull Collection<LineMarkerInfo> results) {
+    private void constraintMessagePropertyMarker(@NotNull PsiElement psiElement, @NotNull Collection<? super LineMarkerInfo<?>> results) {
         PsiElement parent = psiElement.getParent();
         if (parent instanceof StringLiteralExpression && TranslationUtil.isConstraintPropertyField((StringLiteralExpression) parent)) {
             String contents = ((StringLiteralExpression) parent).getContents();

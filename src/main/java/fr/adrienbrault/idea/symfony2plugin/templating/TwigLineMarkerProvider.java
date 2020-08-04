@@ -106,7 +106,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
                     results.add(lineOverwrites);
                 }
             } else if(TwigPattern.getFunctionPattern("form_start", "form").accepts(psiElement)) {
-                LineMarkerInfo lineOverwrites = attachFormType(psiElement);
+                LineMarkerInfo<?> lineOverwrites = attachFormType(psiElement);
                 if(lineOverwrites != null) {
                     results.add(lineOverwrites);
                 }
@@ -306,7 +306,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
     }
 
     @Nullable
-    private LineMarkerInfo attachFormType(@NotNull PsiElement psiElement) {
+    private LineMarkerInfo<?> attachFormType(@NotNull PsiElement psiElement) {
         PsiElement firstChild = psiElement.getFirstChild();
         if (firstChild == null) {
             return null;

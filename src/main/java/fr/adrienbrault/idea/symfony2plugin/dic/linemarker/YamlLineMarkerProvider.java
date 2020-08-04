@@ -63,7 +63,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
         }
     }
 
-    private void visitServiceIdForResources(PsiElement leafTarget, YAMLKeyValue yamlKeyValue, @NotNull Collection<LineMarkerInfo> result) {
+    private void visitServiceIdForResources(PsiElement leafTarget, YAMLKeyValue yamlKeyValue, @NotNull Collection<? super LineMarkerInfo<?>> result) {
         String resource = YamlHelper.getYamlKeyValueAsString(yamlKeyValue, "resource");
         if (resource == null) {
             return;
