@@ -2,7 +2,8 @@ Changelog
 =========
 
 # Version names
-* 0.20.x: PhpStorm 2020.x
+* 0.21.x: PhpStorm 2020.2
+* 0.20.x: PhpStorm 2020.0+ (no support)
 * 0.19.x: PhpStorm 2019.2+ (no support)
 * 0.18.x: PhpStorm 2019.1+ (no support)
 * 0.17.x: PhpStorm 2018.2+ (no support)
@@ -15,10 +16,16 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.21.202
+* Only "form" and "form_start" are valid linemarker on Twig types (Daniel Espendiller)
+* Support for PhpStorm 2020.2: get rid of start comment tokens in doc patterns & migrate to non-atomic PsiComment structure (Aleksandr Slapoguzov)
+* Support for PhpStorm 2020.2: process all class references for parameter (union types support) - now a parameter can contain several class references (Aleksandr Slapoguzov)
+* Support for PhpStorm 2020.2: change signatures for LineMarkerProvider implementations (Aleksandr Slapoguzov)
+
 ## 0.20.201
-*   Use simple code flow for formBuilder field extraction (Daniel Espendiller)
-*   Support form type extraction of FormFactoryInterface::createNamed inside Twig type resolving (Daniel Espendiller)
-*   Provide form type linemarker inside Twig templates and provide navigation and extended completion for form fields (Daniel Espendiller)
+* Use simple code flow for formBuilder field extraction (Daniel Espendiller)
+* Support form type extraction of FormFactoryInterface::createNamed inside Twig type resolving (Daniel Espendiller)
+* Provide form type linemarker inside Twig templates and provide navigation and extended completion for form fields (Daniel Espendiller)
 
 ## 0.20.200
 * Change annotation controller icon and provide link to Symfony documentation (Daniel Espendiller)
