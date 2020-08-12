@@ -47,6 +47,11 @@ public class TwigTypeContainer {
             if(phpClass.size() > 0) {
                 twigTypeContainerList.add(new TwigTypeContainer(phpClass.iterator().next()));
             }
+
+            // inside {% for ... %}{% endfor %} we have a "loop" var; fake an internal type here
+            if (phpNamedElement.getTypes().contains("\\loop")) {
+                twigTypeContainerList.add(new TwigTypeContainer("\\loop"));
+            }
         }
 
         return twigTypeContainerList;

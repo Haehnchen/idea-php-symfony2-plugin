@@ -9,11 +9,15 @@ import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.TwigLanguage;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -82,6 +86,41 @@ public class TwigTypeResolveUtilTest extends SymfonyLightCodeInsightFixtureTestC
 
         assertContainsElements(stringPsiVariableMap.get("a").getTypes(), "\\Foo\\Bar");
         assertContainsElements(stringPsiVariableMap.get("b").getTypes(), "\\Foo\\Bar");
+    }
+
+    /**
+     * @see TwigTypeResolveUtil#collectScopeVariables
+     */
+    public void testForeachMustProvideLoopVariable() {
+        myFixture.configureByText(TwigFileType.INSTANCE,
+            "{% for foo in foo %}" +
+                "{{ <caret> }}" +
+                "{% endfor %}"
+        );
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+
+        Map<String, PsiVariable> stringPsiVariableMap = TwigTypeResolveUtil.collectScopeVariables(psiElement);
+        assertContainsElements(stringPsiVariableMap.keySet(), "loop");
+    }
+
+    /**
+     * @see TwigTypeResolveUtil#resolveTwigMethodName
+     */
+    public void testForeachMustProvideLoopTypeVariable() {
+        myFixture.configureByText(TwigFileType.INSTANCE,
+            "{% for foo in foo %}" +
+                "{{ loop.i<caret> }}" +
+                "{% endfor %}"
+        );
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        Collection<String> beforeLeaf = TwigTypeResolveUtil.formatPsiTypeName(psiElement);
+
+        Collection<TwigTypeContainer> stringPsiVariableMap = TwigTypeResolveUtil.resolveTwigMethodName(psiElement.getPrevSibling(), beforeLeaf);
+
+        Set<String> types = stringPsiVariableMap.stream().map(TwigTypeContainer::getStringElement).collect(Collectors.toSet());
+        assertContainsElements(types, "last", "index", "index0");
     }
 
     private void assertMatches(@NotNull String content, @NotNull String... regularExpressions) {
