@@ -20,7 +20,7 @@ import java.util.List;
 @State(
        name = "Symfony2PluginSettings",
        storages = {
-               @Storage("/symfony2.xml")
+               @Storage("symfony2.xml")
        }
 )
 public class Settings implements PersistentStateComponent<Settings> {
