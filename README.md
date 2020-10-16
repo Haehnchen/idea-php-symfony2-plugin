@@ -45,7 +45,7 @@ Building, debugging and other
 * Install IntelliJ IDEA (Community Edition works fine)
 * Open this project
 * Choose `View > Tool Windows > Gradle`
-* Double click `idea-php-symfony2-plugin > Tasks > intellij > runIdle`
+* Double click `idea-php-symfony2-plugin > Tasks > intellij > runIde`
 
 If you are having difficulties, consult the documentation: http://confluence.jetbrains.com/display/PhpStorm/Setting-up+environment+for+PhpStorm+plugin+development
 
