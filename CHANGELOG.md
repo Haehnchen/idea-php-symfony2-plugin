@@ -2,6 +2,7 @@ Changelog
 =========
 
 # Version names
+* 0.22.x: PhpStorm 2020.3
 * 0.21.x: PhpStorm 2020.2
 * 0.20.x: PhpStorm 2020.0+ (no support)
 * 0.19.x: PhpStorm 2019.2+ (no support)
@@ -15,6 +16,10 @@ Changelog
 * 0.11.x: PhpStorm 8, 9, 10 (no support)
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
+
+## 0.21.203
+* Fix typo in build instructions (Matthias Gutjahr)
+* Remove leading slash from storage location ([#1543](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1543)) (Jens Schulze)
 
 ## 0.21.202
 * Only "form" and "form_start" are valid linemarker on Twig types (Daniel Espendiller)
