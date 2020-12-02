@@ -10,7 +10,7 @@ import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiWhiteSpace;
-import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.tree.IElementType;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Field;
@@ -19,7 +19,8 @@ import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigBlockTag;
 import com.jetbrains.twig.elements.TwigElementTypes;
-import com.jetbrains.twig.elements.TwigTagWithFileReference;
+import com.jetbrains.twig.elements.TwigPsiReference;
+import com.jetbrains.twig.elements.TwigVariableReference;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
@@ -174,8 +175,9 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
     @NotNull
     private Collection<PsiElement> getAfterIsToken(@NotNull PsiElement psiElement) {
         // find text after if statement
+        PsiElement actualElement = psiElement.getParent() instanceof TwigVariableReference ? psiElement.getParent() : psiElement;
         String text = StringUtils.trim(
-            PhpElementsUtil.getPrevSiblingAsTextUntil(psiElement, TwigPattern.getAfterIsTokenTextPattern(), false) + psiElement.getText()
+            PhpElementsUtil.getPrevSiblingAsTextUntil(actualElement, TwigPattern.getAfterIsTokenTextPattern(), false) + actualElement.getText()
         );
 
         if(StringUtils.isBlank(text)) {
@@ -191,12 +193,13 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         PsiElement whitespace = psiElement.getNextSibling();
         if(whitespace instanceof PsiWhiteSpace) {
             PsiElement nextSibling = whitespace.getNextSibling();
-            if(nextSibling != null && nextSibling.getNode().getElementType() == TwigTokenTypes.IDENTIFIER) {
-                String identifier = nextSibling.getText();
-                if(StringUtils.isNotBlank(identifier)) {
-                    items.add(text + " " + identifier);
+            IElementType elementType = nextSibling == null ? null : nextSibling.getNode().getElementType();
+                if (elementType == TwigTokenTypes.IDENTIFIER || elementType == TwigElementTypes.VARIABLE_REFERENCE) {
+                    String identifier = nextSibling.getText();
+                    if (StringUtils.isNotBlank(identifier)) {
+                        items.add(text + " " + identifier);
+                    }
                 }
-            }
         }
 
         Collection<PsiElement> psiElements = new ArrayList<>();
@@ -405,7 +408,10 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
     @NotNull
     public static Collection<PsiElement> getTypeGoto(@NotNull PsiElement psiElement) {
         Collection<PsiElement> targetPsiElements = new HashSet<>();
-
+        if (psiElement.getParent() instanceof TwigPsiReference) {
+            PsiElement defaultResult = ((TwigPsiReference) psiElement.getParent()).resolve();
+            if (defaultResult != null && defaultResult != psiElement.getParent()) return Collections.singleton(defaultResult);
+        }
         // class, class.method, class.method.method
         // click on first item is our class name
         Collection<String> beforeLeaf = TwigTypeResolveUtil.formatPsiTypeName(psiElement);
@@ -465,7 +471,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         PsiElement prevSibling = psiElement.getPrevSibling();
         if(prevSibling != null && prevSibling.getNode().getElementType() == TwigTokenTypes.DOT) {
             PsiElement identifier = prevSibling.getPrevSibling();
-            if(identifier == null || identifier.getNode().getElementType() != TwigTokenTypes.IDENTIFIER) {
+            if(identifier == null || identifier.getNode().getElementType() != TwigElementTypes.VARIABLE_REFERENCE) {
                 return Collections.emptyList();
             }
 
@@ -496,7 +502,8 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
     @NotNull
     private Collection<PsiElement> getParentGoto(@NotNull PsiElement psiElement) {
         // find printblock
-        PsiElement printBlock = psiElement.getParent();
+        PsiElement functionCall = psiElement.getParent();
+        PsiElement printBlock = functionCall != null ? functionCall.getParent() : null;
         if(printBlock == null || !PlatformPatterns.psiElement(TwigElementTypes.PRINT_BLOCK).accepts(printBlock)) {
             return Collections.emptyList();
         }

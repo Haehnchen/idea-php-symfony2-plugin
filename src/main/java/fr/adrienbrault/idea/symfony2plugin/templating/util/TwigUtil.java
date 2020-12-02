@@ -25,6 +25,7 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
+import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.phpunit.PhpUnitUtil;
 import com.jetbrains.twig.TwigFile;
@@ -72,6 +73,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.captureVariableOrField;
 import static fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore;
 
 /**
@@ -313,7 +315,7 @@ public class TwigUtil {
      */
     @Nullable
     public static String getTransDefaultDomainOnScopeOrInjectedElement(@NotNull PsiElement position) {
-        if(position.getContainingFile().getContainingFile() == TwigFileType.INSTANCE) {
+        if(position.getContainingFile().getContainingFile().getFileType() == TwigFileType.INSTANCE) {
             return getTransDefaultDomainOnScope(position);
         }
 
@@ -375,7 +377,8 @@ public class TwigUtil {
 
         // Elements that match a simple parameter foo(<caret>,)
         IElementType[] skipArrayElements = {
-            TwigElementTypes.LITERAL, TwigTokenTypes.LBRACE_SQ, TwigTokenTypes.RBRACE_SQ, TwigTokenTypes.IDENTIFIER
+            TwigElementTypes.LITERAL, TwigTokenTypes.LBRACE_SQ, TwigTokenTypes.RBRACE_SQ, TwigTokenTypes.IDENTIFIER,
+            TwigElementTypes.VARIABLE_REFERENCE, TwigElementTypes.FIELD_REFERENCE
         };
 
         String filterNameText = filterName.getText();
@@ -397,6 +400,7 @@ public class TwigUtil {
                 IElementType[] skipElements = {
                     TwigTokenTypes.SINGLE_QUOTE, TwigTokenTypes.DOUBLE_QUOTE, TwigTokenTypes.NUMBER,
                     TwigTokenTypes.STRING_TEXT, TwigTokenTypes.DOT, TwigTokenTypes.IDENTIFIER,
+                    TwigElementTypes.VARIABLE_REFERENCE, TwigElementTypes.FIELD_REFERENCE,
                     TwigTokenTypes.CONCAT, TwigTokenTypes.PLUS, TwigTokenTypes.MINUS,
                 };
 
@@ -624,8 +628,8 @@ public class TwigUtil {
                 continue;
             }
 
-            PsiElement asVariable = PsiElementUtils.getNextSiblingAndSkip(pair.getSecond(), TwigTokenTypes.IDENTIFIER);
-            if(asVariable == null) {
+            PsiElement asVariable = PhpPsiUtil.getNextSiblingIgnoreWhitespace(pair.getSecond(), true);
+            if(!(asVariable instanceof TwigPsiReference)) {
                 continue;
             }
 
@@ -675,8 +679,8 @@ public class TwigUtil {
                 continue;
             }
 
-            PsiElement setVariable = PsiElementUtils.getNextSiblingAndSkip(tagName, TwigTokenTypes.IDENTIFIER);
-            if(setVariable == null) {
+            PsiElement setVariable = PhpPsiUtil.getNextSiblingIgnoreWhitespace(tagName, true);
+            if(!(setVariable instanceof TwigPsiReference)) {
                 continue;
             }
 
@@ -2542,7 +2546,7 @@ public class TwigUtil {
                 if (firstChildElementType == TwigElementTypes.IF_TAG || firstChildElementType == TwigElementTypes.SET_TAG) {
                     PsiElement nextSiblingOfType = PsiElementUtils.getNextSiblingOfType(
                         firstChild.getFirstChild(),
-                        PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).afterLeafSkipping(
+                        captureVariableOrField().afterLeafSkipping(
                             PlatformPatterns.psiElement(PsiWhiteSpace.class),
                             PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME)
                         )
@@ -2554,7 +2558,7 @@ public class TwigUtil {
                         PsiElement firstChild1 = firstChild.getFirstChild();
                         PsiElement nextSiblingOfType1 = PsiElementUtils.getNextSiblingOfType(
                             firstChild1,
-                            PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).afterLeafSkipping(
+                            captureVariableOrField().afterLeafSkipping(
                                 PlatformPatterns.psiElement(PsiWhiteSpace.class),
                                 PlatformPatterns.or(PlatformPatterns.psiElement(TwigTokenTypes.AND), PlatformPatterns.psiElement(TwigTokenTypes.OR))
                             )
@@ -2574,7 +2578,7 @@ public class TwigUtil {
 
                 PsiElement nextSiblingOfType = PsiElementUtils.getNextSiblingOfType(
                     psiElement.getFirstChild(),
-                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).afterLeaf(PlatformPatterns.or(
+                    captureVariableOrField().afterLeaf(PlatformPatterns.or(
                         PlatformPatterns.psiElement(PsiWhiteSpace.class),
                         PlatformPatterns.psiElement(TwigTokenTypes.PRINT_BLOCK_START)
                     ))

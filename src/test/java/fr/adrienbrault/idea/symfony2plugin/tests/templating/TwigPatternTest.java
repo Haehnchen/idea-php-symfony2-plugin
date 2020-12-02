@@ -86,6 +86,82 @@ public class TwigPatternTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
+     * @see TwigPattern#captureVariableOrField()
+     */
+    public void testCaptureVariableOrField() {
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.captureVariableOrField().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ <caret>foo }}").getParent()
+        ));
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.captureVariableOrField().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ <caret>foo.bar }}").getParent()
+        ));
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.captureVariableOrField().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ foo.<caret>bar }}").getParent()
+        ));
+        assertFalse(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.captureVariableOrField().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ <caret>foo(bar) }}").getParent()
+        ));
+        assertFalse(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.captureVariableOrField().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ <caret>foo }}")
+        ));
+        assertFalse(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.captureVariableOrField().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ \"<caret>foo\" }}")
+        ));
+
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern#getTypeCompletionPattern
+     */
+    public void testGetTypeCompletionPattern() {
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getTypeCompletionPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ foo.b<caret>ar }}")
+        ));
+        assertFalse(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getTypeCompletionPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ <caret>foo.foo }}")
+        ));
+        assertFalse(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getTypeCompletionPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ <caret>foo }}")
+        ));
+    }
+
+    /**
+     * @see TwigPattern#getAfterOperatorPattern
+     */
+    public void testGetAfterOperatorPattern() {
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getAfterOperatorPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{% if foo fa<caret>ke %}")
+        ));
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getAfterOperatorPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{% if foo.bar fa<caret>ke %}")
+        ));
+        assertFalse(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getAfterOperatorPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{% if <caret>foo.bar %}")
+        ));
+        assertFalse(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getAfterOperatorPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ fa<caret>ke }}")
+        ));
+    }
+
+    /**
+     * @see TwigPattern#getCompletablePattern()
+     */
+    public void testGetCompletablePattern() {
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getCompletablePattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ b<caret>ar }}")
+        ));
+        assertFalse(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getCompletablePattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ foo.b<caret>ar }")
+        ));
+        assertFalse(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getCompletablePattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ <caret>foo.bar }")
+        ));
+        assertFalse(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getCompletablePattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{% b<caret>ar %}")
+        ));
+    }
+
+    /**
      * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern#getFunctionWithFirstParameterAsArrayPattern
      */
     public void testGetFunctionWithFirstParameterAsArrayPattern() {
