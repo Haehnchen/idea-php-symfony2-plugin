@@ -49,9 +49,9 @@ public class YamlCreateServiceArgumentsCallbackTest extends SymfonyLightCodeInsi
         assertEquals("" +
                         "services:\n" +
                         "    foo:\n" +
-                        "        class: Foo\\Foo\n" +
-                        "        arguments:\n" +
-                        "          ['@foo', '@?', '@?']\n",
+                        "      class: Foo\\Foo\n" +
+                        "      arguments:\n" +
+                        "        [ '@foo', '@?', '@?' ]\n",
                 yamlFile.getText()
         );
     }
