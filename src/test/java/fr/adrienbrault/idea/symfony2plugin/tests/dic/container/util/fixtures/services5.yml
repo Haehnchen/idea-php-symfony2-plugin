@@ -1,0 +1,10 @@
+services:
+  AppSingle\:
+    resource: '../src/*'
+    exclude: '../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php}'
+
+  AppArray\:
+    resource:
+      - '../src/*'
+      - '../src2/*'
+    exclude: ['../src/{DependencyInjection,Kernel.php}', '../src2/{Tests,Kernel.php}']

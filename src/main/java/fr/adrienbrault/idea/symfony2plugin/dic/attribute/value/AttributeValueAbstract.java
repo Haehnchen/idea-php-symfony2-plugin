@@ -59,4 +59,10 @@ abstract class AttributeValueAbstract implements AttributeValueInterface {
     public PsiElement getPsiElement() {
         return this.psiElement;
     }
+
+    @NotNull
+    @Override
+    public Collection<String> getStringArray(@NotNull String key) {
+        return Collections.emptyList();
+    }
 }

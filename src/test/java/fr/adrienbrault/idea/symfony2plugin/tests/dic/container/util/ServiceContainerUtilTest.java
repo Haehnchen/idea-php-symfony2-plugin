@@ -109,7 +109,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
         for (PsiFile psiFile : new PsiFile[]{xmlFile, ymlFile}) {
             ServiceInterface bar = ContainerUtil.find(ServiceContainerUtil.getServicesInFile(psiFile), MyStringServiceInterfaceCondition.create("non.defaults"));
             assertEquals(
-                "{\"id\":\"non.defaults\",\"class\":\"DateTime\",\"public\":false,\"lazy\":true,\"abstract\":true,\"autowire\":true,\"deprecated\":true,\"alias\":\"foo\",\"decorates\":\"foo\",\"decoration_inner_name\":\"foo\",\"parent\":\"foo\",\"tags\":[]}",
+                "{\"id\":\"non.defaults\",\"class\":\"DateTime\",\"public\":false,\"lazy\":true,\"abstract\":true,\"autowire\":true,\"deprecated\":true,\"alias\":\"foo\",\"decorates\":\"foo\",\"decoration_inner_name\":\"foo\",\"parent\":\"foo\",\"resource\":[],\"exclude\":[],\"tags\":[]}",
                 new Gson().toJson(bar)
             );
         }
@@ -137,7 +137,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
         for (PsiFile psiFile : new PsiFile[]{xmlFile, ymlFile}) {
             ServiceInterface bar = ContainerUtil.find(ServiceContainerUtil.getServicesInFile(psiFile), MyStringServiceInterfaceCondition.create("defaults"));
             assertEquals(
-                "{\"id\":\"defaults\",\"class\":\"DateTime\",\"tags\":[]}",
+                "{\"id\":\"defaults\",\"class\":\"DateTime\",\"resource\":[],\"exclude\":[],\"tags\":[]}",
                 new Gson().toJson(bar)
             );
         }
@@ -210,6 +210,21 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
         ServiceSerializable defaultsAlias = services.stream().filter(service -> "_yaml.defaults_alias".equals(service.getId())).findFirst().get();
         assertTrue(defaultsAlias.isAutowire());
         assertFalse(defaultsAlias.isPublic());
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil#getServicesInFile
+     */
+    public void testYamlFileScopeDefaultsForSymfony5() {
+        Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(myFixture.configureByFile("services5.yml"));
+
+        ServiceSerializable appResourceSingle = services.stream().filter(service -> "AppSingle\\".equals(service.getId())).findFirst().get();
+        assertContainsElements(appResourceSingle.getResource(), "../src/*");
+        assertContainsElements(appResourceSingle.getExclude(), "../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php}");
+
+        ServiceSerializable appResourceArray = services.stream().filter(service -> "AppArray\\".equals(service.getId())).findFirst().get();
+        assertContainsElements(appResourceArray.getResource(), "../src2/*", "../src/*");
+        assertContainsElements(appResourceArray.getExclude(), "../src/{DependencyInjection,Kernel.php}", "../src2/{Tests,Kernel.php}");
     }
 
     /**

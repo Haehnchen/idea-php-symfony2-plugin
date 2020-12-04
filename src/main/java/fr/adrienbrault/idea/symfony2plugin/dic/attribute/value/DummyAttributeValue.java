@@ -25,6 +25,12 @@ public class DummyAttributeValue implements AttributeValueInterface {
         return null;
     }
 
+    @NotNull
+    @Override
+    public Collection<String> getStringArray(@NotNull String key) {
+        return Collections.emptySet();
+    }
+
     @Nullable
     @Override
     public Boolean getBoolean(@NotNull String key) {

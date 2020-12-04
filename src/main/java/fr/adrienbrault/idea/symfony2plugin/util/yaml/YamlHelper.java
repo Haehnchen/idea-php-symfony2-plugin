@@ -351,6 +351,33 @@ public class YamlHelper {
         return getYamlKeyValueAsString(yamlKeyValue, keyName, false);
     }
 
+    /**
+     *  foo:
+     *     class: "name"
+     *
+     *  class:
+     *   - "name"
+     *   - "test"
+     */
+    @NotNull
+    public static Collection<String> getYamlKeyValueStringOrArray(@NotNull YAMLKeyValue yamlKeyValue, @NotNull String keyName) {
+        YAMLKeyValue childrenKeyValue = getYamlKeyValue(yamlKeyValue, keyName);
+        if (childrenKeyValue == null) {
+            return Collections.emptyList();
+        }
+
+        // class: [test]
+        // class:
+        //  - "test"
+        YAMLValue value = childrenKeyValue.getValue();
+        if(value instanceof YAMLSequence) {
+          return getYamlArrayValuesAsString((YAMLSequence) value);
+        }
+
+        // class: "test"
+        return Collections.singletonList(getYamlKeyValueAsString(yamlKeyValue, keyName));
+    }
+
     @Nullable
     public static String getYamlKeyValueAsString(@NotNull YAMLKeyValue yamlKeyValue, @NotNull String keyName, boolean ignoreCase) {
 

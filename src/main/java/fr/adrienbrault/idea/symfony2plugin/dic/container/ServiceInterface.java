@@ -38,11 +38,11 @@ public interface ServiceInterface {
     @Nullable
     String getDecorationInnerName();
 
-    @Nullable
-    String getResource();
+    @NotNull
+    Collection<String> getResource();
 
-    @Nullable
-    String getExclude();
+    @NotNull
+    Collection<String> getExclude();
 
     @NotNull
     Collection<String> getTags();

@@ -37,4 +37,10 @@ public class YamlKeyValueAttributeValue extends AttributeValueAbstract {
     public Collection<String> getTags() {
         return YamlHelper.collectServiceTags(yamlKeyValue);
     }
+
+    @NotNull
+    @Override
+    public Collection<String> getStringArray(@NotNull String key) {
+        return YamlHelper.getYamlKeyValueStringOrArray(yamlKeyValue, key);
+    }
 }

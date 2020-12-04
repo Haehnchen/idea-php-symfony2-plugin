@@ -79,15 +79,15 @@ public class ImmutableDecoratorService implements ServiceInterface {
         return service.getDecorationInnerName();
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public String getResource() {
+    public Collection<String> getResource() {
         return service.getResource();
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public String getExclude() {
+    public Collection<String> getExclude() {
         return service.getExclude();
     }
 

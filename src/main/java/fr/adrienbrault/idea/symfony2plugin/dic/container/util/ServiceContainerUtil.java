@@ -183,8 +183,8 @@ public class ServiceContainerUtil {
             .setIsAutowire(attributes.getBoolean("autowire", serviceConsumer.getDefaults().isAutowire()))
             .setIsLazy(attributes.getBoolean("lazy"))
             .setIsPublic(attributes.getBoolean("public", serviceConsumer.getDefaults().isPublic()))
-            .setResource(attributes.getString("resource"))
-            .setExclude(attributes.getString("exclude"))
+            .setResource(attributes.getStringArray("resource"))
+            .setExclude(attributes.getStringArray("exclude"))
             .setTags(attributes.getTags());
     }
 

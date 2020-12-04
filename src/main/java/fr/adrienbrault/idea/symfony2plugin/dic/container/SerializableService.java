@@ -56,13 +56,13 @@ public class SerializableService implements ServiceSerializable {
     @Nullable
     private String parent;
 
-    @Nullable
+    @NotNull
     @SerializedName("resource")
-    private String resource;
+    private Collection<String> resource = new HashSet<>();
 
-    @Nullable
+    @NotNull
     @SerializedName("exclude")
-    private String exclude;
+    private Collection<String> exclude = new HashSet<>();
 
     @NotNull
     @SerializedName("tags")
@@ -183,15 +183,15 @@ public class SerializableService implements ServiceSerializable {
         return this;
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public String getResource() {
+    public Collection<String> getResource() {
         return this.resource;
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public String getExclude() {
+    public Collection<String> getExclude() {
         return this.exclude;
     }
 
@@ -206,12 +206,12 @@ public class SerializableService implements ServiceSerializable {
         return this;
     }
 
-    public SerializableService setResource(@Nullable String resource) {
+    public SerializableService setResource(@NotNull Collection<String> resource) {
         this.resource = resource;
         return this;
     }
 
-    public SerializableService setExclude(@Nullable String exclude) {
+    public SerializableService setExclude(@NotNull Collection<String> exclude) {
         this.exclude = exclude;
         return this;
     }
@@ -231,8 +231,8 @@ public class SerializableService implements ServiceSerializable {
             .append(this.decorates)
             .append(this.decorationInnerName)
             .append(this.parent)
-            .append(this.resource)
-            .append(this.exclude)
+            .append(new HashSet<>(this.resource))
+            .append(new HashSet<>(this.exclude))
             .append(new HashSet<>(this.tags))
             .toHashCode()
         ;
@@ -244,7 +244,6 @@ public class SerializableService implements ServiceSerializable {
             Objects.equals(((SerializableService) obj).id, this.id) &&
             Objects.equals(((SerializableService) obj).className, this.className) &&
             Objects.equals(((SerializableService) obj).isPublic, this.isPublic) &&
-            Objects.equals(((SerializableService) obj).isDeprecated, this.isDeprecated) &&
             Objects.equals(((SerializableService) obj).isLazy, this.isLazy) &&
             Objects.equals(((SerializableService) obj).isAbstract, this.isAbstract) &&
             Objects.equals(((SerializableService) obj).isAutowire, this.isAutowire) &&
@@ -253,8 +252,8 @@ public class SerializableService implements ServiceSerializable {
             Objects.equals(((SerializableService) obj).decorates, this.decorates) &&
             Objects.equals(((SerializableService) obj).decorationInnerName, this.decorationInnerName) &&
             Objects.equals(((SerializableService) obj).parent, this.parent) &&
-            Objects.equals(((SerializableService) obj).resource, this.resource) &&
-            Objects.equals(((SerializableService) obj).exclude, this.exclude) &&
+            Objects.equals(new HashSet<>(((SerializableService) obj).resource), new HashSet<>(this.resource)) &&
+            Objects.equals(new HashSet<>(((SerializableService) obj).exclude), new HashSet<>(this.exclude)) &&
             Objects.equals(new HashSet<>(((SerializableService) obj).tags), new HashSet<>(this.tags))
         ;
     }
