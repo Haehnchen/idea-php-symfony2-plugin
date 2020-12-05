@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -149,6 +150,39 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
                 "method"
             ));
         }
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper#getYamlKeyValueStringOrArray
+     */
+    public void testGetYamlKeyValueStringOrArray() {
+        YAMLKeyValue fromText = YamlPsiElementFactory.createFromText(getProject(), YAMLKeyValue.class, "" +
+            "foo:\n" +
+            "   tags: 'foo'\n"
+        );
+
+        Collection<String> tags = YamlHelper.getYamlKeyValueStringOrArray(fromText,"tags");
+        assertTrue(tags.stream().anyMatch("foo"::equalsIgnoreCase));
+
+        YAMLKeyValue fromText2 = YamlPsiElementFactory.createFromText(getProject(), YAMLKeyValue.class, "" +
+            "foo:\n" +
+            "   tags: ['bar1', 'bar2']\n"
+        );
+
+        Collection<String> tags2 = YamlHelper.getYamlKeyValueStringOrArray(fromText2,"tags");
+        assertTrue(tags2.stream().anyMatch("bar1"::equalsIgnoreCase));
+        assertTrue(tags2.stream().anyMatch("bar2"::equalsIgnoreCase));
+
+        YAMLKeyValue fromText3 = YamlPsiElementFactory.createFromText(getProject(), YAMLKeyValue.class, "" +
+            "foo:\n" +
+            "   tags:\n" +
+            "       - foo1\n" +
+            "       - foo2\n"
+        );
+
+        Collection<String> tags3 = YamlHelper.getYamlKeyValueStringOrArray(fromText3,"tags");
+        assertTrue(tags3.stream().anyMatch("foo1"::equalsIgnoreCase));
+        assertTrue(tags3.stream().anyMatch("foo2"::equalsIgnoreCase));
     }
 
     /**

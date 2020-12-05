@@ -14,6 +14,9 @@ public interface AttributeValueInterface {
     @Nullable
     String getString(@NotNull String key);
 
+    @NotNull
+    Collection<String> getStringArray(@NotNull String key);
+
     @Nullable
     Boolean getBoolean(@NotNull String key);
 

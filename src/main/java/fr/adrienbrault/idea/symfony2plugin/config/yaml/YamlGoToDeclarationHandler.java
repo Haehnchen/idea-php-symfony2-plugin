@@ -514,9 +514,9 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
         //   resource: '....'
         //   exclude: '....'
         if (valueText.endsWith("\\")) {
-            String resource = YamlHelper.getYamlKeyValueAsString(yamlKeyValue, "resource");
-            if (resource != null) {
-                String exclude = YamlHelper.getYamlKeyValueAsString(yamlKeyValue, "exclude");
+            Collection<String> resource = YamlHelper.getYamlKeyValueStringOrArray(yamlKeyValue, "resource");
+            if (!resource.isEmpty()) {
+                Collection<String> exclude = YamlHelper.getYamlKeyValueStringOrArray(yamlKeyValue, "exclude");
                 targets.addAll(getPhpClassFromResources(yamlKeyValue.getProject(), valueText, yamlKeyValue.getContainingFile().getVirtualFile(), resource, exclude));
             }
         }
@@ -527,7 +527,7 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
     }
 
     @NotNull
-    private static Collection<PhpClass> getPhpClassFromResources(@NotNull Project project, @NotNull String namespace, @NotNull VirtualFile source, @NotNull String resource, @Nullable String exclude) {
+    private static Collection<PhpClass> getPhpClassFromResources(@NotNull Project project, @NotNull String namespace, @NotNull VirtualFile source, @NotNull Collection<String> resource, @NotNull Collection<String> exclude) {
         Collection<PhpClass> phpClasses = new HashSet<>();
 
         for (PhpClass phpClass : PhpIndexUtil.getPhpClassInsideNamespace(project, "\\" + StringUtils.strip(namespace, "\\"))) {

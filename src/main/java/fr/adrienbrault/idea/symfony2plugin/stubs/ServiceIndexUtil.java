@@ -168,43 +168,54 @@ public class ServiceIndexUtil {
      * "..src/Foo/{Foo,Foobar.php}"
      *
      */
-    public static boolean matchesResourcesGlob(@NotNull VirtualFile serviceFileAsBase, @NotNull VirtualFile phpClassFile, @NotNull String resource, @Nullable String exclude) {
-        String replace = resource.replace("\\\\", "/");
+    public static boolean matchesResourcesGlob(@NotNull VirtualFile serviceFileAsBase, @NotNull VirtualFile phpClassFile, @NotNull Collection<String> resources, @NotNull Collection<String> excludes) {
+        for (String resource : resources) {
+            String replace = resource.replace("\\\\", "/");
 
-        VirtualFile serviceFile = serviceFileAsBase.getParent();
-        String[] split = replace.split("/");
-        String[] replacePathParts = split;
-        for (String s : split) {
-            if (s.equals("..")) {
-                replacePathParts = Arrays.copyOfRange(replacePathParts, 1, replacePathParts.length);
-                serviceFile = serviceFile.getParent();
-            } else {
-                break;
+            VirtualFile serviceFile = serviceFileAsBase.getParent();
+            String[] split = replace.split("/");
+            String[] replacePathParts = split;
+            for (String s : split) {
+                if (s.equals("..")) {
+                    replacePathParts = Arrays.copyOfRange(replacePathParts, 1, replacePathParts.length);
+                    serviceFile = serviceFile.getParent();
+                } else {
+                    break;
+                }
+            }
+
+            if (serviceFile == null) {
+                return false;
+            }
+
+            // ending one wildcard must be *
+            // "src/*" => "src/**"
+            String path = (serviceFile.getPath() + "/" + StringUtils.join(replacePathParts, "/"))
+                .replaceAll("[^*]([*])$", "**");
+
+            // force "**" at the end
+            if (!path.endsWith("*")) {
+                path += "**";
+            }
+
+            String phpClassPath = phpClassFile.getPath();
+
+            boolean matchingGlobResource = isMatchingGlobResource(path, phpClassPath);
+            if (!matchingGlobResource) {
+                continue;
+            }
+
+            // direct match; skip it
+            if (excludes.isEmpty()) {
+                return true;
+            }
+
+            if (!matchesResourcesGlob(serviceFileAsBase, phpClassFile, excludes, Collections.emptyList())) {
+                return true;
             }
         }
 
-        if (serviceFile == null) {
-            return false;
-        }
-
-        // ending one wildcard must be *
-        // "src/*" => "src/**"
-        String path = (serviceFile.getPath() + "/" + StringUtils.join(replacePathParts, "/"))
-            .replaceAll("[^*]([*])$", "**");
-
-        // force "**" at the end
-        if (!path.endsWith("*")) {
-            path += "**";
-        }
-
-        String phpClassPath = phpClassFile.getPath();
-
-        if (exclude == null) {
-            return isMatchingGlobResource(path, phpClassPath);
-        }
-
-        return isMatchingGlobResource(path, phpClassPath)
-            && !matchesResourcesGlob(serviceFileAsBase, phpClassFile, exclude, null);
+        return false;
     }
 
     @Nullable
@@ -244,8 +255,8 @@ public class ServiceIndexUtil {
                 continue;
             }
 
-            String resource = service.getResource();
-            if (resource == null) {
+            Collection<String> resources = service.getResource();
+            if (resources.isEmpty()) {
                 continue;
             }
 
@@ -261,7 +272,7 @@ public class ServiceIndexUtil {
                     continue;
                 }
 
-                if (matchesResourcesGlob(virtualFile, phpClassFile, resource, service.getExclude())) {
+                if (matchesResourcesGlob(virtualFile, phpClassFile, resources, service.getExclude())) {
                     namespaceServices.add(containerService);
                     namespaceTargets.add(s);
                 }

@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 /**
@@ -19,6 +20,16 @@ public class XmlTagAttributeValue extends AttributeValueAbstract {
     public XmlTagAttributeValue(@NotNull XmlTag xmlTag) {
         super(xmlTag);
         this.xmlTag = xmlTag;
+    }
+
+    @NotNull
+    @Override
+    public Collection<String> getStringArray(@NotNull String key) {
+        String string = getString(key);
+
+        return string != null
+            ? Collections.singleton(string)
+            : Collections.emptyList();
     }
 
     @Nullable

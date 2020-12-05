@@ -7,6 +7,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 
 /**
@@ -94,16 +95,16 @@ public class XmlService implements ServiceInterface {
         return null;
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public String getResource() {
-        return null;
+    public Collection<String> getResource() {
+        return Collections.emptyList();
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public String getExclude() {
-        return null;
+    public Collection<String> getExclude() {
+        return Collections.emptyList();
     }
 
     @NotNull

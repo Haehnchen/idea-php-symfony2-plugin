@@ -34,7 +34,7 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
         assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.yml_id").getClassName());
 
         assertEquals("AppBundle\\Controller\\DefaultController", getFirstValue("foo.yml_id.private").getClassName());
-        assertEquals(false, getFirstValue("foo.yml_id.private").isPublic());
+        assertFalse(getFirstValue("foo.yml_id.private").isPublic());
     }
 
     public void testThatServiceIdOfXmlFileIsIndexed() {
@@ -85,16 +85,16 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
         ServiceInterface firstValue = getFirstValue("app\\controller\\");
 
         assertEquals("App\\Controller\\", firstValue.getId());
-        assertEquals("../src/Controller", firstValue.getResource());
-        assertEquals("../src/{Entity,Tests}", firstValue.getExclude());
+        assertContainsElements(firstValue.getResource(), "../src/Controller");
+        assertContainsElements(firstValue.getExclude(), "../src/{Entity,Tests}");
     }
 
     public void testThatResourceAndExcludeAttributesAreExtractedForXml() {
         ServiceInterface firstValue = getFirstValue("app\\xml\\");
 
         assertEquals("App\\Xml\\", firstValue.getId());
-        assertEquals("../src/*", firstValue.getResource());
-        assertEquals("../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php}", firstValue.getExclude());
+        assertContainsElements(firstValue.getResource(), "../src/*");
+        assertContainsElements(firstValue.getExclude(), "../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php}");
     }
 
     public void testThatTagAreInIndexForYaml() {
