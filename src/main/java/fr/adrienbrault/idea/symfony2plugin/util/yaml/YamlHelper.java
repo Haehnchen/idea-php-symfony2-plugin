@@ -1263,7 +1263,7 @@ public class YamlHelper {
 
     @NotNull
     public static Collection<PhpClass> getPhpClassesInYamlFile(@NotNull YAMLFile yamlFile, @NotNull ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector) {
-        Collection<PhpClass> phpClasses = new HashSet<>();
+        Collection<PhpClass> phpClasses = new HashSet<>(); //TODO
 
         for (YAMLKeyValue keyValue : YamlHelper.getQualifiedKeyValuesInFile(yamlFile, "services")) {
             YAMLValue value = keyValue.getValue();
@@ -1277,6 +1277,10 @@ public class YamlHelper {
                         phpClasses.add(serviceClass);
                     }
                 }
+
+                // My<caret>Class\:
+                //    resource: ...
+                phpClasses.addAll(YamlHelper.getNamespaceResourcesClasses(keyValue));
             } else if(value instanceof YAMLPlainTextImpl) {
                 // Foo\Bar: ~
                 String text = keyValue.getKeyText();
@@ -1284,6 +1288,32 @@ public class YamlHelper {
                 if (StringUtils.isNotBlank(text) && YamlHelper.isClassServiceId(text)) {
                     phpClasses.addAll(PhpElementsUtil.getClassesInterface(yamlFile.getProject(), text));
                 }
+            }
+        }
+
+        return phpClasses;
+    }
+
+    /**
+     * My<caret>Class\:
+     *  resource: '....'
+     *  exclude: '....'
+     */
+    @NotNull
+    public static Collection<PhpClass> getNamespaceResourcesClasses(@NotNull YAMLKeyValue yamlKeyValue) {
+        String valueText = yamlKeyValue.getKeyText();
+        if (StringUtils.isBlank(valueText)) {
+            return Collections.emptyList();
+        }
+
+        Collection<PhpClass> phpClasses = new HashSet<>();
+
+        if (valueText.endsWith("\\")) {
+            Collection<String> resource = YamlHelper.getYamlKeyValueStringOrArray(yamlKeyValue, "resource");
+            if (!resource.isEmpty()) {
+                phpClasses.addAll(ServiceContainerUtil.getPhpClassFromResources(
+                    yamlKeyValue.getProject(), valueText, yamlKeyValue.getContainingFile().getVirtualFile(), resource, YamlHelper.getYamlKeyValueStringOrArray(yamlKeyValue, "exclude"))
+                );
             }
         }
 

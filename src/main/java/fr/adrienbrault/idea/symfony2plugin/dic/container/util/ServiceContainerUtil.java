@@ -27,6 +27,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ServiceFileDefault
 import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ServiceTypeHint;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.visitor.ServiceConsumer;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerIdUsagesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.*;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
@@ -819,6 +820,33 @@ public class ServiceContainerUtil {
                 () -> CachedValueProvider.Result.create(getContainerFilesInner(project), PsiModificationTracker.MODIFICATION_COUNT),
                 false
             );
+    }
+
+    /**
+     * All class that matched against this pattern
+     *
+     * My<caret>Class\:
+     *  resource: '....'
+     *  exclude: '....'
+     */
+    @NotNull
+    public static Collection<PhpClass> getPhpClassFromResources(@NotNull Project project, @NotNull String namespace, @NotNull VirtualFile containerFile, @NotNull Collection<String> resource, @NotNull Collection<String> exclude) {
+        Collection<PhpClass> phpClasses = new HashSet<>();
+
+        for (PhpClass phpClass : PhpIndexUtil.getPhpClassInsideNamespace(project, "\\" + StringUtils.strip(namespace, "\\"))) {
+            boolean classMatchesGlob = ServiceIndexUtil.matchesResourcesGlob(
+                containerFile,
+                phpClass.getContainingFile().getVirtualFile(),
+                resource,
+                exclude
+            );
+
+            if (classMatchesGlob) {
+                phpClasses.add(phpClass);
+            }
+        }
+
+        return phpClasses;
     }
 
     /**
