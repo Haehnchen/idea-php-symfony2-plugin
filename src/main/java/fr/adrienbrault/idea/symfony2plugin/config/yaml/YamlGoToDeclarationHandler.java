@@ -514,36 +514,12 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
         //   resource: '....'
         //   exclude: '....'
         if (valueText.endsWith("\\")) {
-            Collection<String> resource = YamlHelper.getYamlKeyValueStringOrArray(yamlKeyValue, "resource");
-            if (!resource.isEmpty()) {
-                Collection<String> exclude = YamlHelper.getYamlKeyValueStringOrArray(yamlKeyValue, "exclude");
-                targets.addAll(getPhpClassFromResources(yamlKeyValue.getProject(), valueText, yamlKeyValue.getContainingFile().getVirtualFile(), resource, exclude));
-            }
+            targets.addAll(YamlHelper.getNamespaceResourcesClasses(yamlKeyValue));
         }
 
         targets.addAll(PhpElementsUtil.getClassesInterface(yamlKeyValue.getProject(), valueText));
 
         return targets;
-    }
-
-    @NotNull
-    private static Collection<PhpClass> getPhpClassFromResources(@NotNull Project project, @NotNull String namespace, @NotNull VirtualFile source, @NotNull Collection<String> resource, @NotNull Collection<String> exclude) {
-        Collection<PhpClass> phpClasses = new HashSet<>();
-
-        for (PhpClass phpClass : PhpIndexUtil.getPhpClassInsideNamespace(project, "\\" + StringUtils.strip(namespace, "\\"))) {
-            boolean classMatchesGlob = ServiceIndexUtil.matchesResourcesGlob(
-                source,
-                phpClass.getContainingFile().getVirtualFile(),
-                resource,
-                exclude
-            );
-
-            if (classMatchesGlob) {
-                phpClasses.add(phpClass);
-            }
-        }
-
-        return phpClasses;
     }
 
     @Nullable
