@@ -17,6 +17,11 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.21.204
+* Support autowired resources services inside "argument bind" navigation (Daniel Espendiller)
+* Support arrays for "resource" and "exclude" on autowrite which is use on Symfony >= 5 as default instead of global pattern (Daniel Espendiller)
+* Support form "help" option inside translations (Daniel Espendiller)
+
 ## 0.21.203
 * Fix typo in build instructions (Matthias Gutjahr)
 * Remove leading slash from storage location ([#1543](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1543)) (Jens Schulze)
