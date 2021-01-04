@@ -3,7 +3,7 @@ Changelog
 
 # Version names
 * 0.22.x: PhpStorm 2020.3
-* 0.21.x: PhpStorm 2020.2
+* 0.21.x: PhpStorm 2020.2+ (no support)
 * 0.20.x: PhpStorm 2020.0+ (no support)
 * 0.19.x: PhpStorm 2019.2+ (no support)
 * 0.18.x: PhpStorm 2019.1+ (no support)
