@@ -17,6 +17,14 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.22.205
+* Change gradle build to use PhpStorm 2020.3.1 packages (Daniel Espendiller)
+* 2020.3 support: fix yaml indents (Aleksandr Slapoguzov) [#1568](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1568)
+* 2020.3 support: handle a new psi structure for twig variables and fields (Aleksandr Slapoguzov) [#1568](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1568)
+* 2020.3 support: removed go_to_declaration_handler for sets because now it works out of the box (Aleksandr Slapoguzov) [#1568](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1568)
+* 2020.3 support: removed invalid case - else branch cannot contain any conditions (Aleksandr Slapoguzov) [#1568](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1568)
+* 2020.3 support: bump plugin versions (Aleksandr Slapoguzov) [#1568](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1568)
+
 ## 0.21.204
 * Support autowired resources services inside "argument bind" navigation (Daniel Espendiller)
 * Support arrays for "resource" and "exclude" on autowrite which is use on Symfony >= 5 as default instead of global pattern (Daniel Espendiller)
