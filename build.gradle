@@ -10,8 +10,8 @@ def htmlFixer = { htmlFile -> file(htmlFile).text.replace('<html>', '').replace(
 apply plugin: 'idea'
 
 apply plugin: 'java'
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
 
 apply plugin: 'org.jetbrains.intellij'
 
