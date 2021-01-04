@@ -19,6 +19,7 @@ import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
+import com.jetbrains.twig.elements.TwigVariableReference;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
@@ -38,6 +39,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.captureVariableOrField;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -369,6 +372,7 @@ public class TwigTypeResolveUtil {
         // {% for user in "users" %}
         PsiElement forTag = twigCompositeElement.getFirstChild();
         PsiElement inVariable = PsiElementUtils.getChildrenOfType(forTag, TwigPattern.getForTagInVariablePattern());
+        inVariable = inVariable instanceof TwigVariableReference ? inVariable : PsiTreeUtil.getChildOfType(inVariable, TwigVariableReference.class);
         if(inVariable == null) {
             return;
         }
@@ -629,7 +633,7 @@ public class TwigTypeResolveUtil {
         }
 
         // find next IDENTIFIER, eg skip whitespaces
-        PsiElement psiIdentifier = PsiElementUtils.getNextSiblingOfType(psiIn, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER));
+        PsiElement psiIdentifier = PsiElementUtils.getNextSiblingOfType(psiIn, captureVariableOrField());
         if(psiIdentifier == null) {
             return Collections.emptyList();
         }

@@ -302,8 +302,8 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
         assertEquals("" +
             "foo:\n" +
             "   bar:\n" +
-            "       car: test\n" +
-            "       apple: value",
+            "     car: test\n" +
+            "     apple: value",
             yamlFile.getText()
         );
     }
@@ -374,12 +374,12 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
 
         String text = yamlFile.getText();
         assertEquals("services:\n" +
-                "   foo:\n" +
+                "  foo:\n" +
                 "       car: test\n" +
-                "   my_service:\n" +
-                "     class: foo\n" +
-                "     tag:\n" +
-                "       - foo",
+                "  my_service:\n" +
+                "    class: foo\n" +
+                "    tag:\n" +
+                "      - foo",
             text
         );
     }

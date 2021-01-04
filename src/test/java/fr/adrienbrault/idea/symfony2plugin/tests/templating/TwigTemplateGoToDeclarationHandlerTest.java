@@ -200,11 +200,6 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
 
         assertNavigationMatch(
             TwigFileType.INSTANCE,
-            "{% if %}{% else foo<caret>_test() %}{% endif %}", PlatformPatterns.psiElement(Function.class).withName("foo_test")
-        );
-
-        assertNavigationMatch(
-            TwigFileType.INSTANCE,
             "{% if %}{% elseif foo<caret>_test() %}{% endif %}", PlatformPatterns.psiElement(Function.class).withName("foo_test")
         );
 
