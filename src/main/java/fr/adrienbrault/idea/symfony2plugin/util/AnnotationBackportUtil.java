@@ -172,22 +172,23 @@ public class AnnotationBackportUtil {
      * "Foo\ParkResortBundle\Controller\SubController\BundleController\FooController::nestedFooAction" => foo_parkresort_sub_bundle_foo_nestedfoo"
      */
     public static String getRouteByMethod(@NotNull PhpDocTag phpDocTag) {
-        PhpPsiElement method = getMethodScope(phpDocTag);
+        Method method = getMethodScope(phpDocTag);
         if (method == null) {
             return null;
         }
 
+        return getRouteByMethod(method);
+    }
+
+    public static String getRouteByMethod(@NotNull Method method) {
         String name = method.getName();
-        if(name == null) {
-            return null;
-        }
 
         // strip action
         if(name.endsWith("Action")) {
             name = name.substring(0, name.length() - "Action".length());
         }
 
-        PhpClass containingClass = ((Method) method).getContainingClass();
+        PhpClass containingClass = method.getContainingClass();
         if(containingClass == null) {
             return null;
         }

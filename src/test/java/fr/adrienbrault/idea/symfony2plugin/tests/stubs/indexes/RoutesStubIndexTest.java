@@ -31,7 +31,7 @@ public class RoutesStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase 
     public void testRouteIdIndex() {
         assertIndexContains(RoutesStubIndex.KEY,
             "foo_yaml_pattern", "foo_yaml_path", "foo_yaml_path_only",
-            "foo_xml_pattern", "foo_xml_path", "foo_xml_id_only"
+            "foo_xml_pattern", "foo_xml_path", "foo_xml_id_only", "attributes_action", "app_my_default_attributeswithoutname"
         );
 
         assertIndexNotContains(RoutesStubIndex.KEY,
@@ -152,6 +152,29 @@ public class RoutesStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase 
 
     public void testAnnotationThatRouteWithPrefixIsInIndex() {
         assertIndexContains(RoutesStubIndex.KEY, "foo_prefix_home");
+    }
+
+    public void testThatPhp8AttributesMethodsAreInIndex() {
+        RouteInterface route = getFirstValue("attributes_action");
+        assertEquals("attributes_action", route.getName());
+        assertEquals("AppBundle\\My\\Controller\\DefaultController::attributesAction", route.getController());
+        assertEquals("/attributes-action", route.getPath());
+
+        RouteInterface route2 = getFirstValue("app_my_default_attributeswithoutname");
+        assertEquals("app_my_default_attributeswithoutname", route2.getName());
+        assertEquals("AppBundle\\My\\Controller\\DefaultController::attributesWithoutName", route2.getController());
+        assertEquals("/attributesWithoutName", route2.getPath());
+        assertContainsElements(route2.getMethods(), "POST", "GET");
+
+        RouteInterface route3 = getFirstValue("attributes-names");
+        assertEquals("attributes-names", route3.getName());
+        assertEquals("AppBundle\\My\\Controller\\DefaultController::attributesPath", route3.getController());
+        assertEquals("/attributes-path", route3.getPath());
+
+        RouteInterface route4 = getFirstValue("foo-attributes_prefix_home");
+        assertEquals("MyAttributesPrefix\\PrefixController::editAction", route4.getController());
+        assertEquals("foo-attributes_prefix_home", route4.getName());
+        assertEquals("/edit/{id}", route4.getPath());
     }
 
     @NotNull

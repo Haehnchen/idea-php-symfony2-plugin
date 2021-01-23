@@ -9,19 +9,19 @@ import com.intellij.util.containers.HashSet;
 import com.jetbrains.php.lang.documentation.phpdoc.parser.PhpDocElementTypes;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
-import com.jetbrains.php.lang.psi.elements.Method;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
-import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionArgument;
 import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
 import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpPsiAttributesUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -47,6 +47,10 @@ public class AnnotationRouteElementWalkingVisitor extends PsiRecursiveElementWal
     public void visitElement(PsiElement element) {
         if ((element instanceof PhpDocTag)) {
             visitPhpDocTag((PhpDocTag) element);
+        }
+
+        if ((element instanceof PhpAttributesList)) {
+            visitPhpAttributesList((PhpAttributesList) element);
         }
 
         super.visitElement(element);
@@ -119,6 +123,83 @@ public class AnnotationRouteElementWalkingVisitor extends PsiRecursiveElementWal
             extractMethods(phpDocTag, route);
 
             map.put(routeName, route);
+        }
+    }
+
+    private void visitPhpAttributesList(@NotNull PhpAttributesList phpAttributesList) {
+        PsiElement parent = phpAttributesList.getParent();
+
+        // prefix on class scope
+        String routeNamePrefix = "";
+        if (parent instanceof Method) {
+            PhpClass containingClass = ((Method) parent).getContainingClass();
+            if (containingClass != null) {
+                for (PhpAttribute attribute : containingClass.getAttributes()) {
+                    String fqn = attribute.getFQN();
+                    if(fqn == null || !RouteHelper.isRouteClassAnnotation(fqn)) {
+                        continue;
+                    }
+
+                    String nameAttribute = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, "name");
+                    if (nameAttribute != null) {
+                        routeNamePrefix = nameAttribute;
+                    }
+                }
+            }
+        }
+
+        for (PhpAttribute attribute : phpAttributesList.getAttributes()) {
+            String fqn = attribute.getFQN();
+            if(fqn == null || !RouteHelper.isRouteClassAnnotation(fqn)) {
+                continue;
+            }
+
+            String nameAttribute = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, "name");
+
+            String routeName = null;
+            if (nameAttribute != null) {
+                routeName = nameAttribute;
+            } else {
+                if (parent instanceof Method) {
+                    routeName = AnnotationBackportUtil.getRouteByMethod((Method) parent);
+                }
+            }
+
+            if (routeName == null) {
+                continue;
+            }
+
+            StubIndexedRoute route = new StubIndexedRoute(routeNamePrefix + routeName);
+
+            if (parent instanceof Method) {
+                route.setController(getController((Method) parent));
+            }
+
+            // find path "#[Route('/attributesWithoutName')]" or "#[Route(path: '/attributesWithoutName')]"
+            String pathAttribute = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, "path");
+            if (pathAttribute != null) {
+                route.setPath(pathAttribute);
+            } else {
+                // find default "#[Route('/attributesWithoutName')]"
+                for (PhpExpectedFunctionArgument argument : attribute.getArguments()) {
+                    if (argument.getArgumentIndex() == 0) {
+                        String value = PsiElementUtils.trimQuote(argument.getValue());
+                        if (StringUtils.isNotBlank(value)) {
+                            route.setPath(value);
+                        }
+
+                        break;
+                    }
+                }
+            }
+
+            Collection<String> methods = PhpPsiAttributesUtil.getAttributeValueByNameAsArray(attribute, "methods");
+            if (!methods.isEmpty()) {
+                // array: needed for serialize
+                route.setMethods(new ArrayList<>(methods));
+            }
+
+            map.put(route.getName(), route);
         }
     }
 
@@ -202,12 +283,21 @@ public class AnnotationRouteElementWalkingVisitor extends PsiRecursiveElementWal
             return null;
         }
 
+        return getController(method);
+    }
+
+    /**
+     * FooController::fooAction
+     */
+    @Nullable
+    private String getController(@NotNull Method method) {
         PhpClass containingClass = method.getContainingClass();
         if(containingClass == null) {
             return null;
         }
 
-        return String.format("%s::%s",
+        return String.format(
+            "%s::%s",
             StringUtils.stripStart(containingClass.getFQN(), "\\"),
             method.getName()
         );
