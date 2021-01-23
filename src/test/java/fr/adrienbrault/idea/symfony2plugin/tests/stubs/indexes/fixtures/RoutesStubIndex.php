@@ -169,5 +169,60 @@ namespace AppBundle\My\Controller
         public function fooAction()
         {
         }
+
+        #[Route('/attributes-action', name: 'attributes_action')]
+        public function attributesAction()
+        {
+        }
+
+        #[Route('/attributesWithoutName', methods: ['GET', 'POST'])]
+        public function attributesWithoutName()
+        {
+        }
+
+        #[Route(path: '/attributes-path', name: 'attributes-names')]
+        public function attributesPath()
+        {
+        }
+    }
+}
+
+
+namespace MyAttributesPrefix
+{
+    use Symfony\Component\Routing\Annotation\Route;
+
+    #[Route(path: '/foo-attributes', name: 'foo-attributes_')]
+    class PrefixController
+    {
+        #[Route(path: '/edit/{id}', name: 'prefix_home')]
+        public function editAction()
+        {
+        }
+    }
+}
+
+namespace Symfony\Component\Routing\Annotation
+{
+    class Route
+    {
+        public function __construct(
+            $data = [],
+            $path = null,
+            string $name = null,
+            array $requirements = [],
+            array $options = [],
+            array $defaults = [],
+            string $host = null,
+            array $methods = [],
+            array $schemes = [],
+            string $condition = null,
+            int $priority = null,
+            string $locale = null,
+            string $format = null,
+            bool $utf8 = null,
+            bool $stateless = null
+        ) {
+        }
     }
 }
