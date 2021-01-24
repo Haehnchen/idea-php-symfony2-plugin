@@ -17,6 +17,10 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.22.206
+* Support routes definition inside PHP8 attributes (Daniel Espendiller) [#1567](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1567)
+* Higher java compatibility version for builds (Daniel Espendiller)
+
 ## 0.22.205
 * Change gradle build to use PhpStorm 2020.3.1 packages (Daniel Espendiller)
 * 2020.3 support: fix yaml indents (Aleksandr Slapoguzov) [#1568](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1568)
