@@ -162,7 +162,7 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
         }
 
         ParameterList parameterList = (ParameterList) psiElement.getContext();
-        if (parameterList == null || !(parameterList.getContext() instanceof NewExpression)) {
+        if (!(parameterList.getContext() instanceof NewExpression)) {
             return false;
         }
 
