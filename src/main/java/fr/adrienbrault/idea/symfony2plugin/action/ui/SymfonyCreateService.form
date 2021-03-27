@@ -175,7 +175,6 @@
                       <component id="69cac" class="javax.swing.JTextArea" binding="textAreaOutput">
                         <constraints/>
                         <properties>
-                          <background color="-1"/>
                           <editable value="false"/>
                           <font name="Courier New"/>
                           <lineWrap value="true"/>
