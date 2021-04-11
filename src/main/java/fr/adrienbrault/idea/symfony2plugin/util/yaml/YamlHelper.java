@@ -1033,6 +1033,13 @@ public class YamlHelper {
     }
 
     /**
+     * Returns true if given parameter name is default value for ENV variable.
+     */
+    public static boolean isDefaultEnvValue(@NotNull String parameterName) {
+        return parameterName.length() > 5 && parameterName.startsWith("env(") && parameterName.endsWith(")");
+    }
+
+    /**
      * service_name:
      *   class: FOOBAR
      *   calls:
