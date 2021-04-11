@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.util;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.util.containers.ContainerUtil;
+import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.*;
@@ -306,5 +307,21 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
         assertContainsElements(PhpElementsUtil.StringResolver.findStringValues(PhpPsiElementFactory.createPhpPsiFromText(getProject(), BinaryExpression.class, "<?php foo($var ?? 'test.html');")), "test.html");
         assertContainsElements(PhpElementsUtil.StringResolver.findStringValues(PhpPsiElementFactory.createPhpPsiFromText(getProject(), ParameterList.class, "<?php $var = 'test.html'; foo($var);").getFirstPsiChild()), "test.html");
         assertContainsElements(PhpElementsUtil.StringResolver.findStringValues(PhpPsiElementFactory.createPhpPsiFromText(getProject(), TernaryExpression.class, "<?php $var = 'test.html'; $x = true == true ? $var : 'test2.html';")), "test.html", "test2.html");
+    }
+
+    public void testGetImplementedMethodsForRecursiveClassHierarchy() {
+        myFixture.addFileToProject("First.php", "<?php class First extends Second { public function method() {} }");
+        myFixture.addFileToProject("Second.php", "<?php class Second extends First { public function method() {} }");
+
+        var firstClass = PhpIndex.getInstance(getProject()).getClassByName("First");
+        var secondClass = PhpIndex.getInstance(getProject()).getClassByName("Second");
+
+        var actualResult = PhpElementsUtil.getImplementedMethods(
+            secondClass.findOwnMethodByName("method")
+        );
+
+        assertSize(2, actualResult);
+        assertEquals(secondClass.findOwnMethodByName("method"), actualResult[0]);
+        assertEquals(firstClass.findOwnMethodByName("method"), actualResult[1]);
     }
 }
