@@ -575,14 +575,16 @@ public class PhpElementsUtil {
     }
 
     public static Method[] getImplementedMethods(@NotNull Method method) {
-        ArrayList<Method> items = getImplementedMethods(method.getContainingClass(), method, new ArrayList<>());
+        ArrayList<Method> items = getImplementedMethods(method.getContainingClass(), method, new ArrayList<>(), new HashSet<>());
         return items.toArray(new Method[items.size()]);
     }
 
-    private static ArrayList<Method> getImplementedMethods(@Nullable PhpClass phpClass, @NotNull Method method, ArrayList<Method> implementedMethods) {
-        if (phpClass == null) {
+    private static ArrayList<Method> getImplementedMethods(@Nullable PhpClass phpClass, @NotNull Method method, ArrayList<Method> implementedMethods, Set<PhpClass> visitedClasses) {
+        if (phpClass == null || visitedClasses.contains(phpClass)) {
             return implementedMethods;
         }
+
+        visitedClasses.add(phpClass);
 
         Method[] methods = phpClass.getOwnMethods();
         for (Method ownMethod : methods) {
@@ -592,10 +594,10 @@ public class PhpElementsUtil {
         }
 
         for(PhpClass interfaceClass: phpClass.getImplementedInterfaces()) {
-            getImplementedMethods(interfaceClass, method, implementedMethods);
+            getImplementedMethods(interfaceClass, method, implementedMethods, visitedClasses);
         }
 
-        getImplementedMethods(phpClass.getSuperClass(), method, implementedMethods);
+        getImplementedMethods(phpClass.getSuperClass(), method, implementedMethods, visitedClasses);
 
         return implementedMethods;
     }
