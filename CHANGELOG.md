@@ -2,7 +2,8 @@ Changelog
 =========
 
 # Version names
-* 0.22.x: PhpStorm 2020.3
+* 0.23.x: PhpStorm 2021.1
+* 0.22.x: PhpStorm 2020.3+
 * 0.21.x: PhpStorm 2020.2+ (no support)
 * 0.20.x: PhpStorm 2020.0+ (no support)
 * 0.19.x: PhpStorm 2019.2+ (no support)
@@ -16,6 +17,9 @@ Changelog
 * 0.11.x: PhpStorm 8, 9, 10 (no support)
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
+
+## 0.22.207
+* Removed hardcoded background in output textarea of Symfony Create Service Form (Adam Wójs)
 
 ## 0.22.206
 * Support routes definition inside PHP8 attributes (Daniel Espendiller) [#1567](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1567)
