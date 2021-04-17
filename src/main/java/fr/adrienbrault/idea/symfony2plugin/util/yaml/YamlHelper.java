@@ -1318,9 +1318,13 @@ public class YamlHelper {
         if (valueText.endsWith("\\")) {
             Collection<String> resource = YamlHelper.getYamlKeyValueStringOrArray(yamlKeyValue, "resource");
             if (!resource.isEmpty()) {
-                phpClasses.addAll(ServiceContainerUtil.getPhpClassFromResources(
-                    yamlKeyValue.getProject(), valueText, yamlKeyValue.getContainingFile().getVirtualFile(), resource, YamlHelper.getYamlKeyValueStringOrArray(yamlKeyValue, "exclude"))
-                );
+                PsiFile containingFile = yamlKeyValue.getContainingFile();
+                // PhpStorm 2021.1 needs file check
+                if (containingFile != null)  {
+                    phpClasses.addAll(ServiceContainerUtil.getPhpClassFromResources(
+                        yamlKeyValue.getProject(), valueText, containingFile.getVirtualFile(), resource, YamlHelper.getYamlKeyValueStringOrArray(yamlKeyValue, "exclude"))
+                    );
+                }
             }
         }
 
