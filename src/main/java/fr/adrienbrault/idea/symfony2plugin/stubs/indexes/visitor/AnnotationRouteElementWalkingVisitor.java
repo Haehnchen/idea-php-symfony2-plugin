@@ -181,9 +181,10 @@ public class AnnotationRouteElementWalkingVisitor extends PsiRecursiveElementWal
                 route.setPath(pathAttribute);
             } else {
                 // find default "#[Route('/attributesWithoutName')]"
-                for (PhpExpectedFunctionArgument argument : attribute.getArguments()) {
-                    if (argument.getArgumentIndex() == 0) {
-                        String value = PsiElementUtils.trimQuote(argument.getValue());
+                for (PhpAttribute.PhpAttributeArgument argument : attribute.getArguments()) {
+                    PhpExpectedFunctionArgument argument1 = argument.getArgument();
+                    if (argument1.getArgumentIndex() == 0) {
+                        String value = PsiElementUtils.trimQuote(argument1.getValue());
                         if (StringUtils.isNotBlank(value)) {
                             route.setPath(value);
                         }
