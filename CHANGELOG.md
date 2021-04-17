@@ -3,7 +3,7 @@ Changelog
 
 # Version names
 * 0.23.x: PhpStorm 2021.1
-* 0.22.x: PhpStorm 2020.3+
+* 0.22.x: PhpStorm 2020.3+ (no support)
 * 0.21.x: PhpStorm 2020.2+ (no support)
 * 0.20.x: PhpStorm 2020.0+ (no support)
 * 0.19.x: PhpStorm 2019.2+ (no support)
@@ -17,6 +17,12 @@ Changelog
 * 0.11.x: PhpStorm 8, 9, 10 (no support)
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
+
+## 0.23.208
+* [#1624](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1624) secure yaml key class resolving for PhpStorm 2021.3 (Daniel Espendiller)
+* PhpStorm 2021.1 gradle build (Daniel Espendiller)
+* Fixed [#1575](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1575): Inspection "Container sensitivity" is not expected to be emitted for default env values (Adam Wójs)
+* Fixed [#1599](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1599): Added protection against infinite recursion in PhpElementsUtil.getImplementedMethods (Adam Wójs)
 
 ## 0.22.207
 * Removed hardcoded background in output textarea of Symfony Create Service Form (Adam Wójs)
