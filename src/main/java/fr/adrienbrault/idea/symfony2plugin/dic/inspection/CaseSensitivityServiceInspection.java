@@ -78,7 +78,7 @@ public class CaseSensitivityServiceInspection extends LocalInspectionTool {
         // services and parameter
         YamlHelper.processKeysAfterRoot(psiFile, yamlKeyValue -> {
             String keyText = yamlKeyValue.getKeyText();
-            if(StringUtils.isNotBlank(keyText) && !keyText.equals(keyText.toLowerCase()) && !YamlHelper.isClassServiceId(keyText)) {
+            if(StringUtils.isNotBlank(keyText) && !keyText.equals(keyText.toLowerCase()) && !YamlHelper.isClassServiceId(keyText) && !YamlHelper.isDefaultEnvValue(keyText)) {
                 PsiElement firstChild = yamlKeyValue.getFirstChild();
                 if(firstChild != null) {
                     holder.registerProblem(firstChild, SYMFONY_LOWERCASE_LETTERS_FOR_SERVICE, ProblemHighlightType.WEAK_WARNING);

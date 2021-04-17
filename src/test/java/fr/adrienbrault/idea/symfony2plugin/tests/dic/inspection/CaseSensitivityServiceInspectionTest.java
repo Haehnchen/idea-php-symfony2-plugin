@@ -79,6 +79,11 @@ public class CaseSensitivityServiceInspectionTest extends SymfonyLightCodeInsigh
                 "        class: DateTime",
             "Symfony: lowercase letters for service and parameter"
         );
+
+        assertLocalInspectionNotContains("service.yml", "parameters:\n" +
+                "    env(SECRET<caret>): 'some_secret'\n",
+        "Symfony: lowercase letters for service and parameter"
+        );
     }
 
     public void testCaseSensitivityForYamlExpressionsNotInspected() {
