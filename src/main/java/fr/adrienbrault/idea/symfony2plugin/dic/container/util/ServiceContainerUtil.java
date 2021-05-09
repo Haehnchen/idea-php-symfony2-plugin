@@ -731,6 +731,11 @@ public class ServiceContainerUtil {
         contents = contents.replaceAll(":+", ":");
         String[] split = contents.split(":");
 
+        if (split.length < 2) {
+            // Empty const name e.g. "\\App\\Foo::"
+            return Collections.emptyList();
+        }
+
         Collection<PsiElement> psiElements = new ArrayList<>();
         for (PhpClass phpClass : PhpElementsUtil.getClassesInterface(project, split[0])) {
             Field fieldByName = phpClass.findFieldByName(split[1], true);

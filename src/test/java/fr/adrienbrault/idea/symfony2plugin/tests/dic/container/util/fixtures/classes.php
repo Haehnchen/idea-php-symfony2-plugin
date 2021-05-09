@@ -27,3 +27,11 @@ namespace App\Controller
         }
     }
 }
+
+namespace App\Service
+{
+    class FooService
+    {
+        public const FOO = "foo";
+    }
+}

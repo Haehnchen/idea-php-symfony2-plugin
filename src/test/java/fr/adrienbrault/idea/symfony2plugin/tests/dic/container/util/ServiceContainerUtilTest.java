@@ -357,6 +357,10 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
         assertFalse(arguments.contains("private"));
     }
 
+    public void testGetTargetsForConstantForEmptyClassConstName() {
+        assertEmpty(ServiceContainerUtil.getTargetsForConstant(getProject(), "\\App\\Service\\FooService::"));
+    }
+
     private static class MyStringServiceInterfaceCondition implements Condition<ServiceInterface> {
 
         @NotNull
