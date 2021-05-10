@@ -18,6 +18,11 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.23.209
+* [#1614](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1614) fix "ListPopupStep" issues of PhpStorm 2021.1 (Daniel Espendiller)
+* Fixed [#1640](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1640): Go to declaration throws ArrayIndexOutOfBoundsException on empty class const name (Adam Wójs)
+* Added unit test for [#1640](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1640) (Adam Wójs)
+
 ## 0.23.208
 * [#1624](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1624) secure yaml key class resolving for PhpStorm 2021.3 (Daniel Espendiller)
 * PhpStorm 2021.1 gradle build (Daniel Espendiller)
