@@ -1,8 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.profiler.widget;
 
-import com.intellij.openapi.actionSystem.ActionGroup;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
@@ -10,6 +8,7 @@ import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.ListPopup;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.openapi.wm.StatusBarWidget;
 import com.intellij.openapi.wm.impl.status.EditorBasedWidget;
 import com.intellij.ui.popup.PopupFactoryImpl;
@@ -144,8 +143,30 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
     @Nullable
     @Override
     public ListPopup getPopupStep() {
+        if (isDisposed()) {
+            return null;
+        }
+
         ActionGroup popupGroup = getActions();
-        return new PopupFactoryImpl.ActionGroupPopup("Symfony Profiler", popupGroup, SimpleDataContext.getProjectContext(getProject()), false, false, false, true, null, -1, null, null);
+
+        DataContext dataContext = SimpleDataContext.builder()
+                .add(CommonDataKeys.PROJECT, getProject())
+                .add(PlatformDataKeys.CONTEXT_COMPONENT, IdeFocusManager.getInstance(getProject()).getFocusOwner())
+                .build();
+
+        return new PopupFactoryImpl.ActionGroupPopup(
+                "Symfony Profiler",
+                popupGroup,
+                dataContext,
+                false,
+                false,
+                false,
+                true,
+                null,
+                -1,
+                null,
+                null
+        );
     }
 
     @Nullable

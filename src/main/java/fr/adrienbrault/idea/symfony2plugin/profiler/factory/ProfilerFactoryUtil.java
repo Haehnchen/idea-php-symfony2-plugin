@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class ProfilerFactoryUtil {
-    private static ProfilerFactoryInterface[] PROFILER = new ProfilerFactoryInterface[] {
+    private static final ProfilerFactoryInterface[] PROFILER = new ProfilerFactoryInterface[] {
         new HttpProfilerFactory(),
         new LocalProfilerFactory(),
     };
