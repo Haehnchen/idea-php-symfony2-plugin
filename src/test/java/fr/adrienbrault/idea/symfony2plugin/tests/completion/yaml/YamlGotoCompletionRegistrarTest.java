@@ -103,12 +103,33 @@ public class YamlGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixt
     }
 
     public void testThatPhpConstAreCompletedAndNavigable() {
-        assertCompletionIsEmpty(YAMLFileType.YML, "" +
-                "services:\n" +
-                "    foo:\n" +
-                "       class: Foo\\Foobar\n" +
-                "       arguments: \n" +
-                "           - !php/const Foo\\Bar<caret>::BAZ\n"
+        assertCompletionContains(
+            YAMLFileType.YML,
+            "services:\n" +
+            "    foo:\n" +
+            "       class: Foo\\Foobar\n" +
+            "       arguments: \n" +
+            "           - !php/const <caret>\n",
+            "Bar", "Foobar"
+        );
+
+        assertCompletionContains(
+            YAMLFileType.YML,
+            "services:\n" +
+            "    foo:\n" +
+            "       class: Foo\\Foobar\n" +
+            "       arguments: \n" +
+            "           - !php/const Foo\\Bar::<caret>\n",
+            "BAZ"
+        );
+
+        assertCompletionIsEmpty(
+            YAMLFileType.YML,
+            "services:\n" +
+            "    foo:\n" +
+            "       class: Foo\\Foobar\n" +
+            "       arguments: \n" +
+            "           - !php/const Foo\\Bar<caret>::BAZ\n"
         );
     }
 }
