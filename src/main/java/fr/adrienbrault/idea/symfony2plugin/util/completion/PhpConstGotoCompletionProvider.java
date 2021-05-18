@@ -42,12 +42,16 @@ public class PhpConstGotoCompletionProvider extends GotoCompletionProvider {
         PhpIndex phpIndex = PhpIndex.getInstance(this.getProject());
         CompletionResultSet resultSet = arguments.getResultSet();
 
-        final String prefix = getElement().getText().replace(CompletionUtil.DUMMY_IDENTIFIER_TRIMMED, "");
+        var elementText = getElement().getText();
+        var scopeOperatorPos = elementText.indexOf(SCOPE_OPERATOR);
+        var cursorPos = elementText.indexOf(CompletionUtil.DUMMY_IDENTIFIER_TRIMMED);
 
         // Class constants:  !php/const Foo::<caret>
-        if (prefix.contains(SCOPE_OPERATOR)) {
-            String classFQN = prefix.substring(0, getElement().getText().indexOf(SCOPE_OPERATOR));
-            PhpClass phpClass = PhpElementsUtil.getClassInterface(this.getProject(), classFQN);
+        if (scopeOperatorPos > -1 && scopeOperatorPos < cursorPos) {
+            var prefix = elementText.replace(CompletionUtil.DUMMY_IDENTIFIER_TRIMMED, "");
+            var classFQN = prefix.substring(0, scopeOperatorPos);
+            var phpClass = PhpElementsUtil.getClassInterface(this.getProject(), classFQN);
+
             if (phpClass != null) {
                 // reset the prefix matcher, starting after ::
                 resultSet = resultSet.withPrefixMatcher(prefix.substring(prefix.indexOf(SCOPE_OPERATOR) + 2));
