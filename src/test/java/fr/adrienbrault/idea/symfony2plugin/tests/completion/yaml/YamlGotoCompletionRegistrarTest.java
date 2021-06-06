@@ -123,6 +123,16 @@ public class YamlGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixt
             "BAZ"
         );
 
+        assertCompletionNotContains(
+            YAMLFileType.YML,
+            "services:\n" +
+            "    foo:\n" +
+            "       class: Foo\\Foobar\n" +
+            "       arguments: \n" +
+            "           - !php/const Foo\\Bar::<caret>\n",
+            "PROTECTED_CONST", "PRIVATE_CONST"
+        );
+
         assertCompletionIsEmpty(
             YAMLFileType.YML,
             "services:\n" +
