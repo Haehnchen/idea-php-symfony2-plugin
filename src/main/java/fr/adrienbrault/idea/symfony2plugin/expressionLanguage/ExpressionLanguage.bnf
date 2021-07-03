@@ -1,0 +1,149 @@
+{
+  parserClass="fr.adrienbrault.idea.symfony2plugin.expressionLanguage.ExpressionLanguageParser"
+
+  extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+
+  psiClassPrefix="ExpressionLanguage"
+  psiImplClassSuffix="Impl"
+  psiPackage="fr.adrienbrault.idea.symfony2plugin.expressionLanguage.psi"
+  psiImplPackage="fr.adrienbrault.idea.symfony2plugin.expressionLanguage.psi.impl"
+
+  elementTypeHolderClass="fr.adrienbrault.idea.symfony2plugin.expressionLanguage.psi.ExpressionLanguageTypes"
+  elementTypeClass="fr.adrienbrault.idea.symfony2plugin.expressionLanguage.psi.ExpressionLanguageElementType"
+  tokenTypeClass="fr.adrienbrault.idea.symfony2plugin.expressionLanguage.psi.ExpressionLanguageTokenType"
+
+  extends(".*expr")=expr
+  tokens=[
+    space='regexp:\s+'
+    number='regexp:\d+(\.\d*)?([Ee][+\-]\d+)?'
+    null="regexp:NULL|null"
+    true="regexp:TRUE|true"
+    false="regexp:FALSE|false"
+    id='regexp:\p{Alpha}\w*'
+    string="regexp:('([^'\\]|\\.)*'|\"([^\"\\]|\\.)*\")"
+    OP_OR="||"
+    OP_OR_KW="or"
+    OP_AND="&&"
+    OP_AND_KW="and"
+    OP_BIT_OR="|"
+    OP_BIT_XOR="^"
+    OP_BIT_AND="&"
+    OP_IDENTICAL="==="
+    OP_EQ="=="
+    OP_NOT_IDENTICAL="!=="
+    OP_NEQ="!="
+    OP_LT="<"
+    OP_GT=">"
+    OP_GTE=">="
+    OP_LTE="<="
+    OP_NOT_IN="not in"
+    OP_IN="in"
+    OP_MATCHES="matches"
+    OP_RANGE=".."
+    OP_PLUS="+"
+    OP_MINUS="-"
+    OP_CONCAT="~"
+    OP_MUL="*"
+    OP_DIV="/"
+    OP_MOD="%"
+    OP_POW="**"
+    OP_NOT='!'
+    OP_NOT_KW='not'
+
+    L_ROUND_BRACKET="("
+    R_ROUND_BRACKET=")"
+    L_CURLY_BRACKET="{"
+    R_CURLY_BRACKET="}"
+    L_SQUARE_BRACKET="["
+    R_SQUARE_BRACKET="]"
+
+    syntax='regexp:[?:.,]'
+  ]
+}
+
+root ::= expr
+
+expr ::= ternary_group
+    | or_expr
+    | and_expr
+    | bit_or_expr
+    | bit_xor_expr
+    | bit_and_expr
+    | rel_group
+    | range_expr
+    | add_group
+    | concat_expr
+    | mul_group
+    | not_expr
+    | exp_expr
+    | sign_group
+    | qualification_expr
+    | array_access_expr
+    | primary_group
+
+private sign_group ::= unary_plus_expr | unary_min_expr
+private mul_group ::= mul_expr | div_expr | mod_expr
+private add_group ::= plus_expr | minus_expr
+private ternary_group ::= elvis_expr | ternary_expr
+
+private rel_group ::= identical_expr
+    | eq_expr
+    | not_identical_expr
+    | neq_expr
+    | gte_expr
+    | gt_expr
+    | lt_expr
+    | lte_expr
+    | not_in_expr
+    | in_expr
+    | matches_expr
+
+private primary_group ::= simple_ref_expr | literal_expr | array_expr | hash_expr | call_expr | paren_expr
+
+not_expr            ::= (OP_NOT|OP_NOT_KW) expr
+unary_min_expr      ::= OP_MINUS expr
+unary_plus_expr     ::= OP_PLUS expr
+div_expr            ::= expr OP_DIV expr
+mul_expr            ::= expr OP_MUL expr
+mod_expr            ::= expr OP_MOD expr
+concat_expr         ::= expr OP_CONCAT expr
+minus_expr          ::= expr OP_MINUS expr
+plus_expr           ::= expr OP_PLUS expr
+range_expr          ::= expr OP_RANGE expr
+identical_expr      ::= expr OP_IDENTICAL expr
+not_identical_expr  ::= expr OP_NOT_IDENTICAL expr
+eq_expr             ::= expr OP_EQ expr
+neq_expr            ::= expr OP_NEQ expr
+gt_expr             ::= expr OP_GT expr
+gte_expr            ::= expr OP_GTE expr
+lt_expr             ::= expr OP_LT expr
+lte_expr            ::= expr OP_LTE expr
+not_in_expr         ::= expr OP_NOT_IN expr
+in_expr             ::= expr OP_IN expr
+matches_expr        ::= expr OP_MATCHES expr
+or_expr             ::= expr (OP_OR|OP_OR_KW) expr
+and_expr            ::= expr (OP_AND|OP_AND_KW) expr
+bit_and_expr        ::= expr OP_BIT_AND expr
+bit_or_expr         ::= expr OP_BIT_OR expr
+bit_xor_expr        ::= expr OP_BIT_XOR expr
+exp_expr            ::= expr (OP_POW expr)+
+paren_expr          ::= L_ROUND_BRACKET expr R_ROUND_BRACKET
+ternary_expr        ::= expr '?' expr (':' expr)?
+elvis_expr          ::= expr '?:' expr
+
+fake ref_expr ::= expr? '.' identifier
+simple_ref_expr ::= identifier {extends=ref_expr elementType=ref_expr}
+qualification_expr ::= expr '.' identifier {extends=ref_expr elementType=ref_expr}
+array_access_expr ::= expr L_SQUARE_BRACKET expr R_SQUARE_BRACKET {extends=ref_expr elementType=ref_expr}
+
+literal_expr ::= number | string | true | false | null
+array_expr ::= L_SQUARE_BRACKET expr_list? R_SQUARE_BRACKET
+hash_expr ::= L_CURLY_BRACKET hash_entries? R_CURLY_BRACKET
+
+call_expr ::= expr L_ROUND_BRACKET expr_list? R_ROUND_BRACKET
+
+private hash_entries ::= hash_entry (',' hash_entry)*
+private hash_entry ::= identifier ':' expr
+private expr_list ::= expr (',' expr_list)*
+
+identifier ::= id
