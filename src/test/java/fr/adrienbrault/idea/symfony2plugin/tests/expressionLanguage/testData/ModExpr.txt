@@ -1,0 +1,9 @@
+Expression Language File
+  ExpressionLanguageModExprImpl(MOD_EXPR)
+    ExpressionLanguageLiteralExprImpl(LITERAL_EXPR)
+      PsiElement( ExpressionLanguageType.number)('17')
+    PsiWhiteSpace(' ')
+    PsiElement( ExpressionLanguageType.%)('%')
+    PsiWhiteSpace(' ')
+    ExpressionLanguageLiteralExprImpl(LITERAL_EXPR)
+      PsiElement( ExpressionLanguageType.number)('10')

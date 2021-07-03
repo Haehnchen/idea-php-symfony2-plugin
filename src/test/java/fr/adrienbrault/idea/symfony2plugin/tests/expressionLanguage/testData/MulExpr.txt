@@ -1,0 +1,9 @@
+Expression Language File
+  ExpressionLanguageMulExprImpl(MUL_EXPR)
+    ExpressionLanguageLiteralExprImpl(LITERAL_EXPR)
+      PsiElement( ExpressionLanguageType.number)('2')
+    PsiWhiteSpace(' ')
+    PsiElement( ExpressionLanguageType.*)('*')
+    PsiWhiteSpace(' ')
+    ExpressionLanguageLiteralExprImpl(LITERAL_EXPR)
+      PsiElement( ExpressionLanguageType.number)('2')

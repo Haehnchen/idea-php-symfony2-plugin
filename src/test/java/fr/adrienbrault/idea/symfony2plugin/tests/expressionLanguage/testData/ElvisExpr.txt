@@ -1,0 +1,12 @@
+Expression Language File
+  ExpressionLanguageElvisExprImpl(ELVIS_EXPR)
+    ExpressionLanguageRefExprImpl(REF_EXPR)
+      ExpressionLanguageIdentifierImpl(IDENTIFIER)
+        PsiElement( ExpressionLanguageType.id)('a')
+    PsiWhiteSpace(' ')
+    PsiElement( ExpressionLanguageType.syntax)('?')
+    PsiElement( ExpressionLanguageType.syntax)(':')
+    PsiWhiteSpace(' ')
+    ExpressionLanguageRefExprImpl(REF_EXPR)
+      ExpressionLanguageIdentifierImpl(IDENTIFIER)
+        PsiElement( ExpressionLanguageType.id)('b')

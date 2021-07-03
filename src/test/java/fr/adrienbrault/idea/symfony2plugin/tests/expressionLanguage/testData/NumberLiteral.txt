@@ -1,0 +1,3 @@
+Expression Language File
+  ExpressionLanguageLiteralExprImpl(LITERAL_EXPR)
+    PsiElement( ExpressionLanguageType.number)('2')

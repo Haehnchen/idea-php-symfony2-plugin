@@ -1,0 +1,11 @@
+Expression Language File
+  ExpressionLanguageBitXorExprImpl(BIT_XOR_EXPR)
+    ExpressionLanguageRefExprImpl(REF_EXPR)
+      ExpressionLanguageIdentifierImpl(IDENTIFIER)
+        PsiElement( ExpressionLanguageType.id)('a')
+    PsiWhiteSpace(' ')
+    PsiElement( ExpressionLanguageType.^)('^')
+    PsiWhiteSpace(' ')
+    ExpressionLanguageRefExprImpl(REF_EXPR)
+      ExpressionLanguageIdentifierImpl(IDENTIFIER)
+        PsiElement( ExpressionLanguageType.id)('b')

@@ -1,0 +1,5 @@
+Expression Language File
+  ExpressionLanguageUnaryPlusExprImpl(UNARY_PLUS_EXPR)
+    PsiElement( ExpressionLanguageType.+)('+')
+    ExpressionLanguageLiteralExprImpl(LITERAL_EXPR)
+      PsiElement( ExpressionLanguageType.number)('1')

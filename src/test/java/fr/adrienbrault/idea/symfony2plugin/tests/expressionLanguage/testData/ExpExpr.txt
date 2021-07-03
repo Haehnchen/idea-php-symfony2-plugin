@@ -1,0 +1,8 @@
+Expression Language File
+  ExpressionLanguageExpExprImpl(EXP_EXPR)
+    ExpressionLanguageRefExprImpl(REF_EXPR)
+      ExpressionLanguageIdentifierImpl(IDENTIFIER)
+        PsiElement( ExpressionLanguageType.id)('a')
+    PsiElement( ExpressionLanguageType.**)('**')
+    ExpressionLanguageLiteralExprImpl(LITERAL_EXPR)
+      PsiElement( ExpressionLanguageType.number)('2')
