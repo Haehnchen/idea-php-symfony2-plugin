@@ -92,6 +92,17 @@ public final class LanguageInjectionPatterns {
             );
     }
 
+    public static ElementPattern<? extends PsiElement> getVariableAssignmentPattern(@NotNull String variableName) {
+        return PlatformPatterns.psiElement()
+            .withParent(PlatformPatterns
+                .psiElement(AssignmentExpression.class)
+                .withFirstChild(PlatformPatterns
+                    .psiElement(Variable.class)
+                    .withName(variableName)
+                )
+            );
+    }
+
     private static class IsAnnotationProperty extends PatternCondition<StringLiteralExpression> {
         @NotNull
         private final String classFQN;

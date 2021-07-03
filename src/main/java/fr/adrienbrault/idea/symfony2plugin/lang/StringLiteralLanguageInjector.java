@@ -12,9 +12,33 @@ import java.util.*;
 
 public class StringLiteralLanguageInjector implements MultiHostInjector {
 
+    public static final String LANGUAGE_ID_CSS = "CSS";
+    public static final String LANGUAGE_ID_XPATH = "XPath";
+    public static final String LANGUAGE_ID_JSON = "JSON";
+    public static final String LANGUAGE_ID_DQL = "DQL";
     public static final String LANGUAGE_ID_EXPRESSION_LANGUAGE = "Symfony Expression Language";
 
     private final LanguageInjection[] LANGUAGE_INJECTIONS = {
+        new LanguageInjection.Builder(LANGUAGE_ID_CSS)
+            .withPrefix("@media all { ")
+            .withSuffix(" }")
+            .matchingMethodCallArgument("\\Symfony\\Component\\DomCrawler\\Crawler", "filter", "selector", 0)
+            .matchingMethodCallArgument("\\Symfony\\Component\\DomCrawler\\Crawler", "children", "selector", 0)
+            .matchingMethodCallArgument("\\Symfony\\Component\\CssSelector\\CssSelectorConverter", "toXPath", "cssExpr", 0)
+            .build(),
+        new LanguageInjection.Builder(LANGUAGE_ID_XPATH)
+            .matchingMethodCallArgument("\\Symfony\\Component\\DomCrawler\\Crawler", "filterXPath", "xpath", 0)
+            .matchingMethodCallArgument("\\Symfony\\Component\\DomCrawler\\Crawler", "evaluate", "xpath", 0)
+            .build(),
+        new LanguageInjection.Builder(LANGUAGE_ID_JSON)
+            .matchingMethodCallArgument("\\Symfony\\Component\\HttpFoundation\\JsonResponse", "fromJsonString", "data", 0)
+            .matchingMethodCallArgument("\\Symfony\\Component\\HttpFoundation\\JsonResponse", "setJson", "json", 0)
+            .build(),
+        new LanguageInjection.Builder(LANGUAGE_ID_DQL)
+            .matchingMethodCallArgument("\\Doctrine\\ORM\\EntityManager", "createQuery", "dql", 0)
+            .matchingMethodCallArgument("\\Doctrine\\ORM\\Query", "setDQL", "dqlQuery", 0)
+            .matchingVariableAssigment("dql")
+            .build(),
         new LanguageInjection.Builder(LANGUAGE_ID_EXPRESSION_LANGUAGE)
             .matchingConstructorCallArgument("\\Symfony\\Component\\ExpressionLanguage\\Expression", "expression", 0)
             .matchingFunctionCallArgument("\\Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\expr", "expression", 0)

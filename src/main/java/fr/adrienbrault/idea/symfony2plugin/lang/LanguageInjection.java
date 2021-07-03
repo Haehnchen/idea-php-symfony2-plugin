@@ -99,6 +99,10 @@ public final class LanguageInjection {
             return matchingPattern(LanguageInjectionPatterns.getMethodCallArgumentPattern(classFQN, methodName, argumentName, argumentIndex));
         }
 
+        public Builder matchingVariableAssigment(@NotNull String variableName) {
+            return matchingPattern(LanguageInjectionPatterns.getVariableAssignmentPattern(variableName));
+        }
+
         public LanguageInjection build() {
             return new LanguageInjection(languageId, prefix, suffix, StandardPatterns.or(patterns.toArray(new ElementPattern[0])));
         }

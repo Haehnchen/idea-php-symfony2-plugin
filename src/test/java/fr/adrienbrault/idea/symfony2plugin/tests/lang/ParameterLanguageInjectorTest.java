@@ -6,9 +6,12 @@ import com.intellij.testFramework.fixtures.InjectionTestFixture;
 import com.jetbrains.php.lang.PhpFileType;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import junit.framework.TestCase;
+import org.junit.Ignore;
 
 import static fr.adrienbrault.idea.symfony2plugin.lang.ParameterLanguageInjector.*;
 
+@Deprecated
+@Ignore("ParameterLanguageInjectorTest is deprecated")
 public class ParameterLanguageInjectorTest extends SymfonyLightCodeInsightFixtureTestCase {
 
     private InjectionTestFixture injectionTestFixture;
