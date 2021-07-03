@@ -228,6 +228,13 @@
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigBlockIndexExtension"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigControllerStubIndex"/>
 
+        <fileType name="Expression Language File" implementationClass="fr.adrienbrault.idea.symfony2plugin.expressionLanguage.ExpressionLanguageFileType" fieldName="INSTANCE" language="Symfony Expression Language" extensions="sfel" />
+        <lang.parserDefinition language="Symfony Expression Language" implementationClass="fr.adrienbrault.idea.symfony2plugin.expressionLanguage.ExpressionLanguageParserDefinition" />
+        <lang.syntaxHighlighterFactory language="Symfony Expression Language" implementationClass="fr.adrienbrault.idea.symfony2plugin.expressionLanguage.ExpressionLanguageSyntaxHighlighterFactory" />
+        <lang.braceMatcher language="Symfony Expression Language" implementationClass="fr.adrienbrault.idea.symfony2plugin.expressionLanguage.ExpressionLanguageBraceMatcher" />
+        <lang.quoteHandler language="Symfony Expression Language" implementationClass="fr.adrienbrault.idea.symfony2plugin.expressionLanguage.ExpressionLanguageQuoteHandler" />
+        <colorSettingsPage implementation="fr.adrienbrault.idea.symfony2plugin.expressionLanguage.ExpressionLanguageColorSettingsPage"/>
+
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.ServiceLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.ControllerMethodLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigLineMarkerProvider"/>
@@ -258,6 +265,10 @@
         <codeInsight.parameterNameHints language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.ServiceArgumentParameterHintsProvider"/>
 
         <multiHostInjector implementation="fr.adrienbrault.idea.symfony2plugin.lang.ParameterLanguageInjector"/>
+        <multiHostInjector implementation="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlLanguageInjector" />
+        <multiHostInjector implementation="fr.adrienbrault.idea.symfony2plugin.lang.StringLiteralLanguageInjector" />
+        <multiHostInjector implementation="fr.adrienbrault.idea.symfony2plugin.config.xml.XmlLanguageInjector" />
+
         <iconProvider implementation="fr.adrienbrault.idea.symfony2plugin.twig.icon.TwigIconProvider"/>
 
         <statusBarWidgetFactory implementation="fr.adrienbrault.idea.symfony2plugin.ui.SymfonyStatusbarWidgetFactory" />
