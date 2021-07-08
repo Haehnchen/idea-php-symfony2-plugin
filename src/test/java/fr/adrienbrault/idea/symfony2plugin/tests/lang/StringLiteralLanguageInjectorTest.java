@@ -187,6 +187,15 @@ public class StringLiteralLanguageInjectorTest extends SymfonyLightCodeInsightFi
             "\n" +
             "use Symfony\\Component\\Validator\\Constraints\\Expression;\n" +
             "\n" +
+            "new Expression(['expression' => '<caret>']);\n",
+            LANGUAGE_ID_EXPRESSION_LANGUAGE
+        );
+
+        assertInjectedLangAtCaret(
+            "<?php\n" +
+            "\n" +
+            "use Symfony\\Component\\Validator\\Constraints\\Expression;\n" +
+            "\n" +
             "/**\n" +
             " * @Expression(\"<caret>\")\n" +
             " */\n" +
