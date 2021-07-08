@@ -55,12 +55,19 @@ publishPlugin {
 
 group 'fr.adrienbrault.idea.symfony2plugin'
 
+/*
+* What went wrong:
+A problem occurred evaluating root project 'idea-php-symfony2-plugin'.
+> java.lang.NullPointerException (no error message)
+
+
 def details = versionDetails()
 if (details.isCleanTag) {
     version = "${details.lastTag}"
 } else {
     version = "${details.lastTag}.${details.gitHash}-SNAPSHOT"
 }
+*/
 
 wrapper {
     gradleVersion '5.5.1'
