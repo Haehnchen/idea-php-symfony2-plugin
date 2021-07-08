@@ -9,6 +9,8 @@ import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.documentation.phpdoc.lexer.PhpDocTokenTypes;
 import com.jetbrains.php.lang.documentation.phpdoc.parser.PhpDocElementTypes;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
+import com.jetbrains.php.lang.parser.PhpElementTypes;
+import com.jetbrains.php.lang.patterns.PhpPatterns;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.elements.impl.ParameterListImpl;
 import de.espend.idea.php.annotation.util.AnnotationUtil;
@@ -72,6 +74,34 @@ public final class LanguageInjectionPatterns {
                 .withParent(
                     PlatformPatterns.psiElement(NewExpression.class)
                         .with(new IsConstructorReference(classFQN))
+                )
+            );
+    }
+
+    public static ElementPattern<? extends PsiElement> getConstructorCallWithArrayArgumentPattern(
+        @NotNull String classFQN,
+        @NotNull String argumentName,
+        int argumentIndex,
+        @NotNull String keyName
+    ) {
+        return PlatformPatterns.psiElement()
+            .withParent(PlatformPatterns
+                .psiElement(PhpPsiElement.class)
+                .withElementType(PhpElementTypes.ARRAY_VALUE)
+                .withParent(PlatformPatterns
+                    .psiElement(ArrayHashElement.class)
+                    .with(new IsArrayHashElementKey(keyName))
+                    .withParent(PlatformPatterns
+                        .psiElement(ArrayCreationExpression.class)
+                        .with(new IsArgument(argumentName, argumentIndex))
+                        .withParent(PlatformPatterns
+                            .psiElement(ParameterList.class)
+                            .withParent(
+                                PlatformPatterns.psiElement(NewExpression.class)
+                                    .with(new IsConstructorReference(classFQN))
+                            )
+                        )
+                    )
                 )
             );
     }
@@ -175,6 +205,26 @@ public final class LanguageInjectionPatterns {
         @Override
         public boolean accepts(@NotNull PhpAttribute phpAttribute, ProcessingContext context) {
             return classFQN.equals(phpAttribute.getFQN());
+        }
+    }
+
+    private static class IsArrayHashElementKey extends PatternCondition<ArrayHashElement> {
+        @NotNull
+        private final String name;
+
+        public IsArrayHashElementKey(@NotNull String name) {
+            super(String.format("IsArrayHashElementKey(%s)", name));
+            this.name = name;
+        }
+
+        @Override
+        public boolean accepts(@NotNull ArrayHashElement arrayHashElement, ProcessingContext context) {
+            var key = arrayHashElement.getKey();
+            if (key instanceof StringLiteralExpression) {
+                return ((StringLiteralExpression) key).getContents().equals(name);
+            }
+
+            return false;
         }
     }
 

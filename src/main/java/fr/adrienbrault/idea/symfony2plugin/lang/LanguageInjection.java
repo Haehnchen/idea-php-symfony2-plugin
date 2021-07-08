@@ -91,6 +91,10 @@ public final class LanguageInjection {
             return matchingPattern(LanguageInjectionPatterns.getConstructorCallArgumentPattern(classFQN, argumentName, argumentIndex));
         }
 
+        public Builder matchingConstructorCallWithArrayArgumentPattern(@NotNull String classFQN, @NotNull String argumentName, int argumentIndex, @NotNull String keyName) {
+            return matchingPattern(LanguageInjectionPatterns.getConstructorCallWithArrayArgumentPattern(classFQN, argumentName, argumentIndex, keyName));
+        }
+
         public Builder matchingFunctionCallArgument(@NotNull String functionFQN, @NotNull String argumentName, int argumentIndex) {
             return matchingPattern(LanguageInjectionPatterns.getFunctionCallArgumentPattern(functionFQN, argumentName, argumentIndex));
         }

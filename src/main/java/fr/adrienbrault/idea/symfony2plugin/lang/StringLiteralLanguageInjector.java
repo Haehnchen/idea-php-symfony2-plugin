@@ -41,6 +41,7 @@ public class StringLiteralLanguageInjector implements MultiHostInjector {
             .build(),
         new LanguageInjection.Builder(LANGUAGE_ID_EXPRESSION_LANGUAGE)
             .matchingConstructorCallArgument("\\Symfony\\Component\\ExpressionLanguage\\Expression", "expression", 0)
+            .matchingConstructorCallWithArrayArgumentPattern("\\Symfony\\Component\\Validator\\Constraints\\Expression", "expression", 0, "expression")
             .matchingFunctionCallArgument("\\Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\expr", "expression", 0)
             .matchingMethodCallArgument("\\Symfony\\Component\\ExpressionLanguage\\ExpressionLanguage", "evaluate", "expression", 0)
             .matchingMethodCallArgument("\\Symfony\\Component\\ExpressionLanguage\\ExpressionLanguage", "compile", "expression", 0)
