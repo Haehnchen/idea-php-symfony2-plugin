@@ -6,6 +6,7 @@ import com.intellij.openapi.application.Result;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PatternCondition;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
@@ -1321,9 +1322,12 @@ public class YamlHelper {
                 PsiFile containingFile = yamlKeyValue.getContainingFile();
                 // PhpStorm 2021.1 needs file check
                 if (containingFile != null)  {
-                    phpClasses.addAll(ServiceContainerUtil.getPhpClassFromResources(
-                        yamlKeyValue.getProject(), valueText, containingFile.getVirtualFile(), resource, YamlHelper.getYamlKeyValueStringOrArray(yamlKeyValue, "exclude"))
-                    );
+                    VirtualFile virtualFile = containingFile.getVirtualFile();
+                    if (virtualFile != null) {
+                        phpClasses.addAll(ServiceContainerUtil.getPhpClassFromResources(
+                            yamlKeyValue.getProject(), valueText, virtualFile, resource, YamlHelper.getYamlKeyValueStringOrArray(yamlKeyValue, "exclude"))
+                        );
+                    }
                 }
             }
         }
