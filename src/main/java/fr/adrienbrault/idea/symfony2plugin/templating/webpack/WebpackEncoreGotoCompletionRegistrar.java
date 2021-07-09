@@ -65,16 +65,6 @@ public class WebpackEncoreGotoCompletionRegistrar implements GotoCompletionRegis
         public void getLookupElements(@NotNull GotoCompletionProviderLookupArguments arguments) {
             SymfonyWebpackUtil.visitAllEntryFileTypes(getProject(), pair ->
                 {
-                    // ignore: "vendor/symonfy/.../tests/fixtures/build/entrypoints.json"
-                    String path = VfsUtil.getRelativePath(pair.first, ProjectUtil.getProjectDir(getElement()), '/');
-                    if (path != null) {
-                        String lowerCase = path.toLowerCase();
-
-                        if (lowerCase.contains("/test/") || lowerCase.contains("/tests/")) {
-                            return;
-                        }
-                    }
-
                     LookupElementBuilder lookupElement = LookupElementBuilder.create(pair.getSecond())
                         .withIcon(Symfony2Icons.SYMFONY)
                         .withTypeText(pair.first.getName());

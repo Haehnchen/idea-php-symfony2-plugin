@@ -11,14 +11,11 @@ import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -41,30 +38,40 @@ public class AssetDirectoryReader {
         this.filterExtension.addAll(Arrays.asList(filterExtension));
     }
 
-    @Nullable
-    private static VirtualFile getProjectAssetRoot(@NotNull Project project) {
-        String webDirectoryName = Settings.getInstance(project).directoryToWeb;
-        return VfsUtil.findRelativeFile(ProjectUtil.getProjectDir(project), webDirectoryName.split("/"));
+    @NotNull
+    private static Collection<VirtualFile> getProjectAssetRoot(@NotNull Project project) {
+        Set<String> paths = new HashSet<>();
+
+        // custom config
+        String directoryToWeb = Settings.getInstance(project).directoryToWeb;
+        if (StringUtils.isNotBlank(directoryToWeb)) {
+            paths.add(directoryToWeb);
+        }
+
+        paths.add("public"); // latest Symfony structure
+        paths.add("web"); // old Symfony structure
+
+        return paths.stream()
+            .map(path -> VfsUtil.findRelativeFile(ProjectUtil.getProjectDir(project), path.split("/")))
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
     }
 
     @NotNull
     public Collection<AssetFile> getAssetFiles(@NotNull Project project) {
         Collection<AssetFile> files = new ArrayList<>();
 
-        VirtualFile webDirectory = getProjectAssetRoot(project);
-        if (null == webDirectory) {
-            return files;
-        }
-
-        VfsUtil.visitChildrenRecursively(webDirectory, new VirtualFileVisitor() {
-            @Override
-            public boolean visitFile(@NotNull VirtualFile virtualFile) {
-                if(isValidFile(virtualFile)) {
-                    files.add(new AssetFile(virtualFile, AssetEnum.Position.Web, webDirectory));
+        for (VirtualFile webDirectory : getProjectAssetRoot(project)) {
+            VfsUtil.visitChildrenRecursively(webDirectory, new VirtualFileVisitor<VirtualFile>() {
+                @Override
+                public boolean visitFile(@NotNull VirtualFile virtualFile) {
+                    if(isValidFile(virtualFile)) {
+                        files.add(new AssetFile(virtualFile, AssetEnum.Position.Web, webDirectory));
+                    }
+                    return super.visitFile(virtualFile);
                 }
-                return super.visitFile(virtualFile);
-            }
-        });
+            });
+        }
 
         if(!this.includeBundleDir) {
             return files;
@@ -81,7 +88,7 @@ public class AssetDirectoryReader {
             VirtualFile resourceDirectory = VfsUtil.findRelativeFile(bundleDirectoryVirtual, "Resources");
 
             if (null != resourceDirectory) {
-                VfsUtil.visitChildrenRecursively(resourceDirectory, new VirtualFileVisitor() {
+                VfsUtil.visitChildrenRecursively(resourceDirectory, new VirtualFileVisitor<VirtualFile>() {
                     @Override
                     public boolean visitFile(@NotNull VirtualFile virtualFile) {
                         if(isValidFile(virtualFile)) {
@@ -139,21 +146,18 @@ public class AssetDirectoryReader {
 
         Collection<VirtualFile> files = new ArrayList<>();
 
-        VirtualFile webDirectory = getProjectAssetRoot(project);
-        if (null == webDirectory) {
-            return files;
-        }
-
-        Matcher matcher = Pattern.compile("^(.*[/\\\\])\\*([.\\w+]*)$").matcher(assetName);
-        if (!matcher.find()) {
-            VirtualFile assetFile = VfsUtil.findRelativeFile(webDirectory, assetName.split("/"));
-            if(assetFile != null) {
-                files.add(assetFile);
+        for (VirtualFile webDirectory : getProjectAssetRoot(project)) {
+            Matcher matcher = Pattern.compile("^(.*[/\\\\])\\*([.\\w+]*)$").matcher(assetName);
+            if (!matcher.find()) {
+                VirtualFile assetFile = VfsUtil.findRelativeFile(webDirectory, assetName.split("/"));
+                if(assetFile != null) {
+                    files.add(assetFile);
+                }
+            } else {
+                // "/*"
+                // "/*.js"
+                files.addAll(collectWildcardDirectories(matcher, webDirectory));
             }
-        } else {
-            // "/*"
-            // "/*.js"
-            files.addAll(collectWildcardDirectories(matcher, webDirectory));
         }
 
         return files;

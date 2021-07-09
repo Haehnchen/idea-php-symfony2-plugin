@@ -17,6 +17,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.presentation.java.SymbolPresentationUtil;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ConstantFunction;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIcons;
@@ -26,6 +27,9 @@ import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigElementTypes;
+import com.jetbrains.twig.elements.TwigFieldReference;
+import com.jetbrains.twig.elements.TwigPsiReference;
+import com.jetbrains.twig.elements.TwigVariableReference;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.RelatedPopupGotoLineMarker;
@@ -105,7 +109,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
                 if(lineOverwrites != null) {
                     results.add(lineOverwrites);
                 }
-            } else if(TwigPattern.getFunctionPattern("form_start", "form").accepts(psiElement)) {
+            } else if(TwigPattern.getFunctionPattern("form_start", "form", "form_end", "form_rest").accepts(psiElement)) {
                 LineMarkerInfo<?> lineOverwrites = attachFormType(psiElement);
                 if(lineOverwrites != null) {
                     results.add(lineOverwrites);
@@ -307,17 +311,13 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
 
     @Nullable
     private LineMarkerInfo<?> attachFormType(@NotNull PsiElement psiElement) {
-        PsiElement firstChild = psiElement.getFirstChild();
-        if (firstChild == null) {
+        // form(theform);
+        PsiElement twigFunctionParameterIdentifierPsi = TwigUtil.getTwigFunctionParameterIdentifierPsi(psiElement);
+        if (twigFunctionParameterIdentifierPsi == null) {
             return null;
         }
 
-        PsiElement nextSiblingOfType = PsiElementUtils.getNextSiblingOfType(firstChild, PlatformPatterns.psiElement().withElementType(TwigTokenTypes.IDENTIFIER).afterLeaf(PlatformPatterns.psiElement(TwigTokenTypes.LBRACE)));
-        if (nextSiblingOfType == null) {
-            return null;
-        }
-
-        Collection<TwigTypeContainer> twigTypeContainers = TwigTypeResolveUtil.resolveTwigMethodName(nextSiblingOfType, TwigTypeResolveUtil.formatPsiTypeNameWithCurrent(nextSiblingOfType));
+        Collection<TwigTypeContainer> twigTypeContainers = TwigTypeResolveUtil.resolveTwigMethodName(twigFunctionParameterIdentifierPsi, TwigTypeResolveUtil.formatPsiTypeNameWithCurrent(twigFunctionParameterIdentifierPsi));
 
         Collection<PhpClass> phpClasses = new HashSet<>();
 
@@ -337,7 +337,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             .setTooltipText("Navigate to Form")
             .setCellRenderer(new MyBlockListCellRenderer());
 
-        return builder.createLineMarkerInfo(firstChild);
+        return builder.createLineMarkerInfo(psiElement.getFirstChild());
     }
 
     @Nullable
