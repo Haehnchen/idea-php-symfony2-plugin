@@ -875,6 +875,20 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertDoesntContain(blocks, "foobar_2");
     }
 
+    public void testGetTwigFunctionParameterIdentifierPsi() {
+        PsiElement psiElement = TwigElementFactory.createPsiElement(getProject(), "{{ form(form.name) }}", TwigElementTypes.FUNCTION_CALL);
+        PsiElement twigFunctionParameter = TwigUtil.getTwigFunctionParameterIdentifierPsi(psiElement);
+
+        assertEquals("form", twigFunctionParameter.getText());
+        assertEquals(TwigTokenTypes.IDENTIFIER, twigFunctionParameter.getNode().getElementType());
+
+        psiElement = TwigElementFactory.createPsiElement(getProject(), "{{ form_start(\n     form, {attr: {'novalidate': 'novalidate'}}) }}", TwigElementTypes.FUNCTION_CALL);
+        twigFunctionParameter = TwigUtil.getTwigFunctionParameterIdentifierPsi(psiElement);
+
+        assertEquals("form", twigFunctionParameter.getText());
+        assertEquals(TwigTokenTypes.IDENTIFIER, twigFunctionParameter.getNode().getElementType());
+    }
+
     public void testGetBlockLookupElements() {
         PsiFile psiFile = myFixture.configureByText("foo.html.twig", "{% block name %}{% endblock %}");
         PsiFile psiFile2 = myFixture.configureByText("foo_2.html.twig", "{% block foobar %}{% endblock %}");

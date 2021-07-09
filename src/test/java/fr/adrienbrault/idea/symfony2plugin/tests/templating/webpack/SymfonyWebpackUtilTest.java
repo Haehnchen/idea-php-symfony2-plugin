@@ -25,6 +25,6 @@ public class SymfonyWebpackUtilTest extends SymfonyLightCodeInsightFixtureTestCa
         Set<String> entries = new HashSet<>();
 
         SymfonyWebpackUtil.visitAllEntryFileTypes(myFixture.getProject(), pair -> entries.add(pair.second));
-        assertContainsElements(entries, "foo", "foobar", "entry_foobar_2");
+        assertContainsElements(entries, "foo", "foobar", "entry_foobar_2", "addStyleEntryFoobar");
     }
 }

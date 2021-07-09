@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -161,10 +160,12 @@ public class IdeHelper {
 
         Collection<String> messages = new ArrayList<>();
 
+        /* Remove version info; prevent index issues
         Set<String> versions = SymfonyUtil.getVersions(project);
         if (!versions.isEmpty()) {
             messages.add("Symfony Version: " + versions.iterator().next());
         }
+        */
 
         // Symfony 3.0 structure
         if (VfsUtil.findRelativeFile(ProjectUtil.getProjectDir(project), "var", "cache") != null) {
@@ -180,10 +181,12 @@ public class IdeHelper {
 
         // There no clean version when "FooBar:Foo:foo.html.twig" was dropped or deprecated
         // So we disable it in the 4 branch by default; following with a default switch to "false" soon
+        /* Remove version info; prevent index issues
         if (SymfonyUtil.isVersionGreaterThenEquals(project, "4.0")) {
             Settings.getInstance(project).twigBundleNamespaceSupport = false;
             messages.add("Twig: Bundle names disabled");
         }
+        */
 
         return messages;
     }

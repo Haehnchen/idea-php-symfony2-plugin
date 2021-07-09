@@ -311,6 +311,29 @@ public class TwigUtil {
     }
 
     /**
+     * "form(form.name)" => "form"
+     */
+    @Nullable
+    public static PsiElement getTwigFunctionParameterIdentifierPsi(@NotNull PsiElement psiElement) {
+        // "form(form.name)" => "form"
+        TwigFieldReference childOfType = PsiTreeUtil.findChildOfType(psiElement, TwigFieldReference.class);
+        if (childOfType != null) {
+            TwigPsiReference owner = childOfType.getOwner();
+            if (owner != null) {
+                return owner.getFirstChild();
+            }
+        }
+
+        // "form(form)" => "form"
+        TwigVariableReference childOfType1 = PsiTreeUtil.findChildOfType(psiElement, TwigVariableReference.class);
+        if (childOfType1 != null) {
+            return childOfType1.getFirstChild();
+        }
+
+        return null;
+    }
+
+    /**
      * Search Twig element to find use trans_default_domain and returns given string parameter
      */
     @Nullable
