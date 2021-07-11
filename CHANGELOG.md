@@ -18,6 +18,15 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.23.210
+* [#1661](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1661) Fix container nullable in yaml context (Daniel Espendiller)
+* Smarter public asset folder, fix twig form linemarker psi pattern, remove symfony check from notication window (Daniel Espendiller)
+* Update gradle git versions plugin (Daniel Espendiller)
+* Gradle to github actions migration (Daniel Espendiller)
+* Support webencore inside "encore_entry_*" twig functions (Daniel Espendiller)
+* Excluded non-public consts from !php/const autocompletion (Adam Wójs)
+* Fixed [#1631](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1631): PhpConstGotoCompletionProvider throws IndexOutOfBoundsException when cursor is before scope operator (Adam Wójs)
+
 ## 0.23.209
 * [#1614](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1614) fix "ListPopupStep" issues of PhpStorm 2021.1 (Daniel Espendiller)
 * Fixed [#1640](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1640): Go to declaration throws ArrayIndexOutOfBoundsException on empty class const name (Adam Wójs)
