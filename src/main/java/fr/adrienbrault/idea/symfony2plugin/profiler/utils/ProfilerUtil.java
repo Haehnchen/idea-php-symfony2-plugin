@@ -128,7 +128,7 @@ public class ProfilerUtil {
             if(tokenLink != null) {
                 String href = tokenLink.getAttributeValue("href");
                 if(StringUtils.isNotBlank(href)) {
-                    profilerUrl = StringUtils.stripEnd(baseUrl, "/") + href;
+                    profilerUrl = getProfilerAbsoluteUrl(baseUrl, href);
                 }
             }
 
@@ -151,6 +151,11 @@ public class ProfilerUtil {
         }
 
         return requests;
+    }
+
+    @NotNull
+    private static String getProfilerAbsoluteUrl(@NotNull String baseUrl, @NotNull String href) {
+        return StringUtils.stripEnd(baseUrl, "/") + href.substring(href.indexOf("/_profiler/"));
     }
 
     @NotNull
