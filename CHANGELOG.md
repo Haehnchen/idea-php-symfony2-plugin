@@ -18,6 +18,11 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.23.211
+* Support default function parameter values for extracting template render scope (Daniel Espendiller)
+* Fixed [#1674](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1674): duplicated route prefix in profiler urls (Adam Wójs)
+* Fixed [#1667](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1667): Rename refactoring ignores constants inside yaml files (tests) (Adam Wójs)
+
 ## 0.23.210
 * [#1661](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1661) Fix container nullable in yaml context (Daniel Espendiller)
 * Smarter public asset folder, fix twig form linemarker psi pattern, remove symfony check from notication window (Daniel Espendiller)
