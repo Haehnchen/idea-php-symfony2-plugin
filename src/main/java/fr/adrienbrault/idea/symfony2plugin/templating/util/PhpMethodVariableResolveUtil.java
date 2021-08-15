@@ -353,16 +353,20 @@ public class PhpMethodVariableResolveUtil {
                     if (defaultValue instanceof StringLiteralExpression) {
                         addStringLiteralScope(methodReference, (StringLiteralExpression) defaultValue);
                     }
-                }
-
-                // foo($var) => $var = 'test.html.twig'
-                if (phpNamedElement instanceof Variable) {
+                } else if (phpNamedElement instanceof Variable) {
+                    // foo($var) => $var = 'test.html.twig'
                     PsiElement assignmentExpression = phpNamedElement.getParent();
                     if (assignmentExpression instanceof AssignmentExpression) {
                         PhpPsiElement value = ((AssignmentExpression) assignmentExpression).getValue();
                         if (value instanceof StringLiteralExpression) {
                             addStringLiteralScope(methodReference, (StringLiteralExpression) value);
                         }
+                    }
+                } else if (phpNamedElement instanceof Parameter) {
+                    // function foobar($defaultParameter = 'default-function-parameter.html.twig')
+                    PsiElement value = ((Parameter) phpNamedElement).getDefaultValue();
+                    if (value instanceof StringLiteralExpression) {
+                        addStringLiteralScope(methodReference, (StringLiteralExpression) value);
                     }
                 }
             }
