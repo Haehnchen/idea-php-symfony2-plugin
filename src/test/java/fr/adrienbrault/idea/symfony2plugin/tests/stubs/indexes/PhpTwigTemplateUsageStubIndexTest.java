@@ -18,7 +18,7 @@ public class PhpTwigTemplateUsageStubIndexTest extends SymfonyLightCodeInsightFi
             "   const FOO_TERNARY = 'const-ternary.html.twig';\n" +
             "   const FOO_COALESCE = 'const-coalesce.html.twig';\n" +
             "   private $foo = 'private.html.twig';\n" +
-            "   public function foobar() {\n" +
+            "   public function foobar($defaultParameter = 'default-function-parameter.html.twig') {\n" +
             "       $var = 'var.html.twig';\n" +
             "       $foo->render('foo-render.html.twig');\n" +
             "       $foo->render('foo-render.html.twig');\n" +
@@ -35,6 +35,7 @@ public class PhpTwigTemplateUsageStubIndexTest extends SymfonyLightCodeInsightFi
             "       $foo->render($var);\n" +
             "       $foo->render($this->foo);\n" +
             "       $foo->render(\\DateTime::foo);\n" +
+            "       $foo->renderView($defaultParameter);\n" +
             "   }\n" +
             "}" +
             "" +
@@ -49,7 +50,7 @@ public class PhpTwigTemplateUsageStubIndexTest extends SymfonyLightCodeInsightFi
             "foo-render.html.twig", "foo-renderView.html.twig", "foo-renderResponse.html.twig",
             "@Foo/overwrite.html.twig", "const.html.twig", "var.html.twig", "private.html.twig", "foobar-render.twig",
             "foo-render-ternary.html.twig", "const-ternary.html.twig", "foo-render-coalesce.html.twig", "const-coalesce.html.twig",
-            "foo-var-assignment-expression.html.twig"
+            "foo-var-assignment-expression.html.twig", "default-function-parameter.html.twig"
         );
 
         assertIndexContainsKeyWithValue(PhpTwigTemplateUsageStubIndex.KEY, "foo-render.html.twig", value ->
