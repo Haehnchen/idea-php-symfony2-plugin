@@ -40,6 +40,22 @@ public class ProfilerUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
+     * @see ProfilerUtil#createRequestsFromIndexHtml
+     */
+    public void testCreateRequestsFromIndexHtmlRemovesProfilerRoutePrefixFromTokenLinks() {
+        PsiFile psiFile = myFixture.configureByFile("profiler-index-with-route-prefix.html");
+        Collection<ProfilerRequestInterface> requests = ProfilerUtil.createRequestsFromIndexHtml(getProject(), psiFile.getText(), "http://127.0.0.1:8000/prefix/");
+
+        ProfilerRequestInterface request = requests.iterator().next();
+
+        assertEquals("a9eaab", request.getHash());
+        assertEquals("GET", request.getMethod());
+        assertEquals("http://127.0.0.1:8000/prefix/_profiler/search/results?ip=&amp;limit=10", request.getUrl());
+        assertEquals("http://127.0.0.1:8000/prefix/_profiler/a9eaab", request.getProfilerUrl());
+        assertEquals(404, request.getStatusCode());
+    }
+
+    /**
      * @see ProfilerUtil#getRequestAttributes
      */
     public void testGetRequestValues() {
