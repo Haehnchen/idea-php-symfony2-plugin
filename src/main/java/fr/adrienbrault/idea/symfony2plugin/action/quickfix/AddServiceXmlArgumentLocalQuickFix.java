@@ -44,4 +44,8 @@ public class AddServiceXmlArgumentLocalQuickFix implements LocalQuickFix {
         ServiceActionUtil.fixServiceArgument(args, (XmlTag) parent);
     }
 
+    @Override
+    public boolean startInWriteAction() {
+        return false;
+    }
 }
