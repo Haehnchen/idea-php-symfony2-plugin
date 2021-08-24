@@ -85,9 +85,15 @@ public class YamlCompletionContributor extends CompletionContributor {
         put("decorates", null);
         put("decoration_inner_name", null);
         put("decoration_priority", "(int) >= 2.8");
+        put("decoration_on_invalid", "(exception|ignore|null) >= 4.4");
         put("shared", "(bool) >= 3.0");
         put("resource", "(string) >= 3.3");
         put("autoconfigure", "(bool) >= 3.3");
+        put("properties", ">= 5.1");
+        put("configurator", ">= 2.8");
+        put("bind", ">= 2.8");
+        put("file", ">= 2.8");
+        put("exclude", ">= 2.8");
     }});
 
     private static final Map<String, String> ROUTE_KEYS = Collections.unmodifiableMap(new HashMap<String, String>() {{
