@@ -89,4 +89,8 @@ public class XmlServiceArgumentIntention extends PsiElementBaseIntentionAction {
         return "Symfony: Add Arguments";
     }
 
+    @Override
+    public boolean startInWriteAction() {
+        return false;
+    }
 }

@@ -474,7 +474,7 @@ public class ServiceActionUtil {
                 }
             }
 
-            callback.insert(items);
+            ApplicationManager.getApplication().runWriteAction(() -> callback.insert(items));
 
             return;
         }

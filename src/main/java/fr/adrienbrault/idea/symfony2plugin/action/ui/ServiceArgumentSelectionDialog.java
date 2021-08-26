@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.action.ui;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.ToolbarDecorator;
@@ -55,7 +56,7 @@ public class ServiceArgumentSelectionDialog extends JDialog {
                 items.add(serviceParameter.getCurrentService());
             }
 
-            callback.onOk(items);
+            ApplicationManager.getApplication().runWriteAction(() -> callback.onOk(items));
 
             dispose();
         });

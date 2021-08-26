@@ -78,7 +78,7 @@ public class ServiceArgumentGenerateAction extends CodeInsightAction {
 
             @Override
             public boolean startInWriteAction() {
-                return true;
+                return false;
             }
         };
     }
