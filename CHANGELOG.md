@@ -18,6 +18,11 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.23.212
+* Smarter Doctrine querybuilder "where" condition navigation to fields (Daniel Espendiller)
+* Add PHP8 attributes support for Doctrine metadata (Daniel Espendiller)
+* Fixed [#1675](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1675): "AWT events are not allowed inside write action" exception while creating dialog window for resolving arguments ambiguity (Adam Wójs)
+
 ## 0.23.211
 * Support default function parameter values for extracting template render scope (Daniel Espendiller)
 * Fixed [#1674](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1674): duplicated route prefix in profiler urls (Adam Wójs)
