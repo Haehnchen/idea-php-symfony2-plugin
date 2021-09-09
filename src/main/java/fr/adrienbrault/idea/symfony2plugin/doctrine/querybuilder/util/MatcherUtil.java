@@ -60,5 +60,12 @@ public class MatcherUtil {
     }
 
 
-
+    @Nullable
+    public static MethodMatcher.MethodMatchParameter matchWhere(PsiElement psiElement) {
+        return new MethodMatcher.StringParameterMatcher(psiElement, 0)
+            .withSignature("\\Doctrine\\ORM\\QueryBuilder", "andWhere")
+            .withSignature("\\Doctrine\\ORM\\QueryBuilder", "where")
+            .withSignature("\\Doctrine\\ORM\\QueryBuilder", "orWhere")
+            .match();
+    }
 }

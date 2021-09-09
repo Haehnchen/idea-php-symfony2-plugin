@@ -11,9 +11,11 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderPropertyAlias;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderRelation;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.util.MatcherUtil;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.util.QueryBuilderUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -27,7 +29,7 @@ public class QueryBuilderGotoDeclarationHandler implements GotoDeclarationHandle
 
     @Nullable
     @Override
-    public PsiElement[] getGotoDeclarationTargets(PsiElement psiElement, int i, Editor editor) {
+    public PsiElement[] getGotoDeclarationTargets(PsiElement psiElement, int offset, Editor editor) {
 
         if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof StringLiteralExpression)) {
             return new PsiElement[0];
@@ -35,16 +37,46 @@ public class QueryBuilderGotoDeclarationHandler implements GotoDeclarationHandle
 
         List<PsiElement> psiElements = new ArrayList<>();
 
-        attachPropertyGoto((StringLiteralExpression) psiElement.getContext(), psiElements);
-        attachJoinGoto((StringLiteralExpression) psiElement.getContext(), psiElements);
+        StringLiteralExpression context = (StringLiteralExpression) psiElement.getContext();
+        attachPropertyGoto(context, psiElements);
+        attachJoinGoto(context, psiElements);
+        attachPartialGoto(context, psiElements, offset);
 
         // $qb->expr()->in('')
-        attachExprGoto((StringLiteralExpression) psiElement.getContext(), psiElements);
+        attachExprGoto(context, psiElements);
 
         // $qb->from('', '', '<foo>');
-        attachFromIndexGoto((StringLiteralExpression) psiElement.getContext(), psiElements);
+        attachFromIndexGoto(context, psiElements);
 
         return psiElements.toArray(new PsiElement[psiElements.size()]);
+    }
+
+    private void attachPartialGoto(@NotNull StringLiteralExpression psiElement, @NotNull List<PsiElement> targets, int offset) {
+        MethodMatcher.MethodMatchParameter methodMatchParameter = MatcherUtil.matchWhere(psiElement);
+        if(methodMatchParameter == null) {
+            return;
+        }
+
+        int calulatedOffset = offset - psiElement.getTextRange().getStartOffset();
+        if (calulatedOffset < 0) {
+            calulatedOffset = 0;
+        }
+
+        String contents = psiElement.getContents();
+        String fieldString = QueryBuilderUtil.getFieldString(contents, calulatedOffset);
+        if (fieldString != null) {
+            QueryBuilderMethodReferenceParser qb = QueryBuilderCompletionContributor.getQueryBuilderParser(methodMatchParameter.getMethodReference());
+            if(qb == null) {
+                return;
+            }
+
+            QueryBuilderScopeContext collect = qb.collect();
+            for(Map.Entry<String, QueryBuilderPropertyAlias> entry: collect.getPropertyAliasMap().entrySet()) {
+                if(entry.getKey().equals(fieldString)) {
+                    targets.addAll(entry.getValue().getPsiTargets());
+                }
+            }
+        }
     }
 
     private void attachJoinGoto(StringLiteralExpression psiElement, List<PsiElement> targets) {
@@ -76,11 +108,8 @@ public class QueryBuilderGotoDeclarationHandler implements GotoDeclarationHandle
                 if(phpClass != null) {
                     targets.add(phpClass);
                 }
-
             }
         }
-
-
     }
 
     private void attachPropertyGoto(StringLiteralExpression psiElement, List<PsiElement> targets) {

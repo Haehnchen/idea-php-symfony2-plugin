@@ -2,9 +2,12 @@ package fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.util;
 
 import fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryTypeProvider;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -31,5 +34,36 @@ public class QueryBuilderUtil {
         }
 
         return results;
+    }
+
+    /**
+     * test "test.fooTe<caret>aa = aa"
+     */
+    @Nullable
+    public static String getFieldString(@NotNull String content, int offset) {
+        if (offset > content.length()) {
+            return null;
+        }
+
+        String substring1 = content.substring(0, offset);
+        Matcher matcherBefore = Pattern.compile("([\\w.]+)[\\s|>=<]?$").matcher(substring1);
+        if (!matcherBefore.find()) {
+            return null;
+        }
+
+        String substring = content.substring(offset);
+        Matcher matcherAfter = Pattern.compile("^[\\s|>=<]?([\\w.]+)").matcher(substring);
+        if (!matcherAfter.find()) {
+            return null;
+        }
+
+        String field = matcherBefore.group(1) + matcherAfter.group(1);
+
+        // invalid field
+        if (!field.contains(".")) {
+            return null;
+        }
+
+        return field;
     }
 }
