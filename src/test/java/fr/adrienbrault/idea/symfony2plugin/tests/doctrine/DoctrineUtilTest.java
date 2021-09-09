@@ -42,6 +42,43 @@ public class DoctrineUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     /**
      * @see DoctrineUtil#getClassRepositoryPair
      */
+    public void testGetClassRepositoryPairForPhp8AttributeStringValue() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php class Foobar {};");
+
+        PsiFile psiFileFromText = PhpPsiElementFactory.createPsiFileFromText(getProject(), "" +
+            "<?php\n" +
+            "namespace Foo;\n" +
+            "\n" +
+            "use Foobar;\n" +
+            "use Doctrine\\ORM\\Mapping\\Entity;\n" +
+            "\n" +
+            "#[Entity(repositoryClass: Foobar::class, readOnly: false)]\n" +
+            "class Apple\n" +
+            "{\n" +
+            "}\n" +
+            "\n" +
+            "\n" +
+            "#[Entity()]\n" +
+            "class Car\n" +
+            "{\n" +
+            "}\n" +
+            "\n"
+        );
+
+        Collection<Pair<String, String>> classRepositoryPair = DoctrineUtil.getClassRepositoryPair(psiFileFromText);
+
+        Pair<String, String> apple = classRepositoryPair.stream().filter(stringStringPair -> "Foo\\Apple".equals(stringStringPair.getFirst())).findFirst().get();
+        assertEquals("Foo\\Apple", apple.getFirst());
+        assertEquals("Foobar", apple.getSecond());
+
+        Pair<String, String> car = classRepositoryPair.stream().filter(stringStringPair -> "Foo\\Car".equals(stringStringPair.getFirst())).findFirst().get();
+        assertEquals("Foo\\Car", car.getFirst());
+        assertNull(car.getSecond());
+    }
+
+    /**
+     * @see DoctrineUtil#getClassRepositoryPair
+     */
     public void testGetClassRepositoryPairForClassConstant() {
         myFixture.configureByText(PhpFileType.INSTANCE, "<?php class Foobar {};");
 

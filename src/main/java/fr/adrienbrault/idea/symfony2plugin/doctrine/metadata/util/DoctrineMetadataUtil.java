@@ -40,9 +40,10 @@ public class DoctrineMetadataUtil {
     private static final Key<CachedValue<Set<String>>> CLASS_KEYS = new Key<>("CLASS_KEYS");
 
     private static DoctrineMappingDriverInterface[] MAPPING_DRIVERS = new DoctrineMappingDriverInterface[] {
+        new DoctrinePhpMappingDriver(),
+        new DoctrinePhpAttributeMappingDriver(),
         new DoctrineXmlMappingDriver(),
         new DoctrineYamlMappingDriver(),
-        new DoctrinePhpMappingDriver(),
     };
 
     @NotNull

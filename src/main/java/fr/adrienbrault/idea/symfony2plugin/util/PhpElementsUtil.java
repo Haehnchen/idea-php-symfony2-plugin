@@ -26,6 +26,8 @@ import com.jetbrains.php.lang.psi.elements.impl.ClassConstImpl;
 import com.jetbrains.php.lang.psi.elements.impl.ConstantImpl;
 import com.jetbrains.php.lang.psi.elements.impl.PhpDefineImpl;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
+import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionArgument;
+import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionScalarArgument;
 import com.jetbrains.php.phpunit.PhpUnitUtil;
 import com.jetbrains.php.refactoring.PhpAliasImporter;
 import fr.adrienbrault.idea.symfony2plugin.dic.MethodReferenceBag;
@@ -785,6 +787,16 @@ public class PhpElementsUtil {
             .equals(StringUtils.stripStart(compareClassName, "\\"));
     }
 
+    public static boolean isEqualClassName(@NotNull String phpClass, @NotNull String ...compareClassNames) {
+        for (String compareClassName : compareClassNames) {
+            if (Objects.equals(StringUtils.stripStart(phpClass, "\\"), StringUtils.stripStart(compareClassName, "\\"))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     @NotNull
     public static PsiElement[] getMethodParameterReferences(@NotNull Method method, int parameterIndex) {
         // we dont have a parameter on resolved method
@@ -1502,6 +1514,31 @@ public class PhpElementsUtil {
         return null;
     }
 
+    public static PhpExpectedFunctionArgument findAttributeArgumentByName(@NotNull String attributeName, @NotNull PhpAttribute phpAttribute) {
+        for (PhpAttribute.PhpAttributeArgument argument : phpAttribute.getArguments()) {
+            String name = argument.getName();
+            if (!attributeName.equals(name)) {
+                continue;
+            }
+
+            return argument.getArgument();
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public static String findAttributeArgumentByNameAsString(@NotNull String attributeName, @NotNull PhpAttribute phpAttribute) {
+        PhpExpectedFunctionArgument attributeArgumentByName = findAttributeArgumentByName(attributeName, phpAttribute);
+        if (attributeArgumentByName instanceof PhpExpectedFunctionScalarArgument) {
+            String value = PsiElementUtils.trimQuote(attributeArgumentByName.getValue());
+            if (StringUtils.isNotBlank(value)) {
+                return value;
+            }
+        }
+
+        return null;
+    }
     /**
      * Visit and collect all variables in given scope
      */

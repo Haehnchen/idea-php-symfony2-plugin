@@ -14,8 +14,12 @@ import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
+import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionArgument;
+import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionClassConstantArgument;
 import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.AnnotationElementWalkingVisitor;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.AttributeElementWalkingVisitor;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.ArrayUtils;
@@ -113,6 +117,8 @@ public class DoctrineUtil {
     public static Collection<Pair<String, String>> getClassRepositoryPair(@NotNull PsiElement phpFile) {
         final Collection<Pair<String, String>> pairs = new ArrayList<>();
 
+        // Annotations:
+        // @ORM\Entity("repositoryClass": YYY)
         phpFile.acceptChildren(new AnnotationElementWalkingVisitor(phpDocTag -> {
             PhpDocComment phpDocComment = PsiTreeUtil.getParentOfType(phpDocTag, PhpDocComment.class);
             if (phpDocComment == null) {
@@ -130,6 +136,27 @@ public class DoctrineUtil {
                 phpClassScope.getPresentableFQN(),
                 getAnnotationRepositoryClass(phpDocTag, phpClassScope))
             );
+
+            return false;
+        }, MODEL_CLASS_ANNOTATION));
+
+        // Attributes:
+        // #[Entity(repositoryClass: UserRepository::class)]
+        phpFile.acceptChildren(new AttributeElementWalkingVisitor(pair -> {
+            String repositoryClass = null;
+
+            PhpExpectedFunctionArgument argument = PhpElementsUtil.findAttributeArgumentByName("repositoryClass", pair.getFirst());
+            if (argument instanceof PhpExpectedFunctionClassConstantArgument) {
+                String repositoryClassRaw = ((PhpExpectedFunctionClassConstantArgument) argument).getClassFqn();
+                if (StringUtils.isNotBlank(repositoryClassRaw)) {
+                    repositoryClass = repositoryClassRaw;
+                }
+            }
+
+            pairs.add(Pair.create(
+                StringUtils.stripStart(pair.getSecond().getFQN(), "\\"),
+                repositoryClass != null ? StringUtils.stripStart(repositoryClass, "\\") : null
+            ));
 
             return false;
         }, MODEL_CLASS_ANNOTATION));
