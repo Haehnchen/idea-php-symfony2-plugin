@@ -1,3 +1,4 @@
 Expression Language File
   ExpressionLanguageLiteralExprImpl(LITERAL_EXPR)
-    PsiElement( ExpressionLanguageType.number)('1.99E+3')
+    ExpressionLanguageNumberLiteralImpl(NUMBER_LITERAL)
+      PsiElement( ExpressionLanguageType.number)('1.99E+3')

@@ -136,7 +136,12 @@ simple_ref_expr ::= identifier {extends=ref_expr elementType=ref_expr}
 qualification_expr ::= expr '.' identifier {extends=ref_expr elementType=ref_expr}
 array_access_expr ::= expr L_SQUARE_BRACKET expr R_SQUARE_BRACKET {extends=ref_expr elementType=ref_expr}
 
-literal_expr ::= number | string | true | false | null
+literal_expr ::= number_literal | string_literal | boolean_literal | null_literal
+string_literal ::= string
+number_literal ::= number
+boolean_literal ::= true | false
+null_literal ::= null
+
 array_expr ::= L_SQUARE_BRACKET expr_list? R_SQUARE_BRACKET
 hash_expr ::= L_CURLY_BRACKET hash_entries? R_CURLY_BRACKET
 

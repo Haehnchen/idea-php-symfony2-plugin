@@ -1,9 +1,11 @@
 Expression Language File
   ExpressionLanguagePlusExprImpl(PLUS_EXPR)
     ExpressionLanguageLiteralExprImpl(LITERAL_EXPR)
-      PsiElement( ExpressionLanguageType.number)('5')
+      ExpressionLanguageNumberLiteralImpl(NUMBER_LITERAL)
+        PsiElement( ExpressionLanguageType.number)('5')
     PsiWhiteSpace(' ')
     PsiElement( ExpressionLanguageType.+)('+')
     PsiWhiteSpace(' ')
     ExpressionLanguageLiteralExprImpl(LITERAL_EXPR)
-      PsiElement( ExpressionLanguageType.number)('1')
+      ExpressionLanguageNumberLiteralImpl(NUMBER_LITERAL)
+        PsiElement( ExpressionLanguageType.number)('1')
