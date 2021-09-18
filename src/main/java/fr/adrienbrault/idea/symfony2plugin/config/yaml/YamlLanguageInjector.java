@@ -31,6 +31,10 @@ public class YamlLanguageInjector implements MultiHostInjector {
         }
 
         var file = context.getContainingFile();
+        if (file == null) {
+            return;
+        }
+
         var element = (YAMLQuotedText) context;
         var value = element.getTextValue();
 
