@@ -120,4 +120,9 @@ public class SymfonyInstallerProjectGenerator extends WebProjectTemplate<Symfony
     public Icon getLogo() {
         return Symfony2Icons.SYMFONY;
     }
+
+    @Override
+    public Icon getIcon() {
+        return Symfony2Icons.SYMFONY;
+    }
 }
