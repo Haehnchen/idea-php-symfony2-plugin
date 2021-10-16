@@ -82,10 +82,10 @@ public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
             psiElement,
             psiElement.getTextRange(),
             Symfony2Icons.SYMFONY_LINE_MARKER,
-            6,
             new ConstantFunction<>("Related Files"),
             new RelatedPopupGotoLineMarker.NavigationHandler(gotoRelatedItems),
-            GutterIconRenderer.Alignment.RIGHT
+            GutterIconRenderer.Alignment.RIGHT,
+            () -> "Go to related files"
         );
     }
 
