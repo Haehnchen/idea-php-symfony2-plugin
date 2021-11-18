@@ -318,6 +318,48 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
         );
     }
 
+    public void testKeywordsCompletionInsideServiceDefinition() {
+        var exceptedKeywords = new String[] {
+            "abstract",
+            "alias",
+            "arguments",
+            "autoconfigure",
+            "autowire",
+            "autowiring_types",
+            "bind",
+            "class",
+            "configurator",
+            "decorates",
+            "decoration_inner_name",
+            "decoration_on_invalid",
+            "decoration_priority",
+            "deprecated",
+            "exclude",
+            "factory",
+            "factory_class",
+            "factory_method",
+            "factory_service",
+            "file",
+            "lazy",
+            "parent",
+            "properties",
+            "public",
+            "resource",
+            "scope",
+            "shared",
+            "synchronized",
+            "synthetic",
+            "tags"
+        };
+
+        assertCompletionContains(YAMLFileType.YML, "" +
+            "services:\n" +
+            "    app.foo.service:\n" +
+            "        <caret>\n",
+            exceptedKeywords
+        );
+    }
+
     private void assertCompletion3rdInvocationContains(String configureByText, String... lookupStrings) {
         myFixture.configureByText(YAMLFileType.YML, configureByText);
         myFixture.complete(CompletionType.BASIC, 3);
