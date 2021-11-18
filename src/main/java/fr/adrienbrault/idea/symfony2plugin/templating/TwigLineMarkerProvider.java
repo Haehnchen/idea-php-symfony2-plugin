@@ -223,10 +223,10 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             ).withIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_LINE_OVERWRITE));
         }
 
-        return getRelatedPopover("Overwrites", "Overwrite", twigFile, gotoRelatedItems, Symfony2Icons.TWIG_LINE_OVERWRITE);
+        return getRelatedPopover("Overwrites", "Overwrite", twigFile, gotoRelatedItems, Symfony2Icons.TWIG_LINE_OVERWRITE, "Go to the overwritten template");
     }
 
-    private LineMarkerInfo<?> getRelatedPopover(String singleItemTitle, String singleItemTooltipPrefix, PsiElement lineMarkerTarget, List<GotoRelatedItem> gotoRelatedItems, Icon icon) {
+    private LineMarkerInfo<?> getRelatedPopover(String singleItemTitle, String singleItemTooltipPrefix, PsiElement lineMarkerTarget, List<GotoRelatedItem> gotoRelatedItems, Icon icon, String accessibleName) {
 
         // single item has no popup
         String title = singleItemTitle;
@@ -241,10 +241,10 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             lineMarkerTarget,
             lineMarkerTarget.getTextRange(),
             icon,
-            6,
             new ConstantFunction<>(title),
             new RelatedPopupGotoLineMarker.NavigationHandler(gotoRelatedItems),
-            GutterIconRenderer.Alignment.RIGHT
+            GutterIconRenderer.Alignment.RIGHT,
+            () -> accessibleName
         );
     }
 
