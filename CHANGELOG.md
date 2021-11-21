@@ -18,6 +18,11 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.23.213
+* Fixed [#1716](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1716): Deprecated LineMarkerInfo constructor usage (Adam Wójs)
+* Add missing Symfony icon to new project setup (Shyim)
+* Added missing services keywords to YamlCompletionContributor (Adam Wójs)
+
 ## 0.23.212
 * Smarter Doctrine querybuilder "where" condition navigation to fields (Daniel Espendiller)
 * Add PHP8 attributes support for Doctrine metadata (Daniel Espendiller)
