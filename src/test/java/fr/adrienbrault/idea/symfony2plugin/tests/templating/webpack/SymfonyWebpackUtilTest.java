@@ -21,6 +21,7 @@ public class SymfonyWebpackUtilTest extends SymfonyLightCodeInsightFixtureTestCa
     public void testVisitEntries() {
         myFixture.copyFileToProject("webpack.config.js");
         myFixture.copyFileToProject("entrypoints.json");
+        myFixture.copyFileToProject("entrypoints_invalid.json");
 
         Set<String> entries = new HashSet<>();
 

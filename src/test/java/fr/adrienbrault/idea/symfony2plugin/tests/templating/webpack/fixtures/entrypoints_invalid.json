@@ -1,0 +1,14 @@
+{
+  "entrypoints": {
+    "entry_foobar": {
+      "js": []
+    },
+    "entry_foobar_2": {
+      "js": [];
+    },
+    "mainEntry": {
+      "js": [],
+      "css": [],
+    }
+  }
+}

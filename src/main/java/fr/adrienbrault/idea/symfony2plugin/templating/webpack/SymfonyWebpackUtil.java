@@ -1,5 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.webpack;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.io.StreamUtil;
@@ -9,9 +13,6 @@ import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import org.jetbrains.annotations.NotNull;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.util.function.Consumer;
@@ -62,27 +63,29 @@ public class SymfonyWebpackUtil {
             return;
         }
 
-        Object parse;
+        JsonObject jsonObject;
         try {
-            JSONParser jsonParser = new JSONParser();
-            parse = jsonParser.parse(s);
-
-        } catch (ParseException e) {
+            jsonObject = new JsonParser().parse(s).getAsJsonObject();
+        } catch (JsonSyntaxException e) {
             return;
         }
 
-        if (!(parse instanceof JSONObject)) {
+        if (jsonObject == null) {
             return;
         }
 
-        Object entrypoints = ((JSONObject) parse).get("entrypoints");
+        JsonElement entrypoints = jsonObject.get("entrypoints");
+        if (entrypoints == null) {
+            return;
+        }
 
-        if (entrypoints instanceof JSONObject) {
-            for (Object o : ((JSONObject) entrypoints).keySet()) {
-                if (o instanceof String) {
-                    consumer.accept(Pair.create(virtualFile, (String) o));
-                }
-            }
+        JsonObject asJsonObject = entrypoints.getAsJsonObject();
+        if (asJsonObject == null) {
+            return;
+        }
+
+        for (String s1 : asJsonObject.keySet()) {
+            consumer.accept(Pair.create(virtualFile, s1));
         }
     }
 
