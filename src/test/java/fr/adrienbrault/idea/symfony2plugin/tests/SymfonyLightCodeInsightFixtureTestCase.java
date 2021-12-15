@@ -36,7 +36,7 @@ import com.intellij.psi.impl.source.tree.injected.InjectedLanguageUtil;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
+import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
@@ -47,13 +47,14 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpReference;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import org.jetbrains.annotations.NotNull;
+import org.junit.Test;
 
 import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightCodeInsightFixtureTestCase {
+public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCodeInsightFixtureTestCase {
 
     @Override
     public void setUp() throws Exception {
