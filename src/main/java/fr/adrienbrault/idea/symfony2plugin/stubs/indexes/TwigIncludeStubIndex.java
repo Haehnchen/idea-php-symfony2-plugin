@@ -44,9 +44,12 @@ public class TwigIncludeStubIndex extends FileBasedIndexExtension<String, Void> 
                 return map;
             }
 
-            TwigUtil.visitTemplateIncludes((TwigFile) psiFile, templateInclude ->
-                map.put(TwigUtil.normalizeTemplateName(templateInclude.getTemplateName()), null)
-            );
+            TwigUtil.visitTemplateIncludes((TwigFile) psiFile, templateInclude -> {
+                if (templateInclude.getTemplateName().length() < 255) {
+                    map.put(TwigUtil.normalizeTemplateName(templateInclude.getTemplateName()), null);
+                }
+            });
+
 
             return map;
         };

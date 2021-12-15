@@ -50,6 +50,10 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
             PhpMethodVariableResolveUtil.visitRenderTemplateFunctions(psiFile, triple -> {
                 String templateName = triple.getFirst();
 
+                if (templateName.length() > 255) {
+                    return;
+                }
+
                 if(!items.containsKey(templateName)) {
                     items.put(templateName, new HashSet<>());
                 }
