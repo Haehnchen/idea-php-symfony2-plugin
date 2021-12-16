@@ -270,6 +270,44 @@ public class TwigPatternTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern#getTemplateImportFileReferenceTagPattern
+     */
+    public void testGetTemplateImportFileReferenceTagPattern() {
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getTemplateImportFileReferenceTagPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{% from 'foo.html.twig' import <caret> %}")
+        ));
+
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getTemplateImportFileReferenceTagPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{% from 'foo.html.twig' import <caret> %}")
+        ));
+
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getTemplateImportFileReferenceTagPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{% from 'foo.html.twig' import foo, <caret> %}")
+        ));
+
+        assertFalse(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getTemplateImportFileReferenceTagPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{% from 'foo.html.twig' import foo as <caret> %}")
+        ));
+
+        assertFalse(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getTemplateImportFileReferenceTagPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{% from 'foo.html.twig' import foo as a<caret> %}")
+        ));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern#getFromTemplateElementPattern
+     */
+    public void testGetFromTemplateElementPattern() {
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getFromTemplateElementPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{% from 'foo.ht<caret>ml.twig' import aa %}")
+        ));
+
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getFromTemplateElementPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{% from _se<caret>lf import foo %}")
+        ));
+    }
+
+    /**
      * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern#getPathAfterLeafPattern
      */
     public void testGetPathAfterLeafPattern() {

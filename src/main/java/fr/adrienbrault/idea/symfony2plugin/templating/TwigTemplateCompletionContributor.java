@@ -122,32 +122,32 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             CompletionType.BASIC,
             TwigPattern.getTemplateImportFileReferenceTagPattern(),
 
-            new CompletionProvider<CompletionParameters>() {
+            new CompletionProvider<>() {
                 public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
 
-                    if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                    if (!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
                         return;
                     }
 
                     // find {% from "<template.name>"
                     PsiElement psiElement = PsiElementUtils.getPrevSiblingOfType(parameters.getPosition(), TwigPattern.getFromTemplateElementPattern());
-                    if(psiElement == null) {
+                    if (psiElement == null) {
                         return;
                     }
 
                     // {% from _self
-                    if(psiElement.getNode().getElementType() == TwigTokenTypes.RESERVED_ID) {
+                    if (psiElement.getNode().getElementType() == TwigTokenTypes.RESERVED_ID) {
                         attachLookupElements(resultSet, Collections.singletonList(psiElement.getContainingFile()));
                         return;
                     }
 
                     String templateName = psiElement.getText();
-                    if(StringUtils.isBlank(templateName)) {
+                    if (StringUtils.isBlank(templateName)) {
                         return;
                     }
 
                     Collection<PsiFile> twigFilesByName = TwigUtil.getTemplatePsiElements(parameters.getPosition().getProject(), templateName);
-                    if(twigFilesByName.size() == 0) {
+                    if (twigFilesByName.size() == 0) {
                         return;
                     }
 
@@ -156,7 +156,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
                 private void attachLookupElements(@NotNull CompletionResultSet resultSet, Collection<PsiFile> psiFiles) {
                     for (PsiFile psiFile : psiFiles) {
-                        for (TwigMacroTagInterface entry: TwigUtil.getMacros(psiFile)) {
+                        for (TwigMacroTagInterface entry : TwigUtil.getMacros(psiFile)) {
                             resultSet.addElement(LookupElementBuilder.create(entry.getName()).withTypeText(entry.getParameters(), true).withIcon(TwigIcons.TwigFileIcon));
                         }
                     }

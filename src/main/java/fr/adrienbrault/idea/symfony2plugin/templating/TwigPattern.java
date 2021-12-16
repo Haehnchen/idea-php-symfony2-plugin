@@ -1016,7 +1016,7 @@ public class TwigPattern {
 
         //noinspection unchecked
         return PlatformPatterns
-            .psiElement(TwigTokenTypes.IDENTIFIER)
+            .psiElement()
             .withParent(PlatformPatterns.psiElement(TwigElementTypes.IMPORT_TAG))
             .afterLeafSkipping(
                 PlatformPatterns.or(
@@ -1028,11 +1028,12 @@ public class TwigPattern {
                 ),
                 PlatformPatterns.psiElement(TwigTokenTypes.IMPORT_KEYWORD)
             ).andNot(PlatformPatterns
-                    .psiElement(TwigTokenTypes.IDENTIFIER)
+                    .psiElement()
                     .afterLeafSkipping(
                         PlatformPatterns.or(
                             PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                            PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER)
                         ),
                         PlatformPatterns.psiElement(TwigTokenTypes.AS_KEYWORD)
                     )
