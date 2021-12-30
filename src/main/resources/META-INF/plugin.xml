@@ -227,6 +227,7 @@
         <codeInsight.lineMarkerProvider language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.YamlLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.XmlLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.PhpLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.linemarker.XmlLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.linemarker.YamlLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.ConfigLineMarkerProvider"/>

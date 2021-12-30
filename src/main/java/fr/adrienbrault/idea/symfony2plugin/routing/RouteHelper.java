@@ -835,6 +835,34 @@ public class RouteHelper {
         return null;
     }
 
+    /**
+     * Find controller definition in php function call.
+     * $routes->controller('FooController:method');
+     */
+    @Nullable
+    public static String getPhpController(@Nullable MethodReference methodCall) {
+        if (methodCall == null || !methodCall.getName().equals("controller")) {
+            return null;
+        }
+
+        PhpExpression expression = methodCall;
+        while(expression instanceof MethodReference) {
+            expression = (PhpExpression) expression.getFirstChild();
+        }
+
+        var expr = expression.getInferredType();
+
+        if (!"\\Symfony\\Component\\Routing\\Loader\\Configurator\\RoutingConfigurator".equals(expr.toString())) {
+            return null;
+        }
+
+        PsiElement parameter = methodCall.getParameters()[0];
+        if (parameter instanceof StringLiteralExpression) {
+            return ((StringLiteralExpression) parameter).getContents();
+        }
+        return null;
+    }
+
     @Nullable
     public static PsiElement getXmlRouteNameTarget(@NotNull XmlFile psiFile,@NotNull String routeName) {
 
