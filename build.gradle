@@ -41,6 +41,10 @@ intellij {
         "buildSearchableOptions" {
             enabled = false
         }
+
+        test {
+            systemProperty("idea.force.use.core.classloader", "true")
+        }
     }
 }
 
@@ -67,3 +71,10 @@ wrapper {
 }
 
 test.testLogging.exceptionFormat = TestExceptionFormat.FULL
+
+allprojects {
+    test {
+        scanForTestClasses false
+        include "**/*Test.class"
+    }
+}
