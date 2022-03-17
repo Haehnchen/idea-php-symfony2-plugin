@@ -1,7 +1,7 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
-    id "org.jetbrains.intellij" version "0.4.11"
+    id "org.jetbrains.intellij" version "1.1.1"
     id "com.palantir.git-version" version "0.12.3"
 }
 
