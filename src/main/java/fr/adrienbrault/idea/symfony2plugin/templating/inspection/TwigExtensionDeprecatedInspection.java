@@ -77,9 +77,14 @@ public class TwigExtensionDeprecatedInspection extends LocalInspectionTool {
                     PhpDocComment docComment = phpClass.getDocComment();
                     if (docComment != null) {
                         for (PhpDocTag deprecatedTag : docComment.getTagElementsByName("@deprecated")) {
-                            String tagValue = deprecatedTag.getTagValue();
+                            // deprecatedTag.getValue provides a number !?
+                            String tagValue = deprecatedTag.getText();
                             if (StringUtils.isNotBlank(tagValue)) {
-                                return StringUtils.abbreviate("Deprecated: " + tagValue, 100);
+                                String trim = tagValue.replace("@deprecated", "").trim();
+
+                                if (StringUtils.isNotBlank(tagValue)) {
+                                    return StringUtils.abbreviate("Deprecated: " + trim, 100);
+                                }
                             }
                         }
                     }
