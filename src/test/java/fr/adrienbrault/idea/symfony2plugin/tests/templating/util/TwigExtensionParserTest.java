@@ -53,6 +53,11 @@ public class TwigExtensionParserTest extends SymfonyLightCodeInsightFixtureTestC
             "OPERATOR",
             TwigExtensionParser.getOperators(getProject()).get("or").getType()
         );
+
+        assertEquals(
+            "#M#C\\ClassInstance.getFoobar",
+            TwigExtensionParser.getFunctions(getProject()).get("class_instance_foobar").getSignature()
+        );
     }
 
     public void testExtensionAreCollectedForDeprecated() {

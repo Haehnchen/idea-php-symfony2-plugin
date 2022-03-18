@@ -5,6 +5,10 @@ namespace
     function foo_test() {}
     class My_Node_Test {}
 
+    class ClassInstance {
+        public function getFoobar() {}
+    }
+
     interface Twig_ExtensionInterface
     {
         public function getTokenParsers();
@@ -104,6 +108,7 @@ namespace Twig
                 'hwi_oauth_login_url'  => new \Twig_Function_Method($this, 'foobar'),
                 new \Twig_Function('max_2', 'max'),
                 new TwigFunction('max_3', 'max'),
+                new TwigFunction('class_instance_foobar', [\ClassInstance::class, 'getFoobar']),
             ];
         }
 
