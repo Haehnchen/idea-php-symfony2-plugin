@@ -149,6 +149,7 @@ public class TwigExtensionParser  {
      */
     @Nullable
     private static String getCallableSignature(PsiElement psiElement, Method method) {
+        // @TODO can be replaced by PhpStorm function now; much smarter
         // array($this, 'getUrl')
         if(psiElement instanceof ArrayCreationExpression) {
             List<PsiElement> arrayValues = (List<PsiElement>) PsiElementUtils.getChildrenOfTypeAsList(psiElement, PlatformPatterns.psiElement(PhpElementTypes.ARRAY_VALUE));
@@ -160,6 +161,17 @@ public class TwigExtensionParser  {
                         PhpClass phpClass = method.getContainingClass();
                         if(phpClass != null) {
                             return String.format("#M#C\\%s.%s", phpClass.getPresentableFQN(), methodName);
+                        }
+                    }
+                } else if (firstChild instanceof ClassConstantReference) {
+                    String classConstantPhpFqn = PhpElementsUtil.getClassConstantPhpFqn((ClassConstantReference) firstChild);
+                    if (StringUtils.isNotEmpty(classConstantPhpFqn)) {
+                        String methodName = PhpElementsUtil.getStringValue(arrayValues.get(1).getFirstChild());
+                        if(StringUtils.isNotBlank(methodName)) {
+                            PhpClass phpClass = method.getContainingClass();
+                            if(phpClass != null) {
+                                return String.format("#M#C\\%s.%s", classConstantPhpFqn, methodName);
+                            }
                         }
                     }
                 }
