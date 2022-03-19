@@ -46,7 +46,7 @@ public class PhpLineMarkerProvider implements LineMarkerProvider {
     }
 
     private void attachRouteActions(@NotNull Collection<? super LineMarkerInfo<?>> lineMarkerInfos, @NotNull PsiElement psiElement) {
-        if (!(psiElement instanceof FunctionReference)) {
+        if (!(psiElement instanceof MethodReference)) {
             return;
         }
 
