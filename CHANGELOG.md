@@ -18,6 +18,14 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.23.214
+* Support more use cases for php controller linemarker (Daniel Espendiller)
+* Support class constants for Twig extension navigation (Daniel Espendiller)
+* Adding a linemarker to php route config (mamazu)
+* Provide pattern tests for Twig macro syntax (Daniel Espendiller)
+* Secure some long template filenames to be not indexed (Daniel Espendiller)
+* SymfonyWebpackUtil: migrate from "org.json.simple" to "com.google.gson" (Daniel Espendiller)
+
 ## 0.23.213
 * Fixed [#1716](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1716): Deprecated LineMarkerInfo constructor usage (Adam Wójs)
 * Add missing Symfony icon to new project setup (Shyim)
