@@ -838,29 +838,45 @@ public class RouteHelper {
     /**
      * Find controller definition in php function call.
      * $routes->controller('FooController:method');
+     * $routes->controller([FooController::class, 'method']);
+     * $routes->controller(FooController::class);
      */
-    @Nullable
-    public static String getPhpController(@Nullable MethodReference methodCall) {
-        if (methodCall == null || !methodCall.getName().equals("controller")) {
-            return null;
+    @NotNull
+    public static PsiElement[] getPhpController(@NotNull MethodReference methodCall) {
+        PsiElement[] parameters = methodCall.getParameters();
+        if (parameters.length == 1 && parameters[0] instanceof StringLiteralExpression) {
+            // 'FooController::method'
+            String contents = ((StringLiteralExpression) parameters[0]).getContents();
+            if (StringUtils.isNotBlank(contents)) {
+                return RouteHelper.getMethodsOnControllerShortcut(methodCall.getProject(), contents);
+            }
+
+            return new PsiElement[0];
+        } else if (parameters.length == 1 && parameters[0] instanceof ClassConstantReference) {
+            // FooController::class
+            String classConstantPhpFqn = PhpElementsUtil.getClassConstantPhpFqn((ClassConstantReference) parameters[0]);
+            if (StringUtils.isNotBlank(classConstantPhpFqn)) {
+                return RouteHelper.getMethodsOnControllerShortcut(methodCall.getProject(), classConstantPhpFqn);
+            }
+
+            return new PsiElement[0];
+        } else if (parameters.length == 1 && parameters[0] instanceof ArrayCreationExpression) {
+            // [FooController::class, 'method']
+            PsiElement[] elements = PhpElementsUtil.getArrayValues((ArrayCreationExpression) parameters[0]);
+            if (elements.length == 2) {
+                String className = PhpElementsUtil.getStringValue(elements[0]);
+                if (StringUtils.isNotBlank(className)) {
+                    String method = PhpElementsUtil.getStringValue(elements[1]);
+                    if (method != null) {
+                        return RouteHelper.getMethodsOnControllerShortcut(methodCall.getProject(), className + "::" + method);
+                    }
+                }
+            }
+
+            return new PsiElement[0];
         }
 
-        PhpExpression expression = methodCall;
-        while(expression instanceof MethodReference) {
-            expression = (PhpExpression) expression.getFirstChild();
-        }
-
-        var expr = expression.getInferredType();
-
-        if (!"\\Symfony\\Component\\Routing\\Loader\\Configurator\\RoutingConfigurator".equals(expr.toString())) {
-            return null;
-        }
-
-        PsiElement parameter = methodCall.getParameters()[0];
-        if (parameter instanceof StringLiteralExpression) {
-            return ((StringLiteralExpression) parameter).getContents();
-        }
-        return null;
+        return new PsiElement[0];
     }
 
     @Nullable

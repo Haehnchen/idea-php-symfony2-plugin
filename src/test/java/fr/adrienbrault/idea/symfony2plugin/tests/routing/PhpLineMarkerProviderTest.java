@@ -1,7 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.routing;
 
-import com.intellij.patterns.XmlPatterns;
-import com.intellij.psi.PsiFile;
 import com.jetbrains.php.lang.PhpFileType;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
@@ -17,6 +15,7 @@ public class PhpLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTes
 
         myFixture.copyFileToProject("BundleScopeLineMarkerProvider.php");
         myFixture.copyFileToProject("XmlLineMarkerProvider.php");
+        myFixture.copyFileToProject("classes.php");
     }
 
     protected String getTestDataPath() {
@@ -37,6 +36,36 @@ public class PhpLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTes
                         "};"
                 ),
                 new LineMarker.ToolTipEqualsAssert("Navigate to action")
+        );
+
+        assertLineMarker(
+            myFixture.configureByText(
+                PhpFileType.INSTANCE,
+                "<?php\n" +
+                    "use Symfony\\Component\\Routing\\Loader\\Configurator\\RoutingConfigurator;\n" +
+                    "\n" +
+                    "return function(RoutingConfigurator $routes) {\n" +
+                    "    $routes->add('xml_route', '/xml')\n" +
+                    "        ->controller(\\Foo\\Bar::class)\n" +
+                    "    ;\n" +
+                    "};"
+            ),
+            new LineMarker.ToolTipEqualsAssert("Navigate to action")
+        );
+
+        assertLineMarker(
+            myFixture.configureByText(
+                PhpFileType.INSTANCE,
+                "<?php\n" +
+                    "use Symfony\\Component\\Routing\\Loader\\Configurator\\RoutingConfigurator;\n" +
+                    "\n" +
+                    "return function(RoutingConfigurator $routes) {\n" +
+                    "    $routes->add('xml_route', '/xml')\n" +
+                    "        ->controller([\\Foo\\Bar2::class, 'index'])\n" +
+                    "    ;\n" +
+                    "};"
+            ),
+            new LineMarker.ToolTipEqualsAssert("Navigate to action")
         );
     }
 }

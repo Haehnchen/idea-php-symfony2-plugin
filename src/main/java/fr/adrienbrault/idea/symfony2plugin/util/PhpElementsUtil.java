@@ -130,6 +130,33 @@ public class PhpElementsUtil {
     }
 
     /**
+     * Get array values
+     *
+     * ["value", FOO::class] but not [$foo . $foo, $foo]
+     */
+    @NotNull
+    static public PsiElement[] getArrayValues(@NotNull ArrayCreationExpression arrayCreationExpression) {
+        Collection<PsiElement> arrayValues = PhpPsiUtil.getChildren(arrayCreationExpression, psiElement ->
+            psiElement.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE
+        );
+
+        List<PsiElement> items = new ArrayList<>();
+        for (PsiElement child : arrayValues) {
+            if (child instanceof PhpPsiElement) {
+                PsiElement[] children = child.getChildren();
+                if (children.length == 1) {
+                    items.add(children[0]);
+                } else {
+                    // inalid for use: [$foo . $foo]
+                    return new PsiElement[0];
+                }
+            }
+        }
+
+        return items.toArray(new PsiElement[0]);
+    }
+
+    /**
      * array('foo' => FOO.class, 'foo1' => 'bar', 1 => 'foo')
      */
     @NotNull
