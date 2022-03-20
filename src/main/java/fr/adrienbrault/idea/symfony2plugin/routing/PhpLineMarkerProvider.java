@@ -4,12 +4,14 @@ import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
+import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.php.lang.psi.PhpFile;
-import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.lang.psi.elements.MethodReference;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -46,20 +48,23 @@ public class PhpLineMarkerProvider implements LineMarkerProvider {
     }
 
     private void attachRouteActions(@NotNull Collection<? super LineMarkerInfo<?>> lineMarkerInfos, @NotNull PsiElement psiElement) {
-        if (!(psiElement instanceof MethodReference)) {
+        if (!(psiElement instanceof MethodReference) || !"controller".equalsIgnoreCase(((MethodReference) psiElement).getName()) || !PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) psiElement, "\\Symfony\\Component\\Routing\\Loader\\Configurator\\Traits\\RouteTrait", "controller")) {
             return;
         }
 
         MethodReference methodCall = (MethodReference) psiElement;
-        String controllerMethod = RouteHelper.getPhpController(methodCall);
 
-        PsiElement[] methods = RouteHelper.getMethodsOnControllerShortcut(psiElement.getProject(), controllerMethod);
+        PsiElement[] methods = RouteHelper.getPhpController(methodCall);
         if(methods.length > 0) {
             NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.TWIG_CONTROLLER_LINE_MARKER).
                     setTargets(methods).
                     setTooltipText("Navigate to action");
 
-            lineMarkerInfos.add(builder.createLineMarkerInfo(methodCall.getParameters()[0].getFirstChild()));
+            // leaf elements are only allowed to attach; search "controller" psi element
+            ASTNode nameNode = ((MethodReference) psiElement).getNameNode();
+            if (nameNode != null) {
+                lineMarkerInfos.add(builder.createLineMarkerInfo(nameNode.getPsi()));
+            }
         }
     }
 }
