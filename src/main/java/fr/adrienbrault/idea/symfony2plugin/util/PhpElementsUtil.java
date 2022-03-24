@@ -2,6 +2,8 @@ package fr.adrienbrault.idea.symfony2plugin.util;
 
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Ref;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PatternCondition;
 import com.intellij.patterns.PlatformPatterns;
@@ -10,6 +12,7 @@ import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.intellij.util.Processor;
+import com.jetbrains.php.PhpClassHierarchyUtils;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.codeInsight.PhpCodeInsightUtil;
 import com.jetbrains.php.completion.PhpLookupElement;
@@ -482,23 +485,52 @@ public class PhpElementsUtil {
      * @param expectedClass eg DateTimeInterface
      */
     public static boolean isInstanceOf(@NotNull PhpClass subjectClass, @NotNull PhpClass expectedClass) {
+        Ref<Boolean> result = new Ref<>(false);
+
+        PhpClassHierarchyUtils.processSupers(subjectClass, true, true, superClass -> {
+            boolean b = StringUtil.equalsIgnoreCase(superClass.getFQN(), expectedClass.getFQN())
+                || StringUtil.equalsIgnoreCase(StringUtils.stripStart(superClass.getFQN(), "\\"), StringUtils.stripStart(expectedClass.getFQN(), "\\"));
+
+            if (b) {
+                result.set(true);
+            }
+
+            return !(Boolean)result.get();
+        });
+
+        if (result.get()) {
+            return true;
+        }
+
         return new PhpType().add(expectedClass).isConvertibleFrom(new PhpType().add(subjectClass), PhpIndex.getInstance(subjectClass.getProject()));
     }
 
     /**
      * @param subjectClass eg DateTime
-     * @param expectedClass eg DateTimeInterface
+     * @param expectedClassAsString eg DateTimeInterface
      */
-    public static boolean isInstanceOf(@NotNull PhpClass subjectClass, @NotNull String expectedClass) {
-        return new PhpType().add(expectedClass).isConvertibleFrom(new PhpType().add(subjectClass), PhpIndex.getInstance(subjectClass.getProject()));
+    public static boolean isInstanceOf(@NotNull PhpClass subjectClass, @NotNull String expectedClassAsString) {
+        for (PhpClass expectedClass : PhpIndex.getInstance(subjectClass.getProject()).getAnyByFQN(expectedClassAsString)) {
+            if (isInstanceOf(subjectClass, expectedClass)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
-     * @param subjectClass eg DateTime
+     * @param subjectClassAsString eg DateTime
      * @param expectedClass eg DateTimeInterface
      */
-    public static boolean isInstanceOf(@NotNull Project project, @NotNull String subjectClass, @NotNull String expectedClass) {
-        return new PhpType().add(expectedClass).isConvertibleFrom(new PhpType().add(subjectClass), PhpIndex.getInstance(project));
+    public static boolean isInstanceOf(@NotNull Project project, @NotNull String subjectClassAsString, @NotNull String expectedClass) {
+        for (PhpClass subjectClass : PhpIndex.getInstance(project).getAnyByFQN(subjectClassAsString)) {
+            if (isInstanceOf(subjectClass, expectedClass)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     static public Collection<PhpClass> getClassesInterface(Project project, @NotNull String className) {
