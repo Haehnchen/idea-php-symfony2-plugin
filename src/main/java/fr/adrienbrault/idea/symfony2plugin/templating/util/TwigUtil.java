@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
@@ -2437,6 +2438,26 @@ public class TwigUtil {
         return allSubclasses.stream()
             .filter(phpClass -> !PhpUnitUtil.isPhpUnitTestFile(phpClass.getContainingFile()))
             .collect(Collectors.toCollection(HashSet::new));
+    }
+
+    @Nullable
+    public static PsiElement getInjectedTwigElement(@NotNull PsiFile psiFile, @NotNull Editor editor) {
+        int caretOffset = editor.getCaretModel().getOffset();
+        if(caretOffset < 0) {
+            return null;
+        }
+
+        // last and first element of file are tricky :)
+        if (caretOffset == 0) {
+            return psiFile;
+        }
+
+        PsiElement psiElement = psiFile.findElementAt(caretOffset - 1);
+        if(psiElement == null) {
+            return null;
+        }
+
+        return TwigUtil.getElementOnTwigViewProvider(psiElement);
     }
 
     /**

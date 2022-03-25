@@ -18,7 +18,6 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,7 +31,7 @@ public class TwigTranslationGeneratorAction extends CodeInsightAction {
         return Symfony2ProjectComponent.isEnabled(project) && (
             file instanceof TwigFile
             || (file instanceof HtmlFileImpl && file.getName().toLowerCase().endsWith(".twig"))
-            || getInjectedTwigElement(file, editor) != null
+            || TwigUtil.getInjectedTwigElement(file, editor) != null
         );
     }
 
@@ -42,30 +41,10 @@ public class TwigTranslationGeneratorAction extends CodeInsightAction {
         return new MyCodeInsightActionHandler();
     }
 
-    @Nullable
-    private static PsiElement getInjectedTwigElement(@NotNull PsiFile psiFile, @NotNull Editor editor) {
-        int caretOffset = editor.getCaretModel().getOffset();
-        if(caretOffset <= 0) {
-            return null;
-        }
-
-        PsiElement psiElement = psiFile.findElementAt(caretOffset);
-        if(psiElement == null) {
-            return null;
-        }
-
-        return TwigUtil.getElementOnTwigViewProvider(psiElement);
-    }
-
     private static class MyCodeInsightActionHandler implements CodeInsightActionHandler {
         @Override
         public void invoke(@NotNull Project project, @NotNull Editor editor, @NotNull PsiFile psiFile) {
-            int caretOffset = editor.getCaretModel().getOffset();
-            if(caretOffset <= 0) {
-                return;
-            }
-
-            PsiElement psiElement = getInjectedTwigElement(psiFile, editor);
+            PsiElement psiElement = TwigUtil.getInjectedTwigElement(psiFile, editor);
             if(psiElement == null) {
                 return;
             }
