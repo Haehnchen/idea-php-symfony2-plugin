@@ -86,11 +86,17 @@ public class TwigBlockOverwriteGenerator extends CodeInsightAction {
                         WriteCommandAction.writeCommandAction(editor.getProject())
                             .withName("Block Overwrite: " + titleBlocks)
                             .run((ThrowableRunnable<Throwable>) () -> {
+                                String endBlock = "{% endblock %}";
+
                                 String content = strings.stream()
-                                    .map((Function<String, String>) s -> "{% block " + s + " %}{% endblock %}")
+                                    .map((Function<String, String>) s -> "{% block " + s + " %}" + endBlock)
                                     .collect(Collectors.joining("\n"));
 
                                 PhpInsertHandlerUtil.insertStringAtCaret(editor, content);
+
+                                // move caret inside block
+                                // {% block %}<caret>{% endblock %}
+                                editor.getCaretModel().moveCaretRelatively(-endBlock.length(), 0, false, false, true);
                             });
                     } catch (Throwable ignored) {
                     }
