@@ -718,6 +718,13 @@
             <add-to-group group-id="GoToTargetEx"/>
         </action>
 
+        <action icon="SymfonyIcons.TwigBlockOverwrite"
+                id="SymfonyTwigBlockOverwrite"
+                class="fr.adrienbrault.idea.symfony2plugin.templating.action.TwigBlockOverwriteGenerator"
+                text="Block Overwrite">
+            <add-to-group group-id="GenerateGroup"/>
+        </action>
+
     </actions>
 </idea-plugin>
 
