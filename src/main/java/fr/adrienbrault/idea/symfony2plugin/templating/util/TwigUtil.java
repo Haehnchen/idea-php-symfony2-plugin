@@ -43,10 +43,7 @@ import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtensionParameter;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateUsage;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpTwigTemplateUsageStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigBlockIndexExtension;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigMacroFunctionStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.*;
@@ -1527,17 +1524,20 @@ public class TwigUtil {
 
     /**
      * Lookup elements for Twig files
+     * @return
      */
     @NotNull
-    public static Collection<LookupElement> getTwigLookupElements(@NotNull Project project) {
+    public static Collection<LookupElement> getTwigLookupElements(@NotNull Project project, @NotNull Collection<String> highlight) {
         VirtualFile baseDir = ProjectUtil.getProjectDir(project);
-
         return getTemplateMap(project).entrySet()
             .stream()
             .filter(entry -> entry.getValue().size() > 0)
-            .map((java.util.function.Function<Map.Entry<String, Set<VirtualFile>>, LookupElement>) entry ->
-                new TemplateLookupElement(entry.getKey(), entry.getValue().iterator().next(), baseDir)
-            )
+            .map((java.util.function.Function<Map.Entry<String, Set<VirtualFile>>, LookupElement>) entry -> new TemplateLookupElement(
+                entry.getKey(),
+                entry.getValue().iterator().next(),
+                baseDir,
+                highlight.contains(entry.getKey())
+            ))
             .collect(Collectors.toList());
     }
 
@@ -2785,6 +2785,46 @@ public class TwigUtil {
                 super.visitElement(element);
             }
         });
+    }
+
+    public static List<String> getIncludeTemplateUsageAsOrderedList(@NotNull Project project, int limit) {
+        Set<String> allKeys = FileBasedIndex.getInstance().getAllKeys(TwigIncludeStubIndex.KEY, project)
+            .stream()
+            .filter(s -> !s.toLowerCase().contains("@webprofiler") && !s.toLowerCase().contains("/profiler/") && !s.toLowerCase().contains("@twig") && !s.equalsIgnoreCase("form_div_layout.html.twig"))
+            .collect(Collectors.toSet());
+
+        Map<String, Integer> extendsWithFileCountUsage = new HashMap<>();
+        for (String allKey : allKeys) {
+            Collection<VirtualFile> containingFiles = FileBasedIndex.getInstance().getContainingFiles(TwigIncludeStubIndex.KEY, allKey, GlobalSearchScope.allScope(project));
+            extendsWithFileCountUsage.put(allKey, containingFiles.size());
+        }
+
+        return extendsWithFileCountUsage.entrySet()
+            .stream()
+            .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+            .map(Map.Entry::getKey)
+            .limit(limit)
+            .collect(Collectors.toList());
+    }
+
+    public static List<String> getExtendsTemplateUsageAsOrderedList(@NotNull Project project, int limit) {
+        Set<String> allKeys = FileBasedIndex.getInstance().getAllKeys(TwigExtendsStubIndex.KEY, project)
+            .stream()
+            .filter(s -> !s.toLowerCase().contains("@webprofiler") && !s.toLowerCase().contains("/profiler/") && !s.toLowerCase().contains("@twig") && !s.equalsIgnoreCase("form_div_layout.html.twig"))
+            .collect(Collectors.toSet());
+
+        Map<String, Integer> extendsWithFileCountUsage = new HashMap<>();
+        for (String allKey : allKeys) {
+            Collection<VirtualFile> containingFiles = FileBasedIndex.getInstance().getContainingFiles(TwigExtendsStubIndex.KEY, allKey, GlobalSearchScope.allScope(project));
+            extendsWithFileCountUsage.put(allKey, containingFiles.size());
+        }
+
+        return extendsWithFileCountUsage.entrySet()
+            .stream()
+            .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+            .map(Map.Entry::getKey)
+            .limit(limit)
+            .collect(Collectors.toList());
     }
 
     /**

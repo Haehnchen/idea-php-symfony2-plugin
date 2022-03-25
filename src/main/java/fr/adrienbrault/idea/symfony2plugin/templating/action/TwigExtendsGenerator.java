@@ -8,21 +8,17 @@ import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.impl.source.html.HtmlFileImpl;
-import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.ThrowableRunnable;
-import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.completion.insert.PhpInsertHandlerUtil;
 import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -53,23 +49,7 @@ public class TwigExtendsGenerator extends CodeInsightAction {
                 return;
             }
 
-            Set<String> allKeys = FileBasedIndex.getInstance().getAllKeys(TwigExtendsStubIndex.KEY, project)
-                .stream()
-                .filter(s -> !s.toLowerCase().contains("@webprofiler") && !s.toLowerCase().contains("/profiler/") && !s.toLowerCase().contains("@twig") && !s.equalsIgnoreCase("form_div_layout.html.twig"))
-                .collect(Collectors.toSet());
-
-            Map<String, Integer> extendsWithFileCountUsage = new HashMap<>();
-            for (String allKey : allKeys) {
-                Collection<VirtualFile> containingFiles = FileBasedIndex.getInstance().getContainingFiles(TwigExtendsStubIndex.KEY, allKey, GlobalSearchScope.allScope(project));
-                extendsWithFileCountUsage.put(allKey, containingFiles.size());
-            }
-
-            List<String> prioritizedKeys = extendsWithFileCountUsage.entrySet()
-                .stream()
-                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-                .map(Map.Entry::getKey)
-                .limit(40)
-                .collect(Collectors.toList());
+            List<String> prioritizedKeys = TwigUtil.getExtendsTemplateUsageAsOrderedList(project, 40);
 
             if (prioritizedKeys.size() == 0) {
                 if (!ApplicationManager.getApplication().isHeadlessEnvironment()) {
