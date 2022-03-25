@@ -22,6 +22,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.asset.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.asset.provider.AssetCompletionProvider;
+import fr.adrienbrault.idea.symfony2plugin.dic.ServiceCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.completion.QuotedInsertionLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
@@ -71,7 +72,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             TwigPattern.getPrintBlockOrTagFunctionPattern("include", "source"),
             TwigPattern.getIncludeTagArrayPattern(),
             TwigPattern.getTagTernaryPattern(TwigElementTypes.INCLUDE_TAG)
-        ),  new TemplateCompletionProvider());
+        ), new TemplateCompletionProvider());
 
         // provides support for 'a<xxx>'|trans({'%foo%' : bar|default}, 'Domain')
         // provides support for 'a<xxx>'|transchoice(2, {'%foo%' : bar|default}, 'Domain')
@@ -503,7 +504,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            resultSet.addAllElements(TwigUtil.getTwigLookupElements(parameters.getPosition().getProject()));
+            resultSet.addAllElements(TwigUtil.getTwigLookupElements(parameters.getPosition().getProject(), Collections.emptyList()));
         }
     }
 
@@ -573,16 +574,33 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
     }
 
-    private class TemplateCompletionProvider extends CompletionProvider<CompletionParameters> {
+    private static class TemplateCompletionProvider extends CompletionProvider<CompletionParameters> {
         public void addCompletions(@NotNull CompletionParameters parameters,
-            ProcessingContext context,
-            @NotNull CompletionResultSet resultSet) {
+                                   @NotNull ProcessingContext context,
+                                   @NotNull CompletionResultSet resultSet) {
 
             if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
                 return;
             }
 
-            resultSet.addAllElements(TwigUtil.getTwigLookupElements(parameters.getPosition().getProject()));
+            List<String> prioritizedKeys = new ArrayList<>();
+            Project project = parameters.getPosition().getProject();
+
+            if (TwigPattern.getTemplateFileReferenceTagPattern("extends").accepts(parameters.getPosition())) {
+                prioritizedKeys.addAll(TwigUtil.getExtendsTemplateUsageAsOrderedList(project, 50));
+            } else if(TwigPattern.getTemplateFileReferenceTagPattern("include").accepts(parameters.getPosition())) {
+                prioritizedKeys.addAll(TwigUtil.getIncludeTemplateUsageAsOrderedList(project, 50));
+            }
+
+            if (prioritizedKeys.size() > 0) {
+                CompletionSorter completionSorter = CompletionService.getCompletionService()
+                    .defaultSorter(parameters, resultSet.getPrefixMatcher())
+                    .weighBefore("priority", new ServiceCompletionProvider.MyLookupElementWeigher(prioritizedKeys));
+
+                resultSet = resultSet.withRelevanceSorter(completionSorter);
+            }
+
+            resultSet.addAllElements(TwigUtil.getTwigLookupElements(project, new HashSet<>(prioritizedKeys)));
         }
     }
 

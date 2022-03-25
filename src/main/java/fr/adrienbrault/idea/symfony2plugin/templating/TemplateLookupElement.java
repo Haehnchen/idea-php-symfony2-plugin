@@ -23,6 +23,8 @@ public class TemplateLookupElement extends LookupElement {
     @NotNull
     private final String templateName;
 
+    private boolean bold = false;
+
     @Nullable
     private InsertHandler<LookupElement> insertHandler = null;
 
@@ -30,6 +32,11 @@ public class TemplateLookupElement extends LookupElement {
         this.templateName = templateName;
         this.virtualFile = virtualFile;
         this.projectBaseDir = projectBaseDir;
+    }
+
+    public TemplateLookupElement(@NotNull String templateName, @NotNull VirtualFile virtualFile, @NotNull VirtualFile projectBaseDir, boolean bold) {
+        this(templateName, virtualFile, projectBaseDir);
+        this.bold = bold;
     }
 
     @NotNull
@@ -49,5 +56,6 @@ public class TemplateLookupElement extends LookupElement {
         presentation.setIcon(this.virtualFile.getFileType().getIcon());
         presentation.setTypeText(VfsUtil.getRelativePath(this.virtualFile, this.projectBaseDir, '/'));
         presentation.setTypeGrayed(true);
+        presentation.setItemTextBold(bold);
     }
 }

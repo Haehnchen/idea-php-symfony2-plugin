@@ -107,11 +107,11 @@ public class ServiceCompletionProvider extends CompletionProvider<CompletionPara
         }
     }
 
-    private static class MyLookupElementWeigher extends LookupElementWeigher {
+    public static class MyLookupElementWeigher extends LookupElementWeigher {
         @NotNull
         private final List<String> elements;
 
-        MyLookupElementWeigher(@NotNull List<String> elements) {
+        public MyLookupElementWeigher(@NotNull List<String> elements) {
             super("topElement");
             this.elements = elements;
 
