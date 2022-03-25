@@ -74,6 +74,8 @@ public class Symfony2Icons {
     public static final Icon CONFIG_VALUE = IconLoader.getIcon("/icons/config_value.png");
     public static final Icon CONFIG_VALUE_SHORTCUT = IconLoader.getIcon("/icons/config_value_shortcut.png");
 
+    public static final Icon TWIG_BLOCK_OVERWRITE = IconLoader.getIcon("/icons/twig_block_overwrite.png");
+
     public static Image getImage(Icon icon) {
 
         if (icon instanceof ImageIcon) {
