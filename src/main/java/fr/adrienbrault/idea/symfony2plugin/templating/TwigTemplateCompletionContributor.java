@@ -579,16 +579,17 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                                    @NotNull ProcessingContext context,
                                    @NotNull CompletionResultSet resultSet) {
 
-            if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+            PsiElement psiElement = parameters.getPosition();
+            if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
                 return;
             }
 
             List<String> prioritizedKeys = new ArrayList<>();
-            Project project = parameters.getPosition().getProject();
+            Project project = psiElement.getProject();
 
-            if (TwigPattern.getTemplateFileReferenceTagPattern("extends").accepts(parameters.getPosition())) {
+            if (TwigPattern.getTemplateFileReferenceTagPattern("extends").accepts(psiElement)) {
                 prioritizedKeys.addAll(TwigUtil.getExtendsTemplateUsageAsOrderedList(project, 50));
-            } else if(TwigPattern.getTemplateFileReferenceTagPattern("include").accepts(parameters.getPosition())) {
+            } else if (TwigPattern.getTemplateFileReferenceTagPattern("include").accepts(psiElement) || TwigPattern.getPrintBlockOrTagFunctionPattern("include", "source").accepts(psiElement)) {
                 prioritizedKeys.addAll(TwigUtil.getIncludeTemplateUsageAsOrderedList(project, 50));
             }
 

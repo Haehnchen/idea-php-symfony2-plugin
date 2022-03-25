@@ -721,14 +721,14 @@
         <action icon="SymfonyIcons.TwigBlockOverwrite"
                 id="SymfonyTwigBlockOverwrite"
                 class="fr.adrienbrault.idea.symfony2plugin.templating.action.TwigBlockOverwriteGenerator"
-                text="Block Overwrite">
+                text="Twig: Block Overwrite">
             <add-to-group group-id="GenerateGroup"/>
         </action>
 
         <action icon="TwigIcons.TwigFileIcon"
                 id="SymfonyTwigExtendsGenerator"
                 class="fr.adrienbrault.idea.symfony2plugin.templating.action.TwigExtendsGenerator"
-                text="Extends Tag">
+                text="Twig: Extends">
             <add-to-group group-id="GenerateGroup"/>
         </action>
 
