@@ -5,7 +5,7 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
-import com.intellij.patterns.PlatformPatterns;
+import com.intellij.patterns.*;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiWhiteSpace;
@@ -406,6 +406,45 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 }
             }
         );
+
+        // {% e => {% extends '...'
+        extend(
+            CompletionType.BASIC,
+            PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withSuperParent(2, PsiFile.class),
+            new IncompleteExtendsCompletionProvider()
+        );
+
+        // {% in => {% include '...'
+        extend(
+            CompletionType.BASIC,
+            PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME),
+            new IncompleteIncludeCompletionProvider()
+        );
+
+        // {{ in => {{ include('...')
+        extend(
+            CompletionType.BASIC,
+            TwigPattern.getCompletablePattern(),
+            new IncompleteIncludePrintBlockCompletionProvider()
+        );
+    }
+
+    private boolean isCompletionStartingMatch(@NotNull String fullText, @NotNull CompletionParameters completionParameters, int minLength) {
+        PsiElement originalPosition = completionParameters.getOriginalPosition();
+        if (originalPosition != null) {
+            String text = originalPosition.getText();
+            if (text.length() >= minLength && fullText.startsWith(text)) {
+                return true;
+            }
+        }
+
+        PsiElement position = completionParameters.getPosition();
+        String text = position.getText().toLowerCase().replace("intellijidearulezzz", "");
+        if (text.length() >= minLength && fullText.startsWith(text)) {
+            return true;
+        }
+
+        return false;
     }
 
     private static class FilterCompletionProvider extends CompletionProvider<CompletionParameters> {
@@ -662,6 +701,104 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                             .withIcon(TwigIcons.TwigFileIcon).withInsertHandler(FunctionInsertHandler.getInstance())
                     ).collect(Collectors.toList())
             );
+        }
+    }
+
+    /**
+     * {% e => {% extends '...'
+     */
+    private class IncompleteExtendsCompletionProvider extends CompletionProvider<CompletionParameters> {
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
+            if(!Symfony2ProjectComponent.isEnabled(completionParameters.getPosition())) {
+                return;
+            }
+
+            if (!isCompletionStartingMatch("extends", completionParameters, 1)) {
+                return;
+            }
+
+            List<String> extendsTemplateUsageAsOrderedList = TwigUtil.getExtendsTemplateUsageAsOrderedList(completionParameters.getPosition().getProject(), 50);
+
+            CompletionSorter completionSorter = CompletionService.getCompletionService()
+                .defaultSorter(completionParameters, resultSet.getPrefixMatcher())
+                .weigh(new ServiceCompletionProvider.MyLookupElementWeigher(extendsTemplateUsageAsOrderedList));
+
+            resultSet = resultSet.withRelevanceSorter(completionSorter);
+
+            for (String s : extendsTemplateUsageAsOrderedList) {
+                resultSet.addElement(LookupElementBuilder.create(String.format("extends '%s'", s)).withIcon(TwigIcons.TwigFileIcon));
+            }
+        }
+    }
+
+    /**
+     * {% in => {% include '...'
+     */
+    private class IncompleteIncludeCompletionProvider extends CompletionProvider<CompletionParameters> {
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
+            if(!Symfony2ProjectComponent.isEnabled(completionParameters.getPosition())) {
+                return;
+            }
+
+            resultSet.restartCompletionOnPrefixChange(StandardPatterns.string().longerThan(1).with(new PatternCondition<>("include startsWith") {
+                @Override
+                public boolean accepts(@NotNull String s, ProcessingContext processingContext) {
+                    return "include".startsWith(s);
+                }
+            }));
+
+            if (!isCompletionStartingMatch("include", completionParameters, 2)) {
+                return;
+            }
+
+            List<String> extendsTemplateUsageAsOrderedList = TwigUtil.getIncludeTemplateUsageAsOrderedList(completionParameters.getPosition().getProject(), 50);
+
+            CompletionSorter completionSorter = CompletionService.getCompletionService()
+                .defaultSorter(completionParameters, resultSet.getPrefixMatcher())
+                .weigh(new ServiceCompletionProvider.MyLookupElementWeigher(extendsTemplateUsageAsOrderedList));
+
+            resultSet = resultSet.withRelevanceSorter(completionSorter);
+
+            for (String s : extendsTemplateUsageAsOrderedList) {
+                resultSet.addElement(LookupElementBuilder.create(String.format("include '%s'", s)).withIcon(TwigIcons.TwigFileIcon));
+            }
+        }
+    }
+
+    /**
+     * {{ in => {{ include('...')
+     */
+    private class IncompleteIncludePrintBlockCompletionProvider extends CompletionProvider<CompletionParameters> {
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
+            if(!Symfony2ProjectComponent.isEnabled(completionParameters.getPosition())) {
+                return;
+            }
+
+            resultSet.restartCompletionOnPrefixChange(StandardPatterns.string().longerThan(1).with(new PatternCondition<>("include startsWith") {
+                @Override
+                public boolean accepts(@NotNull String s, ProcessingContext processingContext) {
+                    return "include".startsWith(s);
+                }
+            }));
+
+            if (!isCompletionStartingMatch("include", completionParameters, 2)) {
+                return;
+            }
+
+            List<String> extendsTemplateUsageAsOrderedList = TwigUtil.getIncludeTemplateUsageAsOrderedList(completionParameters.getPosition().getProject(), 50);
+
+            CompletionSorter completionSorter = CompletionService.getCompletionService()
+                .defaultSorter(completionParameters, resultSet.getPrefixMatcher())
+                .weigh(new ServiceCompletionProvider.MyLookupElementWeigher(extendsTemplateUsageAsOrderedList));
+
+            resultSet = resultSet.withRelevanceSorter(completionSorter);
+
+            for (String s : extendsTemplateUsageAsOrderedList) {
+                resultSet.addElement(LookupElementBuilder.create(String.format("include('%s')", s)).withIcon(TwigIcons.TwigFileIcon));
+            }
         }
     }
 }
