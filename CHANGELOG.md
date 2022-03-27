@@ -18,6 +18,15 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.23.215
+* Provide incomplete "if" completion for Twig (Daniel Espendiller)
+* Provide incomplete "for" completion for Twig based on variable scope (Daniel Espendiller)
+* Provide incomplete tags / function completion for Twig (Daniel Espendiller)
+* Add Twig "include" and "extends" lookup element weight sorting (Daniel Espendiller)
+* Add Twig "extends" generator action (Daniel Espendiller)
+* Add Twig block overwrite generator action (Daniel Espendiller)
+* Reflect changes in instanceOf check for PhpClass (Daniel Espendiller)
+
 ## 0.23.214
 * Support more use cases for php controller linemarker (Daniel Espendiller)
 * Support class constants for Twig extension navigation (Daniel Espendiller)
