@@ -59,6 +59,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -439,6 +440,13 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             CompletionType.BASIC,
             PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME),
             new IncompleteForCompletionProvider()
+        );
+
+        // {% if => "if app.debug"
+        extend(
+            CompletionType.BASIC,
+            PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME),
+            new IncompleteIfCompletionProvider()
         );
     }
 
@@ -821,7 +829,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
     private class IncompleteForCompletionProvider extends CompletionProvider<CompletionParameters> {
         @Override
         protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
-            if(!Symfony2ProjectComponent.isEnabled(completionParameters.getPosition())) {
+            if (!Symfony2ProjectComponent.isEnabled(completionParameters.getPosition())) {
                 return;
             }
 
@@ -836,59 +844,99 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            Set<Map.Entry<String, PsiVariable>> entries = TwigTypeResolveUtil.collectScopeVariables(completionParameters.getPosition()).entrySet();
-
-            Map<String, Pair<String, LookupElement>> arrays = new HashMap<>();
-
-            Project project = completionParameters.getPosition().getProject();
-
-            for(Map.Entry<String, PsiVariable> entry: entries) {
-                Collection<PhpClass> classFromPhpTypeSet = PhpElementsUtil.getClassFromPhpTypeSet(project, entry.getValue().getTypes());
-                for (PhpClass phpClass : classFromPhpTypeSet) {
-                    for(Method method: phpClass.getMethods()) {
-                        if(!(!method.getModifier().isPublic() || method.getName().startsWith("set") || method.getName().startsWith("__"))) {
-                            if (PhpType.isArray(PhpIndex.getInstance(project).completeType(project, method.getType(), new HashSet<>()))) {
-                                String propertyShortcutMethodName = TwigTypeResolveUtil.getPropertyShortcutMethodName(method);
-                                arrays.put(entry.getKey() + "." + propertyShortcutMethodName, Pair.create(propertyShortcutMethodName, new PhpTwigMethodLookupElement(method)));
-                            }
-                        }
+            resultSet.addAllElements(processVariables(
+                completionParameters.getPosition(),
+                PhpType::isArray,
+                pair -> {
+                    String var = pair.getValue().getFirst();
+                    String unpluralize = StringUtil.unpluralize(var);
+                    if (unpluralize != null) {
+                        var = unpluralize;
                     }
 
-                    for(Field field: phpClass.getFields()) {
-                        if(field.getModifier().isPublic()) {
-                            if (PhpType.isArray(PhpIndex.getInstance(project).completeType(project, field.getType(), new HashSet<>()))) {
-                                arrays.put(entry.getKey() + "." + field.getName(), Pair.create(field.getName(), new PhpTwigMethodLookupElement(field)));
-                            }
-                        }
-                    }
+                    return String.format("for %s in %s", var, pair.getKey());
                 }
+            ));
+        }
+    }
+
+    /**
+     * {% if => "if app.debug"
+     */
+    private class IncompleteIfCompletionProvider extends CompletionProvider<CompletionParameters> {
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
+            if(!Symfony2ProjectComponent.isEnabled(completionParameters.getPosition())) {
+                return;
             }
 
-            for (Map.Entry<String, Pair<String, LookupElement>> entry : arrays.entrySet()) {
-                String var = entry.getValue().getFirst();
-                String unpluralize = StringUtil.unpluralize(var);
-                if (unpluralize != null) {
-                    var = unpluralize;
+            resultSet.restartCompletionOnPrefixChange(StandardPatterns.string().longerThan(1).with(new PatternCondition<>("if startsWith") {
+                @Override
+                public boolean accepts(@NotNull String s, ProcessingContext processingContext) {
+                    return "if".startsWith(s);
+                }
+            }));
+
+            if (!isCompletionStartingMatch("if", completionParameters, 2)) {
+                return;
+            }
+
+            resultSet.addAllElements(processVariables(
+                completionParameters.getPosition(),
+                PhpType::isBoolean,
+                entry -> String.format("if %s", entry.getKey())
+            ));
+        }
+    }
+
+    @NotNull
+    private Collection<LookupElement> processVariables(@NotNull PsiElement psiElement, @NotNull Predicate<PhpType> filter, @NotNull Function<Map.Entry<String, Pair<String, LookupElement>>, String> map) {
+        Project project = psiElement.getProject();
+
+        Map<String, Pair<String, LookupElement>> arrays = new HashMap<>();
+        for(Map.Entry<String, PsiVariable> entry: TwigTypeResolveUtil.collectScopeVariables(psiElement).entrySet()) {
+            Collection<PhpClass> classFromPhpTypeSet = PhpElementsUtil.getClassFromPhpTypeSet(project, entry.getValue().getTypes());
+            for (PhpClass phpClass : classFromPhpTypeSet) {
+                for(Method method: phpClass.getMethods()) {
+                    if(!(!method.getModifier().isPublic() || method.getName().startsWith("set") || method.getName().startsWith("__"))) {
+                        if (filter.test(PhpIndex.getInstance(project).completeType(project, method.getType(), new HashSet<>()))) {
+                            String propertyShortcutMethodName = TwigTypeResolveUtil.getPropertyShortcutMethodName(method);
+                            arrays.put(entry.getKey() + "." + propertyShortcutMethodName, Pair.create(propertyShortcutMethodName, new PhpTwigMethodLookupElement(method)));
+                        }
+                    }
                 }
 
-                LookupElementPresentation lookupElementPresentation = new LookupElementPresentation();
-                entry.getValue().getSecond().renderElement(lookupElementPresentation);
-
-                Set<String> types = new HashSet<>();
-                PsiElement psiElement = entry.getValue().getSecond().getPsiElement();
-                if (psiElement instanceof PhpTypedElement) {
-                    types.addAll(((PhpTypedElement) psiElement).getType().getTypes());
+                for(Field field: phpClass.getFields()) {
+                    if(field.getModifier().isPublic()) {
+                        if (filter.test(PhpIndex.getInstance(project).completeType(project, field.getType(), new HashSet<>()))) {
+                            arrays.put(entry.getKey() + "." + field.getName(), Pair.create(field.getName(), new PhpTwigMethodLookupElement(field)));
+                        }
+                    }
                 }
-
-                String content = String.format("for %s in %s", var, entry.getKey());
-                LookupElementBuilder lookupElement = LookupElementBuilder.create(content)
-                    .withIcon(lookupElementPresentation.getIcon())
-                    .withStrikeoutness(lookupElementPresentation.isStrikeout())
-                    .withTypeText(StringUtils.stripStart(TwigTypeResolveUtil.getTypeDisplayName(project, types), "\\"));
-
-                resultSet.addElement(lookupElement);
             }
         }
+
+        Collection<LookupElement> items = new ArrayList<>();
+
+        for (Map.Entry<String, Pair<String, LookupElement>> entry : arrays.entrySet()) {
+            LookupElementPresentation lookupElementPresentation = new LookupElementPresentation();
+            entry.getValue().getSecond().renderElement(lookupElementPresentation);
+
+            Set<String> types = new HashSet<>();
+            PsiElement typeElement = entry.getValue().getSecond().getPsiElement();
+            if (typeElement instanceof PhpTypedElement) {
+                types.addAll(((PhpTypedElement) typeElement).getType().getTypes());
+            }
+
+            LookupElementBuilder lookupElement = LookupElementBuilder.create(map.apply(entry))
+                .withIcon(lookupElementPresentation.getIcon())
+                .withStrikeoutness(lookupElementPresentation.isStrikeout())
+                .withTypeText(StringUtils.stripStart(TwigTypeResolveUtil.getTypeDisplayName(project, types), "\\"));
+
+            items.add(lookupElement);
+        }
+
+        return items;
     }
 }
 

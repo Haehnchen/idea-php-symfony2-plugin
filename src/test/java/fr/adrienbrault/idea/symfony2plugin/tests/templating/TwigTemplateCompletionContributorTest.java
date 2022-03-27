@@ -113,6 +113,22 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         );
     }
 
+    public void testThatIncompleteIfStatementIsCompletedWithVariables() {
+        assertCompletionContains(TwigFileType.INSTANCE, "\n" +
+                "{# @var \\Foo\\Template\\Foobar foobar #}\n" +
+                "{% if<caret> %}\n",
+            "if foobar.ready", "if foobar.readyStatus"
+        );
+    }
+
+    public void testThatIncompleteForStatementIsCompletedWithVariables() {
+        assertCompletionContains(TwigFileType.INSTANCE, "\n" +
+                "{# @var \\Foo\\Template\\Foobar foobar #}\n" +
+                "{% fo<caret> %}\n",
+            "for myfoo in foobar.myfoos", "for date in foobar.dates", "for item in foobar.items"
+        );
+    }
+
     private void createWorkaroundFile(@NotNull String file, @NotNull String content) {
 
         try {

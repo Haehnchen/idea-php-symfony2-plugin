@@ -37,3 +37,39 @@ namespace Foo\ConstantBar
         const FOO = 'BAR';
     }
 }
+
+
+namespace Foo\Template {
+
+    class Foobar
+    {
+        /**
+         * @var \DateTime[]
+         */
+        public $items;
+
+        public bool $ready;
+
+        public function __construct(public array $myfoos)
+        {
+        }
+
+        public function getFoobar(): array
+        {
+        }
+
+        /**
+         * @return \DateTime[]
+         */
+        public function getDates()
+        {
+        }
+
+        /**
+         * @return bool
+         */
+        public function isReadyStatus()
+        {
+        }
+    }
+}
