@@ -564,7 +564,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            resultSet.addAllElements(TwigUtil.getTwigLookupElements(parameters.getPosition().getProject(), Collections.emptyList()));
+            resultSet.addAllElements(TwigUtil.getTwigLookupElements(parameters.getPosition().getProject()));
         }
     }
 

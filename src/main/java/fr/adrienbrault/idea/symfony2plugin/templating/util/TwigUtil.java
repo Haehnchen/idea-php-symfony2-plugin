@@ -1524,7 +1524,14 @@ public class TwigUtil {
 
     /**
      * Lookup elements for Twig files
-     * @return
+     */
+    @NotNull
+    public static Collection<LookupElement> getTwigLookupElements(@NotNull Project project) {
+        return getTwigLookupElements(project, Collections.emptyList());
+    }
+
+    /**
+     * Lookup elements for Twig files
      */
     @NotNull
     public static Collection<LookupElement> getTwigLookupElements(@NotNull Project project, @NotNull Collection<String> highlight) {
