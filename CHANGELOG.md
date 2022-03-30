@@ -18,6 +18,9 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.23.216
+* Fix api issues (Daniel Espendiller)
+
 ## 0.23.215
 * Provide incomplete "if" completion for Twig (Daniel Espendiller)
 * Provide incomplete "for" completion for Twig based on variable scope (Daniel Espendiller)
