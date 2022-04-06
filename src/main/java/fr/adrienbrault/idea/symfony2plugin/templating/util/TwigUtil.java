@@ -97,7 +97,7 @@ public class TwigUtil {
         "fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension"
     );
 
-    private static final ExtensionPointName<TwigFileUsage> TWIG_FILE_USAGE_EXTENSIONS = new ExtensionPointName<>(
+    public static final ExtensionPointName<TwigFileUsage> TWIG_FILE_USAGE_EXTENSIONS = new ExtensionPointName<>(
         "fr.adrienbrault.idea.symfony2plugin.extension.TwigFileUsage"
     );
 
