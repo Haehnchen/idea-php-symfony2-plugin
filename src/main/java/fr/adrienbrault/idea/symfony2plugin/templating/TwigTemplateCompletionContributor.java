@@ -428,6 +428,13 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             new IncompleteIncludeCompletionProvider()
         );
 
+        // {% em => {% embed '...'
+        extend(
+            CompletionType.BASIC,
+            PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME),
+            new IncompleteEmbedCompletionProvider()
+        );
+
         // {{ in => {{ include('...')
         extend(
             CompletionType.BASIC,
@@ -648,9 +655,11 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             Project project = psiElement.getProject();
 
             if (TwigPattern.getTemplateFileReferenceTagPattern("extends").accepts(psiElement)) {
-                prioritizedKeys.addAll(TwigUtil.getExtendsTemplateUsageAsOrderedList(project, 50));
+                prioritizedKeys.addAll(TwigUtil.getExtendsTemplateUsageAsOrderedList(project));
+            } else if (TwigPattern.getTemplateFileReferenceTagPattern("embed").accepts(psiElement)) {
+                prioritizedKeys.addAll(TwigUtil.getEmbedTemplateUsageAsOrderedList(project));
             } else if (TwigPattern.getTemplateFileReferenceTagPattern("include").accepts(psiElement) || TwigPattern.getPrintBlockOrTagFunctionPattern("include", "source").accepts(psiElement)) {
-                prioritizedKeys.addAll(TwigUtil.getIncludeTemplateUsageAsOrderedList(project, 50));
+                prioritizedKeys.addAll(TwigUtil.getIncludeTemplateUsageAsOrderedList(project));
             }
 
             if (prioritizedKeys.size() > 0) {
@@ -739,11 +748,11 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            List<String> extendsTemplateUsageAsOrderedList = TwigUtil.getExtendsTemplateUsageAsOrderedList(completionParameters.getPosition().getProject(), 50);
+            List<String> extendsTemplateUsageAsOrderedList = TwigUtil.getExtendsTemplateUsageAsOrderedList(completionParameters.getPosition().getProject());
 
             CompletionSorter completionSorter = CompletionService.getCompletionService()
                 .defaultSorter(completionParameters, resultSet.getPrefixMatcher())
-                .weigh(new ServiceCompletionProvider.MyLookupElementWeigher(extendsTemplateUsageAsOrderedList));
+                .weighBefore("priority", new ServiceCompletionProvider.MyLookupElementWeigher(extendsTemplateUsageAsOrderedList));
 
             resultSet = resultSet.withRelevanceSorter(completionSorter);
 
@@ -774,16 +783,51 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            List<String> extendsTemplateUsageAsOrderedList = TwigUtil.getIncludeTemplateUsageAsOrderedList(completionParameters.getPosition().getProject(), 50);
+            List<String> extendsTemplateUsageAsOrderedList = TwigUtil.getIncludeTemplateUsageAsOrderedList(completionParameters.getPosition().getProject());
 
             CompletionSorter completionSorter = CompletionService.getCompletionService()
                 .defaultSorter(completionParameters, resultSet.getPrefixMatcher())
-                .weigh(new ServiceCompletionProvider.MyLookupElementWeigher(extendsTemplateUsageAsOrderedList));
+                .weighBefore("priority", new ServiceCompletionProvider.MyLookupElementWeigher(extendsTemplateUsageAsOrderedList));
 
             resultSet = resultSet.withRelevanceSorter(completionSorter);
 
             for (String s : extendsTemplateUsageAsOrderedList) {
                 resultSet.addElement(LookupElementBuilder.create(String.format("include '%s'", s)).withIcon(TwigIcons.TwigFileIcon));
+            }
+        }
+    }
+
+    /**
+     * {% em => {% embed '...'
+     */
+    private class IncompleteEmbedCompletionProvider extends CompletionProvider<CompletionParameters> {
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
+            if(!Symfony2ProjectComponent.isEnabled(completionParameters.getPosition())) {
+                return;
+            }
+
+            resultSet.restartCompletionOnPrefixChange(StandardPatterns.string().longerThan(1).with(new PatternCondition<>("embed startsWith") {
+                @Override
+                public boolean accepts(@NotNull String s, ProcessingContext processingContext) {
+                    return "embed".startsWith(s);
+                }
+            }));
+
+            if (!isCompletionStartingMatch("embed", completionParameters, 2)) {
+                return;
+            }
+
+            List<String> extendsTemplateUsageAsOrderedList = TwigUtil.getEmbedTemplateUsageAsOrderedList(completionParameters.getPosition().getProject());
+
+            CompletionSorter completionSorter = CompletionService.getCompletionService()
+                .defaultSorter(completionParameters, resultSet.getPrefixMatcher())
+                .weighBefore("priority", new ServiceCompletionProvider.MyLookupElementWeigher(extendsTemplateUsageAsOrderedList));
+
+            resultSet = resultSet.withRelevanceSorter(completionSorter);
+
+            for (String s : extendsTemplateUsageAsOrderedList) {
+                resultSet.addElement(LookupElementBuilder.create(String.format("embed '%s'", s)).withIcon(TwigIcons.TwigFileIcon));
             }
         }
     }
@@ -809,11 +853,11 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            List<String> extendsTemplateUsageAsOrderedList = TwigUtil.getIncludeTemplateUsageAsOrderedList(completionParameters.getPosition().getProject(), 50);
+            List<String> extendsTemplateUsageAsOrderedList = TwigUtil.getIncludeTemplateUsageAsOrderedList(completionParameters.getPosition().getProject());
 
             CompletionSorter completionSorter = CompletionService.getCompletionService()
                 .defaultSorter(completionParameters, resultSet.getPrefixMatcher())
-                .weigh(new ServiceCompletionProvider.MyLookupElementWeigher(extendsTemplateUsageAsOrderedList));
+                .weighBefore("priority", new ServiceCompletionProvider.MyLookupElementWeigher(extendsTemplateUsageAsOrderedList));
 
             resultSet = resultSet.withRelevanceSorter(completionSorter);
 
