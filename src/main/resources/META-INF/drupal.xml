@@ -1,0 +1,47 @@
+<idea-plugin url="https://www.jetbrains.com/idea">
+    <extensions defaultExtensionNs="com.intellij">
+
+        <fileBasedIndex implementation="de.espend.idea.php.drupal.index.GetTextFileIndex"/>
+        <fileBasedIndex implementation="de.espend.idea.php.drupal.index.ConfigSchemaIndex"/>
+        <fileBasedIndex implementation="de.espend.idea.php.drupal.index.PermissionIndex"/>
+        <fileBasedIndex implementation="de.espend.idea.php.drupal.index.ConfigEntityTypeAnnotationIndex"/>
+        <fileBasedIndex implementation="de.espend.idea.php.drupal.index.MenuIndex"/>
+
+        <completion.contributor language="PHP" implementationClass="de.espend.idea.php.drupal.completion.PhpCompletionContributor"/>
+        <completion.contributor language="Twig" implementationClass="de.espend.idea.php.drupal.completion.TwigCompletionContributor"/>
+        <completion.contributor language="yaml" implementationClass="de.espend.idea.php.drupal.completion.YamlCompletionContributor"/>
+
+        <gotoDeclarationHandler implementation="de.espend.idea.php.drupal.navigation.PhpGoToDeclarationHandler"/>
+        <psi.referenceContributor implementation="de.espend.idea.php.drupal.references.PhpRouteReferenceContributor"/>
+
+        <codeInsight.lineMarkerProvider language="yaml" implementationClass="de.espend.idea.php.drupal.linemarker.RouteFormLineMarkerProvider"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="fr.adrienbrault.idea.symfony2plugin.extension">
+        <GotoCompletionRegistrar implementation="de.espend.idea.php.drupal.config.ConfigCompletionGoto"/>
+        <GotoCompletionRegistrar implementation="de.espend.idea.php.drupal.registrar.YamlPermissionGotoCompletion"/>
+        <GotoCompletionRegistrar implementation="de.espend.idea.php.drupal.registrar.YamlEntityFormGotoCompletion"/>
+        <GotoCompletionRegistrar implementation="de.espend.idea.php.drupal.registrar.ControllerCompletion"/>
+        <GotoCompletionRegistrar implementation="de.espend.idea.php.drupal.registrar.YamlMenuGotoCompletion"/>
+        <GotoCompletionRegistrar implementation="de.espend.idea.php.drupal.registrar.PhpRouteParameterCompletion"/>
+        <GotoCompletionRegistrar implementation="de.espend.idea.php.drupal.registrar.YamlRouteKeyCompletion"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="de.espend.idea.php.annotation">
+        <PhpAnnotationGlobalNamespacesLoader implementation="de.espend.idea.php.drupal.annotation.GlobalNamespaceLoader"/>
+
+        <!-- @Translation -->
+        <PhpAnnotationCompletionProvider implementation="de.espend.idea.php.drupal.annotation.TranslationAnnotationReference"/>
+
+        <!-- @ConfigEntityType -->
+        <PhpAnnotationCompletionProvider implementation="de.espend.idea.php.drupal.annotation.ContentEntityTypeAnnotation"/>
+        <PhpAnnotationReferenceProvider implementation="de.espend.idea.php.drupal.annotation.ContentEntityTypeAnnotation"/>
+
+        <!-- @ConfigEntityType -->
+        <PhpAnnotationCompletionProvider implementation="de.espend.idea.php.drupal.annotation.ConfigEntityTypeAnnotation"/>
+        <PhpAnnotationReferenceProvider implementation="de.espend.idea.php.drupal.annotation.ConfigEntityTypeAnnotation"/>
+
+        <!-- Virtual properties for annotations -->
+        <PhpAnnotationVirtualProperties implementation="de.espend.idea.php.drupal.annotation.DrupalVirtualProperties"/>
+    </extensions>
+</idea-plugin>

@@ -1,0 +1,4 @@
+foo_bar:
+  path: /foo/{foobar}/{foobar2}
+  defaults:
+    _controller: '\Foo\Bar::foo'
