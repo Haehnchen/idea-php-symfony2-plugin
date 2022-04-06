@@ -30,6 +30,7 @@ import com.jetbrains.php.lang.psi.elements.impl.ConstantImpl;
 import com.jetbrains.php.lang.psi.elements.impl.PhpDefineImpl;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionArgument;
+import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionArgumentsRegistry;
 import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionScalarArgument;
 import com.jetbrains.php.phpunit.PhpUnitUtil;
 import com.jetbrains.php.refactoring.PhpAliasImporter;
@@ -1230,14 +1231,23 @@ public class PhpElementsUtil {
      * Resolves MethodReference and compare containing class against implementations instances
      */
     public static boolean isMethodReferenceInstanceOf(@NotNull MethodReference methodReference, @NotNull String expectedClassName) {
-        for (ResolveResult resolveResult : methodReference.multiResolve(false)) {
-            PsiElement resolve = resolveResult.getElement();
+        PhpIndex instance = PhpIndex.getInstance(methodReference.getProject());
+        PhpType classType = (new PhpType()).add(methodReference.getClassReference()).global(methodReference.getProject());
 
-            if(!(resolve instanceof Method)) {
+        Collection<PhpClass> instanceClasses = classType.getTypes()
+            .stream()
+            .flatMap((fqn) -> instance.getAnyByFQN(fqn).stream())
+            .distinct()
+            .collect(Collectors.toList());
+
+        for (PhpClass phpClass : instanceClasses) {
+            Method method = phpClass.findMethodByName(methodReference.getName());
+            if (method == null) {
                 continue;
             }
 
-            PhpClass containingClass = ((Method) resolve).getContainingClass();
+            // different class possible
+            PhpClass containingClass = method.getContainingClass();
             if(containingClass == null) {
                 continue;
             }
