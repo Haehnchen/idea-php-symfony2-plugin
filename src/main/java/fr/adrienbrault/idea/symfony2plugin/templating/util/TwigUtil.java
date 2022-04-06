@@ -104,6 +104,9 @@ public class TwigUtil {
     private static final Key<CachedValue<Map<String, Set<VirtualFile>>>> TEMPLATE_CACHE_TWIG = new Key<>("TEMPLATE_CACHE_TWIG");
 
     private static final Key<CachedValue<Map<String, Set<VirtualFile>>>> TEMPLATE_CACHE_ALL = new Key<>("TEMPLATE_CACHE_ALL");
+    private static final Key<CachedValue<List<String>>> SYMFONY_TEMPLATE_INCLUDE_LIST = new Key<>("SYMFONY_TEMPLATE_INCLUDE_LIST");
+    private static final Key<CachedValue<List<String>>> SYMFONY_TEMPLATE_EMBED_LIST = new Key<>("SYMFONY_TEMPLATE_EMBED_LIST");
+    private static final Key<CachedValue<List<String>>> SYMFONY_TEMPLATE_EXTENDS_LIST = new Key<>("SYMFONY_TEMPLATE_EXTENDS_LIST");
 
     public static String[] CSS_FILES_EXTENSIONS = new String[] { "css", "less", "sass", "scss" };
 
@@ -2794,44 +2797,86 @@ public class TwigUtil {
         });
     }
 
-    public static List<String> getIncludeTemplateUsageAsOrderedList(@NotNull Project project, int limit) {
-        Set<String> allKeys = FileBasedIndex.getInstance().getAllKeys(TwigIncludeStubIndex.KEY, project)
-            .stream()
-            .filter(s -> !s.toLowerCase().contains("@webprofiler") && !s.toLowerCase().contains("/profiler/") && !s.toLowerCase().contains("@twig") && !s.equalsIgnoreCase("form_div_layout.html.twig"))
-            .collect(Collectors.toSet());
+    public static List<String> getIncludeTemplateUsageAsOrderedList(@NotNull Project project) {
+        return CachedValuesManager.getManager(project).getCachedValue(project, SYMFONY_TEMPLATE_INCLUDE_LIST, () -> {
+            Set<String> allKeys = FileBasedIndex.getInstance().getAllKeys(TwigIncludeStubIndex.KEY, project)
+                .stream()
+                .filter(s -> !s.toLowerCase().contains("@webprofiler") && !s.toLowerCase().contains("/profiler/") && !s.toLowerCase().contains("@twig") && !s.equalsIgnoreCase("form_div_layout.html.twig"))
+                .collect(Collectors.toSet());
 
-        Map<String, Integer> extendsWithFileCountUsage = new HashMap<>();
-        for (String allKey : allKeys) {
-            Collection<VirtualFile> containingFiles = FileBasedIndex.getInstance().getContainingFiles(TwigIncludeStubIndex.KEY, allKey, GlobalSearchScope.allScope(project));
-            extendsWithFileCountUsage.put(allKey, containingFiles.size());
-        }
+            Map<String, Integer> extendsWithFileCountUsage = new HashMap<>();
+            for (String allKey : allKeys) {
+                List<fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateInclude> values = FileBasedIndex.getInstance().getValues(TwigIncludeStubIndex.KEY, allKey, GlobalSearchScope.allScope(project));
+                for (fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateInclude value : values) {
+                    if (value.getType() == TemplateInclude.TYPE.INCLUDE || value.getType() == TemplateInclude.TYPE.INCLUDE_FUNCTION) {
+                        extendsWithFileCountUsage.putIfAbsent(allKey, 0);
+                        extendsWithFileCountUsage.put(allKey, extendsWithFileCountUsage.get(allKey) + 1);
+                    }
+                }
+            }
 
-        return extendsWithFileCountUsage.entrySet()
-            .stream()
-            .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-            .map(Map.Entry::getKey)
-            .limit(limit)
-            .collect(Collectors.toList());
+            List<String> collect = extendsWithFileCountUsage.entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .map(Map.Entry::getKey)
+                .limit(100)
+                .collect(Collectors.toList());
+
+            return CachedValueProvider.Result.create(collect, TimeSecondModificationTracker.TIMED_MODIFICATION_TRACKER_60);
+        }, false);
     }
 
-    public static List<String> getExtendsTemplateUsageAsOrderedList(@NotNull Project project, int limit) {
-        Set<String> allKeys = FileBasedIndex.getInstance().getAllKeys(TwigExtendsStubIndex.KEY, project)
-            .stream()
-            .filter(s -> !s.toLowerCase().contains("@webprofiler") && !s.toLowerCase().contains("/profiler/") && !s.toLowerCase().contains("@twig") && !s.equalsIgnoreCase("form_div_layout.html.twig"))
-            .collect(Collectors.toSet());
+    public static List<String> getEmbedTemplateUsageAsOrderedList(@NotNull Project project) {
+        return CachedValuesManager.getManager(project).getCachedValue(project, SYMFONY_TEMPLATE_EMBED_LIST, () -> {
+            Set<String> allKeys = FileBasedIndex.getInstance().getAllKeys(TwigIncludeStubIndex.KEY, project)
+                .stream()
+                .filter(s -> !s.toLowerCase().contains("@webprofiler") && !s.toLowerCase().contains("/profiler/") && !s.toLowerCase().contains("@twig") && !s.equalsIgnoreCase("form_div_layout.html.twig"))
+                .collect(Collectors.toSet());
 
-        Map<String, Integer> extendsWithFileCountUsage = new HashMap<>();
-        for (String allKey : allKeys) {
-            Collection<VirtualFile> containingFiles = FileBasedIndex.getInstance().getContainingFiles(TwigExtendsStubIndex.KEY, allKey, GlobalSearchScope.allScope(project));
-            extendsWithFileCountUsage.put(allKey, containingFiles.size());
-        }
+            Map<String, Integer> extendsWithFileCountUsage = new HashMap<>();
+            for (String allKey : allKeys) {
+                List<fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateInclude> values = FileBasedIndex.getInstance().getValues(TwigIncludeStubIndex.KEY, allKey, GlobalSearchScope.allScope(project));
+                for (fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateInclude value : values) {
+                    if (value.getType() == TemplateInclude.TYPE.EMBED) {
+                        extendsWithFileCountUsage.putIfAbsent(allKey, 0);
+                        extendsWithFileCountUsage.put(allKey, extendsWithFileCountUsage.get(allKey) + 1);
+                    }
+                }
+            }
 
-        return extendsWithFileCountUsage.entrySet()
-            .stream()
-            .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-            .map(Map.Entry::getKey)
-            .limit(limit)
-            .collect(Collectors.toList());
+            List<String> collect = extendsWithFileCountUsage.entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .map(Map.Entry::getKey)
+                .limit(100)
+                .collect(Collectors.toList());
+
+            return CachedValueProvider.Result.create(collect, TimeSecondModificationTracker.TIMED_MODIFICATION_TRACKER_60);
+        }, false);
+    }
+
+    public static List<String> getExtendsTemplateUsageAsOrderedList(@NotNull Project project) {
+        return CachedValuesManager.getManager(project).getCachedValue(project, SYMFONY_TEMPLATE_EXTENDS_LIST, () -> {
+            Set<String> allKeys = FileBasedIndex.getInstance().getAllKeys(TwigExtendsStubIndex.KEY, project)
+                .stream()
+                .filter(s -> !s.toLowerCase().contains("@webprofiler") && !s.toLowerCase().contains("/profiler/") && !s.toLowerCase().contains("@twig") && !s.equalsIgnoreCase("form_div_layout.html.twig"))
+                .collect(Collectors.toSet());
+
+            Map<String, Integer> extendsWithFileCountUsage = new HashMap<>();
+            for (String allKey : allKeys) {
+                Collection<VirtualFile> containingFiles = FileBasedIndex.getInstance().getContainingFiles(TwigExtendsStubIndex.KEY, allKey, GlobalSearchScope.allScope(project));
+                extendsWithFileCountUsage.put(allKey, containingFiles.size());
+            }
+
+            List<String> collect = extendsWithFileCountUsage.entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .map(Map.Entry::getKey)
+                .limit(100)
+                .collect(Collectors.toList());
+
+            return CachedValueProvider.Result.create(collect, TimeSecondModificationTracker.TIMED_MODIFICATION_TRACKER_60);
+        }, false);
     }
 
     /**

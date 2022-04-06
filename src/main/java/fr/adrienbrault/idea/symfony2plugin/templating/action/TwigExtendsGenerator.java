@@ -49,7 +49,7 @@ public class TwigExtendsGenerator extends CodeInsightAction {
                 return;
             }
 
-            List<String> prioritizedKeys = TwigUtil.getExtendsTemplateUsageAsOrderedList(project, 40);
+            List<String> prioritizedKeys = TwigUtil.getExtendsTemplateUsageAsOrderedList(project);
 
             if (prioritizedKeys.size() == 0) {
                 if (!ApplicationManager.getApplication().isHeadlessEnvironment()) {
