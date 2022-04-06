@@ -200,6 +200,15 @@ namespace MyAttributesPrefix
         {
         }
     }
+
+    #[Route('/foo-attributes-default')]
+    class PrefixDefaultParameterController
+    {
+        #[Route(path: '/edit/{id}', name: 'prefix_home_default_parameter')]
+        public function editAction()
+        {
+        }
+    }
 }
 
 namespace Symfony\Component\Routing\Annotation
