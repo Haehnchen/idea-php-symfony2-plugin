@@ -41,6 +41,9 @@ public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
                     .withSignature("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "hasParameter")
                     .withSignature("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "getParameter")
                     .withSignature("\\Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\ParametersConfigurator", "set")
+                    .withSignature("\\Symfony\\Component\\DependencyInjection\\ParameterBag\\ParameterBagInterface", "get")
+                    .withSignature("\\Symfony\\Component\\DependencyInjection\\ParameterBag\\ParameterBagInterface", "set")
+                    .withSignature("\\Symfony\\Component\\DependencyInjection\\ParameterBag\\ParameterBagInterface", "has")
                     .match();
 
                 if(methodMatchParameter == null) {
