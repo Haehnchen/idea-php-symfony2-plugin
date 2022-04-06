@@ -10,7 +10,6 @@ import com.jetbrains.php.lang.documentation.phpdoc.parser.PhpDocElementTypes;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.elements.*;
-import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionArgument;
 import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
@@ -131,6 +130,7 @@ public class AnnotationRouteElementWalkingVisitor extends PsiRecursiveElementWal
 
         // prefix on class scope
         String routeNamePrefix = "";
+        String routePathPrefix = "";
         if (parent instanceof Method) {
             PhpClass containingClass = ((Method) parent).getContainingClass();
             if (containingClass != null) {
@@ -143,6 +143,11 @@ public class AnnotationRouteElementWalkingVisitor extends PsiRecursiveElementWal
                     String nameAttribute = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, "name");
                     if (nameAttribute != null) {
                         routeNamePrefix = nameAttribute;
+                    }
+
+                    String pathAttribute = PhpPsiAttributesUtil.getAttributeValueByNameAsStringWithDefaultParameterFallback(attribute, "path");;
+                    if (pathAttribute != null) {
+                        routePathPrefix = pathAttribute;
                     }
                 }
             }
@@ -176,22 +181,9 @@ public class AnnotationRouteElementWalkingVisitor extends PsiRecursiveElementWal
             }
 
             // find path "#[Route('/attributesWithoutName')]" or "#[Route(path: '/attributesWithoutName')]"
-            String pathAttribute = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, "path");
+            String pathAttribute = PhpPsiAttributesUtil.getAttributeValueByNameAsStringWithDefaultParameterFallback(attribute, "path");
             if (pathAttribute != null) {
-                route.setPath(pathAttribute);
-            } else {
-                // find default "#[Route('/attributesWithoutName')]"
-                for (PhpAttribute.PhpAttributeArgument argument : attribute.getArguments()) {
-                    PhpExpectedFunctionArgument argument1 = argument.getArgument();
-                    if (argument1.getArgumentIndex() == 0) {
-                        String value = PsiElementUtils.trimQuote(argument1.getValue());
-                        if (StringUtils.isNotBlank(value)) {
-                            route.setPath(value);
-                        }
-
-                        break;
-                    }
-                }
+                route.setPath(routePathPrefix + pathAttribute);
             }
 
             Collection<String> methods = PhpPsiAttributesUtil.getAttributeValueByNameAsArray(attribute, "methods");

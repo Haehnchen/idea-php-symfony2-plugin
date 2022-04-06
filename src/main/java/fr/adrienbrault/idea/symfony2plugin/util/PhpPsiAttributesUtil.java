@@ -11,6 +11,7 @@ import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression;
 import com.jetbrains.php.lang.psi.elements.ParameterList;
 import com.jetbrains.php.lang.psi.elements.PhpAttribute;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionArgument;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -47,6 +48,30 @@ public class PhpPsiAttributesUtil {
         }
 
         return Collections.emptyList();
+    }
+
+    /**
+     * find default "#[Route(path: '/attributesWithoutName')]" or "#[Route('/attributesWithoutName')]"
+     */
+    @Nullable
+    public static String getAttributeValueByNameAsStringWithDefaultParameterFallback(@NotNull PhpAttribute attribute, @NotNull String attributeName) {
+        String pathAttribute = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, attributeName);
+        if (StringUtils.isNotBlank(pathAttribute)) {
+            return pathAttribute;
+        }
+
+        // find default "#[Route('/attributesWithoutName')]"
+        for (PhpAttribute.PhpAttributeArgument argument : attribute.getArguments()) {
+            PhpExpectedFunctionArgument argument1 = argument.getArgument();
+            if (argument1.getArgumentIndex() == 0) {
+                String value = PsiElementUtils.trimQuote(argument1.getValue());
+                if (StringUtils.isNotBlank(value)) {
+                    return value;
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
