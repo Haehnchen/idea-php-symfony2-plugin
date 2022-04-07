@@ -2,6 +2,7 @@ Changelog
 =========
 
 # Version names
+* 2022.x: PhpStorm 2022.1
 * 0.23.x: PhpStorm 2021.1
 * 0.22.x: PhpStorm 2020.3+ (no support)
 * 0.21.x: PhpStorm 2020.2+ (no support)
@@ -17,6 +18,13 @@ Changelog
 * 0.11.x: PhpStorm 8, 9, 10 (no support)
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
+
+## 0.23.217
+* Fix [#1793](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1793) Symfony twig path previews are not complete when Route is set on Controller class (Daniel Espendiller)
+* Add "embed" incomplete completion, caches and smarter filter (Daniel Espendiller)
+* [#1706](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1706) fix method references and multi resolve (Daniel Espendiller)
+* Twig icon extends should also support extension point (Daniel Espendiller)
+* [#1706](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1706) add support for ParameterBagInterface (Daniel Espendiller)
 
 ## 0.23.216
 * Fix api issues (Daniel Espendiller)
