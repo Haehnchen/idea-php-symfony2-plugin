@@ -256,6 +256,7 @@
         <projectService
                 serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent$ProjectCloseService"/>
 
+        <notificationGroup id="Symfony Notifications" displayType="STICKY_BALLOON"/>
 
         <localInspection groupPath="Symfony" shortName="PhpRouteMissingInspection" displayName="Route Missing"
                          groupName="Route"

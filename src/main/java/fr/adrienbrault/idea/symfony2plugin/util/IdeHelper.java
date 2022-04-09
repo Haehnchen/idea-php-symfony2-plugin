@@ -2,8 +2,8 @@ package fr.adrienbrault.idea.symfony2plugin.util;
 
 import com.intellij.ide.util.PsiNavigationSupport;
 import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationGroupManager;
 import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
 import com.intellij.openapi.application.ex.ApplicationManagerEx;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.fileTypes.FileType;
@@ -16,7 +16,7 @@ import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.util.ui.UIUtil;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.SettingsForm;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -24,7 +24,9 @@ import org.jetbrains.annotations.Nullable;
 import java.awt.*;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -124,25 +126,34 @@ public class IdeHelper {
     }
 
     public static void notifyEnableMessage(final Project project) {
+        Notification notification = NotificationGroupManager.getInstance()
+            .getNotificationGroup("Symfony Notifications")
+            .createNotification(
+                "Enable Symfony Plugin <a href=\"enable\">with auto configuration now</a> or <a href=\"dismiss\">dismiss</a> further messages",
+                NotificationType.INFORMATION
+            );
 
-        Notification notification = new Notification("Symfony Support", "Symfony", "Enable the Symfony Plugin <a href=\"enable\">with auto configuration now</a>, open <a href=\"config\">Project Settings</a> or <a href=\"dismiss\">dismiss</a> further messages", NotificationType.INFORMATION, (notification1, event) -> {
+        notification.setTitle("Symfony");
+        notification.setIcon(Symfony2Icons.SYMFONY);
+        notification.setListener((notification1, event) -> {
 
             // handle html click events
-            if("config".equals(event.getDescription())) {
-
-                // open settings dialog and show panel
-                SettingsForm.show(project);
-            } else if("enable".equals(event.getDescription())) {
+            if("enable".equals(event.getDescription())) {
                 Collection<String> messages = enablePluginAndConfigure(project);
 
-                String message = "Plugin enabled";
+                String message = "Plugin enabled for project";
 
                 if (!messages.isEmpty()) {
                     List<String> collect = messages.stream().map(s -> "<br> - " + s).collect(Collectors.toList());
                     message += StringUtils.join(collect, "");
                 }
 
-                Notifications.Bus.notify(new Notification("Symfony Support", "Symfony", message, NotificationType.INFORMATION), project);
+                Notification notification2 = NotificationGroupManager.getInstance()
+                    .getNotificationGroup("Symfony Notifications")
+                    .createNotification(message, NotificationType.INFORMATION);
+
+                notification2.setIcon(Symfony2Icons.SYMFONY);
+                notification2.notify(project);
             } else if("dismiss".equals(event.getDescription())) {
 
                 // user doesnt want to show notification again
@@ -152,7 +163,7 @@ public class IdeHelper {
             notification1.expire();
         });
 
-        Notifications.Bus.notify(notification, project);
+        notification.notify(project);
     }
 
     public static Collection<String> enablePluginAndConfigure(@NotNull Project project) {
