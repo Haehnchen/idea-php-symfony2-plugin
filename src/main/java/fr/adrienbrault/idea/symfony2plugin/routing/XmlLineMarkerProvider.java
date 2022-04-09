@@ -31,6 +31,11 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
+        PsiFile containingFile = psiElements.get(0).getContainingFile();
+        if (containingFile == null || !XmlHelper.isXmlFileExtension(containingFile)) {
+            return;
+        }
+
         for(PsiElement psiElement: psiElements) {
             if(XmlHelper.getXmlTagNameLeafStartPattern().accepts(psiElement)) {
                 attachRouteActions(psiElement, lineMarkerInfos);
