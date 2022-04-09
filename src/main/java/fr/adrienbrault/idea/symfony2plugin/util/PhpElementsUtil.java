@@ -30,7 +30,6 @@ import com.jetbrains.php.lang.psi.elements.impl.ConstantImpl;
 import com.jetbrains.php.lang.psi.elements.impl.PhpDefineImpl;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionArgument;
-import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionArgumentsRegistry;
 import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionScalarArgument;
 import com.jetbrains.php.phpunit.PhpUnitUtil;
 import com.jetbrains.php.refactoring.PhpAliasImporter;
@@ -1521,35 +1520,26 @@ public class PhpElementsUtil {
         return -1;
     }
 
-    /**
-     * Single resolve doesnt work if we have non unique class names in project context,
-     * so try a multiResolve
-     */
     @NotNull
-    public static Method[] getMultiResolvedMethod(@NotNull PsiReference psiReference) {
-        // class be unique in normal case, so try this first
-        PsiElement resolvedReference = psiReference.resolve();
-        if (resolvedReference instanceof Method) {
-            return new Method[] { (Method) resolvedReference };
+    public static Collection<Method> getMultiResolvedMethod(@NotNull MethodReference methodReference) {
+        PhpIndex instance = PhpIndex.getInstance(methodReference.getProject());
+        PhpType classType = (new PhpType()).add(methodReference.getClassReference()).global(methodReference.getProject());
+
+        Collection<PhpClass> instanceClasses = classType.getTypes()
+            .stream()
+            .flatMap((fqn) -> instance.getAnyByFQN(fqn).stream())
+            .distinct()
+            .collect(Collectors.toList());
+
+        Set<Method> methods = new HashSet<>();
+        for (PhpClass phpClass : instanceClasses) {
+            Method method = phpClass.findMethodByName(methodReference.getName());
+            if (method != null) {
+                methods.add(method);
+            }
         }
 
-        // try multiResolve if class exists twice in project
-        if(psiReference instanceof PsiPolyVariantReference) {
-            Collection<Method> methods = new HashSet<>();
-            for(ResolveResult resolveResult : ((PsiPolyVariantReference) psiReference).multiResolve(false)) {
-                PsiElement element = resolveResult.getElement();
-                if(element instanceof Method) {
-                    methods.add((Method) element);
-                }
-            }
-
-            if(methods.size() > 0) {
-                return methods.toArray(new Method[methods.size()]);
-            }
-
-        }
-
-        return new Method[0];
+        return methods;
     }
 
     /**
