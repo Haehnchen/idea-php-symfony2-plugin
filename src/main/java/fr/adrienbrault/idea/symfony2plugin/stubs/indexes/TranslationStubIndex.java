@@ -34,21 +34,21 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
     @Override
     public DataIndexer<String, Set<String>, FileContent> getIndexer() {
 
-        return new DataIndexer<String, Set<String>, FileContent>() {
+        return new DataIndexer<>() {
             @NotNull
             @Override
             public Map<String, Set<String>> map(@NotNull FileContent inputData) {
-                if(!Symfony2ProjectComponent.isEnabledForIndex(inputData.getProject())) {
+                if (!Symfony2ProjectComponent.isEnabledForIndex(inputData.getProject())) {
                     return Collections.emptyMap();
                 }
 
                 String extension = inputData.getFile().getExtension();
-                if("xlf".equalsIgnoreCase(extension) || "xliff".equalsIgnoreCase(extension)) {
+                if ("xlf".equalsIgnoreCase(extension) || "xliff".equalsIgnoreCase(extension)) {
                     return getXlfStringMap(inputData);
                 }
 
                 PsiFile psiFile = inputData.getPsiFile();
-                if(!(psiFile instanceof YAMLFile)) {
+                if (!(psiFile instanceof YAMLFile)) {
                     return Collections.emptyMap();
                 }
 
@@ -58,7 +58,7 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
                 }
 
                 String domainName = this.getDomainName(inputData.getFileName());
-                if(domainName == null) {
+                if (domainName == null) {
                     return Collections.emptyMap();
                 }
 
@@ -68,7 +68,7 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
                     return true;
                 });
 
-                if(translationKeySet.size() == 0) {
+                if (translationKeySet.size() == 0) {
                     return Collections.emptyMap();
                 }
 
@@ -84,7 +84,7 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
                 //  - "Resources/translations"
                 //  - "translations/[.../]foo.de.yml"
                 String relativePath = VfsUtil.getRelativePath(inputData.getFile(), ProjectUtil.getProjectDir(inputData.getProject()), '/');
-                if(relativePath != null) {
+                if (relativePath != null) {
                     return relativePath.contains("/translations") || relativePath.startsWith("translations/");
                 }
 
@@ -98,13 +98,13 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
             private Map<String, Set<String>> getXlfStringMap(@NotNull FileContent inputData) {
                 // testing files are not that nice
                 String relativePath = VfsUtil.getRelativePath(inputData.getFile(), ProjectUtil.getProjectDir(inputData.getProject()), '/');
-                if(relativePath != null && (relativePath.contains("/Test/") || relativePath.contains("/Tests/") || relativePath.contains("/Fixture/") || relativePath.contains("/Fixtures/"))) {
+                if (relativePath != null && (relativePath.contains("/Test/") || relativePath.contains("/Tests/") || relativePath.contains("/Fixture/") || relativePath.contains("/Fixtures/"))) {
                     return Collections.emptyMap();
                 }
 
                 // extract domain name
                 String domainName = getDomainName(inputData.getFileName());
-                if(domainName == null) {
+                if (domainName == null) {
                     return Collections.emptyMap();
                 }
 
@@ -116,7 +116,7 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
                 }
 
                 Set<String> set = TranslationUtil.getXliffTranslations(inputStream);
-                if(set.size() == 0) {
+                if (set.size() == 0) {
                     return Collections.emptyMap();
                 }
 
@@ -129,14 +129,14 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
             @Nullable
             private String getDomainName(@NotNull String fileName) {
                 String[] split = fileName.split("\\.");
-                if(split.length < 2 || Arrays.stream(split).anyMatch(s -> s.length() == 0)) {
+                if (split.length < 2 || Arrays.stream(split).anyMatch(s -> s.length() == 0)) {
                     return null;
                 }
 
                 // foo.fr.yml
                 // dont index fr.yml
                 int domainSplit = fileName.lastIndexOf(".");
-                if(domainSplit <= 2) {
+                if (domainSplit <= 2) {
                     return null;
                 }
 

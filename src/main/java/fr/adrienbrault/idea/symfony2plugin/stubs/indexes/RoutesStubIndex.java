@@ -1,7 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
-import com.intellij.ide.highlighter.XmlFileType;
-import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
@@ -11,17 +9,16 @@ import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
-import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.inputFilter.FileInputFilter;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.AnnotationRouteElementWalkingVisitor;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLFile;
 
@@ -64,13 +61,19 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, StubIndexed
                 }
 
                 for(StubIndexedRoute indexedRoutes: RouteHelper.getYamlRouteDefinitions(yamlDocument)) {
-                    map.put(indexedRoutes.getName(), indexedRoutes);
+                    String name = indexedRoutes.getName();
+                    if (name.length() < 255) {
+                        map.put(name, indexedRoutes);
+                    }
                 }
 
                 return map;
             } else if(psiFile instanceof XmlFile) {
                 for(StubIndexedRoute indexedRoutes: RouteHelper.getXmlRouteDefinitions((XmlFile) psiFile)) {
-                    map.put(indexedRoutes.getName(), indexedRoutes);
+                    String name = indexedRoutes.getName();
+                    if (name.length() < 255) {
+                        map.put(name, indexedRoutes);
+                    }
                 }
             } else if(psiFile instanceof PhpFile) {
                 // annotations: @Route()
@@ -101,10 +104,7 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, StubIndexed
     @NotNull
     @Override
     public FileBasedIndex.InputFilter getInputFilter() {
-        return file -> {
-            FileType fileType = file.getFileType();
-            return fileType == YAMLFileType.YML || fileType == XmlFileType.INSTANCE || fileType == PhpFileType.INSTANCE;
-        };
+        return FileInputFilter.XML_YAML_PHP;
     }
 
     @Override
