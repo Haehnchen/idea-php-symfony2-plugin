@@ -555,9 +555,7 @@
         <extensionPoint name="extension.ServiceParameterCollector" interface="fr.adrienbrault.idea.symfony2plugin.extension.ServiceParameterCollector"/>
         <extensionPoint name="extension.ServiceDefinitionLocator" interface="fr.adrienbrault.idea.symfony2plugin.extension.ServiceDefinitionLocator"/>
         <extensionPoint name="extension.TwigVariableCollector" interface="fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector"/>
-        <extensionPoint name="extension.PluginConfigurationExtension" interface="fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtension"/>
         <extensionPoint name="extension.TranslatorProvider" interface="fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProvider"/>
-        <extensionPoint name="extension.TwigFileUsage" interface="fr.adrienbrault.idea.symfony2plugin.extension.TwigFileUsage"/>
     </extensionPoints>
 
     <extensions defaultExtensionNs="fr.adrienbrault.idea.symfony2plugin.extension">
@@ -627,6 +625,7 @@
     <depends optional="true">com.jetbrains.php.dql</depends>
     <depends optional="true">de.espend.idea.php.toolbox</depends>
     <depends optional="true" config-file="deployment-aware.xml">com.jetbrains.plugins.webDeployment</depends>
+    <depends config-file="pay.xml">com.jetbrains.php</depends>
 
     <extensions defaultExtensionNs="de.espend.idea.php.annotation">
         <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.twig.annotation.TemplateAnnotationReferences"/>
