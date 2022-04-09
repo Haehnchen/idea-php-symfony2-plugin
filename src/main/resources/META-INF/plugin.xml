@@ -250,6 +250,8 @@
         <multiHostInjector implementation="fr.adrienbrault.idea.symfony2plugin.lang.ParameterLanguageInjector"/>
         <iconProvider implementation="fr.adrienbrault.idea.symfony2plugin.twig.icon.TwigIconProvider"/>
 
+        <statusBarWidgetFactory implementation="fr.adrienbrault.idea.symfony2plugin.ui.SymfonyStatusbarWidgetFactory" />
+
         <localInspection groupPath="Symfony" shortName="PhpRouteMissingInspection" displayName="Route Missing"
                          groupName="Route"
                          enabledByDefault="true" level="WARNING"
