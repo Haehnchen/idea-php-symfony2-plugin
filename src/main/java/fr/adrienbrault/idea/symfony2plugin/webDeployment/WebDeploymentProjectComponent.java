@@ -1,6 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.webDeployment;
 
-import com.intellij.openapi.components.ProjectComponent;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.DumbService;
@@ -16,45 +16,55 @@ import java.util.TimerTask;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class WebDeploymentProjectComponent implements ProjectComponent {
+public class WebDeploymentProjectComponent {
+    public static class PostStartupActivity implements com.intellij.openapi.startup.StartupActivity {
+        @Override
+        public void runActivity(@NotNull Project project) {
+            if(!WebDeploymentUtil.isEnabled(project)) {
+                return;
+            }
 
-    private Project project;
-
-    public WebDeploymentProjectComponent(Project project) {
-        this.project = project;
-    }
-
-    public void initComponent() {
-    }
-
-    public void disposeComponent() {
-    }
-
-    @NotNull
-    public String getComponentName() {
-        return "WebDeploymentProjectComponent";
-    }
-
-    public void projectOpened() {
-        if(!WebDeploymentUtil.isEnabled(project)) {
-            return;
-        }
-
-        // remote file downloader
-        if(Settings.getInstance(project).remoteDevFileScheduler) {
-            Symfony2ProjectComponent.getLogger().info("Starting Symfony webDeployment background scheduler");
-
-            DumbService.getInstance(project).smartInvokeLater(() -> new Timer().schedule(new MyTimerTask(), 1000, 300000));
+            project.getService(ProjectService.class).start();
         }
     }
 
-    public void projectClosed() {
-        if(RemoteWebServerUtil.STORAGE_INSTANCES.containsKey(project)) {
+    public static class ProjectService implements Disposable {
+        private final Project project;
+        private Timer timer1;
+
+        public ProjectService(@NotNull Project project) {
+            this.project = project;
+        }
+
+        public void start() {
+            // remote file downloader
+            if(Settings.getInstance(project).remoteDevFileScheduler) {
+                Symfony2ProjectComponent.getLogger().info("Starting Symfony webDeployment background scheduler");
+
+                this.timer1 = new Timer();
+                DumbService.getInstance(this.project).smartInvokeLater(() -> timer1.schedule(new MyTimerTask(project), 1000, 300000));
+            }
+        }
+
+        @Override
+        public void dispose() {
             RemoteWebServerUtil.STORAGE_INSTANCES.remove(project);
+
+            if (this.timer1 != null) {
+                this.timer1.cancel();
+                this.timer1.purge();
+                this.timer1 = null;
+            }
         }
     }
 
-    private class MyTimerTask extends TimerTask {
+    private static class MyTimerTask extends TimerTask {
+        @NotNull
+        private final Project project;
+
+        public MyTimerTask(@NotNull Project project) {
+            this.project = project;
+        }
 
         @Override
         public void run() {
