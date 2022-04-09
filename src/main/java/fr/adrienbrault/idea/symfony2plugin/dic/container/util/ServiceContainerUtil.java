@@ -57,6 +57,8 @@ public class ServiceContainerUtil {
 
         // Symfony 4
         new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "get"),
+
+        new MethodMatcher.CallToSignature("\\Symfony\\Component\\DependencyInjection\\ParameterBag\\ContainerBagInterface", "get"),
     };
 
     private static final Key<CachedValue<Collection<String>>> SYMFONY_COMPILED_TIMED_SERVICE_WATCHER = new Key<>("SYMFONY_COMPILED_TIMED_SERVICE_WATCHER");
