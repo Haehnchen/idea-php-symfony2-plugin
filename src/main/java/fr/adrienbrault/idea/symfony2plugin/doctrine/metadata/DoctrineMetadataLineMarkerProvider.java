@@ -5,11 +5,13 @@ import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTokenType;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -38,6 +40,11 @@ public class DoctrineMetadataLineMarkerProvider implements LineMarkerProvider {
 
         Project project = psiElements.get(0).getProject();
         if(!Symfony2ProjectComponent.isEnabled(project)) {
+            return;
+        }
+
+        PsiFile containingFile = psiElements.get(0).getContainingFile();
+        if (containingFile == null || !XmlHelper.isXmlFileExtension(containingFile)) {
             return;
         }
 

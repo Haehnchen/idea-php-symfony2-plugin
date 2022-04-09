@@ -1,5 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.config.xml;
 
+import com.intellij.ide.highlighter.XmlFileType;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.*;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -796,5 +798,26 @@ public class XmlHelper {
         return PlatformPatterns.psiElement(XmlElementType.XML_NAME)
             .afterLeaf(PlatformPatterns.psiElement(XmlTokenType.XML_START_TAG_START))
             .withParent(XmlTag.class);
+    }
+
+    public static boolean isXmlFileExtension(@NotNull PsiFile psiFile) {
+        if (psiFile.getFileType() != XmlFileType.INSTANCE) {
+            return false;
+        }
+
+        String filename = psiFile.getName();
+
+        int i = filename.lastIndexOf('.');
+        String extension = null;
+        if (i > 0) {
+            extension = filename.substring(i + 1).toLowerCase();
+        }
+
+        if ("xml".equalsIgnoreCase(extension)) {
+            return true;
+        }
+
+        VirtualFile virtualFile = psiFile.getVirtualFile();
+        return virtualFile == null || !"xml".equalsIgnoreCase(virtualFile.getExtension());
     }
 }
