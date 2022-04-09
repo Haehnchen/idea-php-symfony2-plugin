@@ -45,9 +45,12 @@ public class FileResourcesIndex extends FileBasedIndexExtension<String, FileReso
 
             final Map<String, FileResource> items = new THashMap<>();
 
-            FileResourceVisitorUtil.visitFile(psiFile, consumer ->
-                items.put(consumer.getResource(), consumer.createFileResource())
-            );
+            FileResourceVisitorUtil.visitFile(psiFile, consumer -> {
+                String resource = consumer.getResource();
+                if (resource.length() < 255) {
+                    items.put(resource, consumer.createFileResource());
+                }
+            });
 
             return items;
         };

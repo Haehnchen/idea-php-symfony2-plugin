@@ -64,13 +64,19 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, StubIndexed
                 }
 
                 for(StubIndexedRoute indexedRoutes: RouteHelper.getYamlRouteDefinitions(yamlDocument)) {
-                    map.put(indexedRoutes.getName(), indexedRoutes);
+                    String name = indexedRoutes.getName();
+                    if (name.length() < 255) {
+                        map.put(name, indexedRoutes);
+                    }
                 }
 
                 return map;
             } else if(psiFile instanceof XmlFile) {
                 for(StubIndexedRoute indexedRoutes: RouteHelper.getXmlRouteDefinitions((XmlFile) psiFile)) {
-                    map.put(indexedRoutes.getName(), indexedRoutes);
+                    String name = indexedRoutes.getName();
+                    if (name.length() < 255) {
+                        map.put(name, indexedRoutes);
+                    }
                 }
             } else if(psiFile instanceof PhpFile) {
                 // annotations: @Route()

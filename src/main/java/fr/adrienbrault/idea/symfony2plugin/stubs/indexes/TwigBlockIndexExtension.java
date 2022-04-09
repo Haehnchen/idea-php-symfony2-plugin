@@ -45,12 +45,17 @@ public class TwigBlockIndexExtension extends FileBasedIndexExtension<String, Set
             PsiFile psiFile = fileContent.getPsiFile();
             if(psiFile instanceof TwigFile) {
                 for (TwigBlock twigBlock : TwigUtil.getBlocksInFile((TwigFile) psiFile)) {
+                    String blockName = twigBlock.getName();
+                    if (blockName.length() > 255) {
+                        continue;
+                    }
+
                     // we only index file scope
                     // {% embed 'foo.html.twig' %}{% block foo %}{% endembed %}
                     PsiElement embedStatement = PsiElementUtils.getParentOfType(twigBlock.getTarget(), TwigElementTypes.EMBED_STATEMENT);
                     if(embedStatement == null) {
                         blocks.putIfAbsent("block", new HashSet<>());
-                        blocks.get("block").add(twigBlock.getName());
+                        blocks.get("block").add(blockName);
                     }
                 }
 
@@ -63,7 +68,7 @@ public class TwigBlockIndexExtension extends FileBasedIndexExtension<String, Set
                                 public void visitElement(PsiElement element) {
                                     if(TwigPattern.getTwigTagUseNamePattern().accepts(element) && PsiElementUtils.getParentOfType(element, TwigElementTypes.EMBED_STATEMENT) == null) {
                                         String templateName = TwigUtil.normalizeTemplateName(PsiElementUtils.trimQuote(element.getText()));
-                                        if(StringUtils.isNotBlank(templateName)) {
+                                        if(templateName.length() < 255 && StringUtils.isNotBlank(templateName)) {
                                             blocks.putIfAbsent("use", new HashSet<>());
                                             blocks.get("use").add(templateName);
                                         }
