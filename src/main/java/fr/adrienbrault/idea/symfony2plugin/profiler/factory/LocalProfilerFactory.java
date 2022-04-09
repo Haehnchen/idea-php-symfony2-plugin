@@ -58,8 +58,7 @@ public class LocalProfilerFactory implements ProfilerFactoryInterface {
 
     @Nullable
     protected File getCsvIndex(@NotNull Project project) {
-        Symfony2ProjectComponent symfony2ProjectComponent = project.getComponent(Symfony2ProjectComponent.class);
-        for(File file: symfony2ProjectComponent.getContainerFiles()) {
+        for(File file: Symfony2ProjectComponent.getContainerFiles(project)) {
             if(file.exists()) {
                 File csvFile = new File(file.getParentFile().getPath() + "/profiler/index.csv");
                 if (csvFile.exists()) {

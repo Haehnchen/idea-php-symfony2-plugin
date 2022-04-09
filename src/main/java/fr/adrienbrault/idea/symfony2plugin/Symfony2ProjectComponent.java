@@ -1,9 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin;
 
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
-import com.intellij.openapi.components.ProjectComponent;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
@@ -28,51 +25,40 @@ import java.util.Collection;
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
  */
-public class Symfony2ProjectComponent implements ProjectComponent {
+public class Symfony2ProjectComponent {
+    public static class PostStartupActivity implements com.intellij.openapi.startup.StartupActivity {
+        @Override
+        public void runActivity(@NotNull Project project) {
+            checkProject(project);
+
+        }
+    }
+
+    public static class ProjectCloseService implements Disposable {
+        private final Project project;
+
+        public ProjectCloseService(@NotNull Project project) {
+            this.project = project;
+        }
+
+        @Override
+        public void dispose() {
+            ServiceXmlParserFactory.cleanInstance(this.project);
+            // clean routing
+            RouteHelper.COMPILED_CACHE.remove(project);
+        }
+    }
 
     public static String HELP_URL = "http://symfony2-plugin.espend.de/";
     final private static Logger LOG = Logger.getInstance("Symfony-Plugin");
     private static final ExtensionPointName<ServiceContainerLoader> SERVICE_CONTAINER_POINT_NAME = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoader");
     public static final ExtensionPointName<PluginConfigurationExtension> PLUGIN_CONFIGURATION_EXTENSION = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtension");
 
-    private final Project project;
-
-    public Symfony2ProjectComponent(Project project) {
-        this.project = project;
-    }
-
-    @NotNull
-    public String getComponentName() {
-        return "Symfony2ProjectComponent";
-    }
-
-    public void projectOpened() {
-        this.checkProject();
-    }
-
-    public void projectClosed() {
-        ServiceXmlParserFactory.cleanInstance(project);
-
-        // clean routing
-        if(RouteHelper.COMPILED_CACHE.containsKey(project)) {
-            RouteHelper.COMPILED_CACHE.remove(project);
-        }
-    }
-
     public static Logger getLogger() {
         return LOG;
     }
 
-    public void showInfoNotification(String content) {
-        Notification errorNotification = new Notification("Symfony Plugin", "Symfony Plugin", content, NotificationType.INFORMATION);
-        Notifications.Bus.notify(errorNotification, this.project);
-    }
-
-    private boolean isEnabled() {
-        return Settings.getInstance(project).pluginEnabled;
-    }
-
-    public Collection<File> getContainerFiles() {
+    public static Collection<File> getContainerFiles(@NotNull Project project) {
         Collection<ContainerFile> containerFiles = new ArrayList<>();
 
         ServiceContainerLoaderParameter containerLoaderExtensionParameter = new ServiceContainerLoaderParameter(project, containerFiles);
@@ -88,25 +74,25 @@ public class Symfony2ProjectComponent implements ProjectComponent {
 
         Collection<File> validFiles = new ArrayList<>();
         for(ContainerFile containerFile : containerFiles) {
-            if(containerFile.exists(this.project)) {
-                validFiles.add(containerFile.getFile(this.project));
+            if(containerFile.exists(project)) {
+                validFiles.add(containerFile.getFile(project));
             }
         }
 
         return validFiles;
     }
 
-    private void checkProject() {
-        if(!this.isEnabled()
+    private static void checkProject(@NotNull Project project) {
+        if(!isEnabled(project)
             && !Settings.getInstance(project).dismissEnableNotification
-            && VfsUtil.findRelativeFile(ProjectUtil.getProjectDir(this.project), "vendor", "symfony") != null
+            && VfsUtil.findRelativeFile(ProjectUtil.getProjectDir(project), "vendor", "symfony") != null
             ) {
 
             IdeHelper.notifyEnableMessage(project);
             return;
         }
 
-        if(this.getContainerFiles().size() == 0) {
+        if(getContainerFiles(project).size() == 0) {
             Symfony2ProjectComponent.getLogger().warn("missing at least one container file");
         }
     }
