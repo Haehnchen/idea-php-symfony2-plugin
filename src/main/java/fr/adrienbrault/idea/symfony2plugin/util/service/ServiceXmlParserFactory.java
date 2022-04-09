@@ -65,10 +65,7 @@ public class ServiceXmlParserFactory {
 
     @Nullable
     synchronized public <T extends ServiceParserInterface> T parser(Class<T> serviceParser) {
-
-        Symfony2ProjectComponent symfony2ProjectComponent = this.project.getComponent(Symfony2ProjectComponent.class);
-
-        Collection<File> settingsServiceFiles = symfony2ProjectComponent.getContainerFiles();
+        Collection<File> settingsServiceFiles = Symfony2ProjectComponent.getContainerFiles(this.project);
 
         if (this.serviceParserInstance != null && !this.isModified(settingsServiceFiles)) {
             return (T) this.serviceParserInstance;

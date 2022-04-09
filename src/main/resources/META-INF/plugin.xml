@@ -252,6 +252,11 @@
 
         <statusBarWidgetFactory implementation="fr.adrienbrault.idea.symfony2plugin.ui.SymfonyStatusbarWidgetFactory" />
 
+        <postStartupActivity implementation="fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent$PostStartupActivity"/>
+        <projectService
+                serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent$ProjectCloseService"/>
+
+
         <localInspection groupPath="Symfony" shortName="PhpRouteMissingInspection" displayName="Route Missing"
                          groupName="Route"
                          enabledByDefault="true" level="WARNING"
@@ -544,20 +549,20 @@
     </extensions>
 
     <extensionPoints>
-        <extensionPoint name="extension.ServiceContainerLoader" interface="fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoader"/>
-        <extensionPoint name="extension.DoctrineModelProvider" interface="fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProvider"/>
-        <extensionPoint name="extension.MethodSignatureTypeProviderExtension" interface="fr.adrienbrault.idea.symfony2plugin.extension.MethodSignatureTypeProviderExtension"/>
-        <extensionPoint name="extension.MethodParameterReferenceContributorExtension" interface="fr.adrienbrault.idea.symfony2plugin.extension.MethodParameterReferenceContributorExtension"/>
-        <extensionPoint name="extension.ControllerActionGotoRelatedCollector" interface="fr.adrienbrault.idea.symfony2plugin.extension.ControllerActionGotoRelatedCollector"/>
-        <extensionPoint name="extension.GotoCompletionRegistrar" interface="fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar"/>
-        <extensionPoint name="extension.TwigNamespaceExtension" interface="fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension"/>
-        <extensionPoint name="extension.RoutingLoader" interface="fr.adrienbrault.idea.symfony2plugin.extension.RoutingLoader"/>
-        <extensionPoint name="extension.CompiledServiceBuilderFactory" interface="fr.adrienbrault.idea.symfony2plugin.extension.CompiledServiceBuilderFactory"/>
-        <extensionPoint name="extension.ServiceCollector" interface="fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector"/>
-        <extensionPoint name="extension.ServiceParameterCollector" interface="fr.adrienbrault.idea.symfony2plugin.extension.ServiceParameterCollector"/>
-        <extensionPoint name="extension.ServiceDefinitionLocator" interface="fr.adrienbrault.idea.symfony2plugin.extension.ServiceDefinitionLocator"/>
-        <extensionPoint name="extension.TwigVariableCollector" interface="fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector"/>
-        <extensionPoint name="extension.TranslatorProvider" interface="fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProvider"/>
+        <extensionPoint dynamic="true" name="extension.ServiceContainerLoader" interface="fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoader"/>
+        <extensionPoint dynamic="true" name="extension.DoctrineModelProvider" interface="fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProvider"/>
+        <extensionPoint dynamic="true" name="extension.MethodSignatureTypeProviderExtension" interface="fr.adrienbrault.idea.symfony2plugin.extension.MethodSignatureTypeProviderExtension"/>
+        <extensionPoint dynamic="true" name="extension.MethodParameterReferenceContributorExtension" interface="fr.adrienbrault.idea.symfony2plugin.extension.MethodParameterReferenceContributorExtension"/>
+        <extensionPoint dynamic="true" name="extension.ControllerActionGotoRelatedCollector" interface="fr.adrienbrault.idea.symfony2plugin.extension.ControllerActionGotoRelatedCollector"/>
+        <extensionPoint dynamic="true" name="extension.GotoCompletionRegistrar" interface="fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar"/>
+        <extensionPoint dynamic="true" name="extension.TwigNamespaceExtension" interface="fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension"/>
+        <extensionPoint dynamic="true" name="extension.RoutingLoader" interface="fr.adrienbrault.idea.symfony2plugin.extension.RoutingLoader"/>
+        <extensionPoint dynamic="true" name="extension.CompiledServiceBuilderFactory" interface="fr.adrienbrault.idea.symfony2plugin.extension.CompiledServiceBuilderFactory"/>
+        <extensionPoint dynamic="true" name="extension.ServiceCollector" interface="fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector"/>
+        <extensionPoint dynamic="true" name="extension.ServiceParameterCollector" interface="fr.adrienbrault.idea.symfony2plugin.extension.ServiceParameterCollector"/>
+        <extensionPoint dynamic="true" name="extension.ServiceDefinitionLocator" interface="fr.adrienbrault.idea.symfony2plugin.extension.ServiceDefinitionLocator"/>
+        <extensionPoint dynamic="true" name="extension.TwigVariableCollector" interface="fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector"/>
+        <extensionPoint dynamic="true" name="extension.TranslatorProvider" interface="fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProvider"/>
     </extensionPoints>
 
     <extensions defaultExtensionNs="fr.adrienbrault.idea.symfony2plugin.extension">
@@ -657,12 +662,6 @@
         <PhpToolboxTargetLocator implementation="fr.adrienbrault.idea.symfony2plugin.external.locator.TwigFileToolboxTargetLocator"/>
         <PhpToolboxTargetLocator implementation="fr.adrienbrault.idea.symfony2plugin.external.locator.BundleFileToolboxTargetLocator"/>
     </extensions>
-
-    <project-components>
-        <component>
-            <implementation-class>fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent</implementation-class>
-        </component>
-    </project-components>
 
     <actions>
 

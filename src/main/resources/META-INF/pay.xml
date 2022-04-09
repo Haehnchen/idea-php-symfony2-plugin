@@ -2,8 +2,8 @@
 <idea-plugin url="https://www.jetbrains.com/idea">
 
     <extensionPoints>
-        <extensionPoint name="extension.PluginConfigurationExtension" interface="fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtension"/>
-        <extensionPoint name="extension.TwigFileUsage" interface="fr.adrienbrault.idea.symfony2plugin.extension.TwigFileUsage"/>
+        <extensionPoint dynamic="true" name="extension.PluginConfigurationExtension" interface="fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtension"/>
+        <extensionPoint dynamic="true" name="extension.TwigFileUsage" interface="fr.adrienbrault.idea.symfony2plugin.extension.TwigFileUsage"/>
 
 
     </extensionPoints>
