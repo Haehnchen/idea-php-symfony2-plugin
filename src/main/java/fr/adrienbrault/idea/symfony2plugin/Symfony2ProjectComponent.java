@@ -8,15 +8,12 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.wm.StatusBar;
-import com.intellij.openapi.wm.WindowManager;
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtension;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoader;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoaderParameter;
-import fr.adrienbrault.idea.symfony2plugin.profiler.widget.SymfonyProfilerWidget;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
@@ -38,18 +35,10 @@ public class Symfony2ProjectComponent implements ProjectComponent {
     private static final ExtensionPointName<ServiceContainerLoader> SERVICE_CONTAINER_POINT_NAME = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoader");
     public static final ExtensionPointName<PluginConfigurationExtension> PLUGIN_CONFIGURATION_EXTENSION = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtension");
 
-    private Project project;
+    private final Project project;
 
     public Symfony2ProjectComponent(Project project) {
         this.project = project;
-    }
-
-    public void initComponent() {
-        //System.out.println("initComponent");
-    }
-
-    public void disposeComponent() {
-        //System.out.println("disposeComponent");
     }
 
     @NotNull
@@ -57,31 +46,11 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         return "Symfony2ProjectComponent";
     }
 
-
-
     public void projectOpened() {
         this.checkProject();
-
-        // attach toolbar popup (right bottom)
-        StatusBar statusBar = WindowManager.getInstance().getStatusBar(this.project);
-        if(statusBar == null) {
-            return;
-        }
-
-        // clean bar on project open; we can have multiple projects att some time
-        if(statusBar.getWidget(SymfonyProfilerWidget.ID) != null) {
-            statusBar.removeWidget(SymfonyProfilerWidget.ID);
-        }
-
-        if(isEnabled()) {
-            SymfonyProfilerWidget symfonyProfilerWidget = new SymfonyProfilerWidget(this.project);
-            statusBar.addWidget(symfonyProfilerWidget);
-        }
-
     }
 
     public void projectClosed() {
-
         ServiceXmlParserFactory.cleanInstance(project);
 
         // clean routing
@@ -99,7 +68,7 @@ public class Symfony2ProjectComponent implements ProjectComponent {
         Notifications.Bus.notify(errorNotification, this.project);
     }
 
-    public boolean isEnabled() {
+    private boolean isEnabled() {
         return Settings.getInstance(project).pluginEnabled;
     }
 
