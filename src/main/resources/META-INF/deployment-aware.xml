@@ -15,10 +15,10 @@
         <CompiledServiceBuilderFactory implementation="fr.adrienbrault.idea.symfony2plugin.webDeployment.container.RemoteCompiledServiceContainerLoader"/>
     </extensions>
 
-    <project-components>
-        <component>
-            <implementation-class>fr.adrienbrault.idea.symfony2plugin.webDeployment.WebDeploymentProjectComponent</implementation-class>
-        </component>
-    </project-components>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <postStartupActivity implementation="fr.adrienbrault.idea.symfony2plugin.webDeployment.WebDeploymentProjectComponent$PostStartupActivity"/>
+        <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.webDeployment.WebDeploymentProjectComponent$ProjectService"/>
+    </extensions>
 
 </idea-plugin>
