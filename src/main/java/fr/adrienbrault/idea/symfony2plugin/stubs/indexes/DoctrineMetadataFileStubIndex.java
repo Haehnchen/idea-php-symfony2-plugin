@@ -1,22 +1,19 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
-import com.intellij.ide.highlighter.XmlFileType;
-import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.util.Pair;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
-import com.jetbrains.php.lang.PhpFileType;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineUtil;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModel;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelSerializable;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.inputFilter.FileInputFilter;
 import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.yaml.YAMLFileType;
 
 import java.util.Collection;
 import java.util.Map;
@@ -89,14 +86,7 @@ public class DoctrineMetadataFileStubIndex extends FileBasedIndexExtension<Strin
     @NotNull
     @Override
     public FileBasedIndex.InputFilter getInputFilter() {
-        return virtualFile -> {
-            FileType fileType = virtualFile.getFileType();
-            return
-                fileType == XmlFileType.INSTANCE ||
-                fileType == PhpFileType.INSTANCE ||
-                fileType == YAMLFileType.YML
-            ;
-        };
+        return FileInputFilter.XML_YAML_PHP;
     }
 
     @Override

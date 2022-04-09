@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
-import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
@@ -9,10 +8,10 @@ import com.intellij.util.io.KeyDescriptor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.FileResource;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.inputFilter.FileInputFilter;
 import fr.adrienbrault.idea.symfony2plugin.util.FileResourceVisitorUtil;
 import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.yaml.YAMLFileType;
 
 import java.util.Collections;
 import java.util.Map;
@@ -71,8 +70,7 @@ public class FileResourcesIndex extends FileBasedIndexExtension<String, FileReso
     @NotNull
     @Override
     public FileBasedIndex.InputFilter getInputFilter() {
-        return virtualFile ->
-            virtualFile.getFileType() == XmlFileType.INSTANCE || virtualFile.getFileType() == YAMLFileType.YML;
+        return FileInputFilter.XML_YAML;
     }
 
     @Override
