@@ -3,7 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.ObjectUtils;
-import com.intellij.util.containers.HashSet;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
@@ -17,7 +16,6 @@ import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.Parameter;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ContainerBuilderCall;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
@@ -28,6 +26,7 @@ import one.util.streamex.StreamEx;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,13 +43,13 @@ public class ContainerBuilderStubIndex extends FileBasedIndexExtension<String, C
 
     private static int MAX_FILE_BYTE_SIZE = 2621440;
 
-    private static final Set<String> SET = new HashSet<String>() {{
+    private static final Set<String> SET = new HashSet<>() {{
         add("Symfony\\Component\\DependencyInjection\\Container");
         add("Symfony\\Component\\DependencyInjection\\ContainerBuilder");
         add("Symfony\\Component\\DependencyInjection\\TaggedContainerInterface");
     }};
 
-    private static final Set<String> METHODS = new HashSet<String>() {{
+    private static final Set<String> METHODS = new HashSet<>() {{
         add("findTaggedServiceIds");
         add("setDefinition");
         add("setParameter");

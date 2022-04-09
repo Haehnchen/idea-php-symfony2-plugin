@@ -39,6 +39,9 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "has"),
         new MethodMatcher.CallToSignature("\\Psr\\Container\\ContainerInterface", "get"),
         new MethodMatcher.CallToSignature("\\Psr\\Container\\ContainerInterface", "has"),
+
+        new MethodMatcher.CallToSignature("Symfony\\Component\\DependencyInjection\\ParameterBag\\ContainerBagInterface", "get"),
+        new MethodMatcher.CallToSignature("Symfony\\Component\\DependencyInjection\\ParameterBag\\ContainerBagInterface", "has"),
     };
 
     public static MethodMatcher.CallToSignature[] REPOSITORY_SIGNATURES = new MethodMatcher.CallToSignature[] {
