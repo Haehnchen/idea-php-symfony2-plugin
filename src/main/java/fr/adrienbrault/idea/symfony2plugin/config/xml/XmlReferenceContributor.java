@@ -36,19 +36,19 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
         // <argument type="service" id="service_container" />
         // <service alias="Foobar" />
         registrar.registerReferenceProvider(
-            PlatformPatterns.or(XmlHelper.getArgumentServiceIdPattern(), XmlHelper.getServiceAliasPattern()),
+            PlatformPatterns.and(XmlHelper.XML_EXTENSION, PlatformPatterns.or(XmlHelper.getArgumentServiceIdPattern(), XmlHelper.getServiceAliasPattern())),
             new ServiceReferenceProvider()
         );
 
         // <factory service="factory_service" />
         registrar.registerReferenceProvider(
-            XmlHelper.getFactoryServiceCompletionPattern(),
+            PlatformPatterns.and(XmlHelper.XML_EXTENSION, XmlHelper.getFactoryServiceCompletionPattern()),
             new ServiceReferenceProvider()
         );
 
         // <autowiring-type>Acme\TransformerInterface</autowiring-type>
         registrar.registerReferenceProvider(
-            XmlHelper.getAutowiringTypePattern(),
+            PlatformPatterns.and(XmlHelper.XML_EXTENSION, XmlHelper.getAutowiringTypePattern()),
             new PsiReferenceProvider() {
                 @NotNull
                 @Override
@@ -71,20 +71,20 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
         // <service class="%foo.class%">
         // <service class="Class\Name">
         registrar.registerReferenceProvider(
-            XmlHelper.getServiceClassAttributeWithIdPattern(),
+            PlatformPatterns.and(XmlHelper.XML_EXTENSION, XmlHelper.getServiceClassAttributeWithIdPattern()),
             new ClassPsiReferenceProvider()
         );
 
         // Symfony 3.3 shortcut
         // <service id="Class\Name">
         registrar.registerReferenceProvider(
-            XmlHelper.getServiceIdAttributePattern(),
+            PlatformPatterns.and(XmlHelper.XML_EXTENSION, XmlHelper.getServiceIdAttributePattern()),
             new ClassAsIdPsiReferenceProvider()
         );
 
         // <parameter key="fos_user.user_manager.class">FOS\UserBundle\Doctrine\UserManager</parameter>
         registrar.registerReferenceProvider(
-            XmlHelper.getParameterClassValuePattern(),
+            PlatformPatterns.and(XmlHelper.XML_EXTENSION, XmlHelper.getParameterClassValuePattern()),
             new PsiReferenceProvider() {
                 @NotNull
                 @Override
@@ -104,7 +104,7 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
 
         // <argument>%form.resolved_type_factory.class%</argument>
         registrar.registerReferenceProvider(
-            XmlHelper.getArgumentValuePattern(),
+            PlatformPatterns.and(XmlHelper.XML_EXTENSION, XmlHelper.getArgumentValuePattern()),
             new PsiReferenceProvider() {
                 @NotNull
                 @Override
@@ -126,7 +126,7 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
 
         // <argument type="constant">Foobar\Foo</argument>
         registrar.registerReferenceProvider(
-            XmlHelper.getArgumentValueWithTypePattern("constant"),
+            PlatformPatterns.and(XmlHelper.XML_EXTENSION, XmlHelper.getArgumentValueWithTypePattern("constant")),
             new PsiReferenceProvider() {
                 @NotNull
                 @Override
@@ -152,9 +152,12 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
 
         // <tag name="kernel.event_subscriber" />
         registrar.registerReferenceProvider(
-            XmlHelper.getTagAttributePattern("tag", "name")
-                .inside(XmlHelper.getInsideTagPattern("services"))
-            .inFile(XmlHelper.getXmlFilePattern()),
+            PlatformPatterns.and(
+                XmlHelper.XML_EXTENSION,
+                XmlHelper.getTagAttributePattern("tag", "name")
+                    .inside(XmlHelper.getInsideTagPattern("services"))
+                    .inFile(XmlHelper.getXmlFilePattern())
+            ),
 
             new PsiReferenceProvider() {
 
@@ -178,32 +181,44 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
 
         // <tag event="foo" method="kernel.event_subscriber" />
         registrar.registerReferenceProvider(
-            XmlHelper.getTagAttributePattern("tag", "method")
-                .inside(XmlHelper.getInsideTagPattern("services"))
-                .inFile(XmlHelper.getXmlFilePattern()),
+            PlatformPatterns.and(
+                XmlHelper.XML_EXTENSION,
+                XmlHelper.getTagAttributePattern("tag", "method")
+                    .inside(XmlHelper.getInsideTagPattern("services"))
+                    .inFile(XmlHelper.getXmlFilePattern())
+            ),
             new ClassMethodReferenceProvider()
         );
 
         registrar.registerReferenceProvider(
-            XmlHelper.getTagAttributePattern("call", "method")
-                .inside(XmlHelper.getInsideTagPattern("services"))
-                .inFile(XmlHelper.getXmlFilePattern()),
+            PlatformPatterns.and(
+                XmlHelper.XML_EXTENSION,
+                XmlHelper.getTagAttributePattern("call", "method")
+                    .inside(XmlHelper.getInsideTagPattern("services"))
+                    .inFile(XmlHelper.getXmlFilePattern())
+            ),
             new ClassMethodReferenceProvider()
         );
 
         // <factory class="AppBundle\Trivago\ConfigFactory"/>
         registrar.registerReferenceProvider(
-            XmlHelper.getTagAttributePattern("factory", "class")
-                .inFile(XmlHelper.getXmlFilePattern()),
+            PlatformPatterns.and(
+                XmlHelper.XML_EXTENSION,
+                XmlHelper.getTagAttributePattern("factory", "class")
+                    .inFile(XmlHelper.getXmlFilePattern())
+            ),
             new ClassPsiReferenceProvider()
         );
 
         // <factory class="AppBundle\Trivago\ConfigFactory" method="create"/>
         // <factory service="foo" method="create"/>
         registrar.registerReferenceProvider(
-            XmlHelper.getTagAttributePattern("factory", "method")
-                .inside(XmlHelper.getInsideTagPattern("services"))
-                .inFile(XmlHelper.getXmlFilePattern()),
+            PlatformPatterns.and(
+                XmlHelper.XML_EXTENSION,
+                XmlHelper.getTagAttributePattern("factory", "method")
+                    .inside(XmlHelper.getInsideTagPattern("services"))
+                    .inFile(XmlHelper.getXmlFilePattern())
+            ),
             new ChainPsiReferenceProvider(
                 new FactoryClassMethodPsiReferenceProvider(),
                 new FactoryServiceMethodPsiReferenceProvider()
@@ -211,10 +226,11 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
         );
 
         registrar.registerReferenceProvider(
-
-            XmlHelper.getParameterWithClassEndingPattern()
-                .inside(XmlHelper.getInsideTagPattern("parameters"))
-                .inFile(XmlHelper.getXmlFilePattern()
+            PlatformPatterns.and(
+                XmlHelper.XML_EXTENSION,
+                XmlHelper.getParameterWithClassEndingPattern()
+                    .inside(XmlHelper.getInsideTagPattern("parameters"))
+                    .inFile(XmlHelper.getXmlFilePattern())
             ),
             new PsiReferenceProvider() {
 
@@ -238,7 +254,10 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
         );
 
         registrar.registerReferenceProvider(
-            XmlHelper.getTagAttributePattern("tag", "event").inside(XmlHelper.getInsideTagPattern("services")),
+            PlatformPatterns.and(
+                XmlHelper.XML_EXTENSION,
+                XmlHelper.getTagAttributePattern("tag", "event").inside(XmlHelper.getInsideTagPattern("services"))
+            ),
             new PsiReferenceProvider() {
 
                 @NotNull

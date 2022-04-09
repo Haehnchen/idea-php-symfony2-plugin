@@ -9,6 +9,7 @@ import com.intellij.psi.impl.source.xml.XmlDocumentImpl;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.*;
 import com.intellij.util.Consumer;
+import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.Parameter;
@@ -29,6 +30,14 @@ import java.util.Map;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class XmlHelper {
+    public static final PsiElementPattern.Capture<PsiElement> XML_EXTENSION = PlatformPatterns.psiElement().inFile(PlatformPatterns.psiFile().with(new PatternCondition<PsiElement>("xml extension") {
+        @Override
+        public boolean accepts(@NotNull PsiElement psiElement, ProcessingContext processingContext) {
+            PsiFile containingFile = psiElement.getContainingFile();
+            return containingFile != null && isXmlFileExtension(containingFile);
+        }
+    }));
+
     public static PsiElementPattern.Capture<PsiElement> getTagPattern(String... tags) {
         return XmlPatterns
             .psiElement()
