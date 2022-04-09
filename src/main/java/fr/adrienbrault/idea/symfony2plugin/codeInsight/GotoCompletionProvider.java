@@ -10,6 +10,8 @@ import java.util.Collections;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
+ *
+ * @deprecated Use core features
  */
 public abstract class GotoCompletionProvider implements GotoCompletionProviderInterfaceEx {
     @NotNull
