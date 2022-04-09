@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.routing;
 
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.*;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlText;
@@ -17,7 +18,7 @@ public class RouteXmlReferenceContributor extends PsiReferenceContributor {
     @Override
     public void registerReferenceProviders(@NotNull PsiReferenceRegistrar registrar) {
         registrar.registerReferenceProvider(
-            XmlHelper.getRouteControllerPattern(),
+            PlatformPatterns.and(XmlHelper.XML_EXTENSION, XmlHelper.getRouteControllerPattern()),
             new PsiReferenceProvider() {
                 @NotNull
                 @Override
