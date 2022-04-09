@@ -1,0 +1,11 @@
+<!-- All feature that are only available via valid plugin license (paid) -->
+<idea-plugin url="https://www.jetbrains.com/idea">
+
+    <extensionPoints>
+        <extensionPoint name="extension.PluginConfigurationExtension" interface="fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtension"/>
+        <extensionPoint name="extension.TwigFileUsage" interface="fr.adrienbrault.idea.symfony2plugin.extension.TwigFileUsage"/>
+
+
+    </extensionPoints>
+
+</idea-plugin>
