@@ -71,14 +71,15 @@ tasks {
     patchPluginXml {
         version.set(properties("pluginVersion"))
         sinceBuild.set(properties("pluginSinceBuild"))
-        // untilBuild.set(properties("pluginUntilBuild"))
+        untilBuild.set(properties("pluginUntilBuild"))
+        changeNotes.set(file("src/main/resources/META-INF/change-notes.html").readText().replace("<html>", "").replace("</html>", ""));
 
         // Get the latest available change notes from the changelog file
-        changeNotes.set(provider {
-            changelog.run {
-                getOrNull(properties("pluginVersion")) ?: getLatest()
-            }.toHTML()
-        })
+        // changeNotes.set(provider {
+        //     changelog.run {
+        //         getOrNull(properties("pluginVersion")) ?: getLatest()
+        //     }.toHTML()
+        // })
     }
 
     // Configure UI tests plugin
@@ -97,7 +98,7 @@ tasks {
     }
 
     publishPlugin {
-        dependsOn("patchChangelog")
+        // dependsOn("patchChangelog")
         token.set(System.getenv("PUBLISH_TOKEN"))
         // pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
         // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
