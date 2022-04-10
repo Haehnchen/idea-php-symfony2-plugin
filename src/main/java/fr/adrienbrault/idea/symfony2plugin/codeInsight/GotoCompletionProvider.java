@@ -13,6 +13,7 @@ import java.util.Collections;
  *
  * @deprecated Use core features
  */
+@Deprecated
 public abstract class GotoCompletionProvider implements GotoCompletionProviderInterfaceEx {
     @NotNull
     private final PsiElement element;
