@@ -52,6 +52,12 @@ public class TwigFileUtil {
             return;
         }
 
+        // secure loading
+        VirtualFile virtualFile1 = file.getVirtualFile();
+        if (virtualFile1 == null) {
+            return;
+        }
+
         Set<VirtualFile> myVirtualFiles = new HashSet<>();
         Set<String> templates = new HashSet<>();
 
@@ -60,7 +66,7 @@ public class TwigFileUtil {
             .forEach(templates::addAll);
 
         FileBasedIndex.getInstance()
-            .getFileData(TwigExtendsStubIndex.KEY, file.getVirtualFile(), file.getProject())
+            .getFileData(TwigExtendsStubIndex.KEY, virtualFile1, file.getProject())
             .forEach((templateName, aVoid) -> templates.add(templateName));
 
         for (String template : templates) {
