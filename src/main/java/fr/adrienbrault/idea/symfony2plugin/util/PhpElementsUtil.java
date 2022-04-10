@@ -528,11 +528,7 @@ public class PhpElementsUtil {
             return !(Boolean)result.get();
         });
 
-        if (result.get()) {
-            return true;
-        }
-
-        return new PhpType().add(expectedClass).isConvertibleFrom(new PhpType().add(subjectClass), PhpIndex.getInstance(subjectClass.getProject()));
+        return result.get();
     }
 
     /**
