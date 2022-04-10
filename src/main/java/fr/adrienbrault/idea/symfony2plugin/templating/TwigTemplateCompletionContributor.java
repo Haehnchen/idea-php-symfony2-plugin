@@ -435,6 +435,13 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             new IncompleteEmbedCompletionProvider()
         );
 
+        // {% bl => {% block '...'
+        extend(
+            CompletionType.BASIC,
+            PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME),
+            new IncompleteBlockCompletionProvider()
+        );
+
         // {{ in => {{ include('...')
         extend(
             CompletionType.BASIC,
@@ -930,6 +937,41 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 PhpType::isBoolean,
                 entry -> String.format("if %s", entry.getKey())
             ));
+        }
+    }
+
+    /**
+     * {% bl => {% block '...'
+     */
+    private class IncompleteBlockCompletionProvider extends CompletionProvider<CompletionParameters> {
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
+            PsiElement position = completionParameters.getOriginalPosition();
+            if(!Symfony2ProjectComponent.isEnabled(position)) {
+                return;
+            }
+
+            resultSet.restartCompletionOnPrefixChange(StandardPatterns.string().longerThan(1).with(new PatternCondition<>("embed startsWith") {
+                @Override
+                public boolean accepts(@NotNull String s, ProcessingContext processingContext) {
+                    return "block".startsWith(s);
+                }
+            }));
+
+            if (!isCompletionStartingMatch("block", completionParameters, 2)) {
+                return;
+            }
+
+            Pair<Collection<PsiFile>, Boolean> scopedContext = TwigUtil.findScopedFile(position);
+
+            Collection<LookupElement> blockLookupElements = TwigUtil.getBlockLookupElements(
+                position.getProject(),
+                TwigFileUtil.collectParentFiles(scopedContext.getSecond(), scopedContext.getFirst())
+            );
+
+            for (LookupElement blockLookupElement : blockLookupElements) {
+                resultSet.addElement(LookupElementBuilder.create("block " + blockLookupElement.getLookupString()).withIcon(TwigIcons.TwigFileIcon));
+            }
         }
     }
 
