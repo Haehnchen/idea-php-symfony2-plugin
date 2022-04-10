@@ -633,6 +633,7 @@
     <depends optional="true">com.jetbrains.php.dql</depends>
     <depends optional="true">de.espend.idea.php.toolbox</depends>
     <depends optional="true" config-file="deployment-aware.xml">com.jetbrains.plugins.webDeployment</depends>
+    <depends optional="true" config-file="drupal.xml">com.jetbrains.php</depends>
     <depends config-file="pay.xml">com.jetbrains.php</depends>
 
     <extensions defaultExtensionNs="de.espend.idea.php.annotation">
