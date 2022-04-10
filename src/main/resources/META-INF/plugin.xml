@@ -563,7 +563,6 @@
         <extensionPoint dynamic="true" name="extension.ServiceParameterCollector" interface="fr.adrienbrault.idea.symfony2plugin.extension.ServiceParameterCollector"/>
         <extensionPoint dynamic="true" name="extension.ServiceDefinitionLocator" interface="fr.adrienbrault.idea.symfony2plugin.extension.ServiceDefinitionLocator"/>
         <extensionPoint dynamic="true" name="extension.TwigVariableCollector" interface="fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector"/>
-        <extensionPoint dynamic="true" name="extension.TranslatorProvider" interface="fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProvider"/>
     </extensionPoints>
 
     <extensions defaultExtensionNs="fr.adrienbrault.idea.symfony2plugin.extension">
@@ -618,10 +617,6 @@
         <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.IncludeVariableCollector"/>
         <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.MarcoScopeVariableCollector"/>
         <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.GlobalTwigConfigVariableCollector"/>
-
-        <TranslatorProvider implementation="fr.adrienbrault.idea.symfony2plugin.translation.provider.CompiledTranslatorProvider"/>
-        <TranslatorProvider implementation="fr.adrienbrault.idea.symfony2plugin.translation.provider.IndexTranslatorProvider"/>
-        <TranslatorProvider implementation="fr.adrienbrault.idea.symfony2plugin.translation.provider.CompiledContainerTranslatorProvider"/>
     </extensions>
 
     <depends>com.jetbrains.twig</depends>

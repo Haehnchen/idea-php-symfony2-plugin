@@ -4,7 +4,7 @@
     <extensionPoints>
         <extensionPoint dynamic="true" name="extension.PluginConfigurationExtension" interface="fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtension"/>
         <extensionPoint dynamic="true" name="extension.TwigFileUsage" interface="fr.adrienbrault.idea.symfony2plugin.extension.TwigFileUsage"/>
-
+        <extensionPoint dynamic="true" name="extension.TranslatorProvider" interface="fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProvider"/>
 
     </extensionPoints>
 

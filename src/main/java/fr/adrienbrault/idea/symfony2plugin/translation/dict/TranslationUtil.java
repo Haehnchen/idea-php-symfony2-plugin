@@ -21,6 +21,9 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TranslationStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationVisitor;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.DomainMappings;
+import fr.adrienbrault.idea.symfony2plugin.translation.provider.CompiledContainerTranslatorProvider;
+import fr.adrienbrault.idea.symfony2plugin.translation.provider.CompiledTranslatorProvider;
+import fr.adrienbrault.idea.symfony2plugin.translation.provider.IndexTranslatorProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -46,12 +49,18 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TranslationUtil {
-    public static final ExtensionPointName<TranslatorProvider> TRANSLATION_PROVIDER = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProvider");
+    private static final ExtensionPointName<TranslatorProvider> TRANSLATION_PROVIDER = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProvider");
+    public static final TranslatorProvider[] INTERNAL_TRANSLATOR_PROVIDERS = new TranslatorProvider[]{
+        new CompiledContainerTranslatorProvider(),
+        new CompiledTranslatorProvider(),
+        new IndexTranslatorProvider(),
+    };
 
     public static MethodMatcher.CallToSignature[] PHP_TRANSLATION_SIGNATURES = new MethodMatcher.CallToSignature[] {
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Translation\\TranslatorInterface", "trans"),
@@ -378,8 +387,12 @@ public class TranslationUtil {
         return placeholder;
     }
 
+    @NotNull
     private static TranslatorProvider[] getTranslationProviders() {
-        return TRANSLATION_PROVIDER.getExtensions();
+        return Stream.concat(
+            Arrays.stream(INTERNAL_TRANSLATOR_PROVIDERS),
+            Arrays.stream(TRANSLATION_PROVIDER.getExtensions())
+        ).toArray(TranslatorProvider[]::new);
     }
 
     /**
