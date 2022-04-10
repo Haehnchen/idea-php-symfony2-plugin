@@ -19,6 +19,21 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.23.218
+* [#1730](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1730) TwigPath dont sort via class comparable and dont use clone for being cached elements (Daniel Espendiller)
+* Migrate project notification (Daniel Espendiller)
+* Replace the webdeployment project component to allow the plugin be dynamic (Daniel Espendiller)
+* Replace the project component to allow the plugin be dynamic (Daniel Espendiller)
+* Migrate Symfony statusbar to extension (Daniel Espendiller)
+* [#1767](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1767) replace method reference resolving with core way (Daniel Espendiller)
+* split plugin config file (Daniel Espendiller)
+* Deprecated "GotoCompletionRegistrar" extension in favor of core features (Daniel Espendiller)
+* Xml file references should only trigger with "xml" extension (Daniel Espendiller)
+* Xml line marker should only trigger with "xml" extension (Daniel Espendiller)
+* Prevent indexing all xml file types; filter by extension (Daniel Espendiller)
+* Prevent indexing long strings (Daniel Espendiller)
+* [#1706](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1706) support "ContainerBagInterface" (Daniel Espendiller)
+
 ## 0.23.217
 * Fix [#1793](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1793) Symfony twig path previews are not complete when Route is set on Controller class (Daniel Espendiller)
 * Add "embed" incomplete completion, caches and smarter filter (Daniel Espendiller)
