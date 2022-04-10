@@ -66,6 +66,7 @@ import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.*;
 
 import java.io.File;
+import java.text.Collator;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -115,6 +116,15 @@ public class TwigUtil {
     public static String[] IMG_FILES_EXTENSIONS = new String[] { "png", "jpg", "jpeg", "gif", "svg"};
 
     public static String TEMPLATE_ANNOTATION_CLASS = "\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template";
+
+    public static class TwigPathNamespaceComparator implements Comparator<TwigPath> {
+        @Override
+        public int compare(TwigPath o1, TwigPath o2) {
+            Collator collator = Collator.getInstance();
+            collator.setStrength(Collator.SECONDARY);
+            return collator.compare(o1.getNamespace(), o2.getNamespace());
+        }
+    }
 
     @NotNull
     public static String[] getControllerMethodShortcut(@NotNull Method method) {
