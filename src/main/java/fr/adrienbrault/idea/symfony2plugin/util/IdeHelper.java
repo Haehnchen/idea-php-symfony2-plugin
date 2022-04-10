@@ -2,8 +2,10 @@ package fr.adrienbrault.idea.symfony2plugin.util;
 
 import com.intellij.ide.util.PsiNavigationSupport;
 import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationAction;
 import com.intellij.notification.NotificationGroupManager;
 import com.intellij.notification.NotificationType;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ex.ApplicationManagerEx;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.fileTypes.FileType;
@@ -128,18 +130,17 @@ public class IdeHelper {
     public static void notifyEnableMessage(final Project project) {
         Notification notification = NotificationGroupManager.getInstance()
             .getNotificationGroup("Symfony Notifications")
-            .createNotification(
-                "Enable Symfony Plugin <a href=\"enable\">with auto configuration now</a> or <a href=\"dismiss\">dismiss</a> further messages",
-                NotificationType.INFORMATION
-            );
+            .createNotification("Detected a Symfony project structure", NotificationType.INFORMATION);
 
-        notification.setTitle("Symfony");
-        notification.setIcon(Symfony2Icons.SYMFONY);
-        notification.setListener((notification1, event) -> {
+        notification.addAction(new NotificationAction("Enable plugin") {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e, @NotNull Notification notification) {
+                Project project1 = e.getProject();
+                if (project1 == null) {
+                    return;
+                }
 
-            // handle html click events
-            if("enable".equals(event.getDescription())) {
-                Collection<String> messages = enablePluginAndConfigure(project);
+                Collection<String> messages = enablePluginAndConfigure(project1);
 
                 String message = "Plugin enabled for project";
 
@@ -152,18 +153,32 @@ public class IdeHelper {
                     .getNotificationGroup("Symfony Notifications")
                     .createNotification(message, NotificationType.INFORMATION);
 
+                notification2.setTitle(createNotificationTitle(project1));
                 notification2.setIcon(Symfony2Icons.SYMFONY);
-                notification2.notify(project);
-            } else if("dismiss".equals(event.getDescription())) {
+                notification2.notify(project1);
+            }
+        });
 
+        notification.addAction(new NotificationAction("Dont`t show again") {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e, @NotNull Notification notification) {
                 // user doesnt want to show notification again
                 Settings.getInstance(project).dismissEnableNotification = true;
             }
-
-            notification1.expire();
         });
 
+        notification.setTitle(createNotificationTitle(project));
+        notification.setIcon(Symfony2Icons.SYMFONY);
+
         notification.notify(project);
+    }
+
+    private static String createNotificationTitle(@NotNull final Project project) {
+        String title = "Symfony Support";
+
+        title += " (Full Version)";
+
+        return title;
     }
 
     public static Collection<String> enablePluginAndConfigure(@NotNull Project project) {
