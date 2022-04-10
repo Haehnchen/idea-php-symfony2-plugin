@@ -20,6 +20,7 @@ Changelog
 * 0.9.x: PhpStorm 6 (no support)
 
 ## 0.23.218 / 2022.1.218
+* Provide incomple block completion (Daniel Espendiller)
 * [#1730](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1730) TwigPath dont sort via class comparable and dont use clone for being cached elements (Daniel Espendiller)
 * Migrate project notification (Daniel Espendiller)
 * Replace the webdeployment project component to allow the plugin be dynamic (Daniel Espendiller)
