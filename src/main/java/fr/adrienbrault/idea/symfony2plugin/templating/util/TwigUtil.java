@@ -42,6 +42,7 @@ import fr.adrienbrault.idea.symfony2plugin.extension.TwigFileUsage;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtensionParameter;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
+import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateUsage;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateLookupElement;
@@ -2832,7 +2833,7 @@ public class TwigUtil {
                 .limit(100)
                 .collect(Collectors.toList());
 
-            return CachedValueProvider.Result.create(collect, TimeSecondModificationTracker.TIMED_MODIFICATION_TRACKER_60);
+            return CachedValueProvider.Result.create(collect, FileIndexCaches.getModificationTrackerForIndexId(project, TwigIncludeStubIndex.KEY));
         }, false);
     }
 
@@ -2861,7 +2862,7 @@ public class TwigUtil {
                 .limit(100)
                 .collect(Collectors.toList());
 
-            return CachedValueProvider.Result.create(collect, TimeSecondModificationTracker.TIMED_MODIFICATION_TRACKER_60);
+            return CachedValueProvider.Result.create(collect, FileIndexCaches.getModificationTrackerForIndexId(project, TwigIncludeStubIndex.KEY));
         }, false);
     }
 
@@ -2885,7 +2886,7 @@ public class TwigUtil {
                 .limit(100)
                 .collect(Collectors.toList());
 
-            return CachedValueProvider.Result.create(collect, TimeSecondModificationTracker.TIMED_MODIFICATION_TRACKER_60);
+            return CachedValueProvider.Result.create(collect, FileIndexCaches.getModificationTrackerForIndexId(project, TwigExtendsStubIndex.KEY));
         }, false);
     }
 

@@ -10,7 +10,10 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.util.*;
+import com.intellij.psi.util.CachedValue;
+import com.intellij.psi.util.CachedValueProvider;
+import com.intellij.psi.util.CachedValuesManager;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
@@ -135,7 +138,7 @@ public class DoctrineMetadataUtil {
                     }
                 }
 
-                return CachedValueProvider.Result.create(repositoryMap, PsiModificationTracker.MODIFICATION_COUNT);
+                return CachedValueProvider.Result.create(repositoryMap, FileIndexCaches.getModificationTrackerForIndexId(project, DoctrineMetadataFileStubIndex.KEY));
             },
             false
         );
