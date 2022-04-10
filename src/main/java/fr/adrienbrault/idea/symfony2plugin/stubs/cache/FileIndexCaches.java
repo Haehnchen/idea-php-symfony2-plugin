@@ -89,7 +89,7 @@ public class FileIndexCaches {
     }
 
     @NotNull
-    private static ModificationTracker getModificationTrackerForIndexId(@NotNull Project project, @NotNull final ID<?, ?> id) {
+    public static ModificationTracker getModificationTrackerForIndexId(@NotNull Project project, @NotNull final ID<?, ?> id) {
         return () -> FileBasedIndex.getInstance().getIndexModificationStamp(id, project);
     }
 }
