@@ -22,7 +22,6 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -59,11 +58,11 @@ public class TwigSettingsForm implements Configurable {
         }
 
         List<TwigPath> sortableLookupItems = new ArrayList<>(TwigUtil.getTwigNamespaces(this.project, true));
-        Collections.sort(sortableLookupItems);
+        sortableLookupItems.sort(new TwigUtil.TwigPathNamespaceComparator());
 
         for (TwigPath twigPath : sortableLookupItems) {
             // dont use managed class here
-            this.modelList.addRow(twigPath.clone());
+            this.modelList.addRow(TwigPath.createClone(twigPath));
         }
     }
 
@@ -105,12 +104,12 @@ public class TwigSettingsForm implements Configurable {
                 TwigSettingsForm.this.resetList();
 
                 List<TwigPath> sortableLookupItems = new ArrayList<>(TwigUtil.getTwigNamespaces(TwigSettingsForm.this.project, false));
-                Collections.sort(sortableLookupItems);
+                sortableLookupItems.sort(new TwigUtil.TwigPathNamespaceComparator());
 
                 for (TwigPath twigPath : sortableLookupItems) {
                     // dont use managed class here
                     // @TODO state to enabled (should not be here)
-                    TwigSettingsForm.this.modelList.addRow(twigPath.clone().setEnabled(true));
+                    TwigSettingsForm.this.modelList.addRow(TwigPath.createClone(twigPath).setEnabled(true));
                 }
             }
         });

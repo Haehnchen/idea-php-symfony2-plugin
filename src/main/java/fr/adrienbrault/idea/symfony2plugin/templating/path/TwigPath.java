@@ -10,14 +10,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.text.Collator;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class TwigPath implements Comparable<TwigPath> {
+public class TwigPath {
     @NotNull
-    private String path;
+    private final String path;
 
     @NotNull
     private String namespace = TwigUtil.MAIN;
@@ -47,17 +46,16 @@ public class TwigPath implements Comparable<TwigPath> {
         this.customPath = customPath;
     }
 
-    @Override
-    public TwigPath clone() {
-        try {
-            super.clone();
-        } catch (CloneNotSupportedException ignored) {
-        }
+    public static TwigPath createClone(@NotNull TwigPath twigPath) {
+        TwigPath newTwigPath = new TwigPath(
+            twigPath.getPath(),
+            twigPath.getNamespace(),
+            twigPath.getNamespaceType(),
+            twigPath.isCustomPath()
+        );
 
-        TwigPath twigPath = new TwigPath(this.getPath(), this.getNamespace(), this.getNamespaceType(), this.isCustomPath());
-        twigPath.setEnabled(this.isEnabled());
-
-        return twigPath;
+        newTwigPath.setEnabled(twigPath.isEnabled());
+        return newTwigPath;
     }
 
     public TwigPath(@NotNull String path, @NotNull String namespace, @NotNull TwigUtil.NamespaceType namespaceType) {
@@ -127,13 +125,6 @@ public class TwigPath implements Comparable<TwigPath> {
         }
 
         return VfsUtil.findFileByIoFile(file, true);
-    }
-
-    @Override
-    public int compareTo(@NotNull TwigPath twigPath) {
-        Collator collator = Collator.getInstance();
-        collator.setStrength(Collator.SECONDARY);
-        return collator.compare(this.getNamespace(), twigPath.getNamespace());
     }
 
     public boolean isCustomPath() {
