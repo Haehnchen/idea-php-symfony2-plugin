@@ -19,7 +19,7 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
-## 0.23.218
+## 0.23.218 / 2022.1.218
 * [#1730](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1730) TwigPath dont sort via class comparable and dont use clone for being cached elements (Daniel Espendiller)
 * Migrate project notification (Daniel Espendiller)
 * Replace the webdeployment project component to allow the plugin be dynamic (Daniel Espendiller)
@@ -34,12 +34,17 @@ Changelog
 * Prevent indexing long strings (Daniel Espendiller)
 * [#1706](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1706) support "ContainerBagInterface" (Daniel Espendiller)
 
-## 0.23.217
+## 0.23.217 / 2022.1.217
 * Fix [#1793](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1793) Symfony twig path previews are not complete when Route is set on Controller class (Daniel Espendiller)
 * Add "embed" incomplete completion, caches and smarter filter (Daniel Espendiller)
 * [#1706](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1706) fix method references and multi resolve (Daniel Espendiller)
 * Twig icon extends should also support extension point (Daniel Espendiller)
 * [#1706](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1706) add support for ParameterBagInterface (Daniel Espendiller)
+* [paid] Heavy twig inspection (Daniel Espendiller)
+* [paid] Inspection to favor "kernel.project_dir" instead of KernelInterface injection (Daniel Espendiller)
+* [paid] Inspection to notice inject a controller into a service (Daniel Espendiller)
+* [paid] Provide inspection for warning injection for unsupported classes on autowire (Daniel Espendiller)
+* [paid] Constructor inspections (Daniel Espendiller)
 
 ## 0.23.216
 * Fix api issues (Daniel Espendiller)
