@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
  *
  * @deprecated Use core features
  */
+@Deprecated
 public interface GotoCompletionRegistrar {
     void register(@NotNull GotoCompletionRegistrarParameter registrar);
 }

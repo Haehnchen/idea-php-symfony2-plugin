@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
  *
  * @deprecated Use core features
  */
+@Deprecated
 public interface GotoCompletionRegistrarParameter {
     void register(@NotNull ElementPattern<? extends PsiElement> pattern, GotoCompletionContributor contributor);
 }

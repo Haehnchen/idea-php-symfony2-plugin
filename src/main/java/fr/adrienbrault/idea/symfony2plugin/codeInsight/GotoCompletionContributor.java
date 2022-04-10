@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
  *
  * @deprecated Use core features
  */
+@Deprecated
 public interface GotoCompletionContributor {
     @Nullable
     GotoCompletionProvider getProvider(@NotNull PsiElement psiElement);
