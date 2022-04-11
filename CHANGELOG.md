@@ -19,6 +19,12 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.23.219 / 2022.1.219
+* Use new toolbox version (Daniel Espendiller)
+* Design plugin project notification with action links (Daniel Espendiller)
+* Fix optional plugins dependencies need a config file (Daniel Espendiller)
+* Dynamic plugin support (Daniel Espendiller)
+
 ## 0.23.218 / 2022.1.218
 * Provide incomple block completion (Daniel Espendiller)
 * [#1730](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1730) TwigPath dont sort via class comparable and dont use clone for being cached elements (Daniel Espendiller)
