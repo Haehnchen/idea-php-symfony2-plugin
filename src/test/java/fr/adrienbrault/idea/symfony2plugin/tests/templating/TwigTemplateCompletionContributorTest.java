@@ -1,14 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating;
 
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import org.jetbrains.annotations.NotNull;
-
-import java.io.IOException;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -21,6 +15,9 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         myFixture.copyFileToProject("classes.php");
         myFixture.copyFileToProject("TwigTemplateCompletionContributorTest.php");
         myFixture.copyFileToProject("routing.xml");
+
+        myFixture.copyFileToProject("ide-twig.json", "ide-twig.json");
+        myFixture.copyFileToProject("test.html.twig", "res/test.html.twig");
     }
 
     public String getTestDataPath() {
@@ -129,23 +126,31 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         );
     }
 
-    private void createWorkaroundFile(@NotNull String file, @NotNull String content) {
+    public void testThatIncompleteExtendsStatementIsCompleted() {
+        assertCompletionContains(TwigFileType.INSTANCE, "" +
+                "{% ext<caret> %}\n",
+            "extends 'test.html.twig'"
+        );
+    }
 
-        try {
-            createDummyFiles(file);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void testThatIncompleteIncludeStatementIsCompleted() {
+        assertCompletionContains(TwigFileType.INSTANCE, "" +
+                "{% inc<caret> %}\n",
+            "include 'test.html.twig'"
+        );
+    }
 
-        // build pseudo file with block
-        final VirtualFile relativeFile = VfsUtil.findRelativeFile(getProject().getBaseDir(), file.split("/"));
-        ApplicationManager.getApplication().runWriteAction(() -> {
-            try {
-                relativeFile.setBinaryContent(content.getBytes());
-            } catch (IOException e2) {
-                e2.printStackTrace();
-            }
-            relativeFile.refresh(false, false);
-        });
+    public void testThatIncompleteEmbedStatementIsCompleted() {
+        assertCompletionContains(TwigFileType.INSTANCE, "" +
+                "{% emb<caret> %}\n",
+            "embed 'test.html.twig'"
+        );
+    }
+
+    public void testThatIncompleteIncludePrintIsCompleted() {
+        assertCompletionContains(TwigFileType.INSTANCE, "" +
+                "{{ in<caret>c }}\n",
+            "include('test.html.twig')"
+        );
     }
 }
