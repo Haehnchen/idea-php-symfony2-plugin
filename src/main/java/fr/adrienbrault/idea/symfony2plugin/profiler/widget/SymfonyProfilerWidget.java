@@ -45,7 +45,7 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
 
     //constructs the actions for the widget popup
     public DefaultActionGroup getActions(){
-        DefaultActionGroup actionGroup = new DefaultActionGroup(null, false);
+        DefaultActionGroup actionGroup = new DefaultActionGroup("Symfony.Profiler", false);
 
         ProfilerIndexInterface index = ProfilerFactoryUtil.createIndex(getProject());
         if(index == null) {
