@@ -36,16 +36,6 @@ jobs:
         path: ~/.gradle/wrapper
         key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
 
-    - name: setting env vars
-      run: echo "Main version ${ORG_GRADLE_PROJECT_ideaVersion}"
-      env:
-        ORG_GRADLE_PROJECT_ideaVersion: "IU-2021.2.3"
-        ORG_GRADLE_PROJECT_phpPluginVersion: "212.5457.49"
-        ORG_GRADLE_PROJECT_twigPluginVersion: "212.5457.16"
-        ORG_GRADLE_PROJECT_toolboxPluginVersion: "0.4.6"
-        ORG_GRADLE_PROJECT_annotationPluginVersion: "5.3"
-        ORG_GRADLE_PROJECT_dqlPluginVersion: "212.4746.52"
-
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
