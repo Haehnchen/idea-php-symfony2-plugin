@@ -4,9 +4,9 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Pair;
+import com.intellij.ssh.interaction.ConnectionOwnerFactory;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
-import com.jetbrains.plugins.webDeployment.ConnectionOwnerFactory;
 import com.jetbrains.plugins.webDeployment.PublishUtils;
 import com.jetbrains.plugins.webDeployment.config.*;
 import com.jetbrains.plugins.webDeployment.connections.RemoteConnection;
@@ -68,7 +68,7 @@ public class RemoteWebServerUtil {
         Deployable deployable = Deployable.create(defaultServer, project);
         RemoteConnection connection;
         try {
-            connection = RemoteConnectionManager.getInstance().openConnection(ConnectionOwnerFactory.createConnectionOwner(project), "foo", deployable, FileTransferConfig.Origin.Default, null, null);
+            connection = RemoteConnectionManager.getInstance().openConnection(ConnectionOwnerFactory.createConnectionOwnerWithDialogMessages(project), "foo", deployable, FileTransferConfig.Origin.Default, null, null);
         } catch (FileSystemException e) {
             return;
         }
