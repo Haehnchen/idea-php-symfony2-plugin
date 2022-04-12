@@ -7,12 +7,12 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.plugins.webDeployment.config.Deployable;import com.jetbrains.plugins.webDeployment.config.FileTransferConfig;
-import com.jetbrains.plugins.webDeployment.config.PublishConfig;
 import com.jetbrains.plugins.webDeployment.config.WebServerConfig;
 import com.jetbrains.plugins.webDeployment.ui.ServerBrowserDialog;
 import fr.adrienbrault.idea.symfony2plugin.ui.dict.UiFilePathInterface;
 import fr.adrienbrault.idea.symfony2plugin.ui.dict.UiFilePathPresentable;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
+import fr.adrienbrault.idea.symfony2plugin.webDeployment.utils.RemoteWebServerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -56,14 +56,14 @@ public class UiSettingsUtil {
     }
 
     public static void openFileDialogForDefaultWebServerConnection(@NotNull Project project, @NotNull WebServerFileDialogCallback callback) {
-        WebServerConfig server = PublishConfig.getInstance(project).findDefaultServer();
+        WebServerConfig server = RemoteWebServerUtil.findDefaultServer(project);
         if(server == null) {
             callback.noDefaultServer();
             return;
         }
 
         String rootPath = server.getFileTransferConfig().getRootFolder();
-        ServerBrowserDialog d = new ServerBrowserDialog(project, Deployable.create(server), String.format("Remote file: %s", server.getName()), false, FileTransferConfig.Origin.Default, new WebServerConfig.RemotePath(rootPath));
+        ServerBrowserDialog d = new ServerBrowserDialog(project, Deployable.create(server, project), String.format("Remote file: %s", server.getName()), false, FileTransferConfig.Origin.Default, new WebServerConfig.RemotePath(rootPath));
         d.show();
         if (!d.isOK()) {
             return;
