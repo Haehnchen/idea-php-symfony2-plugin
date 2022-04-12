@@ -20,6 +20,17 @@ Install
 * Install [Php Annotation](http://plugins.jetbrains.com/plugin/7320) plugin to enjoy all the annotation stuff
 * Plugin needs a valid PhpStorm indexer, use "File > Invalidate Caches / Restart" if something crazy is going on
 
+Freemium
+---------------------
+
+Since PhpStorm 2022.1 is plugin is marked a "Freemium".
+
+*   All features which are inside [GitHub](https://github.com/Haehnchen/idea-php-symfony2-plugin) are free to use, unless there is reason (e.g. Supporting old Symfony Version, ...) 
+*   Non-free features are flagged with _[paid]_ inside the [CHANGELOG](https://github.com/Haehnchen/idea-php-symfony2-plugin/blob/master/CHANGELOG.md)
+*   There is ~15min grace period after project open where all features are available
+
+_A license can be bought at [JetBrains Marketplace](https://www.jetbrains.com/shop/quote?item=C%3AN%3APSYMFONYPLUGIN%3AY). Free Discount Code generator for open source contributions are planned._
+
 Version
 ---------------------
 
