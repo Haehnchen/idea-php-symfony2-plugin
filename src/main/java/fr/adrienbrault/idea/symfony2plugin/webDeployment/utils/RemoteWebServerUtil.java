@@ -3,14 +3,12 @@ package fr.adrienbrault.idea.symfony2plugin.webDeployment.utils;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Condition;
+import com.intellij.openapi.util.Pair;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.plugins.webDeployment.ConnectionOwnerFactory;
 import com.jetbrains.plugins.webDeployment.PublishUtils;
-import com.jetbrains.plugins.webDeployment.config.Deployable;
-import com.jetbrains.plugins.webDeployment.config.FileTransferConfig;
-import com.jetbrains.plugins.webDeployment.config.PublishConfig;
-import com.jetbrains.plugins.webDeployment.config.WebServerConfig;
+import com.jetbrains.plugins.webDeployment.config.*;
 import com.jetbrains.plugins.webDeployment.connections.RemoteConnection;
 import com.jetbrains.plugins.webDeployment.connections.RemoteConnectionManager;
 import fr.adrienbrault.idea.symfony2plugin.dic.webDeployment.ServiceContainerRemoteFileStorage;
@@ -62,12 +60,12 @@ public class RemoteWebServerUtil {
     }
 
     public static void collectRemoteFiles(final @NotNull Project project) {
-        WebServerConfig defaultServer = PublishConfig.getInstance(project).findDefaultServer();
+        WebServerConfig defaultServer = findDefaultServer(project);
         if(defaultServer == null) {
             return;
         }
 
-        Deployable deployable = Deployable.create(defaultServer);
+        Deployable deployable = Deployable.create(defaultServer, project);
         RemoteConnection connection;
         try {
             connection = RemoteConnectionManager.getInstance().openConnection(ConnectionOwnerFactory.createConnectionOwner(project), "foo", deployable, FileTransferConfig.Origin.Default, null, null);
@@ -82,7 +80,7 @@ public class RemoteWebServerUtil {
 
                 FileObject file;
                 try {
-                    file = PublishUtils.findFile(connection.getFileSystem(), new WebServerConfig.RemotePath((String) s), deployable);
+                    file = PublishUtils.findFile(connection, new WebServerConfig.RemotePath((String) s), deployable);
                 } catch (FileSystemException e) {
                     continue;
                 }
@@ -96,6 +94,15 @@ public class RemoteWebServerUtil {
         }
 
         connection.clone();
+    }
+
+    /**
+     * replacement for "com.jetbrains.plugins.webDeployment.config.PublishConfig#findDefaultServer()"
+     */
+    @Nullable
+    public static WebServerConfig findDefaultServer(@NotNull Project project) {
+        Pair<WebServerGroupingWrap, WebServerConfig> server = PublishConfig.getInstance(project).findDefaultServerOrGroup();
+        return server == null ? null : server.getSecond();
     }
 
     @NotNull

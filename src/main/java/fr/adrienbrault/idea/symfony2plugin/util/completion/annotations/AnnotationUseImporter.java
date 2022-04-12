@@ -5,6 +5,7 @@ import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiUtilCore;
 import com.jetbrains.php.codeInsight.PhpCodeInsightUtil;
+import com.jetbrains.php.lang.psi.PhpGroupUseElement;
 import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
 import com.jetbrains.php.refactoring.PhpAliasImporter;
 
@@ -30,7 +31,7 @@ public class AnnotationUseImporter {
         }
 
         // this looks suitable! :)
-        if(PhpCodeInsightUtil.alreadyImported(scopeForUseOperator, fqnAnnotation) == null) {
+        if(PhpCodeInsightUtil.findImportedName(scopeForUseOperator, fqnAnnotation, PhpGroupUseElement.PhpUseKeyword.CLASS) == null) {
             PsiDocumentManager.getInstance(context.getProject()).commitDocument(context.getDocument());
             PhpAliasImporter.insertUseStatement(fqnAnnotation, scopeForUseOperator);
             PsiDocumentManager.getInstance(context.getProject()).doPostponedOperationsAndUnblockDocument(context.getDocument());

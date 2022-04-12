@@ -177,20 +177,8 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
 
     @NotNull
     @Override
-    public String getMaxValue() {
-        return "";
-    }
-
-    @NotNull
-    @Override
     public String ID() {
         return ID;
-    }
-
-    @Nullable
-    @Override
-    public WidgetPresentation getPresentation(@NotNull PlatformType platformType) {
-        return this;
     }
 
     @Nullable
