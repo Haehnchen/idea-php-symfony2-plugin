@@ -4,15 +4,18 @@ import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.impl.CamelHumpMatcher;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.completion.PhpClassLookupElement;
-import com.jetbrains.php.completion.PhpCompletionUtil;
 import com.jetbrains.php.lang.PhpLangUtil;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.util.PhpContractUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpClassReferenceInsertHandler;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import gnu.trove.THashSet;
+import one.util.streamex.StreamEx;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -41,11 +44,19 @@ public class PhpEntityClassCompletionProvider extends CompletionProvider<Complet
 
             for(Map.Entry<String, String> entry: entityNamespaces.entrySet()) {
                 String namespaceFqn = PhpLangUtil.toFQN(entry.getValue());
-                Collection<PhpClass> filtered = PhpCompletionUtil.filterByNamespace(classes, namespaceFqn);
+                Collection<PhpClass> filtered = filterByNamespace(classes, namespaceFqn);
                 for (PhpClass phpClass : filtered) {
                     resultSet.addElement(new PhpClassLookupElement(phpClass, true, PhpClassReferenceInsertHandler.getInstance()));
                 }
             }
         }
+    }
+
+    /**
+     * Replacment for "PhpCompletionUtil.filterByNamespace(classes, namespaceFqn)"
+     */
+    public static Collection<PhpClass> filterByNamespace(@NotNull Collection<PhpClass> classes, @NotNull String namespaceFQN) {
+        PhpContractUtil.assertFqn(namespaceFQN);
+        return StreamEx.of(classes).filter((aClass) -> PhpLangUtil.equalsClassNames(namespaceFQN, StringUtil.trimEnd(aClass.getNamespaceName(), "\\"))).toCollection(THashSet::new);
     }
 }

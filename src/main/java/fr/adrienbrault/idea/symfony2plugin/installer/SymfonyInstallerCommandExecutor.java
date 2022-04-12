@@ -76,7 +76,7 @@ abstract public class SymfonyInstallerCommandExecutor {
                         }
                         if (indicator.isCanceled()) {
                             cancelledByUser = true;
-                            OSProcessManager.getInstance().killProcessTree(processHandler.getProcess());
+                            OSProcessUtil.killProcess(processHandler.getProcess());
                             break;
                         }
                     }
