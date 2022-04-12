@@ -52,7 +52,7 @@ public class ClassCompletionPanelWrapper {
     private void init() {
         this.field = new EditorTextField("", project, com.jetbrains.php.lang.PhpFileType.INSTANCE);
 
-        PhpCompletionUtil.installClassCompletion(this.field, null, getDisposable());
+        PhpCompletionUtil.installClassCompletion(this.field, null, getDisposable(), null);
 
         this.field.getDocument().addDocumentListener(new DocumentAdapter() {
             @Override
