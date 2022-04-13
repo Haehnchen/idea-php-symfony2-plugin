@@ -19,6 +19,10 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.23.220 / 2022.1.220
+* Fix SymfonyProfilerWidget api compatibility (Daniel Espendiller)
+* Fix 2022.1 compatibility issues (Daniel Espendiller)
+
 ## 0.23.219 / 2022.1.219
 * Use new toolbox version (Daniel Espendiller)
 * Design plugin project notification with action links (Daniel Espendiller)
