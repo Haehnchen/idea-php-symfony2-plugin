@@ -181,6 +181,11 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
         return ID;
     }
 
+    @Override
+    public @Nullable WidgetPresentation getPresentation() {
+        return this;
+    }
+
     @Nullable
     @Override
     public String getTooltipText() {
