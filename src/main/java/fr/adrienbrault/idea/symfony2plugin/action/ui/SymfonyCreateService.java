@@ -45,8 +45,8 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -271,22 +271,19 @@ public class SymfonyCreateService extends JDialog {
         }
 
         final TextRange[] textRange = {null};
-        new WriteCommandAction.Simple(project, "Generate Service", SymfonyCreateService.this.psiFile) {
-            @Override
-            protected void run() {
+        WriteCommandAction.runWriteCommandAction(project, "Generate Service", null, () -> {
 
-                XmlTag services = rootTag.findFirstSubTag("services");
-                XmlElementFactory instance = XmlElementFactory.getInstance(SymfonyCreateService.this.project);
+            XmlTag services = rootTag.findFirstSubTag("services");
+            XmlElementFactory instance = XmlElementFactory.getInstance(SymfonyCreateService.this.project);
 
-                if(services == null) {
-                    services = rootTag.addSubTag(instance.createTagFromText("<services/>", rootTag.getLanguage()), false);
-                }
-
-                XmlTag tag = instance.createTagFromText(createServiceAsText(ServiceBuilder.OutputType.XML).replace("\r\n", "\n").replace("\n", " "), services.getLanguage());
-
-                textRange[0] = services.addSubTag(tag, false).getTextRange();
+            if(services == null) {
+                services = rootTag.addSubTag(instance.createTagFromText("<services/>", rootTag.getLanguage()), false);
             }
-        }.execute();
+
+            XmlTag tag = instance.createTagFromText(createServiceAsText(ServiceBuilder.OutputType.XML).replace("\r\n", "\n").replace("\n", " "), services.getLanguage());
+
+            textRange[0] = services.addSubTag(tag, false).getTextRange();
+        });
 
         navigateToElement(textRange);
 

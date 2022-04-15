@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.codeInspection.quickfix;
 
 import com.intellij.codeInspection.LocalQuickFix;
 import com.intellij.codeInspection.ProblemDescriptor;
-import com.intellij.openapi.application.Result;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.ScrollType;
@@ -78,31 +77,23 @@ public class CreateMethodQuickFix implements LocalQuickFix {
             return;
         }
 
-        new WriteCommandAction(project) {
-            @Override
-            protected void run(@NotNull Result result) throws Throwable {
-                StringBuffer textBuf = new StringBuffer();
-                textBuf.append("\n");
-                textBuf.append(methodCreated.getText());
+        WriteCommandAction.runWriteCommandAction(project, "Create Method", null, () -> {
+            StringBuffer textBuf = new StringBuffer();
+            textBuf.append("\n");
+            textBuf.append(methodCreated.getText());
 
-                editor.getDocument().insertString(insertPos, textBuf);
-                final int endPos = insertPos + textBuf.length();
+            editor.getDocument().insertString(insertPos, textBuf);
+            final int endPos = insertPos + textBuf.length();
 
-                CodeStyleManager.getInstance(project).reformatText(phpClass.getContainingFile(), insertPos, endPos);
-                PsiDocumentManager.getInstance(project).commitDocument(editor.getDocument());
+            CodeStyleManager.getInstance(project).reformatText(phpClass.getContainingFile(), insertPos, endPos);
+            PsiDocumentManager.getInstance(project).commitDocument(editor.getDocument());
 
-                Method insertedMethod = phpClass.findMethodByName(functionName);
-                if(insertedMethod != null) {
-                    editor.getCaretModel().moveToOffset(insertedMethod.getTextRange().getStartOffset());
-                    editor.getScrollingModel().scrollToCaret(ScrollType.RELATIVE);
-                }
+            Method insertedMethod = phpClass.findMethodByName(functionName);
+            if(insertedMethod != null) {
+                editor.getCaretModel().moveToOffset(insertedMethod.getTextRange().getStartOffset());
+                editor.getScrollingModel().scrollToCaret(ScrollType.RELATIVE);
             }
-
-            @Override
-            public String getGroupID() {
-                return "Create Method";
-            }
-        }.execute();
+        });
     }
 
     public interface InsertStringInterface {
