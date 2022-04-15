@@ -114,6 +114,11 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
                 if(lineOverwrites != null) {
                     results.add(lineOverwrites);
                 }
+            } else if(TwigPattern.getFunctionPattern("form_row", "form_widget").accepts(psiElement)) {
+                LineMarkerInfo lineOverwrites = attachFormTypeFields(psiElement);
+                if(lineOverwrites != null) {
+                    results.add(lineOverwrites);
+                }
             }
         }
     }
@@ -303,7 +308,45 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
 
         NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.OVERRIDES)
             .setTargets(new BlockOverwriteLazyValue(psiElement))
-            .setTooltipText("Overwrites")
+            .setTooltipText("Navigate to form")
+            .setCellRenderer(new MyBlockListCellRenderer());
+
+        return builder.createLineMarkerInfo(firstChild);
+    }
+
+    @Nullable
+    private LineMarkerInfo attachFormTypeFields(@NotNull PsiElement psiElement) {
+        PsiElement firstChild = psiElement.getFirstChild();
+        if (firstChild == null) {
+            return null;
+        }
+
+        PsiElement nextSiblingOfType = PsiElementUtils.getNextSiblingOfType(firstChild, PlatformPatterns.psiElement().withElementType(TwigTokenTypes.IDENTIFIER).beforeLeaf(PlatformPatterns.psiElement(TwigTokenTypes.RBRACE)));
+        if (nextSiblingOfType == null) {
+            return null;
+        }
+
+        Collection<TwigTypeContainer> twigTypeContainers = TwigTypeResolveUtil.resolveTwigMethodName(nextSiblingOfType, TwigTypeResolveUtil.formatPsiTypeNameWithCurrent(nextSiblingOfType));
+
+        Collection<PsiElement> targets = new HashSet<>();
+
+        for (TwigTypeContainer twigTypeContainer : twigTypeContainers) {
+            Object dataHolder = twigTypeContainer.getDataHolder();
+            if (dataHolder instanceof FormDataHolder && PhpElementsUtil.isInstanceOf(((FormDataHolder) dataHolder).getFormType(), "\\Symfony\\Component\\Form\\FormTypeInterface")) {
+                PsiElement field = ((FormDataHolder) dataHolder).getField();
+                if (field != null) {
+                    targets.add(field);
+                }
+            }
+        }
+
+        if (targets.isEmpty()) {
+            return null;
+        }
+
+        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.FORM_TYPE_LINE_MARKER)
+            .setTargets(targets)
+            .setTooltipText("Navigate to form field")
             .setCellRenderer(new MyBlockListCellRenderer());
 
         return builder.createLineMarkerInfo(psiElement);

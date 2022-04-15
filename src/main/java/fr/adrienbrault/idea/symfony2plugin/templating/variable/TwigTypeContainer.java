@@ -5,6 +5,7 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -15,16 +16,20 @@ import java.util.List;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TwigTypeContainer {
-
+    @Nullable
     private PhpNamedElement phpNamedElement;
+
+    @Nullable
     private String stringElement;
+
+    @Nullable
     private Object dataHolder;
 
-    public TwigTypeContainer(PhpNamedElement phpNamedElement) {
+    public TwigTypeContainer(@Nullable PhpNamedElement phpNamedElement) {
         this.phpNamedElement = phpNamedElement;
     }
 
-    public TwigTypeContainer(String stringElement) {
+    public TwigTypeContainer(@Nullable String stringElement) {
         this.stringElement = stringElement;
     }
 
@@ -52,11 +57,12 @@ public class TwigTypeContainer {
         return twigTypeContainerList;
     }
 
-    public TwigTypeContainer withDataHolder(Object object) {
+    public TwigTypeContainer withDataHolder(@NotNull Object object) {
         this.dataHolder = object;
         return this;
     }
 
+    @Nullable
     public Object getDataHolder() {
         return dataHolder;
     }

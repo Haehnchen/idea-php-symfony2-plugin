@@ -123,12 +123,15 @@ public class FormFieldResolver implements TwigTypeResolver {
     }
 
     @NotNull
-    private static List<TwigTypeContainer> getTwigTypeContainer(@NotNull Method method, @NotNull PhpClass formTypClass) {
-        List<TwigTypeContainer> twigTypeContainers = new ArrayList<>();
+    private static Collection<TwigTypeContainer> getTwigTypeContainer(@NotNull Method method, @NotNull PhpClass formTypClass) {
+        Collection<TwigTypeContainer> twigTypeContainers = new ArrayList<>();
 
         for(MethodReference methodReference: FormUtil.getFormBuilderTypes(method)) {
-
             String fieldName = PsiElementUtils.getMethodParameterAt(methodReference, 0);
+            if (fieldName == null) {
+                continue;
+            }
+
             PsiElement psiElement = PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 1);
             TwigTypeContainer twigTypeContainer = new TwigTypeContainer(fieldName);
 
@@ -136,7 +139,7 @@ public class FormFieldResolver implements TwigTypeResolver {
             if(psiElement != null) {
                 PhpClass fieldType = FormUtil.getFormTypeClassOnParameter(psiElement);
                 if(fieldType != null) {
-                    twigTypeContainer.withDataHolder(new FormDataHolder(fieldType, formTypClass));
+                    twigTypeContainer.withDataHolder(new FormDataHolder(fieldType, formTypClass, psiElement));
                 }
             }
 
