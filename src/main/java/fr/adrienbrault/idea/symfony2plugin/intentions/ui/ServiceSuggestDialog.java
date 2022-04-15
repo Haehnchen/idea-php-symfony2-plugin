@@ -3,10 +3,11 @@ package fr.adrienbrault.idea.symfony2plugin.intentions.ui;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
-import com.intellij.ui.components.JBList;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -14,16 +15,11 @@ import java.util.Collection;
 public class ServiceSuggestDialog {
 
     public static void create(final @NotNull Editor editor, @NotNull Collection<String> services, final @NotNull Callback callback) {
-        final JBList<String> list = new JBList<>(services);
+        final List<String> list = new ArrayList<>(services);
 
-        JBPopupFactory.getInstance().createListPopupBuilder(list)
+        JBPopupFactory.getInstance().createPopupChooserBuilder(list)
             .setTitle("Symfony: Service Suggestion")
-            .setItemChoosenCallback(() -> new WriteCommandAction.Simple(editor.getProject(), "Service Suggestion Insert") {
-                @Override
-                protected void run() {
-                    callback.insert((String) list.getSelectedValue());
-                }
-            }.execute())
+            .setItemChosenCallback(s -> WriteCommandAction.runWriteCommandAction(editor.getProject(), "Service Suggestion Insert", null, () -> callback.insert(s)))
             .createPopup()
             .showInBestPositionFor(editor);
     }

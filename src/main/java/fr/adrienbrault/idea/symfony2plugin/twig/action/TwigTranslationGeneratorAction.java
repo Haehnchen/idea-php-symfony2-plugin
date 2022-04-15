@@ -10,7 +10,6 @@ import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.impl.source.html.HtmlFileImpl;
-import com.intellij.ui.components.JBList;
 import com.jetbrains.php.completion.insert.PhpInsertHandlerUtil;
 import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -60,34 +59,25 @@ public class TwigTranslationGeneratorAction extends CodeInsightAction {
             final String defaultDomain = twigFileDomainScope.getDefaultDomain();
             final String domain = twigFileDomainScope.getDomain();
 
-            List<String> collect = TranslationUtil.getTranslationLookupElementsOnDomain(project, domain)
+            final List<String> list = TranslationUtil.getTranslationLookupElementsOnDomain(project, domain)
                 .stream()
                 .map(LookupElement::getLookupString)
                 .sorted()
                 .collect(Collectors.toList());
 
-            final JBList<String> list = new JBList<>(collect);
-
-            JBPopupFactory.getInstance().createListPopupBuilder(list)
+            JBPopupFactory.getInstance().createPopupChooserBuilder(list)
                 .setTitle(String.format("Symfony: Translations \"%s\"", StringUtils.abbreviate(domain, 20)))
-                .setItemChoosenCallback(() -> {
-                    String selectedValue = list.getSelectedValue();
+                .setItemChosenCallback(selectedValue -> WriteCommandAction.runWriteCommandAction(editor.getProject(), String.format("Symfony: Add Translation \"%s\"", StringUtils.abbreviate(selectedValue, 20)), null, () -> {
+                    String s;
 
-                    new WriteCommandAction.Simple(editor.getProject(), String.format("Symfony: Add Translation \"%s\"", StringUtils.abbreviate(selectedValue, 20))) {
-                        @Override
-                        protected void run() {
-                            String s;
+                    if (!domain.equals(defaultDomain)) {
+                        s = String.format("{{ '%s'|trans({}, '%s') }}", selectedValue, domain);
+                    } else {
+                        s = String.format("{{ '%s'|trans }}", selectedValue);
+                    }
 
-                            if (!domain.equals(defaultDomain)) {
-                                s = String.format("{{ '%s'|trans({}, '%s') }}", selectedValue, domain);
-                            } else {
-                                s = String.format("{{ '%s'|trans }}", selectedValue);
-                            }
-
-                            PhpInsertHandlerUtil.insertStringAtCaret(editor, s);
-                        }
-                    }.execute();
-                })
+                    PhpInsertHandlerUtil.insertStringAtCaret(editor, s);
+                }))
                 .createPopup()
                 .showInBestPositionFor(editor);
         }

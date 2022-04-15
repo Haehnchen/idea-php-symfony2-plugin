@@ -15,7 +15,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.*;
-import com.intellij.ui.components.JBList;
 import com.intellij.util.Consumer;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
@@ -520,7 +519,7 @@ public class ServiceUtil {
     }
 
     public static void insertTagWithPopupDecision(final @NotNull Editor editor, final @NotNull Set<String> phpServiceTags, final @NotNull Consumer<String> consumer) {
-        final JBList<String> list = new JBList<>(phpServiceTags);
+        final List<String> list = new ArrayList<>(phpServiceTags);
 
         if(phpServiceTags.size() == 0) {
             HintManager.getInstance().showErrorHint(editor, "Ops, no tag found");
@@ -528,24 +527,13 @@ public class ServiceUtil {
         }
 
         if(phpServiceTags.size() == 1) {
-            new WriteCommandAction.Simple(editor.getProject(), "Service Suggestion Insert") {
-                @Override
-                protected void run() {
-                    consumer.consume(phpServiceTags.iterator().next());
-                }
-            }.execute();
-
+            WriteCommandAction.runWriteCommandAction(editor.getProject(), "Service Suggestion Insert", null, () -> consumer.consume(phpServiceTags.iterator().next()));
             return;
         }
 
-        JBPopupFactory.getInstance().createListPopupBuilder(list)
+        JBPopupFactory.getInstance().createPopupChooserBuilder(list)
             .setTitle("Symfony: Tag Suggestion")
-            .setItemChoosenCallback(() -> new WriteCommandAction.Simple(editor.getProject(), "Service Suggestion Insert") {
-                @Override
-                protected void run() {
-                    consumer.consume((String) list.getSelectedValue());
-                }
-            }.execute())
+            .setItemChosenCallback(s -> WriteCommandAction.runWriteCommandAction(editor.getProject(), "Service Suggestion Insert", null, () -> consumer.consume(s)))
             .createPopup()
             .showInBestPositionFor(editor);
     }
