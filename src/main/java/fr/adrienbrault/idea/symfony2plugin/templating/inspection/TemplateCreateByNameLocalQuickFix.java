@@ -12,7 +12,6 @@ import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
-import com.intellij.ui.components.JBList;
 import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
@@ -21,7 +20,7 @@ import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -72,20 +71,14 @@ public class TemplateCreateByNameLocalQuickFix extends IntentionAndQuickFixActio
             return;
         }
 
-        JBList<String> list = new JBList<>(templatePaths);
+        List<String> list = new ArrayList<>(templatePaths);
+        list.sort(new ProjectTemplateComparator());
 
-        JBPopup popup = JBPopupFactory.getInstance().createListPopupBuilder(list)
+        JBPopup popup = JBPopupFactory.getInstance().createPopupChooserBuilder(list)
             .setTitle("Twig: Template Path")
-            .setItemChoosenCallback(() -> {
-                final String selectedValue = list.getSelectedValue();
+            .setItemChosenCallback(selectedValue -> {
                 String commandName = "Create Template: " + (selectedValue.length() > 15 ? selectedValue.substring(selectedValue.length() - 15) : selectedValue);
-
-                new WriteCommandAction.Simple(project, commandName) {
-                    @Override
-                    protected void run() {
-                        createFile(project, selectedValue);
-                    }
-                }.execute();
+                WriteCommandAction.runWriteCommandAction(project, commandName, null, () -> createFile(project, selectedValue));
             })
             .createPopup();
 
@@ -114,5 +107,41 @@ public class TemplateCreateByNameLocalQuickFix extends IntentionAndQuickFixActio
         }
 
         runnableCreateAndOpenFile.run();
+    }
+
+    private static class ProjectTemplateComparator implements Comparator<String> {
+        @Override
+        public int compare(String o1, String o2) {
+            int[] weights = new int[]{0, 0};
+
+            int index = 0;
+            for (String s : Arrays.asList(o1, o2)) {
+                int weight = 0;
+
+                // low priority for vendor and symfony
+                if (s.toLowerCase().contains("/vendor/")) {
+                    weight += 2;
+                }
+
+                if (s.toLowerCase().contains("/symfony/")) {
+                    weight += 1;
+                }
+
+                // project finds
+                if (s.toLowerCase().contains("/templates/")) {
+                    weight -= 4;
+                }
+
+                // foobundle is better then any other
+                if (s.toLowerCase().contains("bundle/")) {
+                    weight -= 3;
+                }
+
+                weights[index] = weight;
+                index += 1;
+            }
+
+            return weights[0] - weights[1];
+        }
     }
 }

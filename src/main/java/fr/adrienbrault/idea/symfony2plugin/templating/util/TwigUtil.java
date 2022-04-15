@@ -2195,7 +2195,11 @@ public class TwigUtil {
 
         }
 
-        return paths;
+        // prevent some noisy standard project stuff.
+        return paths
+            .stream()
+            .filter(s -> !(s.toLowerCase().contains("/twig-bridge/") && s.toLowerCase().contains("/form/")))
+            .collect(Collectors.toSet());
     }
 
     /**
