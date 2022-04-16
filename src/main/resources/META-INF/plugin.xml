@@ -328,11 +328,6 @@
                          language="yaml"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.intentions.yaml.YamlServiceArgumentInspection"/>
 
-        <localInspection groupPath="Symfony" shortName="CaseSensitivityServiceInspection" displayName="Symfony: Container sensitivity"
-                         groupName="Service"
-                         enabledByDefault="true" level="WARNING"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.CaseSensitivityServiceInspection"/>
-
         <localInspection groupPath="Symfony" shortName="RouteSettingDeprecatedInspection" displayName="Symfony: Route settings deprecated"
                          groupName="Route"
                          enabledByDefault="true" level="WARNING"
