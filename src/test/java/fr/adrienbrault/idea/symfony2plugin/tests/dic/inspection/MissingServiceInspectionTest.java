@@ -33,13 +33,13 @@ public class MissingServiceInspectionTest extends SymfonyLightCodeInsightFixture
     }
 
     public void testThatYamlServiceInterfaceForGetMethodIsInspected() {
-        assertLocalInspectionContains("services.yml", "services:\n   @args<caret>_unknown", "Missing Service");
-        assertLocalInspectionContains("services.yml", "services:\n   @Args<caret>_unknown", "Missing Service");
+        assertLocalInspectionContains("services.yml", "services:\n   @args<caret>_unknown", MissingServiceInspection.INSPECTION_MESSAGE);
+        assertLocalInspectionContains("services.yml", "services:\n   @Args<caret>_unknown", MissingServiceInspection.INSPECTION_MESSAGE);
 
-        assertLocalInspectionNotContains("services.yml", "services:\n   @App.ma<caret>iler", "Missing Service");
-        assertLocalInspectionNotContains("services.yml", "services:\n   @app.ma<caret>iler", "Missing Service");
+        assertLocalInspectionNotContains("services.yml", "services:\n   @App.ma<caret>iler", MissingServiceInspection.INSPECTION_MESSAGE);
+        assertLocalInspectionNotContains("services.yml", "services:\n   @app.ma<caret>iler", MissingServiceInspection.INSPECTION_MESSAGE);
 
-        assertLocalInspectionNotContains("services.yml", "services:\n   @@args<caret>_unknown", "Missing Service");
-        assertLocalInspectionNotContains("services.yml", "services:\n   @=args<caret>_unknown", "Missing Service");
+        assertLocalInspectionNotContains("services.yml", "services:\n   @@args<caret>_unknown", MissingServiceInspection.INSPECTION_MESSAGE);
+        assertLocalInspectionNotContains("services.yml", "services:\n   @=args<caret>_unknown", MissingServiceInspection.INSPECTION_MESSAGE);
     }
 }
