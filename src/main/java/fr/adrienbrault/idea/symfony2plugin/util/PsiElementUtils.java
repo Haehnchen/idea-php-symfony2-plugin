@@ -224,6 +224,7 @@ public class PsiElementUtils {
     }
 
     @Nullable
+    @Deprecated
     public static MethodReference getMethodReferenceWithFirstStringParameter(PsiElement psiElement) {
         if(!PlatformPatterns.psiElement()
             .withParent(StringLiteralExpression.class).inside(ParameterList.class)
