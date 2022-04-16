@@ -8,6 +8,7 @@ import com.intellij.ide.util.PsiElementListCellRenderer;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Iconable;
 import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -158,7 +159,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.IMPLEMENTED)
             .setTargets(NotNullLazyValue.lazy(new MyTemplateIncludeLazyValue(twigFile, templateNames)))
             .setTooltipText("Navigate to includes")
-            .setCellRenderer(new MyFileReferencePsiElementListCellRenderer());
+            .setCellRenderer(MyFileReferencePsiElementListCellRenderer::new);
 
         return builder.createLineMarkerInfo(twigFile);
     }
@@ -189,7 +190,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.IMPLEMENTED)
             .setTargets(NotNullLazyValue.lazy(new TemplateExtendsLazyTargets(twigFile.getProject(), twigFile.getVirtualFile())))
             .setTooltipText("Navigate to extends")
-            .setCellRenderer(new MyFileReferencePsiElementListCellRenderer());
+            .setCellRenderer(MyFileReferencePsiElementListCellRenderer::new);
 
         return builder.createLineMarkerInfo(twigFile);
     }
@@ -252,7 +253,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.IMPLEMENTED)
             .setTargets(NotNullLazyValue.lazy(new BlockImplementationLazyValue(psiElement)))
             .setTooltipText("Implementations")
-            .setCellRenderer(new MyBlockListCellRenderer());
+            .setCellRenderer(MyBlockListCellRenderer::new);
 
         return builder.createLineMarkerInfo(psiElement);
     }
@@ -297,7 +298,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.OVERRIDES)
             .setTargets(NotNullLazyValue.lazy(new BlockOverwriteLazyValue(psiElement)))
             .setTooltipText("Overwrites")
-            .setCellRenderer(new MyBlockListCellRenderer());
+            .setCellRenderer(MyBlockListCellRenderer::new);
 
         return builder.createLineMarkerInfo(psiElement);
     }
@@ -328,7 +329,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.FORM_TYPE_LINE_MARKER)
             .setTargets(phpClasses)
             .setTooltipText("Navigate to Form")
-            .setCellRenderer(new MyBlockListCellRenderer());
+            .setCellRenderer(MyBlockListCellRenderer::new);
 
         return builder.createLineMarkerInfo(psiElement.getFirstChild());
     }
@@ -339,7 +340,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         return null;
     }
 
-    private static class MyFileReferencePsiElementListCellRenderer extends PsiElementListCellRenderer {
+    private static class MyFileReferencePsiElementListCellRenderer extends PsiElementListCellRenderer<PsiElement> {
         @Override
         public String getElementText(PsiElement psiElement) {
             String symbolPresentableText = SymbolPresentationUtil.getSymbolPresentableText(psiElement);
@@ -357,7 +358,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
 
         @Override
         protected int getIconFlags() {
-            return 1;
+            return Iconable.ICON_FLAG_VISIBILITY;
         }
 
         @Override
@@ -429,7 +430,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         }
     }
 
-    private static class MyBlockListCellRenderer extends PsiElementListCellRenderer {
+    private static class MyBlockListCellRenderer extends PsiElementListCellRenderer<PsiElement> {
         @Override
         public String getElementText(PsiElement psiElement) {
             return StringUtils.abbreviate(
@@ -445,7 +446,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
 
         @Override
         protected int getIconFlags() {
-            return 1;
+            return Iconable.ICON_FLAG_VISIBILITY;
         }
 
         @Override
