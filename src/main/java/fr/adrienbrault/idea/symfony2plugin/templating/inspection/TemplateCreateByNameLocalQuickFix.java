@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.inspection;
 
 import com.intellij.codeInsight.hint.HintManager;
+import com.intellij.codeInsight.intention.HighPriorityAction;
 import com.intellij.codeInspection.IntentionAndQuickFixAction;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.openapi.command.WriteCommandAction;
@@ -25,7 +26,7 @@ import java.util.*;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class TemplateCreateByNameLocalQuickFix extends IntentionAndQuickFixAction {
+public class TemplateCreateByNameLocalQuickFix extends IntentionAndQuickFixAction implements HighPriorityAction {
     @NotNull
     private final String templateName;
 

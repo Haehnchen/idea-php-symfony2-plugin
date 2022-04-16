@@ -1,5 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.twig.annotation;
 
+import com.intellij.lang.annotation.AnnotationBuilder;
+import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.containers.ContainerUtil;
@@ -10,8 +12,11 @@ import de.espend.idea.php.annotation.extension.PhpAnnotationDocTagAnnotator;
 import de.espend.idea.php.annotation.extension.parameter.PhpAnnotationDocTagAnnotatorParameter;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.templating.inspection.TemplateCreateByNameLocalQuickFix;
+import fr.adrienbrault.idea.symfony2plugin.templating.inspection.TemplateGuessTypoQuickFix;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -87,9 +92,13 @@ public class TemplateAnnotationAnnotator implements PhpAnnotationDocTagAnnotator
             return;
         }
 
-        parameter.getHolder()
-            .createWarningAnnotation(firstChild.getTextRange(), "Twig: Missing Template")
-            .registerFix(new TemplateCreateByNameLocalQuickFix(templateName))
-        ;
+        @NotNull AnnotationBuilder warningAnnotation = parameter.getHolder().newAnnotation(HighlightSeverity.WARNING, "Twig: Missing Template")
+            .withFix(new TemplateCreateByNameLocalQuickFix(templateName));
+
+        if (StringUtils.isNotBlank(templateName)) {
+            warningAnnotation = warningAnnotation.withFix(new TemplateGuessTypoQuickFix(templateName));
+        }
+
+        warningAnnotation.create();
     }
 }
