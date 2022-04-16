@@ -66,7 +66,14 @@ public class TemplateGuessTypoQuickFix extends IntentionAndQuickFixAction {
         Consumer<String> templateSuggestion = null;
 
         PsiElement parent = elementAt.getParent();
-        if (parent instanceof StringLiteralExpression) {
+        if (elementAt.getNode().getElementType() == TwigTokenTypes.STRING_TEXT) {
+            // TWIG
+            templateSuggestion = selectedValue -> WriteCommandAction.runWriteCommandAction(project, "Template Suggestion", null, () -> {
+                PsiElement firstFromText = TwigElementFactory.createPsiElement(project, "{% foo '" + selectedValue + "' }%", TwigTokenTypes.STRING_TEXT);
+                elementAt.replace(firstFromText);
+            });
+        } else if (parent instanceof StringLiteralExpression) {
+            // PHP + DocTag
             templateSuggestion = selectedValue -> {
                 WriteCommandAction.runWriteCommandAction(project, "Template Suggestion", null, () -> {
                     String contents = parent.getText();
@@ -82,11 +89,6 @@ public class TemplateGuessTypoQuickFix extends IntentionAndQuickFixAction {
                     parent.replace(firstFromText);
                 });
             };
-        } else if (elementAt.getNode().getElementType() == TwigTokenTypes.STRING_TEXT) {
-            templateSuggestion = selectedValue -> WriteCommandAction.runWriteCommandAction(project, "Template Suggestion", null, () -> {
-                PsiElement firstFromText = TwigElementFactory.createPsiElement(project, "{% foo '" + selectedValue + "' }%", TwigTokenTypes.STRING_TEXT);
-                elementAt.replace(firstFromText);
-            });
         }
 
         if (templateSuggestion == null) {

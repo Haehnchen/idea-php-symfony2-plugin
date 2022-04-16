@@ -7,6 +7,7 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
+import com.jetbrains.php.lang.psi.elements.ParameterList;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.SymfonyPhpReferenceContributor;
@@ -19,10 +20,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -45,40 +42,50 @@ public class PhpTemplateMissingInspection extends LocalInspectionTool {
     }
 
     private void invoke(@NotNull ProblemsHolder holder, @NotNull PsiElement psiElement) {
-        String templateNameIfMissing = getTemplateNameIfMissing(psiElement);
+        if (!(psiElement instanceof StringLiteralExpression)) {
+            return;
+        }
+
+        String templateNameIfMissing = getTemplateNameIfMissing((StringLiteralExpression) psiElement);
         if(templateNameIfMissing == null) {
             return;
         }
 
-        Collection<LocalQuickFix> templateCreateByNameLocalQuickFix = new ArrayList<>(List.of(
-            new TemplateCreateByNameLocalQuickFix(templateNameIfMissing)
-        ));
-
-        if (psiElement.getParent() instanceof StringLiteralExpression) {
-            templateCreateByNameLocalQuickFix.add(new TemplateGuessTypoQuickFix(templateNameIfMissing));
-        }
+        LocalQuickFix[] templateCreateByNameLocalQuickFix = new LocalQuickFix[]{
+            new TemplateCreateByNameLocalQuickFix(templateNameIfMissing),
+            new TemplateGuessTypoQuickFix(templateNameIfMissing)
+        };
 
         holder.registerProblem(
             psiElement,
             "Twig: Missing Template",
             ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
-            templateCreateByNameLocalQuickFix.toArray(LocalQuickFix[]::new)
+            templateCreateByNameLocalQuickFix
         );
     }
 
     @Nullable
-    private String getTemplateNameIfMissing(@NotNull PsiElement psiElement) {
-        MethodReference methodReference = PsiElementUtils.getMethodReferenceWithFirstStringParameter(psiElement);
-        if (methodReference == null || !PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, SymfonyPhpReferenceContributor.TEMPLATE_SIGNATURES)) {
-            return null;
-        }
-
-        ParameterBag parameterBag = PsiElementUtils.getCurrentParameterIndex(psiElement.getParent());
+    private String getTemplateNameIfMissing(@NotNull StringLiteralExpression psiElement) {
+        ParameterBag parameterBag = PsiElementUtils.getCurrentParameterIndex(psiElement);
         if(parameterBag == null || parameterBag.getIndex() != 0) {
             return null;
         }
 
-        String templateName = PhpElementsUtil.getFirstArgumentStringValue(methodReference);
+        PsiElement parameterList = psiElement.getParent();
+        if (!(parameterList instanceof ParameterList)) {
+            return null;
+        }
+
+        PsiElement methodReference = parameterList.getParent();
+        if (!(methodReference instanceof MethodReference)) {
+            return null;
+        }
+
+        if (!PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) methodReference, SymfonyPhpReferenceContributor.TEMPLATE_SIGNATURES)) {
+            return null;
+        }
+
+        String templateName = PhpElementsUtil.getFirstArgumentStringValue((MethodReference) methodReference);
         if(templateName == null || StringUtils.isBlank(templateName)) {
             return null;
         }

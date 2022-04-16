@@ -13,9 +13,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * {% include 'f<caret>.html.twig' %}
@@ -56,16 +54,16 @@ public class TwigTemplateMissingInspection extends LocalInspectionTool {
             return;
         }
 
-        Collection<LocalQuickFix> templateCreateByNameLocalQuickFix = new ArrayList<>(List.of(
+        LocalQuickFix[] templateCreateByNameLocalQuickFix = new LocalQuickFix[]{
             new TemplateCreateByNameLocalQuickFix(templateName),
             new TemplateGuessTypoQuickFix(templateName)
-        ));
+        };
 
         holder.registerProblem(
             element,
             "Twig: Missing Template",
             ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
-            templateCreateByNameLocalQuickFix.toArray(LocalQuickFix[]::new)
+            templateCreateByNameLocalQuickFix
         );
     }
 }
