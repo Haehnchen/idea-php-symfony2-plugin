@@ -10,7 +10,6 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
-import com.intellij.ui.components.JBList;
 import com.intellij.util.IncorrectOperationException;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
@@ -58,13 +57,11 @@ public class PhpServiceArgumentIntention extends PsiElementBaseIntentionAction {
             map.put(VfsUtil.getRelativePath(element.getContainingFile().getVirtualFile(), ProjectUtil.getProjectDir(element)), element);
         }
 
-        final JBList<String> list = new JBList<>(map.keySet());
-        JBPopupFactory.getInstance().createListPopupBuilder(list)
+        JBPopupFactory.getInstance().createPopupChooserBuilder(new ArrayList<>(map.keySet()))
                 .setTitle("Symfony: Services Definitions")
-                .setItemChoosenCallback(() -> WriteCommandAction.writeCommandAction(project).withName("Service Update").run(() -> invokeByScope(map.get(list.getSelectedValue()), editor)))
+                .setItemChosenCallback(setSelectedValue -> WriteCommandAction.writeCommandAction(project).withName("Service Update").run(() -> invokeByScope(map.get(setSelectedValue), editor)))
                 .createPopup()
-                .showInBestPositionFor(editor)
-        ;
+                .showInBestPositionFor(editor);
     }
 
     private void invokeByScope(@NotNull PsiElement psiElement, @NotNull Editor editor) {
