@@ -244,6 +244,26 @@ public class PsiElementUtils {
         return (MethodReference) parameterList.getContext();
     }
 
+    @Nullable
+    public static MethodReference getMethodReferenceWithFirstStringParameter(@NotNull StringLiteralExpression stringLiteralExpression) {
+        ParameterBag parameterBag = PsiElementUtils.getCurrentParameterIndex(stringLiteralExpression);
+        if(parameterBag == null || parameterBag.getIndex() != 0) {
+            return null;
+        }
+
+        PsiElement parameterList = stringLiteralExpression.getParent();
+        if (!(parameterList instanceof ParameterList)) {
+            return null;
+        }
+
+        PsiElement methodReference = parameterList.getParent();
+        if (!(methodReference instanceof MethodReference)) {
+            return null;
+        }
+
+        return (MethodReference) parameterList.getParent();
+    }
+
     public static String trimQuote(String text) {
         return text.replaceAll("^\"|\"$|\'|\'$", "");
     }

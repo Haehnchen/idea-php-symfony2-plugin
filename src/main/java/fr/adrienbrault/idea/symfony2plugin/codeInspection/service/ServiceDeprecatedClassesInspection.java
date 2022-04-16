@@ -163,26 +163,25 @@ public class ServiceDeprecatedClassesInspection extends LocalInspectionTool {
         }
 
         @Override
-        public void visitElement(PsiElement element) {
-            MethodReference methodReference = PsiElementUtils.getMethodReferenceWithFirstStringParameter(element);
-            if (methodReference == null || !PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, ServiceContainerUtil.SERVICE_GET_SIGNATURES)) {
-                super.visitElement(element);
+        public void visitElement(PsiElement psiElement) {
+            if (!(psiElement instanceof StringLiteralExpression)) {
+                super.visitElement(psiElement);
                 return;
             }
 
-            PsiElement psiElement = element.getParent();
-            if(!(psiElement instanceof StringLiteralExpression)) {
-                super.visitElement(element);
+            MethodReference methodReference = PsiElementUtils.getMethodReferenceWithFirstStringParameter((StringLiteralExpression) psiElement);
+            if (methodReference == null || !PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, ServiceContainerUtil.SERVICE_GET_SIGNATURES)) {
+                super.visitElement(psiElement);
                 return;
             }
 
             String contents = ((StringLiteralExpression) psiElement).getContents();
             if(StringUtils.isNotBlank(contents)) {
-                this.problemRegistrar.attachDeprecatedProblem(element, contents, holder);
-                this.problemRegistrar.attachServiceDeprecatedProblem(element, contents, holder);
+                this.problemRegistrar.attachDeprecatedProblem(psiElement, contents, holder);
+                this.problemRegistrar.attachServiceDeprecatedProblem(psiElement, contents, holder);
             }
 
-            super.visitElement(element);
+            super.visitElement(psiElement);
         }
     }
 
