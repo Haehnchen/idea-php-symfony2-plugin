@@ -1,6 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
+import com.intellij.codeInspection.LocalQuickFix;
+import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
@@ -8,9 +10,12 @@ import com.intellij.psi.PsiElementVisitor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * {% include 'f<caret>.html.twig' %}
@@ -42,16 +47,25 @@ public class TwigTemplateMissingInspection extends LocalInspectionTool {
 
     private void invoke(@NotNull final PsiElement element, @NotNull ProblemsHolder holder) {
         String templateName = element.getText();
+        if (StringUtils.isBlank(templateName)) {
+            return;
+        }
 
         Collection<VirtualFile> psiElements = TwigUtil.getTemplateFiles(element.getProject(), templateName);
         if(psiElements.size() > 0)  {
             return;
         }
 
+        Collection<LocalQuickFix> templateCreateByNameLocalQuickFix = new ArrayList<>(List.of(
+            new TemplateCreateByNameLocalQuickFix(templateName),
+            new TemplateGuessTypoQuickFix(templateName)
+        ));
+
         holder.registerProblem(
             element,
             "Twig: Missing Template",
-            new TemplateCreateByNameLocalQuickFix(templateName)
+            ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
+            templateCreateByNameLocalQuickFix.toArray(LocalQuickFix[]::new)
         );
     }
 }
