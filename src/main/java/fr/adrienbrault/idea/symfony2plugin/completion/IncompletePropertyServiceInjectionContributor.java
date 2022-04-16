@@ -234,6 +234,7 @@ public class IncompletePropertyServiceInjectionContributor extends CompletionCon
             add(new Triple<>(null, new String[] {"\\Symfony\\Component\\HttpFoundation\\RequestStack"}, new String[0]));
             add(new Triple<>(null, new String[] {"\\Twig\\Environment"}, new String[] {"render"}));
             add(new Triple<>("twig", new String[] {"\\Twig\\Environment"}, new String[] {"render"}));
+            add(new Triple<>(null, new String[] {"\\Psr\\Log\\LoggerInterface"}, new String[] {"error", "debug", "info"}));
             add(new Triple<>(null, new String[] {"\\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface"}, new String[] {"generate"}));
             add(new Triple<>(null, new String[] {"\\Doctrine\\ORM\\EntityManagerInterface", "\\Doctrine\\Persistence\\ObjectManager"}, new String[] {"flush", "find", "remove", "persist", "getRepository"}));
         }};
