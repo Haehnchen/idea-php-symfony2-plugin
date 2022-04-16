@@ -18,6 +18,7 @@ import org.jetbrains.yaml.psi.YAMLKeyValue;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -60,13 +61,13 @@ public class ConfigLineMarkerProvider implements LineMarkerProvider {
         }
 
         NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.SYMFONY_LINE_MARKER)
-            .setTargets(new MyClassIdLazyValue(psiElement.getProject(), treeSignatures.get(keyText), keyText))
+            .setTargets(NotNullLazyValue.lazy(new MyClassIdLazyValue(psiElement.getProject(), treeSignatures.get(keyText), keyText)))
             .setTooltipText("Navigate to configuration");
 
         result.add(builder.createLineMarkerInfo(psiElement));
     }
 
-    private static class MyClassIdLazyValue extends NotNullLazyValue<Collection<? extends PsiElement>> {
+    private static class MyClassIdLazyValue implements Supplier<Collection<? extends PsiElement>> {
         @NotNull
         private final Project project;
 
@@ -82,9 +83,8 @@ public class ConfigLineMarkerProvider implements LineMarkerProvider {
             this.root = root;
         }
 
-        @NotNull
         @Override
-        protected Collection<? extends PsiElement> compute() {
+        public Collection<? extends PsiElement> get() {
             return ConfigUtil.getTreeSignatureTargets(project, root, configuration);
         }
     }

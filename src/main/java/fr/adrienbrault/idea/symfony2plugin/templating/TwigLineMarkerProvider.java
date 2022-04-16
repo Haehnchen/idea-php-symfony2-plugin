@@ -11,13 +11,11 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.presentation.java.SymbolPresentationUtil;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ConstantFunction;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIcons;
@@ -25,11 +23,7 @@ import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
-import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigElementTypes;
-import com.jetbrains.twig.elements.TwigFieldReference;
-import com.jetbrains.twig.elements.TwigPsiReference;
-import com.jetbrains.twig.elements.TwigVariableReference;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.RelatedPopupGotoLineMarker;
@@ -52,6 +46,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.*;
+import java.util.function.Supplier;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -161,7 +156,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         }
 
         NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.IMPLEMENTED)
-            .setTargets(new MyTemplateIncludeLazyValue(twigFile, templateNames))
+            .setTargets(NotNullLazyValue.lazy(new MyTemplateIncludeLazyValue(twigFile, templateNames)))
             .setTooltipText("Navigate to includes")
             .setCellRenderer(new MyFileReferencePsiElementListCellRenderer());
 
@@ -192,7 +187,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         }
 
         NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.IMPLEMENTED)
-            .setTargets(new TemplateExtendsLazyTargets(twigFile.getProject(), twigFile.getVirtualFile()))
+            .setTargets(NotNullLazyValue.lazy(new TemplateExtendsLazyTargets(twigFile.getProject(), twigFile.getVirtualFile())))
             .setTooltipText("Navigate to extends")
             .setCellRenderer(new MyFileReferencePsiElementListCellRenderer());
 
@@ -255,14 +250,14 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         }
 
         NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.IMPLEMENTED)
-            .setTargets(new BlockImplementationLazyValue(psiElement))
+            .setTargets(NotNullLazyValue.lazy(new BlockImplementationLazyValue(psiElement)))
             .setTooltipText("Implementations")
             .setCellRenderer(new MyBlockListCellRenderer());
 
         return builder.createLineMarkerInfo(psiElement);
     }
 
-    private static class BlockImplementationLazyValue extends NotNullLazyValue<Collection<? extends PsiElement>> {
+    private static class BlockImplementationLazyValue implements Supplier<Collection<? extends PsiElement>> {
         @NotNull
         private final PsiElement psiElement;
 
@@ -270,9 +265,8 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             this.psiElement = psiElement;
         }
 
-        @NotNull
         @Override
-        protected Collection<? extends PsiElement> compute() {
+        public Collection<? extends PsiElement> get() {
             return TwigBlockUtil.getBlockImplementationTargets(psiElement);
         }
     }
@@ -280,7 +274,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
     /**
      * Provides lazy targets for given template scope
      */
-    private static class BlockOverwriteLazyValue extends NotNullLazyValue<Collection<? extends PsiElement>> {
+    private static class BlockOverwriteLazyValue implements Supplier<Collection<? extends PsiElement>> {
         @NotNull
         private final PsiElement psiElement;
 
@@ -288,9 +282,8 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             this.psiElement = psiElement;
         }
 
-        @NotNull
         @Override
-        protected Collection<? extends PsiElement> compute() {
+        public Collection<? extends PsiElement> get() {
             return TwigBlockUtil.getBlockOverwriteTargets(psiElement);
         }
     }
@@ -302,7 +295,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         }
 
         NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.OVERRIDES)
-            .setTargets(new BlockOverwriteLazyValue(psiElement))
+            .setTargets(NotNullLazyValue.lazy(new BlockOverwriteLazyValue(psiElement)))
             .setTooltipText("Overwrites")
             .setCellRenderer(new MyBlockListCellRenderer());
 
@@ -379,7 +372,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         }
     }
 
-    private static class MyTemplateIncludeLazyValue extends NotNullLazyValue<Collection<? extends PsiElement>> {
+    private static class MyTemplateIncludeLazyValue implements Supplier<Collection<? extends PsiElement>> {
         @NotNull
         private final TwigFile twigFile;
 
@@ -391,9 +384,8 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             this.templateNames = templateNames;
         }
 
-        @NotNull
         @Override
-        protected Collection<? extends PsiElement> compute() {
+        public Collection<? extends PsiElement> get() {
             Collection<VirtualFile> twigFiles = new ArrayList<>();
 
             Project project = twigFile.getProject();
@@ -465,7 +457,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
     /**
      * Find "extends" which are targeting the given template file
      */
-    private static class TemplateExtendsLazyTargets extends NotNullLazyValue<Collection<? extends PsiElement>> {
+    private static class TemplateExtendsLazyTargets implements Supplier<Collection<? extends PsiElement>> {
         @NotNull
         private final Project project;
         @NotNull
@@ -476,9 +468,8 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             this.virtualFile = virtualFile;
         }
 
-        @NotNull
         @Override
-        protected Collection<? extends PsiElement> compute() {
+        public Collection<? extends PsiElement> get() {
             return PsiElementUtils.convertVirtualFilesToPsiFiles(project, TwigUtil.getTemplatesExtendingFile(project, virtualFile));
         }
     }

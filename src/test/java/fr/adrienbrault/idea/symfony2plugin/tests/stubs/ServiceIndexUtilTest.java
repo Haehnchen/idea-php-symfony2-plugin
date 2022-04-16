@@ -24,7 +24,6 @@ import java.util.Map;
 public class ServiceIndexUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     private VirtualFile ymlVirtualFile;
     private VirtualFile xmlVirtualFile;
-    private VirtualFile phpVirtualFile;
 
     public void setUp() throws Exception {
         super.setUp();
@@ -33,7 +32,7 @@ public class ServiceIndexUtilTest extends SymfonyLightCodeInsightFixtureTestCase
 
         ymlVirtualFile = myFixture.copyFileToProject("services.yml");
         xmlVirtualFile = myFixture.copyFileToProject("services.xml");
-        phpVirtualFile = myFixture.copyFileToProject("services.php");
+        myFixture.copyFileToProject("services.php");
     }
 
     public String getTestDataPath() {
@@ -84,14 +83,14 @@ public class ServiceIndexUtilTest extends SymfonyLightCodeInsightFixtureTestCase
 
     public void testFindServiceDefinitionsForPhpClassAsLazyInsideYml() {
         assertNotNull(ContainerUtil.find(
-            ServiceIndexUtil.findServiceDefinitionsLazy(PhpElementsUtil.getClass(getProject(),"My\\Foo\\Service\\Targets")).getValue(),
+            ServiceIndexUtil.findServiceDefinitionsLazy(PhpElementsUtil.getClass(getProject(),"My\\Foo\\Service\\Targets")).get(),
             new MyYamlKeyValueCondition("foo.yml_id"))
         );
     }
 
     public void testFindServiceDefinitionsForPhpClassAsLazyInsideXml() {
         assertNotNull(ContainerUtil.find(
-            ServiceIndexUtil.findServiceDefinitionsLazy(PhpElementsUtil.getClass(getProject(),"My\\Foo\\Service\\Targets")).getValue(),
+            ServiceIndexUtil.findServiceDefinitionsLazy(PhpElementsUtil.getClass(getProject(),"My\\Foo\\Service\\Targets")).get(),
             new MyXmlTagCondition("foo.xml_id"))
         );
     }

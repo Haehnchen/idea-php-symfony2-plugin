@@ -1,18 +1,21 @@
 package fr.adrienbrault.idea.symfony2plugin.dic;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class ClassServiceDefinitionTargetLazyValue extends NotNullLazyValue<Collection<? extends PsiElement>> {
+public class ClassServiceDefinitionTargetLazyValue implements Supplier<Collection<? extends PsiElement>> {
 
     @NotNull
     private final Project project;
@@ -30,9 +33,8 @@ public class ClassServiceDefinitionTargetLazyValue extends NotNullLazyValue<Coll
         this.fqnClasses = Collections.singletonList(fqnClass);
     }
 
-    @NotNull
     @Override
-    protected Collection<? extends PsiElement> compute() {
+    public Collection<? extends PsiElement> get() {
         ContainerCollectionResolver.ServiceCollector serviceCollector = ContainerCollectionResolver.ServiceCollector.create(project);
 
         Collection<PsiElement> psiElements = new ArrayList<>();

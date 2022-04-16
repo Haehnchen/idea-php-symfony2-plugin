@@ -25,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -111,9 +112,9 @@ public class FileResourceUtil {
             return null;
         }
 
-        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.IMPLEMENTS).
-            setTargets(new FileResourceUtil.FileResourceNotNullLazyValue(project, bundleLocateName)).
-            setTooltipText("Navigate to resource");
+        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.IMPLEMENTS)
+            .setTargets(NotNullLazyValue.lazy(new FileResourceUtil.FileResourceNotNullLazyValue(project, bundleLocateName)))
+            .setTooltipText("Navigate to resource");
 
         return builder.createLineMarkerInfo(psiFile);
     }
@@ -152,14 +153,14 @@ public class FileResourceUtil {
             return null;
         }
 
-        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PlatformIcons.ANNOTATION_TYPE_ICON).
-            setTargets(new FileResourceUtil.FileResourceNotNullLazyValue(project, names)).
-            setTooltipText("Symfony: <a href=\"https://symfony.com/doc/current/routing.html#creating-routes-as-annotations\">Annotation Routing</a>");
+        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PlatformIcons.ANNOTATION_TYPE_ICON)
+            .setTargets(NotNullLazyValue.lazy(new FileResourceUtil.FileResourceNotNullLazyValue(project, names)))
+            .setTooltipText("Symfony: <a href=\"https://symfony.com/doc/current/routing.html#creating-routes-as-annotations\">Annotation Routing</a>");
 
         return builder.createLineMarkerInfo(psiFile);
     }
 
-    private static class FileResourceNotNullLazyValue extends NotNullLazyValue<Collection<? extends PsiElement>> {
+    private static class FileResourceNotNullLazyValue implements Supplier<Collection<? extends PsiElement>> {
 
         private final Collection<String> resources;
         private final Project project;
@@ -174,9 +175,8 @@ public class FileResourceUtil {
             this.project = project;
         }
 
-        @NotNull
         @Override
-        protected Collection<? extends PsiElement> compute() {
+        public Collection<? extends PsiElement> get() {
             Collection<PsiElement> psiElements = new HashSet<>();
 
             for (String resource : this.resources) {

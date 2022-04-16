@@ -39,6 +39,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -313,7 +314,7 @@ public class ServiceIndexUtil {
      */
     @NotNull
     public static NotNullLazyValue<Collection<? extends PsiElement>> getServiceIdDefinitionLazyValue(@NotNull Project project, @NotNull Collection<String> ids) {
-        return new MyServiceIdLazyValue(project, ids);
+        return NotNullLazyValue.lazy(new MyServiceIdLazyValue(project, ids));
     }
 
     /**
@@ -397,7 +398,7 @@ public class ServiceIndexUtil {
         return services;
     }
 
-    private static class MyServiceIdLazyValue extends NotNullLazyValue<Collection<? extends PsiElement>> {
+    private static class MyServiceIdLazyValue implements Supplier<Collection<? extends PsiElement>> {
         @NotNull
         private final Project project;
 
@@ -409,9 +410,8 @@ public class ServiceIndexUtil {
             this.ids = ids;
         }
 
-        @NotNull
         @Override
-        protected Collection<? extends PsiElement> compute() {
+        public Collection<? extends PsiElement> get() {
             Collection<PsiElement> psiElements = new HashSet<>();
 
             for (String id : new HashSet<>(this.ids)) {

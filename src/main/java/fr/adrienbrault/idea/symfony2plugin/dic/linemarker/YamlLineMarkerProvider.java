@@ -70,13 +70,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
         }
 
         result.add(NavigationGutterIconBuilder.create(AllIcons.Modules.SourceRoot)
-            .setTargets(new NotNullLazyValue<Collection<? extends PsiElement>>() {
-                @NotNull
-                @Override
-                protected Collection<? extends PsiElement> compute() {
-                    return YamlGoToDeclarationHandler.getClassesForServiceKey(yamlKeyValue);
-                }
-            })
+            .setTargets(NotNullLazyValue.lazy(() -> YamlGoToDeclarationHandler.getClassesForServiceKey(yamlKeyValue)))
             .setTooltipText("Navigate to class")
             .createLineMarkerInfo(leafTarget));
     }

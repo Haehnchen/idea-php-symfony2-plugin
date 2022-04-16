@@ -41,6 +41,8 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -155,7 +157,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         }
 
         NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(serviceLineMarker)
-            .setTargets(new MyCollectionNotNullLazyValue(targets))
+            .setTargets(NotNullLazyValue.lazy(new MyCollectionNotNullLazyValue(targets)))
             .setTooltipText("Navigate to definition");
 
         result.add(builder.createLineMarkerInfo(psiElement));
@@ -375,7 +377,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         }
 
         NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(AllIcons.Nodes.Plugin)
-            .setTargets(new MyCollectionNotNullLazyValue(targets))
+            .setTargets(NotNullLazyValue.lazy(new MyCollectionNotNullLazyValue(targets)))
             .setTooltipText("Symfony: <a href=\"https://symfony.com/doc/current/service_container/autowiring.html\">Autowire available</a>");
 
         results.add(builder.createLineMarkerInfo(psiElement));
@@ -389,13 +391,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
 
             if (validators.length > 0) {
                 NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.TRANSLATION)
-                    .setTargets(new NotNullLazyValue<Collection<? extends PsiElement>>() {
-                        @NotNull
-                        @Override
-                        protected Collection<? extends PsiElement> compute() {
-                            return Arrays.asList(TranslationUtil.getTranslationPsiElements(psiElement.getProject(), contents, "validators"));
-                        }
-                    })
+                    .setTargets(NotNullLazyValue.lazy(() -> Arrays.asList(TranslationUtil.getTranslationPsiElements(psiElement.getProject(), contents, "validators"))))
                     .setTooltipText("Navigate to translation");
 
                 results.add(builder.createLineMarkerInfo(psiElement));
@@ -403,18 +399,19 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         }
     }
 
-    private static class MyCollectionNotNullLazyValue extends NotNullLazyValue<Collection<? extends PsiElement>> {
+    private static class MyCollectionNotNullLazyValue implements Supplier<Collection<? extends PsiElement>> {
         private final Collection<ClassServiceDefinitionTargetLazyValue> targets;
 
         public MyCollectionNotNullLazyValue(@NotNull Collection<ClassServiceDefinitionTargetLazyValue> targets) {
             this.targets = targets;
         }
 
-        @NotNull
         @Override
-        protected Collection<? extends PsiElement> compute() {
+        public Collection<? extends PsiElement> get() {
             Collection<PsiElement> myTargets = new HashSet<>();
-            targets.stream().map(NotNullLazyValue::getValue).forEach(myTargets::addAll);
+            targets.stream()
+                .map((Function<ClassServiceDefinitionTargetLazyValue, Collection<? extends PsiElement>>) ClassServiceDefinitionTargetLazyValue::get)
+                .forEach(myTargets::addAll);
             return myTargets;
         }
     }
