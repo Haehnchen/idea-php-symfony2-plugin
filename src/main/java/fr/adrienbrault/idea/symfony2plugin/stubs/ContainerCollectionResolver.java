@@ -152,7 +152,7 @@ public class ContainerCollectionResolver {
         private ParameterCollector parameterCollector;
 
         @Nullable
-        private Map<String, ContainerService> services;
+        private Map<String, ContainerService> servicesCache;
 
         @Nullable
         private Set<String> serviceNamesCache;
@@ -185,11 +185,11 @@ public class ContainerCollectionResolver {
 
         @NotNull
         public Map<String, ContainerService> getServices() {
-            if(this.services != null) {
-                return this.services;
+            if(this.servicesCache != null) {
+                return this.servicesCache;
             }
 
-            this.services = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+            TreeMap<String, ContainerService> services = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
             // file system
             for(ServiceInterface entry: ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getServices()) {
@@ -225,17 +225,17 @@ public class ContainerCollectionResolver {
                 String serviceName = entry.getKey();
 
                 // fake empty service, case which is not allowed by catch it
-                List<ServiceSerializable> services = entry.getValue();
+                List<ServiceSerializable> servicesValues = entry.getValue();
                 if(services.size() == 0) {
-                    this.services.put(serviceName, new ContainerService(serviceName, null, true));
+                    services.put(serviceName, new ContainerService(serviceName, null, true));
                     continue;
                 }
 
-                for(ServiceInterface service: services) {
+                for(ServiceInterface service: servicesValues) {
                     String classValue = service.getClassName();
 
                     // duplicate services
-                    ContainerService containerService = this.services.get(serviceName);
+                    ContainerService containerService = services.get(serviceName);
                     if (containerService != null) {
                         if(classValue == null) {
                             continue;
@@ -253,7 +253,7 @@ public class ContainerCollectionResolver {
 
                         // compiled container done have a value
                         if (containerService.getService() == null) {
-                            this.services.put(serviceName, new ContainerService(service, classValueResolve));
+                            services.put(serviceName, new ContainerService(service, classValueResolve));
                         }
 
                         continue;
@@ -274,43 +274,50 @@ public class ContainerCollectionResolver {
                     }
 
                     // @TODO: legacy bridge; replace this with ServiceInterface
-                    this.services.put(serviceName, new ContainerService(service, classValue));
+                    services.put(serviceName, new ContainerService(service, classValue));
                 }
             }
 
             // replace alias with main service
             if(aliases.size() > 0) {
-                collectAliases(aliases);
+                services.putAll(collectAliases(aliases, services));
             }
 
             if(decorated.size() > 0) {
-                collectDecorated(decorated);
+                services.putAll(collectDecorated(decorated, services));
             }
 
-            return this.services;
+            return this.servicesCache = services;
         }
 
-        private void collectAliases(@NotNull Collection<ServiceInterface> aliases) {
-            for (ServiceInterface service : aliases) {
+        @NotNull
+        private Map<String, ContainerService> collectAliases(@NotNull Collection<ServiceInterface> aliases, @NotNull Map<String, ContainerService> currentServices) {
+            Map<String, ContainerService> items = new HashMap<>();
 
+            for (ServiceInterface service : aliases) {
                 // double check alias name
                 String alias = service.getAlias();
-                if(alias == null || StringUtils.isBlank(alias) || !this.services.containsKey(alias)) {
+                if(alias == null || StringUtils.isBlank(alias) || !currentServices.containsKey(alias)) {
                     continue;
                 }
 
-                this.services.put(service.getId(), this.services.get(alias));
+                items.put(service.getId(), currentServices.get(alias));
             }
+
+            return items;
         }
 
-        private void collectDecorated(@NotNull Collection<ServiceInterface> decorated) {
+        @NotNull
+        private Map<String, ContainerService> collectDecorated(@NotNull Collection<ServiceInterface> decorated, @NotNull Map<String, ContainerService> currentServices) {
+            Map<String, ContainerService> items = new HashMap<>();
+
             for (ServiceInterface service : decorated) {
                 String decorationInnerName = service.getDecorationInnerName();
                 if(StringUtils.isBlank(decorationInnerName)) {
                     decorationInnerName = service.getId() + ".inner";
                 }
 
-                ContainerService origin = this.services.get(service.getDecorates());
+                ContainerService origin = currentServices.get(service.getDecorates());
                 if(origin == null) {
                     continue;
                 }
@@ -319,8 +326,10 @@ public class ContainerCollectionResolver {
                 ContainerService value = new ContainerService(decorationInnerName, origin.getClassName(), origin.isWeak(), true);
                 origin.getClassNames().forEach(value::addClassName);
 
-                this.services.put(decorationInnerName, value);
+                items.put(decorationInnerName, value);
             }
+
+            return items;
         }
 
         public Set<String> convertClassNameToServices(@NotNull String fqnClassName) {
@@ -440,12 +449,11 @@ public class ContainerCollectionResolver {
 
 
         private Map<String, ContainerParameter> getParameters() {
-
             if(this.containerParameterMap != null) {
                 return this.containerParameterMap;
             }
 
-            this.containerParameterMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+            TreeMap<String, ContainerParameter> parametersMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
 
             // local filesystem
@@ -454,9 +462,8 @@ public class ContainerCollectionResolver {
                 // user input here; secure nullable values
                 String key = Entry.getKey();
                 if(key != null) {
-                    this.containerParameterMap.put(key, new ContainerParameter(key, Entry.getValue()));
+                    parametersMap.put(key, new ContainerParameter(key, Entry.getValue()));
                 }
-
             }
 
             // index
@@ -468,8 +475,8 @@ public class ContainerCollectionResolver {
                 }
 
                 // indexes is weak stuff, dont overwrite compiled ones
-                if(!this.containerParameterMap.containsKey(parameterName)) {
-                    this.containerParameterMap.put(parameterName, new ContainerParameter(parameterName, entry.getValue(), true));
+                if(!parametersMap.containsKey(parameterName)) {
+                    parametersMap.put(parameterName, new ContainerParameter(parameterName, entry.getValue(), true));
                 }
             }
 
@@ -481,21 +488,21 @@ public class ContainerCollectionResolver {
                 }
 
                 for (String parameter : parameters) {
-                    if(this.containerParameterMap.containsKey(parameter)) {
+                    if(parametersMap.containsKey(parameter)) {
                         continue;
                     }
 
-                    this.containerParameterMap.put(parameter, new ContainerParameter(parameter, true));
+                    parametersMap.put(parameter, new ContainerParameter(parameter, true));
                 }
             }
 
             // Kernel::getKernelParameters
             for (String parameterName : ServiceUtil.getParameterParameters(project)) {
-                if(this.containerParameterMap.containsKey(parameterName)) {
+                if(parametersMap.containsKey(parameterName)) {
                     continue;
                 }
 
-                this.containerParameterMap.put(parameterName, new ContainerParameter(parameterName, true));
+                parametersMap.put(parameterName, new ContainerParameter(parameterName, true));
             }
 
             // Extension points
@@ -510,14 +517,13 @@ public class ContainerCollectionResolver {
             }
 
             for (ContainerParameter extParameter: exps) {
-                this.containerParameterMap.put(extParameter.getName(), extParameter);
+                parametersMap.put(extParameter.getName(), extParameter);
             }
 
-            return this.containerParameterMap;
+            return this.containerParameterMap = parametersMap;
         }
 
         private Set<String> getNames() {
-
             // use overall map if already generated
             if(this.containerParameterMap != null) {
                 return this.containerParameterMap.keySet();
