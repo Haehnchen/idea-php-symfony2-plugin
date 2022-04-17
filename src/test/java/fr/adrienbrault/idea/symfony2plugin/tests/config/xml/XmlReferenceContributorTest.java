@@ -81,12 +81,6 @@ public class XmlReferenceContributorTest extends SymfonyLightCodeInsightFixtureT
     }
 
     public void testThatArgumentConstantProvidesReferences() {
-        // skip for 2019.x build
-        // reference XmlText:null was created for XmlToken:XML_DATA_CHARACTERS but target XmlText, provider
-        if(true) {
-            return;
-        }
-
         assertReferenceMatch(XmlFileType.INSTANCE, "" +
                 "<?xml version=\"1.0\"?>\n" +
                 "<container>\n" +
@@ -113,12 +107,6 @@ public class XmlReferenceContributorTest extends SymfonyLightCodeInsightFixtureT
     }
 
     public void testEnvironmentParameter() {
-        // skip for 2019.x build
-        // reference XmlText:null was created for XmlToken:XML_DATA_CHARACTERS but target XmlText, provider
-        if(true) {
-            return;
-        }
-
         assertReferenceMatch(XmlFileType.INSTANCE, "" +
                 "<?xml version=\"1.0\"?>\n" +
                 "<container>\n" +

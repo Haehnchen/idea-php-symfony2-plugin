@@ -1,37 +1,34 @@
 package fr.adrienbrault.idea.symfony2plugin.config.xml;
 
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
-import com.intellij.psi.xml.XmlText;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
-import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-class ConstantXmlReference extends PsiPolyVariantReferenceBase<XmlText> {
-    ConstantXmlReference(@NotNull XmlText element) {
+class ConstantXmlReference extends PsiPolyVariantReferenceBase<PsiElement> {
+    private final String value;
+
+    ConstantXmlReference(@NotNull PsiElement element, @NotNull String value) {
         super(element);
+        this.value = value;
     }
 
     @NotNull
     @Override
-    public ResolveResult[] multiResolve(boolean incompleteCode) {
-        String contents = getElement().getValue();
-        if(StringUtils.isBlank(contents)) {
-            return new ResolveResult[0];
-        }
-
+    public ResolveResult @NotNull [] multiResolve(boolean incompleteCode) {
         return PsiElementResolveResult.createResults(
-            ServiceContainerUtil.getTargetsForConstant(getElement().getProject(), contents)
+            ServiceContainerUtil.getTargetsForConstant(getElement().getProject(), value)
         );
     }
 
     @NotNull
     @Override
-    public Object[] getVariants() {
+    public Object @NotNull [] getVariants() {
         return new Object[0];
     }
 }
