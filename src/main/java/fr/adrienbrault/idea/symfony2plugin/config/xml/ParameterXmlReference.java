@@ -4,7 +4,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
-import com.intellij.psi.xml.XmlText;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.DotEnvUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.jetbrains.annotations.NotNull;
@@ -16,17 +15,16 @@ import java.util.Collection;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class ParameterXmlReference extends PsiPolyVariantReferenceBase<PsiElement> {
+    private final String parameterName;
 
-    private String parameterName;
-
-    public ParameterXmlReference(@NotNull XmlText element) {
-        super(element);
-        parameterName = element.getValue();
+    public ParameterXmlReference(@NotNull PsiElement psiElement, @NotNull String parameterName) {
+        super(psiElement);
+        this.parameterName = parameterName;
     }
 
     @NotNull
     @Override
-    public ResolveResult[] multiResolve(boolean incompleteCode) {
+    public ResolveResult @NotNull [] multiResolve(boolean incompleteCode) {
         Collection<PsiElement> targets = new ArrayList<>();
 
         targets.addAll(
@@ -40,7 +38,7 @@ public class ParameterXmlReference extends PsiPolyVariantReferenceBase<PsiElemen
 
     @NotNull
     @Override
-    public Object[] getVariants() {
+    public Object @NotNull [] getVariants() {
         return new Object[0];
     }
 }
