@@ -5,6 +5,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.CachedValue;
+import com.intellij.psi.util.CachedValueProvider;
+import com.intellij.psi.util.CachedValuesManager;
+import com.intellij.psi.util.PsiModificationTracker;
 import com.intellij.util.indexing.FileBasedIndex;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
@@ -38,6 +41,9 @@ public class ContainerCollectionResolver {
 
     private static final Key<CachedValue<Set<String>>> SERVICE_CONTAINER_INDEX_NAMES = new Key<>("SYMFONY_SERVICE_CONTAINER_INDEX_NAMES");
     private static final Key<CachedValue<Set<String>>> SERVICE_PARAMETER_INDEX_NAMES = new Key<>("SERVICE_PARAMETER_INDEX_NAMES");
+
+    private static final Key<CachedValue<ServiceCollector>> SYMFONY_SERVICE_COLLECTOR_CACHE = new Key<>("SYMFONY_SERVICE_COLLECTOR_CACHE");
+    private static final Key<CachedValue<ParameterCollector>> SYMFONY_PARAMETER_COLLECTOR_CACHE = new Key<>("SYMFONY_PARAMETER_COLLECTOR_CACHE");
 
     private static final ExtensionPointName<fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector> EXTENSIONS = new ExtensionPointName<>(
         "fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector"
@@ -151,7 +157,7 @@ public class ContainerCollectionResolver {
         @Nullable
         private Set<String> serviceNamesCache;
 
-        public ServiceCollector(@NotNull Project project) {
+        private ServiceCollector(@NotNull Project project) {
             this.project = project;
         }
 
@@ -373,24 +379,33 @@ public class ContainerCollectionResolver {
         }
 
         public static ServiceCollector create(@NotNull Project project) {
-            return new ContainerCollectionResolver.ServiceCollector(project);
+            return CachedValuesManager.getManager(project).getCachedValue(
+                project,
+                SYMFONY_SERVICE_COLLECTOR_CACHE,
+                () -> CachedValueProvider.Result.create(new ServiceCollector(project), PsiModificationTracker.MODIFICATION_COUNT),
+                false
+            );
         }
     }
 
     public static class ParameterCollector {
-
         @NotNull
-        private Project project;
+        private final Project project;
 
         @Nullable
         private Map<String, ContainerParameter> containerParameterMap;
 
-        public ParameterCollector(@NotNull Project project) {
+        private ParameterCollector(@NotNull Project project) {
             this.project = project;
         }
 
         public static ParameterCollector create(@NotNull Project project) {
-            return new ParameterCollector(project);
+            return CachedValuesManager.getManager(project).getCachedValue(
+                project,
+                SYMFONY_PARAMETER_COLLECTOR_CACHE,
+                () -> CachedValueProvider.Result.create(new ParameterCollector(project), PsiModificationTracker.MODIFICATION_COUNT),
+                false
+            );
         }
 
         /**
