@@ -24,34 +24,47 @@ public class YamlParameterInspection extends LocalInspectionTool {
             return super.buildVisitor(holder, isOnTheFly);
         }
 
-        return new PsiElementVisitor() {
-            @Override
-            public void visitElement(PsiElement psiElement) {
-                if(YamlElementPatternHelper.getServiceParameterDefinition().accepts(psiElement) && YamlElementPatternHelper.getInsideServiceKeyPattern().accepts(psiElement)) {
-                    invoke(psiElement, holder);
-                }
-
-                super.visitElement(psiElement);
-            }
-        };
+        return new ParameterVisitor(holder);
     }
 
-    private void invoke(@NotNull final PsiElement psiElement, @NotNull ProblemsHolder holder) {
-        // at least %a%
-        // and not this one: %kernel.root_dir%/../web/
-        // %kernel.root_dir%/../web/%webpath_modelmasks%
-        String parameterName = PsiElementUtils.getText(psiElement);
-        if(!YamlHelper.isValidParameterName(parameterName)) {
-            return;
+    private static class ParameterVisitor extends PsiElementVisitor {
+        private final @NotNull ProblemsHolder holder;
+        private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
+
+        public ParameterVisitor(@NotNull ProblemsHolder holder) {
+            this.holder = holder;
         }
 
-        // strip "%"
-        parameterName = parameterName.substring(1, parameterName.length() - 1);
+        @Override
+        public void visitElement(@NotNull PsiElement psiElement) {
+            if(YamlElementPatternHelper.getServiceParameterDefinition().accepts(psiElement) && YamlElementPatternHelper.getInsideServiceKeyPattern().accepts(psiElement)) {
+                if (this.lazyServiceCollector == null) {
+                    this.lazyServiceCollector = new ContainerCollectionResolver.LazyServiceCollector(holder.getProject());
+                }
 
-        // parameter a always lowercase see #179
-        parameterName = parameterName.toLowerCase();
-        if (!ContainerCollectionResolver.getParameterNames(psiElement.getProject()).contains(parameterName)) {
-            holder.registerProblem(psiElement, "Missing Parameter", ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
+                invoke(psiElement, holder, lazyServiceCollector);
+            }
+
+            super.visitElement(psiElement);
+        }
+
+        private void invoke(@NotNull final PsiElement psiElement, @NotNull ProblemsHolder holder, @NotNull ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector) {
+            // at least %a%
+            // and not this one: %kernel.root_dir%/../web/
+            // %kernel.root_dir%/../web/%webpath_modelmasks%
+            String parameterName = PsiElementUtils.getText(psiElement);
+            if(!YamlHelper.isValidParameterName(parameterName)) {
+                return;
+            }
+
+            // strip "%"
+            parameterName = parameterName.substring(1, parameterName.length() - 1);
+
+            // parameter a always lowercase see #179
+            parameterName = parameterName.toLowerCase();
+            if (!ContainerCollectionResolver.hasParameterName(lazyServiceCollector, parameterName)) {
+                holder.registerProblem(psiElement, "Missing Parameter", ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
+            }
         }
     }
 }

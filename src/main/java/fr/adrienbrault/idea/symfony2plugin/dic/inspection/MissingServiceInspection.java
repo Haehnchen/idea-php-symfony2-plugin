@@ -37,8 +37,9 @@ public class MissingServiceInspection extends LocalInspectionTool {
 
     private static class MyPsiElementVisitor extends PsiElementVisitor {
         private final ProblemsHolder holder;
+        private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
 
-        MyPsiElementVisitor(ProblemsHolder holder) {
+        MyPsiElementVisitor(@NotNull ProblemsHolder holder) {
             this.holder = holder;
         }
 
@@ -50,7 +51,7 @@ public class MissingServiceInspection extends LocalInspectionTool {
                 if (methodReference != null && PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, ServiceContainerUtil.SERVICE_GET_SIGNATURES)) {
                     String serviceName = PhpElementsUtil.getFirstArgumentStringValue(methodReference);
                     if(StringUtils.isNotBlank(serviceName)) {
-                        if(!ContainerCollectionResolver.hasServiceNames(element.getProject(), serviceName)) {
+                        if(!hasService(serviceName)) {
                             holder.registerProblem(element, INSPECTION_MESSAGE, ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
                         }
                     }
@@ -63,7 +64,7 @@ public class MissingServiceInspection extends LocalInspectionTool {
 
                     // dont mark "@", "@?", "@@" escaping and expressions
                     if(serviceName.length() > 2 && !serviceName.startsWith("=") && !serviceName.startsWith("@")) {
-                        if(!ContainerCollectionResolver.hasServiceNames(element.getProject(), serviceName)) {
+                        if(!hasService(serviceName)) {
                             holder.registerProblem(element, INSPECTION_MESSAGE, ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
                         }
                     }
@@ -71,6 +72,14 @@ public class MissingServiceInspection extends LocalInspectionTool {
             }
 
             super.visitElement(element);
+        }
+
+        private boolean hasService(@NotNull String serviceName) {
+            if (this.lazyServiceCollector == null) {
+                this.lazyServiceCollector = new ContainerCollectionResolver.LazyServiceCollector(holder.getProject());
+            }
+
+            return ContainerCollectionResolver.hasServiceName(lazyServiceCollector, serviceName);
         }
     }
 }
