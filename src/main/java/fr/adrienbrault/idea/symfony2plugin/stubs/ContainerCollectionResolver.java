@@ -56,6 +56,11 @@ public class ContainerCollectionResolver {
         return ServiceCollector.create(project).getNames().contains(serviceName);
     }
 
+    public static boolean hasServiceName(@NotNull LazyServiceCollector lazyServiceCollector, @NotNull String serviceName) {
+        // @TODO: we dont need a collection here; stop on first match
+        return lazyServiceCollector.getCollector().getNames().contains(serviceName);
+    }
+
     @Nullable
     public static ContainerService getService(@NotNull Project project, @NotNull String serviceName) {
         Map<String, ContainerService> services = getServices(project);
@@ -128,6 +133,10 @@ public class ContainerCollectionResolver {
         return ParameterCollector.create(project).getNames();
     }
 
+    public static boolean hasParameterName(@NotNull LazyServiceCollector lazyServiceCollector, @NotNull String parameterName) {
+        return lazyServiceCollector.getParameterCollector().getNames().contains(parameterName);
+    }
+
     public static class ServiceCollector {
 
         @NotNull
@@ -138,6 +147,9 @@ public class ContainerCollectionResolver {
 
         @Nullable
         private Map<String, ContainerService> services;
+
+        @Nullable
+        private Set<String> serviceNamesCache;
 
         public ServiceCollector(@NotNull Project project) {
             this.project = project;
@@ -326,6 +338,9 @@ public class ContainerCollectionResolver {
         }
 
         private Set<String> getNames() {
+            if (this.serviceNamesCache != null) {
+                return this.serviceNamesCache;
+            }
 
             Set<String> serviceNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
@@ -349,7 +364,7 @@ public class ContainerCollectionResolver {
                 FileIndexCaches.getIndexKeysCache(project, SERVICE_CONTAINER_INDEX_NAMES, ServicesDefinitionStubIndex.KEY)
             );
 
-            return serviceNames;
+            return this.serviceNamesCache = serviceNames;
         }
 
 

@@ -15,8 +15,10 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.suggestion.XmlServiceSuggestIntentionAction;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -30,10 +32,16 @@ public class XmlServiceInstanceInspection extends LocalInspectionTool {
         }
 
         return new PsiElementVisitor() {
+            private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
+
             @Override
-            public void visitElement(PsiElement psiElement) {
+            public void visitElement(@NotNull PsiElement psiElement) {
                 if(XmlHelper.getArgumentServiceIdPattern().accepts(psiElement)) {
-                    annotateServiceInstance(psiElement, holder);
+                    if (this.lazyServiceCollector == null) {
+                        this.lazyServiceCollector = new ContainerCollectionResolver.LazyServiceCollector(holder.getProject());
+                    }
+
+                    annotateServiceInstance(psiElement, holder, this.lazyServiceCollector);
                 }
 
                 super.visitElement(psiElement);
@@ -41,7 +49,7 @@ public class XmlServiceInstanceInspection extends LocalInspectionTool {
         };
     }
 
-    private void annotateServiceInstance(@NotNull PsiElement psiElement, @NotNull ProblemsHolder holder) {
+    private void annotateServiceInstance(@NotNull PsiElement psiElement, @NotNull ProblemsHolder holder, @NotNull ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector) {
         // search for parent service definition
         XmlTag currentXmlTag = PsiTreeUtil.getParentOfType(psiElement, XmlTag.class);
         XmlTag parentXmlTag = PsiTreeUtil.getParentOfType(currentXmlTag, XmlTag.class);
@@ -54,15 +62,15 @@ public class XmlServiceInstanceInspection extends LocalInspectionTool {
             // service/argument[id]
             String serviceDefName = XmlHelper.getClassFromServiceDefinition(parentXmlTag);
             if(serviceDefName != null) {
-                PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), serviceDefName);
+                PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), serviceDefName, lazyServiceCollector);
 
                 // check type hint on constructor
                 if(phpClass != null) {
                     Method constructor = phpClass.getConstructor();
                     if(constructor != null) {
                         String serviceName = ((XmlAttributeValue) psiElement).getValue();
-                        if(serviceName != null) {
-                            attachMethodInstances(psiElement, serviceName, constructor, XmlHelper.getArgumentIndex(currentXmlTag, constructor), holder);
+                        if(StringUtils.isNotBlank(serviceName)) {
+                            attachMethodInstances(psiElement, serviceName, constructor, XmlHelper.getArgumentIndex(currentXmlTag, constructor), holder, lazyServiceCollector);
                         }
                     }
                 }
@@ -80,15 +88,15 @@ public class XmlServiceInstanceInspection extends LocalInspectionTool {
                 if(serviceTag != null && "service".equals(serviceTag.getName())) {
                     String serviceDefName = XmlHelper.getClassFromServiceDefinition(serviceTag);
                     if(serviceDefName != null) {
-                        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), serviceDefName);
+                        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), serviceDefName, lazyServiceCollector);
 
                         // finally check method type hint
                         if(phpClass != null) {
                             Method method = phpClass.findMethodByName(methodName);
                             if(method != null) {
                                 String serviceName = ((XmlAttributeValue) psiElement).getValue();
-                                if(serviceName != null) {
-                                    attachMethodInstances(psiElement, serviceName, method, XmlHelper.getArgumentIndex(currentXmlTag, method), holder);
+                                if(StringUtils.isNotBlank(serviceName)) {
+                                    attachMethodInstances(psiElement, serviceName, method, XmlHelper.getArgumentIndex(currentXmlTag, method), holder, lazyServiceCollector);
                                 }
                             }
                         }
@@ -98,7 +106,7 @@ public class XmlServiceInstanceInspection extends LocalInspectionTool {
         }
     }
 
-    private void attachMethodInstances(@NotNull PsiElement target, @NotNull String serviceName, @NotNull Method method, int parameterIndex, @NotNull ProblemsHolder holder) {
+    private void attachMethodInstances(@NotNull PsiElement target, @NotNull String serviceName, @NotNull Method method, int parameterIndex, @NotNull ProblemsHolder holder, ContainerCollectionResolver.@NotNull LazyServiceCollector lazyServiceCollector) {
         Parameter[] constructorParameter = method.getParameters();
         if(parameterIndex >= constructorParameter.length) {
             return;
@@ -110,7 +118,7 @@ public class XmlServiceInstanceInspection extends LocalInspectionTool {
             return;
         }
 
-        PhpClass serviceParameterClass = ServiceUtil.getResolvedClassDefinition(method.getProject(), serviceName);
+        PhpClass serviceParameterClass = ServiceUtil.getResolvedClassDefinition(method.getProject(), serviceName, lazyServiceCollector);
         if(serviceParameterClass != null && !PhpElementsUtil.isInstanceOf(serviceParameterClass, expectedClass)) {
             holder.registerProblem(
                 target,
