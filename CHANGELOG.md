@@ -33,6 +33,9 @@ Changelog
 * Provide fuzzy template search for invalid template names (Daniel Espendiller)
 * Replace deprecated "WriteCommandAction.Simple" and "createListPopupBuilder" (Daniel Espendiller)
 * Replace deprecated usages for template create quickfix and sort templates by possible weight (Daniel Espendiller)
+* [paid] Better service detection (Daniel Espendiller)
+* [paid] Add createView check for passing form to template (Daniel Espendiller)
+* [paid] Add inspection for "A template that extends another one cannot include content outside Twig blocks" (Daniel Espendiller)
 
 ## 0.23.220 / 2022.1.220
 * Fix SymfonyProfilerWidget api compatibility (Daniel Espendiller)
