@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class TwigTranslationKeyInspection extends LocalInspectionTool {
 
-    public static final String MESSAGE = "Missing translation key";
+    public static final String MESSAGE = "Symfony: Missing translation key";
 
     @NotNull
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
@@ -59,7 +59,8 @@ public class TwigTranslationKeyInspection extends LocalInspectionTool {
             holder.registerProblem(
                 psiElement,
                 MESSAGE,
-                new TranslationKeyIntentionAndQuickFixAction(text, domainName)
+                new TranslationKeyIntentionAndQuickFixAction(text, domainName),
+                new TranslationKeyGuessTypoQuickFix(text, domainName)
             );
 
             super.visitElement(psiElement);

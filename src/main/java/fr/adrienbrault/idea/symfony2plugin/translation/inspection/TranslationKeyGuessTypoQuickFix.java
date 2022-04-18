@@ -1,6 +1,7 @@
-package fr.adrienbrault.idea.symfony2plugin.templating.inspection;
+package fr.adrienbrault.idea.symfony2plugin.translation.inspection;
 
 import com.intellij.codeInsight.hint.HintManager;
+import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInspection.IntentionAndQuickFixAction;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
@@ -14,7 +15,7 @@ import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigElementFactory;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -25,12 +26,13 @@ import java.util.stream.Collectors;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class TemplateGuessTypoQuickFix extends IntentionAndQuickFixAction {
-    @NotNull
-    private final String missingTemplateName;
+public class TranslationKeyGuessTypoQuickFix extends IntentionAndQuickFixAction {
+    private final String missingTranslationKey;
+    private final String translationDomain;
 
-    public TemplateGuessTypoQuickFix(@NotNull String missingTemplateName) {
-        this.missingTemplateName = missingTemplateName;
+    public TranslationKeyGuessTypoQuickFix(@NotNull String missingTranslationKey, @NotNull String translationDomain) {
+        this.missingTranslationKey = missingTranslationKey;
+        this.translationDomain = translationDomain;
     }
 
     @Nls
@@ -58,25 +60,25 @@ public class TemplateGuessTypoQuickFix extends IntentionAndQuickFixAction {
             return;
         }
 
-        List<String> similarTemplateNames = findSimilarTemplateNames(project, this.missingTemplateName);
-        if (similarTemplateNames.size() == 0) {
+        List<String> similarItems = findSimilar(project, this.missingTranslationKey, this.translationDomain);
+        if (similarItems.size() == 0) {
             HintManager.getInstance().showErrorHint(editor, "No similar item found");
             return;
         }
 
-        Consumer<String> templateSuggestion = null;
+        Consumer<String> suggestionSelected = null;
 
         PsiElement parent = elementAt.getParent();
         if (elementAt.getNode().getElementType() == TwigTokenTypes.STRING_TEXT) {
             // TWIG
-            templateSuggestion = selectedValue -> WriteCommandAction.runWriteCommandAction(project, "Template Suggestion", null, () -> {
+            suggestionSelected = selectedValue -> WriteCommandAction.runWriteCommandAction(project, "Translation Key Suggestion", null, () -> {
                 PsiElement firstFromText = TwigElementFactory.createPsiElement(project, "{% foo '" + selectedValue + "' }%", TwigTokenTypes.STRING_TEXT);
                 elementAt.replace(firstFromText);
             });
         } else if (parent instanceof StringLiteralExpression) {
             // PHP + DocTag
-            templateSuggestion = selectedValue -> {
-                WriteCommandAction.runWriteCommandAction(project, "Template Suggestion", null, () -> {
+            suggestionSelected = selectedValue -> {
+                WriteCommandAction.runWriteCommandAction(project, "Translation Key Suggestion", null, () -> {
                     String contents = parent.getText();
                     String wrap = "'";
                     if (contents.length() > 0) {
@@ -92,35 +94,36 @@ public class TemplateGuessTypoQuickFix extends IntentionAndQuickFixAction {
             };
         }
 
-        if (templateSuggestion == null) {
+        if (suggestionSelected == null) {
             HintManager.getInstance().showErrorHint(editor, "No replacement provider found");
             return;
         }
 
-        if (similarTemplateNames.size() == 1 || ApplicationManager.getApplication().isHeadlessEnvironment()) {
-            templateSuggestion.consume(similarTemplateNames.get(0));
+        if (similarItems.size() == 1 || ApplicationManager.getApplication().isHeadlessEnvironment()) {
+            suggestionSelected.consume(similarItems.get(0));
             return;
         }
 
-        JBPopupFactory.getInstance().createPopupChooserBuilder(similarTemplateNames)
-            .setTitle("Symfony: Template Suggestions")
-            .setItemChosenCallback(templateSuggestion)
+        JBPopupFactory.getInstance().createPopupChooserBuilder(similarItems)
+            .setTitle("Symfony: Translation Key Suggestions")
+            .setItemChosenCallback(suggestionSelected)
             .createPopup()
             .showInBestPositionFor(editor);
     }
 
     @NotNull
-    private static List<String> findSimilarTemplateNames(@NotNull Project project, String templateNameIfMissing) {
-        String outTemplate = stripTemplateFormatAndExtensionLowered(templateNameIfMissing);
+    private static List<String> findSimilar(@NotNull Project project, @NotNull String missingTranslationKey, @NotNull String translationDomain) {
+        Set<String> translationKeys = TranslationUtil.getTranslationLookupElementsOnDomain(project, translationDomain)
+            .stream()
+            .map(LookupElement::getLookupString)
+            .collect(Collectors.toSet());
 
         Map<String, Integer> fuzzy = new HashMap<>();
 
-        for (String template : TwigUtil.getTemplateMap(project, true).keySet()) {
-            String myTemplate = stripTemplateFormatAndExtensionLowered(template);
-
-            int fuzzyDistance = org.apache.commons.lang3.StringUtils.getFuzzyDistance(outTemplate, myTemplate, Locale.ENGLISH);
+        for (String translationKey : translationKeys) {
+            int fuzzyDistance = org.apache.commons.lang3.StringUtils.getFuzzyDistance(missingTranslationKey, translationKey, Locale.ENGLISH);
             if (fuzzyDistance > 0) {
-                fuzzy.put(template, fuzzyDistance);
+                fuzzy.put(translationKey, fuzzyDistance);
             }
         }
 
@@ -138,13 +141,6 @@ public class TemplateGuessTypoQuickFix extends IntentionAndQuickFixAction {
             .limit(5)
             .map(Map.Entry::getKey)
             .collect(Collectors.toList());
-    }
-
-    @NotNull
-    private static String stripTemplateFormatAndExtensionLowered(@NotNull String templateNameIfMissing) {
-        return templateNameIfMissing
-            .toLowerCase()
-            .replaceAll("\\.[^.]*$", "").replaceAll("\\.[^.]*$", "");
     }
 
     private static double calculateStandardDeviation(double[] numArray) {
