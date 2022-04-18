@@ -9,10 +9,12 @@ import com.jetbrains.php.lang.psi.elements.ParameterList;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
+import fr.adrienbrault.idea.symfony2plugin.translation.inspection.TranslationKeyGuessTypoQuickFix;
 import fr.adrienbrault.idea.symfony2plugin.translation.inspection.TwigTranslationKeyInspection;
 import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -31,7 +33,7 @@ public class PhpTranslationKeyInspection extends LocalInspectionTool {
 
         return new PsiElementVisitor() {
             @Override
-            public void visitElement(PsiElement element) {
+            public void visitElement(@NotNull PsiElement element) {
                 invoke(holder, element);
                 super.visitElement(element);
             }
@@ -85,7 +87,7 @@ public class PhpTranslationKeyInspection extends LocalInspectionTool {
 
         // should not annotate "foo$bar"
         // @TODO: regular expression to only notice translation keys and not possible text values
-        if(keyName.contains("$")) {
+        if(StringUtils.isBlank(keyName) || keyName.contains("$")) {
             return;
         }
 
@@ -97,7 +99,8 @@ public class PhpTranslationKeyInspection extends LocalInspectionTool {
         holder.registerProblem(
             psiElement,
             MESSAGE,
-            new TranslationKeyIntentionAndQuickFixAction(keyName, domainName)
+            new TranslationKeyIntentionAndQuickFixAction(keyName, domainName),
+            new TranslationKeyGuessTypoQuickFix(keyName, domainName)
         );
     }
 }

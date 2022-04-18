@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.translation.inspection;
 
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.translation.PhpTranslationKeyInspection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -21,13 +22,13 @@ public class TwigTranslationKeyInspectionTest extends SymfonyLightCodeInsightFix
         assertLocalInspectionContains(
             "f.html.twig",
             "{{ 'f<caret>oo'|trans({}, 'symfony')) }}",
-            "Missing translation key"
+            PhpTranslationKeyInspection.MESSAGE
         );
 
         assertLocalInspectionContains(
             "f.html.twig",
             "{% trans_default_domain symfony %}\n{{ 'f<caret>oo'|trans }}",
-            "Missing translation key"
+            PhpTranslationKeyInspection.MESSAGE
         );
     }
 
@@ -35,7 +36,7 @@ public class TwigTranslationKeyInspectionTest extends SymfonyLightCodeInsightFix
         assertLocalInspectionNotContains(
             "f.html.twig",
             "{{ 'ti<caret>tle.#{word}'|trans({}, 'symfony')) }}",
-            "Missing translation key"
+            PhpTranslationKeyInspection.MESSAGE
         );
     }
 
@@ -43,13 +44,13 @@ public class TwigTranslationKeyInspectionTest extends SymfonyLightCodeInsightFix
         assertLocalInspectionNotContains(
             "f.html.twig",
             "{{ 'symfon<caret>y.great'|trans({}, 'symfony')) }}",
-            "Missing translation key"
+            PhpTranslationKeyInspection.MESSAGE
         );
 
         assertLocalInspectionNotContains(
             "f.html.twig",
             "{% trans_default_domain symfony %}\n{{ 'symfon<caret>y.great'|trans }}",
-            "Missing translation key"
+            PhpTranslationKeyInspection.MESSAGE
         );
     }
 }
