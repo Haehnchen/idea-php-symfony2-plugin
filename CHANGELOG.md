@@ -19,6 +19,21 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.23.221 / 2022.1.221
+* Globally cache service and parameter collector (Daniel Espendiller)
+* [#1574](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1574) [#1834](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1834) fix all psi references which are not attached to itself (Daniel Espendiller)
+* Provide some more lazy loading and batching for service inspections (Daniel Espendiller)
+* Replaced deprecated popover usage of "Symfony: Services Definitions" (Daniel Espendiller)
+* Replace all deprecated "NavigationGutterIconBuilder::setCellRenderer" usages (Daniel Espendiller)
+* Replace all deprecated "NotNullLazyValue" usages (Daniel Espendiller)
+* PHP service missing inspection must not match on all leaf elements (Daniel Espendiller)
+* PHP service deprecation must not match on all leaf elements (Daniel Espendiller)
+* Remove "lowercase letters for service and parameter" inspection as its not the common way anymore in favor for class names (Daniel Espendiller)
+* Template create must not match on all leaf elements (Daniel Espendiller)
+* Provide fuzzy template search for invalid template names (Daniel Espendiller)
+* Replace deprecated "WriteCommandAction.Simple" and "createListPopupBuilder" (Daniel Espendiller)
+* Replace deprecated usages for template create quickfix and sort templates by possible weight (Daniel Espendiller)
+
 ## 0.23.220 / 2022.1.220
 * Fix SymfonyProfilerWidget api compatibility (Daniel Espendiller)
 * Fix 2022.1 compatibility issues (Daniel Espendiller)

@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Haehnchen/idea-php-symfony2-plugin">
     <id>fr.adrienbrault.idea.symfony2plugin</id>
     <name>Symfony Support</name>
-    <version>0.23.220</version>
+    <version>0.23.221</version>
     <vendor email="daniel@espendiller.net" url="http://espend.de?p=fr.adrienbrault.idea.symfony2plugin">espend_de</vendor>
 
     <description><![CDATA[
