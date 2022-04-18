@@ -20,7 +20,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class TwigTranslationDomainInspection extends LocalInspectionTool {
 
-    public static final String MESSAGE = "Missing translation domain";
+    public static final String MESSAGE = "Symfony: Missing translation domain";
 
     @NotNull
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
@@ -43,7 +43,7 @@ public class TwigTranslationDomainInspection extends LocalInspectionTool {
         }
 
         @Override
-        public void visitElement(PsiElement psiElement) {
+        public void visitElement(@NotNull PsiElement psiElement) {
             if(!TwigPattern.getTransDomainPattern().accepts(psiElement)) {
                 return;
             }
@@ -68,7 +68,8 @@ public class TwigTranslationDomainInspection extends LocalInspectionTool {
                     holder.registerProblem(
                         psiElement,
                         MESSAGE,
-                        ProblemHighlightType.GENERIC_ERROR_OR_WARNING
+                        ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
+                        new TranslationDomainGuessTypoQuickFix(text)
                     );
                 }
             }
