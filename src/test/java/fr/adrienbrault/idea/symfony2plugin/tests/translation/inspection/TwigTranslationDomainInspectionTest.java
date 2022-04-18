@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.translation.inspection;
 
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.translation.inspection.TwigTranslationDomainInspection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -20,7 +21,7 @@ public class TwigTranslationDomainInspectionTest extends SymfonyLightCodeInsight
         assertLocalInspectionContains(
             "f.html.twig",
             "{{ 'foo'|trans({}, 'UNK<caret>NOWN')) }}",
-            "Missing translation domain"
+            TwigTranslationDomainInspection.MESSAGE
         );
     }
 
@@ -28,7 +29,7 @@ public class TwigTranslationDomainInspectionTest extends SymfonyLightCodeInsight
         assertLocalInspectionNotContains(
             "f.html.twig",
             "{{ 'foo'|trans({}, 'sy<caret>mfony')) }}",
-            "Missing translation domain"
+            TwigTranslationDomainInspection.MESSAGE
         );
     }
 }
