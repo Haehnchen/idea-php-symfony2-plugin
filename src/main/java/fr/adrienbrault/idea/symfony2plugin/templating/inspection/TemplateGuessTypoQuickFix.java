@@ -15,6 +15,7 @@ import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigElementFactory;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.SimilarSuggestionUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -124,7 +125,7 @@ public class TemplateGuessTypoQuickFix extends IntentionAndQuickFixAction {
             }
         }
 
-        double v = calculateStandardDeviation(Arrays.stream(fuzzy.values().stream().mapToInt(i->i).toArray()).asDoubleStream().toArray());
+        double v = SimilarSuggestionUtil.calculateStandardDeviation(Arrays.stream(fuzzy.values().stream().mapToInt(i->i).toArray()).asDoubleStream().toArray());
 
         Map<String, Integer> fuzzySelected = new HashMap<>();
         for (Map.Entry<String, Integer> entry : fuzzy.entrySet()) {
@@ -145,24 +146,5 @@ public class TemplateGuessTypoQuickFix extends IntentionAndQuickFixAction {
         return templateNameIfMissing
             .toLowerCase()
             .replaceAll("\\.[^.]*$", "").replaceAll("\\.[^.]*$", "");
-    }
-
-    private static double calculateStandardDeviation(double[] numArray) {
-        double sum = 0.0;
-        double standardDeviation = 0.0;
-
-        int length = numArray.length;
-
-        for(double num : numArray) {
-            sum += num;
-        }
-
-        double mean = sum / length;
-
-        for(double num: numArray) {
-            standardDeviation += Math.pow(num - mean, 2);
-        }
-
-        return Math.sqrt(standardDeviation / length);
     }
 }
