@@ -29,10 +29,10 @@ public class PhpRouteMissingInspection extends LocalInspectionTool {
 
         return new PsiElementVisitor() {
             @Override
-            public void visitElement(PsiElement element) {
+            public void visitElement(@NotNull PsiElement element) {
                 if(PhpElementsUtil.getMethodWithFirstStringPattern().accepts(element)) {
                     String contents = PhpElementsUtil.getStringValue(element);
-                    if(contents != null && StringUtils.isNotBlank(contents)) {
+                    if(StringUtils.isNotBlank(contents)) {
                         invoke(contents, element, holder);
                     }
                 }
@@ -53,7 +53,7 @@ public class PhpRouteMissingInspection extends LocalInspectionTool {
 
         Collection<Route> route = RouteHelper.getRoute(element.getProject(), routeName);
         if(route.size() == 0) {
-            holder.registerProblem(element, "Missing Route", ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
+            holder.registerProblem(element, "Symfony: Missing Route", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, new RouteGuessTypoQuickFix(routeName));
         }
     }
 }
