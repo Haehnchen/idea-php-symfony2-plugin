@@ -22,7 +22,7 @@ public class PhpRouteMissingInspectionTest extends SymfonyLightCodeInsightFixtur
         assertLocalInspectionContains("test.php", "<?php\n" +
                 "/** @var $x \\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface */\n" +
                 "$x->generate('fo<caret>obar');\n",
-            "Missing Route"
+            "Symfony: Missing Route"
         );
     }
 
@@ -30,7 +30,7 @@ public class PhpRouteMissingInspectionTest extends SymfonyLightCodeInsightFixtur
         assertLocalInspectionNotContains("test.php", "<?php\n" +
                 "/** @var $x \\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface */\n" +
                 "$x->generate('my_fo<caret>obar');\n",
-            "Missing Route"
+            "Symfony: Missing Route"
         );
     }
 }

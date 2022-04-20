@@ -21,7 +21,7 @@ public class TwigRouteMissingInspectionTest extends SymfonyLightCodeInsightFixtu
         assertLocalInspectionContains(
             "test.html.twig",
             "{{ path('fo<caret>obar') }}",
-            "Missing Route"
+            "Symfony: Missing Route"
         );
     }
 
@@ -29,7 +29,7 @@ public class TwigRouteMissingInspectionTest extends SymfonyLightCodeInsightFixtu
         assertLocalInspectionNotContains(
             "test.html.twig",
             "{{ path('my_<caret>foobar') }}",
-            "Missing Route"
+            "Symfony: Missing Route"
         );
     }
 
@@ -37,15 +37,13 @@ public class TwigRouteMissingInspectionTest extends SymfonyLightCodeInsightFixtu
         assertLocalInspectionNotContains(
             "test.html.twig",
             "{{ path('fo<caret>o#{langId}foobar') }}",
-            "Missing Route"
+            "Symfony: Missing Route"
         );
 
         assertLocalInspectionNotContains(
             "test.html.twig",
             "{{ path('fo<caret>o#{segment.typeKey}foobar') }}",
-            "Missing Route"
+            "Symfony: Missing Route"
         );
-
-
     }
 }
