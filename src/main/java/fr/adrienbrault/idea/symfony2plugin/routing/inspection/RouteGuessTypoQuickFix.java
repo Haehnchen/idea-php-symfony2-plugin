@@ -15,12 +15,12 @@ import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigElementFactory;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
+import fr.adrienbrault.idea.symfony2plugin.util.SimilarSuggestionUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -57,7 +57,7 @@ public class RouteGuessTypoQuickFix extends IntentionAndQuickFixAction {
             return;
         }
 
-        List<String> similarItems = findSimilar(project, this.missingRoute);
+        List<String> similarItems = SimilarSuggestionUtil.findSimilarString(this.missingRoute, RouteHelper.getAllRoutes(project).keySet());
         if (similarItems.size() == 0) {
             HintManager.getInstance().showErrorHint(editor, "No similar item found");
             return;
@@ -106,53 +106,5 @@ public class RouteGuessTypoQuickFix extends IntentionAndQuickFixAction {
             .setItemChosenCallback(suggestionSelected)
             .createPopup()
             .showInBestPositionFor(editor);
-    }
-
-    @NotNull
-    private static List<String> findSimilar(@NotNull Project project, @NotNull String missingTranslationKey) {
-        Set<String> routes = RouteHelper.getAllRoutes(project).keySet();
-
-        Map<String, Integer> fuzzy = new HashMap<>();
-
-        for (String domain : routes) {
-            int fuzzyDistance = org.apache.commons.lang3.StringUtils.getFuzzyDistance(missingTranslationKey, domain, Locale.ENGLISH);
-            if (fuzzyDistance > 0) {
-                fuzzy.put(domain, fuzzyDistance);
-            }
-        }
-
-        double v = calculateStandardDeviation(Arrays.stream(fuzzy.values().stream().mapToInt(i->i).toArray()).asDoubleStream().toArray());
-
-        Map<String, Integer> fuzzySelected = new HashMap<>();
-        for (Map.Entry<String, Integer> entry : fuzzy.entrySet()) {
-            if (entry.getValue() > v) {
-                fuzzySelected.put(entry.getKey(), entry.getValue());
-            }
-        }
-
-        return fuzzySelected.entrySet().stream()
-            .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-            .limit(5)
-            .map(Map.Entry::getKey)
-            .collect(Collectors.toList());
-    }
-
-    private static double calculateStandardDeviation(double[] numArray) {
-        double sum = 0.0;
-        double standardDeviation = 0.0;
-
-        int length = numArray.length;
-
-        for(double num : numArray) {
-            sum += num;
-        }
-
-        double mean = sum / length;
-
-        for(double num: numArray) {
-            standardDeviation += Math.pow(num - mean, 2);
-        }
-
-        return Math.sqrt(standardDeviation / length);
     }
 }
