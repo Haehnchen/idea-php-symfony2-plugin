@@ -1,12 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.dic.container.dict;
 
-import com.intellij.util.containers.HashSet;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Objects;
 
 /**
@@ -20,7 +20,7 @@ public class ContainerBuilderCall implements Serializable {
     @Nullable
     private String name;
 
-    private Collection<String> parameter = new HashSet<>();
+    private final Collection<String> parameter = new HashSet<>();
 
     public ContainerBuilderCall() {
     }
