@@ -19,7 +19,7 @@ public class SymfonyInstallerTemplatesFactory extends ProjectTemplatesFactory {
     }
 
     public Icon getGroupIcon(String group) {
-        return PhpIcons.Php_icon;
+        return PhpIcons.PhpIcon;
     }
 
     @NotNull

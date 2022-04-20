@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.ui;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.options.Configurable;
@@ -99,7 +100,7 @@ public class ContainerSettingsForm implements Configurable {
     @Nullable
     @Override
     public JComponent createComponent() {
-        ToolbarDecorator tablePanel = ToolbarDecorator.createDecorator(this.tableView, new ElementProducer<ContainerFile>() {
+        ToolbarDecorator tablePanel = ToolbarDecorator.createDecorator(this.tableView, new ElementProducer<>() {
             @Override
             public ContainerFile createElement() {
                 return null;
@@ -114,7 +115,7 @@ public class ContainerSettingsForm implements Configurable {
         tablePanel.setEditAction(anActionButton -> {
             ContainerFile containerFile = ContainerSettingsForm.this.tableView.getSelectedObject();
             if(containerFile != null) {
-                String uri = UiSettingsUtil.getPathDialog(project, StdFileTypes.XML);
+                String uri = UiSettingsUtil.getPathDialog(project, XmlFileType.INSTANCE);
                 if(uri != null) {
                     containerFile.setPath(uri);
                     ContainerSettingsForm.this.changed = true;
@@ -124,7 +125,7 @@ public class ContainerSettingsForm implements Configurable {
         });
 
         tablePanel.setAddAction(anActionButton -> {
-            String uri = UiSettingsUtil.getPathDialog(project, StdFileTypes.XML);
+            String uri = UiSettingsUtil.getPathDialog(project, XmlFileType.INSTANCE);
             if(uri != null) {
                 ContainerSettingsForm.this.tableView.getListTableModel().addRow(new ContainerFile(uri));
                 ContainerSettingsForm.this.changed = true;
