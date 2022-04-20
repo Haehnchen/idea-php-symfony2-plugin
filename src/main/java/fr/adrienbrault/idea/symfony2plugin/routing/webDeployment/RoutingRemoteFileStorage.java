@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.routing.webDeployment;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.StreamUtil;
-import com.intellij.util.containers.HashMap;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
@@ -15,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
