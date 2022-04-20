@@ -13,7 +13,6 @@ import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.containers.ContainerUtil;
-import com.intellij.util.containers.HashMap;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
@@ -147,7 +146,7 @@ public class EventDispatcherSubscriberUtil {
         // support string, constants and array values
         PhpPsiElement value = arrayHashElement.getValue();
         if(value == null) {
-            Collections.emptySet();
+            return Collections.emptySet();
         }
 
         // 'pre.foo' => [...]
