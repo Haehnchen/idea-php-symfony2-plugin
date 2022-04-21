@@ -35,6 +35,7 @@ import com.jetbrains.php.phpunit.PhpUnitUtil;
 import com.jetbrains.php.refactoring.PhpAliasImporter;
 import fr.adrienbrault.idea.symfony2plugin.dic.MethodReferenceBag;
 import fr.adrienbrault.idea.symfony2plugin.util.psi.PsiElementAssertUtil;
+import kotlin.Pair;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
@@ -182,6 +183,35 @@ public class PhpElementsUtil {
                 }
 
                 keys.put(key, arrayHashElement.getValue());
+            }
+        }
+
+        return keys;
+    }
+
+    /**
+     * array('foo' => FOO.class, 'foo1' => 'bar', 1 => 'foo')
+     */
+    @NotNull
+    static public Map<String, Pair<PsiElement, PsiElement>> getArrayKeyValueMapWithKeyAndValueElement(@NotNull ArrayCreationExpression arrayCreationExpression) {
+        HashMap<String, Pair<PsiElement, PsiElement>> keys = new HashMap<>();
+
+        for(ArrayHashElement arrayHashElement: arrayCreationExpression.getHashElements()) {
+            PhpPsiElement child = arrayHashElement.getKey();
+            if(child != null && ((child instanceof StringLiteralExpression) || PhpPatterns.psiElement(PhpElementTypes.NUMBER).accepts(child))) {
+
+                String key;
+                if(child instanceof StringLiteralExpression) {
+                    key = ((StringLiteralExpression) child).getContents();
+                } else {
+                    key = child.getText();
+                }
+
+                if(key == null || StringUtils.isBlank(key)) {
+                    continue;
+                }
+
+                keys.put(key, new Pair(arrayHashElement.getKey(), arrayHashElement.getValue()));
             }
         }
 
