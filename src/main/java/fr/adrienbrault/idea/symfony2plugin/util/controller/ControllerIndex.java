@@ -46,13 +46,19 @@ public class ControllerIndex {
     @Nullable
     public ControllerAction getControllerActionOnService(String shortcutName) {
 
-        // only foo_bar:Method is valid
-        if(!RouteHelper.isServiceController(shortcutName)) {
+        String serviceId;
+        String methodName;
+        if(RouteHelper.isServiceController(shortcutName)) {
+            // only "foo_bar:Method" is valid
+            serviceId = shortcutName.substring(0, shortcutName.lastIndexOf(":"));
+            methodName = shortcutName.substring(shortcutName.lastIndexOf(":") + 1);
+        } else if(RouteHelper.isServiceControllerInvoke(shortcutName)) {
+            // only "foo_bar" is valid
+            serviceId = shortcutName;
+            methodName = "__invoke";
+        } else {
             return null;
         }
-
-        String serviceId = shortcutName.substring(0, shortcutName.lastIndexOf(":"));
-        String methodName = shortcutName.substring(shortcutName.lastIndexOf(":") + 1);
 
         PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(this.project, serviceId, getLazyServiceCollector(this.project));
         if(phpClass == null) {
