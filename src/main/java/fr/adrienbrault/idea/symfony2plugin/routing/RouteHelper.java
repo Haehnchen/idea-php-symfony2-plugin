@@ -174,7 +174,7 @@ public class RouteHelper {
             if(split.length == 3) {
                 Collection<Method> controllerMethod = ControllerIndex.getControllerMethod(project, controllerName);
                 if(controllerMethod.size() > 0) {
-                    return controllerMethod.toArray(new PsiElement[controllerMethod.size()]);
+                    return controllerMethod.toArray(new PsiElement[0]);
                 }
             }
 
@@ -193,7 +193,13 @@ public class RouteHelper {
 
             // class fallback
             Collection<PhpClass> phpClass = PhpElementsUtil.getClassesInterface(project, controllerName);
-            return phpClass.toArray(new PsiElement[phpClass.size()]);
+            return phpClass.toArray(new PsiElement[0]);
+        } else {
+            // foo_service_bar
+            ControllerAction controllerServiceAction = new ControllerIndex(project).getControllerActionOnService(controllerName);
+            if(controllerServiceAction != null) {
+                return new PsiElement[] {controllerServiceAction.getMethod()};
+            }
         }
 
         return new PsiElement[0];
@@ -211,8 +217,7 @@ public class RouteHelper {
      * @return targets
      */
     @Nullable
-    public static ControllerClassOnShortcutReturn getControllerClassOnShortcut(@NotNull Project project,@NotNull  String controllerName) {
-
+    public static ControllerClassOnShortcutReturn getControllerClassOnShortcut(@NotNull Project project, @NotNull String controllerName) {
         if(controllerName.contains("::")) {
             // FooBundle\Controller\BarController::fooBarAction
 
@@ -908,6 +913,10 @@ public class RouteHelper {
 
     public static boolean isServiceController(@NotNull String shortcutName) {
         return !shortcutName.contains("::") && shortcutName.contains(":") && shortcutName.split(":").length == 2;
+    }
+
+    public static boolean isServiceControllerInvoke(@NotNull String shortcutName) {
+        return !shortcutName.contains("::") && !shortcutName.contains(":");
     }
 
     @NotNull

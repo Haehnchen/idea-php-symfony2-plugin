@@ -484,6 +484,14 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
+     * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#getMethodsOnControllerShortcut
+     */
+    public void testGetMethodsOnControllerShortcutForControllerAsServiceWithInvoke() {
+        PsiElement[] targets = RouteHelper.getMethodsOnControllerShortcut(getProject(), "invoke_._controller");
+        assertEquals("InvokeController", ((Method) targets[0]).getContainingClass().getName());
+    }
+
+    /**
      * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#getRoute
      */
     public void testGetRoute() {

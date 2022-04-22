@@ -58,4 +58,14 @@ namespace MyFooBarBundle\Controller
         {
         }
     }
+
+    class InvokeController
+    {
+        /**
+         * @Route("/edit/{id}")
+         */
+        public function __invoke()
+        {
+        }
+    }
 }

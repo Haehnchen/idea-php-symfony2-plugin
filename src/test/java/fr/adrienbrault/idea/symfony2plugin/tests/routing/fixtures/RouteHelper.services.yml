@@ -1,3 +1,6 @@
 services:
     foobar_controller:
         class: MyFooBarBundle\Controller\CarController
+
+    invoke_._controller:
+        class: MyFooBarBundle\Controller\InvokeController
