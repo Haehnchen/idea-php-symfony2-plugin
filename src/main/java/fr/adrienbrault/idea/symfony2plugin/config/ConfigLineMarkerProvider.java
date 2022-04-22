@@ -6,14 +6,17 @@ import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.util.PsiTreeUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.utils.ConfigUtil;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.YAMLValue;
 
 import java.util.Collection;
 import java.util.List;
@@ -55,6 +58,31 @@ public class ConfigLineMarkerProvider implements LineMarkerProvider {
         }
 
         String keyText = ((YAMLKeyValue) parent).getKeyText();
+
+        // nested condition:
+        // when@prod:
+        //    framework:
+        //        router: ~
+        if (keyText.startsWith("when@")) {
+            YAMLValue value = ((YAMLKeyValue) parent).getValue();
+
+            for (YAMLKeyValue yamlKeyValue : PsiTreeUtil.getChildrenOfTypeAsList(value, YAMLKeyValue.class)) {
+                String keyText1 = yamlKeyValue.getKeyText();
+                if (StringUtils.isNotBlank(keyText1)) {
+                    PsiElement key = yamlKeyValue.getKey();
+                    if (key != null) {
+                        visitConfigKey(result, key, function, keyText1);
+                    }
+                }
+            }
+
+            return;
+        }
+
+        visitConfigKey(result, psiElement, function, keyText);
+    }
+
+    private void visitConfigKey(@NotNull Collection<? super LineMarkerInfo<?>> result, @NotNull PsiElement psiElement, @NotNull LazyConfigTreeSignatures function, String keyText) {
         Map<String, Collection<String>> treeSignatures = function.value();
         if(!treeSignatures.containsKey(keyText)) {
             return;

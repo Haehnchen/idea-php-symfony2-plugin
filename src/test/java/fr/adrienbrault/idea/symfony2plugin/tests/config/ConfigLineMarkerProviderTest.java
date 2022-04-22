@@ -26,6 +26,15 @@ public class ConfigLineMarkerProviderTest extends SymfonyLightCodeInsightFixture
         assertLineMarker(yaml, new LineMarker.ToolTipEqualsAssert("Navigate to configuration"));
     }
 
+    public void testThatConfigRootProvidesLinemarkerWithEnvironmentCheck() {
+        PsiElement yaml = YamlPsiElementFactory.createDummyFile(getProject(), "config.yml", "" +
+            "when@prod:\n" +
+            "    foobar_root: ~\n"
+        );
+
+        assertLineMarker(yaml, new LineMarker.ToolTipEqualsAssert("Navigate to configuration"));
+    }
+
     public void testThatNonConfigRootShouldNotProvideLinemarker() {
         PsiElement yaml = YamlPsiElementFactory.createDummyFile(getProject(), "foobar.yml", "foobar_root:\n" +
             "    foo: ~"
