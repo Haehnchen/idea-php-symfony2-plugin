@@ -73,3 +73,11 @@ namespace Foo\Template {
         }
     }
 }
+
+namespace Symfony\Component\HttpFoundation
+{
+    class Request
+    {
+        public function isMethod(string $method) {}
+    }
+}

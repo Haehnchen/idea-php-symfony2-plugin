@@ -12,15 +12,14 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.util.ProcessingContext;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.lang.psi.elements.Field;
-import com.jetbrains.php.lang.psi.elements.Method;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.PhpTypedElement;
+import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
+import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigElementTypes;
@@ -275,6 +274,10 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         // {{ controller('<caret>') }}
         // {% render(controller('<caret>')) %}
         extend(CompletionType.BASIC, TwigPattern.getPrintBlockOrTagFunctionPattern("controller"), new ControllerCompletionProvider());
+
+        // {% foo() %}
+        // {% foo.bar() %}
+        extend(CompletionType.BASIC, TwigPattern.getPrintBlockOrTagFunctionPattern(), new PhpProxyForTwigTypCompletionProvider());
 
         // {% render '<caret>' %}"
         extend(CompletionType.BASIC, TwigPattern.getStringAfterTagNamePattern("render"), new ControllerCompletionProvider());
@@ -971,6 +974,58 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
             for (LookupElement blockLookupElement : blockLookupElements) {
                 resultSet.addElement(LookupElementBuilder.create("block " + blockLookupElement.getLookupString()).withIcon(TwigIcons.TwigFileIcon));
+            }
+        }
+    }
+
+    private static class PhpProxyForTwigTypCompletionProvider extends CompletionProvider<CompletionParameters> {
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
+            PsiElement prevSibling = PsiElementUtils.getPrevSiblingOfType(parameters.getPosition(), PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER));
+            if (prevSibling == null) {
+                return;
+            }
+
+            Collection<PsiElement> targets = new ArrayList<>();
+
+            for (PsiElement psiElement : TwigTemplateGoToDeclarationHandler.getTypeGoto(prevSibling)) {
+                if (psiElement instanceof Method) {
+                    PhpClass containingClass = ((Method) psiElement).getContainingClass();
+                    if (containingClass != null) {
+                        targets.add(PhpPsiElementFactory.createPhpPsiFromText(parameters.getPosition().getProject(), StringLiteralExpression.class, "" +
+                            "<?php\n" +
+                            "/** @var " + containingClass.getFQN() + " $x */\n" +
+                            "$x->" + ((Method) psiElement).getName() + "('');\n")
+                        );
+                    }
+                } else if(psiElement instanceof com.jetbrains.php.lang.psi.elements.Function) {
+                    targets.add(PhpPsiElementFactory.createPhpPsiFromText(parameters.getPosition().getProject(), StringLiteralExpression.class, "" +
+                        "<?php\n" +
+                        ((com.jetbrains.php.lang.psi.elements.Function) psiElement).getName() + "('');\n")
+                    );
+                }
+            }
+
+            for (PsiElement target : targets) {
+                PsiElement firstChild = target.getFirstChild();
+
+                CompletionService.getCompletionService().performCompletion(new CompletionParameters(
+                    firstChild,
+                    target.getContainingFile(),
+                    CompletionType.BASIC,
+                    firstChild.getTextOffset(),
+                    parameters.getInvocationCount(),
+                    parameters.getEditor(),
+                    parameters.getProcess()
+                ), completionResult -> result.addElement(completionResult.getLookupElement()));
+
+                for (PsiReference reference : target.getReferences()) {
+                    for (Object variant : reference.getVariants()) {
+                        if (variant instanceof LookupElement) {
+                            result.addElement((LookupElement) variant);
+                        }
+                    }
+                }
             }
         }
     }
