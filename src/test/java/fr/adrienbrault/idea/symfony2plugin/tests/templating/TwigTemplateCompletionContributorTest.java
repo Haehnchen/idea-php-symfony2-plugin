@@ -129,6 +129,14 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         );
     }
 
+    public void testThatTwigMethodStringParameterIsPipedToPhpCompletion() {
+        assertCompletionContains(TwigFileType.INSTANCE, "\n" +
+                "{# @var \\Symfony\\Component\\HttpFoundation\\Request request #}\n" +
+                "{% request.isMethod('<caret>') %}\n",
+            "GET", "POST"
+        );
+    }
+
     private void createWorkaroundFile(@NotNull String file, @NotNull String content) {
 
         try {
