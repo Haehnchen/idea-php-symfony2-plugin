@@ -105,6 +105,8 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             targets.addAll(TranslationUtil.getDomainPsiFiles(psiElement.getProject(), psiElement.getText()));
         }
 
+        // {{ 'test'|<caret> }}
+        // {% apply <caret> %}foobar{% endapply %}
         if (PlatformPatterns.or(TwigPattern.getFilterPattern(), TwigPattern.getApplyFilterPattern()).accepts(psiElement)) {
             targets.addAll(getFilterGoTo(psiElement));
         }
@@ -251,7 +253,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
     }
 
     @NotNull
-    private Collection<PsiElement> getFilterGoTo(@NotNull  PsiElement psiElement) {
+    public static Collection<PsiElement> getFilterGoTo(@NotNull  PsiElement psiElement) {
         Map<String, TwigExtension> filters = TwigExtensionParser.getFilters(psiElement.getProject());
 
         if(!filters.containsKey(psiElement.getText())) {
@@ -450,7 +452,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
     }
 
     @NotNull
-    private Collection<PsiElement> getFunctions(@NotNull PsiElement psiElement) {
+    public static Collection<PsiElement> getFunctions(@NotNull PsiElement psiElement) {
         Map<String, TwigExtension> functions = TwigExtensionParser.getFunctions(psiElement.getProject());
 
         String funcName = psiElement.getText();
