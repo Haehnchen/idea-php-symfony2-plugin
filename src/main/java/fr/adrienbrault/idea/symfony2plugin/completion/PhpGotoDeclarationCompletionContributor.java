@@ -30,7 +30,7 @@ public class PhpGotoDeclarationCompletionContributor {
     public static class Completion extends CompletionContributor {
         public Completion() {
             // $httpClient->request('', '', ['<caret>' => '']);
-            extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new HttpClientCompletionProvider());
+            extend(CompletionType.BASIC, PhpElementsUtil.getParameterListArrayValuePattern(), new HttpClientCompletionProvider());
         }
     }
 
