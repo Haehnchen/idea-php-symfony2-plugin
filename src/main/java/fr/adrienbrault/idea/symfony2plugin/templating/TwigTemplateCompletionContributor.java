@@ -48,6 +48,7 @@ import fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.ControllerDoc
 import fr.adrienbrault.idea.symfony2plugin.twig.variable.globals.TwigGlobalEnum;
 import fr.adrienbrault.idea.symfony2plugin.twig.variable.globals.TwigGlobalVariable;
 import fr.adrienbrault.idea.symfony2plugin.twig.variable.globals.TwigGlobalsServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.FunctionInsertHandler;
@@ -996,7 +997,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             // @TODO: support more the first argument
             int wantParameter = 0;
 
-            Collection<Pair<com.jetbrains.php.lang.psi.elements.Function, Integer>> sources = new ArrayList<>();
+            Collection<Pair<PhpNamedElement, Integer>> sources = new ArrayList<>();
             if (PlatformPatterns.or(TwigPattern.getFilterPattern(), TwigPattern.getApplyFilterPattern()).accepts(prevSibling)) {
                 // filters are move by one parameter to rights; its the value
                 sources.addAll(getTargetFunctionCallWithParameterIndex(TwigTemplateGoToDeclarationHandler.getFilterGoTo(prevSibling), wantParameter + 1));
@@ -1017,15 +1018,24 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
             Collection<PsiElement> targets = new ArrayList<>();
 
-            for (Pair<com.jetbrains.php.lang.psi.elements.Function, Integer> pair : sources) {
-                com.jetbrains.php.lang.psi.elements.Function psiElement = pair.getFirst();
+            for (Pair<PhpNamedElement, Integer> pair : sources) {
                 int i = pair.getSecond() + 1;
 
                 // prefix empty and append our to the end
                 String[] a = new String[i];
                 Arrays.fill(a, "''");
+
+                PsiElement originalPosition = parameters.getOriginalPosition();
+                if (originalPosition != null) {
+                    String text = PsiElementUtils.trimQuote(originalPosition.getText());
+                    if (StringUtils.isNotBlank(text)) {
+                        a[a.length - 1] = "'" + text + "'";
+                    }
+                }
+
                 String join = StringUtils.join(a, ", ");
 
+                PhpNamedElement psiElement = pair.getFirst();
                 if (psiElement instanceof Method) {
                     PhpClass containingClass = ((Method) psiElement).getContainingClass();
                     if (containingClass != null) {
@@ -1037,10 +1047,17 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         PsiElement[] parameters1 = phpPsiFromText.getParameters();
                         targets.add(parameters1[parameters1.length - 1]);
                     }
-                } else {
+                } else if (psiElement instanceof com.jetbrains.php.lang.psi.elements.Function) {
                     @NotNull ParameterList phpPsiFromText = PhpPsiElementFactory.createPhpPsiFromText(parameters.getPosition().getProject(), ParameterList.class, "" +
                         "<?php\n" +
                         psiElement.getName() + "(" + join + ");\n");
+
+                    PsiElement[] parameters1 = phpPsiFromText.getParameters();
+                    targets.add(parameters1[parameters1.length - 1]);
+                } else if (psiElement instanceof PhpClass) {
+                    @NotNull ParameterList phpPsiFromText = PhpPsiElementFactory.createPhpPsiFromText(parameters.getPosition().getProject(), ParameterList.class, "" +
+                        "<?php\n" +
+                        "new " + psiElement.getFQN() + "(" + join + ");\n");
 
                     PsiElement[] parameters1 = phpPsiFromText.getParameters();
                     targets.add(parameters1[parameters1.length - 1]);
@@ -1071,8 +1088,8 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         }
 
         @NotNull
-        private Collection<Pair<com.jetbrains.php.lang.psi.elements.Function, Integer>> getTargetFunctionCallWithParameterIndex(@NotNull Collection<PsiElement> filterGoTo, int wantParameter) {
-            Collection<Pair<com.jetbrains.php.lang.psi.elements.Function, Integer>> sources = new ArrayList<>();
+        private Collection<Pair<PhpNamedElement, Integer>> getTargetFunctionCallWithParameterIndex(@NotNull Collection<PsiElement> filterGoTo, int wantParameter) {
+            Collection<Pair<PhpNamedElement, Integer>> sources = new ArrayList<>();
 
             for (PsiElement psiElement : filterGoTo) {
                 if (!(psiElement instanceof com.jetbrains.php.lang.psi.elements.Function)) {
@@ -1102,25 +1119,47 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         }
 
         @NotNull
-        private static Collection<Pair<com.jetbrains.php.lang.psi.elements.Function, Integer>> collectFunctions(@NotNull com.jetbrains.php.lang.psi.elements.Function functionScope, @NotNull Parameter parameter) {
+        private static Collection<Pair<PhpNamedElement, Integer>> collectFunctions(@NotNull com.jetbrains.php.lang.psi.elements.Function functionScope, @NotNull Parameter parameter) {
             String text = parameter.getName();
             PsiElement[] psiElements = PsiTreeUtil.collectElements(functionScope, psiElement -> psiElement instanceof Variable && text.equals(((Variable) psiElement).getName()));
 
-            Collection<Pair<com.jetbrains.php.lang.psi.elements.Function, Integer>> targets = new ArrayList<>();
+            Collection<Pair<PhpNamedElement, Integer>> targets = new ArrayList<>();
 
             for (PsiElement psiElement : psiElements) {
-                // @TODO: support functions also
-                // @TODO: support new instance: see "date() => new DateTime($value)"
-                MethodReferenceBag methodParameterReferenceBag = PhpElementsUtil.getMethodParameterReferenceBag(psiElement);
-                if (methodParameterReferenceBag == null) {
+                PsiElement variableContext = psiElement.getContext();
+                if(!(variableContext instanceof ParameterList)) {
                     continue;
                 }
 
-                int index = methodParameterReferenceBag.getParameterBag().getIndex();
-                Collection<com.jetbrains.php.lang.psi.elements.Function> functions = PhpElementsUtil.getMethodReferenceMethods(methodParameterReferenceBag.getMethodReference());
+                ParameterList parameterList = (ParameterList) variableContext;
+                PsiElement context = parameterList.getContext();
+                // @TODO: support functions also
+                if (context instanceof MethodReference) {
+                    ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(psiElement);
+                    if(currentIndex == null) {
+                        continue;
+                    }
 
-                for (com.jetbrains.php.lang.psi.elements.Function methodReferenceMethod : functions) {
-                    targets.add(new Pair<>(methodReferenceMethod, index));
+                    MethodReferenceBag methodParameterReferenceBag = PhpElementsUtil.getMethodParameterReferenceBag(psiElement);
+                    if (methodParameterReferenceBag == null) {
+                        continue;
+                    }
+
+                    int index = methodParameterReferenceBag.getParameterBag().getIndex();
+                    Collection<com.jetbrains.php.lang.psi.elements.Function> functions = PhpElementsUtil.getMethodReferenceMethods(methodParameterReferenceBag.getMethodReference());
+
+                    for (com.jetbrains.php.lang.psi.elements.Function methodReferenceMethod : functions) {
+                        targets.add(new Pair<>(methodReferenceMethod, index));
+                    }
+                } else if (context instanceof NewExpression) {
+                    ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(psiElement);
+                    if(currentIndex == null) {
+                        continue;
+                    }
+
+                    for (PhpClass phpClass : PhpElementsUtil.getNewExpressionPhpClasses((NewExpression) context)) {
+                        targets.add(new Pair<>(phpClass, currentIndex.getIndex()));
+                    }
                 }
             }
 

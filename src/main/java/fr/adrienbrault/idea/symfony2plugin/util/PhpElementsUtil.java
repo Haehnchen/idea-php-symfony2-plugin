@@ -1038,7 +1038,7 @@ public class PhpElementsUtil {
      * new FooClass()
      */
     @Nullable
-    private static PhpClass getNewExpressionPhpClass(@NotNull NewExpression newExpression) {
+    public static PhpClass getNewExpressionPhpClass(@NotNull NewExpression newExpression) {
         ClassReference classReference = newExpression.getClassReference();
         if(classReference != null) {
             String fqn = classReference.getFQN();
@@ -1048,6 +1048,18 @@ public class PhpElementsUtil {
         }
 
         return null;
+    }
+
+    @NotNull
+    public static Collection<PhpClass> getNewExpressionPhpClasses(@NotNull NewExpression newExpression) {
+        PhpIndex instance = PhpIndex.getInstance(newExpression.getProject());
+        PhpType classType = (new PhpType()).add(newExpression.getClassReference()).global(newExpression.getProject());
+
+        return classType.getTypes()
+            .stream()
+            .flatMap((fqn) -> instance.getAnyByFQN(fqn).stream())
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
     }
 
     /**
