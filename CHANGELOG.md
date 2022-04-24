@@ -19,6 +19,20 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.23.222 / 2022.1.222
+* Proxy Twig function parameter completion to PHP completion (Daniel Espendiller)
+* Support controller action linemarker for "__invoke" and all others resolving (Daniel Espendiller)
+* Support navigation for "Symfony 5.3: Configure Multiple Environments in a Single File" @see https://symfony.com/blog/new-in-symfony-5-3-configure-multiple-environments-in-a-single-file (Daniel Espendiller)
+* [#1858](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1858) fix external phpindex "Stub ids not found for key in index" by replacing phpclass filter namespacing (Daniel Espendiller)
+* Provide navigation and completion for Symfony http client options (Daniel Espendiller)
+* Replace deprecated "com.intellij.util.containers.HashMap" (Daniel Espendiller)
+* Replace deprecated "Deprecated fields usages" (Daniel Espendiller)
+* Replace deprecated "com.intellij.util.containers.HashSet" (Daniel Espendiller)
+* Provide fuzzy similar search for fix missing routes (Daniel Espendiller)
+* Provide fuzzy similar search for fix missing translation domain (Daniel Espendiller)
+* Provide fuzzy similar search for fix missing translation keys (Daniel Espendiller)
+* Sync changelog (Daniel Espendiller)
+
 ## 0.23.221 / 2022.1.221
 * Globally cache service and parameter collector (Daniel Espendiller)
 * [#1574](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1574) [#1834](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1834) fix all psi references which are not attached to itself (Daniel Espendiller)
