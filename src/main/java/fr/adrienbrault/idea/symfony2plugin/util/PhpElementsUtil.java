@@ -1603,6 +1603,24 @@ public class PhpElementsUtil {
         return null;
     }
 
+    @NotNull
+    public static Collection<Function> getMethodReferenceMethods(@NotNull MethodReference methodReference) {
+        PhpIndex instance = PhpIndex.getInstance(methodReference.getProject());
+        PhpType classType = (new PhpType()).add(methodReference.getClassReference()).global(methodReference.getProject());
+
+        Set<PhpClass> collect = classType.getTypes()
+            .stream()
+            .flatMap((fqn) -> instance.getAnyByFQN(fqn).stream())
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
+
+        return collect
+            .stream()
+            .map((java.util.function.Function<PhpClass, Function>) phpClass -> phpClass.findMethodByName(methodReference.getName()))
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
+    }
+
     public static PhpExpectedFunctionArgument findAttributeArgumentByName(@NotNull String attributeName, @NotNull PhpAttribute phpAttribute) {
         for (PhpAttribute.PhpAttributeArgument argument : phpAttribute.getArguments()) {
             String name = argument.getName();

@@ -137,6 +137,28 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         );
     }
 
+    public void testThatTwigExtensionStringParameterIsPipedToPhpCompletion() {
+        assertCompletionContains(TwigFileType.INSTANCE, "\n" +
+                "{{ 'aaa'|request_filter('<caret>') }}\n",
+            "GET", "POST"
+        );
+
+        assertCompletionContains(TwigFileType.INSTANCE, "\n" +
+                "{% apply request_filter('<caret>') %}{% endapply %}\n",
+            "GET", "POST"
+        );
+
+        assertCompletionContains(TwigFileType.INSTANCE, "\n" +
+                "{{ request_function('<caret>') }}\n",
+            "GET", "POST"
+        );
+
+        assertCompletionNotContains(TwigFileType.INSTANCE, "\n" +
+                "{{ test.request_function('<caret>') }}\n",
+            "GET", "POST"
+        );
+    }
+
     private void createWorkaroundFile(@NotNull String file, @NotNull String content) {
 
         try {

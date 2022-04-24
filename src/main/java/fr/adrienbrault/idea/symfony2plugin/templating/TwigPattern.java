@@ -199,6 +199,27 @@ public class TwigPattern {
     }
 
     /**
+     * {{ foo('<caret>') }}
+     * {{ 'test'|foo('<caret>') }}
+     * {% apply date('<caret>') %}foobar{% endapply %}
+     */
+    public static ElementPattern<PsiElement> getFunctionStringParameterPattern() {
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.STRING_TEXT)
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                ),
+                PlatformPatterns.or(PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER))
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    /**
      * Literal are fine in lexer so just extract the parameter
      *
      * {{ foo({'foobar', 'foo<caret>bar'}) }}
