@@ -1001,11 +1001,9 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             if (PlatformPatterns.or(TwigPattern.getFilterPattern(), TwigPattern.getApplyFilterPattern()).accepts(prevSibling)) {
                 // filters are move by one parameter to rights; its the value
                 sources.addAll(getTargetFunctionCallWithParameterIndex(TwigTemplateGoToDeclarationHandler.getFilterGoTo(prevSibling), wantParameter + 1));
-            }
-
-            // {{ foo.foo() }}
-            // {{ foo() }}
-            if (TwigPattern.getPrintBlockOrTagFunctionPattern().accepts(parameters.getPosition())) {
+            } else {
+                // {{ foo.foo() }}
+                // {{ foo() }}
                 Collection<PsiElement> typeGoto = TwigTemplateGoToDeclarationHandler.getTypeGoto(prevSibling);
                 for (PsiElement psiElement : typeGoto) {
                     if(psiElement instanceof com.jetbrains.php.lang.psi.elements.Function) {
@@ -1013,7 +1011,11 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                     }
                 }
 
-                sources.addAll(getTargetFunctionCallWithParameterIndex(TwigTemplateGoToDeclarationHandler.getFunctions(prevSibling), wantParameter));
+                // not for "foobar" on "foo.foobar"
+                PsiElement prevSibling1 = prevSibling.getPrevSibling();
+                if (prevSibling1 == null || prevSibling1.getNode().getElementType() != TwigTokenTypes.DOT) {
+                    sources.addAll(getTargetFunctionCallWithParameterIndex(TwigTemplateGoToDeclarationHandler.getFunctions(prevSibling), wantParameter));
+                }
             }
 
             Collection<PsiElement> targets = new ArrayList<>();
@@ -1111,7 +1113,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
                 if (wantParameter <= parameters.length - 1) {
                     Parameter parameter = parameters[wantParameter];
-                    sources.addAll(collectFunctions((com.jetbrains.php.lang.psi.elements.Function) psiElement, parameter));
+                    sources.addAll(collectFunctions((com.jetbrains.php.lang.psi.elements.Function) psiElement, parameter).values());
                 }
             }
 
@@ -1119,11 +1121,11 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         }
 
         @NotNull
-        private static Collection<Pair<PhpNamedElement, Integer>> collectFunctions(@NotNull com.jetbrains.php.lang.psi.elements.Function functionScope, @NotNull Parameter parameter) {
+        private static Map<String ,Pair<PhpNamedElement, Integer>> collectFunctions(@NotNull com.jetbrains.php.lang.psi.elements.Function functionScope, @NotNull Parameter parameter) {
             String text = parameter.getName();
             PsiElement[] psiElements = PsiTreeUtil.collectElements(functionScope, psiElement -> psiElement instanceof Variable && text.equals(((Variable) psiElement).getName()));
 
-            Collection<Pair<PhpNamedElement, Integer>> targets = new ArrayList<>();
+            Map<String ,Pair<PhpNamedElement, Integer>> targets = new HashMap<>();
 
             for (PsiElement psiElement : psiElements) {
                 PsiElement variableContext = psiElement.getContext();
@@ -1149,7 +1151,8 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                     Collection<com.jetbrains.php.lang.psi.elements.Function> functions = PhpElementsUtil.getMethodReferenceMethods(methodParameterReferenceBag.getMethodReference());
 
                     for (com.jetbrains.php.lang.psi.elements.Function methodReferenceMethod : functions) {
-                        targets.add(new Pair<>(methodReferenceMethod, index));
+                        String fqn = methodReferenceMethod.getFQN();
+                        targets.put(fqn, new Pair<>(methodReferenceMethod, index));
                     }
                 } else if (context instanceof NewExpression) {
                     ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(psiElement);
@@ -1158,7 +1161,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                     }
 
                     for (PhpClass phpClass : PhpElementsUtil.getNewExpressionPhpClasses((NewExpression) context)) {
-                        targets.add(new Pair<>(phpClass, currentIndex.getIndex()));
+                        targets.put(phpClass.getFQN(), new Pair<>(phpClass, currentIndex.getIndex()));
                     }
                 }
             }
