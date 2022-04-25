@@ -540,6 +540,10 @@ public class PhpElementsUtil {
      * @param expectedClassAsString eg DateTimeInterface
      */
     public static boolean isInstanceOf(@NotNull PhpClass subjectClass, @NotNull String expectedClassAsString) {
+        if (("\\" + StringUtils.stripStart(expectedClassAsString, "\\")).equals(subjectClass.getFQN())) {
+            return true;
+        }
+
         for (PhpClass expectedClass : PhpIndex.getInstance(subjectClass.getProject()).getAnyByFQN(expectedClassAsString)) {
             if (isInstanceOf(subjectClass, expectedClass)) {
                 return true;
@@ -554,6 +558,10 @@ public class PhpElementsUtil {
      * @param expectedClass eg DateTimeInterface
      */
     public static boolean isInstanceOf(@NotNull Project project, @NotNull String subjectClassAsString, @NotNull String expectedClass) {
+        if (("\\" + StringUtils.stripStart(subjectClassAsString, "\\")).equals(("\\" + StringUtils.stripStart(expectedClass, "\\")))) {
+            return true;
+        }
+
         for (PhpClass subjectClass : PhpIndex.getInstance(project).getAnyByFQN(subjectClassAsString)) {
             if (isInstanceOf(subjectClass, expectedClass)) {
                 return true;

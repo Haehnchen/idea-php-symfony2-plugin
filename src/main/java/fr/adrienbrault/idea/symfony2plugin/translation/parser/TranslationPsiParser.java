@@ -58,7 +58,11 @@ public class TranslationPsiParser {
             Symfony2ProjectComponent.getLogger().info("VfsUtil missing translation: " + file.getPath());
             return;
         }
-
+        
+        parse(virtualFile);
+    }
+    
+    public void parse(@NotNull VirtualFile virtualFile) {
         PsiFile psiFile;
         try {
             psiFile = PhpPsiElementFactory.createPsiFileFromText(this.project, StreamUtil.readText(virtualFile.getInputStream(), "UTF-8"));
@@ -70,19 +74,20 @@ public class TranslationPsiParser {
             return;
         }
 
-        Symfony2ProjectComponent.getLogger().info("update translations: " + file.getPath());
+        Symfony2ProjectComponent.getLogger().info("update translations: " + virtualFile.getPath());
 
         Collection<NewExpression> messageCatalogues = PsiTreeUtil.collectElementsOfType(psiFile, NewExpression.class);
-        for(NewExpression newExpression: messageCatalogues) {
-            ClassReference classReference = newExpression.getClassReference();
-            if(classReference != null) {
-                PsiElement constructorMethod = classReference.resolve();
-                if(constructorMethod instanceof Method) {
-                    PhpClass phpClass = ((Method) constructorMethod).getContainingClass();
-                    if(phpClass != null && PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Translation\\MessageCatalogueInterface")) {
-                        this.getTranslationMessages(newExpression);
-                    }
+        for (NewExpression newExpression: messageCatalogues) {
+            boolean isMessageCatalogueConstructor = false;
+            for (PhpClass phpClass : PhpElementsUtil.getNewExpressionPhpClasses(newExpression)) {
+                if (PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Translation\\MessageCatalogue") || PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Translation\\MessageCatalogueInterface")) {
+                    isMessageCatalogueConstructor = true;
+                    break;
                 }
+            }
+
+            if(isMessageCatalogueConstructor) {
+                this.getTranslationMessages(newExpression);
             }
         }
     }
