@@ -7,16 +7,19 @@ import org.jetbrains.annotations.NotNull;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class SymfonyInstallerSettings {
-
     @NotNull
     private final SymfonyInstallerVersion version;
 
     @NotNull
     private final String phpInterpreter;
 
-    public SymfonyInstallerSettings(@NotNull SymfonyInstallerVersion version, @NotNull String phpInterpreter) {
+    @NotNull
+    private final String projectType;
+
+    public SymfonyInstallerSettings(@NotNull SymfonyInstallerVersion version, @NotNull String phpInterpreter, @NotNull String projectType) {
         this.version = version;
         this.phpInterpreter = phpInterpreter;
+        this.projectType = projectType;
     }
 
     public boolean isDownload() {
@@ -38,4 +41,8 @@ public class SymfonyInstallerSettings {
         return "";
     }
 
+    @NotNull
+    public String getProjectType() {
+        return projectType;
+    }
 }

@@ -1,8 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.installer;
 
 import com.intellij.ide.util.projectWizard.SettingsStep;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.ui.ValidationInfo;
-import com.intellij.platform.WebProjectGenerator;
+import com.intellij.platform.ProjectGeneratorPeer;
+import fr.adrienbrault.idea.symfony2plugin.installer.dict.SymfonyInstallerVersion;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -11,7 +15,7 @@ import javax.swing.*;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class SymfonyInstallerGeneratorPeer implements WebProjectGenerator.GeneratorPeer<SymfonyInstallerSettings> {
+public class SymfonyInstallerGeneratorPeer implements ProjectGeneratorPeer<SymfonyInstallerSettings> {
 
     private SymfonyInstallerForm symfonyInstallerForm;
 
@@ -34,30 +38,35 @@ public class SymfonyInstallerGeneratorPeer implements WebProjectGenerator.Genera
     @Override
     public SymfonyInstallerSettings getSettings() {
         return new SymfonyInstallerSettings(
-            symfonyInstallerForm.getVersion(),
-            symfonyInstallerForm.getInterpreter()
+            new SymfonyInstallerVersion("unknown", symfonyInstallerForm.getProjectType()), // apt-get does not work with this value
+            "php",
+            symfonyInstallerForm.getProjectType()
         );
     }
 
     @Nullable
     @Override
     public ValidationInfo validate() {
-        /*
-        issue in: PhpStorm 8.0.2 ?
-        if(StringUtils.isBlank(symfonyInstallerForm.getInterpreter())) {
-            return new ValidationInfo("Invalid PHP interpreter");
+        Boolean installerExists = false;
+        try {
+            installerExists = ProgressManager.getInstance().run(new Task.WithResult<Boolean, Exception>(null, "Checking", false) {
+                @Override
+                protected Boolean compute(@NotNull ProgressIndicator indicator) {
+                    return SymfonyInstallerUtil.isValidSymfonyCliToolsCommand();
+                }
+            });
+        } catch (Exception ignored) {
         }
-        */
-        return null;
+
+        if (installerExists) {
+            return null;
+        }
+
+        return new ValidationInfo("Symfony CLI not found please install: <a href=\"https://symfony.com/download\">https://symfony.com/download</a>");
     }
 
     @Override
     public boolean isBackgroundJobRunning() {
         return false;
-    }
-
-    @Override
-    public void addSettingsStateListener(@NotNull WebProjectGenerator.SettingsStateListener settingsStateListener) {
-
     }
 }

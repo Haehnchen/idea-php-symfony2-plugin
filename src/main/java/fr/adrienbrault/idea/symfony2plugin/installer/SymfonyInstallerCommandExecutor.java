@@ -41,7 +41,7 @@ abstract public class SymfonyInstallerCommandExecutor {
 
                 StringBuilder sb = new StringBuilder();
                 sb.append("Running: ");
-                for (String aCommandToRun : Arrays.copyOfRange(myCommand, 1, myCommand.length)) {
+                for (String aCommandToRun : myCommand) {
                     if (aCommandToRun.length() > 35) {
                         aCommandToRun = "..." + aCommandToRun.substring(aCommandToRun.length() - 35);
                     }
