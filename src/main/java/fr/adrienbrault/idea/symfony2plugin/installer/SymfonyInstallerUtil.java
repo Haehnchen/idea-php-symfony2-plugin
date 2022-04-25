@@ -3,10 +3,16 @@ package fr.adrienbrault.idea.symfony2plugin.installer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.execution.process.ProcessAdapter;
+import com.intellij.execution.process.ProcessEvent;
+import com.intellij.execution.process.ScriptRunnerUtil;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ArrayUtil;
 import com.jetbrains.php.util.PhpConfigurationUtil;
@@ -64,7 +70,13 @@ public class SymfonyInstallerUtil {
     public static boolean isSuccessfullyInstalled(@NotNull String output) {
         // successfully installed
         // [RuntimeException]
-        return output.toLowerCase().contains("successfully") && !output.toLowerCase().contains("exception]");
+        // You should fix the reported issues before
+        // [KO] PHP extension "pdo_pgsql" not found, please install it - required
+        return (output.toLowerCase().contains("[ok]") || output.toLowerCase().contains("successfully"))
+            && !output.toLowerCase().contains("exception]")
+            && !output.toLowerCase().contains("[nok]")
+            && !output.toLowerCase().contains("fix the reported")
+        ;
     }
 
     @Nullable
@@ -84,13 +96,26 @@ public class SymfonyInstallerUtil {
     }
 
     @NotNull
-    public static String[] getCreateProjectCommand(@NotNull SymfonyInstallerVersion version, @NotNull String installerPath, @NotNull String newProjectPath, @NotNull String phpPath, @Nullable String commandLineOptions) {
+    public static String[] getCreateProjectCommand(@NotNull SymfonyInstallerVersion version, @NotNull String installerPath, @NotNull String newProjectPath, @NotNull String phpPath, @NotNull String projectType) {
 
         List<String> commands = new ArrayList<>();
 
-        commands.add(phpPath);
+        //commands.add(phpPath);
         commands.add(installerPath);
+        commands.add("new");
 
+        String version1 = version.getVersion();
+        if (List.of("lts", "stable", "previous").contains(version1)) {
+            commands.add("--version=" + version1);
+        }
+
+        if (List.of("full", "demo", "webapp", "book").contains(projectType)) {
+            commands.add("--" + projectType);
+        }
+
+        commands.add(newProjectPath + "/" + PROJECT_SUB_FOLDER);
+
+        /*
         // "php symfony demo"
         if("demo".equals(version.getVersion())) {
             commands.add("demo");
@@ -104,6 +129,7 @@ public class SymfonyInstallerUtil {
         if(commandLineOptions != null) {
             commands.add(commandLineOptions);
         }
+        */
 
         return ArrayUtil.toStringArray(commands);
     }
@@ -200,4 +226,30 @@ public class SymfonyInstallerUtil {
 
     }
 
+    public static boolean isValidSymfonyCliToolsCommand() {
+        String[] myCommand = new String[] {"symfony", "-V"};
+
+        final StringBuilder outputBuilder = new StringBuilder();
+        OSProcessHandler processHandler = null;
+        try {
+            processHandler = ScriptRunnerUtil.execute(myCommand[0], null, null, Arrays.copyOfRange(myCommand, 1, myCommand.length));
+        } catch (ExecutionException e) {
+            return false;
+        }
+
+        processHandler.addProcessListener(new ProcessAdapter() {
+            @Override
+            public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
+                String text = event.getText();
+                outputBuilder.append(text);
+            }
+        });
+
+        processHandler.startNotify();
+        if (!processHandler.waitFor(1000 * 5)) {
+            return false;
+        }
+
+        return outputBuilder.toString().toLowerCase().contains("version");
+    }
 }

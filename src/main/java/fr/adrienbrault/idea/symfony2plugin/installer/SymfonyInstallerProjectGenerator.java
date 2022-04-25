@@ -6,11 +6,11 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.util.PlatformUtils;
+import com.intellij.platform.ProjectGeneratorPeer;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -32,12 +32,17 @@ public class SymfonyInstallerProjectGenerator extends WebProjectTemplate<Symfony
 
     @Override
     public String getDescription() {
-        return "Create a new Symfony project by using the external \"Symfony Installer\". A local PHP interpreter is required.";
+        return "Create a new Symfony project by using the external \"Symfony Symfony CLI\". Download it via <a href=\"https://symfony.com/download\">https://symfony.com/download</a>";
     }
 
     @Override
     public void generateProject(@NotNull final Project project, final @NotNull VirtualFile baseDir, final @NotNull SymfonyInstallerSettings settings, @NotNull Module module) {
         final File baseDirFile = new File(baseDir.getPath());
+
+        // @TODO: reimplement binary download
+        // https://api.github.com/repos/symfony-cli/symfony-cli/releases/64816848/assets
+        // https://api.github.com/repos/symfony-cli/symfony-cli/releases
+        /*
         final File tempFile = FileUtil.findSequentNonexistentFile(baseDirFile, "symfony", "");
 
         String composerPath;
@@ -56,10 +61,11 @@ public class SymfonyInstallerProjectGenerator extends WebProjectTemplate<Symfony
         } else {
             composerPath = settings.getExistingPath();
         }
+        */
 
-        String[] commands = SymfonyInstallerUtil.getCreateProjectCommand(settings.getVersion(), composerPath, baseDir.getPath(), settings.getPhpInterpreter(), null);
+        String[] commands = SymfonyInstallerUtil.getCreateProjectCommand(settings.getVersion(), "symfony", baseDir.getPath(), settings.getPhpInterpreter(), settings.getProjectType());
 
-        final File finalSymfonyInProject = symfonyInProject;
+        final File finalSymfonyInProject = null;
         SymfonyInstallerCommandExecutor executor = new SymfonyInstallerCommandExecutor(project, baseDir, commands) {
             @Override
             protected void onFinish(@Nullable String message) {
@@ -97,28 +103,18 @@ public class SymfonyInstallerProjectGenerator extends WebProjectTemplate<Symfony
 
     private static void showErrorNotification(@NotNull Project project, @NotNull String content)
     {
-        Notifications.Bus.notify(new Notification(SymfonyInstallerUtil.INSTALLER_GROUP_DISPLAY_ID, "Symfony-Installer", content, NotificationType.ERROR, null), project);
+        Notifications.Bus.notify(new Notification(SymfonyInstallerUtil.INSTALLER_GROUP_DISPLAY_ID, "Symfony-Installer", content, NotificationType.ERROR), project);
     }
 
     private static void showInfoNotification(@NotNull Project project, @NotNull String content)
     {
-        Notifications.Bus.notify(new Notification(SymfonyInstallerUtil.INSTALLER_GROUP_DISPLAY_ID, "Symfony-Installer", content, NotificationType.INFORMATION, null), project);
+        Notifications.Bus.notify(new Notification(SymfonyInstallerUtil.INSTALLER_GROUP_DISPLAY_ID, "Symfony-Installer", content, NotificationType.INFORMATION), project);
     }
 
     @NotNull
     @Override
-    public GeneratorPeer<SymfonyInstallerSettings> createPeer() {
+    public ProjectGeneratorPeer<SymfonyInstallerSettings> createPeer() {
         return new SymfonyInstallerGeneratorPeer();
-    }
-
-    public boolean isPrimaryGenerator()
-    {
-        return PlatformUtils.isPhpStorm();
-    }
-
-    @Override
-    public Icon getLogo() {
-        return Symfony2Icons.SYMFONY;
     }
 
     @Override
