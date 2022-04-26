@@ -39,7 +39,7 @@ public class SymfonyInstallerGeneratorPeer implements ProjectGeneratorPeer<Symfo
     public SymfonyInstallerSettings getSettings() {
         return new SymfonyInstallerSettings(
             new SymfonyInstallerVersion("unknown", symfonyInstallerForm.getProjectType()), // apt-get does not work with this value
-            "php",
+            symfonyInstallerForm.isDownloadInstallerSelected(),
             symfonyInstallerForm.getProjectType()
         );
     }
@@ -52,7 +52,7 @@ public class SymfonyInstallerGeneratorPeer implements ProjectGeneratorPeer<Symfo
             installerExists = ProgressManager.getInstance().run(new Task.WithResult<Boolean, Exception>(null, "Checking", false) {
                 @Override
                 protected Boolean compute(@NotNull ProgressIndicator indicator) {
-                    return SymfonyInstallerUtil.isValidSymfonyCliToolsCommand();
+                    return SymfonyInstallerUtil.isValidSymfonyCliToolsCommandInPath();
                 }
             });
         } catch (Exception ignored) {
