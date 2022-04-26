@@ -10,20 +10,15 @@ public class SymfonyInstallerSettings {
     @NotNull
     private final SymfonyInstallerVersion version;
 
-    @NotNull
-    private final String phpInterpreter;
+    private final boolean isDownloadInstallerSelected;
 
     @NotNull
     private final String projectType;
 
-    public SymfonyInstallerSettings(@NotNull SymfonyInstallerVersion version, @NotNull String phpInterpreter, @NotNull String projectType) {
+    public SymfonyInstallerSettings(@NotNull SymfonyInstallerVersion version, boolean isDownloadInstallerSelected, @NotNull String projectType) {
         this.version = version;
-        this.phpInterpreter = phpInterpreter;
+        this.isDownloadInstallerSelected = isDownloadInstallerSelected;
         this.projectType = projectType;
-    }
-
-    public boolean isDownload() {
-        return true;
     }
 
     @NotNull
@@ -32,17 +27,11 @@ public class SymfonyInstallerSettings {
     }
 
     @NotNull
-    public String getPhpInterpreter() {
-        return phpInterpreter;
-    }
-
-    public String getExistingPath() {
-        // @TODO: implement
-        return "";
-    }
-
-    @NotNull
     public String getProjectType() {
         return projectType;
+    }
+
+    public boolean isDownloadInstallerSelected() {
+        return isDownloadInstallerSelected;
     }
 }

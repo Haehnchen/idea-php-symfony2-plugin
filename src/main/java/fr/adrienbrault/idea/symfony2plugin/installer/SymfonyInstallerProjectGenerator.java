@@ -5,12 +5,15 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.platform.ProjectGeneratorPeer;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -39,33 +42,50 @@ public class SymfonyInstallerProjectGenerator extends WebProjectTemplate<Symfony
     public void generateProject(@NotNull final Project project, final @NotNull VirtualFile baseDir, final @NotNull SymfonyInstallerSettings settings, @NotNull Module module) {
         final File baseDirFile = new File(baseDir.getPath());
 
-        // @TODO: reimplement binary download
-        // https://api.github.com/repos/symfony-cli/symfony-cli/releases/64816848/assets
-        // https://api.github.com/repos/symfony-cli/symfony-cli/releases
-        /*
-        final File tempFile = FileUtil.findSequentNonexistentFile(baseDirFile, "symfony", "");
-
-        String composerPath;
         File symfonyInProject = null;
-        if (settings.isDownload()) {
+        String binaryPath = "symfony";
 
-            VirtualFile file = SymfonyInstallerUtil.downloadPhar(project, null, tempFile.getPath());
-            if (file == null)  {
-                showErrorNotification(project, "Cannot download symfony.phar file");
-                Symfony2ProjectComponent.getLogger().warn("Cannot download symfony.phar file");
-                return;
+        if (!checkBinaryValidity(binaryPath) && settings.isDownloadInstallerSelected()) {
+            File tempFile = FileUtil.findSequentNonexistentFile(baseDirFile, "symfony", "");
+
+            boolean success =false;
+            try {
+                success = ProgressManager.getInstance().run(new Task.WithResult<Boolean, Exception>(null, "Downloading Symfony CLI", false) {
+                    @Override
+                    protected Boolean compute(@NotNull ProgressIndicator indicator) {
+                        String releaseUrl = SymfonyInstallerUtil.getReleaseUrl();
+                        if (releaseUrl == null) {
+                            return false;
+                        }
+
+                        if (!SymfonyInstallerUtil.extractTarGZ(releaseUrl, tempFile.getPath()) || !tempFile.exists()) {
+                            return false;
+                        }
+
+                        return true;
+                    }
+                });
+            } catch (Exception ignored) {
             }
 
-            composerPath = file.getPath();
+            if (!success) {
+                showErrorNotification(project, "Cannot download Symfony CLI");
+                Symfony2ProjectComponent.getLogger().warn("Cannot download Symfony CLI");
+            }
+
             symfonyInProject = tempFile;
-        } else {
-            composerPath = settings.getExistingPath();
+            binaryPath = tempFile.getPath();
         }
-        */
 
-        String[] commands = SymfonyInstallerUtil.getCreateProjectCommand(settings.getVersion(), "symfony", baseDir.getPath(), settings.getPhpInterpreter(), settings.getProjectType());
+        if (!checkBinaryValidity(binaryPath)) {
+            showErrorNotification(project, "Symfony CLI could not be executed");
+            Symfony2ProjectComponent.getLogger().warn("Symfony CLI could not be executed");
+            return;
+        }
 
-        final File finalSymfonyInProject = null;
+        String[] commands = SymfonyInstallerUtil.getCreateProjectCommand(settings.getVersion(), binaryPath, baseDir.getPath() + "/" + SymfonyInstallerUtil.PROJECT_SUB_FOLDER, settings.getProjectType());
+
+        final File finalSymfonyInProject = symfonyInProject;
         SymfonyInstallerCommandExecutor executor = new SymfonyInstallerCommandExecutor(project, baseDir, commands) {
             @Override
             protected void onFinish(@Nullable String message) {
@@ -84,7 +104,6 @@ public class SymfonyInstallerProjectGenerator extends WebProjectTemplate<Symfony
                 if(finalSymfonyInProject != null) {
                     FileUtil.delete(finalSymfonyInProject);
                 }
-
             }
 
             @Override
@@ -120,5 +139,20 @@ public class SymfonyInstallerProjectGenerator extends WebProjectTemplate<Symfony
     @Override
     public Icon getIcon() {
         return Symfony2Icons.SYMFONY;
+    }
+
+    private boolean checkBinaryValidity(@NotNull String binary) {
+        Boolean installerExists = false;
+        try {
+            installerExists = ProgressManager.getInstance().run(new Task.WithResult<Boolean, Exception>(null, "Checking Symfony CLI Validity", false) {
+                @Override
+                protected Boolean compute(@NotNull ProgressIndicator indicator) {
+                    return SymfonyInstallerUtil.isValidSymfonyCliToolsCommand(binary);
+                }
+            });
+        } catch (Exception ignored) {
+        }
+
+        return installerExists;
     }
 }

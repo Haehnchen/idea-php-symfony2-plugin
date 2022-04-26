@@ -8,24 +8,25 @@ import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ScriptRunnerUtil;
-import com.intellij.ide.plugins.PluginManager;
+import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.extensions.PluginId;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ArrayUtil;
-import com.jetbrains.php.util.PhpConfigurationUtil;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.installer.dict.SymfonyInstallerVersion;
+import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
+import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,12 +38,6 @@ public class SymfonyInstallerUtil {
 
     public static String PROJECT_SUB_FOLDER = ".checkout";
     public static String INSTALLER_GROUP_DISPLAY_ID = "Symfony";
-
-    @Nullable
-    public static VirtualFile downloadPhar(@Nullable Project project, JComponent component, @Nullable String toDir)
-    {
-        return PhpConfigurationUtil.downloadFile(project, component, toDir, "https://get.symfony.com/symfony.phar", "symfony.phar");
-    }
 
     @Nullable
     public static String extractSuccessMessage(@NotNull String output)
@@ -96,11 +91,9 @@ public class SymfonyInstallerUtil {
     }
 
     @NotNull
-    public static String[] getCreateProjectCommand(@NotNull SymfonyInstallerVersion version, @NotNull String installerPath, @NotNull String newProjectPath, @NotNull String phpPath, @NotNull String projectType) {
-
+    public static String[] getCreateProjectCommand(@NotNull SymfonyInstallerVersion version, @NotNull String installerPath, @NotNull String newProjectPath, @NotNull String projectType) {
         List<String> commands = new ArrayList<>();
 
-        //commands.add(phpPath);
         commands.add(installerPath);
         commands.add("new");
 
@@ -113,25 +106,114 @@ public class SymfonyInstallerUtil {
             commands.add("--" + projectType);
         }
 
-        commands.add(newProjectPath + "/" + PROJECT_SUB_FOLDER);
-
-        /*
-        // "php symfony demo"
-        if("demo".equals(version.getVersion())) {
-            commands.add("demo");
-            commands.add(newProjectPath + "/" + PROJECT_SUB_FOLDER);
-        } else {
-            commands.add("new");
-            commands.add(newProjectPath + "/" + PROJECT_SUB_FOLDER);
-            commands.add(version.getVersion());
-        }
-
-        if(commandLineOptions != null) {
-            commands.add(commandLineOptions);
-        }
-        */
+        commands.add(newProjectPath);
 
         return ArrayUtil.toStringArray(commands);
+    }
+
+    @Nullable
+    public static String getReleaseUrl() {
+        String contents1;
+        try {
+            java.io.InputStream is = new java.net.URL("https://api.github.com/repos/symfony-cli/symfony-cli/releases").openStream();
+            contents1 = new String(is.readAllBytes());
+        } catch (IOException e) {
+            return null;
+        }
+
+        String lastReleaseUrl = null;
+        for (JsonElement jsonElement : com.google.gson.JsonParser.parseString(contents1).getAsJsonArray()) {
+            if (!(jsonElement instanceof JsonObject)) {
+                continue;
+            }
+
+            String url = ((JsonObject) jsonElement).get("assets_url").getAsString();
+            if (url != null) {
+                lastReleaseUrl = url;
+            }
+        }
+
+        System.out.println(lastReleaseUrl);
+
+        String contents;
+        try {
+            java.io.InputStream is = new java.net.URL(lastReleaseUrl + "?per_page=100").openStream();
+            contents = new String(is.readAllBytes());
+        } catch (IOException e) {
+            return null;
+        }
+
+        com.google.gson.JsonElement element = com.google.gson.JsonParser.parseString(contents);
+
+        Map<String, Integer> archMap = new HashMap<>();
+        archMap.put("x86", 32);
+        archMap.put("i386", 32);
+        archMap.put("i486", 32);
+        archMap.put("i586", 32);
+        archMap.put("i686", 32);
+        archMap.put("x86_64", 64);
+        archMap.put("amd64", 64);
+
+        Integer osArch = archMap.get(SystemUtils.OS_ARCH);
+
+        for (JsonElement jsonElement : element.getAsJsonArray()) {
+            if (!(jsonElement instanceof JsonObject)) {
+                continue;
+            }
+
+            String name = ((JsonObject) jsonElement).get("name").getAsString();
+            if (!name.endsWith(".tar.gz")) {
+                continue;
+            }
+
+            String browserDownloadUrl = ((JsonObject) jsonElement).get("browser_download_url").getAsString();
+            if (browserDownloadUrl == null) {
+                continue;
+            }
+
+            if (SystemUtils.IS_OS_LINUX && name.contains("_linux_")) {
+                if (osArch == 32 && name.contains("_386")) {
+                    return browserDownloadUrl;
+                } else if (osArch == 64 && name.contains("amd64")) {
+                    return browserDownloadUrl;
+                }
+            } else if(SystemUtils.IS_OS_WINDOWS && name.contains("_windows_")) {
+                if (osArch == 32 && name.contains("_386")) {
+                    return browserDownloadUrl;
+                } else if (osArch == 64 && name.contains("amd64")) {
+                    return browserDownloadUrl;
+                }
+            } else if(SystemUtils.IS_OS_MAC && name.contains("_darwin_") && name.contains("_all_")) {
+                return browserDownloadUrl;
+            }
+        }
+
+        return null;
+    }
+
+    public static boolean extractTarGZ(@NotNull String releaseUrl, @NotNull String projectDir) {
+        try {
+            BufferedInputStream bi = new BufferedInputStream(new URL(releaseUrl).openStream());
+            GzipCompressorInputStream gzi = new GzipCompressorInputStream(bi);
+            TarArchiveInputStream ti = new TarArchiveInputStream(gzi);
+
+            ArchiveEntry entry;
+            while ((entry = ti.getNextEntry()) != null) {
+                String name = entry.getName();
+                if (name.equals("symfony")) {
+                    Files.copy(ti, Path.of(projectDir));
+
+                    File file = new File(projectDir);
+                    file.setExecutable(true);
+
+                    return true;
+                }
+            }
+        } catch (IOException e) {
+            Symfony2ProjectComponent.getLogger().warn("Symfony CLI: can not fetch release binary: " + e.getMessage());
+        }
+
+        return false;
     }
 
     @NotNull
@@ -197,7 +279,7 @@ public class SymfonyInstallerUtil {
         String userAgent = String.format("%s / %s / Symfony Plugin %s",
             ApplicationInfo.getInstance().getVersionName(),
             ApplicationInfo.getInstance().getBuild(),
-            PluginManager.getPlugin(PluginId.getId("fr.adrienbrault.idea.symfony2plugin")).getVersion()
+            PluginManagerCore.getPlugin(PluginId.getId("fr.adrienbrault.idea.symfony2plugin")).getVersion()
         );
 
         try {
@@ -226,8 +308,8 @@ public class SymfonyInstallerUtil {
 
     }
 
-    public static boolean isValidSymfonyCliToolsCommand() {
-        String[] myCommand = new String[] {"symfony", "-V"};
+    public static boolean isValidSymfonyCliToolsCommand(@NotNull String binaryPath) {
+        String[] myCommand = new String[] {binaryPath, "-V"};
 
         final StringBuilder outputBuilder = new StringBuilder();
         OSProcessHandler processHandler = null;
@@ -251,5 +333,9 @@ public class SymfonyInstallerUtil {
         }
 
         return outputBuilder.toString().toLowerCase().contains("version");
+    }
+
+    public static boolean isValidSymfonyCliToolsCommandInPath() {
+        return isValidSymfonyCliToolsCommand("symfony");
     }
 }
