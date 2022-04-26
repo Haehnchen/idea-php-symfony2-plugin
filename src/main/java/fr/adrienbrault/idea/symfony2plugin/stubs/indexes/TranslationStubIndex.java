@@ -1,17 +1,23 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
+import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
+import com.jetbrains.php.lang.PhpFileType;
+import com.jetbrains.php.lang.psi.PhpFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.StringSetDataExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.ArrayReturnPsiRecursiveVisitor;
 import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationVisitor;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import gnu.trove.THashMap;
+import kotlin.Pair;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -21,6 +27,7 @@ import org.jetbrains.yaml.psi.YAMLFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -48,38 +55,49 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
                 }
 
                 PsiFile psiFile = inputData.getPsiFile();
-                if (!(psiFile instanceof YAMLFile)) {
-                    return Collections.emptyMap();
-                }
 
                 // check physical file position
-                if (!isValidTranslationFile(inputData, psiFile)) {
+                if (!isValidTranslationFile(inputData)) {
                     return Collections.emptyMap();
                 }
 
-                String domainName = this.getDomainName(inputData.getFileName());
+                String domainName = getDomainName(inputData.getFileName());
                 if (domainName == null) {
                     return Collections.emptyMap();
                 }
 
-                Set<String> translationKeySet = new HashSet<>();
-                YamlTranslationVisitor.collectFileTranslations((YAMLFile) psiFile, (keyName, yamlKeyValue) -> {
-                    translationKeySet.add(keyName);
-                    return true;
-                });
+                if (psiFile instanceof PhpFile) {
+                    Set<String> translationKeySet = new HashSet<>();
+                    psiFile.acceptChildren(new ArrayReturnPsiRecursiveVisitor(pair -> translationKeySet.add(pair.getFirst())));
 
-                if (translationKeySet.size() == 0) {
-                    return Collections.emptyMap();
+                    if (translationKeySet.size() == 0) {
+                        return Collections.emptyMap();
+                    }
+                    
+                    Map<String, Set<String>> map = new THashMap<>();
+                    map.put(domainName, translationKeySet);
+
+                    return map;
+                } else if (psiFile instanceof YAMLFile) {
+                    Set<String> translationKeySet = new HashSet<>();
+                    YamlTranslationVisitor.collectFileTranslations((YAMLFile) psiFile, (keyName, yamlKeyValue) -> {
+                        translationKeySet.add(keyName);
+                        return true;
+                    });
+
+                    if (translationKeySet.size() == 0) {
+                        return Collections.emptyMap();
+                    }
+
+                    Map<String, Set<String>> map = new THashMap<>();
+                    map.put(domainName, translationKeySet);
+                    return map;
                 }
 
-                Map<String, Set<String>> map = new THashMap<>();
-
-                map.put(domainName, translationKeySet);
-
-                return map;
+                return Collections.emptyMap();
             }
 
-            private boolean isValidTranslationFile(@NotNull FileContent inputData, @NotNull PsiFile psiFile) {
+            private boolean isValidTranslationFile(@NotNull FileContent inputData) {
                 // dont index all yaml files; valid:
                 //  - "Resources/translations"
                 //  - "translations/[.../]foo.de.yml"
@@ -125,32 +143,32 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
                 map.put(domainName, set);
                 return map;
             }
-
-            @Nullable
-            private String getDomainName(@NotNull String fileName) {
-                String[] split = fileName.split("\\.");
-                if (split.length < 2 || Arrays.stream(split).anyMatch(s -> s.length() == 0)) {
-                    return null;
-                }
-
-                // foo.fr.yml
-                // dont index fr.yml
-                int domainSplit = fileName.lastIndexOf(".");
-                if (domainSplit <= 2) {
-                    return null;
-                }
-
-                String domain = StringUtils.join(Arrays.copyOfRange(split, 0, split.length - 2), ".");
-
-                if (domain.endsWith("+intl-icu")) {
-                    // Remove +intl-icu suffix, as it is not part of the domain
-                    // https://symfony.com/blog/new-in-symfony-4-2-intlmessageformatter
-                    domain = domain.replace("+intl-icu", "");
-                }
-
-                return domain;
-            }
         };
+    }
+
+    @Nullable
+    private static String getDomainName(@NotNull String fileName) {
+        String[] split = fileName.split("\\.");
+        if (split.length < 2 || Arrays.stream(split).anyMatch(s -> s.length() == 0)) {
+            return null;
+        }
+
+        // foo.fr.yml
+        // dont index fr.yml
+        int domainSplit = fileName.lastIndexOf(".");
+        if (domainSplit <= 2) {
+            return null;
+        }
+
+        String domain = StringUtils.join(Arrays.copyOfRange(split, 0, split.length - 2), ".");
+
+        if (domain.endsWith("+intl-icu")) {
+            // Remove +intl-icu suffix, as it is not part of the domain
+            // https://symfony.com/blog/new-in-symfony-4-2-intlmessageformatter
+            domain = domain.replace("+intl-icu", "");
+        }
+
+        return domain;
     }
 
     @NotNull
@@ -173,8 +191,14 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
     @NotNull
     @Override
     public FileBasedIndex.InputFilter getInputFilter() {
-        return file ->
-            file.getFileType() == YAMLFileType.YML || "xlf".equalsIgnoreCase(file.getExtension()) || "xliff".equalsIgnoreCase(file.getExtension());
+        return file -> {
+            FileType fileType = file.getFileType();
+            if (fileType == PhpFileType.INSTANCE) {
+                return getDomainName(file.getName()) != null;
+            }
+
+            return fileType == YAMLFileType.YML || "xlf".equalsIgnoreCase(file.getExtension()) || "xliff".equalsIgnoreCase(file.getExtension());
+        };
     }
 
     @Override

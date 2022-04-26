@@ -29,6 +29,7 @@ public class TranslationUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
         myFixture.copyFileToProject("car.de.yml", "Resources/translations/car.de.yml");
         myFixture.copyFileToProject("symfony.de.yml", "Resources/translations/symfony.de.yml");
         myFixture.copyFileToProject("symfony.de.xlf", "Resources/translations/symfony.de.xlf");
+        myFixture.copyFileToProject("symfony.de.php", "translations/symfony.de.php");
         myFixture.copyFileToProject("symfony.de.xlf", "translations/my_foobar.de.xlf");
     }
 
@@ -51,6 +52,8 @@ public class TranslationUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
         assertTrue(TranslationUtil.getTranslationPsiElements(getProject(), "yaml_weak.symfony.more.lines_2", "apple").length > 0);
 
         assertTrue(TranslationUtil.getTranslationPsiElements(getProject(), "foo_yaml.symfony.great", "car").length > 0);
+
+        assertTrue(TranslationUtil.getTranslationPsiElements(getProject(), "my_foobar [PHP]", "symfony").length > 0);
     }
 
     public void testGetTargetForXlfAsXmlFileInVersion12() {

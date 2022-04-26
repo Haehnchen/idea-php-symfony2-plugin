@@ -12,12 +12,14 @@ import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.Consumer;
 import com.intellij.util.indexing.FileBasedIndex;
+import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProvider;
 import fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProviderDict;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TranslationStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.ArrayReturnPsiRecursiveVisitor;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationVisitor;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.DomainMappings;
@@ -147,6 +149,12 @@ public class TranslationUtil {
 
                 return true;
             });
+        } else if(psiFile instanceof PhpFile) {
+            psiFile.acceptChildren(new ArrayReturnPsiRecursiveVisitor(pair -> {
+                if (translationKey.equals(pair.getFirst())) {
+                    elements.add(pair.getSecond());
+                }
+            }));
         } else if(TranslationUtil.isSupportedXlfFile(psiFile)) {
             // fine: xlf registered as XML file. try to find source value
             elements.addAll(TranslationUtil.getTargetForXlfAsXmlFile((XmlFile) psiFile, translationKey));

@@ -19,6 +19,7 @@ public class TranslationStubIndexTest extends SymfonyLightCodeInsightFixtureTest
     public void setUp() throws Exception {
         super.setUp();
         myFixture.copyFileToProject("messages.fr.xlf");
+        myFixture.copyFileToProject("messages.fr.php", "translations/messages.fr.php");
         myFixture.copyFileToProject("messages+intl-icu.fr.xlf");
         myFixture.copyFileToProject("messages_two.fr.xlf");
         myFixture.copyFileToProject("foo.fr.xliff");
@@ -50,6 +51,14 @@ public class TranslationStubIndexTest extends SymfonyLightCodeInsightFixtureTest
     public void testThatDomainAndTranslationsKeyOfXliffIsInIndex() {
         assertIndexContains(TranslationStubIndex.KEY, "foo");
         assertContainsElements(getDomainKeys("foo"), "Symfony is great xliff");
+    }
+
+    public void testThatDomainAndTranslationsKeyOfPhpIsInIndex() {
+        assertIndexContains(TranslationStubIndex.KEY, "messages");
+        assertContainsElements(getDomainKeys("messages"), "Symfony is great [PHP]");
+        assertContainsElements(getDomainKeys("messages"), "symfony.is.great [PHP-nested]");
+        assertContainsElements(getDomainKeys("messages"), "symfony.is.amazing [PHP-nested]");
+        assertContainsElements(getDomainKeys("messages"), "symfony.has.bundles [PHP-nested]");
     }
 
     public void testThatDomainAndTranslationsKeyOfXliffv2IsInIndex() {
