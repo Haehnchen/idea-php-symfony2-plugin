@@ -159,10 +159,15 @@ namespace AppBundle\Controller
 
 namespace AppBundle\My\Controller
 {
+
+    use Symfony\Component\HttpFoundation\Request;
     use Symfony\Component\Routing\Annotation\Route;
 
     class DefaultController
     {
+        private const FOOBAR = 'attributes-names-foobar-const';
+        private const FOOBAR_URL = '/attributes-path-foobar';
+
         /**
          * @Route("/", name="framework_extra_bundle_route")
          */
@@ -180,8 +185,23 @@ namespace AppBundle\My\Controller
         {
         }
 
+        #[Route('/attributesWithoutNameWithConstantsInMethods', name: 'attributesWithoutNameWithConstantsInMethods', methods: [Request::METHOD_GET])]
+        public function attributesWithoutNameWithConstantsInMethods()
+        {
+        }
+
         #[Route(path: '/attributes-path', name: 'attributes-names')]
         public function attributesPath()
+        {
+        }
+
+        #[Route(path: self::FOOBAR_URL, name: self::FOOBAR)]
+        public function attributesPathFoo1()
+        {
+        }
+
+        #[Route(self::FOOBAR_URL, name: "attributes-default-as-const")]
+        public function attributesPathFoo2()
         {
         }
     }
@@ -235,3 +255,12 @@ namespace Symfony\Component\Routing\Annotation
         }
     }
 }
+
+namespace Symfony\Component\HttpFoundation
+{
+    class Request
+    {
+        public const METHOD_GET = 'GET';
+    }
+}
+
