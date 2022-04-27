@@ -1046,13 +1046,11 @@ public class PhpElementsUtil {
      * new FooClass()
      */
     @Nullable
+    @Deprecated
     public static PhpClass getNewExpressionPhpClass(@NotNull NewExpression newExpression) {
-        ClassReference classReference = newExpression.getClassReference();
-        if(classReference != null) {
-            String fqn = classReference.getFQN();
-            if(fqn != null) {
-                return PhpElementsUtil.getClass(newExpression.getProject(), fqn);
-            }
+        Collection<PhpClass> newExpressionPhpClasses = getNewExpressionPhpClasses(newExpression);
+        if (newExpressionPhpClasses.size() > 0) {
+            return newExpressionPhpClasses.iterator().next();
         }
 
         return null;
@@ -1074,10 +1072,10 @@ public class PhpElementsUtil {
      * Get PhpClass from "new FooClass()" only if match instance condition
      */
     public static PhpClass getNewExpressionPhpClassWithInstance(@NotNull NewExpression newExpression, @NotNull String instance) {
-
-        PhpClass phpClass = getNewExpressionPhpClass(newExpression);
-        if(phpClass != null && PhpElementsUtil.isInstanceOf(phpClass, instance)) {
-            return phpClass;
+        for (PhpClass phpClass : getNewExpressionPhpClasses(newExpression)) {
+            if (PhpElementsUtil.isInstanceOf(phpClass, instance)) {
+                return phpClass;
+            }
         }
 
         return null;
@@ -1089,7 +1087,7 @@ public class PhpElementsUtil {
     public static boolean isNewExpressionPhpClassWithInstance(@NotNull NewExpression newExpression, @NotNull String... instances) {
         for (String instance : instances) {
             PhpClass phpClass = getNewExpressionPhpClassWithInstance(newExpression, instance);
-            if(phpClass != null) {
+            if (phpClass != null) {
                 return true;
             }
         }

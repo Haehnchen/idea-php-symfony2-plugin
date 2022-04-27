@@ -194,7 +194,7 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
                         return new PsiReference[0];
                     }
 
-                    PhpClass phpClass = getClassArrayCreationParameter(psiElement, 0, "\\Symfony\\Component\\Validator\\Constraint");
+                    PhpClass phpClass = getClassArrayCreationParameter(psiElement);
                     if(phpClass != null) {
                         return new PsiReference[] { new ConstraintPropertyReference((StringLiteralExpression) psiElement, phpClass)};
                     }
@@ -202,31 +202,19 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
                     return new PsiReference[0];
                 }
 
-                private PhpClass getClassArrayCreationParameter(PsiElement psiElement, int parameterIndex, String instance) {
+                private PhpClass getClassArrayCreationParameter(PsiElement psiElement) {
                     ArrayCreationExpression arrayCreationExpression = PhpElementsUtil.getCompletableArrayCreationElement(psiElement);
                     if (arrayCreationExpression != null) {
 
                         PsiElement parameterList = arrayCreationExpression.getContext();
                         if (parameterList instanceof ParameterList) {
-                            PsiElement methodParameters[] = ((ParameterList) parameterList).getParameters();
-                            if (!(methodParameters.length < parameterIndex)) {
+                            PsiElement[] methodParameters = ((ParameterList) parameterList).getParameters();
+                            if (methodParameters.length > 0) {
                                 PsiElement newExpression = parameterList.getContext();
                                 if (newExpression instanceof NewExpression) {
                                     ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(arrayCreationExpression);
-                                    if (currentIndex != null && currentIndex.getIndex() == parameterIndex) {
-                                        // @TODO: getNewExpressionPhpClassWithInstance
-                                        ClassReference classReference = ((NewExpression) newExpression).getClassReference();
-                                        if(classReference != null) {
-                                            String fqn = classReference.getFQN();
-                                            if(fqn != null) {
-                                                PhpClass phpClass = PhpElementsUtil.getClass(psiElement.getProject(), fqn);
-                                                if(phpClass != null) {
-                                                    if(PhpElementsUtil.isInstanceOf(phpClass, instance)) {
-                                                        return phpClass;
-                                                    }
-                                                }
-                                            }
-                                        }
+                                    if (currentIndex != null && currentIndex.getIndex() == 0) {
+                                        return PhpElementsUtil.getNewExpressionPhpClassWithInstance((NewExpression) newExpression, "\\Symfony\\Component\\Validator\\Constraint");
                                     }
                                 }
                             }
