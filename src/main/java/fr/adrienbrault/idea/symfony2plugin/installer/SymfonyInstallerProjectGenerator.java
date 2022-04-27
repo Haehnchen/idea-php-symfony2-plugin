@@ -15,6 +15,7 @@ import com.intellij.platform.ProjectGeneratorPeer;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
+import org.apache.commons.lang.SystemUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -40,46 +41,39 @@ public class SymfonyInstallerProjectGenerator extends WebProjectTemplate<Symfony
 
     @Override
     public void generateProject(@NotNull final Project project, final @NotNull VirtualFile baseDir, final @NotNull SymfonyInstallerSettings settings, @NotNull Module module) {
-        final File baseDirFile = new File(baseDir.getPath());
-
         File symfonyInProject = null;
-        String binaryPath = "symfony";
+        String binaryPath = SystemUtils.IS_OS_WINDOWS ? "symfony.exe" : "symfony";
 
         if (!checkBinaryValidity(binaryPath) && settings.isDownloadInstallerSelected()) {
-            File tempFile = FileUtil.findSequentNonexistentFile(baseDirFile, "symfony", "");
-
-            boolean success =false;
+            String projectBinaryPath = null;
             try {
-                success = ProgressManager.getInstance().run(new Task.WithResult<Boolean, Exception>(null, "Downloading Symfony CLI", false) {
+                projectBinaryPath = ProgressManager.getInstance().run(new Task.WithResult<String, Exception>(null, "Downloading Symfony CLI", false) {
                     @Override
-                    protected Boolean compute(@NotNull ProgressIndicator indicator) {
+                    protected String compute(@NotNull ProgressIndicator indicator) {
                         String releaseUrl = SymfonyInstallerUtil.getReleaseUrl();
                         if (releaseUrl == null) {
-                            return false;
+                            return null;
                         }
 
-                        if (!SymfonyInstallerUtil.extractTarGZ(releaseUrl, tempFile.getPath()) || !tempFile.exists()) {
-                            return false;
-                        }
-
-                        return true;
+                        return SymfonyInstallerUtil.extractTarGZ(releaseUrl, baseDir.getPath());
                     }
                 });
             } catch (Exception ignored) {
             }
 
-            if (!success) {
-                showErrorNotification(project, "Cannot download Symfony CLI");
-                Symfony2ProjectComponent.getLogger().warn("Cannot download Symfony CLI");
+            if (projectBinaryPath == null) {
+                showErrorNotification(project, "Cannot download or find a matching Symfony CLI binary architecture");
+                Symfony2ProjectComponent.getLogger().warn("Cannot download or find a matching Symfony CLI binary architecture");
+                return;
             }
 
-            symfonyInProject = tempFile;
-            binaryPath = tempFile.getPath();
+            symfonyInProject = new File(projectBinaryPath);
+            binaryPath = projectBinaryPath;
         }
 
         if (!checkBinaryValidity(binaryPath)) {
-            showErrorNotification(project, "Symfony CLI could not be executed");
-            Symfony2ProjectComponent.getLogger().warn("Symfony CLI could not be executed");
+            showErrorNotification(project, "Symfony CLI could not be executed: " + binaryPath);
+            Symfony2ProjectComponent.getLogger().warn("Symfony CLI could not be executed: " + binaryPath);
             return;
         }
 
