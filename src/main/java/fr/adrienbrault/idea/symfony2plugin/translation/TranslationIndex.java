@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.translation;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.ModificationTracker;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VfsUtilCore;
@@ -19,10 +20,10 @@ import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.TimeSecondModificationTracker;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 
 /**
@@ -32,74 +33,54 @@ public class TranslationIndex {
     private static final Key<CachedValue<Collection<File>>> SYMFONY_TRANSLATION_COMPILED_TIMED_WATCHER = new Key<>("SYMFONY_TRANSLATION_COMPILED_TIMED_WATCHER");
     private static final Key<CachedValue<Collection<File>>> SYMFONY_TRANSLATION_COMPILED = new Key<>("SYMFONY_TRANSLATION_COMPILED");
 
-    private static Map<Project, TranslationIndex> instance = new HashMap<>();
-
-    private Project project;
-
-    @Nullable
-    private TranslationStringMap translationStringMap;
-    private long translationStringMapModified;
-
-    public static TranslationIndex getInstance(@NotNull Project project){
-        TranslationIndex projectInstance = instance.get(project);
-        if(projectInstance != null) {
-          return projectInstance;
-        }
-
-        projectInstance = new TranslationIndex(project);
-        instance.put(project, projectInstance);
-
-        return projectInstance;
+    private TranslationIndex() {
     }
 
-    private TranslationIndex(@NotNull Project project) {
-        this.project = project;
-    }
+    private static final Key<CachedValue<TranslationStringMap>> CACHE = new Key<>("FOO");
 
-    synchronized public TranslationStringMap getTranslationMap() {
-        if(this.translationStringMap != null && this.isCacheValid()) {
-            return this.translationStringMap;
-        }
+    synchronized static public TranslationStringMap getTranslationMap(@NotNull Project project) {
+        return CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            CACHE,
+            () -> {
+                Collection<File> translationDirectories = getTranslationRoot(project);
 
-        Collection<File> translationDirectories = this.getTranslationRoot();
-        if(translationDirectories.size() == 0) {
-            return new TranslationStringMap();
-        }
+                TranslationStringMap translationStringMap = new TranslationStringMap();
+                if (translationDirectories.size() > 0) {
+                    Symfony2ProjectComponent.getLogger().info("translations changed: " + StringUtils.join(translationDirectories.stream().map(File::toString).collect(Collectors.toSet()), ","));
 
-        Symfony2ProjectComponent.getLogger().info("translations changed: " + StringUtils.join(translationDirectories.stream().map(File::toString).collect(Collectors.toSet()), ","));
+                    translationStringMap = new TranslationPsiParser(project, translationDirectories).parsePathMatcher();
+                }
 
-        this.translationStringMapModified = translationDirectories.stream().mapToLong(File::lastModified).sum();
-        return this.translationStringMap = new TranslationPsiParser(project, translationDirectories).parsePathMatcher();
-    }
-
-    private boolean isCacheValid() {
-        // symfony2 recreates translation file on change, so folder modtime is caching indicator
-        Collection<File> translationDirectories = this.getTranslationRoot();
-        if(translationDirectories.size() == 0) {
-            return false;
-        }
-
-        return translationDirectories.stream().mapToLong(File::lastModified).sum() == translationStringMapModified;
+                return CachedValueProvider.Result.create(translationStringMap, new MyModificationTracker(project));
+            },
+            false
+        );
     }
 
     @NotNull
-    private Collection<File> getTranslationRoot() {
+    private static Collection<File> getTranslationRoot(@NotNull Project project) {
         return CachedValuesManager.getManager(project)
             .getCachedValue(
                 project,
                 SYMFONY_TRANSLATION_COMPILED,
-                () -> CachedValueProvider.Result.create(getTranslationRootInnerTime(), PsiModificationTracker.MODIFICATION_COUNT),
+                () -> CachedValueProvider.Result.create(getTranslationRootInnerTime(project), PsiModificationTracker.MODIFICATION_COUNT),
                 false
             );
     }
 
     @NotNull
-    private Collection<File> getTranslationRootInnerTime() {
-        return CachedValuesManager.getManager(project).getCachedValue(project, SYMFONY_TRANSLATION_COMPILED_TIMED_WATCHER, () -> CachedValueProvider.Result.create(getTranslationRootInner(), TimeSecondModificationTracker.TIMED_MODIFICATION_TRACKER_60), false);
+    private static Collection<File> getTranslationRootInnerTime(@NotNull Project project) {
+        return CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            SYMFONY_TRANSLATION_COMPILED_TIMED_WATCHER,
+            () -> CachedValueProvider.Result.create(getTranslationRootInner(project), TimeSecondModificationTracker.TIMED_MODIFICATION_TRACKER_60),
+            false
+        );
     }
 
     @NotNull
-    private Collection<File> getTranslationRootInner() {
+    private static Collection<File> getTranslationRootInner(@NotNull Project project) {
         Collection<File> files = new HashSet<>();
 
         String translationPath = Settings.getInstance(project).pathToTranslation;
@@ -137,5 +118,19 @@ public class TranslationIndex {
         }
 
         return files;
+    }
+
+    private static class MyModificationTracker implements ModificationTracker {
+        @NotNull
+        private final Project project;
+
+        public MyModificationTracker(@NotNull Project project) {
+            this.project = project;
+        }
+
+        @Override
+        public long getModificationCount() {
+            return getTranslationRoot(this.project).stream().mapToLong(File::lastModified).sum();
+        }
     }
 }

@@ -21,20 +21,19 @@ import java.util.stream.Collectors;
 public class CompiledTranslatorProvider implements TranslatorProvider {
     @Override
     public boolean hasTranslationKey(@NotNull Project project, @NotNull String keyName, @NotNull String domainName) {
-        Set<String> domainMap = TranslationIndex.getInstance(project).getTranslationMap().getDomainMap(domainName);
+        Set<String> domainMap = TranslationIndex.getTranslationMap(project).getDomainMap(domainName);
         return domainMap != null && domainMap.contains(keyName);
     }
 
     @Override
     public boolean hasDomain(@NotNull Project project, @NotNull String domainName) {
-        return TranslationIndex.getInstance(project).getTranslationMap().getDomainList().contains(domainName);
+        return TranslationIndex.getTranslationMap(project).getDomainList().contains(domainName);
     }
 
     @NotNull
     @Override
     public Collection<TranslatorProviderDict.TranslationDomain> getTranslationDomains(@NotNull Project project) {
-        return TranslationIndex.getInstance(project)
-            .getTranslationMap()
+        return TranslationIndex.getTranslationMap(project)
             .getDomainList()
             .stream()
             .map(TranslatorProviderDict.TranslationDomain::new)
@@ -58,7 +57,7 @@ public class CompiledTranslatorProvider implements TranslatorProvider {
     @NotNull
     @Override
     public Collection<TranslatorProviderDict.TranslationKey> getTranslationsForDomain(@NotNull Project project, @NotNull String domainName) {
-        Set<String> domainMap = TranslationIndex.getInstance(project).getTranslationMap().getDomainMap(domainName);
+        Set<String> domainMap = TranslationIndex.getTranslationMap(project).getDomainMap(domainName);
         if (domainMap == null) {
             return Collections.emptyList();
         }
