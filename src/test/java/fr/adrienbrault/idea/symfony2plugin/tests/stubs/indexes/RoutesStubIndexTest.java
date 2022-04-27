@@ -178,6 +178,15 @@ public class RoutesStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase 
 
         RouteInterface route5 = getFirstValue("prefix_home_default_parameter");
         assertEquals("/foo-attributes-default/edit/{id}", route5.getPath());
+
+        RouteInterface route6 = getFirstValue("attributes-names-foobar-const");
+        assertEquals("/attributes-path-foobar", route6.getPath());
+
+        RouteInterface route7 = getFirstValue("attributes-default-as-const");
+        assertEquals("/attributes-path-foobar", route7.getPath());
+
+        RouteInterface route8 = getFirstValue("attributesWithoutNameWithConstantsInMethods");
+        assertEquals(0, route8.getMethods().size());
     }
 
     @NotNull
