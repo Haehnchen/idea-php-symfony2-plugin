@@ -14,7 +14,6 @@ import com.intellij.psi.util.PsiModificationTracker;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
-import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationPsiParser;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.TimeSecondModificationTracker;
@@ -45,12 +44,14 @@ public class TranslationIndex {
             () -> {
                 Collection<File> translationDirectories = getTranslationRoot(project);
 
-                TranslationStringMap translationStringMap = new TranslationStringMap();
+                TranslationStringMap translationStringMap;
                 if (translationDirectories.size() > 0) {
-                    Symfony2ProjectComponent.getLogger().info("translations changed: " + StringUtils.join(translationDirectories.stream().map(File::toString).collect(Collectors.toSet()), ","));
-
-                    translationStringMap = new TranslationPsiParser(project, translationDirectories).parsePathMatcher();
+                    translationStringMap = TranslationStringMap.create(project, translationDirectories);
+                } else {
+                    translationStringMap = TranslationStringMap.createEmpty();
                 }
+
+                Symfony2ProjectComponent.getLogger().info("translations changed: " + StringUtils.join(translationDirectories.stream().map(File::toString).collect(Collectors.toSet()), ","));
 
                 return CachedValueProvider.Result.create(translationStringMap, new MyModificationTracker(project));
             },
