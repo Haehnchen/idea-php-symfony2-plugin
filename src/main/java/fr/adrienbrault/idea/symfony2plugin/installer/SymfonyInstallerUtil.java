@@ -191,7 +191,8 @@ public class SymfonyInstallerUtil {
         return null;
     }
 
-    public static boolean extractTarGZ(@NotNull String releaseUrl, @NotNull String projectDir) {
+    @Nullable
+    public static String extractTarGZ(@NotNull String releaseUrl, @NotNull String projectDir) {
         try {
             BufferedInputStream bi = new BufferedInputStream(new URL(releaseUrl).openStream());
             GzipCompressorInputStream gzi = new GzipCompressorInputStream(bi);
@@ -200,20 +201,21 @@ public class SymfonyInstallerUtil {
             ArchiveEntry entry;
             while ((entry = ti.getNextEntry()) != null) {
                 String name = entry.getName();
-                if (name.equals("symfony")) {
-                    Files.copy(ti, Path.of(projectDir));
+                if (name.equals("symfony") || name.equals("symfony.exe")) {
+                    String filePath = projectDir + "/" + name;
+                    Files.copy(ti, Path.of(filePath));
 
-                    File file = new File(projectDir);
+                    File file = new File(filePath);
                     file.setExecutable(true);
 
-                    return true;
+                    return filePath;
                 }
             }
         } catch (IOException e) {
             Symfony2ProjectComponent.getLogger().warn("Symfony CLI: can not fetch release binary: " + e.getMessage());
         }
 
-        return false;
+        return null;
     }
 
     @NotNull
