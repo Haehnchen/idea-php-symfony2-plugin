@@ -2,7 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.translation;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
-import com.intellij.openapi.util.ModificationTracker;
+import com.intellij.openapi.util.SimpleModificationTracker;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VfsUtilCore;
@@ -35,12 +35,12 @@ public class TranslationIndex {
     private TranslationIndex() {
     }
 
-    private static final Key<CachedValue<TranslationStringMap>> CACHE = new Key<>("FOO");
+    private static final Key<CachedValue<TranslationStringMap>> SYMFONY_TRANSLATION_MAP_COMPILED = new Key<>("SYMFONY_TRANSLATION_MAP_COMPILED");
 
     synchronized static public TranslationStringMap getTranslationMap(@NotNull Project project) {
         return CachedValuesManager.getManager(project).getCachedValue(
             project,
-            CACHE,
+            SYMFONY_TRANSLATION_MAP_COMPILED,
             () -> {
                 Collection<File> translationDirectories = getTranslationRoot(project);
 
@@ -53,7 +53,7 @@ public class TranslationIndex {
 
                 Symfony2ProjectComponent.getLogger().info("translations changed: " + StringUtils.join(translationDirectories.stream().map(File::toString).collect(Collectors.toSet()), ","));
 
-                return CachedValueProvider.Result.create(translationStringMap, new MyModificationTracker(project));
+                return CachedValueProvider.Result.create(translationStringMap, new FileModificationModificationTracker(project));
             },
             false
         );
@@ -121,17 +121,28 @@ public class TranslationIndex {
         return files;
     }
 
-    private static class MyModificationTracker implements ModificationTracker {
+    private static class FileModificationModificationTracker extends SimpleModificationTracker {
         @NotNull
         private final Project project;
+        private long last = 0;
 
-        public MyModificationTracker(@NotNull Project project) {
+        public FileModificationModificationTracker(@NotNull Project project) {
             this.project = project;
         }
 
         @Override
         public long getModificationCount() {
-            return getTranslationRoot(this.project).stream().mapToLong(File::lastModified).sum();
+            long hash = getTranslationRoot(this.project)
+                .stream()
+                .mapToLong(File::lastModified)
+                .sum();
+
+            if (hash != this.last) {
+                this.last = hash;
+                this.incModificationCount();
+            }
+
+            return super.getModificationCount();
         }
     }
 }
