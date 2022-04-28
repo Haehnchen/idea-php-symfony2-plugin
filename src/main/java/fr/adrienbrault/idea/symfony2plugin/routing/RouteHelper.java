@@ -5,6 +5,7 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.SimpleModificationTracker;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -29,16 +30,15 @@ import de.espend.idea.php.annotation.dict.PhpDocTagAnnotation;
 import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.extension.RoutingLoader;
 import fr.adrienbrault.idea.symfony2plugin.extension.RoutingLoaderParameter;
 import fr.adrienbrault.idea.symfony2plugin.routing.dic.ControllerClassOnShortcutReturn;
 import fr.adrienbrault.idea.symfony2plugin.routing.dic.ServiceRouteContainer;
-import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutesContainer;
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutingFile;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.ui.dict.AbstractUiFilePath;
 import fr.adrienbrault.idea.symfony2plugin.util.*;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerAction;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
@@ -61,13 +61,13 @@ import java.util.stream.Collectors;
 public class RouteHelper {
 
     private static final Key<CachedValue<Map<String, Route>>> ROUTE_CACHE = new Key<>("SYMFONY:ROUTE_CACHE");
+    private static final Key<CachedValue<Map<String, Route>>> SYMFONY_COMPILED_CACHE_ROUTES = new Key<>("SYMFONY_COMPILED_CACHE_ROUTES");
+    private static final Key<CachedValue<Collection<String>>> SYMFONY_COMPILED_CACHE_ROUTES_FILES = new Key<>("SYMFONY_COMPILED_CACHE_ROUTES_FILES");
 
     public static Set<String> ROUTE_CLASSES = new HashSet<>(Arrays.asList(
         "Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Route",
         "Symfony\\Component\\Routing\\Annotation\\Route"
     ));
-
-    public static Map<Project, Map<String, RoutesContainer>> COMPILED_CACHE = new HashMap<>();
 
     private static final ExtensionPointName<RoutingLoader> ROUTING_LOADER = new ExtensionPointName<>(
         "fr.adrienbrault.idea.symfony2plugin.extension.RoutingLoader"
@@ -261,65 +261,66 @@ public class RouteHelper {
     }
 
     @NotNull
-    public static Map<String, Route> getCompiledRoutes(@NotNull Project project) {
-        Set<String> files = new HashSet<>();
+    private static synchronized Collection<String> getCompiledRouteFiles(@NotNull Project project) {
+        return CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            SYMFONY_COMPILED_CACHE_ROUTES_FILES,
+            () -> {
+                Set<String> files = new HashSet<>();
 
-        // add custom routing files on settings
-        List<RoutingFile> routingFiles = Settings.getInstance(project).routingFiles;
-        if(routingFiles != null) {
-            for (RoutingFile routingFile : routingFiles) {
-                String path = routingFile.getPath();
-                if(StringUtils.isNotBlank(path)) {
-                    files.add(path);
-                }
-            }
-        }
-
-        // add defaults; if user never has changed the settings
-        if(routingFiles == null || routingFiles.size() == 0) {
-            Collections.addAll(files, Settings.DEFAULT_ROUTES);
-        }
-
-        for(String file: files) {
-
-            File urlGeneratorFile = new File(getPath(project, file));
-            VirtualFile virtualUrlGeneratorFile = VfsUtil.findFileByIoFile(urlGeneratorFile, false);
-            if (virtualUrlGeneratorFile == null || !urlGeneratorFile.exists()) {
-
-                // clean file cache
-                if(COMPILED_CACHE.containsKey(project) && COMPILED_CACHE.get(project).containsKey(file)) {
-                    COMPILED_CACHE.get(project).remove(file);
+                // add custom routing files on settings
+                List<RoutingFile> routingFiles = Settings.getInstance(project).routingFiles;
+                if (routingFiles != null) {
+                    files = routingFiles.stream().map(AbstractUiFilePath::getPath)
+                        .filter(StringUtils::isNotBlank)
+                        .collect(Collectors.toSet());
                 }
 
-            } else {
+                Collections.addAll(files, Settings.DEFAULT_ROUTES);
 
-                if(!COMPILED_CACHE.containsKey(project)) {
-                    COMPILED_CACHE.put(project, new HashMap<>());
+                Set<String> filesAbsolute = files.stream()
+                    .map(s -> getPath(project, s))
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+
+                return CachedValueProvider.Result.create(Collections.unmodifiableSet(filesAbsolute), PsiModificationTracker.MODIFICATION_COUNT);
+            },
+            false
+        );
+
+    }
+
+    @NotNull
+    private static Map<String, Route> getCompiledRoutes(@NotNull Project project) {
+        Map<String, Route> routesCache = CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            SYMFONY_COMPILED_CACHE_ROUTES,
+            () -> {
+                Map<String, Route> routesContainerMap = new HashMap<>();
+
+                Collection<String> compiledRouteFiles = getCompiledRouteFiles(project);
+
+                for (String file : compiledRouteFiles) {
+                    File urlGeneratorFile = new File(getPath(project, file));
+                    VirtualFile virtualUrlGeneratorFile = VfsUtil.findFileByIoFile(urlGeneratorFile, false);
+                    if (virtualUrlGeneratorFile == null || !urlGeneratorFile.exists()) {
+                        continue;
+                    }
+
+                    routesContainerMap.putAll(RouteHelper.getRoutesInsideUrlGeneratorFile(project, virtualUrlGeneratorFile));
                 }
 
-                Long routesLastModified = urlGeneratorFile.lastModified();
-                if(!COMPILED_CACHE.get(project).containsKey(file) || !COMPILED_CACHE.get(project).get(file).getLastMod().equals(routesLastModified)) {
+                return CachedValueProvider.Result.create(
+                    Collections.unmodifiableMap(routesContainerMap),
+                    new StringModificationTracker(project),
+                    new AbsoluteFileModificationTracker(compiledRouteFiles)
+                );
+            },
+            false
+        );
 
-                    COMPILED_CACHE.get(project).put(file, new RoutesContainer(
-                        routesLastModified,
-                        RouteHelper.getRoutesInsideUrlGeneratorFile(project, virtualUrlGeneratorFile)
-                    ));
-
-                    Symfony2ProjectComponent.getLogger().info("update routing: " + urlGeneratorFile.toString());
-                }
-            }
-
-        }
-
-        Map<String, Route> routes = new HashMap<>();
-        if(COMPILED_CACHE.containsKey(project)) {
-            for (RoutesContainer container : COMPILED_CACHE.get(project).values()) {
-                routes.putAll(container.getRoutes());
-            }
-        }
-
+        Map<String, Route> routes = new HashMap<>(routesCache);
         RoutingLoaderParameter parameter = null;
-
         for (RoutingLoader routingLoader : ROUTING_LOADER.getExtensions()) {
             if(parameter == null) {
                 parameter = new RoutingLoaderParameter(project, routes);
@@ -1145,5 +1146,25 @@ public class RouteHelper {
     public static boolean isRouteClassAnnotation(@NotNull String clazz) {
         String myClazz = StringUtils.stripStart(clazz, "\\");
         return ROUTE_CLASSES.stream().anyMatch(s -> s.equalsIgnoreCase(myClazz));
+    }
+
+    private static class StringModificationTracker extends SimpleModificationTracker {
+        private final @NotNull Project project;
+        private int last = 0;
+
+        public StringModificationTracker(@NotNull Project project) {
+            this.project = project;
+        }
+
+        @Override
+        public long getModificationCount() {
+            int hash = getCompiledRouteFiles(project).stream().sorted().collect(Collectors.joining()).hashCode();
+            if (hash != this.last) {
+                this.last = hash;
+                this.incModificationCount();
+            }
+
+            return super.getModificationCount();
+        }
     }
 }

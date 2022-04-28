@@ -44,8 +44,6 @@ public class Symfony2ProjectComponent {
         @Override
         public void dispose() {
             ServiceXmlParserFactory.cleanInstance(this.project);
-            // clean routing
-            RouteHelper.COMPILED_CACHE.remove(project);
         }
     }
 
