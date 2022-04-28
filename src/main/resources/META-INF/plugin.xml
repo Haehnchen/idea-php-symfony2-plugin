@@ -109,8 +109,8 @@
         <typeProvider4 implementation="fr.adrienbrault.idea.symfony2plugin.assistant.signature.MethodSignatureTypeProvider"/>
 
 
-        <libraryRoot id="symfony_meta" path="/symfony-meta/" runtime="false"/>
-        <libraryRoot id="doctrine_meta" path="/doctrine-meta/" runtime="false"/>
+        <libraryRoot implementation="fr.adrienbrault.idea.symfony2plugin.library.SymfonyMetaLibraryRootProvider"/>
+        <libraryRoot implementation="fr.adrienbrault.idea.symfony2plugin.library.DoctrineMetaLibraryRootProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
