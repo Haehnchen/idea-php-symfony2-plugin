@@ -63,6 +63,7 @@ public class RouteHelper {
     private static final Key<CachedValue<Map<String, Route>>> ROUTE_CACHE = new Key<>("SYMFONY:ROUTE_CACHE");
     private static final Key<CachedValue<Map<String, Route>>> SYMFONY_COMPILED_CACHE_ROUTES = new Key<>("SYMFONY_COMPILED_CACHE_ROUTES");
     private static final Key<CachedValue<Collection<String>>> SYMFONY_COMPILED_CACHE_ROUTES_FILES = new Key<>("SYMFONY_COMPILED_CACHE_ROUTES_FILES");
+    private static final Key<CachedValue<Collection<String>>> SYMFONY_COMPILED_GUESTED_FILES = new Key<>("SYMFONY_COMPILED_GUESTED_FILES");
 
     public static Set<String> ROUTE_CLASSES = new HashSet<>(Arrays.asList(
         "Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Route",
@@ -261,6 +262,62 @@ public class RouteHelper {
     }
 
     @NotNull
+    private static Set<String> getDefaultRoutes(@NotNull Project project) {
+        Set<String> allFiles = new HashSet<>();
+
+        VirtualFile projectDir = ProjectUtil.getProjectDir(project);
+        if (projectDir != null) {
+            VirtualFile varCache = VfsUtil.findRelativeFile(projectDir, "var", "cache");
+            if (varCache != null) {
+                String path1 = varCache.getPath();
+
+                Collection<String> cachedValue = CachedValuesManager.getManager(project).getCachedValue(
+                    project,
+                    SYMFONY_COMPILED_GUESTED_FILES,
+                    () -> {
+                        Set<String> files = new HashSet<>();
+
+                        // old "app/cache" is ignored for now
+                        VirtualFile cache = VfsUtil.findRelativeFile(projectDir, "var", "cache");
+                        for (VirtualFile child : cache != null ? cache.getChildren() : new VirtualFile[] {}) {
+                            String filename = child.getName();
+                            // support "dev" and "dev_*"
+                            if ("dev".equals(filename) || filename.startsWith("dev_")) {
+                                for (VirtualFile childChild : child.getChildren()) {
+                                    if (childChild.isDirectory() || !"php".equalsIgnoreCase(childChild.getExtension())) {
+                                        continue;
+                                    }
+
+                                    // guess a compiled php file by its normalized name
+                                    // some common examples, from Symfony 2 to now :)
+                                    // appDevDebugProjectContainerUrlGenerator, UrlGenerator
+                                    String s = childChild.getNameWithoutExtension().toLowerCase().replace("_", "");
+                                    if (s.contains("urlgenerator") || s.contains("urlgenerating")) {
+                                        String path = VfsUtil.getRelativePath(childChild, projectDir, '/');
+                                        if (path != null) {
+                                            files.add(path.replace("\\", "//"));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        return CachedValueProvider.Result.create(Collections.unmodifiableSet(files), new AbsoluteFileModificationTracker(List.of(path1)));
+                    },
+                    false
+                );
+
+                allFiles.addAll(cachedValue);
+            }
+        }
+
+        // work with cloned data
+        Set<String> files2 = new HashSet<>(allFiles);
+        files2.addAll(Settings.DEFAULT_ROUTES);
+        return files2;
+    }
+
+    @NotNull
     private static synchronized Collection<String> getCompiledRouteFiles(@NotNull Project project) {
         return CachedValuesManager.getManager(project).getCachedValue(
             project,
@@ -276,7 +333,7 @@ public class RouteHelper {
                         .collect(Collectors.toSet());
                 }
 
-                Collections.addAll(files, Settings.DEFAULT_ROUTES);
+                files.addAll(getDefaultRoutes(project));
 
                 Set<String> filesAbsolute = files.stream()
                     .map(s -> getPath(project, s))
@@ -287,7 +344,6 @@ public class RouteHelper {
             },
             false
         );
-
     }
 
     @NotNull

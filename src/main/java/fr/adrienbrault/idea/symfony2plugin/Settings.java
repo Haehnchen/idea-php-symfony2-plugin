@@ -15,6 +15,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 @State(
@@ -26,14 +28,14 @@ import java.util.List;
 public class Settings implements PersistentStateComponent<Settings> {
 
     // Default Symfony
-    public static String[] DEFAULT_ROUTES = new String[] {
+    public static final Collection<String> DEFAULT_ROUTES = Arrays.asList(
         "app/cache/dev/appDevUrlGenerator.php",
         "var/cache/dev/appDevUrlGenerator.php",
         "var/cache/dev/appDevDebugProjectContainerUrlGenerator.php",
         "var/cache/dev/srcDevDebugProjectContainerUrlGenerator.php",
         "var/cache/dev/url_generating_routes.php", // Symfony >= 4
-        "var/cache/dev/UrlGenerator.php", // Symfony >= 4
-    };
+        "var/cache/dev/UrlGenerator.php" // Symfony >= 4
+    );
 
     public static String DEFAULT_TRANSLATION_PATH = "app/cache/dev/translations";
 
