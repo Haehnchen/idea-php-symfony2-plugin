@@ -15,6 +15,7 @@ import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
+import fr.adrienbrault.idea.symfony2plugin.util.AbsoluteFileModificationTracker;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.TimeSecondModificationTracker;
 import org.apache.commons.lang.StringUtils;
@@ -22,7 +23,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -31,6 +34,7 @@ import java.util.stream.Collectors;
 public class TranslationIndex {
     private static final Key<CachedValue<Collection<File>>> SYMFONY_TRANSLATION_COMPILED_TIMED_WATCHER = new Key<>("SYMFONY_TRANSLATION_COMPILED_TIMED_WATCHER");
     private static final Key<CachedValue<Collection<File>>> SYMFONY_TRANSLATION_COMPILED = new Key<>("SYMFONY_TRANSLATION_COMPILED");
+    private static final Key<CachedValue<Collection<String>>> SYMFONY_GUESTED_TRANSLATION_DIRECTORIES = new Key<>("SYMFONY_GUESTED_TRANSLATION_DIRECTORIES");
 
     private TranslationIndex() {
     }
@@ -80,27 +84,99 @@ public class TranslationIndex {
         );
     }
 
+    private static class TranslationSettingsModificationTracker extends SimpleModificationTracker {
+        private final @NotNull Project project;
+        private int last = 0;
+
+        public TranslationSettingsModificationTracker(@NotNull Project project) {
+            this.project = project;
+        }
+
+        @Override
+        public long getModificationCount() {
+            String pathToTranslation = Settings.getInstance(project).pathToTranslation;
+            if (StringUtils.isBlank(pathToTranslation)) {
+                pathToTranslation = "";
+            }
+
+            int hash = pathToTranslation.hashCode();
+            if (hash != this.last) {
+                this.last = hash;
+                this.incModificationCount();
+            }
+
+            return super.getModificationCount();
+        }
+    }
+
     @NotNull
     private static Collection<File> getTranslationRootInner(@NotNull Project project) {
         Collection<File> files = new HashSet<>();
+        Collection<String> filesAbsolute = new HashSet<>();
 
-        String translationPath = Settings.getInstance(project).pathToTranslation;
-        if (StringUtils.isNotBlank(translationPath)) {
-            if (!FileUtil.isAbsolute(translationPath)) {
-                translationPath = project.getBasePath() + "/" + translationPath;
-            }
+        VirtualFile projectDir = ProjectUtil.getProjectDir(project);
+        if (projectDir != null) {
+            Collection<String> cachedValue = CachedValuesManager.getManager(project).getCachedValue(
+                project,
+                SYMFONY_GUESTED_TRANSLATION_DIRECTORIES,
+                () -> {
+                    Set<String> directories = new HashSet<>();
+                    Set<String> caches = new HashSet<>();
 
-            File file = new File(translationPath);
-            if(file.exists() && file.isDirectory()) {
-                files.add(file);
-            }
+                    for (String root : new String[] {"var/cache", "app/cache"}) {
+                        VirtualFile cache = VfsUtil.findRelativeFile(projectDir, root.split("/"));
+                        if (cache == null) {
+                            continue;
+                        }
+
+                        caches.add(cache.getParent().getPath());
+
+                        for (VirtualFile child : cache.getChildren()) {
+                            String filename = child.getName();
+                            // support "dev" and "dev_*"
+                            if (!"dev".equals(filename) && !filename.startsWith("dev_")) {
+                                continue;
+                            }
+
+                            VirtualFile translations = child.findChild("translations");
+                            if (translations == null) {
+                                continue;
+                            }
+
+                            directories.add(translations.getPath());
+                        }
+                    }
+
+                    String translationPath = Settings.getInstance(project).pathToTranslation;
+                    if (StringUtils.isNotBlank(translationPath)) {
+                        if (!FileUtil.isAbsolute(translationPath)) {
+                            translationPath = project.getBasePath() + "/" + translationPath;
+                        }
+
+                        File file = new File(translationPath);
+                        if(file.exists() && file.isDirectory()) {
+                            directories.add(file.getPath());
+                        }
+                    }
+
+                    caches.addAll(directories);
+
+                    return CachedValueProvider.Result.create(
+                        Collections.unmodifiableSet(directories),
+                        new TranslationSettingsModificationTracker(project),
+                        new AbsoluteFileModificationTracker(caches)
+                    );
+                },
+                false
+            );
+
+            files.addAll(cachedValue.stream().map(File::new).collect(Collectors.toSet()));
+            filesAbsolute.addAll(cachedValue);
         }
-
-        VirtualFile baseDir = ProjectUtil.getProjectDir(project);
 
         for (String containerFile : ServiceContainerUtil.getContainerFiles(project)) {
             // resolve the file
-            VirtualFile containerVirtualFile = VfsUtil.findRelativeFile(containerFile, baseDir);
+            VirtualFile containerVirtualFile = VfsUtil.findRelativeFile(containerFile, projectDir);
             if (containerVirtualFile == null) {
                 continue;
             }
@@ -113,7 +189,8 @@ public class TranslationIndex {
 
             // get translation sub directory
             VirtualFile translations = cacheDirectory.findChild("translations");
-            if (translations != null) {
+            if (translations != null && !filesAbsolute.contains(translations.getPath())) {
+                filesAbsolute.add(translations.getPath());
                 files.add(VfsUtilCore.virtualToIoFile(translations));
             }
         }
