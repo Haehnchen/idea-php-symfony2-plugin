@@ -870,10 +870,10 @@ public class ServiceContainerUtil {
         return CachedValuesManager.getManager(project).getCachedValue(project, SYMFONY_COMPILED_TIMED_SERVICE_WATCHER, () -> {
             Set<String> files = new HashSet<>();
 
+            VirtualFile baseDir = ProjectUtil.getProjectDir(project);
+
             // several Symfony cache folder structures
             for (String root : new String[] {"var/cache", "app/cache"}) {
-                VirtualFile baseDir = ProjectUtil.getProjectDir(project);
-
                 VirtualFile relativeFile = VfsUtil.findRelativeFile(root, baseDir);
                 if (relativeFile == null) {
                     continue;
@@ -904,7 +904,9 @@ public class ServiceContainerUtil {
                 }
             }
 
-            return CachedValueProvider.Result.create(files, TimeSecondModificationTracker.TIMED_MODIFICATION_TRACKER_60);
+            Set<String> cache = files.stream().map(s -> baseDir.getPath() + "/" + s).collect(Collectors.toSet());
+
+            return CachedValueProvider.Result.create(Collections.unmodifiableSet(files), new AbsoluteFileModificationTracker(cache));
         }, false);
     }
 }
