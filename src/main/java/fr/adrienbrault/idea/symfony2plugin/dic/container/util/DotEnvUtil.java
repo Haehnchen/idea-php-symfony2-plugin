@@ -99,7 +99,7 @@ public class DotEnvUtil {
 
         // try to find some env's ;)
         for (String file : new String[]{".env", ".env.dist", ".env.test", ".env.local"}) {
-            files.addAll(FilenameIndex.getVirtualFilesByName(project, file, GlobalSearchScope.allScope(project)));
+            files.addAll(FilenameIndex.getVirtualFilesByName(file, GlobalSearchScope.allScope(project)));
         }
 
         // search root directory for all ".env*" files

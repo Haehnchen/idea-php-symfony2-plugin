@@ -29,13 +29,13 @@ public class SymfonyWebpackUtil {
      * - entrypoints.json
      */
     public static void visitAllEntryFileTypes(@NotNull Project project, @NotNull Consumer<Pair<VirtualFile, String>> consumer) {
-        for (VirtualFile virtualFile : FilenameIndex.getVirtualFilesByName(project, "webpack.config.js", GlobalSearchScope.allScope(project))) {
+        for (VirtualFile virtualFile : FilenameIndex.getVirtualFilesByName("webpack.config.js", GlobalSearchScope.allScope(project))) {
             if (!isTestFile(project, virtualFile)) {
                 visitWebpackConfiguration(virtualFile, consumer);
             }
         }
 
-        for (VirtualFile virtualFile : FilenameIndex.getVirtualFilesByName(project, "entrypoints.json", GlobalSearchScope.allScope(project))) {
+        for (VirtualFile virtualFile : FilenameIndex.getVirtualFilesByName("entrypoints.json", GlobalSearchScope.allScope(project))) {
             if (!isTestFile(project, virtualFile)) {
                 visitEntryPointJson(virtualFile, consumer);
             }
