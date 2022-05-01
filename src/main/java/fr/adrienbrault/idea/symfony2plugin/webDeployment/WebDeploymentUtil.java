@@ -1,7 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.webDeployment;
 
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
-import com.intellij.ide.plugins.PluginManager;
+import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -20,7 +20,7 @@ public class WebDeploymentUtil {
         }
 
         if(PLUGIN_ENABLED == null) {
-            IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId("com.jetbrains.plugins.webDeployment"));
+            IdeaPluginDescriptor plugin = PluginManagerCore.getPlugin(PluginId.getId("com.jetbrains.plugins.webDeployment"));
             PLUGIN_ENABLED = plugin != null && plugin.isEnabled();
         }
 
