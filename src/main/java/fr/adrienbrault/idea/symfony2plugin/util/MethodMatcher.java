@@ -70,32 +70,41 @@ public class MethodMatcher {
     }
 
     public static class MethodMatchParameter {
-
+        @NotNull
         final private CallToSignature signature;
+
+        @NotNull
         final private ParameterBag parameterBag;
+
+        @NotNull
         final private PsiElement[] parameters;
+
+        @NotNull
         final private MethodReference methodReference;
 
-        public MethodMatchParameter(CallToSignature signature, ParameterBag parameterBag, PsiElement[] parameters, MethodReference methodReference) {
+        public MethodMatchParameter(@NotNull CallToSignature signature, @NotNull ParameterBag parameterBag, @NotNull PsiElement[] parameters, @NotNull MethodReference methodReference) {
             this.signature = signature;
             this.parameterBag = parameterBag;
             this.parameters = parameters;
             this.methodReference = methodReference;
         }
 
-        @Nullable
+        @NotNull
         public CallToSignature getSignature() {
             return signature;
         }
 
+        @NotNull
         public ParameterBag getParameterBag() {
             return this.parameterBag;
         }
 
+        @NotNull
         public PsiElement[] getParameters() {
             return parameters;
         }
 
+        @NotNull
         public MethodReference getMethodReference() {
             return methodReference;
         }

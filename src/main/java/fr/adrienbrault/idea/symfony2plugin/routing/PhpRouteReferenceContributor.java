@@ -4,6 +4,8 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.*;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.PhpLanguage;
+import com.jetbrains.php.lang.psi.elements.MethodReference;
+import com.jetbrains.php.lang.psi.elements.PhpExpression;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
@@ -50,9 +52,17 @@ public class PhpRouteReferenceContributor extends PsiReferenceContributor {
             new PsiReferenceProvider() {
                 @NotNull
                 @Override
-                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+                public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
 
-                    if (MethodMatcher.getMatchedSignatureWithDepth(psiElement, GENERATOR_SIGNATURES) == null) {
+                    MethodMatcher.MethodMatchParameter matchedSignatureWithDepth = MethodMatcher.getMatchedSignatureWithDepth(psiElement, GENERATOR_SIGNATURES);
+                    if (matchedSignatureWithDepth == null) {
+                        return new PsiReference[0];
+                    }
+
+                    // @TODO: find better solution; prevent duplicate on proxy frpm twig to php eg on path() or url()
+                    MethodReference methodReference = matchedSignatureWithDepth.getMethodReference();
+                    PhpExpression classReference = methodReference.getClassReference();
+                    if (classReference != null && "____proxy____".equalsIgnoreCase(classReference.getName())) {
                         return new PsiReference[0];
                     }
 
