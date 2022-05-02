@@ -447,7 +447,7 @@ public class ContainerCollectionResolver {
             return paramOrClassName;
         }
 
-
+        @NotNull
         private Map<String, ContainerParameter> getParameters() {
             if(this.containerParameterMap != null) {
                 return this.containerParameterMap;
@@ -523,34 +523,9 @@ public class ContainerCollectionResolver {
             return this.containerParameterMap = parametersMap;
         }
 
+        @NotNull
         private Set<String> getNames() {
-            // use overall map if already generated
-            if(this.containerParameterMap != null) {
-                return this.containerParameterMap.keySet();
-            }
-
-            Set<String> parameterNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-
-            // local filesystem
-            parameterNames.addAll(ServiceXmlParserFactory.getInstance(project, ParameterServiceParser.class).getParameterMap().keySet());
-
-            // index
-            parameterNames.addAll(
-                FileIndexCaches.getIndexKeysCache(project, SERVICE_PARAMETER_INDEX_NAMES, ContainerParameterStubIndex.KEY)
-            );
-
-            // setParameter("foo") for ContainerBuilder
-            for (ContainerBuilderCall call : FileBasedIndex.getInstance().getValues(ContainerBuilderStubIndex.KEY, "setParameter", GlobalSearchScope.allScope(project))) {
-                Collection<String> parameter = call.getParameter();
-                if(parameter != null) {
-                    parameterNames.addAll(parameter);
-                }
-            }
-
-
-            return parameterNames;
+            return getParameters().keySet();
         }
-
     }
-
 }
