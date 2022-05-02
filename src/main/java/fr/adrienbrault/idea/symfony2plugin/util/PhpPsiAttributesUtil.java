@@ -63,10 +63,22 @@ public class PhpPsiAttributesUtil {
         for (PhpAttribute.PhpAttributeArgument argument : attribute.getArguments()) {
             PhpExpectedFunctionArgument argument1 = argument.getArgument();
             if (argument1.getArgumentIndex() == 0) {
+                // what a mess here :)
+                // createReference is stopping with exception on array values
+                String value = argument1.getValue();
+                String s = org.apache.commons.lang3.StringUtils.normalizeSpace(value).replaceAll("[\\n\\t ]", "");
+                if (s.startsWith("['") || s.startsWith("[\"")) {
+                    continue;
+                }
 
                 // hint: reference is a complete fake object lazily created; it is not reflect the real element :(
                 // PhpPsiElementFactory.createPhpPsiFromText => com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionClassConstantArgument.createReference
-                @NotNull PsiElement namedElement = argument1.createReference(attribute.getProject());
+                @NotNull PsiElement namedElement;
+                try {
+                    namedElement = argument1.createReference(attribute.getProject());
+                } catch (AssertionError e) {
+                    continue;
+                }
 
                 if (namedElement instanceof StringLiteralExpression) {
                     // we can trust the string representation here, looks to be right implemented
