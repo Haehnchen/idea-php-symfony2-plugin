@@ -204,6 +204,14 @@ namespace AppBundle\My\Controller
         public function attributesPathFoo2()
         {
         }
+
+        #[Route([
+            'cs' => '/foobar/baz/{id}',
+            'sk' => '/foobarbaz/bat/{id}',
+        ], name: 'dashboard', methods: ['GET'])]
+        public function nameAsArray()
+        {
+        }
     }
 }
 
