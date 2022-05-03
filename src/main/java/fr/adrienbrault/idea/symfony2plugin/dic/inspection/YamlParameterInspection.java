@@ -63,7 +63,7 @@ public class YamlParameterInspection extends LocalInspectionTool {
             // parameter a always lowercase see #179
             parameterName = parameterName.toLowerCase();
             if (!ContainerCollectionResolver.hasParameterName(lazyServiceCollector, parameterName)) {
-                holder.registerProblem(psiElement, "Missing Parameter", ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
+                holder.registerProblem(psiElement, "Symfony: Missing Parameter", ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
             }
         }
     }
