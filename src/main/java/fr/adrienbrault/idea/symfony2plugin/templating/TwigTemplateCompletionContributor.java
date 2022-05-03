@@ -1071,7 +1071,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
                 CompletionService.getCompletionService().performCompletion(new CompletionParameters(
                     firstChild,
-                    target.getContainingFile(),
+                    firstChild.getContainingFile(),
                     CompletionType.BASIC,
                     firstChild.getTextOffset(),
                     parameters.getInvocationCount(),
