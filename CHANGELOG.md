@@ -25,6 +25,7 @@ Changelog
 * [#1890](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1890) pipe also the fake php file to completion proxying for php (Daniel Espendiller)
 * [#1893](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1893) workaround in wrongly implemented attributes handling; catch errors and check for direct attribute value via string (Daniel Espendiller)
 * Use central container parameter naming as its now highly optimized (Daniel Espendiller)
+* [paid] [#1888](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1888) Inspection #FormViewTemplate has no description (PluginException) (Daniel Espendiller)
 
 ## 0.23.223 / 2022.1.223
 * Replaced timed cache for container to use its file modification counter (Daniel Espendiller)
@@ -74,6 +75,7 @@ Changelog
 ## 0.23.220 / 2022.1.220
 * Fix SymfonyProfilerWidget api compatibility (Daniel Espendiller)
 * Fix 2022.1 compatibility issues (Daniel Espendiller)
+* [paid] Add project start grace period for paid feature (Daniel Espendiller)
 
 ## 0.23.219 / 2022.1.219
 * Use new toolbox version (Daniel Espendiller)
