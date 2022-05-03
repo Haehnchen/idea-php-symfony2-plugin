@@ -18,21 +18,21 @@ public class YamlParameterInspectionTest extends SymfonyLightCodeInsightFixtureT
     }
 
     public void testParameterInspection() {
-        assertLocalInspectionContains("services.yml", "services:\n   %foo_<caret>missing%", "Missing Parameter");
-        assertLocalInspectionNotContains("services.yml", "services:\n   %foo_p<caret>arameter%", "Missing Parameter");
+        assertLocalInspectionContains("services.yml", "services:\n   %foo_<caret>missing%", "Symfony: Missing Parameter");
+        assertLocalInspectionNotContains("services.yml", "services:\n   %foo_p<caret>arameter%", "Symfony: Missing Parameter");
 
-        assertLocalInspectionContains("services.yml", "services:\n   %Foo_<caret>missing%", "Missing Parameter");
-        assertLocalInspectionNotContains("services.yml", "services:\n   %Foo_p<caret>arameter%", "Missing Parameter");
+        assertLocalInspectionContains("services.yml", "services:\n   %Foo_<caret>missing%", "Symfony: Missing Parameter");
+        assertLocalInspectionNotContains("services.yml", "services:\n   %Foo_p<caret>arameter%", "Symfony: Missing Parameter");
 
-        assertLocalInspectionContains("services.yml", "services:\n   [ '%Foo_<caret>missing%' ]\n", "Missing Parameter");
-        assertLocalInspectionContains("services.yml", "services:\n   [ \"%Foo_<caret>missing%\" ]\n", "Missing Parameter");
-        assertLocalInspectionNotContains("services.yml", "services:\n   %kernel.root_dir%/../we<caret>b/%webpath_modelmasks%", "Missing Parameter");
+        assertLocalInspectionContains("services.yml", "services:\n   [ '%Foo_<caret>missing%' ]\n", "Symfony: Missing Parameter");
+        assertLocalInspectionContains("services.yml", "services:\n   [ \"%Foo_<caret>missing%\" ]\n", "Symfony: Missing Parameter");
+        assertLocalInspectionNotContains("services.yml", "services:\n   %kernel.root_dir%/../we<caret>b/%webpath_modelmasks%", "Symfony: Missing Parameter");
     }
 
     public void testParameterInspectionForEnvMustNotAnnotationAsMissing() {
-        assertLocalInspectionNotContains("services.yml", "services:\n   %env(FO<caret>O)%", "Missing Parameter");
-        assertLocalInspectionNotContains("services.yml", "services:\n   '%env(FO<caret>O)%'", "Missing Parameter");
-        assertLocalInspectionNotContains("services.yml", "services:\n   \"%env(FO<caret>O)%\"", "Missing Parameter");
-        assertLocalInspectionNotContains("services.yml", "services:\n   '%ENV(FO<caret>O)%'", "Missing Parameter");
+        assertLocalInspectionNotContains("services.yml", "services:\n   %env(FO<caret>O)%", "Symfony: Missing Parameter");
+        assertLocalInspectionNotContains("services.yml", "services:\n   '%env(FO<caret>O)%'", "Symfony: Missing Parameter");
+        assertLocalInspectionNotContains("services.yml", "services:\n   \"%env(FO<caret>O)%\"", "Symfony: Missing Parameter");
+        assertLocalInspectionNotContains("services.yml", "services:\n   '%ENV(FO<caret>O)%'", "Symfony: Missing Parameter");
     }
 }
