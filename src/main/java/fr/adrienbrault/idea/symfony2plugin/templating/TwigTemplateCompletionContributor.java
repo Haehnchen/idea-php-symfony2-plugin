@@ -318,9 +318,9 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         extend(
             CompletionType.BASIC,
             TwigPattern.getAutocompletableRoutePattern(),
-            new CompletionProvider<CompletionParameters>() {
+            new CompletionProvider<>() {
                 public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
-                    if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                    if (!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
                         return;
                     }
 
@@ -994,7 +994,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            // @TODO: support more the first argument
+            // @TODO: support more then the first argument
             int wantParameter = 0;
 
             Collection<Pair<PhpNamedElement, Integer>> sources = new ArrayList<>();
@@ -1043,8 +1043,8 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                     if (containingClass != null) {
                         @NotNull ParameterList phpPsiFromText = PhpPsiElementFactory.createPhpPsiFromText(parameters.getPosition().getProject(), ParameterList.class, "" +
                             "<?php\n" +
-                            "/** @var " + containingClass.getFQN() + " $x */\n" +
-                            "$x->" + psiElement.getName() + "(" + join + ");\n");
+                            "/** @var " + containingClass.getFQN() + " $____proxy____ */\n" +
+                            "$____proxy____->" + psiElement.getName() + "(" + join + ");\n");
 
                         PsiElement[] parameters1 = phpPsiFromText.getParameters();
                         targets.add(parameters1[parameters1.length - 1]);
@@ -1052,14 +1052,14 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 } else if (psiElement instanceof com.jetbrains.php.lang.psi.elements.Function) {
                     @NotNull ParameterList phpPsiFromText = PhpPsiElementFactory.createPhpPsiFromText(parameters.getPosition().getProject(), ParameterList.class, "" +
                         "<?php\n" +
-                        psiElement.getName() + "(" + join + ");\n");
+                        "$____proxy____ = " + psiElement.getName() + "(" + join + ");\n");
 
                     PsiElement[] parameters1 = phpPsiFromText.getParameters();
                     targets.add(parameters1[parameters1.length - 1]);
                 } else if (psiElement instanceof PhpClass) {
                     @NotNull ParameterList phpPsiFromText = PhpPsiElementFactory.createPhpPsiFromText(parameters.getPosition().getProject(), ParameterList.class, "" +
                         "<?php\n" +
-                        "new " + psiElement.getFQN() + "(" + join + ");\n");
+                        "$____proxy____ = new " + psiElement.getFQN() + "(" + join + ");\n");
 
                     PsiElement[] parameters1 = phpPsiFromText.getParameters();
                     targets.add(parameters1[parameters1.length - 1]);
