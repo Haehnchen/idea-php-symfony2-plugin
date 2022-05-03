@@ -62,6 +62,8 @@ import java.util.stream.Collectors;
 public class RouteHelper {
 
     private static final Key<CachedValue<Map<String, Route>>> ROUTE_CACHE = new Key<>("SYMFONY:ROUTE_CACHE");
+    private static final Key<CachedValue<Set<String>>> ROUTE_CONTROLLER_RESOLVED_CACHE = new Key<>("ROUTE_CONTROLLER_RESOLVED_CACHE");
+
     private static final Key<CachedValue<Map<String, Route>>> SYMFONY_COMPILED_CACHE_ROUTES = new Key<>("SYMFONY_COMPILED_CACHE_ROUTES");
     private static final Key<CachedValue<Collection<String>>> SYMFONY_COMPILED_CACHE_ROUTES_FILES = new Key<>("SYMFONY_COMPILED_CACHE_ROUTES_FILES");
     private static final Key<CachedValue<Collection<String>>> SYMFONY_COMPILED_GUESTED_FILES = new Key<>("SYMFONY_COMPILED_GUESTED_FILES");
@@ -1165,6 +1167,42 @@ public class RouteHelper {
         }
 
         return targets;
+    }
+
+    public static boolean isRouteExistingForMethod(final @NotNull Method method) {
+        Project project = method.getProject();
+
+        Set<String> cachedValue = CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            ROUTE_CONTROLLER_RESOLVED_CACHE,
+            () -> {
+                Set<String> items = new HashSet<>();
+
+                for (Map.Entry<String, Route> pair : RouteHelper.getAllRoutes(project).entrySet()) {
+                    String controller = pair.getValue().getController();
+                    if (controller != null) {
+                        for (PsiElement psiElement : RouteHelper.getMethodsOnControllerShortcut(project, controller)) {
+                            if (psiElement instanceof Method) {
+                                items.add(((Method) psiElement).getFQN());
+                            }
+                        }
+                    }
+                }
+
+                return CachedValueProvider.Result.create(items, PsiModificationTracker.MODIFICATION_COUNT);
+            },
+            false
+        );
+
+        String fqn = method.getFQN();
+        if (fqn.toLowerCase().endsWith("action")) {
+            String substring = fqn.substring(0, fqn .length() - "action".length());
+            if (cachedValue.contains(substring)) {
+                return true;
+            }
+        }
+
+        return cachedValue.contains(fqn);
     }
 
     @NotNull
