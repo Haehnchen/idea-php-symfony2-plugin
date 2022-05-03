@@ -19,18 +19,25 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.23.224 / 2022.1.224
+* Prefix missing parameter inspection with "Symfony" (Daniel Espendiller)
+* Prevent duplicate complete for already known path / url twig lookup elements (Daniel Espendiller)
+* [#1890](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1890) pipe also the fake php file to completion proxying for php (Daniel Espendiller)
+* [#1893](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1893) workaround in wrongly implemented attributes handling; catch errors and check for direct attribute value via string (Daniel Espendiller)
+* Use central container parameter naming as its now highly optimized (Daniel Espendiller)
+
 ## 0.23.223 / 2022.1.223
-*   Replaced timed cache for container to use its file modification counter (Daniel Espendiller)
-*   Smarter detection for compiled translation files (Daniel Espendiller)
-*   Update PhpStorm library: - https://github.com/King2500/symfony-phpstorm-meta - https://github.com/King2500/doctrine-phpstorm-meta (Daniel Espendiller)
-*   Change static libraryRoots to dynamic LibraryRootProvider implementations (Thomas Schulz)
-*   Try to guess the translations file even more (Daniel Espendiller)
-*   Refactor compiled routing loading; to use internal cache implementation (Daniel Espendiller)
-*   [#1705](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1705) support constants for route name and path via first level self owning (Daniel Espendiller)
-*   Replace custom compiled translations caching result with CachedValue (Daniel Espendiller)
-*   Support download of Symfony CLI for project creation (Daniel Espendiller)
-*   [#1764](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1764) support translations in php files (Daniel Espendiller)
-*   [#774](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/774) [#1310](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1310) [#1334](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1334) fix "Symfony" project create feature with using Symfony CLI installer (Daniel Espendiller)
+* Replaced timed cache for container to use its file modification counter (Daniel Espendiller)
+* Smarter detection for compiled translation files (Daniel Espendiller)
+* Update PhpStorm library: - https://github.com/King2500/symfony-phpstorm-meta - https://github.com/King2500/doctrine-phpstorm-meta (Daniel Espendiller)
+* Change static libraryRoots to dynamic LibraryRootProvider implementations (Thomas Schulz)
+* Try to guess the translations file even more (Daniel Espendiller)
+* Refactor compiled routing loading; to use internal cache implementation (Daniel Espendiller)
+* [#1705](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1705) support constants for route name and path via first level self owning (Daniel Espendiller)
+* Replace custom compiled translations caching result with CachedValue (Daniel Espendiller)
+* Support download of Symfony CLI for project creation (Daniel Espendiller)
+* [#1764](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1764) support translations in php files (Daniel Espendiller)
+* [#774](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/774) [#1310](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1310) [#1334](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1334) fix "Symfony" project create feature with using Symfony CLI installer (Daniel Espendiller)
 
 ## 0.23.222 / 2022.1.222
 * Proxy Twig function parameter completion to PHP completion (Daniel Espendiller)
