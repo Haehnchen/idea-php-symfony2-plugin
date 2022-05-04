@@ -36,6 +36,7 @@ public class RoutingSettingsForm implements Configurable {
     private JPanel panel1;
     private JPanel listviewPanel;
     private JButton buttonReset;
+    private JTextPane ifYouApplicationDoesTextPane;
     private TableView<RoutingFile> tableView;
     private Project project;
     private boolean changed = false;
