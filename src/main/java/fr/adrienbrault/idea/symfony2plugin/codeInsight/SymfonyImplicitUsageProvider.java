@@ -7,6 +7,7 @@ import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.*;
 import de.espend.idea.php.annotation.dict.PhpDocCommentAnnotation;
 import de.espend.idea.php.annotation.util.AnnotationUtil;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
@@ -38,10 +39,16 @@ public class SymfonyImplicitUsageProvider implements ImplicitUsageProvider {
                 || isCommandAndService((PhpClass) element)
                 || isSubscribedEvent((PhpClass) element)
                 || isVoter((PhpClass) element)
-                || isTwigExtension((PhpClass) element);
+                || isTwigExtension((PhpClass) element)
+                || isEntityRepository((PhpClass) element);
         }
 
         return false;
+    }
+
+    private boolean isEntityRepository(@NotNull PhpClass phpClass) {
+        return PhpElementsUtil.isInstanceOf(phpClass, "\\Doctrine\\ORM\\EntityRepository")
+            && DoctrineMetadataUtil.findMetadataForRepositoryClass(phpClass).size() > 0;
     }
 
     private boolean isTwigExtension(PhpClass phpClass) {
