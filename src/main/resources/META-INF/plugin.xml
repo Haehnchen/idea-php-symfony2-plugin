@@ -244,6 +244,8 @@
         <gotoSymbolContributor implementation="fr.adrienbrault.idea.symfony2plugin.navigation.RouteSymbolContributor"/>
         <gotoSymbolContributor implementation="fr.adrienbrault.idea.symfony2plugin.navigation.SymfonyCommandSymbolContributor"/>
 
+        <implicitUsageProvider implementation="fr.adrienbrault.idea.symfony2plugin.codeInsight.SymfonyImplicitUsageProvider"/>
+
         <gotoFileContributor implementation="fr.adrienbrault.idea.symfony2plugin.navigation.TemplateFileContributor"/>
 
         <gotoRelatedProvider implementation="fr.adrienbrault.idea.symfony2plugin.navigation.PhpGotoRelatedProvider"/>

@@ -1,0 +1,6 @@
+services:
+  foo_controller_service:
+    class: App\Controller\FooControllerService
+
+  foo_controller.service_invoke:
+    class: App\Controller\FooControllerServiceInvoke

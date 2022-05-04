@@ -1,0 +1,19 @@
+foo_controller:
+  pattern: /
+  defaults:
+    _controller: App\Controller\FooController::foobarYaml
+
+foo_controller_invoke:
+  pattern: /
+  defaults:
+    _controller: App\Controller\FooControllerInvoke
+
+foo_controller_service_route:
+  pattern: /
+  defaults:
+    _controller: foo_controller_service:foo
+
+foo_controller_service_route_invoke:
+  pattern: /
+  defaults:
+    _controller: foo_controller.service_invoke
