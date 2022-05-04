@@ -32,12 +32,6 @@ import static fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class PhpMethodVariableResolveUtil {
-    private static Set<String> RENDER_METHODS = new HashSet<String>() {{
-        add("render");
-        add("renderView");
-        add("renderResponse");
-    }};
-
     /**
      * search for twig template variable on common use cases
      *
@@ -272,7 +266,7 @@ public class PhpMethodVariableResolveUtil {
         }
 
         @Override
-        public void visitElement(PsiElement element) {
+        public void visitElement(@NotNull PsiElement element) {
             if(element instanceof MethodReference) {
                 visitMethodReference((MethodReference) element);
             } else if(element instanceof PhpDocTag) {
@@ -283,11 +277,13 @@ public class PhpMethodVariableResolveUtil {
 
         private void visitMethodReference(@NotNull MethodReference methodReference) {
             String methodName = methodReference.getName();
+            if (methodName == null) {
+                return;
+            }
 
             // init methods once per file
             if(methods == null) {
                 methods = new HashSet<>();
-                methods.addAll(RENDER_METHODS);
 
                 PluginConfigurationExtension[] extensions = Symfony2ProjectComponent.PLUGIN_CONFIGURATION_EXTENSION.getExtensions();
                 if(extensions.length > 0) {
@@ -300,7 +296,7 @@ public class PhpMethodVariableResolveUtil {
                 }
             }
 
-            if(!methods.contains(methodName)) {
+            if(!methods.contains(methodName) && !methodName.toLowerCase().contains("template") && !methodName.toLowerCase().contains("render")) {
                 return;
             }
 

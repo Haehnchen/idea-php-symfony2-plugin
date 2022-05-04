@@ -24,6 +24,7 @@ public class PluginConfigurationExtensionParameter {
         return project;
     }
 
+    @Deprecated
     public void addTemplateUsageMethod(@NotNull String methodName) {
         templateUsageMethod.add(methodName);
     }
