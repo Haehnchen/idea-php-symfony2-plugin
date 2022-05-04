@@ -39,3 +39,28 @@ namespace Twig\Extension
         public function getFunctions();
     }
 }
+
+namespace Doctrine\ORM
+{
+    class EntityRepository
+    {
+    }
+}
+
+namespace Doctrine\ORM\Mapping
+{
+    class Entity {};
+}
+
+namespace App\Entity
+{
+    use Doctrine\ORM\Mapping AS ORM;
+
+    /**
+     * @ORM\Entity(repositoryClass="App\Repository\MyFoobarEntityRepository")
+     */
+    class FooEntity
+    {
+    }
+}
+
