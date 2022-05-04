@@ -334,7 +334,7 @@ public class TranslationUtil {
         try {
             DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             document = documentBuilder.parse(content);
-        } catch (ParserConfigurationException | SAXException | IOException e) {
+        } catch (ParserConfigurationException | SAXException | ArrayIndexOutOfBoundsException | IOException e) {
             return;
         }
 
