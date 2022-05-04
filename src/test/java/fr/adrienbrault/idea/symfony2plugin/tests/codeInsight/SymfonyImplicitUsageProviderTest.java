@@ -137,6 +137,50 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
         assertFalse(new SymfonyImplicitUsageProvider().isImplicitUsage(firstClassFromFile));
     }
 
+    public void testEventSubscriberGetSubscribedEventsArray() {
+        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "<?php\n" +
+            "\n" +
+            "namespace App\\EventSubscriber;\n" +
+            "\n" +
+            "use Symfony\\Component\\EventDispatcher\\EventSubscriberInterface;\n" +
+            "use Symfony\\Component\\HttpKernel\\KernelEvents;\n" +
+            "\n" +
+            "class ExceptionSubscriber implements EventSubscriberInterface\n" +
+            "{\n" +
+            "    public static function getSubscribedEvents()\n" +
+            "    {\n" +
+            "        return [\n" +
+            "            KernelEvents::EXCEPTION => [\n" +
+            "                ['processException', 10],\n" +
+            "                ['notifyException', -10],\n" +
+            "            ],\n" +
+            "        ];\n" +
+            "        return [\n" +
+            "            'keyString' => 'logException'\n" +
+            "        ];" +
+            "    }\n" +
+            "\n" +
+            "    public function processException() {}\n" +
+            "    public function logException() {}\n" +
+            "    public function notifyException() {}\n" +
+            "    public function notifyExceptionUnknown() {}\n" +
+            "    public function keyString() {}\n" +
+            "}"
+        );
+
+        PhpClass phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
+
+        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("processException")));
+        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("logException")));
+        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("notifyException")));
+
+        assertFalse(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("notifyExceptionUnknown")));
+        assertFalse(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("keyString")));
+
+        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass));
+    }
+
     private PhpClass createPhpControllerClassWithRouteContent(@NotNull String content) {
         return createPhpControllerClassWithRouteContent("\\App\\Controller\\FooController", content);
     }
