@@ -13,13 +13,17 @@ import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class SymfonyImplicitUsageProvider implements ImplicitUsageProvider {
-    private static final String[] ROUTE_ANNOTATIONS = new String[]{
+    private static final String[] ROUTE_ANNOTATIONS = new String[] {
         "\\Symfony\\Component\\Routing\\Annotation\\Route",
         "\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Route"
     };
@@ -33,7 +37,32 @@ public class SymfonyImplicitUsageProvider implements ImplicitUsageProvider {
             return isRouteClass((PhpClass) element)
                 || isCommandAndService((PhpClass) element)
                 || isSubscribedEvent((PhpClass) element)
-                || isVoter((PhpClass) element);
+                || isVoter((PhpClass) element)
+                || isTwigExtension((PhpClass) element);
+        }
+
+        return false;
+    }
+
+    private boolean isTwigExtension(PhpClass phpClass) {
+        if ((PhpElementsUtil.isInstanceOf(phpClass, "\\Twig\\Extension\\ExtensionInterface") || PhpElementsUtil.isInstanceOf(phpClass,"\\Twig_ExtensionInterface")) && ServiceUtil.isPhpClassAService(phpClass)) {
+            Set<String> methods = new HashSet<>();
+
+            Collection<PhpClass> phpClasses = new HashSet<>() {{
+                addAll(PhpElementsUtil.getClassesInterface(phpClass.getProject(), "\\Twig\\Extension\\ExtensionInterface"));
+                addAll(PhpElementsUtil.getClassesInterface(phpClass.getProject(), "\\Twig_ExtensionInterface"));
+            }};
+
+            for (PhpClass aClass : phpClasses) {
+                methods.addAll(aClass.getMethods()
+                    .stream()
+                    .filter(method -> !method.isStatic() && method.getAccess() == PhpModifier.Access.PUBLIC).map(PhpNamedElement::getName)
+                    .collect(Collectors.toSet())
+                );
+            }
+
+            return Arrays.stream(phpClass.getOwnMethods())
+                .anyMatch(ownMethod -> ownMethod.getAccess() == PhpModifier.Access.PUBLIC && methods.contains(ownMethod.getName()));
         }
 
         return false;

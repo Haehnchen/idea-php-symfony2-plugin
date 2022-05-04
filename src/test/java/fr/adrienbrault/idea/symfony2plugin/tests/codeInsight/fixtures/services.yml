@@ -10,3 +10,6 @@ services:
 
   foo_command.my_foobar_voter:
     class: App\Voter\MyFoobarVoter
+
+  foo_command.twig_extension:
+    class: App\TwigExtension\MyTwigExtension
