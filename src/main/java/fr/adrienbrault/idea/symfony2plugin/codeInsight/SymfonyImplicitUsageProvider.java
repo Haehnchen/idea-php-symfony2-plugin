@@ -38,10 +38,19 @@ public class SymfonyImplicitUsageProvider implements ImplicitUsageProvider {
                 || isVoter((PhpClass) element)
                 || isTwigExtension((PhpClass) element)
                 || isEntityRepository((PhpClass) element)
-                || isConstraint((PhpClass) element);
+                || isConstraint((PhpClass) element)
+                || isKernelEventListener((PhpClass) element);
         }
 
         return false;
+    }
+
+    private boolean isKernelEventListener(@NotNull PhpClass phpClass) {
+        if (!ServiceUtil.isPhpClassAService(phpClass)) {
+            return false;
+        }
+
+        return ServiceUtil.isPhpClassTaggedWith(phpClass, "kernel.event_listener");
     }
 
     private boolean isConstraint(@NotNull PhpClass phpClass) {
