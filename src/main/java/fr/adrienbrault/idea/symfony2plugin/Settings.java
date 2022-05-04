@@ -37,7 +37,7 @@ public class Settings implements PersistentStateComponent<Settings> {
         "var/cache/dev/UrlGenerator.php" // Symfony >= 4
     );
 
-    public static String DEFAULT_TRANSLATION_PATH = "app/cache/dev/translations";
+    public static String DEFAULT_TRANSLATION_PATH = "var/cache/dev/translations";
 
     public static String DEFAULT_WEB_DIRECTORY = "web";
     public static String DEFAULT_APP_DIRECTORY = "app";
