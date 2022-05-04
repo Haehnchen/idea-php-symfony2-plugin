@@ -339,6 +339,11 @@ public class ServiceUtil {
         return phpClasses;
     }
 
+    public static boolean isPhpClassTaggedWith(@NotNull PhpClass phpClass, @NotNull String tagName) {
+        return ServiceUtil.getTaggedClasses(phpClass.getProject(), tagName).stream()
+            .anyMatch(phpClass1 -> phpClass1.getFQN().equalsIgnoreCase(phpClass1.getFQN()));
+    }
+
     @NotNull
     public static Collection<PhpClass> getTaggedClassesWithCompiled(@NotNull Project project, @NotNull String tagName) {
 

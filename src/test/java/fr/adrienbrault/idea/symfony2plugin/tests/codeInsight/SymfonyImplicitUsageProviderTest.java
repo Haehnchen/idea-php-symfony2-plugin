@@ -167,6 +167,16 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
         assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(firstClassFromFile));
     }
 
+    public void testClassWithTaggedEventListenerIsMarkedAsUsed() {
+        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\EventListener;\n" +
+            "class ExceptionListener {}\n"
+        );
+
+        PhpClass firstClassFromFile = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
+        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(firstClassFromFile));
+    }
+
     public void testEventSubscriberGetSubscribedEventsArray() {
         PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
             "<?php\n" +

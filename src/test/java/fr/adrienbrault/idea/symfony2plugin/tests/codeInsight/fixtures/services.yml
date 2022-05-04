@@ -13,3 +13,8 @@ services:
 
   foo_command.twig_extension:
     class: App\TwigExtension\MyTwigExtension
+
+  foo_command.eventListener_exception:
+    class: App\EventListener\ExceptionListener
+    tags:
+        - { name: kernel.event_listener, event: kernel.exception }
