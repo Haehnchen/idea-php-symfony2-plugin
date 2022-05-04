@@ -36,6 +36,7 @@ import fr.adrienbrault.idea.symfony2plugin.routing.dic.ControllerClassOnShortcut
 import fr.adrienbrault.idea.symfony2plugin.routing.dic.ServiceRouteContainer;
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutingFile;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
+import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.ui.dict.AbstractUiFilePath;
@@ -368,7 +369,7 @@ public class RouteHelper {
 
                 return CachedValueProvider.Result.create(
                     Collections.unmodifiableMap(routesContainerMap),
-                    new StringModificationTracker(project),
+                    new CompiledRoutePathFilesModificationTracker(project),
                     new AbsoluteFileModificationTracker(compiledRouteFiles)
                 );
             },
@@ -1154,34 +1155,34 @@ public class RouteHelper {
     }
 
     @NotNull
-    synchronized public static Map<String, Route> getAllRoutes(final @NotNull Project project) {
+    public static Map<String, Route> getAllRoutes(final @NotNull Project project) {
         return CachedValuesManager.getManager(project).getCachedValue(
             project,
             ROUTE_CACHE,
-            () -> CachedValueProvider.Result.create(getAllRoutesProxy(project), PsiModificationTracker.MODIFICATION_COUNT),
+            () -> {
+                Map<String, Route> routes = new HashMap<>(RouteHelper.getCompiledRoutes(project));
+                Set<String> uniqueKeySet = new HashSet<>(routes.keySet());
+
+                for (String routeName: SymfonyProcessors.createResult(project, RoutesStubIndex.KEY, uniqueKeySet)) {
+                    if (uniqueKeySet.contains(routeName)) {
+                        continue;
+                    }
+
+                    for (StubIndexedRoute route: FileBasedIndex.getInstance().getValues(RoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project))) {
+                        uniqueKeySet.add(routeName);
+                        routes.put(routeName, new Route(route));
+                    }
+                }
+
+                return CachedValueProvider.Result.create(
+                    Collections.unmodifiableMap(routes),
+                    FileIndexCaches.getModificationTrackerForIndexId(project, RoutesStubIndex.KEY), // index
+                    new CompiledRoutePathFilesModificationTracker(project), // compiled
+                    new AbsoluteFileModificationTracker(getCompiledRouteFiles(project)) // compiled
+                );
+            },
             false
         );
-    }
-
-    @NotNull
-    private static Map<String, Route> getAllRoutesProxy(@NotNull Project project) {
-
-        Map<String, Route> routes = new HashMap<>(RouteHelper.getCompiledRoutes(project));
-
-        Set<String> uniqueKeySet = new HashSet<>(routes.keySet());
-
-        for(String routeName: SymfonyProcessors.createResult(project, RoutesStubIndex.KEY, uniqueKeySet)) {
-            if(uniqueKeySet.contains(routeName)) {
-                continue;
-            }
-
-            for(StubIndexedRoute route: FileBasedIndex.getInstance().getValues(RoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project))) {
-                uniqueKeySet.add(routeName);
-                routes.put(routeName, new Route(route));
-            }
-        }
-
-        return routes;
     }
 
     /**
@@ -1204,11 +1205,11 @@ public class RouteHelper {
         return ROUTE_CLASSES.stream().anyMatch(s -> s.equalsIgnoreCase(myClazz));
     }
 
-    private static class StringModificationTracker extends SimpleModificationTracker {
+    private static class CompiledRoutePathFilesModificationTracker extends SimpleModificationTracker {
         private final @NotNull Project project;
         private int last = 0;
 
-        public StringModificationTracker(@NotNull Project project) {
+        public CompiledRoutePathFilesModificationTracker(@NotNull Project project) {
             this.project = project;
         }
 
