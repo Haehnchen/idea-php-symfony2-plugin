@@ -9,6 +9,8 @@ import com.jetbrains.php.lang.psi.elements.PhpModifier;
 import de.espend.idea.php.annotation.dict.PhpDocCommentAnnotation;
 import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -27,13 +29,23 @@ public class SymfonyImplicitUsageProvider implements ImplicitUsageProvider {
         if (element instanceof Method && ((Method) element).getAccess() == PhpModifier.Access.PUBLIC) {
             return isMethodARoute((Method) element);
         } else if (element instanceof PhpClass) {
-            return ((PhpClass) element).getMethods()
-                .stream()
-                .filter(method -> method.getAccess() == PhpModifier.Access.PUBLIC)
-                .anyMatch(this::isMethodARoute);
+            return isRouteClass((PhpClass) element)
+                || isCommandAndService((PhpClass) element);
         }
 
         return false;
+    }
+
+    private boolean isRouteClass(@NotNull PhpClass phpClass) {
+        return phpClass.getMethods()
+            .stream()
+            .filter(method -> method.getAccess() == PhpModifier.Access.PUBLIC)
+            .anyMatch(this::isMethodARoute);
+    }
+
+    private boolean isCommandAndService(PhpClass element) {
+        return PhpElementsUtil.isInstanceOf(element, "\\Symfony\\Component\\Console\\Command\\Command")
+            && ServiceUtil.isPhpClassAService(element);
     }
 
     @Override

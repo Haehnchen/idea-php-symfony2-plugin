@@ -117,6 +117,26 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
         )));
     }
 
+    public void testCommandRegisteredAsServiceAreMarkedUsed() {
+        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Command;\n" +
+            "class FooCommand extends \\Symfony\\Component\\Console\\Command\\Command {}"
+        );
+
+        PhpClass firstClassFromFile = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
+        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(firstClassFromFile));
+    }
+
+    public void testCommandRegisteredNotAsServiceIsUntouched() {
+        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Command;\n" +
+            "class FoobarServiceCommand extends \\Symfony\\Component\\Console\\Command\\Command {}"
+        );
+
+        PhpClass firstClassFromFile = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
+        assertFalse(new SymfonyImplicitUsageProvider().isImplicitUsage(firstClassFromFile));
+    }
+
     private PhpClass createPhpControllerClassWithRouteContent(@NotNull String content) {
         return createPhpControllerClassWithRouteContent("\\App\\Controller\\FooController", content);
     }
