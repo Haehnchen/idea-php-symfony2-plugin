@@ -14,10 +14,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -40,10 +37,22 @@ public class SymfonyImplicitUsageProvider implements ImplicitUsageProvider {
                 || isSubscribedEvent((PhpClass) element)
                 || isVoter((PhpClass) element)
                 || isTwigExtension((PhpClass) element)
-                || isEntityRepository((PhpClass) element);
+                || isEntityRepository((PhpClass) element)
+                || isConstraint((PhpClass) element);
         }
 
         return false;
+    }
+
+    private boolean isConstraint(@NotNull PhpClass phpClass) {
+        if(!PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Validator\\Constraint")) {
+            return false;
+        }
+
+        // class in same namespace
+        // @TODO: validateBy alias
+        String className = phpClass.getFQN() + "Validator";
+        return PhpElementsUtil.getClassesInterface(phpClass.getProject(), className).size() > 0;
     }
 
     private boolean isEntityRepository(@NotNull PhpClass phpClass) {

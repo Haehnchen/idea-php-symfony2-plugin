@@ -64,3 +64,20 @@ namespace App\Entity
     }
 }
 
+namespace Symfony\Component\Validator
+{
+    abstract class Constraint
+    {
+    }
+    interface ConstraintValidatorInterface
+    {
+    }
+}
+
+namespace App\Validator
+{
+    use Symfony\Component\Validator\Constraint;
+
+    class MyFoobarConstraintValidator extends Constraint {}
+}
+

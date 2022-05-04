@@ -157,6 +157,16 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
         assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(firstClassFromFile));
     }
 
+    public void testConstraintValidatorReferenceIsMarkedAsUsed() {
+        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Validator;\n" +
+            "class MyFoobarConstraint extends \\Symfony\\Component\\Validator\\Constraint {}\n"
+        );
+
+        PhpClass firstClassFromFile = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
+        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(firstClassFromFile));
+    }
+
     public void testEventSubscriberGetSubscribedEventsArray() {
         PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
             "<?php\n" +
