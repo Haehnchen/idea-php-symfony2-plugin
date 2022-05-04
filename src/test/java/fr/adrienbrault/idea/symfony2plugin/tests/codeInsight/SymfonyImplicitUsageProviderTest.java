@@ -191,6 +191,34 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
         assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass));
     }
 
+    public void testTwigExtensionRegisteredAsServiceWithFunctionMethodImplementedIsMarkedUsed() {
+        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "\n" +
+            "namespace App\\TwigExtension;\n" +
+            "\n" +
+            "class MyTwigExtension implements \\Twig\\Extension\\ExtensionInterface\n" +
+            "{\n" +
+            "    public function getFilters() {}\n" +
+            "}"
+        );
+
+        PhpClass firstClassFromFile = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
+        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(firstClassFromFile));
+
+        PsiFile psiFile2 = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "\n" +
+            "namespace App\\TwigExtension;\n" +
+            "\n" +
+            "class MyTwigExtension implements \\Twig\\Extension\\ExtensionInterface\n" +
+            "{\n" +
+            "    public function getFoobar() {}\n" +
+            "}"
+        );
+
+        PhpClass firstClassFromFile2 = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile2.getContainingFile());
+        assertFalse(new SymfonyImplicitUsageProvider().isImplicitUsage(firstClassFromFile2));
+    }
+
     private PhpClass createPhpControllerClassWithRouteContent(@NotNull String content) {
         return createPhpControllerClassWithRouteContent("\\App\\Controller\\FooController", content);
     }

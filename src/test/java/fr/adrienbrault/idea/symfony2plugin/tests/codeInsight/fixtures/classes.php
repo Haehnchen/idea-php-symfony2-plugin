@@ -30,3 +30,12 @@ namespace Symfony\Component\Security\Core\Authorization\Voter
         public function vote(TokenInterface $token, $subject, array $attributes);
     }
 }
+
+namespace Twig\Extension
+{
+    interface ExtensionInterface
+    {
+        public function getFilters();
+        public function getFunctions();
+    }
+}
