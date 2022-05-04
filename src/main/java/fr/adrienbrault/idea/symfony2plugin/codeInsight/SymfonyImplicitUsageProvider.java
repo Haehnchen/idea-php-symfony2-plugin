@@ -32,10 +32,16 @@ public class SymfonyImplicitUsageProvider implements ImplicitUsageProvider {
         } else if (element instanceof PhpClass) {
             return isRouteClass((PhpClass) element)
                 || isCommandAndService((PhpClass) element)
-                || isSubscribedEvent((PhpClass) element);
+                || isSubscribedEvent((PhpClass) element)
+                || isVoter((PhpClass) element);
         }
 
         return false;
+    }
+
+    private boolean isVoter(PhpClass phpClass) {
+        return PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Security\\Core\\Authorization\\Voter\\VoterInterface")
+            && ServiceUtil.isPhpClassAService(phpClass);
     }
 
     private boolean isRouteClass(@NotNull PhpClass phpClass) {

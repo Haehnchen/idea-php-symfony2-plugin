@@ -22,3 +22,11 @@ namespace Symfony\Component\EventDispatcher
         public static function getSubscribedEvents();
     }
 }
+
+namespace Symfony\Component\Security\Core\Authorization\Voter
+{
+    interface VoterInterface
+    {
+        public function vote(TokenInterface $token, $subject, array $attributes);
+    }
+}

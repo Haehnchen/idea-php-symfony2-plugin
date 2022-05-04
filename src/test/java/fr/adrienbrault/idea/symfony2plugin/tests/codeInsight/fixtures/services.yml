@@ -7,3 +7,6 @@ services:
 
   foo_command.foo_command:
     class: App\Command\FooCommand
+
+  foo_command.my_foobar_voter:
+    class: App\Voter\MyFoobarVoter
