@@ -14,3 +14,11 @@ namespace Symfony\Component\Console\Command
     {
     }
 }
+
+namespace Symfony\Component\EventDispatcher
+{
+    interface EventSubscriberInterface
+    {
+        public static function getSubscribedEvents();
+    }
+}
