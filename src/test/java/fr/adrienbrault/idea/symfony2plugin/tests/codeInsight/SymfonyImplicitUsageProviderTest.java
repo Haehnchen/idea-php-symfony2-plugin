@@ -137,6 +137,16 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
         assertFalse(new SymfonyImplicitUsageProvider().isImplicitUsage(firstClassFromFile));
     }
 
+    public void testVoterRegisteredAsServiceAreMarkedUsed() {
+        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Voter;\n" +
+            "class MyFoobarVoter implements \\Symfony\\Component\\Security\\Core\\Authorization\\Voter\\VoterInterface {}"
+        );
+
+        PhpClass firstClassFromFile = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
+        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(firstClassFromFile));
+    }
+
     public void testEventSubscriberGetSubscribedEventsArray() {
         PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
             "<?php\n" +
