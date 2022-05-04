@@ -168,7 +168,20 @@ public class RouteHelper {
             String methodName = controllerName.substring(controllerName.lastIndexOf("::") + 2);
 
             Method method = PhpElementsUtil.getClassMethod(project, className, methodName);
-            return method != null ? new PsiElement[] {method} : new PsiElement[0];
+
+            Collection<Method> methods = new HashSet<>();
+            if (method != null) {
+                methods.add(method);
+            }
+
+            if (!methodName.toLowerCase().endsWith("action")) {
+                Method methodAction = PhpElementsUtil.getClassMethod(project, className, methodName + "Action");
+                if (methodAction != null) {
+                    methods.add(methodAction);
+                }
+            }
+
+            return methods.toArray(new PsiElement[0]);
 
         } else if(controllerName.contains(":")) {
             // AcmeDemoBundle:Demo:hello

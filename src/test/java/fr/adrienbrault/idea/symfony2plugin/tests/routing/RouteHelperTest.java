@@ -447,6 +447,7 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
             "{\n" +
             "   public function __invoke() {}\n" +
             "   public function barAction() {}\n" +
+            "   public function fooAction() {}\n" +
             "}\n"
         );
 
@@ -458,6 +459,9 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         targets = RouteHelper.getMethodsOnControllerShortcut(getProject(), "Foobar\\Bar::barAction");
         assertEquals("barAction", ((Method) targets[0]).getName());
+
+        targets = RouteHelper.getMethodsOnControllerShortcut(getProject(), "Foobar\\Bar::foo");
+        assertEquals("fooAction", ((Method) targets[0]).getName());
     }
 
     /**
