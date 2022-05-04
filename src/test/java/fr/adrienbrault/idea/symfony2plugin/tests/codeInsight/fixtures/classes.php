@@ -7,3 +7,10 @@ namespace Symfony\Component\Routing\Annotation
      */
     class Route {}
 }
+
+namespace Symfony\Component\Console\Command
+{
+    class Command
+    {
+    }
+}

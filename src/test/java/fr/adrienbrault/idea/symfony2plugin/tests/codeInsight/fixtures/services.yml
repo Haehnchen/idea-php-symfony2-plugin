@@ -4,3 +4,6 @@ services:
 
   foo_controller.service_invoke:
     class: App\Controller\FooControllerServiceInvoke
+
+  foo_command.foo_command:
+    class: App\Command\FooCommand
