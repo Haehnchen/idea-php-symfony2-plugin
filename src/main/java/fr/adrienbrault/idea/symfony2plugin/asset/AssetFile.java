@@ -19,6 +19,8 @@ public class AssetFile {
 
     private String prefix = "";
 
+    private String string = null;
+
     public AssetFile(@NotNull VirtualFile assetFile, @NotNull AssetEnum.Position assetPosition, @NotNull VirtualFile relativeFolder, @NotNull String prefix) {
         this(assetFile, assetPosition, relativeFolder);
         this.prefix = prefix;
@@ -28,6 +30,19 @@ public class AssetFile {
         this.assetFile = assetFile;
         this.assetPosition = assetPosition;
         this.relativeFolder = relativeFolder;
+    }
+
+    private AssetFile(@NotNull VirtualFile assetFile, @NotNull AssetEnum.Position assetPosition) {
+        this.assetFile = assetFile;
+        this.assetPosition = assetPosition;
+    }
+
+    public static AssetFile createVirtualManifestEntry(@NotNull VirtualFile manifestJson, @NotNull String name) {
+        AssetFile myAssetFile = new AssetFile(manifestJson, AssetEnum.Position.Web);
+
+        myAssetFile.string = name;
+
+        return myAssetFile;
     }
 
     @NotNull
@@ -41,6 +56,8 @@ public class AssetFile {
     }
 
     public String toString() {
-        return this.prefix + VfsUtil.getRelativePath(assetFile, relativeFolder, '/');
+        return this.string != null
+            ? this.string
+            : this.prefix + VfsUtil.getRelativePath(assetFile, relativeFolder, '/');
     }
 }

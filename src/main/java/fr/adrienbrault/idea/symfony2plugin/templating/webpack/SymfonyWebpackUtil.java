@@ -12,9 +12,11 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,6 +42,16 @@ public class SymfonyWebpackUtil {
                 visitEntryPointJson(virtualFile, consumer);
             }
         }
+    }
+
+    /**
+     * {
+     *     "build/app.js": "/build/app.123abc.js",
+     *     "build/dashboard.css": "/build/dashboard.a4bf2d.css"
+     * }
+     */
+    public static void visitManifestJsonEntries(@NotNull VirtualFile virtualFile, @NotNull Consumer<Pair<String, String>> consumer) {
+        visitManifestJson(virtualFile, consumer);
     }
 
     /**
@@ -106,6 +118,38 @@ public class SymfonyWebpackUtil {
         Matcher matcher = Pattern.compile("(addEntry|addStyleEntry)\\s*\\(\\s*['\"]([^'\"]+)['\"]").matcher(s);
         while(matcher.find()){
             consumer.accept(Pair.create(virtualFile, matcher.group(2)));
+        }
+    }
+
+    /**
+     * {
+     *     "build/app.js": "/build/app.123abc.js",
+     *     "build/dashboard.css": "/build/dashboard.a4bf2d.css"
+     * }
+     */
+    private static void visitManifestJson(@NotNull VirtualFile virtualFile, @NotNull Consumer<Pair<String, String>> consumer) {
+        JsonElement jsonElement;
+        try {
+            String s = StreamUtil.readText(virtualFile.getInputStream(), "UTF-8");
+            jsonElement = JsonParser.parseString(s);
+        } catch (JsonSyntaxException | IOException e) {
+            return;
+        }
+
+        for (Map.Entry<String, JsonElement> entry : jsonElement.getAsJsonObject().entrySet()) {
+            String key = entry.getKey();
+            if (StringUtils.isBlank(key)) {
+                continue;
+            }
+
+            JsonElement value = entry.getValue();
+
+            String content = null;
+            if (value.isJsonPrimitive()) {
+                content = value.getAsString();
+            }
+
+            consumer.accept(Pair.create(key, content));
         }
     }
 

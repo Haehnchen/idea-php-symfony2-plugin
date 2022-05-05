@@ -6,6 +6,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.psi.PsiDirectory;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
+import fr.adrienbrault.idea.symfony2plugin.templating.webpack.SymfonyWebpackUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
@@ -71,6 +72,14 @@ public class AssetDirectoryReader {
                     return super.visitFile(virtualFile);
                 }
             });
+
+            VirtualFile fileByRelativePath = webDirectory.findFileByRelativePath("build/manifest.json");
+            if (fileByRelativePath != null) {
+                SymfonyWebpackUtil.visitManifestJsonEntries(
+                    fileByRelativePath,
+                    pair -> files.add(AssetFile.createVirtualManifestEntry(fileByRelativePath, pair.getFirst()))
+                );
+            }
         }
 
         if(!this.includeBundleDir) {
@@ -116,7 +125,7 @@ public class AssetDirectoryReader {
         // TODO: '@SampleBundle/Resources/public/js/*'
         // TODO: '@SampleBundle/Resources/public/js/*.js'
         if(filename.startsWith("@")) {
-            Collection<VirtualFile> files = new ArrayList<>();
+            Collection<VirtualFile> files = new HashSet<>();
 
             int i = filename.indexOf("/");
             if(i > 0) {
@@ -144,7 +153,7 @@ public class AssetDirectoryReader {
             return files;
         }
 
-        Collection<VirtualFile> files = new ArrayList<>();
+        Collection<VirtualFile> files = new HashSet<>();
 
         for (VirtualFile webDirectory : getProjectAssetRoot(project)) {
             Matcher matcher = Pattern.compile("^(.*[/\\\\])\\*([.\\w+]*)$").matcher(assetName);
@@ -157,6 +166,18 @@ public class AssetDirectoryReader {
                 // "/*"
                 // "/*.js"
                 files.addAll(collectWildcardDirectories(matcher, webDirectory));
+            }
+
+            VirtualFile fileByRelativePath = webDirectory.findFileByRelativePath("build/manifest.json");
+            if (fileByRelativePath != null) {
+                SymfonyWebpackUtil.visitManifestJsonEntries(
+                    fileByRelativePath,
+                    pair -> {
+                        if (filename.equalsIgnoreCase(pair.getFirst())) {
+                            files.add(fileByRelativePath);
+                        }
+                    }
+                );
             }
         }
 
