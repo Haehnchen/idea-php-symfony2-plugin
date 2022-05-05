@@ -133,8 +133,6 @@ public class SymfonyInstallerUtil {
             }
         }
 
-        System.out.println(lastReleaseUrl);
-
         String contents;
         try {
             java.io.InputStream is = new java.net.URL(lastReleaseUrl + "?per_page=100").openStream();

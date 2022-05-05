@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.webpack;
 
+import com.intellij.openapi.vfs.VirtualFile;
 import fr.adrienbrault.idea.symfony2plugin.templating.webpack.SymfonyWebpackUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
@@ -27,5 +28,14 @@ public class SymfonyWebpackUtilTest extends SymfonyLightCodeInsightFixtureTestCa
 
         SymfonyWebpackUtil.visitAllEntryFileTypes(myFixture.getProject(), pair -> entries.add(pair.second));
         assertContainsElements(entries, "foo", "foobar", "entry_foobar_2", "addStyleEntryFoobar");
+    }
+
+    public void testVisitManifestJsonEntries() {
+        VirtualFile virtualFile = myFixture.copyFileToProject("manifest.json");
+
+        Set<String> entries = new HashSet<>();
+
+        SymfonyWebpackUtil.visitManifestJsonEntries(virtualFile, pair -> entries.add(pair.getFirst()));
+        assertContainsElements(entries, "build/app.js", "build/dashboard.css", "build/images/logo.png");
     }
 }
