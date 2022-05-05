@@ -114,7 +114,6 @@
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
-
         <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Settings"/>
 
         <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.SettingsForm"
@@ -266,6 +265,7 @@
                 serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent$ProjectCloseService"/>
 
         <notificationGroup id="Symfony Notifications" displayType="STICKY_BALLOON"/>
+        <errorHandler implementation="fr.adrienbrault.idea.symfony2plugin.util.ide.SymfonyPluginErrorReporterSubmitter"/>
 
         <localInspection groupPath="Symfony" shortName="PhpRouteMissingInspection" displayName="Route Missing"
                          groupName="Route"
