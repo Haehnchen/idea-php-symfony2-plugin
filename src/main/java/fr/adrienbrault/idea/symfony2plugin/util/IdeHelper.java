@@ -156,6 +156,8 @@ public class IdeHelper {
                 notification2.setTitle(createNotificationTitle(project1));
                 notification2.setIcon(Symfony2Icons.SYMFONY);
                 notification2.notify(project1);
+
+                notification.expire();
             }
         });
 
@@ -164,6 +166,8 @@ public class IdeHelper {
             public void actionPerformed(@NotNull AnActionEvent e, @NotNull Notification notification) {
                 // user doesnt want to show notification again
                 Settings.getInstance(project).dismissEnableNotification = true;
+
+                notification.expire();
             }
         });
 
