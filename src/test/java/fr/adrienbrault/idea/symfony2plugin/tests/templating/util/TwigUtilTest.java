@@ -436,6 +436,12 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertContainsElements(strings, "FooBundle::foobar.html.twig");
         assertContainsElements(strings, "FooBundle::foobar.json.twig");
         assertContainsElements(strings, "FooBundle::foobar.xml.twig");
+        assertContainsElements(strings, "FooBundle::foobar.text.twig");
+
+        assertContainsElements(strings, "FooBundle::Foobar.html.twig");
+        assertContainsElements(strings, "FooBundle::Foobar.json.twig");
+        assertContainsElements(strings, "FooBundle::Foobar.xml.twig");
+        assertContainsElements(strings, "FooBundle::Foobar.text.twig");
     }
 
     public void testGetControllerMethodShortcutForInvokeWithSnakeCase() {
@@ -457,6 +463,12 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertContainsElements(strings, "FooBundle::foo_bar.html.twig");
         assertContainsElements(strings, "FooBundle::foo_bar.json.twig");
         assertContainsElements(strings, "FooBundle::foo_bar.xml.twig");
+        assertContainsElements(strings, "FooBundle::foo_bar.text.twig");
+
+        assertContainsElements(strings, "FooBundle::FooBar.html.twig");
+        assertContainsElements(strings, "FooBundle::FooBar.json.twig");
+        assertContainsElements(strings, "FooBundle::FooBar.xml.twig");
+        assertContainsElements(strings, "FooBundle::FooBar.text.twig");
     }
 
     public void testFindTwigFileController() {

@@ -4,7 +4,6 @@
         <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineAnnotationTargetEntityReferences"/>
         <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.config.SymfonyAnnotationReferences"/>
         <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineAnnotationReferencedColumnReferences"/>
-        <PhpAnnotationDocTagAnnotator implementation="fr.adrienbrault.idea.symfony2plugin.twig.annotation.TemplateAnnotationAnnotator"/>
         <PhpAnnotationDocTagGotoHandler implementation="fr.adrienbrault.idea.symfony2plugin.twig.annotation.TemplateAnnotationGotoHandler"/>
 
         <!-- @IsGranted -->
