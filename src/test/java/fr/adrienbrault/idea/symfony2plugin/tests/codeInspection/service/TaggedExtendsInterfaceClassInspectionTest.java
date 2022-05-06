@@ -19,14 +19,52 @@ public class TaggedExtendsInterfaceClassInspectionTest extends SymfonyLightCodeI
         return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/codeInspection/service/fixtures";
     }
 
-    public void testThatKnownTagsShouldInspectionForMissingServiceClassImplementations() {
+    public void testThatKnownTagsShouldInspectionForMissingServiceClassImplementationsOfYaml() {
         assertLocalInspectionContains("services.yml", "services:\n" +
             "    foo:\n" +
             "        class: Tag\\Instance<caret>Check\\EmptyClass\n" +
             "        tags:\n" +
             "            -  { name: twig.extension }",
-            "Class needs to implement '\\Twig_ExtensionInterface' for tag 'twig.extension'"
+            "Class needs to implement 'Twig_ExtensionInterface' for tag 'twig.extension'"
         );
     }
 
+    public void testThatKnownTagsShouldInspectionForMissingServiceClassImplementationsForClassAsIsOfYaml() {
+        assertLocalInspectionContains("services.yml", "services:\n" +
+                "    Tag\\Instance<caret>Check\\EmptyClass:\n" +
+                "        tags:\n" +
+                "            -  { name: twig.extension }",
+            "Class needs to implement 'Twig_ExtensionInterface' for tag 'twig.extension'"
+        );
+    }
+
+    public void testThatKnownTagsShouldInspectionForMissingServiceClassImplementationsOfXml() {
+        assertLocalInspectionContains(
+            "services.xml",
+                "<?xml version=\"1.0\"?>\n" +
+                "<container>\n" +
+                "    <services>\n" +
+                "        <service id=\"test\" class=\"Tag\\Instance<caret>Check\\EmptyClass\">\n" +
+                "             <tag name=\"twig.extension\"/>" +
+                "        </service>\n" +
+                "    </services>\n" +
+                "</container>\n",
+            "Class needs to implement 'Twig_ExtensionInterface' for tag 'twig.extension'"
+        );
+    }
+
+    public void testThatKnownTagsShouldInspectionForMissingServiceClassImplementationsForClassAsIsOfYamlOfYml() {
+        assertLocalInspectionContains(
+            "services.xml",
+            "<?xml version=\"1.0\"?>\n" +
+                "<container>\n" +
+                "    <services>\n" +
+                "        <service id=\"Tag\\Instance<caret>Check\\EmptyClass\">\n" +
+                "             <tag name=\"twig.extension\"/>" +
+                "        </service>\n" +
+                "    </services>\n" +
+                "</container>\n",
+            "Class needs to implement 'Twig_ExtensionInterface' for tag 'twig.extension'"
+        );
+    }
 }

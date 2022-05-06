@@ -98,7 +98,7 @@ public class ServiceDeprecatedClassesInspection extends LocalInspectionTool {
         }
 
         @Override
-        public void visitElement(PsiElement element) {
+        public void visitElement(@NotNull PsiElement element) {
             boolean serviceArgumentAccepted = XmlHelper.getArgumentServiceIdPattern().accepts(element);
             if(serviceArgumentAccepted || XmlHelper.getServiceClassAttributeWithIdPattern().accepts(element)) {
                 String text = PsiElementUtils.trimQuote(element.getText());

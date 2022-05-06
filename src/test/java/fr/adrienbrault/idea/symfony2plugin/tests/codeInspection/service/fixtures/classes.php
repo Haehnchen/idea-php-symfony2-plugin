@@ -19,6 +19,7 @@ namespace Symfony\Component\DependencyInjection
 namespace
 {
     class Twig_Extension {}
+    interface Twig_ExtensionInterface {}
 }
 
 namespace Tag\InstanceCheck
