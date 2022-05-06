@@ -211,9 +211,11 @@ public class TwigUtil {
             shortcutName + ".html.twig",
             shortcutName + ".json.twig",
             shortcutName + ".xml.twig",
+            shortcutName + ".text.twig", // emails
             shortcutNameForOldNotation + ".html.twig",
             shortcutNameForOldNotation + ".json.twig",
             shortcutNameForOldNotation + ".xml.twig",
+            shortcutNameForOldNotation + ".text.twig",  // emails
         };
     }
 

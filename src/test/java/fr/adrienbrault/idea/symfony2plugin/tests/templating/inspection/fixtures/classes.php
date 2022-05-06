@@ -45,3 +45,10 @@ namespace Foo
     {
     }
 }
+
+namespace Sensio\Bundle\FrameworkExtraBundle\Configuration
+{
+    class Template
+    {
+    }
+}
