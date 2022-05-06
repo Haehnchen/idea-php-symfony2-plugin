@@ -48,53 +48,53 @@ import java.util.*;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class ServiceUtil {
-    private static ServiceNameStrategyInterface[] NAME_STRATEGIES = new ServiceNameStrategyInterface[] {
+    private static final ServiceNameStrategyInterface[] NAME_STRATEGIES = new ServiceNameStrategyInterface[] {
         new JavascriptServiceNameStrategy(),
         new DefaultServiceNameStrategy(),
     };
 
-    public static final Map<String , String> TAG_INTERFACES = new HashMap<String , String>() {{
-        put("assetic.asset", "\\Assetic\\Filter\\FilterInterface");
-        put("assetic.factory_worker", "\\Assetic\\Factory\\Worker\\WorkerInterface");
-        put("assetic.filter", "\\Assetic\\Filter\\FilterInterface");
-        put("assetic.formula_loader", "\\Assetic\\Factory\\Loader\\FormulaLoaderInterface");
-        put("assetic.formula_resource", null);
-        put("assetic.templating.php", null);
-        put("assetic.templating.twig", null);
-        put("console.command", "\\Symfony\\Component\\Console\\Command\\Command");
-        put("data_collector", "\\Symfony\\Component\\HttpKernel\\DataCollector\\DataCollectorInterface");
-        put("doctrine.event_listener", null);
-        put("doctrine.event_subscriber", null);
-        put("form.type", "\\Symfony\\Component\\Form\\FormTypeInterface");
-        put("form.type_extension", "\\Symfony\\Component\\Form\\FormTypeExtensionInterface");
-        put("form.type_guesser", "\\Symfony\\Component\\Form\\FormTypeGuesserInterface");
-        put("kernel.cache_clearer", null);
-        put("kernel.cache_warmer", "\\Symfony\\Component\\HttpKernel\\CacheWarmer\\CacheWarmerInterface");
-        put("kernel.event_subscriber", "\\Symfony\\Component\\EventDispatcher\\EventSubscriberInterface");
-        put("kernel.fragment_renderer", "\\Symfony\\Component\\HttpKernel\\Fragment\\FragmentRendererInterface");
-        put("monolog.logger", null);
-        put("monolog.processor", null);
-        put("routing.loader", "\\Symfony\\Component\\Config\\Loader\\LoaderInterface");
+    public static final Map<String , String[]> TAG_INTERFACES = new HashMap<>() {{
+        put("assetic.asset", new String[]{"\\Assetic\\Filter\\FilterInterface"});
+        put("assetic.factory_worker", new String[]{"\\Assetic\\Factory\\Worker\\WorkerInterface"});
+        put("assetic.filter", new String[]{"\\Assetic\\Filter\\FilterInterface"});
+        put("assetic.formula_loader", new String[]{"\\Assetic\\Factory\\Loader\\FormulaLoaderInterface"});
+        put("assetic.formula_resource", new String[] {});
+        put("assetic.templating.php", new String[] {});
+        put("assetic.templating.twig", new String[] {});
+        put("console.command", new String[]{"\\Symfony\\Component\\Console\\Command\\Command"});
+        put("data_collector", new String[]{"\\Symfony\\Component\\HttpKernel\\DataCollector\\DataCollectorInterface"});
+        put("doctrine.event_listener", new String[] {});
+        put("doctrine.event_subscriber", new String[] {});
+        put("form.type", new String[]{"\\Symfony\\Component\\Form\\FormTypeInterface"});
+        put("form.type_extension", new String[]{"\\Symfony\\Component\\Form\\FormTypeExtensionInterface"});
+        put("form.type_guesser", new String[]{"\\Symfony\\Component\\Form\\FormTypeGuesserInterface"});
+        put("kernel.cache_clearer", new String[] {});
+        put("kernel.cache_warmer", new String[]{"\\Symfony\\Component\\HttpKernel\\CacheWarmer\\CacheWarmerInterface"});
+        put("kernel.event_subscriber", new String[]{"\\Symfony\\Component\\EventDispatcher\\EventSubscriberInterface"});
+        put("kernel.fragment_renderer", new String[]{"\\Symfony\\Component\\HttpKernel\\Fragment\\FragmentRendererInterface"});
+        put("monolog.logger", new String[] {});
+        put("monolog.processor", new String[] {});
+        put("routing.loader", new String[]{"\\Symfony\\Component\\Config\\Loader\\LoaderInterface"});
         //put("security.remember_me_aware", null);
-        put("security.voter", "\\Symfony\\Component\\Security\\Core\\Authorization\\Voter\\VoterInterface");
-        put("serializer.encoder", "\\Symfony\\Component\\Serializer\\Encoder\\EncoderInterface");
-        put("serializer.normalizer", "\\Symfony\\Component\\Serializer\\Normalizer\\NormalizerInterface");
+        put("security.voter", new String[]{"\\Symfony\\Component\\Security\\Core\\Authorization\\Voter\\VoterInterface"});
+        put("serializer.encoder", new String[]{"\\Symfony\\Component\\Serializer\\Encoder\\EncoderInterface"});
+        put("serializer.normalizer", new String[]{"\\Symfony\\Component\\Serializer\\Normalizer\\NormalizerInterface"});
         // Symfony\Component\Serializer\Normalizer\DenormalizerInterface
-        put("swiftmailer.default.plugin", "\\Swift_Events_EventListener");
-        put("templating.helper", "\\Symfony\\Component\\Templating\\Helper\\HelperInterface");
-        put("translation.loader", "\\Symfony\\Component\\Translation\\Loader\\LoaderInterface");
-        put("translation.extractor", "\\Symfony\\Component\\Translation\\Extractor\\ExtractorInterface");
-        put("translation.dumper", "\\Symfony\\Component\\Translation\\Dumper\\DumperInterface");
-        put("twig.extension", "\\Twig_ExtensionInterface");
-        put("twig.loader", "\\Twig_LoaderInterface");
-        put("validator.constraint_validator", "Symfony\\Component\\Validator\\ConstraintValidator");
-        put("validator.initializer", "Symfony\\Component\\Validator\\ObjectInitializerInterface");
+        put("swiftmailer.default.plugin", new String[]{"\\Swift_Events_EventListener"});
+        put("templating.helper", new String[]{"\\Symfony\\Component\\Templating\\Helper\\HelperInterface"});
+        put("translation.loader", new String[]{"\\Symfony\\Component\\Translation\\Loader\\LoaderInterface"});
+        put("translation.extractor", new String[]{"\\Symfony\\Component\\Translation\\Extractor\\ExtractorInterface"});
+        put("translation.dumper", new String[]{"\\Symfony\\Component\\Translation\\Dumper\\DumperInterface"});
+        put("twig.extension", new String[]{"\\Twig\\Extension\\ExtensionInterface", "\\Twig_ExtensionInterface"});
+        put("twig.loader", new String[]{"\\Twig\\Loader\\LoaderInterface", "\\Twig_LoaderInterface"});
+        put("validator.constraint_validator", new String[]{"Symfony\\Component\\Validator\\ConstraintValidator"});
+        put("validator.initializer", new String[]{"Symfony\\Component\\Validator\\ObjectInitializerInterface"});
 
         // 2.6 - @TODO: how to handle duplicate interfaces; also make them weaker
-        put("routing.expression_language_provider", "\\Symfony\\Component\\ExpressionLanguage\\ExpressionFunctionProviderInterface");
-        put("security.expression_language_provider", "\\Symfony\\Component\\ExpressionLanguage\\ExpressionFunctionProviderInterface");
+        put("routing.expression_language_provider", new String[]{"\\Symfony\\Component\\ExpressionLanguage\\ExpressionFunctionProviderInterface"});
+        put("security.expression_language_provider", new String[]{"\\Symfony\\Component\\ExpressionLanguage\\ExpressionFunctionProviderInterface"});
 
-        put("controller.service_arguments", null);
+        put("controller.service_arguments", new String[] {});
     }};
 
     /**
@@ -427,19 +427,14 @@ public class ServiceUtil {
      */
     @NotNull
     public static Set<String> getPhpClassServiceTags(@NotNull PhpClass phpClass) {
-
         Set<String> tags = new HashSet<>();
 
-        for (Map.Entry<String, String> entry : TAG_INTERFACES.entrySet()) {
-
-            if(entry.getValue() == null) {
-                continue;
+        for (Map.Entry<String, String[]> entry : TAG_INTERFACES.entrySet()) {
+            for (String s : entry.getValue()) {
+                if(PhpElementsUtil.isInstanceOf(phpClass, s)) {
+                    tags.add(entry.getKey());
+                }
             }
-
-            if(PhpElementsUtil.isInstanceOf(phpClass, entry.getValue())) {
-                tags.add(entry.getKey());
-            }
-
         }
 
         // strong tags wins

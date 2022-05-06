@@ -22,6 +22,8 @@ import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.YAMLCompoundValue;
 import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
@@ -43,7 +45,7 @@ public class TaggedExtendsInterfaceClassInspection extends LocalInspectionTool {
 
         return new PsiElementVisitor() {
             @Override
-            public void visitFile(PsiFile psiFile) {
+            public void visitFile(@NotNull PsiFile psiFile) {
                 if(psiFile instanceof YAMLFile) {
                     psiFile.acceptChildren(new YmlClassElementWalkingVisitor(holder, new ContainerCollectionResolver.LazyServiceCollector(holder.getProject())));
                 } else if(psiFile instanceof XmlFile) {
@@ -63,16 +65,15 @@ public class TaggedExtendsInterfaceClassInspection extends LocalInspectionTool {
         }
 
         @Override
-        public void visitElement(PsiElement element) {
-            if(XmlHelper.getServiceClassAttributeWithIdPattern().accepts(element)) {
-                String text = PsiElementUtils.trimQuote(element.getText());
-                PsiElement[] psiElements = element.getChildren();
-
-                // attach problems to string value only
-                if(StringUtils.isNotBlank(text) && psiElements.length > 2) {
-                    XmlTag parentOfType = PsiTreeUtil.getParentOfType(element, XmlTag.class);
-                    if(parentOfType != null) {
-                        registerTaggedProblems(psiElements[1], FormUtil.getTags(parentOfType), text, holder, this.lazyServiceCollector);
+        public void visitElement(@NotNull PsiElement element) {
+            String className = getClassNameFromServiceDefinition(element);
+            if (className != null) {
+                XmlTag parentOfType = PsiTreeUtil.getParentOfType(element, XmlTag.class);
+                if(parentOfType != null) {
+                    // attach problems to string value only
+                    PsiElement[] psiElements = element.getChildren();
+                    if (psiElements.length > 2) {
+                        registerTaggedProblems(psiElements[1], FormUtil.getTags(parentOfType), className, holder, this.lazyServiceCollector);
                     }
                 }
             }
@@ -91,20 +92,19 @@ public class TaggedExtendsInterfaceClassInspection extends LocalInspectionTool {
         }
 
         @Override
-        public void visitElement(PsiElement element) {
-
-            if(YamlElementPatternHelper.getSingleLineScalarKey("class").accepts(element)) {
+        public void visitElement(@NotNull PsiElement psiElement) {
+            if(YamlElementPatternHelper.getSingleLineScalarKey("class").accepts(psiElement)) {
 
                 // class: '\Foo'
-                String text = PsiElementUtils.trimQuote(element.getText());
+                String text = PsiElementUtils.trimQuote(psiElement.getText());
                 if(StringUtils.isBlank(text)) {
-                    super.visitElement(element);
+                    super.visitElement(psiElement);
                     return;
                 }
 
-                PsiElement yamlScalar = element.getParent();
+                PsiElement yamlScalar = psiElement.getParent();
                 if(!(yamlScalar instanceof YAMLScalar)) {
-                    super.visitElement(element);
+                    super.visitElement(psiElement);
                     return;
                 }
 
@@ -116,51 +116,90 @@ public class TaggedExtendsInterfaceClassInspection extends LocalInspectionTool {
                         if(serviceKeyValue instanceof YAMLKeyValue) {
                             Set<String> tags = YamlHelper.collectServiceTags((YAMLKeyValue) serviceKeyValue);
                             if(tags.size() > 0) {
-                                registerTaggedProblems(element, tags, text, holder, this.lazyServiceCollector);
+                                registerTaggedProblems(psiElement, tags, text, holder, this.lazyServiceCollector);
                             }
+                        }
+                    }
+                }
+            } else if (psiElement.getNode().getElementType() == YAMLTokenTypes.SCALAR_KEY && YamlElementPatternHelper.getServiceIdKeyValuePattern().accepts(psiElement.getParent())) {
+                // Foobar\Foo: ~
+                String text = PsiElementUtils.getText(psiElement);
+                if (StringUtils.isNotBlank(text) && YamlHelper.isClassServiceId(text) && text.contains("\\")) {
+                    PsiElement yamlKeyValue = psiElement.getParent();
+                    if (yamlKeyValue instanceof YAMLKeyValue && YamlHelper.getYamlKeyValue((YAMLKeyValue) yamlKeyValue, "resource") == null && YamlHelper.getYamlKeyValue((YAMLKeyValue) yamlKeyValue, "exclude") == null) {
+                        Set<String> tags = YamlHelper.collectServiceTags((YAMLKeyValue) yamlKeyValue);
+                        if(tags.size() > 0) {
+                            registerTaggedProblems(psiElement, tags, text, holder, this.lazyServiceCollector);
                         }
                     }
                 }
             }
 
-            super.visitElement(element);
+            super.visitElement(psiElement);
         }
     }
 
     private void registerTaggedProblems(@NotNull PsiElement source, @NotNull Set<String> tags, @NotNull String serviceClass, @NotNull ProblemsHolder holder, @NotNull ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector) {
-
-        if(tags.size() == 0) {
+        if (tags.size() == 0) {
             return;
         }
 
         PhpClass phpClass = null;
 
         for (String tag : tags) {
+            String missingTagInstance = null;
 
-            if(!ServiceUtil.TAG_INTERFACES.containsKey(tag)) {
-                continue;
-            }
-
-            String expectedClass = ServiceUtil.TAG_INTERFACES.get(tag);
-            if(expectedClass == null) {
-                continue;
-            }
-
-            // load PhpClass only if we need it, on error exit
-            if(phpClass == null) {
-                phpClass = ServiceUtil.getResolvedClassDefinition(holder.getProject(), serviceClass, lazyServiceCollector);
+            for (String expectedClass : ServiceUtil.TAG_INTERFACES.getOrDefault(tag, new String[] {})) {
+                // load PhpClass only if we need it, on error exit
                 if(phpClass == null) {
-                    return;
+                    phpClass = ServiceUtil.getResolvedClassDefinition(holder.getProject(), serviceClass, lazyServiceCollector);
+                    if(phpClass == null) {
+                        return;
+                    }
                 }
+
+                // skip unknown classes
+                if (PhpElementsUtil.getClassesInterface(phpClass.getProject(), expectedClass).isEmpty()) {
+                    continue;
+                }
+
+                // check interfaces
+                if(!PhpElementsUtil.isInstanceOf(phpClass, expectedClass)) {
+                    missingTagInstance = expectedClass;
+                    continue;
+                }
+
+                missingTagInstance = null;
+                break;
             }
 
             // check interfaces
-            if(!PhpElementsUtil.isInstanceOf(phpClass, expectedClass)) {
-                holder.registerProblem(source, String.format("Class needs to implement '%s' for tag '%s'", expectedClass, tag), ProblemHighlightType.WEAK_WARNING);
+            if (missingTagInstance != null) {
+                holder.registerProblem(source, String.format("Class needs to implement '%s' for tag '%s'", StringUtils.stripStart(missingTagInstance, "\\"), tag), ProblemHighlightType.WEAK_WARNING);
             }
-
         }
-
     }
 
+    /**
+     * <service class="Foo\\Bar" id="required_attribute">
+     * <service id="Foo\\Bar" />
+     */
+    @Nullable
+    private static String getClassNameFromServiceDefinition(@NotNull PsiElement element) {
+        if (XmlHelper.getServiceClassAttributeWithIdPattern().accepts(element)) {
+            // <service class="Foo\\Bar" id="required_attribute">
+            String text = PsiElementUtils.trimQuote(element.getText());
+            if (StringUtils.isNotBlank(text)) {
+                return text;
+            }
+        } else if (XmlHelper.getServiceIdAttributePattern().accepts(element)) {
+            // <service id="Foo\\Bar" />
+            String text = PsiElementUtils.trimQuote(element.getText());
+            if (StringUtils.isNotBlank(text) && YamlHelper.isClassServiceId(text) && text.contains("\\")) {
+                return text;
+            }
+        }
+
+        return null;
+    }
 }
