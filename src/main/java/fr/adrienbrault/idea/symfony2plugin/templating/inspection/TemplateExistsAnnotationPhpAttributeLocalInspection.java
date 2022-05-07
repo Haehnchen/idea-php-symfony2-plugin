@@ -6,7 +6,6 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.elements.Method;
@@ -19,14 +18,10 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpPsiAttributesUtil;
-import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -54,9 +49,11 @@ public class TemplateExistsAnnotationPhpAttributeLocalInspection extends LocalIn
     }
 
     private void annotate(@NotNull PhpAttribute phpAttribute, @NotNull ProblemsHolder holder) {
-        Collection<String> templateNames = new HashSet<>();
+        LinkedHashSet<String> templateNames = new LinkedHashSet<>();
 
-        if (phpAttribute.getArguments().isEmpty()) {
+
+        boolean isEmptyTemplateAndGuess = phpAttribute.getArguments().isEmpty();
+        if (isEmptyTemplateAndGuess) {
             PsiElement phpAttributesList = phpAttribute.getParent();
             if (phpAttributesList instanceof PhpAttributesList) {
                 PsiElement method = phpAttributesList.getParent();
@@ -72,7 +69,7 @@ public class TemplateExistsAnnotationPhpAttributeLocalInspection extends LocalIn
         }
 
         if(!templateNames.isEmpty()) {
-            extracted(phpAttribute, holder, templateNames);
+            attachProblemForMissingTemplatesWithSuggestions(phpAttribute, holder, templateNames, isEmptyTemplateAndGuess);
         }
     }
 
@@ -91,18 +88,22 @@ public class TemplateExistsAnnotationPhpAttributeLocalInspection extends LocalIn
             return;
         }
 
-        Collection<String> templateNames = new HashSet<>();
+        LinkedHashSet<String> templateNames = new LinkedHashSet<>();
+
+        boolean isEmptyTemplateAndGuess = false;
 
         @Nullable String matcher = AnnotationUtil.getPropertyValueOrDefault(phpDocTag, "template");
         if (matcher != null) {
             templateNames.add(matcher);
         } else {
+            isEmptyTemplateAndGuess = true;
 
             // find template name on last method
             PhpDocComment docComment = PsiTreeUtil.getParentOfType(phpDocTag, PhpDocComment.class);
             if(null == docComment) {
                 return;
             }
+
             Method method = PsiTreeUtil.getNextSiblingOfType(docComment, Method.class);
             if(null == method) {
                 return;
@@ -112,11 +113,11 @@ public class TemplateExistsAnnotationPhpAttributeLocalInspection extends LocalIn
         }
 
         if(!templateNames.isEmpty()) {
-            extracted(phpDocTag, holder, templateNames);
+            attachProblemForMissingTemplatesWithSuggestions(phpDocTag, holder, templateNames, isEmptyTemplateAndGuess);
         }
     }
 
-    private void extracted(@NotNull PsiElement target, @NotNull ProblemsHolder holder, @NotNull Collection<String> templateNames) {
+    private void attachProblemForMissingTemplatesWithSuggestions(@NotNull PsiElement target, @NotNull ProblemsHolder holder, @NotNull LinkedHashSet<String> templateNames, boolean isEmptyTemplateAndGuess) {
         if(templateNames.size() == 0) {
             return;
         }
@@ -128,18 +129,16 @@ public class TemplateExistsAnnotationPhpAttributeLocalInspection extends LocalIn
         }
 
         // find html target, as this this our first priority for end users condition
-        String templateName = ContainerUtil.find(templateNames, s -> s.toLowerCase().endsWith(".html.twig"));
-
-        // fallback on first item
-        if(templateName == null) {
-            templateName = templateNames.iterator().next();
-        }
+        // or fallback on first item
+        String[] templates = templateNames.stream()
+            .filter(s -> s.toLowerCase().endsWith(".html.twig")).toArray(String[]::new);
 
         Collection<LocalQuickFix> quickFixes = new ArrayList<>();
-        quickFixes.add(new TemplateCreateByNameLocalQuickFix(templateName));
+        quickFixes.add(new TemplateCreateByNameLocalQuickFix(templates));
 
-        if (StringUtils.isNotBlank(templateName)) {
-            quickFixes.add(new TemplateGuessTypoQuickFix(templateName));
+        if (!isEmptyTemplateAndGuess && templates.length > 0) {
+            // use first as underscore is higher priority and common way by framework bundle
+            quickFixes.add(new TemplateGuessTypoQuickFix(templates[0]));
         }
 
         holder.registerProblem(target, "Twig: Missing Template", quickFixes.toArray(new LocalQuickFix[0]));
