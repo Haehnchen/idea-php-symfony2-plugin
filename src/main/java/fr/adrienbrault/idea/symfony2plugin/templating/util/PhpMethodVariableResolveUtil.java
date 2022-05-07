@@ -15,6 +15,7 @@ import fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtensio
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpPsiAttributesUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import kotlin.Triple;
 import org.apache.commons.lang.StringUtils;
@@ -244,6 +245,10 @@ public class PhpMethodVariableResolveUtil {
             psiElementVisitor.visitPhpDocTag(phpDocTag);
         }
 
+        for (PhpAttributesList phpAttributesList : PsiTreeUtil.getChildrenOfTypeAsList(method, PhpAttributesList.class)) {
+            psiElementVisitor.visitPhpAttribute(phpAttributesList);
+        }
+
         method.accept(psiElementVisitor);
     }
 
@@ -271,8 +276,34 @@ public class PhpMethodVariableResolveUtil {
                 visitMethodReference((MethodReference) element);
             } else if(element instanceof PhpDocTag) {
                 visitPhpDocTag((PhpDocTag) element);
+            } else if(element instanceof PhpAttributesList) {
+                visitPhpAttribute((PhpAttributesList) element);
             }
             super.visitElement(element);
+        }
+
+        private void visitPhpAttribute(@NotNull PhpAttributesList phpAttributesList) {
+            Collection<@NotNull PhpAttribute> attributes = phpAttributesList.getAttributes(TwigUtil.TEMPLATE_ANNOTATION_CLASS);
+            for (PhpAttribute attribute : attributes) {
+                if (attribute.getArguments().isEmpty()) {
+                    // #[@Template()]
+                    PsiElement parent = phpAttributesList.getParent();
+                    if (parent instanceof Method) {
+                        visitMethodForGuessing((Method) parent);
+                    }
+                } else {
+                    // [@Template("foobar.html.twig")]
+                    // #[@Template(template: "foobar.html.twig")]
+                    String template = PhpPsiAttributesUtil.getAttributeValueByNameAsStringWithDefaultParameterFallback(attribute, "template");
+                    if (StringUtils.isNotBlank(template)) {
+                        PsiElement parent = phpAttributesList.getParent();
+                        if (parent instanceof Method) {
+                            addTemplateWithScope(template, (Method) parent, null);
+
+                        }
+                    }
+                }
+            }
         }
 
         private void visitMethodReference(@NotNull MethodReference methodReference) {
@@ -409,28 +440,32 @@ public class PhpMethodVariableResolveUtil {
                 // App\Controller\MyNiceController::myAction => my_nice/my.html.twig
                 Method methodScope = AnnotationBackportUtil.getMethodScope(phpDocTag);
                 if(methodScope != null) {
-                    PhpClass phpClass = methodScope.getContainingClass();
-                    if (phpClass != null) {
-                        // App\Controller\  "MyNice"  Controller
-                        Matcher matcher = Pattern.compile("Controller\\\\(.+)Controller$", Pattern.MULTILINE).matcher(StringUtils.stripStart(phpClass.getFQN(), "\\"));
-                        if(matcher.find()){
-                            String group = underscore(matcher.group(1).replace("\\", "/"));
-                            String name = methodScope.getName();
-
-                            // __invoke is using controller as template name
-                            if (name.equals("__invoke")) {
-                                addTemplateWithScope(group + ".html.twig", methodScope, null);
-                            } else {
-                                String action = name.endsWith("Action") ? name.substring(0, name.length() - "Action".length()) : name;
-                                addTemplateWithScope(group + "/" + underscore(action) + ".html.twig", methodScope, null);
-                            }
-                        }
-                    }
+                    visitMethodForGuessing(methodScope);
                 }
             } else if(template.endsWith(".twig")) {
                 Method methodScope = AnnotationBackportUtil.getMethodScope(phpDocTag);
                 if(methodScope != null) {
                     addTemplateWithScope(template, methodScope, null);
+                }
+            }
+        }
+
+        private void visitMethodForGuessing(@NotNull Method methodScope) {
+            PhpClass phpClass = methodScope.getContainingClass();
+            if (phpClass != null) {
+                // App\Controller\  "MyNice"  Controller
+                Matcher matcher = Pattern.compile("Controller\\\\(.+)Controller$", Pattern.MULTILINE).matcher(StringUtils.stripStart(phpClass.getFQN(), "\\"));
+                if(matcher.find()){
+                    String group = underscore(matcher.group(1).replace("\\", "/"));
+                    String name = methodScope.getName();
+
+                    // __invoke is using controller as template name
+                    if (name.equals("__invoke")) {
+                        addTemplateWithScope(group + ".html.twig", methodScope, null);
+                    } else {
+                        String action = name.endsWith("Action") ? name.substring(0, name.length() - "Action".length()) : name;
+                        addTemplateWithScope(group + "/" + underscore(action) + ".html.twig", methodScope, null);
+                    }
                 }
             }
         }
