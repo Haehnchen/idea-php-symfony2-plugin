@@ -130,6 +130,65 @@ public class PhpTwigTemplateUsageStubIndexTest extends SymfonyLightCodeInsightFi
         );
     }
 
+
+    public void testThatDefaultTemplatePropertyPhpAttributeIsIndexed() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;" +
+            "class Foobar\n" +
+            "{" +
+            "#[Template(\"foo-php-attribute-default.html.twig\")]\n" +
+            "public function foobar() {}" +
+            "}\n"
+        );
+
+        assertIndexContains(
+            PhpTwigTemplateUsageStubIndex.KEY,
+            "foo-php-attribute-default.html.twig"
+        );
+
+        assertIndexContainsKeyWithValue(PhpTwigTemplateUsageStubIndex.KEY, "foo-php-attribute-default.html.twig", value ->
+            "foo-php-attribute-default.html.twig".equals(value.getTemplate()) && value.getScopes().contains("Foobar.foobar")
+        );
+    }
+
+    public void testThatDefaultTemplatePropertyPhpAttributeTemplateIsIndexed() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;" +
+            "class Foobar\n" +
+            "{" +
+            "#[Template(template: \"foo-php-attribute-template.html.twig\")]\n" +
+            "public function foobar() {}" +
+            "}\n"
+        );
+
+        assertIndexContains(
+            PhpTwigTemplateUsageStubIndex.KEY,
+            "foo-php-attribute-template.html.twig"
+        );
+
+        assertIndexContainsKeyWithValue(PhpTwigTemplateUsageStubIndex.KEY, "foo-php-attribute-template.html.twig", value ->
+            "foo-php-attribute-template.html.twig".equals(value.getTemplate()) && value.getScopes().contains("Foobar.foobar")
+        );
+    }
+
+    public void testEmptyTemplatePhpAttributeIndexUsingTemplateGuesser() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Controller;" +
+            "" +
+            "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;" +
+            "class MyNiceFoobarController\n" +
+            "{" +
+            "#[Template()]\n" +
+            "public function foobarWhatAction() {}" +
+            "}\n"
+        );
+
+        assertIndexContains(
+            PhpTwigTemplateUsageStubIndex.KEY,
+            "my_nice_foobar/foobar_what.html.twig"
+        );
+    }
+
     public void testEmptyTemplateAnnotationIndexUsingInvokeTemplateGuesser() {
         myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
             "namespace App\\Controller;" +
