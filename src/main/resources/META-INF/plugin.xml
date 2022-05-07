@@ -267,6 +267,9 @@
         <notificationGroup id="Symfony Notifications" displayType="STICKY_BALLOON"/>
         <errorHandler implementation="fr.adrienbrault.idea.symfony2plugin.util.ide.SymfonyPluginErrorReporterSubmitter"/>
 
+        <runLineMarkerContributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.command.SymfonyCommandTestRunLineMarkerProvider"/>
+        <runConfigurationProducer implementation="fr.adrienbrault.idea.symfony2plugin.dic.command.SymfonyCommandRunConfigurationProducer"/>
+
         <localInspection groupPath="Symfony" shortName="PhpRouteMissingInspection" displayName="Route Missing"
                          groupName="Route"
                          enabledByDefault="true" level="WARNING"
