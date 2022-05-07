@@ -27,11 +27,10 @@ import java.util.*;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TemplateCreateByNameLocalQuickFix extends IntentionAndQuickFixAction implements HighPriorityAction {
-    @NotNull
-    private final String templateName;
+    private final @NotNull String[] templateNames;
 
-    public TemplateCreateByNameLocalQuickFix(@NotNull String templateName) {
-        this.templateName = templateName;
+    public TemplateCreateByNameLocalQuickFix(@NotNull String... templateNames) {
+        this.templateNames = templateNames;
     }
 
     @Nls
@@ -59,7 +58,11 @@ public class TemplateCreateByNameLocalQuickFix extends IntentionAndQuickFixActio
     }
 
     private void applyFix(@NotNull Project project) {
-        Collection<String> templatePaths = TwigUtil.getCreateAbleTemplatePaths(project, templateName);
+        Collection<String> templatePaths = new LinkedHashSet<>();
+
+        for (String templateName : templateNames) {
+            templatePaths.addAll(TwigUtil.getCreateAbleTemplatePaths(project, templateName));
+        }
 
         if(templatePaths.size() == 0) {
             Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
