@@ -471,6 +471,74 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertContainsElements(strings, "FooBundle::FooBar.text.twig");
     }
 
+    public void testGetControllerMethodShortcutForInvokeForGlobalNamespace() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace FoobarUnknownBundle\\Controller;\n" +
+            "class FooBarController\n" +
+            "{\n" +
+            "   public function foo<caret>Action() {}\n" +
+            "" +
+            "}\n"
+        );
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+
+        List<String> strings = Arrays.asList(TwigUtil.getControllerMethodShortcut((Method) psiElement.getParent()));
+
+        assertContainsElements(strings, "foo_bar/foo.html.twig");
+        assertContainsElements(strings, "foo_bar/foo.json.twig");
+        assertContainsElements(strings, "foo_bar/foo.xml.twig");
+        assertContainsElements(strings, "foo_bar/foo.text.twig");
+
+        assertContainsElements(strings, "FooBar/foo.html.twig");
+        assertContainsElements(strings, "FooBar/foo.json.twig");
+        assertContainsElements(strings, "FooBar/foo.xml.twig");
+        assertContainsElements(strings, "FooBar/foo.text.twig");
+    }
+
+    public void testGetControllerMethodShortcutForInvokeForGlobalNamespaceInInvoke() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace FoobarUnknownBundle\\Controller;\n" +
+            "class FooBarController\n" +
+            "{\n" +
+            "   public function __inv<caret>oke() {}\n" +
+            "" +
+            "}\n"
+        );
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+
+        List<String> strings = Arrays.asList(TwigUtil.getControllerMethodShortcut((Method) psiElement.getParent()));
+
+        assertContainsElements(strings, "foo_bar.html.twig");
+        assertContainsElements(strings, "foo_bar.json.twig");
+        assertContainsElements(strings, "foo_bar.xml.twig");
+        assertContainsElements(strings, "foo_bar.text.twig");
+
+        assertContainsElements(strings, "FooBar.html.twig");
+        assertContainsElements(strings, "FooBar.json.twig");
+        assertContainsElements(strings, "FooBar.xml.twig");
+        assertContainsElements(strings, "FooBar.text.twig");
+    }
+
+    public void testGetControllerMethodShortcutForInvokeForGlobalNamespaceInInvokeWIthPath() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace Fixture\\Controller\\MyAdmin;\n" +
+            "class OutOfBundleController\n" +
+            "{\n" +
+            "   public function index<caret>Action() {}\n" +
+            "" +
+            "}\n"
+        );
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+
+        List<String> strings = Arrays.asList(TwigUtil.getControllerMethodShortcut((Method) psiElement.getParent()));
+
+        assertContainsElements(strings, "my_admin/out_of_bundle/index.html.twig");
+        assertContainsElements(strings, "MyAdmin/OutOfBundle/index.html.twig");
+    }
+
     public void testFindTwigFileController() {
         myFixture.copyFileToProject("bundle.php");
 

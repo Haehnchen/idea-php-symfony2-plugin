@@ -10,6 +10,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.inspection.TemplateExistsA
 public class TemplateExistsAnnotationPhpAttributeLocalInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
         super.setUp();
+
         myFixture.copyFileToProject("classes.php");
     }
 
@@ -132,6 +133,25 @@ public class TemplateExistsAnnotationPhpAttributeLocalInspectionTest extends Sym
                 "   * @Temp<caret>late()\n" +
                 "   */\n" +
                 "   public function __invoke()\n" +
+                "   {\n" +
+                "   }\n" +
+                "}\n" +
+                "",
+            "Twig: Missing Template"
+        );
+    }
+
+    public void testThatMissingTemplateForGlobalNamespaceWithoutBundleScopeForController() {
+        assertLocalInspectionContains("foobar.php", "<?php\n" +
+                "namespace FoobarApp\\Controller;\n" +
+                "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;\n" +
+                "\n" +
+                "class FoobarController\n" +
+                "{\n" +
+                "   /**\n" +
+                "   * @Temp<caret>late()\n" +
+                "   */\n" +
+                "   public function fooAction()\n" +
                 "   {\n" +
                 "   }\n" +
                 "}\n" +
