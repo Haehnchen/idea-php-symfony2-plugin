@@ -144,65 +144,93 @@ public class TwigUtil {
             return new String[0];
         }
 
+        String shortcutName = null;
+        String shortcutNameForOldNotation = null;
+
         SymfonyBundleUtil symfonyBundleUtil = new SymfonyBundleUtil(method.getProject());
         SymfonyBundle symfonyBundle = symfonyBundleUtil.getContainingBundle(phpClass);
-        if(symfonyBundle == null) {
-            return new String[0];
-        }
+        if(symfonyBundle != null) {
+            // check if files is in <Bundle>/Controller/*
+            PhpClass bundleClass = symfonyBundle.getPhpClass();
+            if(!phpClass.getNamespaceName().startsWith(bundleClass.getNamespaceName() + "Controller\\")) {
+                return new String[0];
+            }
 
-        // check if files is in <Bundle>/Controller/*
-        PhpClass bundleClass = symfonyBundle.getPhpClass();
-        if(!phpClass.getNamespaceName().startsWith(bundleClass.getNamespaceName() + "Controller\\")) {
-            return new String[0];
-        }
+            // strip the controller folder name
+            String templateFolderName = phpClass.getNamespaceName().substring(bundleClass.getNamespaceName().length() + 11);
 
-        // strip the controller folder name
-        String templateFolderName = phpClass.getNamespaceName().substring(bundleClass.getNamespaceName().length() + 11);
+            // HomeBundle:default:indexes
+            // HomeBundle:default/Test:indexes
+            templateFolderName = templateFolderName.replace("\\", "/");
 
-        // HomeBundle:default:indexes
-        // HomeBundle:default/Test:indexes
-        templateFolderName = templateFolderName.replace("\\", "/");
+            // Foobar without (.html.twig)
+            String templateName = className.substring(0, className.lastIndexOf("Controller"));
 
-        String shortcutName;
-        String shortcutNameForOldNotation;
+            if(methodName.equals("__invoke")) {
+                // AppBundle::foo_bar.html.twig
+                shortcutName = String.format(
+                    "%s::%s%s",
+                    symfonyBundle.getName(),
+                    underscore(templateFolderName),
+                    underscore(templateName)
+                );
 
-        // Foobar without (.html.twig)
-        String templateName = className.substring(0, className.lastIndexOf("Controller"));
+                // AppBundle::FooBar.html.twig
+                shortcutNameForOldNotation = String.format(
+                    "%s::%s%s",
+                    symfonyBundle.getName(),
+                    templateFolderName,
+                    templateName
+                );
+            } else {
+                // FooBundle:foo_bar:foo_bar.html.twig
+                shortcutName = String.format(
+                    "%s:%s%s:%s",
+                    symfonyBundle.getName(),
+                    underscore(templateFolderName),
+                    underscore(templateName),
+                    underscore(StringUtils.removeEnd(methodName, "Action"))
+                );
 
-        if(methodName.equals("__invoke")) {
-            // AppBundle::foo_bar.html.twig
-            shortcutName = String.format(
-                "%s::%s%s",
-                symfonyBundle.getName(),
-                underscore(templateFolderName),
-                underscore(templateName)
-            );
-
-            // AppBundle::FooBar.html.twig
-            shortcutNameForOldNotation = String.format(
-                "%s::%s%s",
-                symfonyBundle.getName(),
-                templateFolderName,
-                templateName
-            );
+                // FooBundle:FooBar:fooBar.html.twig
+                shortcutNameForOldNotation = String.format(
+                    "%s:%s%s:%s",
+                    symfonyBundle.getName(),
+                    templateFolderName,
+                    templateName,
+                    StringUtils.removeEnd(methodName, "Action")
+                );
+            }
         } else {
-            // FooBundle:foo_bar:foo_bar.html.twig
-            shortcutName = String.format(
-                "%s:%s%s:%s",
-                symfonyBundle.getName(),
-                underscore(templateFolderName),
-                underscore(templateName),
-                underscore(StringUtils.removeEnd(methodName, "Action"))
-            );
+            // https://github.com/sensiolabs/SensioFrameworkExtraBundle/blob/master/src/Templating/TemplateGuesser.php
+            String fqn = phpClass.getFQN();
+            Matcher matcher = Pattern.compile("Controller\\\\(.+)Controller$").matcher(fqn);
+            if(matcher.find()) {
+                String domain = matcher.group(1);
 
-            // FooBundle:FooBar:fooBar.html.twig
-            shortcutNameForOldNotation = String.format(
-                "%s:%s%s:%s",
-                symfonyBundle.getName(),
-                templateFolderName,
-                templateName,
-                StringUtils.removeEnd(methodName, "Action")
-            );
+                String matchController = domain.replaceAll("\\\\", "/");
+
+                String matchAction = null;
+                if (!"__invoke".equals(methodName)) {
+                    matchAction = methodName.replaceAll("Action$", "");
+                    matchAction = matchAction;
+                }
+
+                List<String> parts = new ArrayList<>(
+                    Arrays.asList(matchController.split("/"))
+                );
+
+                if (matchAction != null) {
+                    parts.add(matchAction);
+                }
+
+                shortcutNameForOldNotation = String.join("/", parts);
+                shortcutName = underscore(String.join("/", parts));
+            }
+        }
+
+        if (shortcutName == null || shortcutNameForOldNotation == null) {
+            return new String[0];
         }
 
         // @TODO: we should support types later on; but nicer
