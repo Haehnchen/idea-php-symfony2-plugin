@@ -327,7 +327,7 @@ public class PhpMethodVariableResolveUtil {
                 }
             }
 
-            if(!methods.contains(methodName) && !methodName.toLowerCase().contains("template") && !methodName.toLowerCase().contains("render")) {
+            if(!methods.contains(methodName) && !methodName.toLowerCase().contains("render")) {
                 return;
             }
 
