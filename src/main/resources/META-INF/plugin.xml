@@ -242,6 +242,7 @@
         <gotoSymbolContributor implementation="fr.adrienbrault.idea.symfony2plugin.navigation.ServiceSymbolContributor"/>
         <gotoSymbolContributor implementation="fr.adrienbrault.idea.symfony2plugin.navigation.RouteSymbolContributor"/>
         <gotoSymbolContributor implementation="fr.adrienbrault.idea.symfony2plugin.navigation.SymfonyCommandSymbolContributor"/>
+        <gotoSymbolContributor implementation="fr.adrienbrault.idea.symfony2plugin.navigation.TwigBlockSymbolContributor"/>
 
         <implicitUsageProvider implementation="fr.adrienbrault.idea.symfony2plugin.codeInsight.SymfonyImplicitUsageProvider"/>
 
