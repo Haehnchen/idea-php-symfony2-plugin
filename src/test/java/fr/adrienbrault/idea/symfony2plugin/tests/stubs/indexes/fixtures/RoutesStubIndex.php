@@ -35,6 +35,13 @@ namespace My
         }
 
         /**
+         * @Route
+         */
+        public function emptyAnnotation()
+        {
+        }
+
+        /**
          * @Route("/")
          */
         public function __invoke()
@@ -234,6 +241,11 @@ namespace MyAttributesPrefix
     {
         #[Route(path: '/edit/{id}', name: 'prefix_home_default_parameter')]
         public function editAction()
+        {
+        }
+
+        #[Route]
+        public function emptyAttribute()
         {
         }
     }

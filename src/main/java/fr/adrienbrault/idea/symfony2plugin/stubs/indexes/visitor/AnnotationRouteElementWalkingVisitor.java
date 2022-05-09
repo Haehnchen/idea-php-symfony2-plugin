@@ -76,11 +76,6 @@ public class AnnotationRouteElementWalkingVisitor extends PsiRecursiveElementWal
             return;
         }
 
-        PsiElement phpDocAttributeList = PsiElementUtils.getChildrenOfType(phpDocTag, PlatformPatterns.psiElement(PhpDocElementTypes.phpDocAttributeList));
-        if(!(phpDocAttributeList instanceof PhpPsiElement)) {
-            return;
-        }
-
         String routeName = AnnotationUtil.getPropertyValue(phpDocTag, "name");
         if(routeName == null) {
             routeName = AnnotationBackportUtil.getRouteByMethod(phpDocTag);
@@ -104,11 +99,14 @@ public class AnnotationRouteElementWalkingVisitor extends PsiRecursiveElementWal
             }
 
             // extract method path @Route("/foo") => "/foo"
-            PhpPsiElement firstPsiChild = ((PhpPsiElement) phpDocAttributeList).getFirstPsiChild();
-            if(firstPsiChild instanceof StringLiteralExpression) {
-                String contents = ((StringLiteralExpression) firstPsiChild).getContents();
-                if(StringUtils.isNotBlank(contents)) {
-                    path += contents;
+            PsiElement phpDocAttributeList = PsiElementUtils.getChildrenOfType(phpDocTag, PlatformPatterns.psiElement(PhpDocElementTypes.phpDocAttributeList));
+            if (phpDocAttributeList != null) {
+                PhpPsiElement firstPsiChild = ((PhpPsiElement) phpDocAttributeList).getFirstPsiChild();
+                if(firstPsiChild instanceof StringLiteralExpression) {
+                    String contents = ((StringLiteralExpression) firstPsiChild).getContents();
+                    if(StringUtils.isNotBlank(contents)) {
+                        path += contents;
+                    }
                 }
             }
 
