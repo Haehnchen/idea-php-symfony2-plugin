@@ -249,6 +249,7 @@
         <gotoFileContributor implementation="fr.adrienbrault.idea.symfony2plugin.navigation.TemplateFileContributor"/>
 
         <gotoRelatedProvider implementation="fr.adrienbrault.idea.symfony2plugin.navigation.PhpGotoRelatedProvider"/>
+        <gotoRelatedProvider implementation="fr.adrienbrault.idea.symfony2plugin.navigation.TwigGotoRelatedProvider"/>
 
         <directoryProjectGenerator implementation="fr.adrienbrault.idea.symfony2plugin.installer.SymfonyInstallerProjectGenerator"/>
         <projectTemplatesFactory implementation="fr.adrienbrault.idea.symfony2plugin.installer.SymfonyInstallerTemplatesFactory"/>

@@ -2288,103 +2288,109 @@ public class TwigUtil {
     /**
      * Visit all possible Twig include file pattern
      */
-    public static void visitTemplateIncludes(@NotNull TwigFile twigFile, @NotNull Consumer<TemplateInclude> consumer) {
-        PsiTreeUtil.collectElements(twigFile, psiElement -> {
-            if(psiElement instanceof TwigTagWithFileReference) {
-                // {% include %}
-                if(psiElement.getNode().getElementType() == TwigElementTypes.INCLUDE_TAG) {
-                    for (String templateName : getIncludeTagStrings((TwigTagWithFileReference) psiElement)) {
-                        if(StringUtils.isNotBlank(templateName)) {
-                            consumer.consume(new TemplateInclude(psiElement, templateName, TemplateInclude.TYPE.INCLUDE));
+    public static void visitTemplateIncludes(@NotNull PsiElement psiElement, @NotNull Consumer<TemplateInclude> consumer) {
+        if(psiElement instanceof TwigTagWithFileReference) {
+            // {% include %}
+            if(psiElement.getNode().getElementType() == TwigElementTypes.INCLUDE_TAG) {
+                for (String templateName : getIncludeTagStrings((TwigTagWithFileReference) psiElement)) {
+                    if(StringUtils.isNotBlank(templateName)) {
+                        consumer.consume(new TemplateInclude(psiElement, templateName, TemplateInclude.TYPE.INCLUDE));
+                    }
+                }
+            }
+
+            // {% import "foo.html.twig"
+            PsiElement importTag = PsiElementUtils.getChildrenOfType(psiElement, TwigPattern.getTagNameParameterPattern(TwigElementTypes.IMPORT_TAG, "import"));
+            if(importTag != null) {
+                String templateName = importTag.getText();
+                if(StringUtils.isNotBlank(templateName)) {
+                    consumer.consume(new TemplateInclude(psiElement, templateName, TemplateInclude.TYPE.IMPORT));
+                }
+            }
+
+            // {% from 'forms.html' import ... %}
+            PsiElement fromTag = PsiElementUtils.getChildrenOfType(psiElement, TwigPattern.getTagNameParameterPattern(TwigElementTypes.IMPORT_TAG, "from"));
+            if(fromTag != null) {
+                String templateName = fromTag.getText();
+                if(StringUtils.isNotBlank(templateName)) {
+                    consumer.consume(new TemplateInclude(psiElement, templateName, TemplateInclude.TYPE.IMPORT));
+                }
+            }
+        } else if(psiElement instanceof TwigCompositeElement) {
+            // {{ include() }}
+            // {{ source() }}
+            PsiElement includeTag = PsiElementUtils.getChildrenOfType(psiElement, TwigPattern.getPrintBlockOrTagFunctionPattern("include", "source"));
+            if(includeTag != null) {
+                String templateName = includeTag.getText();
+                if(StringUtils.isNotBlank(templateName)) {
+                    consumer.consume(new TemplateInclude(psiElement, templateName, TemplateInclude.TYPE.INCLUDE_FUNCTION));
+                }
+            }
+
+            // {% embed "foo.html.twig"
+            PsiElement embedTag = PsiElementUtils.getChildrenOfType(psiElement, TwigPattern.getEmbedPattern());
+            if(embedTag != null) {
+                String templateName = embedTag.getText();
+                if(StringUtils.isNotBlank(templateName)) {
+                    consumer.consume(new TemplateInclude(psiElement, templateName, TemplateInclude.TYPE.EMBED));
+                }
+            }
+
+            if(psiElement.getNode().getElementType() == TwigElementTypes.TAG) {
+                PsiElement tagElement = PsiElementUtils.getChildrenOfType(psiElement, PlatformPatterns.psiElement().withElementType(TwigTokenTypes.TAG_NAME));
+                if(tagElement != null) {
+                    String text = tagElement.getText();
+                    if("form_theme".equals(text)) {
+                        // {% form_theme form.child 'form/fields_child.html.twig' %}
+                        PsiElement childrenOfType = PsiElementUtils.getNextSiblingAndSkip(tagElement, TwigTokenTypes.STRING_TEXT,
+                            TwigTokenTypes.IDENTIFIER, TwigTokenTypes.SINGLE_QUOTE, TwigTokenTypes.DOUBLE_QUOTE, TwigTokenTypes.DOT
+                        );
+
+                        if(childrenOfType != null) {
+                            String templateName = childrenOfType.getText();
+                            if(StringUtils.isNotBlank(templateName)) {
+                                consumer.consume(new TemplateInclude(psiElement, templateName, TemplateInclude.TYPE.FORM_THEME));
+                            }
                         }
-                    }
-                }
 
-                // {% import "foo.html.twig"
-                PsiElement importTag = PsiElementUtils.getChildrenOfType(psiElement, TwigPattern.getTagNameParameterPattern(TwigElementTypes.IMPORT_TAG, "import"));
-                if(importTag != null) {
-                    String templateName = importTag.getText();
-                    if(StringUtils.isNotBlank(templateName)) {
-                        consumer.consume(new TemplateInclude(psiElement, templateName, TemplateInclude.TYPE.IMPORT));
-                    }
-                }
-
-                // {% from 'forms.html' import ... %}
-                PsiElement fromTag = PsiElementUtils.getChildrenOfType(psiElement, TwigPattern.getTagNameParameterPattern(TwigElementTypes.IMPORT_TAG, "from"));
-                if(fromTag != null) {
-                    String templateName = fromTag.getText();
-                    if(StringUtils.isNotBlank(templateName)) {
-                        consumer.consume(new TemplateInclude(psiElement, templateName, TemplateInclude.TYPE.IMPORT));
-                    }
-                }
-            } else if(psiElement instanceof TwigCompositeElement) {
-                // {{ include() }}
-                // {{ source() }}
-                PsiElement includeTag = PsiElementUtils.getChildrenOfType(psiElement, TwigPattern.getPrintBlockOrTagFunctionPattern("include", "source"));
-                if(includeTag != null) {
-                    String templateName = includeTag.getText();
-                    if(StringUtils.isNotBlank(templateName)) {
-                        consumer.consume(new TemplateInclude(psiElement, templateName, TemplateInclude.TYPE.INCLUDE_FUNCTION));
-                    }
-                }
-
-                // {% embed "foo.html.twig"
-                PsiElement embedTag = PsiElementUtils.getChildrenOfType(psiElement, TwigPattern.getEmbedPattern());
-                if(embedTag != null) {
-                    String templateName = embedTag.getText();
-                    if(StringUtils.isNotBlank(templateName)) {
-                        consumer.consume(new TemplateInclude(psiElement, templateName, TemplateInclude.TYPE.EMBED));
-                    }
-                }
-
-                if(psiElement.getNode().getElementType() == TwigElementTypes.TAG) {
-                    PsiElement tagElement = PsiElementUtils.getChildrenOfType(psiElement, PlatformPatterns.psiElement().withElementType(TwigTokenTypes.TAG_NAME));
-                    if(tagElement != null) {
-                        String text = tagElement.getText();
-                        if("form_theme".equals(text)) {
-                            // {% form_theme form.child 'form/fields_child.html.twig' %}
-                            PsiElement childrenOfType = PsiElementUtils.getNextSiblingAndSkip(tagElement, TwigTokenTypes.STRING_TEXT,
+                        // {% form_theme form.child with ['form/fields_child.html.twig'] %}
+                        PsiElement withElement = PsiElementUtils.getNextSiblingOfType(tagElement, PlatformPatterns.psiElement().withElementType(TwigTokenTypes.IDENTIFIER).withText("with"));
+                        if(withElement != null) {
+                            // find LITERAL "[", "{"
+                            PsiElement arrayStart = PsiElementUtils.getNextSiblingAndSkip(tagElement, TwigElementTypes.LITERAL,
                                 TwigTokenTypes.IDENTIFIER, TwigTokenTypes.SINGLE_QUOTE, TwigTokenTypes.DOUBLE_QUOTE, TwigTokenTypes.DOT
                             );
 
-                            if(childrenOfType != null) {
-                                String templateName = childrenOfType.getText();
-                                if(StringUtils.isNotBlank(templateName)) {
-                                    consumer.consume(new TemplateInclude(psiElement, templateName, TemplateInclude.TYPE.FORM_THEME));
+                            if(arrayStart != null) {
+                                PsiElement firstChild = arrayStart.getFirstChild();
+                                if(firstChild != null) {
+                                    visitStringInArray(firstChild, pair ->
+                                        consumer.consume(new TemplateInclude(psiElement, pair.getFirst(), TemplateInclude.TYPE.FORM_THEME))
+                                    );
                                 }
                             }
-
-                            // {% form_theme form.child with ['form/fields_child.html.twig'] %}
-                            PsiElement withElement = PsiElementUtils.getNextSiblingOfType(tagElement, PlatformPatterns.psiElement().withElementType(TwigTokenTypes.IDENTIFIER).withText("with"));
-                            if(withElement != null) {
-                                // find LITERAL "[", "{"
-                                PsiElement arrayStart = PsiElementUtils.getNextSiblingAndSkip(tagElement, TwigElementTypes.LITERAL,
-                                    TwigTokenTypes.IDENTIFIER, TwigTokenTypes.SINGLE_QUOTE, TwigTokenTypes.DOUBLE_QUOTE, TwigTokenTypes.DOT
-                                );
-
-                                if(arrayStart != null) {
-                                    PsiElement firstChild = arrayStart.getFirstChild();
-                                    if(firstChild != null) {
-                                        visitStringInArray(firstChild, pair ->
-                                            consumer.consume(new TemplateInclude(psiElement, pair.getFirst(), TemplateInclude.TYPE.FORM_THEME))
-                                        );
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                for (TwigFileUsage extension : TWIG_FILE_USAGE_EXTENSIONS.getExtensions()) {
-                    if (extension.isIncludeTemplate(psiElement)) {
-                        for (String template : extension.getIncludeTemplate(psiElement)) {
-                            consumer.consume(new TemplateInclude(psiElement, template, TemplateInclude.TYPE.INCLUDE));
                         }
                     }
                 }
             }
 
-            return false;
+            for (TwigFileUsage extension : TWIG_FILE_USAGE_EXTENSIONS.getExtensions()) {
+                if (extension.isIncludeTemplate(psiElement)) {
+                    for (String template : extension.getIncludeTemplate(psiElement)) {
+                        consumer.consume(new TemplateInclude(psiElement, template, TemplateInclude.TYPE.INCLUDE));
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Visit all possible Twig include file pattern
+     */
+    public static void visitTemplateIncludes(@NotNull TwigFile twigFile, @NotNull Consumer<TemplateInclude> consumer) {
+        PsiTreeUtil.collectElements(twigFile, psiElement -> {
+            visitTemplateIncludes(psiElement, consumer);
+            return true;
         });
     }
 
