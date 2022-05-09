@@ -17,25 +17,22 @@ import java.util.List;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class PhpGotoRelatedProvider extends GotoRelatedProvider {
-
     @NotNull
     @Override
     public List<? extends GotoRelatedItem> getItems(@NotNull PsiElement psiElement) {
-
-        if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
+        if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
             return Collections.emptyList();
         }
 
-        if(psiElement.getLanguage() != PhpLanguage.INSTANCE) {
+        if (psiElement.getLanguage() != PhpLanguage.INSTANCE) {
             return Collections.emptyList();
         }
 
         Method method = PsiTreeUtil.getParentOfType(psiElement, Method.class);
-        if(method == null || !method.getName().endsWith("Action")) {
+        if (method == null || !method.getAccess().isPublic()) {
             return Collections.emptyList();
         }
 
         return ControllerMethodLineMarkerProvider.getGotoRelatedItems(method);
     }
-
 }
