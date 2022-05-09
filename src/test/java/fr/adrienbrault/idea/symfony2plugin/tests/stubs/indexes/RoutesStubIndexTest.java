@@ -31,7 +31,8 @@ public class RoutesStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase 
     public void testRouteIdIndex() {
         assertIndexContains(RoutesStubIndex.KEY,
             "foo_yaml_pattern", "foo_yaml_path", "foo_yaml_path_only",
-            "foo_xml_pattern", "foo_xml_path", "foo_xml_id_only", "attributes_action", "app_my_default_attributeswithoutname"
+            "foo_xml_pattern", "foo_xml_path", "foo_xml_id_only", "attributes_action", "app_my_default_attributeswithoutname",
+            "my_post_emptyannotation", "myattributesprefix_prefixdefaultparameter_emptyattribute"
         );
 
         assertIndexNotContains(RoutesStubIndex.KEY,
