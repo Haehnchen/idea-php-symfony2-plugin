@@ -56,16 +56,9 @@ public class YamlDicCompletionContributorTest extends SymfonyLightCodeInsightFix
 
         assertCompletionContains(YAMLFileType.YML, "services:\n" +
             "    newsletter_manager:\n" +
-            "        parent: @<caret>\n"
+            "        parent: <caret>\n"
             , "data_collector.router"
         );
-
-        assertCompletionContains(YAMLFileType.YML, "services:\n" +
-                "    newsletter_manager:\n" +
-                "        parent: @<caret>\n"
-            , "data_collector.router"
-        );
-
     }
 
     public void testServiceStaticCompletion() {
