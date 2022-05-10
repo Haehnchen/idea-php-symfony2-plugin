@@ -74,6 +74,17 @@ public class AnnotationExpressionGotoCompletionRegistrarTest extends SymfonyLigh
         );
     }
 
+    public void testSecurityAttributeProvidesCompletion() {
+        assertCompletionContains(
+            "test.php",
+            "<?php\n" +
+                "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Security;\n" +
+                "#[Security('is_granted(\"YAML_ROLE<caret>_USER_FOOBAR\", post)')]\n" +
+                "function test() {};\n",
+            "YAML_ROLE_USER_FOOBAR"
+        );
+    }
+
     public void testSecurityAnnotationProvidesRoleNavigation() {
         assertNavigationMatch(
             "test.php",
@@ -120,6 +131,17 @@ public class AnnotationExpressionGotoCompletionRegistrarTest extends SymfonyLigh
                 "*/\n" +
                 "function test() {};\n" +
                 "",
+            PlatformPatterns.psiElement()
+        );
+    }
+
+    public void testSecurityAttributeProvidesRoleNavigation() {
+        assertNavigationMatch(
+            "test.php",
+            "<?php\n" +
+                "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Security;\n" +
+                "#[Security('is_granted(\"YAML_ROLE<caret>_USER_FOOBAR\", post)')]\n" +
+                "function test() {};\n",
             PlatformPatterns.psiElement()
         );
     }
