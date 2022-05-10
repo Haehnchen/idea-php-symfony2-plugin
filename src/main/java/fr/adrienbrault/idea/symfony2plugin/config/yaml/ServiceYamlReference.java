@@ -18,4 +18,9 @@ public class ServiceYamlReference extends AbstractServiceReference {
 
         this.serviceId = serviceId;
     }
+
+    @Override
+    public @NotNull Object[] getVariants() {
+        return new Object[0];
+    }
 }

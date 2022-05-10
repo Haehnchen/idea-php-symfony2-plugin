@@ -49,6 +49,9 @@ import fr.adrienbrault.idea.symfony2plugin.Settings;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.util.function.Function.identity;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -85,6 +88,30 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
         myFixture.completeBasic();
 
         assertFalse(myFixture.getLookupElementStrings().containsAll(Arrays.asList(lookupStrings)));
+    }
+
+
+    public void assertCompletionResultsAreUnique(
+        @NotNull LanguageFileType languageFileType,
+        @NotNull String configureByText,
+        @NotNull String... lookupStrings
+    ) {
+        myFixture.configureByText(languageFileType, configureByText);
+        myFixture.completeBasic();
+
+        var results = myFixture.getLookupElementStrings();
+        if (results != null) {
+            var duplicates = results.stream()
+                .filter(result -> Arrays.asList(lookupStrings).contains(result))
+                .collect(Collectors.groupingBy(identity()))
+                .entrySet()
+                .stream()
+                .filter(result -> result.getValue().size() > 1)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
+            assertTrue("The following results are duplicated: " + String.join(", ", duplicates), duplicates.isEmpty());
+        }
     }
 
     public void assertCompletionNotContains(LanguageFileType languageFileType, String configureByText, String... lookupStrings) {

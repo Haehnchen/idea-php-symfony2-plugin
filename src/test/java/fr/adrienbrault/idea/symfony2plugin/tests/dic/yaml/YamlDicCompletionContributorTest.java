@@ -61,6 +61,16 @@ public class YamlDicCompletionContributorTest extends SymfonyLightCodeInsightFix
         );
     }
 
+    public void testServiceCompletionResultsAreUnique() {
+        assertCompletionResultsAreUnique(
+            YAMLFileType.YML,
+            "services:\n" +
+            "    newsletter_manager:\n" +
+            "        parent: <caret>\n",
+            "data_collector.router"
+        );
+    }
+
     public void testServiceStaticCompletion() {
 
         assertCompletionContains(YAMLFileType.YML, "services:\n" +
