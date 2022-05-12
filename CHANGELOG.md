@@ -19,6 +19,16 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.23.226 / 2022.1.226
+* [#1429](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1429) fix security matcher starting string replacement and support php attributes (Daniel Espendiller)
+* Fixed duplicated results in service completion (Adam Wójs)
+* Fixed duplicated results in service completion (tests) (Adam Wójs)
+* [#769](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/769) provided related twig symbols navigation (Daniel Espendiller)
+* [#1029](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1029) fix route not indexed if the annotation is empty (Daniel Espendiller)
+* remove requirement for ending method name with "Action" for related controller methods symbol targets (Daniel Espendiller)
+* Reworked test for code completion in service definition parent (Adam Wójs)
+* Added service name reference contributor for YAML DIC files (Adam Wójs)
+
 ## 0.23.225 / 2022.1.225
 * [#567](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/567) support Twig blocks in search everywhere (Daniel Espendiller)
 * Underscore should be the preferred template creation quickfix (Daniel Espendiller)
