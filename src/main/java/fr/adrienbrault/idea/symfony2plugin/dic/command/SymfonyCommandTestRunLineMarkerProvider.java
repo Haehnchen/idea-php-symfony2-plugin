@@ -14,14 +14,10 @@ import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.PhpAttribute;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
-import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionArgument;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import org.apache.commons.lang.StringUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpPsiAttributesUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -69,20 +65,12 @@ public class SymfonyCommandTestRunLineMarkerProvider extends RunLineMarkerContri
             }
 
             // php attributes:
+            // #[AsCommand('app:create-user')]
             // #[AsCommand(name: 'app:create-user')]
             for (PhpAttribute attribute : phpClass.getAttributes("\\Symfony\\Component\\Console\\Attribute\\AsCommand")) {
-                for (PhpAttribute.PhpAttributeArgument argument : attribute.getArguments()) {
-                    String name = argument.getName();
-                    if ("name".equals(name)) {
-                        PhpExpectedFunctionArgument argument1 = argument.getArgument();
-                        if (argument1 != null) {
-                            String value1 = PsiElementUtils.trimQuote(argument1.getValue());
-                            if (StringUtils.isNotBlank(value1)) {
-                                return value1;
-                            }
-                        }
-                        break;
-                    }
+                String name = PhpPsiAttributesUtil.getAttributeValueByNameAsStringWithDefaultParameterFallback(attribute, "name");
+                if (name != null) {
+                    return name;
                 }
             }
 
