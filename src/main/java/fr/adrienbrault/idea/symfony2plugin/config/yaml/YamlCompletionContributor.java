@@ -239,7 +239,7 @@ public class YamlCompletionContributor extends CompletionContributor {
         // tags: [ foobar ]
         extend(
             CompletionType.BASIC,
-            YamlElementPatternHelper.getTagsAsSequencePattern(),
+            YamlElementPatternHelper.getSequenceValueWithArrayKeyPattern("tags"),
             new TagNameCompletionProvider()
         );
 

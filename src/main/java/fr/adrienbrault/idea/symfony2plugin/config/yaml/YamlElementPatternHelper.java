@@ -710,12 +710,12 @@ public class YamlElementPatternHelper {
     /**
      * tags: [ foobar ]
      */
-    public static PsiElementPattern.Capture<PsiElement> getTagsAsSequencePattern() {
+    public static PsiElementPattern.Capture<PsiElement> getSequenceValueWithArrayKeyPattern(@NotNull String... keys) {
         return PlatformPatterns.psiElement().withParent(
             PlatformPatterns.psiElement(YAMLScalar.class).withParent(
                 PlatformPatterns.psiElement(YAMLSequenceItem.class).withParent(
                     PlatformPatterns.psiElement(YAMLSequence.class).withParent(
-                        PlatformPatterns.psiElement(YAMLKeyValue.class).withName("tags")
+                        PlatformPatterns.psiElement(YAMLKeyValue.class).withName(keys)
                     )
                 )
             )

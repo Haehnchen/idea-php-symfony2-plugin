@@ -1366,4 +1366,54 @@ public class YamlHelper {
         }
         return PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(YAMLTokenTypes.EOL)) != null;
     }
+
+    /**
+     * App\\:
+     *   resource: 'foobar_2'
+     * App\\:
+     *   resource: ['foobar_2', 'foobar_3']
+     */
+    @Nullable
+    public static String getServiceKeyFromResourceFromStringOrArray(@NotNull YAMLQuotedText yamlQuotedText) {
+        PsiElement yamlSequence = yamlQuotedText.getParent();
+        if (yamlSequence == null) {
+            return null;
+        }
+
+        YAMLKeyValue serviceKeyValue = null;
+        if (yamlSequence instanceof YAMLSequenceItem) {
+            PsiElement yamlArray = yamlSequence.getParent();
+            if (yamlArray instanceof YAMLSequence) {
+                PsiElement yamlKeyValueResource = yamlArray.getParent();
+                if (yamlKeyValueResource instanceof YAMLKeyValue) {
+                    PsiElement mapping = yamlKeyValueResource.getParent();
+                    if (mapping instanceof YAMLMapping) {
+                        PsiElement serviceKeyValueElement = mapping.getParent();
+                        if (serviceKeyValueElement instanceof YAMLKeyValue) {
+                            serviceKeyValue = (YAMLKeyValue) serviceKeyValueElement;
+                        }
+                    }
+                }
+            }
+        } else {
+            PsiElement yamlKeyValueResource = yamlSequence.getParent();
+            if (yamlKeyValueResource != null) {
+                PsiElement serviceKeyValueElement = yamlKeyValueResource.getParent();
+                if (serviceKeyValueElement instanceof YAMLKeyValue) {
+                    serviceKeyValue = (YAMLKeyValue) serviceKeyValueElement;
+                }
+            }
+        }
+
+        if (serviceKeyValue == null) {
+            return null;
+        }
+
+        String name = serviceKeyValue.getName();
+        if (StringUtils.isBlank(name)) {
+            return null;
+        }
+
+        return name;
+    }
 }
