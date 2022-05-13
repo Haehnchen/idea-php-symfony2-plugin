@@ -13,10 +13,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.visitor.YamlTagVisitor;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
-import org.jetbrains.yaml.psi.YAMLCompoundValue;
-import org.jetbrains.yaml.psi.YAMLFile;
-import org.jetbrains.yaml.psi.YAMLKeyValue;
-import org.jetbrains.yaml.psi.YAMLScalar;
+import org.jetbrains.yaml.psi.*;
 import org.jetbrains.yaml.psi.impl.YAMLHashImpl;
 
 import java.util.ArrayList;
@@ -588,6 +585,24 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
 
         Collection<YAMLKeyValue> taggedServices2 = YamlHelper.getTaggedServices((YAMLFile) psiFile, "test.11");
         assertTrue(taggedServices2.stream().anyMatch(yamlKeyValue -> "foobar2".equals(yamlKeyValue.getKey().getText())));
+    }
+
+    public void testGetServiceKeyFromResourceFromStringOrArray() {
+        YAMLQuotedText fromText = YamlPsiElementFactory.createFromText(getProject(), YAMLQuotedText.class,
+            "services:\n" +
+                "   App\\:\n" +
+                "       resource: 'foobar'"
+        );
+
+        assertEquals("App\\", YamlHelper.getServiceKeyFromResourceFromStringOrArray(fromText));
+
+        fromText = YamlPsiElementFactory.createFromText(getProject(), YAMLQuotedText.class,
+            "services:\n" +
+                "   App\\:\n" +
+                "       resource: ['foobar_2', 'foobar_3']"
+        );
+
+        assertEquals("App\\", YamlHelper.getServiceKeyFromResourceFromStringOrArray(fromText));
     }
 
     private int getIndentForTextContent(@NotNull String content) {

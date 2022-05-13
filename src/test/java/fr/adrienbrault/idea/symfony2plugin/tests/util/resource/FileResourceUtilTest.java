@@ -5,6 +5,7 @@ import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
+import kotlin.Pair;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
