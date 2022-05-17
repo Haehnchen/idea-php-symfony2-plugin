@@ -242,7 +242,7 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
 
             for (SymfonyCommand symfonyCommand : SymfonyCommandUtil.getCommands(project)) {
                 if(symfonyCommand.getName().equals(name)) {
-                    processor.process(new NavigationItemEx(symfonyCommand.getPsiElement(), name, Symfony2Icons.SYMFONY, "Command"));
+                    processor.process(new NavigationItemEx(symfonyCommand.getPhpClass(), name, Symfony2Icons.SYMFONY, "Command"));
                 }
             }
 

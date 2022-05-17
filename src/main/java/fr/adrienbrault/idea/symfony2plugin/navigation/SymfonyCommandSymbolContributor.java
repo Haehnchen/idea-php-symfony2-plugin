@@ -46,7 +46,7 @@ public class SymfonyCommandSymbolContributor implements ChooseByNameContributor 
 
         for (SymfonyCommand symfonyCommand : SymfonyCommandUtil.getCommands(project)) {
             if(symfonyCommand.getName().equals(name)) {
-                navigationItems.add(new NavigationItemEx(symfonyCommand.getPsiElement(), name, Symfony2Icons.SYMFONY, "Command"));
+                navigationItems.add(new NavigationItemEx(symfonyCommand.getPhpClass(), name, Symfony2Icons.SYMFONY, "Command"));
             }
         }
 

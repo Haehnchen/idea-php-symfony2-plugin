@@ -1,22 +1,21 @@
 package fr.adrienbrault.idea.symfony2plugin.util.dict;
 
-import com.intellij.psi.PsiElement;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class SymfonyCommand {
-
     @NotNull
     private final String name;
 
     @NotNull
-    private final PsiElement psiElement;
+    private final PhpClass phpClass;
 
-    public SymfonyCommand(@NotNull String name, @NotNull PsiElement psiElement) {
+    public SymfonyCommand(@NotNull String name, @NotNull PhpClass phpClass) {
         this.name = name;
-        this.psiElement = psiElement;
+        this.phpClass = phpClass;
     }
 
     @NotNull
@@ -25,8 +24,7 @@ public class SymfonyCommand {
     }
 
     @NotNull
-    public PsiElement getPsiElement() {
-        return psiElement;
+    public PhpClass getPhpClass() {
+        return phpClass;
     }
-
 }
