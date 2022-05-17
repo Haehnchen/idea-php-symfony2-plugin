@@ -10,6 +10,7 @@ namespace Symfony\Component\Console\Command
 
 namespace Foo
 {
+    use Symfony\Component\Console\Attribute\AsCommand;
     use Symfony\Component\Console\Command\Command;
 
     class FooCommand extends Command
@@ -38,5 +39,16 @@ namespace Foo
         {
             $this->setName(self::FOO);
         }
+    }
+
+    #[AsCommand('app:create-user-1')]
+    class FoobarCommand1  extends Command {}
+
+    #[AsCommand(name: 'app:create-user-2')]
+    class FoobarCommand2  extends Command {}
+
+    class FoobarCommand3 extends Command
+    {
+        protected static $defaultName = 'app:create-user-3';
     }
 }

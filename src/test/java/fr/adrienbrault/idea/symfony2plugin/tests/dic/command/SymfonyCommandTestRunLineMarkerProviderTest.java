@@ -57,4 +57,18 @@ public class SymfonyCommandTestRunLineMarkerProviderTest extends SymfonyLightCod
 
         assertEquals("app:create-user", SymfonyCommandTestRunLineMarkerProvider.getCommandNameFromClass(phpClass));
     }
+
+    public void testCommandNameFromSetName() {
+        PhpClass phpClass = PhpPsiElementFactory.createFromText(getProject(), PhpClass.class, "<?php\n" +
+            "class FoobarCommand extends \\Symfony\\Component\\Console\\Command\\Command\n" +
+            "{\n" +
+            "    public function configure()\n" +
+            "    {\n" +
+            "        $this->setName('set-const-command');\n" +
+            "    }\n" +
+            "}"
+        );
+
+        assertEquals("set-const-command", SymfonyCommandTestRunLineMarkerProvider.getCommandNameFromClass(phpClass));
+    }
 }

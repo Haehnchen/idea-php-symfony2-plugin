@@ -7,15 +7,14 @@ import com.intellij.execution.lineMarker.RunLineMarkerContributor;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ObjectUtils;
 import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
-import com.jetbrains.php.lang.psi.elements.Field;
-import com.jetbrains.php.lang.psi.elements.PhpAttribute;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
+import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpPsiAttributesUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -76,6 +75,32 @@ public class SymfonyCommandTestRunLineMarkerProvider extends RunLineMarkerContri
 
             // @TODO: provide tag resolving here
             // - { name: 'console.command', command: 'app:sunshine' }
+
+            // old style
+            Method method = phpClass.findOwnMethodByName("configure");
+            if(method != null) {
+                PsiElement[] psiElements = PsiTreeUtil.collectElements(method, psiElement ->
+                    psiElement instanceof MethodReference && "setName".equals(((MethodReference) psiElement).getName())
+                );
+
+                for (PsiElement psiElement : psiElements) {
+                    if(!(psiElement instanceof MethodReference)) {
+                        continue;
+                    }
+
+                    PsiElement psiMethodParameter = PsiElementUtils.getMethodParameterPsiElementAt((MethodReference) psiElement, 0);
+                    if(psiMethodParameter == null) {
+                        continue;
+                    }
+
+                    String stringValue = PhpElementsUtil.getStringValue(psiMethodParameter);
+                    if(stringValue == null) {
+                        continue;
+                    }
+
+                    return stringValue;
+                }
+            }
         }
 
         return null;
