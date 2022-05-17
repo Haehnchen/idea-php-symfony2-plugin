@@ -7,6 +7,8 @@
     <services>
         <service id="foo.xml_id" class="My\Foo\Service\Targets" parent="foo.xml_id.parent"/>
         <service id="foo.xml_id.UPPER" class="My\Foo\Service\Targets"/>
+
+        <prototype namespace="App\" resource="../src/*" exclude="../src/{DependencyInjection,Entity,Tests,Kernel.php}"/>
     </services>
 
 </container>

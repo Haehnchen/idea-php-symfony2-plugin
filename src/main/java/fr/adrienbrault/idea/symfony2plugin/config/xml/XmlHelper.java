@@ -427,7 +427,12 @@ public class XmlHelper {
                 for(XmlTag servicesTag: xmlTag.getSubTags()) {
                     if(servicesTag.getName().equals("services")) {
                         for(XmlTag serviceTag: servicesTag.getSubTags()) {
-                            String serviceNameId = serviceTag.getAttributeValue("id");
+                            String name = serviceTag.getName();
+                            // we know the attributes and context, but rebuild it like yaml
+                            String serviceNameId = "prototype".equals(name)
+                                ? serviceTag.getAttributeValue("namespace")
+                                : serviceTag.getAttributeValue("id");
+
                             if(serviceNameId != null && serviceNameId.equalsIgnoreCase(serviceName)) {
                                 return serviceTag;
                             }

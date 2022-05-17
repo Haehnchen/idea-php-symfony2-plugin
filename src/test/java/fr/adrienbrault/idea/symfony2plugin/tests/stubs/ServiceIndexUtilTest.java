@@ -53,6 +53,16 @@ public class ServiceIndexUtilTest extends SymfonyLightCodeInsightFixtureTestCase
         ));
     }
 
+    public void testFindServiceDefinitionsForNamespacePrototype() {
+        assertTrue(ServiceIndexUtil.findServiceDefinitions(getProject(), "App\\").stream()
+            .anyMatch(psiElement -> psiElement instanceof XmlTag && "App\\".equalsIgnoreCase(((XmlTag) psiElement).getAttributeValue("namespace")))
+        );
+
+        assertTrue(ServiceIndexUtil.findServiceDefinitions(getProject(), "app\\").stream()
+            .anyMatch(psiElement -> psiElement instanceof XmlTag && "App\\".equalsIgnoreCase(((XmlTag) psiElement).getAttributeValue("namespace")))
+        );
+    }
+
     public void testFindServiceDefinitionsForStringInsideXmlUpperCase() {
         assertNotNull(ContainerUtil.find(
             ServiceIndexUtil.findServiceDefinitions(getProject(), "foo.xml_id.upper"),
