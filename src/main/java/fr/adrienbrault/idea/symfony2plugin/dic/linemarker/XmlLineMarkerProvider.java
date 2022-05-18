@@ -3,6 +3,8 @@ package fr.adrienbrault.idea.symfony2plugin.dic.linemarker;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
+import com.intellij.icons.AllIcons;
+import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.patterns.XmlTagPattern;
 import com.intellij.psi.PsiElement;
@@ -46,17 +48,42 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
                 continue;
             }
 
-            PsiElement xmlTag = psiElement.getParent();
-            if(!(xmlTag instanceof XmlTag) || !getServiceIdPattern().accepts(xmlTag)) {
+            if(!XmlHelper.getXmlTagNameLeafStartPattern().accepts(psiElement)) {
                 continue;
             }
 
-            if(lazyDecoratedParentServiceValues == null) {
-                lazyDecoratedParentServiceValues = new LazyDecoratedParentServiceValues(psiElement.getProject());
+            PsiElement xmlTag = psiElement.getParent();
+            if(!(xmlTag instanceof XmlTag)) {
+                continue;
             }
 
-            // <services><service id="foo"/></services>
-            visitServiceId(psiElement, (XmlTag) xmlTag, result, lazyDecoratedParentServiceValues);
+            if (getServiceIdPattern().accepts(xmlTag)) {
+                if(lazyDecoratedParentServiceValues == null) {
+                    lazyDecoratedParentServiceValues = new LazyDecoratedParentServiceValues(psiElement.getProject());
+                }
+
+                // <services><service id="foo"/></services>
+                visitServiceId(psiElement, (XmlTag) xmlTag, result, lazyDecoratedParentServiceValues);
+
+                continue;
+            }
+
+            if (getPrototypeNamespacePattern().accepts(xmlTag)) {
+                String namespace = ((XmlTag) xmlTag).getAttributeValue("namespace");
+                if (StringUtils.isBlank(namespace)) {
+                    continue;
+                }
+
+                String resource = ((XmlTag) xmlTag).getAttributeValue("resource");
+                if (StringUtils.isBlank(resource)) {
+                    continue;
+                }
+
+                result.add(NavigationGutterIconBuilder.create(AllIcons.Modules.SourceRoot)
+                    .setTargets(NotNullLazyValue.lazy(() -> XmlHelper.getNamespaceResourcesClasses((XmlTag) xmlTag)))
+                    .setTooltipText("Navigate to class")
+                    .createLineMarkerInfo(psiElement));
+            }
         }
     }
 
@@ -112,6 +139,16 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
     private static XmlTagPattern.Capture getServiceIdPattern() {
         return XmlPatterns.xmlTag().withName("service")
             .withChild(XmlPatterns.xmlAttribute().withName("id")).inside(
+                XmlHelper.getInsideTagPattern("services")
+            ).inFile(XmlHelper.getXmlFilePattern());
+    }
+
+    /**
+     * <prototype namespace="App\" resource="../src/*" exclude="../src/{DependencyInjection,Entity,Tests,Kernel.php}"/>
+     */
+    private static XmlTagPattern.Capture getPrototypeNamespacePattern() {
+        return XmlPatterns.xmlTag().withName("prototype")
+            .withChild(XmlPatterns.xmlAttribute().withName("namespace")).inside(
                 XmlHelper.getInsideTagPattern("services")
             ).inFile(XmlHelper.getXmlFilePattern());
     }

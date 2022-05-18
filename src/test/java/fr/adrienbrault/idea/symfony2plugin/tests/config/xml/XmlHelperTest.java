@@ -1,16 +1,24 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.config.xml;
 
 import com.intellij.ide.highlighter.XmlFileType;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.Parameter;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -168,5 +176,24 @@ public class XmlHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
         assertEquals(1, XmlHelper.getArgumentIndex((XmlTag) psiElement.getParent()));
+    }
+
+    /**
+     * @see XmlHelper#getNamespaceResourcesClasses
+     */
+    public void testGetNamespaceResourcesClasses() {
+        myFixture.copyFileToProject("XmlHelper.php", "src/XmlHelper.php");
+        VirtualFile service = myFixture.copyFileToProject("services.xml", "src/services.xml");
+
+        PsiFile file = PsiManager.getInstance(getProject()).findFile(service);
+
+        Collection<XmlTag> xmlTags = PsiTreeUtil.collectElementsOfType(file, XmlTag.class);
+
+        XmlTag xmlTag = xmlTags.stream().filter(xmlTag1 -> "prototype".equals(xmlTag1.getName())).findFirst().orElseThrow();
+        Collection<String> namespaceResourcesClasses = XmlHelper.getNamespaceResourcesClasses(xmlTag).stream()
+            .map(PhpNamedElement::getFQN)
+            .collect(Collectors.toSet());
+
+        assertContainsElements(namespaceResourcesClasses, "\\Foo\\Bar");
     }
 }

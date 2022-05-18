@@ -5,9 +5,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -25,11 +23,26 @@ public class XmlTagAttributeValue extends AttributeValueAbstract {
     @NotNull
     @Override
     public Collection<String> getStringArray(@NotNull String key) {
-        String string = getString(key);
+        Set<String> values = new HashSet<>();
 
-        return string != null
-            ? Collections.singleton(string)
-            : Collections.emptyList();
+        String string = getString(key);
+        if (StringUtils.isNotBlank(string)) {
+            values.add(string);
+        }
+
+        // <prototype exclude="../src/{DependencyInjection,Entity,Tests,Kernel.php}">"
+        //  <exclude>../foobar</exclude>"
+        // </prototype>"
+        if (key.equals("exclude")) {
+            for (XmlTag excludeTag : xmlTag.findSubTags(key)) {
+                String text = excludeTag.getValue().getText();
+                if (StringUtils.isNotBlank(text)) {
+                    values.add(text);
+                }
+            }
+        }
+
+        return values;
     }
 
     @Nullable

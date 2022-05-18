@@ -2,5 +2,6 @@
 <container>
     <services>
         <service id="foo.bar_factory" class="Foo\Bar"/>
+        <prototype namespace="Foo\" resource="../src/*"/>
     </services>
 </container>
