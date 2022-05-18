@@ -1,0 +1,28 @@
+services:
+    Foo\:
+      resource: ../src/*
+
+    Foo1\:
+      resource: ../src/
+
+    Foo2\:
+      resource: ../src/**
+
+    Foo3\:
+      resource: ../src/YamlHelper.php
+
+    Foo4\:
+      resource: ../src/*.php
+
+    Foo5\:
+      resource: ../src/*.php
+      exclude: '../src/YamlHelper.php'
+
+    Foo6\:
+      resource: ../src/*.php
+      exclude:
+        - '../src/YamlHelper.php'
+
+    Foo7\:
+      resource: ../src/*.php
+      exclude: ['../src/YamlHelper.php']
