@@ -15,6 +15,7 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.dic.ParameterResolverConsumer;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
@@ -23,8 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -833,5 +833,43 @@ public class XmlHelper {
 
         VirtualFile virtualFile = psiFile.getVirtualFile();
         return virtualFile == null || !"xml".equalsIgnoreCase(virtualFile.getExtension());
+    }
+
+    /**
+     * <prototype exclude="../src/{DependencyInjection,Entity,Tests,Kernel.php}">"
+     *  <exclude>../foobar</exclude>"
+     * </prototype>"
+     */
+    public static @NotNull Collection<PhpClass> getNamespaceResourcesClasses(@NotNull XmlTag xmlTag) {
+        String namespace = xmlTag.getAttributeValue("namespace");
+        if (StringUtils.isBlank(namespace)) {
+            return Collections.emptyList();
+        }
+
+        String resource = xmlTag.getAttributeValue("resource");
+        if (StringUtils.isBlank(resource)) {
+            return Collections.emptyList();
+        }
+
+        Set<String> excludes = new HashSet<>();
+        String exclude = xmlTag.getAttributeValue("exclude");
+        if (StringUtils.isNotBlank(exclude)) {
+            excludes.add(exclude);
+        }
+
+        for (XmlTag excludeTag : xmlTag.findSubTags("exclude")) {
+            String text = excludeTag.getValue().getText();
+            if (StringUtils.isNotBlank(text)) {
+                excludes.add(text);
+            }
+        }
+
+        return ServiceContainerUtil.getPhpClassFromResources(
+            xmlTag.getProject(),
+            namespace,
+            xmlTag.getContainingFile().getVirtualFile(),
+            List.of(resource),
+            excludes
+        );
     }
 }

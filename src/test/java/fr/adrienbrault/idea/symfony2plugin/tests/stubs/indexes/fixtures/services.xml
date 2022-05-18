@@ -35,7 +35,9 @@
 
         <prototype namespace="App\Xml\"
                    resource="../src/*"
-                   exclude="../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php}"/>
+                   exclude="../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php}">
+            <exclude>../src/foobar</exclude>
+        </prototype>
 
         <service id="foo.tagged.xml_type" class="AppBundle\Controller\DefaultController">
             <tag name="xml_type_tag"/>

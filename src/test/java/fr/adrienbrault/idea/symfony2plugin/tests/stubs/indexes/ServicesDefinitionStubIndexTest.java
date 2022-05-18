@@ -95,6 +95,7 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
         assertEquals("App\\Xml\\", firstValue.getId());
         assertContainsElements(firstValue.getResource(), "../src/*");
         assertContainsElements(firstValue.getExclude(), "../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php}");
+        assertContainsElements(firstValue.getExclude(), "../src/foobar");
     }
 
     public void testThatTagAreInIndexForYaml() {
