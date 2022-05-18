@@ -1,10 +1,14 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.util.yaml;
 
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.Parameter;
+import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlPsiElementFactory;
@@ -20,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -603,6 +607,74 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
         );
 
         assertEquals("App\\", YamlHelper.getServiceKeyFromResourceFromStringOrArray(fromText));
+    }
+
+    @NotNull
+    private Collection<String> getClassNamesFromResourceGlob(@NotNull Collection<YAMLKeyValue> yamlKeyValues, @NotNull String namespace) {
+        YAMLKeyValue yamlKeyValue = yamlKeyValues.stream()
+            .filter(yamlKeyValue1 -> namespace.equals(yamlKeyValue1.getKeyText()))
+            .findFirst()
+            .orElseThrow();
+
+        return YamlHelper.getNamespaceResourcesClasses(yamlKeyValue).stream()
+            .map(PhpNamedElement::getFQN)
+            .collect(Collectors.toSet());
+    }
+
+    public void testGetNamespaceResourcesClasses() {
+        myFixture.copyFileToProject("YamlHelper.php", "src/YamlHelper.php");
+        VirtualFile service = myFixture.copyFileToProject("services.yml", "src/services.yml");
+        PsiFile file = PsiManager.getInstance(getProject()).findFile(service);
+
+        Collection<YAMLKeyValue> yamlKeyValues = PsiTreeUtil.collectElementsOfType(file, YAMLKeyValue.class);
+
+        assertContainsElements(
+            getClassNamesFromResourceGlob(yamlKeyValues, "Foo\\"),
+            "\\Foo\\Bar"
+        );
+
+        assertContainsElements(
+            getClassNamesFromResourceGlob(yamlKeyValues, "Foo1\\"),
+            "\\Foo1\\Bar"
+        );
+
+        assertContainsElements(
+            getClassNamesFromResourceGlob(yamlKeyValues, "Foo2\\"),
+            "\\Foo2\\Bar"
+        );
+
+        assertContainsElements(
+            getClassNamesFromResourceGlob(yamlKeyValues, "Foo3\\"),
+            "\\Foo3\\Bar"
+        );
+
+        assertContainsElements(
+            getClassNamesFromResourceGlob(yamlKeyValues, "Foo4\\"),
+            "\\Foo4\\Bar"
+        );
+    }
+
+    public void testGetNamespaceResourcesClassesWithExclude() {
+        myFixture.copyFileToProject("YamlHelper.php", "src/YamlHelper.php");
+        VirtualFile service = myFixture.copyFileToProject("services.yml", "src/services.yml");
+        PsiFile file = PsiManager.getInstance(getProject()).findFile(service);
+
+        Collection<YAMLKeyValue> yamlKeyValues = PsiTreeUtil.collectElementsOfType(file, YAMLKeyValue.class);
+
+        assertDoesntContain(
+            getClassNamesFromResourceGlob(yamlKeyValues, "Foo5\\"),
+            "\\Foo5\\Bar"
+        );
+
+        assertDoesntContain(
+            getClassNamesFromResourceGlob(yamlKeyValues, "Foo6\\"),
+            "\\Foo6\\Bar"
+        );
+
+        assertDoesntContain(
+            getClassNamesFromResourceGlob(yamlKeyValues, "Foo7\\"),
+            "\\Foo7\\Bar"
+        );
     }
 
     private int getIndentForTextContent(@NotNull String content) {
