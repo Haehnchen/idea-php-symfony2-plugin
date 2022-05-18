@@ -13,3 +13,13 @@ namespace Foo
         }
     }
 }
+
+namespace Foo1
+{
+    class Bar {}
+}
+
+namespace Foo2
+{
+    class Bar {}
+}

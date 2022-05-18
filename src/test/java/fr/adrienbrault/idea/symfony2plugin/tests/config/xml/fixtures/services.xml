@@ -3,5 +3,9 @@
     <services>
         <service id="foo.bar_factory" class="Foo\Bar"/>
         <prototype namespace="Foo\" resource="../src/*"/>
+        <prototype namespace="Foo1\" resource="../src/*" exclude="../src/XmlHelper.php"/>
+        <prototype namespace="Foo2\" resource="../src/*">
+            <exclude>../src/XmlHelper.php</exclude>
+        </prototype>
     </services>
 </container>
