@@ -10,14 +10,13 @@ import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.Parameter;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -178,6 +177,18 @@ public class XmlHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertEquals(1, XmlHelper.getArgumentIndex((XmlTag) psiElement.getParent()));
     }
 
+    @NotNull
+    private Collection<String> getClassNamesFromResourceGlob(@NotNull Collection<XmlTag> xmlTags, @NotNull String namespace) {
+        XmlTag xmlTag = xmlTags.stream()
+            .filter(xmlTag1 -> namespace.equals(xmlTag1.getAttributeValue("namespace")))
+            .findFirst()
+            .orElseThrow();
+
+        return XmlHelper.getNamespaceResourcesClasses(xmlTag).stream()
+            .map(PhpNamedElement::getFQN)
+            .collect(Collectors.toSet());
+    }
+
     /**
      * @see XmlHelper#getNamespaceResourcesClasses
      */
@@ -189,11 +200,31 @@ public class XmlHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         Collection<XmlTag> xmlTags = PsiTreeUtil.collectElementsOfType(file, XmlTag.class);
 
-        XmlTag xmlTag = xmlTags.stream().filter(xmlTag1 -> "prototype".equals(xmlTag1.getName())).findFirst().orElseThrow();
-        Collection<String> namespaceResourcesClasses = XmlHelper.getNamespaceResourcesClasses(xmlTag).stream()
-            .map(PhpNamedElement::getFQN)
-            .collect(Collectors.toSet());
+        assertContainsElements(
+            getClassNamesFromResourceGlob(xmlTags, "Foo\\"),
+            "\\Foo\\Bar"
+        );
+    }
 
-        assertContainsElements(namespaceResourcesClasses, "\\Foo\\Bar");
+    /**
+     * @see XmlHelper#getNamespaceResourcesClasses
+     */
+    public void testGetNamespaceResourcesClassesWithExclude() {
+        myFixture.copyFileToProject("XmlHelper.php", "src/XmlHelper.php");
+        VirtualFile service = myFixture.copyFileToProject("services.xml", "src/services.xml");
+
+        PsiFile file = PsiManager.getInstance(getProject()).findFile(service);
+
+        Collection<XmlTag> xmlTags = PsiTreeUtil.collectElementsOfType(file, XmlTag.class);
+
+        assertDoesntContain(
+            getClassNamesFromResourceGlob(xmlTags, "Foo1\\"),
+            "\\Foo1\\Bar"
+        );
+
+        assertDoesntContain(
+            getClassNamesFromResourceGlob(xmlTags, "Foo2\\"),
+            "\\Foo2\\Bar"
+        );
     }
 }
