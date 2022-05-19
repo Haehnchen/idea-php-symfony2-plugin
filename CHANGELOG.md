@@ -19,6 +19,13 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.23.227 / 2022.1.227
+* Provide service class linemarker for prototype resource of xml files (Daniel Espendiller)
+* Support resource namespace navigation for xml prototype (Daniel Espendiller)
+* Support latest command name extraction logic also in search everywhere (Daniel Espendiller)
+* Provide navigation for "resource" and "exclude" of yaml files (Daniel Espendiller)
+* [#1541](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1541) fix supporting "asCommand" name as default value (Daniel Espendiller)
+
 ## 0.23.226 / 2022.1.226
 * [#1429](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1429) fix security matcher starting string replacement and support php attributes (Daniel Espendiller)
 * Fixed duplicated results in service completion (Adam Wójs)
