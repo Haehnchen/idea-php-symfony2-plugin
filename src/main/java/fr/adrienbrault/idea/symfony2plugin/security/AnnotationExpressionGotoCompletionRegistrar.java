@@ -1,18 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.security;
 
-import com.intellij.codeInsight.completion.CompletionResultSet;
-import com.intellij.patterns.PatternCondition;
 import com.intellij.patterns.PlatformPatterns;
-import com.intellij.patterns.PsiElementPattern;
 import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiElement;
-import com.intellij.util.ProcessingContext;
-import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
-import com.jetbrains.php.lang.lexer.PhpTokenTypes;
-import com.jetbrains.php.lang.psi.elements.ParameterList;
-import com.jetbrains.php.lang.psi.elements.PhpAttribute;
-import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProviderLookupArguments;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
@@ -22,7 +12,6 @@ import fr.adrienbrault.idea.symfony2plugin.expressionLanguage.psi.ExpressionLang
 import fr.adrienbrault.idea.symfony2plugin.expressionLanguage.psi.ExpressionLanguageRefExpr;
 import fr.adrienbrault.idea.symfony2plugin.expressionLanguage.psi.ExpressionLanguageStringLiteral;
 import fr.adrienbrault.idea.symfony2plugin.security.utils.VoterUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -33,8 +22,6 @@ import java.util.HashSet;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class AnnotationExpressionGotoCompletionRegistrar implements GotoCompletionRegistrar {
-
-    private static final String SECURITY_ANNOTATION = "\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Security";
 
     @Override
     public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
@@ -69,14 +56,9 @@ public class AnnotationExpressionGotoCompletionRegistrar implements GotoCompleti
 
         @Override
         public void getLookupElements(@NotNull GotoCompletionProviderLookupArguments arguments) {
-            final CompletionResultSet resultSet = arguments.getResultSet();
-            String blockNamePrefix = resultSet.getPrefixMatcher().getPrefix();
-
-            CompletionResultSet myResultSet = resultSet.withPrefixMatcher(blockNamePrefix);
-
-            VoterUtil.LookupElementPairConsumer consumer = new VoterUtil.LookupElementPairConsumer();
+            var consumer = new VoterUtil.LookupElementPairConsumer();
             VoterUtil.visitAttribute(getProject(), consumer);
-            myResultSet.addAllElements(consumer.getLookupElements());
+            arguments.getResultSet().addAllElements(consumer.getLookupElements());
         }
 
         @NotNull
