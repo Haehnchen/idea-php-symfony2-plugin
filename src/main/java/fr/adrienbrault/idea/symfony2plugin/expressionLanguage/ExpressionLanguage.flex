@@ -22,7 +22,6 @@ import static fr.adrienbrault.idea.symfony2plugin.expressionLanguage.psi.Express
 %type IElementType
 %unicode
 
-EOL=\R
 WHITE_SPACE=\s+
 
 SPACE=[ \t\n\x0B\f\r]+
