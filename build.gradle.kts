@@ -13,6 +13,8 @@ plugins {
     id("org.jetbrains.changelog") version "1.3.1"
     // Gradle Qodana Plugin
     id("org.jetbrains.qodana") version "0.1.13"
+    // Gradle Grammar-Kit Plugin
+    id("org.jetbrains.grammarkit") version "2021.2.2"
 }
 
 group = properties("pluginGroup")
@@ -112,4 +114,29 @@ tasks {
             includeEngines("junit-vintage")
         }
     }
+
+    generateLexer {
+        source.set("src/main/java/fr/adrienbrault/idea/symfony2plugin/expressionLanguage/ExpressionLanguage.flex")
+        targetDir.set("src/main/gen/fr/adrienbrault/idea/symfony2plugin/expressionLanguage/")
+        targetClass.set("ExpressionLanguageLexer")
+        purgeOldFiles.set(true)
+    }
+
+    generateParser {
+        source.set("src/main/java/fr/adrienbrault/idea/symfony2plugin/expressionLanguage/ExpressionLanguage.bnf")
+        targetRoot.set("src/main/gen")
+        pathToParser.set("fr/adrienbrault/idea/symfony2plugin/expressionLanguage/ExpressionLanguageParser.java")
+        pathToPsiRoot.set("fr/adrienbrault/idea/symfony2plugin/expressionLanguage/psi")
+        purgeOldFiles.set(true)
+    }
+
+    compileJava {
+        dependsOn("generateLexer")
+        dependsOn("generateParser")
+    }
+}
+
+java.sourceSets["main"].java {
+    // Include the generated files in the source set
+    srcDir("src/main/gen")
 }
