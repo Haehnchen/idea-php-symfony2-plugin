@@ -32,6 +32,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -419,5 +420,39 @@ public class FileResourceUtil {
 
             return psiElements;
         }
+    }
+
+    /**
+     * Split given "resource" path to get the root path and its pattern
+     *
+     * @param resourcePath "../src/{Entity,Foobar}/"
+     * @return "../src", "{Entity,Foobar}"
+     */
+    @NotNull
+    public static Pair<String, String> getGlobalPatternDirectory(@NotNull String resourcePath) {
+        String[] split = resourcePath.split("/");
+        List<String> path = new ArrayList<>();
+
+        for (int i = 0; i < split.length; i++) {
+            String s1 = split[i];
+            if (Stream.of("$", "*", "[", "]", "|", "(", ")", "?", "{", "}").anyMatch(s1::contains)) {
+                String join = String.join("/", Arrays.copyOfRange(split, i, split.length));
+
+                if (resourcePath.endsWith("/") && !join.endsWith("/")) {
+                    join += "/";
+                }
+
+                return new Pair<>(String.join("/", path), join);
+            }
+
+            path.add(s1);
+        }
+
+        String join = String.join("/", path);
+        if (resourcePath.endsWith("/") && !join.endsWith("/")) {
+            join += "/";
+        }
+
+        return new Pair<>(join, null);
     }
 }
