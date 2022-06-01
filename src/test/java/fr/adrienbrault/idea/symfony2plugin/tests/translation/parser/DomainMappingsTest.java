@@ -22,7 +22,7 @@ public class DomainMappingsTest extends Assert {
         domainMappings.parser(new FileInputStream(testFile));
         Collection<DomainFileMap> domainFileMaps = domainMappings.getDomainFileMaps();
 
-        assertEquals(14, domainFileMaps.size());
+        assertEquals(16, domainFileMaps.size());
 
         DomainFileMap craueFormFlowBundle = domainFileMaps.stream().filter(domainFileMap -> domainFileMap.getDomain().equals("CraueFormFlowBundle")).findFirst().get();
 
@@ -40,5 +40,18 @@ public class DomainMappingsTest extends Assert {
         assertNotNull(domainFileMaps.stream().filter(domainFileMap -> domainFileMap.getDomain().equals("foobar_domain2")).findFirst().get());
         assertNotNull(domainFileMaps.stream().filter(domainFileMap -> domainFileMap.getDomain().equals("foobar_domain3")).findFirst().get());
         assertNotNull(domainFileMaps.stream().filter(domainFileMap -> domainFileMap.getDomain().equals("foobar_domain4")).findFirst().get());
+
+
+        DomainFileMap foobarIntl = domainFileMaps.stream().filter(domainFileMap -> domainFileMap.getDomain().equals("foobar_intl")).findFirst().get();
+        assertEquals("foobar_intl", foobarIntl.getDomain());
+        assertEquals("de", foobarIntl.getLanguageKey());
+        assertEquals("xlf", foobarIntl.getLoader());
+        assertTrue(foobarIntl.getPath().endsWith("foobar_intl+intl-icu.de.xlf"));
+
+        DomainFileMap foobarOldIntl = domainFileMaps.stream().filter(domainFileMap -> domainFileMap.getDomain().equals("foobar_old_intl")).findFirst().get();
+        assertEquals("foobar_old_intl", foobarOldIntl.getDomain());
+        assertEquals("de", foobarOldIntl.getLanguageKey());
+        assertEquals("xlf", foobarOldIntl.getLoader());
+        assertTrue(foobarOldIntl.getPath().endsWith("foobar_old_intl+intl-icu.de.xlf"));
     }
 }

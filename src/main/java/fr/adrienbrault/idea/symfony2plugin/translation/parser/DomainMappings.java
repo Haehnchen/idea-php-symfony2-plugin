@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.translation.parser;
 
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.DomainFileMap;
 import fr.adrienbrault.idea.symfony2plugin.util.service.AbstractServiceParser;
+import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -42,7 +43,19 @@ public class DomainMappings extends AbstractServiceParser {
                 NodeList arguments = node.getElementsByTagName("argument");
 
                 if(arguments.getLength() == 4) {
-                    this.domainFileMaps.add(new DomainFileMap(arguments.item(0).getTextContent(), arguments.item(1).getTextContent(), arguments.item(2).getTextContent(), arguments.item(3).getTextContent()));
+                    String domain = arguments.item(3).getTextContent();
+                    if (domain.endsWith("+intl-icu")) {
+                        domain = domain.substring(0, domain.length() - 9);
+                    }
+
+                    if (StringUtils.isNotBlank(domain)) {
+                        this.domainFileMaps.add(new DomainFileMap(
+                            arguments.item(0).getTextContent(),
+                            arguments.item(1).getTextContent(),
+                            arguments.item(2).getTextContent(),
+                            domain
+                        ));
+                    }
                 }
             } else if("argument".equals(tagName)) {
                 // Symfony 5: arguments in constructor
@@ -58,7 +71,13 @@ public class DomainMappings extends AbstractServiceParser {
                     // split by filename: validators.af.xlf
                     String[] split = filename.split("\\.");
                     if (split.length == 3) {
-                        this.domainFileMaps.add(new DomainFileMap(split[2], path, split[1], split[0]));
+                        if (split[0].endsWith("+intl-icu")) {
+                            split[0] = split[0].substring(0, split[0].length() - 9);
+                        }
+
+                        if (StringUtils.isNotBlank(split[0])) {
+                            this.domainFileMaps.add(new DomainFileMap(split[2], path, split[1], split[0]));
+                        }
                     }
                 }
             }

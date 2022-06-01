@@ -11,6 +11,7 @@ import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -128,6 +129,18 @@ public class TranslationStringMap {
             PhpPsiElement arrayKey = arrayHashElement.getKey();
             if(arrayKey instanceof StringLiteralExpression) {
                 String transDomain = ((StringLiteralExpression) arrayKey).getContents();
+                if (StringUtils.isBlank(transDomain)) {
+                    continue;
+                }
+
+                if (transDomain.endsWith("+intl-icu")) {
+                    transDomain = transDomain.substring(0, transDomain.length() - 9);
+                }
+
+                if (StringUtils.isBlank(transDomain)) {
+                    continue;
+                }
+
                 addDomain(transDomain);
 
                 // parse translation keys

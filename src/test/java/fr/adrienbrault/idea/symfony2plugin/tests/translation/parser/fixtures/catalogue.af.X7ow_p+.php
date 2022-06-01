@@ -12,6 +12,10 @@ $catalogue = new MessageCatalogue('af', array (
   array (
     'An authentication exception occurred.' => '\'n Verifikasie probleem het voorgekom.',
   ),
+  'my_intl_icu_domain+intl-icu' =>
+  array (
+    'messages_intl_icu_key' => 'foobar intl-icu',
+  ),
 ));
 
 $catalogueEn = new MessageCatalogue('en', array (
