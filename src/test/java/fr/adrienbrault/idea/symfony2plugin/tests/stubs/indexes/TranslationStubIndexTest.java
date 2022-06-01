@@ -6,6 +6,7 @@ import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TranslationStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
@@ -32,6 +33,9 @@ public class TranslationStubIndexTest extends SymfonyLightCodeInsightFixtureTest
         myFixture.copyFileToProject("car.de.yml", "Resources/translations/car.de.yml");
         myFixture.copyFileToProject("car.de.yml", "translations/car_flex_yml.de.yml");
         myFixture.copyFileToProject("car.de.yml", "translations/car_flex_yaml.de.yaml");
+
+        myFixture.copyFileToProject("fr.xlf", "+intl-icu.fr.xlf");
+        myFixture.copyFileToProject("fr.xlf", "  .fr.xlf");
     }
 
     public String getTestDataPath() {
@@ -99,9 +103,18 @@ public class TranslationStubIndexTest extends SymfonyLightCodeInsightFixtureTest
         assertContainsElements(getDomainKeys("car_flex_yaml"), "foo_yaml.symfony.great");
         assertContainsElements(getDomainKeys("car_xlf_flex"), "Symfony is great");
     }
+
     public void testThatIcuMessagesAreInIndex() {
         assertContainsElements(getDomainKeys("messages"), "Hello {name}");
         assertContainsElements(getDomainKeys("messages"), "resname.hello");
+    }
+    
+    public void testThatEmptyDomainAreNotAdded() {
+        assertFalse(FileBasedIndex.getInstance()
+            .getAllKeys(TranslationStubIndex.KEY, getProject())
+            .stream()
+            .anyMatch(StringUtils::isBlank)
+        );
     }
 
     @NotNull
