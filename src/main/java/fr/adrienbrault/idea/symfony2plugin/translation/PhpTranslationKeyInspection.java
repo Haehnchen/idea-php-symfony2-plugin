@@ -5,6 +5,7 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
+import com.jetbrains.php.lang.psi.elements.NewExpression;
 import com.jetbrains.php.lang.psi.elements.ParameterList;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -46,23 +47,25 @@ public class PhpTranslationKeyInspection extends LocalInspectionTool {
         }
 
         ParameterList parameterList = (ParameterList) psiElement.getContext();
+
+        int domainParameter = -1;
         PsiElement methodReference = parameterList.getContext();
-        if (!(methodReference instanceof MethodReference)) {
-            return;
+        if (methodReference instanceof MethodReference && PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) methodReference, TranslationUtil.PHP_TRANSLATION_SIGNATURES)) {
+            domainParameter = 2;
+            if("transChoice".equals(((MethodReference) methodReference).getName())) {
+                domainParameter = 3;
+            }
+        } else if(methodReference instanceof NewExpression && PhpElementsUtil.isNewExpressionPhpClassWithInstance((NewExpression) methodReference, TranslationUtil.PHP_TRANSLATION_TRANSLATABLE_MESSAGE)) {
+            domainParameter = 2;
         }
 
-        if (!PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) methodReference, TranslationUtil.PHP_TRANSLATION_SIGNATURES)) {
+        if (domainParameter < 0) {
             return;
         }
 
         ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(psiElement);
         if(currentIndex == null || currentIndex.getIndex() != 0) {
             return;
-        }
-
-        int domainParameter = 2;
-        if("transChoice".equals(((MethodReference) methodReference).getName())) {
-            domainParameter = 3;
         }
 
         PsiElement domainElement = PsiElementUtils.getMethodParameterPsiElementAt(parameterList, domainParameter);

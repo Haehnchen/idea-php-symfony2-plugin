@@ -4,6 +4,7 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.*;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
+import com.jetbrains.php.lang.psi.elements.NewExpression;
 import com.jetbrains.php.lang.psi.elements.ParameterList;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -26,24 +27,26 @@ public class TranslationReferenceContributor extends PsiReferenceContributor {
             new PsiReferenceProvider() {
                 @NotNull
                 @Override
-                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+                public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
                     if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof ParameterList)) {
                         return new PsiReference[0];
                     }
 
                     ParameterList parameterList = (ParameterList) psiElement.getContext();
                     PsiElement methodReference = parameterList.getContext();
-                    if (!(methodReference instanceof MethodReference)) {
-                        return new PsiReference[0];
+
+                    int domainParameter = -1;
+                    if (methodReference instanceof MethodReference && PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) methodReference, TranslationUtil.PHP_TRANSLATION_SIGNATURES)) {
+                        domainParameter = 2;
+                        if("transChoice".equals(((MethodReference) methodReference).getName())) {
+                            domainParameter = 3;
+                        }
+                    } else if(methodReference instanceof NewExpression && PhpElementsUtil.isNewExpressionPhpClassWithInstance((NewExpression) methodReference, TranslationUtil.PHP_TRANSLATION_TRANSLATABLE_MESSAGE)) {
+                        domainParameter = 2;
                     }
 
-                    if (!PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) methodReference, TranslationUtil.PHP_TRANSLATION_SIGNATURES)) {
+                    if (domainParameter < 0) {
                         return new PsiReference[0];
-                    }
-
-                    int domainParameter = 2;
-                    if("transChoice".equals(((MethodReference) methodReference).getName())) {
-                        domainParameter = 3;
                     }
 
                     ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(psiElement);

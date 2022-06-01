@@ -49,4 +49,21 @@ public class PhpTranslationDomainInspectionTest extends SymfonyLightCodeInsightF
             PhpTranslationDomainInspection.MESSAGE
         );
     }
+
+    public void testThatPhpTranslationDomainInspectionsForTranslatableMessageAreProvided() {
+        assertLocalInspectionContains("test.php", "<?php\n" +
+                "new \\Symfony\\Component\\Translation\\TranslatableMessage('foobar', [], 'do<caret>main');",
+            PhpTranslationDomainInspection.MESSAGE
+        );
+
+        assertLocalInspectionContains("test.php", "<?php\n" +
+                "new \\Symfony\\Component\\Translation\\TranslatableMessage('foobar', [], 'foo<caret>bar');",
+            PhpTranslationDomainInspection.MESSAGE
+        );
+
+        assertLocalInspectionNotContains("test.php", "<?php\n" +
+                "new \\Symfony\\Component\\Translation\\TranslatableMessage('foobar', [], 'sym<caret>fony');",
+            PhpTranslationDomainInspection.MESSAGE
+        );
+    }
 }

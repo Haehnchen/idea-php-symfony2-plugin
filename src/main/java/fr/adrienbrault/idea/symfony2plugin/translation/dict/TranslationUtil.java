@@ -73,6 +73,8 @@ public class TranslationUtil {
         new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Templating\\Helper\\TranslatorHelper", "transChoice")
     };
 
+    public static final String PHP_TRANSLATION_TRANSLATABLE_MESSAGE = "\\Symfony\\Component\\Translation\\TranslatableMessage";
+
     private static final String[] XLIFF_XPATH = {
         "//xliff/file/body/trans-unit/source",
         "//xliff/file/group/unit/segment/source",

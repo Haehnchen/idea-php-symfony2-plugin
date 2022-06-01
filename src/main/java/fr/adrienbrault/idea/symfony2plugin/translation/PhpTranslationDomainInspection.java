@@ -5,9 +5,7 @@ import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
-import com.jetbrains.php.lang.psi.elements.MethodReference;
-import com.jetbrains.php.lang.psi.elements.ParameterList;
-import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.inspection.TranslationDomainGuessTypoQuickFix;
@@ -48,23 +46,22 @@ public class PhpTranslationDomainInspection extends LocalInspectionTool {
 
         ParameterList parameterList = (ParameterList) psiElement.getContext();
 
+        int domainParameter = -1;
         PsiElement methodReference = parameterList.getContext();
-        if (!(methodReference instanceof MethodReference)) {
-            return;
+        if (methodReference instanceof MethodReference && PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) methodReference, TranslationUtil.PHP_TRANSLATION_SIGNATURES)) {
+            domainParameter = 2;
+            if("transChoice".equals(((MethodReference) methodReference).getName())) {
+                domainParameter = 3;
+            }
+        } else if(methodReference instanceof NewExpression && PhpElementsUtil.isNewExpressionPhpClassWithInstance((NewExpression) methodReference, TranslationUtil.PHP_TRANSLATION_TRANSLATABLE_MESSAGE)) {
+            domainParameter = 2;
         }
 
-        if (!PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) methodReference, TranslationUtil.PHP_TRANSLATION_SIGNATURES)) {
-            return;
-        }
-
-        int domainParameter = 2;
-        if("transChoice".equals(((MethodReference) methodReference).getName())) {
-            domainParameter = 3;
-        }
-
-        ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(psiElement);
-        if(currentIndex != null && currentIndex.getIndex() == domainParameter) {
-            annotateTranslationDomain((StringLiteralExpression) psiElement, holder);
+        if (domainParameter >= 0) {
+            ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(psiElement);
+            if(currentIndex != null && currentIndex.getIndex() == domainParameter) {
+                annotateTranslationDomain((StringLiteralExpression) psiElement, holder);
+            }
         }
     }
 
