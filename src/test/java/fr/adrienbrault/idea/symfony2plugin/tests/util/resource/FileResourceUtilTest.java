@@ -1,12 +1,16 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.util.resource;
 
 import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -17,13 +21,6 @@ public class FileResourceUtilTest extends SymfonyLightCodeInsightFixtureTestCase
 
     public void setUp() throws Exception {
         super.setUp();
-
-        myFixture.copyFileToProject("classes.php");
-        myFixture.configureByText("target.xml", "" +
-                "<routes>\n" +
-                "    <import resource=\"@FooBundle/foo.xml\" />\n" +
-                "</routes>"
-        );
     }
 
     public String getTestDataPath() {
@@ -31,12 +28,15 @@ public class FileResourceUtilTest extends SymfonyLightCodeInsightFixtureTestCase
     }
 
     public void testGetFileResourceRefers() {
-        PsiFile psiFile = myFixture.configureByText("foo.xml", "foo");
+        createBundleScopeProject();
 
+        PsiFile psiFile = myFixture.configureByText("foo.xml", "foo");
         assertNotNull(ContainerUtil.find(FileResourceUtil.getFileResourceRefers(getProject(), psiFile.getVirtualFile()), virtualFile -> virtualFile.getName().equals("target.xml")));
     }
 
     public void testGetFileResourceTargetsInBundleDirectory() {
+        createBundleScopeProject();
+
         for (String s : new String[]{"@FooBundle/Controller", "@FooBundle\\Controller", "@FooBundle/Controller/", "@FooBundle//Controller", "@FooBundle\\Controller\\"}) {
             assertNotNull(ContainerUtil.find(FileResourceUtil.getFileResourceTargetsInBundleDirectory(getProject(), s), psiElement ->
                 psiElement instanceof PhpClass && "\\FooBundle\\Controller\\FooController".equals(((PhpClass) psiElement).getFQN())
@@ -64,5 +64,38 @@ public class FileResourceUtilTest extends SymfonyLightCodeInsightFixtureTestCase
         globalPatternDirectory = FileResourceUtil.getGlobalPatternDirectory("src/");
         assertEquals("src/", globalPatternDirectory.getFirst());
         assertNull(globalPatternDirectory.getSecond());
+    }
+
+    public void testFileResources() {
+        VirtualFile services = myFixture.copyFileToProject("services.xml", "config/services.xml");
+        VirtualFile virtualFile = myFixture.copyFileToProject("classes.php", "src/Test.php");
+
+        assertTrue(FileResourceUtil.hasFileResources(getProject(), PsiElementUtils.virtualFileToPsiFile(getProject(), virtualFile)));
+
+        Collection<Pair<VirtualFile, String>> fileResources = FileResourceUtil.getFileResources(getProject(), virtualFile);
+        assertTrue(fileResources.stream().anyMatch(pair -> pair.getFirst().getPath().equals(services.getPath())));
+    }
+
+    public void testGetFileImplementsLineMarker() {
+        myFixture.copyFileToProject("services.xml", "config/services.xml");
+        VirtualFile virtualFile = myFixture.copyFileToProject("classes.php", "src/Test.php");
+        assertNotNull(FileResourceUtil.getFileImplementsLineMarker(PsiElementUtils.virtualFileToPsiFile(getProject(), virtualFile)));
+    }
+
+    public void testGetFileImplementsLineMarkerForBundle() {
+        createBundleScopeProject();
+
+        myFixture.copyFileToProject("services.xml", "config/services.xml");
+        VirtualFile virtualFile = myFixture.copyFileToProject("classes.php", "src/Test.php");
+        assertNotNull(FileResourceUtil.getFileImplementsLineMarker(PsiElementUtils.virtualFileToPsiFile(getProject(), virtualFile)));
+    }
+
+    private void createBundleScopeProject() {
+        myFixture.copyFileToProject("classes.php");
+        myFixture.configureByText("target.xml", "" +
+            "<routes>\n" +
+            "    <import resource=\"@FooBundle/foo.xml\" />\n" +
+            "</routes>"
+        );
     }
 }
