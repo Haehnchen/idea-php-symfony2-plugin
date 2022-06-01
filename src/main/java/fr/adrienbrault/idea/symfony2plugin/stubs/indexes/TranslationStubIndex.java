@@ -168,6 +168,10 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
             domain = domain.replace("+intl-icu", "");
         }
 
+        if (StringUtils.isBlank(domain)) {
+            return null;
+        }
+
         return domain;
     }
 
