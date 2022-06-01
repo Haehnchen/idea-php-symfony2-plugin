@@ -165,7 +165,7 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
         if (domain.endsWith("+intl-icu")) {
             // Remove +intl-icu suffix, as it is not part of the domain
             // https://symfony.com/blog/new-in-symfony-4-2-intlmessageformatter
-            domain = domain.replace("+intl-icu", "");
+            domain = domain.substring(0, domain.length() - 9);
         }
 
         if (StringUtils.isBlank(domain)) {
