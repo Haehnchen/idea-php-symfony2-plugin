@@ -19,7 +19,10 @@ import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIcons;
 import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.FileResourcesIndex;
-import fr.adrienbrault.idea.symfony2plugin.util.*;
+import fr.adrienbrault.idea.symfony2plugin.util.FileResourceVisitorUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -181,25 +184,20 @@ public class FileResourceUtil {
         }
 
         String bundleLocateName = FileResourceUtil.getBundleLocateName(project, virtualFile);
-        if(bundleLocateName != null) {
-            if(FileResourceUtil.getFileResourceRefers(project, bundleLocateName).size() == 0) {
-                return null;
-            }
-
+        if(bundleLocateName != null && FileResourceUtil.getFileResourceRefers(project, bundleLocateName).size() > 0) {
             NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.IMPLEMENTS)
                 .setTargets(NotNullLazyValue.lazy(new FileResourceBundleNotNullLazyValue(project, bundleLocateName)))
                 .setTooltipText("Navigate to resource");
 
             return builder.createLineMarkerInfo(psiFile);
-        } else {
-            if (hasFileResources(project, psiFile)) {
-                NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.IMPLEMENTS);
-                builder.setTargets(NotNullLazyValue.lazy(new FileResourceNotNullLazyValue(project, virtualFile)));
+        }
 
-                builder.setTooltipText("Navigate to resource");
+        if (hasFileResources(project, psiFile)) {
+            NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.IMPLEMENTS)
+                .setTargets(NotNullLazyValue.lazy(new FileResourceNotNullLazyValue(project, virtualFile)))
+                .setTooltipText("Navigate to resource");
 
-                return builder.createLineMarkerInfo(psiFile);
-            }
+            return builder.createLineMarkerInfo(psiFile);
         }
 
         return null;
