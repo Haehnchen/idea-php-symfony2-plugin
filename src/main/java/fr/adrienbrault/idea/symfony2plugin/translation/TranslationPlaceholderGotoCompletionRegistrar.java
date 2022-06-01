@@ -4,6 +4,9 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
+import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression;
+import com.jetbrains.php.lang.psi.elements.NewExpression;
+import com.jetbrains.php.lang.psi.elements.ParameterList;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
@@ -15,6 +18,7 @@ import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarPa
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
+import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
@@ -53,6 +57,12 @@ public class TranslationPlaceholderGotoCompletionRegistrar implements GotoComple
         registrar.register(
             PlatformPatterns.psiElement().withParent(StringLiteralExpression.class),
             new MyPhpTranslationCompletionContributor("transChoice", 2, 3)
+        );
+
+        // new \Symfony\Component\Translation\TranslatableMessage('symfony.great', ['test' => '%fo<caret>obar%'], 'symfony');
+        registrar.register(
+            PlatformPatterns.psiElement().withParent(StringLiteralExpression.class),
+            new MyPhpTranslatableMessageCompletionContributor()
         );
     }
 
@@ -121,6 +131,67 @@ public class TranslationPlaceholderGotoCompletionRegistrar implements GotoComple
 
             String domain = "messages";
             if(parameters.length > domainParameter) {
+                domain = PhpElementsUtil.getStringValue(parameters[domainParameter]);
+                if(domain == null) {
+                    return null;
+                }
+            }
+
+            return new MyTranslationPlaceholderGotoCompletionProvider(psiElement, key, domain);
+        }
+    }
+
+    /**
+     * new \Symfony\Component\Translation\TranslatableMessage('symfony.great', ['test' => '%fo<caret>obar%'], 'symfony');
+     * new \Symfony\Component\Translation\TranslatableMessage('symfony.great', ['%fo<caret>obar%', null], 'symfony');
+     */
+    private static class MyPhpTranslatableMessageCompletionContributor implements GotoCompletionContributor {
+        @Nullable
+        @Override
+        public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
+            PsiElement context = psiElement.getContext();
+            if (!(context instanceof StringLiteralExpression)) {
+                return null;
+            }
+
+            ArrayCreationExpression arrayCreationExpression = PhpElementsUtil.getCompletableArrayCreationElement(context);
+            if (arrayCreationExpression == null) {
+                return null;
+            }
+
+            PsiElement parameterList = arrayCreationExpression.getContext();
+            if (!(parameterList instanceof ParameterList)) {
+                return null;
+            }
+
+            PsiElement[] parameters = ((ParameterList) parameterList).getParameters();
+            int placeHolderParameter = 1;
+            if (parameters.length < placeHolderParameter) {
+                return null;
+            }
+
+            PsiElement newEx = parameterList.getContext();
+            if (!(newEx instanceof NewExpression)) {
+                return null;
+            }
+
+            ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(arrayCreationExpression);
+            if (currentIndex == null || currentIndex.getIndex() != placeHolderParameter) {
+                return null;
+            }
+
+            if (!PhpElementsUtil.isNewExpressionPhpClassWithInstance((NewExpression) newEx, TranslationUtil.PHP_TRANSLATION_TRANSLATABLE_MESSAGE)) {
+                return null;
+            }
+
+            String key = PhpElementsUtil.getStringValue(parameters[0]);
+            if (key == null) {
+                return null;
+            }
+
+            String domain = "messages";
+            int domainParameter = 2;
+            if (parameters.length > domainParameter) {
                 domain = PhpElementsUtil.getStringValue(parameters[domainParameter]);
                 if(domain == null) {
                     return null;
