@@ -34,6 +34,7 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -41,6 +42,11 @@ import java.util.stream.Stream;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class FileResourceUtil {
+    /**
+     * chars that trigger a glob resolving on symfony
+     * extracted from: \Symfony\Component\Config\Loader\FileLoader::import
+     */
+    private static final String[] GLOB_DETECTION_CHARS = {"*", "?", "{", "["};
 
     /**
      * Search for files refers to given file
@@ -79,19 +85,56 @@ public class FileResourceUtil {
                     return CachedValueProvider.Result.create(Boolean.FALSE, FileIndexCaches.getModificationTrackerForIndexId(project, FileResourcesIndex.KEY));
                 }
 
-                Set<String> collect = FileBasedIndex.getInstance().getAllKeys(FileResourcesIndex.KEY, project)
-                    .stream()
-                    .filter(s -> !s.startsWith("@"))
-                    .collect(Collectors.toSet());
+                Set<String> resources = new HashSet<>(FileBasedIndex.getInstance().getAllKeys(FileResourcesIndex.KEY, project));
 
-                for (String s : collect) {
-                    for (VirtualFile containingFile : FileBasedIndex.getInstance().getContainingFiles(FileResourcesIndex.KEY, s, GlobalSearchScope.allScope(project))) {
+                for (String resource : resources) {
+                    for (VirtualFile containingFile : FileBasedIndex.getInstance().getContainingFiles(FileResourcesIndex.KEY, resource, GlobalSearchScope.allScope(project))) {
                         VirtualFile directory = containingFile.getParent();
                         if (directory == null) {
                             continue;
                         }
 
-                        VirtualFile relativeFile = VfsUtil.findRelativeFile(directory, s.replace("\\", "/").split("/"));
+                        String resourceResolved = resource;
+
+                        if (resource.startsWith("@")) {
+                            String replace = resource.replace("\\", "/");
+                            int i = replace.indexOf("/");
+                            if (i > 2) {
+                                String substring = resource.substring(1, i);
+                                Collection<SymfonyBundle> bundle = new SymfonyBundleUtil(project).getBundle(substring);
+
+                                for (SymfonyBundle symfonyBundle : bundle) {
+                                    PsiDirectory directory1 = symfonyBundle.getDirectory();
+                                    if (directory1 == null) {
+                                        continue;
+                                    }
+
+                                    String substring1 = resource.substring(i);
+                                    String path = directory1.getVirtualFile().getPath();
+                                    resourceResolved = path + substring1;
+
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (Arrays.stream(GLOB_DETECTION_CHARS).anyMatch(resource::contains)) {
+                            String path = directory.getPath();
+
+                            // nested types not support by java glob implementation so just catch the exception: "../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php,Service/{IspConfiguration,DataCollection}}"
+                            try {
+                                String s1 = Paths.get(path + File.separatorChar + StringUtils.stripStart(resourceResolved, "\\/")).normalize().toString();
+                                String syntaxAndPattern = "glob:" + s1;
+                                if (FileSystems.getDefault().getPathMatcher(syntaxAndPattern).matches(Paths.get(virtualFile.getPath()))) {
+                                    return CachedValueProvider.Result.create(Boolean.TRUE, FileIndexCaches.getModificationTrackerForIndexId(project, FileResourcesIndex.KEY));
+                                }
+                            } catch (PatternSyntaxException | InvalidPathException ignored) {
+                            }
+
+                            continue;
+                        }
+
+                        VirtualFile relativeFile = VfsUtil.findRelativeFile(directory, resourceResolved.replace("\\", "/").split("/"));
                         if (relativeFile != null) {
                             String relativePath = VfsUtil.getRelativePath(virtualFile, relativeFile);
                             if (relativePath != null) {
@@ -111,24 +154,61 @@ public class FileResourceUtil {
      */
     @NotNull
     public static Collection<Pair<VirtualFile, String>> getFileResources(@NotNull Project project, @NotNull VirtualFile virtualFile) {
-        Set<String> collect = FileBasedIndex.getInstance().getAllKeys(FileResourcesIndex.KEY, project)
-            .stream()
-            .filter(s -> !s.startsWith("@"))
-            .collect(Collectors.toSet());
+        Set<String> resources = new HashSet<>(FileBasedIndex.getInstance().getAllKeys(FileResourcesIndex.KEY, project));
 
         Collection<Pair<VirtualFile, String>> files = new ArrayList<>();
-        for (String s : collect) {
-            for (VirtualFile containingFile : FileBasedIndex.getInstance().getContainingFiles(FileResourcesIndex.KEY, s, GlobalSearchScope.allScope(project))) {
+        for (String resource : resources) {
+            for (VirtualFile containingFile : FileBasedIndex.getInstance().getContainingFiles(FileResourcesIndex.KEY, resource, GlobalSearchScope.allScope(project))) {
                 VirtualFile directory = containingFile.getParent();
                 if (directory == null) {
                     continue;
                 }
 
-                VirtualFile relativeFile = VfsUtil.findRelativeFile(directory, s.replace("\\", "/").split("/"));
+                String resourceResolved = resource;
+
+                if (resource.startsWith("@")) {
+                    String replace = resource.replace("\\", "/");
+                    int i = replace.indexOf("/");
+                    if (i > 2) {
+                        String substring = resource.substring(1, i);
+                        Collection<SymfonyBundle> bundle = new SymfonyBundleUtil(project).getBundle(substring);
+
+                        for (SymfonyBundle symfonyBundle : bundle) {
+                            PsiDirectory directory1 = symfonyBundle.getDirectory();
+                            if (directory1 == null) {
+                                continue;
+                            }
+
+                            String substring1 = resource.substring(i);
+                            String path = directory1.getVirtualFile().getPath();
+                            resourceResolved = path + substring1;
+
+                            break;
+                        }
+                    }
+                }
+
+                if (Arrays.stream(GLOB_DETECTION_CHARS).anyMatch(resource::contains)) {
+                    String path = directory.getPath();
+
+                    // nested types not support by java glob implementation so just catch the exception: "../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php,Service/{IspConfiguration,DataCollection}}"
+                    try {
+                        String s1 = Paths.get(path + File.separatorChar + StringUtils.stripStart(resourceResolved, "\\/")).normalize().toString();
+                        String syntaxAndPattern = "glob:" + s1;
+                        if (FileSystems.getDefault().getPathMatcher(syntaxAndPattern).matches(Paths.get(virtualFile.getPath()))) {
+                            files.add(Pair.create(containingFile, resource));
+                        }
+                    } catch (PatternSyntaxException | InvalidPathException ignored) {
+                    }
+
+                    continue;
+                }
+
+                VirtualFile relativeFile = VfsUtil.findRelativeFile(directory, resourceResolved.replace("\\", "/").split("/"));
                 if (relativeFile != null) {
                     String relativePath = VfsUtil.getRelativePath(virtualFile, relativeFile);
                     if (relativePath != null) {
-                        files.add(Pair.create(containingFile, s));
+                        files.add(Pair.create(containingFile, resource));
                     }
                 }
             }
