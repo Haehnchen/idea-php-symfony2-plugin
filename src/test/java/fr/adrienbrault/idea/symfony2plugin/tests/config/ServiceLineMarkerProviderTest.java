@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 
 /**
@@ -79,16 +79,12 @@ public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtur
     public void testThatResourceProvidesLineMarker() {
         myFixture.copyFileToProject("BundleScopeLineMarkerProvider.php");
 
-        Collection<String[]> providers = new ArrayList<String[]>() {{
-            add(new String[] {"@FooBundle/foo.php"});
-            add(new String[] {"@FooBundle"});
-            add(new String[] {"@FooBundle/"});
-        }};
+        String[] providers = new String[] {"@FooBundle/foo.php", "@FooBundle", "@FooBundle/"};
 
-        for (String[] provider : providers) {
+        for (String provider : providers) {
             myFixture.configureByText(
                 XmlFileType.INSTANCE,
-               String.format("<routes><import resource=\"%s\" /></routes>", provider[0] )
+               String.format("<routes><import resource=\"%s\" /></routes>", provider)
             );
 
             PsiFile psiFile = myFixture.configureByText("foo.php", "");
@@ -101,7 +97,7 @@ public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtur
                 psiFile,
                 new LineMarker.TargetAcceptsPattern(
                     "Symfony: <a href=\"https://symfony.com/doc/current/routing.html#creating-routes-as-annotations\">Annotation Routing</a>",
-                    XmlPatterns.xmlTag().withName("import").withAttributeValue("resource", provider[0])
+                    XmlPatterns.xmlTag().withName("import").withAttributeValue("resource", provider)
                 )
             );
         }
