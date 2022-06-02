@@ -80,7 +80,7 @@ public class FileResourcesIndex extends FileBasedIndexExtension<String, FileReso
 
     @Override
     public int getVersion() {
-        return 2;
+        return 3;
     }
 
     public static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {
