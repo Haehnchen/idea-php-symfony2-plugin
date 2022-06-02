@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.util.resource;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
@@ -76,9 +77,48 @@ public class FileResourceUtilTest extends SymfonyLightCodeInsightFixtureTestCase
         assertTrue(fileResources.stream().anyMatch(pair -> pair.getFirst().getPath().equals(services.getPath())));
     }
 
+    public void testFileResourcesForBundle() {
+        myFixture.copyFileToProject("classes.php");
+        myFixture.configureByText("target.xml", "" +
+            "<routes>\n" +
+            "    <import resource=\"@FooBundle/*Controller.php\" />\n" +
+            "</routes>"
+        );
+
+        VirtualFile virtualFile = myFixture.copyFileToProject("dummy.php", "src/TestController.php");
+
+        assertTrue(FileResourceUtil.hasFileResources(getProject(), PsiManager.getInstance(getProject()).findFile(virtualFile)));
+
+        Collection<Pair<VirtualFile, String>> fileResources = FileResourceUtil.getFileResources(getProject(), virtualFile);
+        assertTrue(fileResources.stream().anyMatch(pair -> pair.getSecond().equals("@FooBundle/*Controller.php")));
+    }
+
+    public void testFileResourcesForBundleNoMatch() {
+        myFixture.copyFileToProject("classes.php");
+
+        PsiFile psiFile = myFixture.configureByText("target.xml", "" +
+            "<routes>\n" +
+            "    <import resource=\"@FooBundle/*Foobar.php\" />\n" +
+            "</routes>"
+        );
+
+        VirtualFile virtualFile = myFixture.copyFileToProject("dummy.php", "src/TestController.php");
+
+        assertFalse(FileResourceUtil.hasFileResources(getProject(), PsiElementUtils.virtualFileToPsiFile(getProject(), virtualFile)));
+
+        Collection<Pair<VirtualFile, String>> fileResources = FileResourceUtil.getFileResources(getProject(), virtualFile);
+        assertFalse(fileResources.stream().anyMatch(pair -> pair.getFirst().getPath().equals(psiFile.getVirtualFile().getPath())));
+    }
+
     public void testGetFileImplementsLineMarker() {
         myFixture.copyFileToProject("services.xml", "config/services.xml");
         VirtualFile virtualFile = myFixture.copyFileToProject("classes.php", "src/Test.php");
+        assertNotNull(FileResourceUtil.getFileImplementsLineMarker(PsiElementUtils.virtualFileToPsiFile(getProject(), virtualFile)));
+    }
+
+    public void testGetFileImplementsLineMarkerForGlob() {
+        myFixture.copyFileToProject("services.xml", "config/services.xml");
+        VirtualFile virtualFile = myFixture.copyFileToProject("classes.php", "src/TestController.php");
         assertNotNull(FileResourceUtil.getFileImplementsLineMarker(PsiElementUtils.virtualFileToPsiFile(getProject(), virtualFile)));
     }
 
