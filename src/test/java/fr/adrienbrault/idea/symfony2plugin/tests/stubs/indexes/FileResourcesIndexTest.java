@@ -5,9 +5,13 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.FileResource;
+import fr.adrienbrault.idea.symfony2plugin.stubs.dict.FileResourceContextTypeEnum;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.FileResourcesIndex;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
+
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -22,7 +26,9 @@ public class FileResourcesIndexTest extends SymfonyLightCodeInsightFixtureTestCa
         myFixture.configureByText(YAMLFileType.YML, "" +
                 "app:\n" +
                 "  resource: \"@AppBundle/Controller/\"\n" +
+                "  type: annotation\n" +
                 "  prefix: \"/foo\"\n" +
+                "  name_prefix: 'blog_'\n" +
                 "\n" +
                 "app1:\n" +
                 "  resource: \"@AcmeOtherBundle/Resources/config/routing1.yml\"\n" +
@@ -36,7 +42,7 @@ public class FileResourcesIndexTest extends SymfonyLightCodeInsightFixtureTestCa
 
         myFixture.configureByText(XmlFileType.INSTANCE, "" +
                 "<routes>\n" +
-                "    <import resource=\"@AcmeOtherBundle/Resources/config/routing.xml\" prefix=\"/foo2\"/>\n" +
+                "    <import resource=\"@AcmeOtherBundle/Resources/config/routing.xml\" type=\"annotation\" prefix=\"/foo\" name-prefix=\"blog_\"/>\n" +
                 "    <import resource=\"@AcmeOtherBundle//Resources/config/routing1.xml\" />\n" +
                 "    <import resource=\"@AcmeOtherBundle\\\\\\Resources/config///routing2.xml\" />\n" +
                 "</routes>"
@@ -59,10 +65,19 @@ public class FileResourcesIndexTest extends SymfonyLightCodeInsightFixtureTestCa
     }
 
     public void testIndexValue() {
+        Map<String, String> treeMap = new TreeMap<>();
+        treeMap.put("name_prefix", "blog_");
+        treeMap.put("prefix", "/foo");
+        treeMap.put("type", "annotation");
+
         FileResource item = ContainerUtil.getFirstItem(FileBasedIndex.getInstance().getValues(FileResourcesIndex.KEY, "@AppBundle/Controller", GlobalSearchScope.allScope(getProject())));
         assertEquals("/foo", item.getPrefix());
+        assertEquals(treeMap, item.getContextValues());
+        assertEquals(FileResourceContextTypeEnum.ROUTE, item.getContextType());
 
         item = ContainerUtil.getFirstItem(FileBasedIndex.getInstance().getValues(FileResourcesIndex.KEY, "@AcmeOtherBundle/Resources/config/routing.xml", GlobalSearchScope.allScope(getProject())));
-        assertEquals("/foo2", item.getPrefix());
+        assertEquals("/foo", item.getPrefix());
+        assertEquals(FileResourceContextTypeEnum.ROUTE, item.getContextType());
+        assertEquals(treeMap, item.getContextValues());
     }
 }

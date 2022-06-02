@@ -5,17 +5,20 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.TreeMap;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class FileResource implements Serializable {
-
     private final String resource;
-    private String prefix = null;
+    private final FileResourceContextTypeEnum contextType;
+    private final TreeMap<String, String> contextValues;
 
-    public FileResource(@Nullable String resource) {
+    public FileResource(@Nullable String resource, @Nullable FileResourceContextTypeEnum contextType, @Nullable TreeMap<String, String> contextValues) {
         this.resource = resource;
+        this.contextType = contextType;
+        this.contextValues = contextValues;
     }
 
     @Nullable
@@ -23,20 +26,27 @@ public class FileResource implements Serializable {
         return resource;
     }
 
-    public FileResource setPrefix(@Nullable String prefix) {
-        this.prefix = prefix;
-        return this;
+    @Nullable
+    public FileResourceContextTypeEnum getContextType() {
+        return contextType;
     }
 
+    @Nullable
+    public TreeMap<String, String> getContextValues() {
+        return contextValues;
+    }
+
+    @Nullable
     public String getPrefix() {
-        return prefix;
+        return contextValues == null ? null : contextValues.get("prefix");
     }
 
     @Override
     public int hashCode() {
         return new HashCodeBuilder()
             .append(this.resource)
-            .append(this.prefix)
+            .append(this.contextType != null ? this.contextType.toString() : "")
+            .append(this.contextValues != null ? this.contextValues.hashCode() : "")
             .toHashCode()
         ;
     }
@@ -45,7 +55,8 @@ public class FileResource implements Serializable {
     public boolean equals(Object obj) {
         return obj instanceof FileResource &&
             Objects.equals(((FileResource) obj).resource, this.resource) &&
-            Objects.equals(((FileResource) obj).prefix, this.prefix)
+            Objects.equals(((FileResource) obj).contextType, this.contextType) &&
+            Objects.equals(((FileResource) obj).contextValues, this.contextValues)
         ;
     }
 }
