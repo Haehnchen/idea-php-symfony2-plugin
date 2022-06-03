@@ -28,13 +28,6 @@ public class FileResourceUtilTest extends SymfonyLightCodeInsightFixtureTestCase
         return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/util/resource/fixtures";
     }
 
-    public void testGetFileResourceRefers() {
-        createBundleScopeProject();
-
-        PsiFile psiFile = myFixture.configureByText("foo.xml", "foo");
-        assertNotNull(ContainerUtil.find(FileResourceUtil.getFileResourceRefers(getProject(), psiFile.getVirtualFile()), virtualFile -> virtualFile.getName().equals("target.xml")));
-    }
-
     public void testGetFileResourceTargetsInBundleDirectory() {
         createBundleScopeProject();
 
@@ -78,7 +71,7 @@ public class FileResourceUtilTest extends SymfonyLightCodeInsightFixtureTestCase
     }
 
     public void testFileResourcesForBundle() {
-        myFixture.copyFileToProject("classes.php");
+        myFixture.copyFileToProject("classes.php", "src/classes.php");
         myFixture.configureByText("target.xml", "" +
             "<routes>\n" +
             "    <import resource=\"@FooBundle/*Controller.php\" />\n" +

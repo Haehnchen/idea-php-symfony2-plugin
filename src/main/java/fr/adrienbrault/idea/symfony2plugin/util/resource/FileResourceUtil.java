@@ -10,7 +10,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
@@ -18,6 +17,8 @@ import com.intellij.util.PlatformIcons;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIcons;
 import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
+import fr.adrienbrault.idea.symfony2plugin.stubs.dict.FileResource;
+import fr.adrienbrault.idea.symfony2plugin.stubs.dict.FileResourceContextTypeEnum;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.FileResourcesIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.FileResourceVisitorUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
@@ -33,6 +34,7 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
@@ -51,31 +53,6 @@ public class FileResourceUtil {
     /**
      * Search for files refers to given file
      */
-    @NotNull
-    public static Collection<VirtualFile> getFileResourceRefers(@NotNull Project project, @NotNull VirtualFile virtualFile) {
-        String bundleLocateName = getBundleLocateName(project, virtualFile);
-        if(bundleLocateName == null) {
-            return Collections.emptyList();
-        }
-
-        return getFileResourceRefers(project, bundleLocateName);
-    }
-
-    /**
-     * Search for files refers to given file
-     */
-    @NotNull
-    private static Collection<VirtualFile> getFileResourceRefers(@NotNull Project project, @NotNull String bundleLocateName) {
-        return FileBasedIndex.getInstance().getContainingFiles(
-            FileResourcesIndex.KEY,
-            bundleLocateName,
-            GlobalSearchScope.allScope(project)
-        );
-    }
-
-    /**
-     * Search for files refers to given file
-     */
     public static boolean hasFileResources(@NotNull Project project, @NotNull PsiFile psiFile) {
         return CachedValuesManager.getCachedValue(
             psiFile,
@@ -85,66 +62,14 @@ public class FileResourceUtil {
                     return CachedValueProvider.Result.create(Boolean.FALSE, FileIndexCaches.getModificationTrackerForIndexId(project, FileResourcesIndex.KEY));
                 }
 
-                Set<String> resources = new HashSet<>(FileBasedIndex.getInstance().getAllKeys(FileResourcesIndex.KEY, project));
+                final Boolean[] aFalse = {Boolean.FALSE};
 
-                for (String resource : resources) {
-                    for (VirtualFile containingFile : FileBasedIndex.getInstance().getContainingFiles(FileResourcesIndex.KEY, resource, GlobalSearchScope.allScope(project))) {
-                        VirtualFile directory = containingFile.getParent();
-                        if (directory == null) {
-                            continue;
-                        }
+                visitFileResources(project, virtualFile, pair -> {
+                    aFalse[0] = Boolean.TRUE;
+                    return true;
+                });
 
-                        String resourceResolved = resource;
-
-                        if (resource.startsWith("@")) {
-                            String replace = resource.replace("\\", "/");
-                            int i = replace.indexOf("/");
-                            if (i > 2) {
-                                String substring = resource.substring(1, i);
-                                Collection<SymfonyBundle> bundle = new SymfonyBundleUtil(project).getBundle(substring);
-
-                                for (SymfonyBundle symfonyBundle : bundle) {
-                                    PsiDirectory directory1 = symfonyBundle.getDirectory();
-                                    if (directory1 == null) {
-                                        continue;
-                                    }
-
-                                    String substring1 = resource.substring(i);
-                                    String path = directory1.getVirtualFile().getPath();
-                                    resourceResolved = path + substring1;
-
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (Arrays.stream(GLOB_DETECTION_CHARS).anyMatch(resource::contains)) {
-                            String path = directory.getPath();
-
-                            // nested types not support by java glob implementation so just catch the exception: "../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php,Service/{IspConfiguration,DataCollection}}"
-                            try {
-                                String s1 = Paths.get(path + File.separatorChar + StringUtils.stripStart(resourceResolved, "\\/")).normalize().toString();
-                                String syntaxAndPattern = "glob:" + s1;
-                                if (FileSystems.getDefault().getPathMatcher(syntaxAndPattern).matches(Paths.get(virtualFile.getPath()))) {
-                                    return CachedValueProvider.Result.create(Boolean.TRUE, FileIndexCaches.getModificationTrackerForIndexId(project, FileResourcesIndex.KEY));
-                                }
-                            } catch (PatternSyntaxException | InvalidPathException ignored) {
-                            }
-
-                            continue;
-                        }
-
-                        VirtualFile relativeFile = VfsUtil.findRelativeFile(directory, resourceResolved.replace("\\", "/").split("/"));
-                        if (relativeFile != null) {
-                            String relativePath = VfsUtil.getRelativePath(virtualFile, relativeFile);
-                            if (relativePath != null) {
-                                return CachedValueProvider.Result.create(Boolean.TRUE, FileIndexCaches.getModificationTrackerForIndexId(project, FileResourcesIndex.KEY));
-                            }
-                        }
-                    }
-                }
-
-                return CachedValueProvider.Result.create(Boolean.FALSE, FileIndexCaches.getModificationTrackerForIndexId(project, FileResourcesIndex.KEY));
+                return CachedValueProvider.Result.create(aFalse[0], FileIndexCaches.getModificationTrackerForIndexId(project, FileResourcesIndex.KEY));
             }
         );
     }
@@ -154,11 +79,32 @@ public class FileResourceUtil {
      */
     @NotNull
     public static Collection<Pair<VirtualFile, String>> getFileResources(@NotNull Project project, @NotNull VirtualFile virtualFile) {
-        Set<String> resources = new HashSet<>(FileBasedIndex.getInstance().getAllKeys(FileResourcesIndex.KEY, project));
-
         Collection<Pair<VirtualFile, String>> files = new ArrayList<>();
-        for (String resource : resources) {
-            for (VirtualFile containingFile : FileBasedIndex.getInstance().getContainingFiles(FileResourcesIndex.KEY, resource, GlobalSearchScope.allScope(project))) {
+
+        visitFileResources(project, virtualFile, pair -> {
+            files.add(Pair.create(pair.getFirst(), pair.getSecond()));
+            return false;
+        });
+
+        return files;
+    }
+
+    /**
+     * Search for files refers to given file
+     */
+    public static void visitFileResources(@NotNull Project project, @NotNull VirtualFile virtualFile, @NotNull Function<Pair<VirtualFile, String>, Boolean> consumer) {
+        Set<VirtualFile> files = new HashSet<>();
+        for (String resource : FileBasedIndex.getInstance().getAllKeys(FileResourcesIndex.KEY, project)) {
+            files.addAll(FileBasedIndex.getInstance().getContainingFiles(FileResourcesIndex.KEY, resource, GlobalSearchScope.allScope(project)));
+        }
+
+        for (VirtualFile containingFile : files) {
+            for (FileResource fileResourceContext : FileBasedIndex.getInstance().getFileData(FileResourcesIndex.KEY, containingFile, project).values()) {
+                String resource = fileResourceContext.getResource();
+                if (resource == null) {
+                    continue;
+                }
+
                 VirtualFile directory = containingFile.getParent();
                 if (directory == null) {
                     continue;
@@ -169,7 +115,14 @@ public class FileResourceUtil {
                 if (resource.startsWith("@")) {
                     String replace = resource.replace("\\", "/");
                     int i = replace.indexOf("/");
-                    if (i > 2) {
+
+                    boolean resolved = false;
+
+                    if (i > 2 || i == -1) {
+                        if (i == -1) {
+                            i = resource.length();
+                        }
+
                         String substring = resource.substring(1, i);
                         Collection<SymfonyBundle> bundle = new SymfonyBundleUtil(project).getBundle(substring);
 
@@ -179,15 +132,22 @@ public class FileResourceUtil {
                                 continue;
                             }
 
-                            String substring1 = resource.substring(i);
-                            String path = directory1.getVirtualFile().getPath();
-                            resourceResolved = path + substring1;
+                            resourceResolved = resource.substring(replace.contains("/") ? i + 1 : replace.length());
+                            directory = directory1.getVirtualFile();
+
+                            resolved = true;
 
                             break;
                         }
                     }
+
+                    if (!resolved) {
+                        continue;
+                    }
                 }
 
+                // '../src/{Entity}'
+                // '../src/*Controller.php'
                 if (Arrays.stream(GLOB_DETECTION_CHARS).anyMatch(resource::contains)) {
                     String path = directory.getPath();
 
@@ -196,7 +156,9 @@ public class FileResourceUtil {
                         String s1 = Paths.get(path + File.separatorChar + StringUtils.stripStart(resourceResolved, "\\/")).normalize().toString();
                         String syntaxAndPattern = "glob:" + s1;
                         if (FileSystems.getDefault().getPathMatcher(syntaxAndPattern).matches(Paths.get(virtualFile.getPath()))) {
-                            files.add(Pair.create(containingFile, resource));
+                            if (consumer.apply(new Pair<>(containingFile, resource))) {
+                                return;
+                            }
                         }
                     } catch (PatternSyntaxException | InvalidPathException ignored) {
                     }
@@ -204,54 +166,31 @@ public class FileResourceUtil {
                     continue;
                 }
 
+                // '../src/FooController.php'
                 VirtualFile relativeFile = VfsUtil.findRelativeFile(directory, resourceResolved.replace("\\", "/").split("/"));
-                if (relativeFile != null) {
-                    String relativePath = VfsUtil.getRelativePath(virtualFile, relativeFile);
-                    if (relativePath != null) {
-                        files.add(Pair.create(containingFile, resource));
+                if (relativeFile != null && relativeFile.equals(virtualFile)) {
+                    if (consumer.apply(new Pair<>(containingFile, resource))) {
+                        return;
+                    }
+                }
+
+                // '..src/Controller'
+                if (fileResourceContext.getContextType() == FileResourceContextTypeEnum.ROUTE) {
+                    if (StringUtils.isNotBlank(resourceResolved)) {
+                        directory = VfsUtil.findRelativeFile(directory, resourceResolved.replace("\\", "/").split("/"));
+                        if (directory == null) {
+                            continue;
+                        }
+                    }
+
+                    if (VfsUtil.isAncestor(directory, virtualFile, false)) {
+                        if (consumer.apply(new Pair<>(containingFile, resource))) {
+                            return;
+                        }
                     }
                 }
             }
         }
-
-        return files;
-    }
-
-    @Nullable
-    public static String getBundleLocateName(@NotNull Project project, @NotNull VirtualFile virtualFile) {
-        SymfonyBundle containingBundle = new SymfonyBundleUtil(project).getContainingBundle(virtualFile);
-        if(containingBundle == null) {
-            return null;
-        }
-
-        String relativePath = containingBundle.getRelativePath(virtualFile);
-        if(relativePath == null) {
-            return null;
-        }
-
-        return "@" + containingBundle.getName() + "/" + relativePath;
-    }
-
-    /**
-     * Search for line definition of "@FooBundle/foo.xml"
-     */
-    @NotNull
-    private static Collection<PsiElement> getBundleLocateStringDefinitions(@NotNull Project project, final @NotNull String bundleFileName) {
-        final Collection<PsiElement> psiElements = new HashSet<>();
-        for (VirtualFile refVirtualFile : getFileResourceRefers(project, bundleFileName)) {
-            PsiFile psiFile = PsiManager.getInstance(project).findFile(refVirtualFile);
-            if(psiFile == null) {
-                continue;
-            }
-
-            FileResourceVisitorUtil.visitFile(psiFile, consumer -> {
-                if (bundleFileName.equals(consumer.getResource())) {
-                    psiElements.add(consumer.getPsiElement());
-                }
-            });
-        }
-
-        return psiElements;
     }
 
     @Nullable
@@ -261,15 +200,6 @@ public class FileResourceUtil {
         VirtualFile virtualFile = psiFile.getVirtualFile();
         if(virtualFile == null) {
             return null;
-        }
-
-        String bundleLocateName = FileResourceUtil.getBundleLocateName(project, virtualFile);
-        if(bundleLocateName != null && FileResourceUtil.getFileResourceRefers(project, bundleLocateName).size() > 0) {
-            NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PhpIcons.IMPLEMENTS)
-                .setTargets(NotNullLazyValue.lazy(new FileResourceBundleNotNullLazyValue(project, bundleLocateName)))
-                .setTooltipText("Navigate to resource");
-
-            return builder.createLineMarkerInfo(psiFile);
         }
 
         if (hasFileResources(project, psiFile)) {
@@ -288,67 +218,20 @@ public class FileResourceUtil {
      */
     @Nullable
     public static RelatedItemLineMarkerInfo<PsiElement> getFileImplementsLineMarkerInFolderScope(@NotNull PsiFile psiFile) {
+        if (!hasFileResources(psiFile.getProject(), psiFile)) {
+            return null;
+        }
+
         VirtualFile virtualFile = psiFile.getVirtualFile();
-        if(virtualFile == null) {
-            return null;
-        }
-
-        final Project project = psiFile.getProject();
-        String bundleLocateName = FileResourceUtil.getBundleLocateName(project, virtualFile);
-        if(bundleLocateName == null) {
-            return null;
-        }
-
-        Set<String> names = new HashSet<>();
-        names.add(bundleLocateName);
-
-        // strip filename
-        int i = bundleLocateName.lastIndexOf("/");
-        if(i > 0) {
-            names.add(bundleLocateName.substring(0, i));
-        }
-
-        int targets = 0;
-        for (String name : names) {
-            targets += FileResourceUtil.getFileResourceRefers(project, name).size();
-        }
-
-        if(targets == 0) {
+        if (virtualFile == null) {
             return null;
         }
 
         NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PlatformIcons.ANNOTATION_TYPE_ICON)
-            .setTargets(NotNullLazyValue.lazy(new FileResourceBundleNotNullLazyValue(project, names)))
+            .setTargets(NotNullLazyValue.lazy(new FileResourceNotNullLazyValue(psiFile.getProject(), virtualFile)))
             .setTooltipText("Symfony: <a href=\"https://symfony.com/doc/current/routing.html#creating-routes-as-annotations\">Annotation Routing</a>");
 
         return builder.createLineMarkerInfo(psiFile);
-    }
-
-    private static class FileResourceBundleNotNullLazyValue implements Supplier<Collection<? extends PsiElement>> {
-
-        private final Collection<String> resources;
-        private final Project project;
-
-        public FileResourceBundleNotNullLazyValue(@NotNull Project project, @NotNull Collection<String> resource) {
-            this.resources = resource;
-            this.project = project;
-        }
-
-        public FileResourceBundleNotNullLazyValue(@NotNull Project project, @NotNull String resource) {
-            this.resources = Collections.singleton(resource);
-            this.project = project;
-        }
-
-        @Override
-        public Collection<? extends PsiElement> get() {
-            Collection<PsiElement> psiElements = new HashSet<>();
-
-            for (String resource : this.resources) {
-                psiElements.addAll(getBundleLocateStringDefinitions(project, resource));
-            }
-
-            return psiElements;
-        }
     }
 
     /**
@@ -474,7 +357,7 @@ public class FileResourceUtil {
         private final Project project;
         private final VirtualFile virtualFile;
 
-        public FileResourceNotNullLazyValue(Project project, VirtualFile virtualFile) {
+        public FileResourceNotNullLazyValue(@NotNull Project project, @NotNull VirtualFile virtualFile) {
             this.project = project;
             this.virtualFile = virtualFile;
         }
