@@ -69,19 +69,19 @@ public class TwigPatternTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern#getFunctionPattern
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern#getLeafFunctionPattern
      */
-    public void testgetFunctionPattern() {
-        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getFunctionPattern("form").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{{ for<caret>m(test) }}").getParent()
+    public void testGetFunctionPattern() {
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getLeafFunctionPattern("form").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ for<caret>m(test) }}")
         ));
 
-        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getFunctionPattern("form").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{{ for<caret>m     (test) }}").getParent()
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getLeafFunctionPattern("form").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ for<caret>m     (test) }}")
         ));
 
-        assertFalse(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getFunctionPattern("f").accepts(
-            findElementAt(TwigFileType.INSTANCE, "{{ for<caret>m(test) }}").getParent()
+        assertFalse(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getLeafFunctionPattern("f").accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ for<caret>m(test) }}")
         ));
     }
 
