@@ -214,27 +214,6 @@ public class FileResourceUtil {
     }
 
     /**
-     * On route annotations we can have folder scope so: "@FooBundle/Controller/foo.php" can be equal "@FooBundle/Controller/"
-     */
-    @Nullable
-    public static RelatedItemLineMarkerInfo<PsiElement> getFileImplementsLineMarkerInFolderScope(@NotNull PsiFile psiFile) {
-        if (!hasFileResources(psiFile.getProject(), psiFile)) {
-            return null;
-        }
-
-        VirtualFile virtualFile = psiFile.getVirtualFile();
-        if (virtualFile == null) {
-            return null;
-        }
-
-        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(PlatformIcons.ANNOTATION_TYPE_ICON)
-            .setTargets(NotNullLazyValue.lazy(new FileResourceNotNullLazyValue(psiFile.getProject(), virtualFile)))
-            .setTooltipText("Symfony: <a href=\"https://symfony.com/doc/current/routing.html#creating-routes-as-annotations\">Annotation Routing</a>");
-
-        return builder.createLineMarkerInfo(psiFile);
-    }
-
-    /**
      * Gives targets to files on Bundle locate syntax. "@FooBundle/.../foo.yml"
      */
     @NotNull

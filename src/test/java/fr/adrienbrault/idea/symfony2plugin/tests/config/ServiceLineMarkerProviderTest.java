@@ -76,33 +76,6 @@ public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtur
         ), new LineMarker.ToolTipEqualsAssert("Navigate to metadata"));
     }
 
-    public void testThatResourceProvidesLineMarker() {
-        myFixture.copyFileToProject("BundleScopeLineMarkerProvider.php");
-
-        String[] providers = new String[] {"@FooBundle/foo.php", "@FooBundle", "@FooBundle/"};
-
-        for (String provider : providers) {
-            myFixture.configureByText(
-                XmlFileType.INSTANCE,
-               String.format("<routes><import resource=\"%s\" /></routes>", provider)
-            );
-
-            PsiFile psiFile = myFixture.configureByText("foo.php", "");
-            assertLineMarker(
-                psiFile,
-                new LineMarker.ToolTipEqualsAssert("Symfony: <a href=\"https://symfony.com/doc/current/routing.html#creating-routes-as-annotations\">Annotation Routing</a>")
-            );
-
-            assertLineMarker(
-                psiFile,
-                new LineMarker.TargetAcceptsPattern(
-                    "Symfony: <a href=\"https://symfony.com/doc/current/routing.html#creating-routes-as-annotations\">Annotation Routing</a>",
-                    XmlPatterns.xmlTag().withName("import").withAttributeValue("resource", provider)
-                )
-            );
-        }
-    }
-
     public void testXmlServiceLineMarker() {
         myFixture.configureByText(XmlFileType.INSTANCE,
             "<container>\n" +

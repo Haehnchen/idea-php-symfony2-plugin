@@ -33,7 +33,6 @@ import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
 import icons.ExternalSystemIcons;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -84,10 +83,6 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
 
             if(PhpElementsUtil.getClassMethodNamePattern().accepts(psiElement)) {
                 this.autowireConstructorMarker(psiElement, results);
-            }
-
-            if(psiElement instanceof PhpFile) {
-                routeAnnotationFileResource((PhpFile) psiElement, results);
             }
 
             // public $message = 'This value should not be blank.';
@@ -257,13 +252,6 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
 
         }
 
-    }
-
-    private void routeAnnotationFileResource(@NotNull PsiFile psiFile, Collection<? super RelatedItemLineMarkerInfo<?>> results) {
-        RelatedItemLineMarkerInfo<PsiElement> lineMarker = FileResourceUtil.getFileImplementsLineMarkerInFolderScope(psiFile);
-        if(lineMarker != null) {
-            results.add(lineMarker);
-        }
     }
 
     /**
