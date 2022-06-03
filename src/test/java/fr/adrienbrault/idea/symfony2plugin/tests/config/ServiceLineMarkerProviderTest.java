@@ -4,7 +4,6 @@ import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.patterns.PatternCondition;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.XmlPatterns;
-import com.intellij.psi.PsiFile;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
@@ -12,9 +11,6 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
-
-import java.util.Arrays;
-import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -25,6 +21,8 @@ public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtur
 
     public void setUp() throws Exception {
         super.setUp();
+
+        myFixture.copyFileToProject("validators.de.yml", "translations/validators.de.yml");
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("ServiceLineMarkerProvider.php"));
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("SymfonyPhpReferenceContributor.php"));
     }
@@ -210,5 +208,21 @@ public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtur
             "   }\n" +
             "}"
         ), markerInfo -> markerInfo.getLineMarkerTooltip() != null && markerInfo.getLineMarkerTooltip().toLowerCase().contains("autowire"));
+    }
+
+    public void testNavigateToTranslationForConstraintMessage() {
+        assertLineMarker(myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "class LessThan extends \\Symfony\\Component\\Validator\\Constraint\n" +
+            "{\n" +
+            "    public $message = 'validator_message';\n" +
+            "}"
+        ), new LineMarker.ToolTipEqualsAssert("Navigate to translation"));
+
+        assertLineMarker(myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "class LessThan extends \\Symfony\\Component\\Validator\\Constraint\n" +
+            "{\n" +
+            "    public $message = \"validator_message\";\n" +
+            "}"
+        ), new LineMarker.ToolTipEqualsAssert("Navigate to translation"));
     }
 }

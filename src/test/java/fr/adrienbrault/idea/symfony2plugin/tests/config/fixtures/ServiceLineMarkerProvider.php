@@ -7,3 +7,10 @@ namespace Symfony\Component\DependencyInjection
         public function get();
     }
 }
+
+namespace Symfony\Component\Validator
+{
+    abstract class Constraint
+    {
+    }
+}
