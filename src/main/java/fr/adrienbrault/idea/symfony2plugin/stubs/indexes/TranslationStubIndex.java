@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.indexing.*;
@@ -18,6 +19,7 @@ import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import gnu.trove.THashMap;
 import kotlin.Pair;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -28,6 +30,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -98,18 +102,40 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
             }
 
             private boolean isValidTranslationFile(@NotNull FileContent inputData) {
+                String fileName = inputData.getFileName();
+
+                // every direct match
+                if (fileName.contains("+intl-icu") || fileName.startsWith("messages.") || fileName.startsWith("validators.")) {
+                    return true;
+                }
+
+                VirtualFile file = inputData.getFile();
+                String name = file.getNameWithoutExtension();
+
+                // unknown-2.fr.yml
+                Matcher matcher = Pattern.compile("^.*\\.([\\w]{2})$").matcher(name);
+                if (matcher.find()) {
+                    return ArrayUtils.contains(Locale.getISOLanguages(), matcher.group(1));
+                }
+
+                // unknown-3.sr_Cyrl.yml
+                Matcher matcher2 = Pattern.compile("^.*\\.([\\w]{2})_[\\w]{2,4}$").matcher(name);
+                if (matcher2.find()) {
+                    return ArrayUtils.contains(Locale.getISOLanguages(), matcher2.group(1));
+                }
+
                 // dont index all yaml files; valid:
                 //  - "Resources/translations"
                 //  - "translations/[.../]foo.de.yml"
-                String relativePath = VfsUtil.getRelativePath(inputData.getFile(), ProjectUtil.getProjectDir(inputData.getProject()), '/');
+                String relativePath = VfsUtil.getRelativePath(file, ProjectUtil.getProjectDir(inputData.getProject()), '/');
                 if (relativePath != null) {
-                    return relativePath.contains("/translations") || relativePath.startsWith("translations/");
+                    String replace = relativePath.replace("\\", "/");
+                    return replace.contains("/translations") || replace.startsWith("translations/");
                 }
 
                 // Resources/translations/messages.de.yml
-                // @TODO: Resources/translations/de/messages.yml
-                String path = inputData.getFile().getPath();
-                return path.endsWith("/translations/" + inputData.getFileName());
+                String path = file.getPath();
+                return path.replace("\\", "/").endsWith("/translations/" + fileName);
             }
 
             @NotNull
