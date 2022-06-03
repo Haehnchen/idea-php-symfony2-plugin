@@ -27,9 +27,9 @@ public class DoctrineCompletionContributor extends CompletionContributor {
     public DoctrineCompletionContributor() {
 
         // getRepository(FOO) -> getRepository(FOO::class)
-        extend(CompletionType.BASIC, PlatformPatterns.psiElement().withParent(ConstantReference.class), new CompletionProvider<CompletionParameters>() {
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement().withParent(ConstantReference.class), new CompletionProvider<>() {
             @Override
-            protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+            protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
                 PsiElement psiElement = completionParameters.getOriginalPosition();
                 if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
                     return;
@@ -40,11 +40,11 @@ public class DoctrineCompletionContributor extends CompletionContributor {
                     return;
                 }
 
-                if(!(
+                if (!(
                     PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "Doctrine\\Common\\Persistence\\ObjectManager", "getRepository") ||
-                    PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "Doctrine\\Common\\Persistence\\ManagerRegistry", "getRepository") ||
-                    PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "Doctrine\\Persistence\\ObjectManager", "getRepository") ||
-                    PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "Doctrine\\Persistence\\ManagerRegistry", "getRepository")
+                        PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "Doctrine\\Common\\Persistence\\ManagerRegistry", "getRepository") ||
+                        PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "Doctrine\\Persistence\\ObjectManager", "getRepository") ||
+                        PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "Doctrine\\Persistence\\ManagerRegistry", "getRepository")
                 )) {
                     return;
                 }
@@ -53,7 +53,7 @@ public class DoctrineCompletionContributor extends CompletionContributor {
 
                 for (DoctrineModel doctrineModel : modelClasses) {
                     PhpClass phpClass = doctrineModel.getPhpClass();
-                    if(phpClass.isAbstract() || phpClass.isInterface()) {
+                    if (phpClass.isAbstract() || phpClass.isInterface()) {
                         continue;
                     }
 
@@ -61,7 +61,7 @@ public class DoctrineCompletionContributor extends CompletionContributor {
 
                     // does this have an effect really?
                     completionResultSet.addElement(
-                        PrioritizedLookupElement.withExplicitProximity(PrioritizedLookupElement.withPriority(elementBuilder, 1000), 1000)
+                        PrioritizedLookupElement.withPriority(elementBuilder, 100)
                     );
                 }
 
