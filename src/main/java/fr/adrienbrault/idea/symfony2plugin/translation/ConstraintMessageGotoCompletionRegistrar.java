@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.translation;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.PsiElement;
+import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor;
@@ -33,7 +34,10 @@ public class ConstraintMessageGotoCompletionRegistrar implements GotoCompletionR
 
     @NotNull
     public static PsiElementPattern.Capture<PsiElement> getConstraintPropertyMessagePattern() {
-        return PlatformPatterns.psiElement().withParent(PlatformPatterns.psiElement(StringLiteralExpression.class)
+        return PlatformPatterns.psiElement().withElementType(PlatformPatterns.elementType().or(
+            PhpTokenTypes.STRING_LITERAL_SINGLE_QUOTE,
+            PhpTokenTypes.STRING_LITERAL
+        )).withParent(PlatformPatterns.psiElement(StringLiteralExpression.class)
             .withParent(PlatformPatterns.psiElement(Field.class)
                 .withName(PlatformPatterns.string().startsWith("message"))
             ));
