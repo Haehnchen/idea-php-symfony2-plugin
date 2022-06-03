@@ -2,7 +2,9 @@ package fr.adrienbrault.idea.symfony2plugin.form.completion;
 
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.patterns.PatternCondition;
 import com.intellij.patterns.PlatformPatterns;
+import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.PhpIndex;
@@ -10,6 +12,7 @@ import com.jetbrains.php.lang.psi.elements.ConstantReference;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.dic.ServiceCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -19,9 +22,9 @@ import org.jetbrains.annotations.NotNull;
 public class FormCompletionContributor extends CompletionContributor {
 
     public FormCompletionContributor() {
-        extend(CompletionType.BASIC, PlatformPatterns.psiElement().withParent(ConstantReference.class), new CompletionProvider<CompletionParameters>() {
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement().withParent(ConstantReference.class), new CompletionProvider<>() {
             @Override
-            protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+            protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
                 PsiElement psiElement = completionParameters.getOriginalPosition();
                 if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
                     return;
@@ -32,8 +35,8 @@ public class FormCompletionContributor extends CompletionContributor {
                     return;
                 }
 
-                if(!(
-                        PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "Symfony\\Component\\Form\\FormBuilderInterface", "add") ||
+                if (!(
+                    PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "Symfony\\Component\\Form\\FormBuilderInterface", "add") ||
                         PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "Symfony\\Component\\Form\\FormBuilderInterface", "create") ||
                         PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "Symfony\\Component\\Form\\FormFactoryInterface", "createNamedBuilder") ||
                         PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "Symfony\\Component\\Form\\FormFactoryInterface", "createNamed")
@@ -42,20 +45,17 @@ public class FormCompletionContributor extends CompletionContributor {
                 }
 
                 for (PhpClass phpClass : PhpIndex.getInstance(psiElement.getProject()).getAllSubclasses("\\Symfony\\Component\\Form\\FormTypeInterface")) {
-                    if(phpClass.isAbstract() || phpClass.isInterface()) {
+                    if (phpClass.isAbstract() || phpClass.isInterface()) {
                         continue;
                     }
 
                     LookupElement elementBuilder = new FormClassConstantsLookupElement(phpClass);
 
-                    // does this have an effect really?
                     completionResultSet.addElement(
-                        PrioritizedLookupElement.withExplicitProximity(PrioritizedLookupElement.withPriority(elementBuilder, 1000), 1000)
+                        PrioritizedLookupElement.withPriority(elementBuilder, 100)
                     );
                 }
-
             }
-
         });
     }
 

@@ -201,8 +201,8 @@
         <completion.contributor language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.yaml.YamlCompletionContributor"/>
 
         <completion.contributor language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.DoctrineXmlCompletionContributor"/>
-        <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.form.completion.FormCompletionContributor"/>
-        <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.doctrine.completion.DoctrineCompletionContributor"/>
+        <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.form.completion.FormCompletionContributor" order="first"/>
+        <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.doctrine.completion.DoctrineCompletionContributor" order="first"/>
 
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.PhpGotoDeclarationCompletionContributor$Completion"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.completion.PhpGotoDeclarationCompletionContributor$GotoDeclaration"/>
