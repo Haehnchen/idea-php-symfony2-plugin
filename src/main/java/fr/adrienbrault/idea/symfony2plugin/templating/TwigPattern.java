@@ -175,11 +175,8 @@ public class TwigPattern {
 
     /**
      * Check for {{ include('|')  }}, {% include('|') %}
-     *
-     * @param functionName twig function name
      */
     public static ElementPattern<PsiElement> getPrintBlockOrTagFunctionPattern() {
-        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
             .withParent(
@@ -579,17 +576,19 @@ public class TwigPattern {
           .withLanguage(TwigLanguage.INSTANCE);
     }
 
-    public static ElementPattern<PsiElement> getFunctionPattern(@NotNull String ...functionName) {
-        return PlatformPatterns.psiElement(TwigElementTypes.FUNCTION_CALL).withText(PlatformPatterns.string().with(new PatternCondition<String>("Twig: Function call") {
-            @Override
-            public boolean accepts(@NotNull String function, ProcessingContext processingContext) {
-                String funcWithoutSpace = function.replaceAll(" +", "");
+    public static ElementPattern<PsiElement> getLeafFunctionPattern(@NotNull String ...functionName) {
+        return PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER)
+            .withParent(PlatformPatterns.psiElement(TwigElementTypes.FUNCTION_CALL))
+            .withText(PlatformPatterns.string().with(new PatternCondition<>("Twig: Leaf function call") {
+                @Override
+                public boolean accepts(@NotNull String function, ProcessingContext processingContext) {
+                    String funcWithoutSpace = function.replaceAll(" +", "");
 
-                return Arrays.stream(functionName).anyMatch(wantFunction ->
-                    funcWithoutSpace.startsWith(wantFunction + "(") || funcWithoutSpace.equals(wantFunction)
-                );
-            }
-        }));
+                    return Arrays.stream(functionName).anyMatch(wantFunction ->
+                        funcWithoutSpace.startsWith(wantFunction + "(") || funcWithoutSpace.equals(wantFunction)
+                    );
+                }
+            }));
     }
 
     /**
