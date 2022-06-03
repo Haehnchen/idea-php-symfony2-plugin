@@ -59,14 +59,11 @@ public class DoctrineCompletionContributor extends CompletionContributor {
 
                     LookupElement elementBuilder = new Foo(phpClass);
 
-                    // does this have an effect really?
                     completionResultSet.addElement(
                         PrioritizedLookupElement.withPriority(elementBuilder, 100)
                     );
                 }
-
             }
-
         });
     }
 
