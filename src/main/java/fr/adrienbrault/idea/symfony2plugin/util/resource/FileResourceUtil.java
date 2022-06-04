@@ -13,7 +13,6 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
-import com.intellij.util.PlatformIcons;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIcons;
 import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
@@ -394,5 +393,80 @@ public class FileResourceUtil {
         }
 
         return new Pair<>(join, null);
+    }
+
+    /**
+     * Find a file based on "glob" and its content path.
+     *
+     * @param virtualFile Current scope, parent (directory) is taking for resolving root dirctory to glob operation
+     * @param glob "@FooBundle/foo.xml", "src/foo.xml", "src/.../src.xml"
+     */
+    @NotNull
+    public static Collection<VirtualFile> getFilesForResources(@NotNull Project project, @NotNull VirtualFile virtualFile, @NotNull String glob) {
+        VirtualFile parent = virtualFile.getParent();
+        if (parent == null) {
+            return Collections.emptyList();
+        }
+
+        if (glob.startsWith("@")) {
+            String replace = glob.replace("\\", "/");
+            int i = replace.indexOf("/");
+
+            boolean resolved = false;
+
+            if (i > 2 || i == -1) {
+                if (i == -1) {
+                    i = glob.length();
+                }
+
+                String substring = glob.substring(1, i);
+
+
+                for (SymfonyBundle symfonyBundle : new SymfonyBundleUtil(project).getBundle(substring)) {
+                    PsiDirectory directory1 = symfonyBundle.getDirectory();
+                    if (directory1 == null) {
+                        continue;
+                    }
+
+                    glob = glob.substring(replace.contains("/") ? i + 1 : replace.length());
+                    parent = directory1.getVirtualFile();
+
+                    resolved = true;
+
+                    break;
+                }
+
+            }
+
+            if (!resolved) {
+                return Collections.emptyList();
+            }
+
+        }
+
+        Path normalize = Paths.get(parent.getPath() + File.separatorChar + StringUtils.stripStart(glob, "\\/")).normalize();
+        Pair<String, String> globalPatternDirectory = getGlobalPatternDirectory(normalize.toString());
+
+        Collection<VirtualFile> files = new HashSet<>();
+        if (globalPatternDirectory.getSecond() == null) {
+            VirtualFile target = VfsUtil.findFile(Paths.get(globalPatternDirectory.getFirst()), false);
+            if (target != null) {
+                files.add(target);
+            }
+
+            return files;
+        }
+
+        try {
+            for (Path file : Files.newDirectoryStream(Paths.get(globalPatternDirectory.getFirst()), globalPatternDirectory.getSecond())) {
+                VirtualFile target = VfsUtil.findFile(file, false);
+                if (target != null) {
+                    files.add(target);
+                }
+            }
+        } catch (PatternSyntaxException | IOException ignored) {
+        }
+
+        return files;
     }
 }
