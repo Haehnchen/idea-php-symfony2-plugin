@@ -11,7 +11,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.*;
-import org.jetbrains.yaml.psi.impl.YAMLHashImpl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +36,8 @@ public class FileResourceVisitorUtil {
         for (YAMLKeyValue yamlKeyValue : YamlHelper.getTopLevelKeyValues(yamlFile)) {
             // imports:
             //   - { resource: ../src/import/services.yml, ignore_errors: true }
-            if ("imports".equals(yamlKeyValue.getKeyText())) {
+            String keyText = yamlKeyValue.getKeyText();
+            if ("imports".equals(keyText)) {
                 YAMLValue value = yamlKeyValue.getValue();
                 if (value instanceof YAMLSequence) {
                     for (YAMLSequenceItem item : ((YAMLSequence) value).getItems()) {
@@ -52,39 +52,52 @@ public class FileResourceVisitorUtil {
                 }
             }
 
-            // app1:
-            //   resource: "@AcmeOtherBundle/Resources/config/routing1.yml"
-            YAMLKeyValue resourceKey = YamlHelper.getYamlKeyValue(yamlKeyValue, "resource", true);
-            if(resourceKey == null) {
-                continue;
-            }
-
-            String resource = PsiElementUtils.trimQuote(resourceKey.getValueText());
-            if(StringUtils.isBlank(resource)) {
-                continue;
-            }
-
-            FileResourceContextTypeEnum fileResourceContextType = FileResourceContextTypeEnum.UNKNOWN;
-
-            Map<String, String> map = new HashMap<>();
-            for (String option: new String[] {"type", "prefix", "name_prefix"}) {
-                String attributeValue = YamlHelper.getYamlKeyValueAsString(yamlKeyValue, option, true);
-                if (StringUtils.isNotBlank(attributeValue) && attributeValue.length() < 128) {
-                    map.put(option, attributeValue);
+            if (keyText.startsWith("when@")) {
+                YAMLValue value = yamlKeyValue.getValue();
+                if (value instanceof YAMLMapping) {
+                    for (YAMLKeyValue yamlKeyValue2 : ((YAMLMapping) value).getKeyValues()) {
+                        visitKeyValue(yamlKeyValue2, consumer);
+                    }
                 }
             }
 
-            boolean isRouteContext = map.containsKey("type")
-                || map.containsKey("prefix")
-                || map.containsKey("name_prefix")
-                || YamlHelper.getYamlKeyValue(yamlKeyValue, "requirements", true) != null;
-
-            if (isRouteContext) {
-                fileResourceContextType = FileResourceContextTypeEnum.ROUTE;
-            }
-
-            consumer.consume(new FileResourceConsumer(resourceKey, normalize(resource), fileResourceContextType, map));
+            visitKeyValue(yamlKeyValue, consumer);
         }
+    }
+
+    private static void visitKeyValue(@NotNull YAMLKeyValue yamlKeyValue, @NotNull Consumer<FileResourceConsumer> consumer) {
+        // app1:
+        //   resource: "@AcmeOtherBundle/Resources/config/routing1.yml"
+        YAMLKeyValue resourceKey = YamlHelper.getYamlKeyValue(yamlKeyValue, "resource", true);
+        if(resourceKey == null) {
+            return;
+        }
+
+        String resource = PsiElementUtils.trimQuote(resourceKey.getValueText());
+        if(StringUtils.isBlank(resource)) {
+            return;
+        }
+
+        FileResourceContextTypeEnum fileResourceContextType = FileResourceContextTypeEnum.UNKNOWN;
+
+        Map<String, String> map = new HashMap<>();
+        for (String option: new String[] {"type", "prefix", "name_prefix"}) {
+            String attributeValue = YamlHelper.getYamlKeyValueAsString(yamlKeyValue, option, true);
+            if (StringUtils.isNotBlank(attributeValue) && attributeValue.length() < 128) {
+                map.put(option, attributeValue);
+            }
+        }
+
+        boolean isRouteContext = map.containsKey("type")
+            || map.containsKey("prefix")
+            || map.containsKey("name_prefix")
+            || YamlHelper.getYamlKeyValue(yamlKeyValue, "requirements", true) != null;
+
+        if (isRouteContext) {
+            fileResourceContextType = FileResourceContextTypeEnum.ROUTE;
+        }
+
+        consumer.consume(new FileResourceConsumer(resourceKey, normalize(resource), fileResourceContextType, map));
     }
 
     /**

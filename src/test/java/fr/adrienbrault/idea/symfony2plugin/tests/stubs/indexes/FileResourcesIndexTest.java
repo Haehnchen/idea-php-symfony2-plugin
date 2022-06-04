@@ -39,7 +39,14 @@ public class FileResourcesIndexTest extends SymfonyLightCodeInsightFixtureTestCa
                 "app4:\n" +
                 "  resource: '@AcmeOtherBundle///Resources/config\\\\\\routing4.yml'\n" +
                 "imports:\n" +
-                "  - { resource: ../src/import/services.yml, ignore_errors: true }\n"
+                "  - { resource: ../src/import/services.yml, ignore_errors: true }\n" +
+                "web_profiler_wdt_1:\n" +
+                "    resource: '@WebProfilerBundle/Resources/config/routing/wdt_1.xml'\n" +
+                "    prefix: /_wdt\n" +
+                "when@dev:\n" +
+                "    web_profiler_wdt_2:\n" +
+                "        resource: '@WebProfilerBundle/Resources/config/routing/wdt_2.xml'\n" +
+                "        prefix: /_wdt\n"
         );
 
         myFixture.configureByText("test1.xml", "" +
@@ -69,6 +76,9 @@ public class FileResourcesIndexTest extends SymfonyLightCodeInsightFixtureTestCa
 
         assertIndexContains(FileResourcesIndex.KEY, "../src/import/services.yml");
         assertIndexContains(FileResourcesIndex.KEY, "../src/import/services.yml");
+
+        assertIndexContains(FileResourcesIndex.KEY, "@WebProfilerBundle/Resources/config/routing/wdt_1.xml");
+        assertIndexContains(FileResourcesIndex.KEY, "@WebProfilerBundle/Resources/config/routing/wdt_2.xml");
     }
 
     public void testXmlResourcesImport() {
