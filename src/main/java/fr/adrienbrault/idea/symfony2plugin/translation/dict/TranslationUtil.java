@@ -1,7 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.translation.dict;
 
 import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -51,14 +50,12 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TranslationUtil {
-    private static final ExtensionPointName<TranslatorProvider> TRANSLATION_PROVIDER = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProvider");
-    public static final TranslatorProvider[] INTERNAL_TRANSLATOR_PROVIDERS = new TranslatorProvider[]{
+    private static final TranslatorProvider[] INTERNAL_TRANSLATOR_PROVIDERS = new TranslatorProvider[]{
         new CompiledContainerTranslatorProvider(),
         new CompiledTranslatorProvider(),
         new IndexTranslatorProvider(),
@@ -399,10 +396,7 @@ public class TranslationUtil {
 
     @NotNull
     private static TranslatorProvider[] getTranslationProviders() {
-        return Stream.concat(
-            Arrays.stream(INTERNAL_TRANSLATOR_PROVIDERS),
-            Arrays.stream(TRANSLATION_PROVIDER.getExtensions())
-        ).toArray(TranslatorProvider[]::new);
+        return INTERNAL_TRANSLATOR_PROVIDERS;
     }
 
     /**

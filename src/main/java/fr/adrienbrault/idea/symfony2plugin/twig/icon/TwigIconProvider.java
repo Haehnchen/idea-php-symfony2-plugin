@@ -56,12 +56,6 @@ public class TwigIconProvider extends IconProvider {
             if (child instanceof TwigExtendsTag) {
                 return true;
             }
-
-            for (TwigFileUsage extension : TwigUtil.TWIG_FILE_USAGE_EXTENSIONS.getExtensions()) {
-                if (extension.isExtendsTemplate(child)) {
-                    return true;
-                }
-            }
         }
 
         return false;
