@@ -51,7 +51,6 @@ import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.action.comparator.ValueComparator;
 import fr.adrienbrault.idea.symfony2plugin.asset.AssetDirectoryReader;
-import fr.adrienbrault.idea.symfony2plugin.extension.TwigFileUsage;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtensionParameter;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
@@ -138,10 +137,6 @@ public class TwigUtil {
 
     private static final ExtensionPointName<TwigNamespaceExtension> TWIG_NAMESPACE_EXTENSIONS = new ExtensionPointName<>(
         "fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension"
-    );
-
-    public static final ExtensionPointName<TwigFileUsage> TWIG_FILE_USAGE_EXTENSIONS = new ExtensionPointName<>(
-        "fr.adrienbrault.idea.symfony2plugin.extension.TwigFileUsage"
     );
 
     private static final Key<CachedValue<Map<String, Set<VirtualFile>>>> TEMPLATE_CACHE_TWIG = new Key<>("TEMPLATE_CACHE_TWIG");
@@ -1306,7 +1301,6 @@ public class TwigUtil {
      * <pre>{@code
      * {% include 'base.html.twig' %}
      * {{ include('base.html.twig') }}
-     * {% custom_template 'base.html.twig' %}
      * }</pre>
      *
      * Dynamic strings such as {@code {% include 'base/' ~ name ~ '.html.twig' %}} are ignored.
@@ -1318,12 +1312,11 @@ public class TwigUtil {
     }
 
     /**
-     * Matches Twig string leaves that are template references from built-in Twig patterns or external providers.
+     * Matches Twig string leaves that are template references from built-in Twig patterns.
      *
      * <pre>{@code
      * {% extends 'layout.html.twig' %}
      * {{ source('snippet.html.twig') }}
-     * {% custom_template 'layout.html.twig' %}
      * }</pre>
      *
      * This method only checks whether the leaf is a template usage. Use {@link #isStaticTemplateUsage(PsiElement)}
@@ -1334,30 +1327,8 @@ public class TwigUtil {
             return false;
         }
 
-        return isBuiltInTemplateUsage(element) || isExternalTemplateUsage(element);
-    }
-
-    private static boolean isBuiltInTemplateUsage(@NotNull PsiElement element) {
         return TwigPattern.getTemplateFileReferenceTagPattern().accepts(element)
             || TwigPattern.getIncludeSourcePrintBlockOrTagFunctionPattern().accepts(element);
-    }
-
-    private static boolean isExternalTemplateUsage(@NotNull PsiElement stringText) {
-        PsiElement tag = PsiTreeUtil.findFirstParent(stringText, true, parent ->
-            parent.getNode() != null && parent.getNode().getElementType() == TwigElementTypes.TAG
-        );
-
-        if (tag == null) {
-            return false;
-        }
-
-        for (TwigFileUsage extension : TWIG_FILE_USAGE_EXTENSIONS.getExtensions()) {
-            if (extension.isTemplateFileReference(tag)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**
@@ -2741,10 +2712,6 @@ public class TwigUtil {
                     }
                 }
             }
-
-            TwigExternalTemplateUsageUtil.visitTemplateUsages(psiElement, usage -> {
-                consumer.consume(new TemplateInclude(usage.sourceElement(), usage.templateName(), usage.type()));
-            });
         }
     }
 
@@ -3472,18 +3439,6 @@ public class TwigUtil {
             for (String s : TwigUtil.getTwigExtendsTagTemplates((TwigExtendsTag) element)) {
                 String first = TwigUtil.normalizeTemplateName(s);
                 consumer.consume(new Pair<>(first, element));
-            }
-        }
-
-        for (TwigFileUsage extension : TWIG_FILE_USAGE_EXTENSIONS.getExtensions()) {
-            if (!extension.isExtendsTemplate(element)) {
-                continue;
-            }
-
-            for (String template : extension.getExtendsTemplate(element)) {
-                if (StringUtils.isNotBlank(template)) {
-                    consumer.consume(Pair.create(TwigUtil.normalizeTemplateName(template), element));
-                }
             }
         }
     }

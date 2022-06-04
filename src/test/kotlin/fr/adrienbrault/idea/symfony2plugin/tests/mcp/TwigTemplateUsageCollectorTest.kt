@@ -1,9 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.mcp
 
 import fr.adrienbrault.idea.symfony2plugin.mcp.collector.TwigTemplateUsageCollector
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
-import fr.adrienbrault.idea.symfony2plugin.tests.templating.TestTwigFileUsage
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -138,23 +136,6 @@ class TwigTemplateUsageCollectorTest : SymfonyLightCodeInsightFixtureTestCase() 
         assertTrue("Unexpected CSV:\n$result", result.contains("templates/child.html.twig,"))
         assertTrue("Unexpected CSV:\n$result", result.contains("templates/import_page.html.twig,"))
         assertTrue("Unexpected CSV:\n$result", result.contains("templates/form_theme.html.twig,"))
-    }
-
-    fun testCustomTwigFileUsageExtensionRows() {
-        TwigUtil.TWIG_FILE_USAGE_EXTENSIONS.point.registerExtension(TestTwigFileUsage(), testRootDisposable)
-        myFixture.addFileToProject("templates/base.html.twig", "")
-        myFixture.addFileToProject("templates/custom_extends.html.twig", "{% custom_extends 'base.html.twig' %}")
-        myFixture.addFileToProject("templates/custom_include.html.twig", "{% custom_include 'base.html.twig' %}")
-        myFixture.addFileToProject("templates/custom_embed.html.twig", "{% custom_embed 'base.html.twig' %}{% end_custom_embed %}")
-        myFixture.addFileToProject("templates/custom_import.html.twig", "{% custom_import 'base.html.twig' %}")
-        myFixture.addFileToProject("templates/custom_from.html.twig", "{% custom_from 'base.html.twig' %}")
-        myFixture.addFileToProject("templates/custom_source.html.twig", "{% custom_source 'base.html.twig' %}")
-
-        val result = TwigTemplateUsageCollector(project).collect("base.html.twig")
-
-        assertTrue("Unexpected CSV:\n$result", result.contains(
-            "base.html.twig,,/src/templates/custom_include.html.twig;/src/templates/custom_source.html.twig,/src/templates/custom_embed.html.twig,/src/templates/custom_extends.html.twig,/src/templates/custom_from.html.twig;/src/templates/custom_import.html.twig,,,,,\n"
-        ))
     }
 
     fun testReturnsEmptyWhenTemplateFileGlobDoesNotMatch() {
