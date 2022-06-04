@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
-import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
@@ -71,7 +70,6 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
                 items.get(templateName).add(StringUtils.stripStart(triple.getSecond().getFQN(), "\\"));
             };
 
-            @NotNull NotNullLazyValue<Set<String>> methods = PhpMethodVariableResolveUtil.TemplateRenderVisitor.createLazyMethodNamesCollector(psiFile.getProject());
             for (PhpNamedElement topLevelElement : ((PhpFile) psiFile).getTopLevelDefs().values()) {
                 if (topLevelElement instanceof PhpClass clazz) {
                     for (Method method : clazz.getOwnMethods()) {
@@ -85,11 +83,11 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
                                 phpDocTag -> true
                             );
                         }
-                        processMethodReferences(consumer, methods, method);
+                        processMethodReferences(consumer, method);
                     }
                 }
                 if (topLevelElement instanceof Function function) {
-                    processMethodReferences(consumer, methods, function);
+                    processMethodReferences(consumer, function);
                 }
             }
 
@@ -103,12 +101,12 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
         };
     }
 
-    private static void processMethodReferences(@NotNull Consumer<Triple<String, PhpNamedElement, FunctionReference>> consumer, @NotNull NotNullLazyValue<Set<String>> methods, @NotNull Function function) {
+    private static void processMethodReferences(@NotNull Consumer<Triple<String, PhpNamedElement, FunctionReference>> consumer, @NotNull Function function) {
         PhpControlFlowUtil.processFlow(function.getControlFlow(), new PhpInstructionProcessor() {
             @Override
             public boolean processPhpCallInstruction(PhpCallInstruction instruction) {
                 if (instruction.getFunctionReference() instanceof MethodReference methodReference) {
-                    PhpMethodVariableResolveUtil.TemplateRenderVisitor.processMethodReference(methodReference, methods, consumer);
+                    PhpMethodVariableResolveUtil.TemplateRenderVisitor.processMethodReference(methodReference, consumer);
                 }
                 return super.processPhpCallInstruction(instruction);
             }
@@ -148,4 +146,3 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
         return inputData.getFile().getLength() < MAX_FILE_BYTE_SIZE;
     }
 }
-
