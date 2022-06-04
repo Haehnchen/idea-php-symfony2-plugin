@@ -10,8 +10,8 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.dict.FileResourceContextTypeEnu
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.yaml.psi.YAMLFile;
-import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.*;
+import org.jetbrains.yaml.psi.impl.YAMLHashImpl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,6 +35,25 @@ public class FileResourceVisitorUtil {
      */
     private static void visitYamlFile(@NotNull YAMLFile yamlFile, @NotNull Consumer<FileResourceConsumer> consumer) {
         for (YAMLKeyValue yamlKeyValue : YamlHelper.getTopLevelKeyValues(yamlFile)) {
+            // imports:
+            //   - { resource: ../src/import/services.yml, ignore_errors: true }
+            if ("imports".equals(yamlKeyValue.getKeyText())) {
+                YAMLValue value = yamlKeyValue.getValue();
+                if (value instanceof YAMLSequence) {
+                    for (YAMLSequenceItem item : ((YAMLSequence) value).getItems()) {
+                        YAMLValue value1 = item.getValue();
+                        if (value1 instanceof YAMLMapping) {
+                            String resource = YamlHelper.getYamlKeyValueAsString((YAMLMapping) value1, "resource");
+                            if (resource != null  && resource.length() < 128) {
+                                consumer.consume(new FileResourceConsumer(value1, normalize(resource), FileResourceContextTypeEnum.UNKNOWN, new HashMap<>()));
+                            }
+                        }
+                    }
+                }
+            }
+
+            // app1:
+            //   resource: "@AcmeOtherBundle/Resources/config/routing1.yml"
             YAMLKeyValue resourceKey = YamlHelper.getYamlKeyValue(yamlKeyValue, "resource", true);
             if(resourceKey == null) {
                 continue;
@@ -73,25 +92,37 @@ public class FileResourceVisitorUtil {
      */
     private static void visitXmlFile(@NotNull XmlFile psiFile, @NotNull Consumer<FileResourceConsumer> consumer) {
         XmlTag rootTag = psiFile.getRootTag();
-        if(rootTag == null || !"routes".equals(rootTag.getName())) {
+        if (rootTag == null) {
             return;
         }
 
-        for (XmlTag xmlTag : rootTag.findSubTags("import")) {
-            String resource = xmlTag.getAttributeValue("resource");
-            if(StringUtils.isBlank(resource)) {
-                continue;
-            }
+        String rootTagName = rootTag.getName();
+        if ("routes".equals(rootTagName)) {
+            for (XmlTag xmlTag : rootTag.findSubTags("import")) {
+                String resource = xmlTag.getAttributeValue("resource");
+                if(StringUtils.isBlank(resource)) {
+                    continue;
+                }
 
-            Map<String, String> map = new HashMap<>();
-            for (String option: new String[] {"type", "prefix", "name-prefix"}) {
-                String attributeValue = xmlTag.getAttributeValue(option);
-                if (StringUtils.isNotBlank(attributeValue) && attributeValue.length() < 128) {
-                    map.put(option.replace("-", "_"), attributeValue);
+                Map<String, String> map = new HashMap<>();
+                for (String option: new String[] {"type", "prefix", "name-prefix"}) {
+                    String attributeValue = xmlTag.getAttributeValue(option);
+                    if (StringUtils.isNotBlank(attributeValue) && attributeValue.length() < 128) {
+                        map.put(option.replace("-", "_"), attributeValue);
+                    }
+                }
+
+                consumer.consume(new FileResourceConsumer(xmlTag, normalize(resource), FileResourceContextTypeEnum.ROUTE, map));
+            }
+        } else if("container".equals(rootTagName)) {
+            for (XmlTag xmlTag : rootTag.findSubTags("imports")) {
+                for (XmlTag anImport : xmlTag.findSubTags("import")) {
+                    String attributeValue = anImport.getAttributeValue("resource");
+                    if (StringUtils.isNotBlank(attributeValue) && attributeValue.length() < 128) {
+                        consumer.consume(new FileResourceConsumer(xmlTag, normalize(attributeValue), FileResourceContextTypeEnum.CONTAINER, new HashMap<>()));
+                    }
                 }
             }
-
-            consumer.consume(new FileResourceConsumer(xmlTag, normalize(resource), FileResourceContextTypeEnum.ROUTE, map));
         }
     }
 
