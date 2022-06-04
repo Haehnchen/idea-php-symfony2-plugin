@@ -44,7 +44,11 @@ public class DoctrineCompletionContributor extends CompletionContributor {
                     PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "Doctrine\\Common\\Persistence\\ObjectManager", "getRepository") ||
                         PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "Doctrine\\Common\\Persistence\\ManagerRegistry", "getRepository") ||
                         PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "Doctrine\\Persistence\\ObjectManager", "getRepository") ||
-                        PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "Doctrine\\Persistence\\ManagerRegistry", "getRepository")
+                        PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "Doctrine\\Persistence\\ManagerRegistry", "getRepository") ||
+
+                        PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "\\Doctrine\\ORM\\EntityManagerInterface", "getReference") ||
+                        PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "\\Doctrine\\ORM\\EntityManagerInterface", "getClassMetadata") ||
+                        PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "\\Doctrine\\ORM\\EntityManagerInterface", "getPartialReference")
                 )) {
                     return;
                 }
