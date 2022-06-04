@@ -23,7 +23,7 @@ public class FileResourcesIndexTest extends SymfonyLightCodeInsightFixtureTestCa
     public void setUp() throws Exception {
         super.setUp();
 
-        myFixture.configureByText(YAMLFileType.YML, "" +
+        myFixture.configureByText("test.yml", "" +
                 "app:\n" +
                 "  resource: \"@AppBundle/Controller/\"\n" +
                 "  type: annotation\n" +
@@ -37,10 +37,12 @@ public class FileResourcesIndexTest extends SymfonyLightCodeInsightFixtureTestCa
                 "app3:\n" +
                 "  resource: '@AcmeOtherBundle/Resources/config/routing3.yml'\n" +
                 "app4:\n" +
-                "  resource: '@AcmeOtherBundle///Resources/config\\\\\\routing4.yml'\n"
+                "  resource: '@AcmeOtherBundle///Resources/config\\\\\\routing4.yml'\n" +
+                "imports:\n" +
+                "  - { resource: ../src/import/services.yml, ignore_errors: true }\n"
         );
 
-        myFixture.configureByText(XmlFileType.INSTANCE, "" +
+        myFixture.configureByText("test1.xml", "" +
                 "<routes>\n" +
                 "    <import resource=\"@AcmeOtherBundle/Resources/config/routing.xml\" type=\"annotation\" prefix=\"/foo\" name-prefix=\"blog_\"/>\n" +
                 "    <import resource=\"@AcmeOtherBundle//Resources/config/routing1.xml\" />\n" +
@@ -48,6 +50,14 @@ public class FileResourcesIndexTest extends SymfonyLightCodeInsightFixtureTestCa
                 "</routes>"
         );
 
+        myFixture.configureByText("test2.xml", "" +
+            "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" +
+            "<container>\n" +
+            "    <imports>\n" +
+            "        <import resource=\"%kernel.project_dir%/somefile.yaml\"/>\n" +
+            "    </imports>\n" +
+            "</container>"
+        );
     }
 
     public void testYamlResourcesImport() {
@@ -56,6 +66,9 @@ public class FileResourcesIndexTest extends SymfonyLightCodeInsightFixtureTestCa
         assertIndexContains(FileResourcesIndex.KEY, "@AcmeOtherBundle/Resources/config/routing2.yml");
         assertIndexContains(FileResourcesIndex.KEY, "@AcmeOtherBundle/Resources/config/routing3.yml");
         assertIndexContains(FileResourcesIndex.KEY, "@AcmeOtherBundle/Resources/config/routing4.yml");
+
+        assertIndexContains(FileResourcesIndex.KEY, "../src/import/services.yml");
+        assertIndexContains(FileResourcesIndex.KEY, "../src/import/services.yml");
     }
 
     public void testXmlResourcesImport() {
