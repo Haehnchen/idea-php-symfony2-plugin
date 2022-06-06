@@ -3,12 +3,10 @@ package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.patterns.StandardPatterns;
-import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.tree.IElementType;
@@ -30,19 +28,13 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
-import kotlin.Pair;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.*;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -189,14 +181,16 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
             targets.addAll(getClassesForServiceKey(psiElement));
         }
 
-        // resource: '../src/'
-        // exclude:
-        //    - '../src/DependencyInjection/'
+        // services:
+        //  Foo\\:
+        //   resource: '../src/'
+        //   exclude:
+        //      - '../src/DependencyInjection/'
         if (StandardPatterns.or(
             YamlElementPatternHelper.getSingleLineScalarKey("exclude", "resource"),
             YamlElementPatternHelper.getSequenceValueWithArrayKeyPattern("exclude", "resource")
         ).accepts(psiElement)) {
-            targets.addAll(attachGlobResources(psiElement));
+            targets.addAll(attachResourceOrExcludeGlobNamespaceElements(psiElement));
         }
 
         return targets.toArray(new PsiElement[0]);
@@ -465,8 +459,14 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
 
     }
 
+    /**
+     * services:
+     *   Foo\\:
+     *     resource: '../src/'
+     *     exclude: ...
+     */
     @NotNull
-    private Collection<PsiElement> attachGlobResources(@NotNull PsiElement psiElement) {
+    private Collection<PsiElement> attachResourceOrExcludeGlobNamespaceElements(@NotNull PsiElement psiElement) {
         String resource = PsiElementUtils.trimQuote(psiElement.getText());
         if (StringUtils.isBlank(resource)) {
             return Collections.emptyList();

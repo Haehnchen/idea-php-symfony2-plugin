@@ -1368,10 +1368,11 @@ public class YamlHelper {
     }
 
     /**
-     * App\\:
-     *   resource: 'foobar_2'
-     * App\\:
-     *   resource: ['foobar_2', 'foobar_3']
+     * services:
+     *   App\\:
+     *     resource: 'foobar_2'
+     *   App\\:
+     *     resource: ['foobar_2', 'foobar_3']
      */
     @Nullable
     public static String getServiceKeyFromResourceFromStringOrArray(@NotNull YAMLQuotedText yamlQuotedText) {
@@ -1413,6 +1414,18 @@ public class YamlHelper {
         if (StringUtils.isBlank(name)) {
             return null;
         }
+
+        PsiElement parent = serviceKeyValue.getParent();
+        if (parent instanceof YAMLMapping) {
+            PsiElement parent1 = parent.getParent();
+            if (parent1 instanceof YAMLKeyValue) {
+                String keyText = ((YAMLKeyValue) parent1).getKeyText();
+                if ("services".equals(keyText)) {
+                    return name;
+                }
+            }
+        }
+
 
         return name;
     }
