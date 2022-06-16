@@ -13,6 +13,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -37,6 +38,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
             attachRouteActions(lineMarkerInfos, psiElement);
             attachEntityClass(lineMarkerInfos, psiElement);
             attachRelationClass(lineMarkerInfos, psiElement);
+            attachRoutingForResources(lineMarkerInfos, psiElement);
 
             if(psiElement instanceof YAMLFile) {
                 RelatedItemLineMarkerInfo<PsiElement> lineMarker = FileResourceUtil.getFileImplementsLineMarker((PsiFile) psiElement);
@@ -45,6 +47,39 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
                 }
             }
         }
+    }
+
+    /**
+     * controllers:
+     *    resource: '../../src/Controller/'
+     *    type: annotation
+     */
+    private void attachRoutingForResources(@NotNull Collection<? super LineMarkerInfo<?>> result, @NotNull PsiElement leafTarget) {
+        if (leafTarget.getNode().getElementType() != YAMLTokenTypes.SCALAR_KEY) {
+            return;
+        }
+
+        PsiElement yamlKeyValue = leafTarget.getParent();
+        if (!(yamlKeyValue instanceof YAMLKeyValue)) {
+            return;
+        }
+
+        String resource = YamlHelper.getYamlKeyValueAsString((YAMLKeyValue) yamlKeyValue, "resource");
+        if (resource == null) {
+            return;
+        }
+
+        if (!"annotation".equals(YamlHelper.getYamlKeyValueAsString((YAMLKeyValue) yamlKeyValue, "type"))) {
+            return;
+        }
+
+        result.add(
+            FileResourceUtil.getNavigationGutterForRouteAnnotationResources(
+                leafTarget.getProject(),
+                leafTarget.getContainingFile().getVirtualFile(),
+                resource
+            ).createLineMarkerInfo(leafTarget)
+        );
     }
 
     private void attachEntityClass(@NotNull Collection<? super LineMarkerInfo<?>> lineMarkerInfos, @NotNull PsiElement psiElement) {
