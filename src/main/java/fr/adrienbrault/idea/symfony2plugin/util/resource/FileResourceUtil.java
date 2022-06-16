@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.util.resource;
 
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.openapi.util.Pair;
@@ -47,7 +48,7 @@ public class FileResourceUtil {
      * chars that trigger a glob resolving on symfony
      * extracted from: \Symfony\Component\Config\Loader\FileLoader::import
      */
-    private static final String[] GLOB_DETECTION_CHARS = {"*", "?", "{", "["};
+    public static final String[] GLOB_DETECTION_CHARS = {"*", "?", "{", "["};
 
     /**
      * Search for files refers to given file
@@ -393,6 +394,30 @@ public class FileResourceUtil {
         }
 
         return new Pair<>(join, null);
+    }
+
+    public static @NotNull NavigationGutterIconBuilder<PsiElement> getNavigationGutterForRouteAnnotationResources(@NotNull Project project, @NotNull VirtualFile virtualFile, @NotNull String resource) {
+        return NavigationGutterIconBuilder.create(AllIcons.Modules.SourceRoot)
+            .setTargets(NotNullLazyValue.lazy(() -> {
+                String r = resource;
+
+                // try to resolve the following pattern; all are recursive search for php
+                // ../../Core/**/**/Controller/*Controller.php
+                // ../src/Controller/
+                // ../src/Kernel.php
+                if (resource.endsWith("/") || resource.endsWith("\\")) {
+                    r += "**.php";
+                } else if (Arrays.stream(FileResourceUtil.GLOB_DETECTION_CHARS).noneMatch(r::contains) && !resource.toLowerCase().endsWith(".php")) {
+                    r += "**.php";
+                }
+
+                Collection<VirtualFile> filesForResources = FileResourceUtil.getFilesForResources(project, virtualFile, r)
+                    .stream()
+                    .filter(virtualFile1 -> "php".equalsIgnoreCase(virtualFile1.getExtension())).collect(Collectors.toSet());
+
+                return PsiElementUtils.convertVirtualFilesToPsiFiles(project, filesForResources);
+            }))
+            .setTooltipText("Navigate to matching files");
     }
 
     /**

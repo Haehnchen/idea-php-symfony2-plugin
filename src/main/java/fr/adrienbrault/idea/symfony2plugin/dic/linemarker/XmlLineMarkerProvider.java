@@ -48,10 +48,6 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
                 continue;
             }
 
-            if(!XmlHelper.getXmlTagNameLeafStartPattern().accepts(psiElement)) {
-                continue;
-            }
-
             PsiElement xmlTag = psiElement.getParent();
             if(!(xmlTag instanceof XmlTag)) {
                 continue;
