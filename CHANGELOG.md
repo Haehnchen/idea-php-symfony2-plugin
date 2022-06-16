@@ -19,6 +19,27 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.23.228 / 2022.1.228
+* Provide linemarker for route annotations imports (Daniel Espendiller)
+* Inspection for deprecated "controller" targets on route (Daniel Espendiller)
+* Support conditional enviroment for yaml file to index resources (Daniel Espendiller)
+* Add global resolving of resources (Daniel Espendiller)
+* Add "resources" outside of routing to index (Daniel Espendiller)
+* Add more (getReference, getClassMetadata, getPartialReference) Doctrine entity class constant completion (Daniel Espendiller)
+* Prioritize class constant parameter completion for Doctrine repository and form types (Daniel Espendiller)
+* Try to detect yaml translation files also on language pattern (Daniel Espendiller)
+* Twig form linemarker should only be triggered on smallest (leaf) elements (Daniel Espendiller)
+* PhpLineMarkerProvider linemarker should only be triggered on smallest (leaf) elements (Daniel Espendiller)
+* Constraint message property linemarker should only be triggered on smallest (leaf) elements (Daniel Espendiller)
+* Remove annotation linemarker as its also catched by resources linemarker now (Daniel Espendiller)
+* Extend resources / import index with context options (Daniel Espendiller)
+* [#1940](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1940) add translation support for TranslatableMessage class (Daniel Espendiller)
+* "+intl-icu" remove suffix from compiled translation domains (Daniel Espendiller)
+* Prevent empty translation domains (Daniel Espendiller)
+* Provide "glob" pattern extraction for string to provide a file scanner (Daniel Espendiller)
+* Support file and directory resolving for resources (Daniel Espendiller)
+* Fixed bad links to jetbrains plugin marketplace (Adrian Rudnik)
+
 ## 0.23.227 / 2022.1.227
 * Provide service class linemarker for prototype resource of xml files (Daniel Espendiller)
 * Support resource namespace navigation for xml prototype (Daniel Espendiller)
