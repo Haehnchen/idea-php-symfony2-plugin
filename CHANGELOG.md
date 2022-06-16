@@ -39,6 +39,9 @@ Changelog
 * Provide "glob" pattern extraction for string to provide a file scanner (Daniel Espendiller)
 * Support file and directory resolving for resources (Daniel Espendiller)
 * Fixed bad links to jetbrains plugin marketplace (Adrian Rudnik)
+* [paid] Add class constant instance inspection for check only FormTypeInterface can be added to a form (Daniel Espendiller)
+* [paid] Inspection for wrong querybuilder method chaining because of overwrite (Daniel Espendiller)
+* [paid] Add ConstructorCommandHeavyConstructorInspection (Daniel Espendiller)
 
 ## 0.23.227 / 2022.1.227
 * Provide service class linemarker for prototype resource of xml files (Daniel Espendiller)
