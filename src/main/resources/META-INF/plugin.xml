@@ -501,6 +501,12 @@
                          level="WARNING"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.RouteControllerDeprecatedInspection"/>
 
+        <localInspection groupPath="Symfony" shortName="ServiceNamedArgumentExistsInspection" displayName="Symfony: Argument does not exists"
+                         groupName="Service"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.ServiceNamedArgumentExistsInspection"/>
+
         <intentionAction>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.PhpServiceIntention</className>
             <category>PHP</category>
