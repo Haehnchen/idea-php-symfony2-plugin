@@ -14,4 +14,11 @@ namespace Foobar
     {
         const FOOBAR = null;
     }
+
+    class NamedArgument
+    {
+        public function __construct($foobar)
+        {
+        }
+    }
 }

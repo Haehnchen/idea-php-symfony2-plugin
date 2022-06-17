@@ -546,6 +546,44 @@ public class ServiceContainerUtil {
     }
 
     /**
+     * arguments: ['$foobar': '@foo']
+     */
+    public static boolean hasMissingYamlNamedArgumentForInspection(@NotNull PsiElement psiElement, @NotNull ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector) {
+        PsiElement context = psiElement.getContext();
+        if(context instanceof YAMLKeyValue) {
+            // arguments: ['$foobar': '@foo']
+
+            String parameterName = ((YAMLKeyValue) context).getKeyText();
+            if(parameterName.startsWith("$") && parameterName.length() > 1) {
+                PsiElement yamlMapping = context.getParent();
+                if(yamlMapping instanceof YAMLMapping) {
+                    PsiElement yamlKeyValue = yamlMapping.getParent();
+                    if(yamlKeyValue instanceof YAMLKeyValue) {
+                        String keyText = ((YAMLKeyValue) yamlKeyValue).getKeyText();
+                        if(keyText.equals("arguments")) {
+                            YAMLMapping parentMapping = ((YAMLKeyValue) yamlKeyValue).getParentMapping();
+                            if(parentMapping != null) {
+                                String serviceId = getServiceClassFromServiceMapping(parentMapping);
+                                if(StringUtils.isNotBlank(serviceId)) {
+                                    PhpClass serviceClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), serviceId, lazyServiceCollector);
+                                    // class not found don't need a hint
+                                    if (serviceClass == null) {
+                                        return false;
+                                    }
+
+                                    return PhpElementsUtil.getConstructorParameterArgumentByName(serviceClass, StringUtils.stripStart(parameterName, "$")) == null;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * services:
      *  _defaults:
      *      bind:

@@ -126,6 +126,23 @@ public class YamlElementPatternHelper {
         );
     }
 
+    public static ElementPattern<PsiElement> getNamedArgumentPattern() {
+        return PlatformPatterns
+            .psiElement(YAMLTokenTypes.SCALAR_KEY).withText(PlatformPatterns.string().startsWith("$"))
+            .withParent(
+                PlatformPatterns.psiElement(YAMLKeyValue.class)
+                    .withParent(PlatformPatterns.psiElement(YAMLMapping.class)
+                        .withParent(PlatformPatterns.psiElement(YAMLKeyValue.class).with(new PatternCondition<>("YAMLKeyValue: with key 'arguments'") {
+                            @Override
+                            public boolean accepts(@NotNull YAMLKeyValue yamlKeyValue, ProcessingContext context) {
+                                return "arguments".equals(yamlKeyValue.getKeyText());
+                            }
+                        }))
+                    )
+            )
+            .withLanguage(YAMLLanguage.INSTANCE);
+    }
+
     public static ElementPattern<PsiElement> getSingleLineText() {
         return
             PlatformPatterns
