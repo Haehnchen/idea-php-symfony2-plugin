@@ -7,6 +7,7 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
@@ -152,6 +153,38 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
                 PlatformPatterns.psiElement(PhpClass.class)
             );
         }
+    }
+
+    public void testNavigateToTaggedIteratorServices() {
+        assertNavigationMatch(YAMLFileType.YML, "" +
+                "App\\HandlerCollection:\n" +
+                "   arguments:\n" +
+                "       - !tagged_iterator my_nic<caret>e_tag\n",
+            PlatformPatterns.psiElement(PhpClass.class)
+        );
+
+        assertNavigationMatch(YAMLFileType.YML, "" +
+                "App\\HandlerCollection:\n" +
+                "   arguments:\n" +
+                "       - !tagged_<caret>iterator my_nice_tag\n",
+            PlatformPatterns.psiElement(PhpClass.class)
+        );
+    }
+
+    public void testNavigateToTagInsideHash() {
+        assertNavigationMatch(YAMLFileType.YML, "" +
+                "App\\HandlerCollection:\n" +
+                "   arguments:\n" +
+                "       - !tagged_iterator { tag: my_ni<caret>ce_tag, default_priority_method: getPriority }\n",
+            PlatformPatterns.psiElement(PhpClass.class)
+        );
+
+        assertNavigationMatch(YAMLFileType.YML, "" +
+                "App\\HandlerCollection:\n" +
+                "   arguments:\n" +
+                "       - !tagged_it<caret>erator { tag: my_nice_tag, default_priority_method: getPriority }\n",
+            PlatformPatterns.psiElement(PhpClass.class)
+        );
     }
 
     public void testNavigateToTaggedServicesForSymfony33Shortcut() {

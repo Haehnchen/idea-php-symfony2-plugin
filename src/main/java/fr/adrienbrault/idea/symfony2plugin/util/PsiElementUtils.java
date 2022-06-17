@@ -168,6 +168,21 @@ public class PsiElementUtils {
         return foo;
     }
 
+    @NotNull
+    public static <T extends PsiElement> Collection<T> getNextSiblingOfTypes(@Nullable PsiElement sibling, Class<T> pattern) {
+        if (sibling == null) return Collections.emptySet();
+
+        Collection<T> results = new ArrayList<>();
+        for (PsiElement child = sibling.getNextSibling(); child != null; child = child.getNextSibling()) {
+            if (pattern.isInstance(child)) {
+                //noinspection unchecked
+                results.add((T)child);
+            }
+        }
+
+        return results;
+    }
+
     @Nullable
     public static <T extends PsiElement> T getPrevSiblingOfType(@Nullable PsiElement sibling, ElementPattern<T> pattern) {
         if (sibling == null) return null;
