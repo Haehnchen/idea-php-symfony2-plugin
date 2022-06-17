@@ -10,6 +10,7 @@ import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.tree.IElementType;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.Parameter;
@@ -54,8 +55,8 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
         // only string values like "foo", foo
         if (elementType == YAMLTokenTypes.TEXT || elementType == YAMLTokenTypes.SCALAR_DSTRING || elementType == YAMLTokenTypes.SCALAR_STRING) {
             String psiText = PsiElementUtils.getText(psiElement);
-            if(psiText != null && psiText.length() > 0) {
-                if(psiText.startsWith("@") && psiText.length() > 1) {
+            if (psiText.length() > 0) {
+                if (psiText.startsWith("@") && psiText.length() > 1) {
                     targets.addAll(serviceGoToDeclaration(psiElement, psiText.substring(1)));
                 }
 
@@ -104,9 +105,9 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
         }
 
         // yaml Plugin BC: "!php/const:" is a tag
-        if(elementType == YAMLTokenTypes.TAG) {
+        if (elementType == YAMLTokenTypes.TAG) {
             String psiText = PsiElementUtils.getText(psiElement);
-            if(psiText != null && psiText.length() > 0 && psiText.startsWith("!php/const:")) {
+            if (psiText.startsWith("!php/const:")) {
                 targets.addAll(constantGoto(psiElement, psiText));
             }
         }
@@ -191,6 +192,19 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
             YamlElementPatternHelper.getSequenceValueWithArrayKeyPattern("exclude", "resource")
         ).accepts(psiElement)) {
             targets.addAll(attachResourceOrExcludeGlobNamespaceElements(psiElement));
+        }
+
+        // !tagged_iterator app.handler
+        if (PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).accepts(psiElement) || PlatformPatterns.psiElement(YAMLTokenTypes.TAG).accepts(psiElement)) {
+            targets.addAll(attachTaggedIteratorClasses(psiElement));
+        }
+
+        // !tagged_iterator { tag: app.handler, default_priority_method: getPriority }
+        if (YamlElementPatternHelper.getSingleLineScalarKey("tag").accepts(psiElement)) {
+            String tag = psiElement.getText();
+            if (StringUtils.isNotBlank(tag)) {
+                targets.addAll(ServiceUtil.getTaggedClassesWithCompiled(psiElement.getProject(), tag));
+            }
         }
 
         return targets.toArray(new PsiElement[0]);
@@ -510,6 +524,56 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
         }
 
         return new ArrayList<>(FileResourceUtil.getFileResourceTargetsInDirectoryScope(containingFile, text));
+    }
+
+    /**
+     * Both elements are clickable, as parent element does not allow navigation
+     *
+     * "!tagged_iterator app.handler"
+     */
+    @NotNull
+    private Collection<PsiElement> attachTaggedIteratorClasses(@NotNull PsiElement psiElement) {
+        if (psiElement.getNode().getElementType() == YAMLTokenTypes.TEXT) {
+            PsiElement prevLeaf = PsiTreeUtil.prevCodeLeaf(psiElement);
+            if (prevLeaf != null && prevLeaf.getNode().getElementType() == YAMLTokenTypes.TAG) {
+                if ("!tagged_iterator".equals(prevLeaf.getText())) {
+                    String tag = psiElement.getText();
+                    if (StringUtils.isNotBlank(tag)) {
+                        return new ArrayList<>(ServiceUtil.getTaggedClassesWithCompiled(psiElement.getProject(), tag));
+                    }
+                }
+            }
+        } else if (psiElement.getNode().getElementType() == YAMLTokenTypes.TAG) {
+            // - !tagged_iterator ...
+
+            if ("!tagged_iterator".equals(psiElement.getText())) {
+                PsiElement nextLeaf = PsiTreeUtil.nextCodeLeaf(psiElement);
+
+                if (nextLeaf != null && nextLeaf.getNode().getElementType() == YAMLTokenTypes.TEXT) {
+                    // - !tagged_iterator app.handler
+                    String tag = nextLeaf.getText();
+                    if (StringUtils.isNotBlank(tag)) {
+                        return new ArrayList<>(ServiceUtil.getTaggedClassesWithCompiled(psiElement.getProject(), tag));
+                    }
+                } else {
+                    // - !tagged_iterator { tag: app.handler, default_priority_method: getPriority }
+                    YAMLKeyValue tagKeyValue = PsiElementUtils.getNextSiblingOfTypes(psiElement, YAMLKeyValue.class)
+                        .stream()
+                        .filter(yamlKeyValue -> "tag".equals(yamlKeyValue.getKeyText()))
+                        .findFirst()
+                        .orElse(null);
+
+                    if (tagKeyValue != null) {
+                        String tag = tagKeyValue.getValueText();
+                        if (StringUtils.isNotBlank(tag)) {
+                            return new ArrayList<>(ServiceUtil.getTaggedClassesWithCompiled(psiElement.getProject(), tag));
+                        }
+                    }
+                }
+            }
+        }
+
+        return Collections.emptyList();
     }
 
     @NotNull
