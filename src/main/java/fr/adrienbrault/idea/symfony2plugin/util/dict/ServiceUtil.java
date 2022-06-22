@@ -474,6 +474,14 @@ public class ServiceUtil {
         Collection<ContainerService> instances = new ArrayList<>();
 
         for(ContainerService service: serviceMap) {
+            // help here: based on Symfony compiled file already
+            // '@.session.deprecated'
+            // '@.session.do-not-use'
+            String serviceNameNormalized = service.getName().toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "");
+            if (serviceNameNormalized.contains("donotuse") || serviceNameNormalized.contains("deprecated")) {
+                continue;
+            }
+
             if(service.getClassName() == null) {
                 continue;
             }
