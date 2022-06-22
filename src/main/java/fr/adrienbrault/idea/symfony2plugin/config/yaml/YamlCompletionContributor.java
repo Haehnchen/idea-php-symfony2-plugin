@@ -52,8 +52,10 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.YAMLCompoundValue;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.YAMLMapping;
 import org.jetbrains.yaml.psi.YAMLScalar;
 
 import java.util.*;
@@ -265,6 +267,9 @@ public class YamlCompletionContributor extends CompletionContributor {
         //  _defaults:
         //    bind:
         //      $<caret>: ''
+        //  service:
+        //    arguments:
+        //      $<caret>: ''
         extend(
             CompletionType.BASIC,
             YamlElementPatternHelper.getNamedDefaultBindPattern(),
@@ -408,16 +413,66 @@ public class YamlCompletionContributor extends CompletionContributor {
      *     _defaults:
      *         bind:
      *             $projectDir: '%kernel.project_dir%'
+     *     foobar:
+     *         arguments:
+     *             $projectDir: '%kernel.project_dir%'
      */
     private static class NamedArgumentCompletionProvider extends CompletionProvider<CompletionParameters> {
         @Override
         protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
-            HashSet<String> uniqueParameters = new HashSet<>();
-
             PsiElement position = parameters.getPosition();
             boolean hasEmptyNextElement = position.getNextSibling() == null;
 
-            ServiceContainerUtil.visitNamedArguments(position.getContainingFile(), pair -> {
+            YAMLMapping serviceDefintion = null;
+
+            Collection<Pair<Parameter, Integer>> arguments = new ArrayList<>();
+
+            // depending on code complete state we already have a key or not
+            // then decide if we are inside a "service" or "default bind" scope
+            if (position.getNode().getElementType() == YAMLTokenTypes.SCALAR_KEY) {
+                // "$name" key exists
+                YAMLKeyValue parentOfType = PsiTreeUtil.getParentOfType(position, YAMLKeyValue.class);
+                YAMLKeyValue parentOfType2 = PsiTreeUtil.getParentOfType(parentOfType, YAMLKeyValue.class);
+                if (parentOfType2 == null) {
+                    return;
+                }
+
+                String keyText2 = parentOfType2.getKeyText();
+                if (!"bind".equals(keyText2)) {
+                    serviceDefintion = parentOfType2.getParentMapping();
+                }
+            } else {
+                // "$" its just a text element
+                YAMLKeyValue parentOfType = PsiTreeUtil.getParentOfType(position, YAMLKeyValue.class);
+                if (parentOfType == null) {
+                    return;
+                }
+
+                if (!"bind".equals(parentOfType.getKeyText())) {
+                    serviceDefintion = parentOfType.getParentMapping();
+                }
+            }
+
+            ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector = new ContainerCollectionResolver.LazyServiceCollector(position.getProject());
+
+            // visit full file for arguments or current service scope
+            if (serviceDefintion == null) {
+                ServiceContainerUtil.visitNamedArguments(position.getContainingFile(), arguments::add);
+            } else {
+                @Nullable PhpClass yamlNamedArgumentPhpClass = ServiceContainerUtil.getServicePhpClassFromServiceMapping(serviceDefintion, lazyServiceCollector);
+                if (yamlNamedArgumentPhpClass != null) {
+                    Method constructor = yamlNamedArgumentPhpClass.getConstructor();
+                    if (constructor != null) {
+                        Parameter @NotNull [] constructorParameters = constructor.getParameters();
+                        for (int i = 0; i < constructorParameters.length; i++) {
+                            arguments.add(Pair.create(constructorParameters[i], i));
+                        }
+                    }
+                }
+            }
+
+            Set<String> uniqueParameters = new HashSet<>();
+            for (Pair<Parameter, Integer> pair : arguments) {
                 Parameter parameter = pair.getFirst();
                 String parameterName = parameter.getName();
                 if (uniqueParameters.contains(parameterName)) {
@@ -445,7 +500,7 @@ public class YamlCompletionContributor extends CompletionContributor {
 
                     if (!parameter.getType().getTypes().stream().allMatch(PhpType::isPrimitiveType)) {
                         // $foobar: '@service'
-                        result.addAllElements(getServiceSuggestion(position, pair, parameterName, new ContainerCollectionResolver.LazyServiceCollector(position.getProject())));
+                        result.addAllElements(getServiceSuggestion(position, pair, parameterName, lazyServiceCollector));
                     } else {
                         String parameterNormalized = parameterName.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "");
                         if (parameterNormalized.length() > 5) {
@@ -457,9 +512,14 @@ public class YamlCompletionContributor extends CompletionContributor {
                         }
                     }
                 }
-            });
+            }
         }
 
+        /**
+         * Matched service name on instance
+         *
+         * $foobar: '@service'
+         */
         @NotNull
         private Collection<LookupElement> getServiceSuggestion(@NotNull PsiElement position, @NotNull Pair<Parameter, Integer> pair, @NotNull String parameterName, @NotNull ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector) {
             Parameter parameter = pair.getFirst();

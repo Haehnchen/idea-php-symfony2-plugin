@@ -804,7 +804,7 @@ public class YamlElementPatternHelper {
      *      arguments:
      *          $<caret>
      */
-    static ElementPattern<PsiElement> getNamedDefaultBindPattern() {
+    public static ElementPattern<PsiElement> getNamedDefaultBindPattern() {
         // "__defaults" key
         PsiElementPattern.Capture<YAMLMapping> defaultsKey = PlatformPatterns.psiElement(YAMLMapping.class).withParent(PlatformPatterns.psiElement(YAMLKeyValue.class).with(new PatternCondition<YAMLKeyValue>("KeyText") {
             @Override

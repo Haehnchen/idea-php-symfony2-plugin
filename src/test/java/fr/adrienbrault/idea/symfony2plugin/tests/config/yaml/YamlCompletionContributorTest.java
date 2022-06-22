@@ -333,6 +333,16 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
             "$myDateTime: '@foo'"
         );
 
+        assertCompletionNotContains(YAMLFileType.YML, "" +
+                "services:\n" +
+                "  Foo\\Bus: ~\n" +
+                "\n" +
+                "  Foo\\Car:\n" +
+                "    arguments:\n" +
+                "      $<caret>\n",
+            "$myBus"
+        );
+
         assertCompletionContains(YAMLFileType.YML, "" +
                 "services:\n" +
                 "  Foo\\Car:\n" +
