@@ -588,6 +588,11 @@ public class ServiceContainerUtil {
      *  _defaults:
      *      bind:
      *       $<caret>: ''
+     *
+     * services:
+     *    Foo:
+     *       arguments:
+     *         $<caret>
      */
     public static void visitNamedArguments(@NotNull PsiFile psiFile, @NotNull Consumer<Parameter> processor) {
         if (psiFile instanceof YAMLFile) {

@@ -843,7 +843,18 @@ public class YamlElementPatternHelper {
             PlatformPatterns.psiElement(YAMLScalar.class).withParent(PlatformPatterns.or(bindKey, argumentsKey))
         );
 
-        return PlatformPatterns.or(argumentPattern, incompleteCodePattern);
+        // incomplete code 2.0 for new phpstorm version.
+        // bind:
+        // $<caret>
+        PsiElementPattern.Capture<PsiElement> incompleteCodePattern2 = PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).withText(PlatformPatterns.string().startsWith("$")).withParent(PlatformPatterns.psiElement(YAMLScalar.class).withParent(PlatformPatterns.psiElement(YAMLKeyValue.class).with(new PatternCondition<YAMLKeyValue>("KeyText") {
+            @Override
+            public boolean accepts(@NotNull YAMLKeyValue yamlKeyValue, ProcessingContext context) {
+                String keyText = yamlKeyValue.getKeyText();
+                return "arguments".equals(keyText) || "bind".equals(keyText);
+            }
+        })));
+
+        return PlatformPatterns.or(argumentPattern, incompleteCodePattern, incompleteCodePattern2);
     }
 
     /**
