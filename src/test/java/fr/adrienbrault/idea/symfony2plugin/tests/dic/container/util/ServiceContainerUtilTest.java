@@ -349,7 +349,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
         );
 
         Collection<String> arguments = new HashSet<>();
-        ServiceContainerUtil.visitNamedArguments(psiFile, parameter -> arguments.add(parameter.getName()));
+        ServiceContainerUtil.visitNamedArguments(psiFile, parameter -> arguments.add(parameter.getFirst().getName()));
 
         assertTrue(arguments.contains("foobar"));
 

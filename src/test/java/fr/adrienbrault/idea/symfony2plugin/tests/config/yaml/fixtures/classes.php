@@ -19,4 +19,11 @@ namespace Foo
     {
         function __construct($i, $z = null) { }
     }
+
+    class Car
+    {
+        function __construct(\string $projectDir, \string $foobarEnv, \MyDateTime $myDateTime)
+        {
+        }
+    }
 }

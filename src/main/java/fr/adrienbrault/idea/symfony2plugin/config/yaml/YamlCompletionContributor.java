@@ -1,7 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.config.yaml;
 
 import com.intellij.codeInsight.completion.*;
+import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileVisitor;
@@ -14,7 +16,10 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.completion.PhpLookupElement;
 import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.Parameter;
+import com.jetbrains.php.lang.psi.elements.ParameterList;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterLookupElement;
@@ -22,6 +27,8 @@ import fr.adrienbrault.idea.symfony2plugin.config.doctrine.DoctrineStaticTypeLoo
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.completion.ConfigCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceCompletionProvider;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ServiceTypeHint;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.suggestion.utils.ServiceSuggestionUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.DotEnvUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineYamlAnnotationLookupBuilder;
@@ -33,6 +40,7 @@ import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.SimilarSuggestionUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleFileCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.EventCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpClassAndParameterCompletionProvider;
@@ -48,12 +56,10 @@ import org.jetbrains.yaml.psi.YAMLCompoundValue;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.YAMLScalar;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -408,21 +414,142 @@ public class YamlCompletionContributor extends CompletionContributor {
         protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
             HashSet<String> uniqueParameters = new HashSet<>();
 
-            ServiceContainerUtil.visitNamedArguments(parameters.getPosition().getContainingFile(), parameter -> {
-                String name = parameter.getName();
-                if (uniqueParameters.contains(name)) {
+            PsiElement position = parameters.getPosition();
+            boolean hasEmptyNextElement = position.getNextSibling() == null;
+
+            ServiceContainerUtil.visitNamedArguments(position.getContainingFile(), pair -> {
+                Parameter parameter = pair.getFirst();
+                String parameterName = parameter.getName();
+                if (uniqueParameters.contains(parameterName)) {
                     return;
                 }
 
-                uniqueParameters.add(name);
+                uniqueParameters.add(parameterName);
 
                 // create argument for yaml: $parameter
                 result.addElement(
-                        LookupElementBuilder.create("$" + name)
-                                .withIcon(parameter.getIcon())
-                                .withTypeText(StringUtils.stripStart(parameter.getType().toString(), "\\"), true)
+                    LookupElementBuilder.create("$" + parameterName)
+                        .withIcon(parameter.getIcon())
+                        .withTypeText(StringUtils.stripStart(parameter.getType().toString(), "\\"))
                 );
+
+                if (hasEmptyNextElement) {
+                    // iterable $handlers => can also provide "!tagged_iterator"
+                    if (parameter.getType().getTypes().stream().anyMatch(s -> s.equalsIgnoreCase(PhpType._ITERABLE))) {
+                        LookupElementBuilder element = LookupElementBuilder.create("$" + parameterName + ": !tagged_iterator")
+                            .withIcon(parameter.getIcon())
+                            .withTypeText(StringUtils.stripStart(parameter.getType().toString(), "\\"), true);
+
+                        result.addElement(PrioritizedLookupElement.withPriority(element, -1000));
+                    }
+
+                    if (!parameter.getType().getTypes().stream().allMatch(PhpType::isPrimitiveType)) {
+                        // $foobar: '@service'
+                        result.addAllElements(getServiceSuggestion(position, pair, parameterName, new ContainerCollectionResolver.LazyServiceCollector(position.getProject())));
+                    } else {
+                        String parameterNormalized = parameterName.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "");
+                        if (parameterNormalized.length() > 5) {
+                            // $projectDir: '%kernel.project_dir%'
+                            result.addAllElements(getParameterSuggestion(parameter, parameterName, parameterNormalized));
+
+                            // $kernelClass: '%env(KERNEL_CLASS)%'
+                            result.addAllElements(getDotEnvSuggestion(parameter, parameterName, parameterNormalized));
+                        }
+                    }
+                }
             });
+        }
+
+        @NotNull
+        private Collection<LookupElement> getServiceSuggestion(@NotNull PsiElement position, @NotNull Pair<Parameter, Integer> pair, @NotNull String parameterName, @NotNull ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector) {
+            Parameter parameter = pair.getFirst();
+
+            PsiElement parameterList = parameter.getParent();
+            if (parameterList instanceof ParameterList) {
+                PsiElement parent = parameterList.getParent();
+                if (parent instanceof Method) {
+                    Collection<String> suggestions = new ArrayList<>(ServiceSuggestionUtil.createSuggestions(new ServiceTypeHint(
+                        (Method) parent,
+                        pair.getSecond(),
+                        position
+                    ), lazyServiceCollector.getCollector().getServices().values()));
+
+                    return suggestions.stream()
+                        .limit(3)
+                        .map(service -> {
+                            LookupElementBuilder element = LookupElementBuilder.create(String.format("$%s: '@%s'", parameterName, service))
+                                .withIcon(Symfony2Icons.SERVICE)
+                                .withTypeText(StringUtils.stripStart(parameter.getType().toString(), "\\"), true);
+
+                            return PrioritizedLookupElement.withPriority(element, -1000);
+                        })
+                        .collect(Collectors.toList());
+                }
+            }
+
+            return Collections.emptyList();
+        }
+
+        /**
+         * $projectDir: '%kernel.project_dir%'
+         */
+        private Collection<LookupElement> getParameterSuggestion(@NotNull Parameter parameter, @NotNull String parameterName, @NotNull String parameterNormalized) {
+            Set<String> values = new HashSet<>();
+
+            for (String name : ContainerCollectionResolver.getParameterNames(parameter.getProject())) {
+                String symfonyParameterNormalized = name.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "");
+
+                if (symfonyParameterNormalized.contains(parameterNormalized)) {
+                    values.add(name);
+                }
+            }
+
+            // weight items: append all indirect matched, after them in case there they are not similar
+            List<String> similarString = new ArrayList<>(SimilarSuggestionUtil.findSimilarString(parameterNormalized, values));
+            similarString.addAll(values);
+
+            return similarString.stream()
+                .distinct()
+                .limit(3)
+                .map(service -> {
+                    LookupElementBuilder element = LookupElementBuilder.create("$" + parameterName + ": '%" + service + "%'")
+                        .withIcon(Symfony2Icons.PARAMETER)
+                        .withTypeText(StringUtils.stripStart(parameter.getType().toString(), "\\"), true);
+
+                    return PrioritizedLookupElement.withPriority(element, -1000);
+                })
+                .collect(Collectors.toList());
+        }
+
+        /**
+         * "$kernelClass: '%env(KERNEL_CLASS)%'"
+         */
+        @NotNull
+        private Collection<LookupElement> getDotEnvSuggestion(@NotNull Parameter parameter, @NotNull String parameterName, @NotNull String parameterNormalized) {
+            Set<String> dotEnv = new HashSet<>();
+            for (String name : DotEnvUtil.getEnvironmentVariables(parameter.getProject())) {
+                String symfonyParameterNormalized = name.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "");
+
+                if (symfonyParameterNormalized.contains(parameterNormalized)) {
+                    dotEnv.add(name);
+                }
+            }
+
+            // weight items: append all indirect matched, after them in case there they are not similar
+            List<String> similarString = new ArrayList<>(SimilarSuggestionUtil.findSimilarString(parameterNormalized, dotEnv));
+            similarString.addAll(dotEnv);
+
+            return similarString.stream()
+                .distinct()
+                .limit(3)
+                .map(service -> {
+                    LookupElementBuilder element = LookupElementBuilder.create("$" + parameterName + ": '%env(" + service + ")%'")
+                        .withIcon(Symfony2Icons.PARAMETER)
+                        .withTypeText(StringUtils.stripStart(parameter.getType().toString(), "\\"), true);
+
+                    return PrioritizedLookupElement.withPriority(element, -1000);
+                })
+                .collect(Collectors.toList());
         }
     }
 
