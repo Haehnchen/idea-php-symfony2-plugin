@@ -672,6 +672,17 @@ public class ServiceContainerUtil {
         return null;
     }
 
+    @Nullable
+    public static PhpClass getServicePhpClassFromServiceMapping(@NotNull YAMLMapping yamlMapping, @NotNull ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector) {
+        String serviceId = getServiceClassFromServiceMapping(yamlMapping);
+        if (StringUtils.isNotBlank(serviceId)) {
+            return ServiceUtil.getResolvedClassDefinition(yamlMapping.getProject(), serviceId, lazyServiceCollector);
+        }
+
+        return null;
+    }
+
+
     /**
      *  <services>
      *   <service class="Foo\\Bar\\Car">

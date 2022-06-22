@@ -26,4 +26,9 @@ namespace Foo
         {
         }
     }
+
+    class Bus
+    {
+        function __construct($myBus) { }
+    }
 }
