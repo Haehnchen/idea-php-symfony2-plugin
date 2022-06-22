@@ -62,7 +62,7 @@ public class YamlCompletionContributor extends CompletionContributor {
 
     // @TODO: use xsd file
     // Symfony/Component/DependencyInjection/Loader/schema/dic/services/services-1.0.xsd
-    private static final Map<String, String> SERVICE_KEYS = Collections.unmodifiableMap(new HashMap<String, String>() {{
+    private static final Map<String, String> SERVICE_KEYS = Collections.unmodifiableMap(new HashMap<>() {{
         put("class", "(string)");
         put("public", "(bool)");
         put("tags", null);
@@ -96,7 +96,7 @@ public class YamlCompletionContributor extends CompletionContributor {
         put("exclude", ">= 2.8");
     }});
 
-    private static final Map<String, String> ROUTE_KEYS = Collections.unmodifiableMap(new HashMap<String, String>() {{
+    private static final Map<String, String> ROUTE_KEYS = Collections.unmodifiableMap(new HashMap<>() {{
         put("pattern", "deprecated");
         put("defaults", "(bool)");
         put("path", "(string)");
@@ -136,28 +136,28 @@ public class YamlCompletionContributor extends CompletionContributor {
 
         extend(
             CompletionType.BASIC, YamlElementPatternHelper.getServiceParameterDefinition(),
-            new CompletionProvider<CompletionParameters>() {
+            new CompletionProvider<>() {
                 public void addCompletions(@NotNull CompletionParameters parameters,
                                            @NotNull ProcessingContext context,
                                            @NotNull CompletionResultSet resultSet) {
 
-                    if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                    if (!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
                         return;
                     }
 
                     PsiElement element = parameters.getOriginalPosition();
 
-                    if(element == null) {
+                    if (element == null) {
                         return;
                     }
 
-                    for(ContainerParameter containerParameter: ContainerCollectionResolver.getParameters(parameters.getPosition().getProject()).values()) {
+                    for (ContainerParameter containerParameter : ContainerCollectionResolver.getParameters(parameters.getPosition().getProject()).values()) {
                         resultSet.addElement(new ParameterLookupElement(containerParameter, ParameterPercentWrapInsertHandler.getInstance(), element.getText()));
                     }
 
                     for (String s : DotEnvUtil.getEnvironmentVariables(element.getProject())) {
-                        resultSet.addElement(new ParameterLookupElement(new ContainerParameter("env(" + s +")", false), ParameterPercentWrapInsertHandler.getInstance(), element.getText()));
-                        resultSet.addElement(new ParameterLookupElement(new ContainerParameter("env(resolve:" + s +")", false), ParameterPercentWrapInsertHandler.getInstance(), element.getText()));
+                        resultSet.addElement(new ParameterLookupElement(new ContainerParameter("env(" + s + ")", false), ParameterPercentWrapInsertHandler.getInstance(), element.getText()));
+                        resultSet.addElement(new ParameterLookupElement(new ContainerParameter("env(resolve:" + s + ")", false), ParameterPercentWrapInsertHandler.getInstance(), element.getText()));
                     }
                 }
             }
@@ -271,7 +271,7 @@ public class YamlCompletionContributor extends CompletionContributor {
      */
     private static class MyFactoryStringMethodCompletionProvider extends CompletionProvider<CompletionParameters> {
         @Override
-        protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+        protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
             PsiElement position = parameters.getPosition();
             if(!Symfony2ProjectComponent.isEnabled(position)) {
                 return;
@@ -307,7 +307,7 @@ public class YamlCompletionContributor extends CompletionContributor {
 
     private static class FactoryMethodCompletionProvider extends CompletionProvider<CompletionParameters> {
         @Override
-        protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+        protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
             PsiElement position = parameters.getPosition();
             if(!Symfony2ProjectComponent.isEnabled(position)) {
@@ -335,7 +335,7 @@ public class YamlCompletionContributor extends CompletionContributor {
 
     public static class DirectoryScopeCompletionProvider extends CompletionProvider<CompletionParameters> {
         @Override
-        protected void addCompletions(@NotNull CompletionParameters completionParameters, final ProcessingContext processingContext, @NotNull final CompletionResultSet completionResultSet) {
+        protected void addCompletions(@NotNull CompletionParameters completionParameters, final @NotNull ProcessingContext processingContext, @NotNull final CompletionResultSet completionResultSet) {
 
             PsiFile originalFile = completionParameters.getOriginalFile();
             if(!Symfony2ProjectComponent.isEnabled(originalFile)) {
@@ -380,7 +380,7 @@ public class YamlCompletionContributor extends CompletionContributor {
      */
     private static class MyServiceKeyAsClassCompletionParametersCompletionProvider extends CompletionProvider<CompletionParameters> {
         @Override
-        protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+        protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
             PsiElement position = parameters.getPosition();
 
             if(!Symfony2ProjectComponent.isEnabled(position)) {
@@ -405,7 +405,7 @@ public class YamlCompletionContributor extends CompletionContributor {
      */
     private static class NamedArgumentCompletionProvider extends CompletionProvider<CompletionParameters> {
         @Override
-        protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet result) {
+        protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
             HashSet<String> uniqueParameters = new HashSet<>();
 
             ServiceContainerUtil.visitNamedArguments(parameters.getPosition().getContainingFile(), parameter -> {
@@ -430,9 +430,9 @@ public class YamlCompletionContributor extends CompletionContributor {
      * tags:
      *  - { method: 'foobar' }
      */
-    private class ServiceCallsMethodTestCompletion extends CompletionProvider<CompletionParameters> {
+    private static class ServiceCallsMethodTestCompletion extends CompletionProvider<CompletionParameters> {
 
-        protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+        protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
             if(!Symfony2ProjectComponent.isEnabled(completionParameters.getPosition())) {
                 return;
             }
@@ -450,15 +450,14 @@ public class YamlCompletionContributor extends CompletionContributor {
         }
     }
 
-    private class ServiceClassMethodInsideScalarKeyCompletion extends CompletionProvider<CompletionParameters> {
-
-        private String yamlArrayKeyName;
+    private static class ServiceClassMethodInsideScalarKeyCompletion extends CompletionProvider<CompletionParameters> {
+        private final String yamlArrayKeyName;
 
         ServiceClassMethodInsideScalarKeyCompletion(String yamlArrayKeyName) {
             this.yamlArrayKeyName = yamlArrayKeyName;
         }
 
-        protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+        protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
             if(!Symfony2ProjectComponent.isEnabled(completionParameters.getPosition())) {
                 return;
@@ -476,9 +475,9 @@ public class YamlCompletionContributor extends CompletionContributor {
 
     }
 
-    private class ServiceCallsMethodCompletion extends CompletionProvider<CompletionParameters> {
+    private static class ServiceCallsMethodCompletion extends CompletionProvider<CompletionParameters> {
 
-        protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+        protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
             if(!Symfony2ProjectComponent.isEnabled(completionParameters.getPosition())) {
                 return;
             }
@@ -517,7 +516,7 @@ public class YamlCompletionContributor extends CompletionContributor {
 
     private static class FormAliasCompletionProvider extends CompletionProvider<CompletionParameters> {
         @Override
-        protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+        protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
             if(!Symfony2ProjectComponent.isEnabled(completionParameters.getPosition())) {
                 return;
@@ -547,7 +546,7 @@ public class YamlCompletionContributor extends CompletionContributor {
 
     private static class OrmRelationCompletionProvider extends CompletionProvider<CompletionParameters> {
         @Override
-        protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+        protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
             PsiElement position = completionParameters.getPosition();
             if(!Symfony2ProjectComponent.isEnabled(position)) {
@@ -590,7 +589,7 @@ public class YamlCompletionContributor extends CompletionContributor {
      */
     private static class ReferencedColumnCompletionProvider extends CompletionProvider<CompletionParameters> {
         @Override
-        protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+        protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
             PsiElement position = completionParameters.getPosition();
             if(!Symfony2ProjectComponent.isEnabled(position)) {
@@ -661,9 +660,9 @@ public class YamlCompletionContributor extends CompletionContributor {
     /**
      * "requirements" on "path/pattern: /hello/{name}"
      */
-    private class RouteRequirementsCompletion extends CompletionProvider<CompletionParameters> {
+    private static class RouteRequirementsCompletion extends CompletionProvider<CompletionParameters> {
         @Override
-        protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+        protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
             YAMLKeyValue yamlKeyValue = PsiTreeUtil.getParentOfType(completionParameters.getOriginalPosition(), YAMLKeyValue.class);
             if(yamlKeyValue != null) {
                 PsiElement compoundValue = yamlKeyValue.getParent();
