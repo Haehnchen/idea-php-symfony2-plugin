@@ -214,7 +214,8 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
         Collection<PsiElement> psiElements = new HashSet<>();
 
         String argumentWithoutDollar = parameterName.substring(1);
-        ServiceContainerUtil.visitNamedArguments(psiElement.getContainingFile(), parameter -> {
+        ServiceContainerUtil.visitNamedArguments(psiElement.getContainingFile(), pair -> {
+            Parameter parameter = pair.getFirst();
             if (parameter.getName().equals(argumentWithoutDollar)) {
                 psiElements.add(parameter);
             }

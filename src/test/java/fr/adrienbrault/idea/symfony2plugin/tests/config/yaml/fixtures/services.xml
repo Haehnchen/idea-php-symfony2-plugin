@@ -3,6 +3,7 @@
 
     <parameters>
         <parameter key="foo_parameter">bar</parameter>
+        <parameter key="kernel.project_dir">project_dir</parameter>
     </parameters>
 
     <services>

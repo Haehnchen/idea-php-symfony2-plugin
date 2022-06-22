@@ -316,5 +316,37 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
                 "      $<caret>: ~\n",
             "$i"
         );
+
+        assertCompletionContains(YAMLFileType.YML, "" +
+                "services:\n" +
+                "  Foo\\Car:\n" +
+                "    arguments:\n" +
+                "      $myDateT<caret>ime\n",
+            "$myDateTime: '@foo'"
+        );
+
+        assertCompletionNotContains(YAMLFileType.YML, "" +
+                "services:\n" +
+                "  Foo\\Car:\n" +
+                "    arguments:\n" +
+                "      $myDateT<caret>ime: ~\n",
+            "$myDateTime: '@foo'"
+        );
+
+        assertCompletionContains(YAMLFileType.YML, "" +
+                "services:\n" +
+                "  Foo\\Car:\n" +
+                "    arguments:\n" +
+                "      $foobarEn<caret>v\n",
+            "$foobarEnv: '%env(FOOBAR_ENV)%'"
+        );
+
+        assertCompletionContains(YAMLFileType.YML, "" +
+                "services:\n" +
+                "  Foo\\Car:\n" +
+                "    arguments:\n" +
+                "      $project<caret>Dir\n",
+            "$projectDir: '%kernel.project_dir%'"
+        );
     }
 }

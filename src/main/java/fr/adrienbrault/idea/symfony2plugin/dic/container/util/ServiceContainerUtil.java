@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.dic.container.util;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
@@ -594,9 +595,9 @@ public class ServiceContainerUtil {
      *       arguments:
      *         $<caret>
      */
-    public static void visitNamedArguments(@NotNull PsiFile psiFile, @NotNull Consumer<Parameter> processor) {
+    public static void visitNamedArguments(@NotNull PsiFile psiFile, @NotNull Consumer<Pair<Parameter, Integer>> processor) {
         if (psiFile instanceof YAMLFile) {
-            Collection<Parameter> parameters = new HashSet<>();
+            Collection<Pair<Parameter, Integer>> parameters = new HashSet<>();
 
             // direct service definition
             for (PhpClass phpClass : YamlHelper.getPhpClassesInYamlFile((YAMLFile) psiFile, new ContainerCollectionResolver.LazyServiceCollector(psiFile.getProject()))) {
@@ -605,7 +606,10 @@ public class ServiceContainerUtil {
                     continue;
                 }
 
-                parameters.addAll(Arrays.asList(constructor.getParameters()));
+                Parameter @NotNull [] methodParameters = constructor.getParameters();
+                for (int i = 0, methodParametersLength = methodParameters.length; i < methodParametersLength; i++) {
+                    parameters.add(Pair.create(methodParameters[i], i));
+                }
             }
 
             for (YAMLKeyValue taggedService : YamlHelper.getTaggedServices((YAMLFile) psiFile, "controller.service_arguments")) {
@@ -627,7 +631,12 @@ public class ServiceContainerUtil {
                     // maybe filter actions and public methods in a suitable way?
                     phpClass.getMethods().stream()
                         .filter(method -> method.getAccess().isPublic() && !method.getName().startsWith("set"))
-                        .forEach(method -> Collections.addAll(parameters, method.getParameters()));
+                        .forEach(method -> {
+                            Parameter @NotNull [] methodParameters = method.getParameters();
+                            for (int i = 0, methodParametersLength = methodParameters.length; i < methodParametersLength; i++) {
+                                parameters.add(Pair.create(methodParameters[i], i));
+                            }
+                        });
                 }
             }
 
