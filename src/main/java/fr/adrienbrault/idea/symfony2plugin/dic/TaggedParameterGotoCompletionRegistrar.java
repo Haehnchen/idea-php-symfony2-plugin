@@ -30,6 +30,8 @@ public class TaggedParameterGotoCompletionRegistrar implements GotoCompletionReg
         registrar.register(
             PlatformPatterns.or(
                 YamlElementPatternHelper.getTaggedServicePattern(),
+                YamlElementPatternHelper.getSingleLineScalarKey("tag"),
+                YamlElementPatternHelper.getTaggedIteratorTagNamePattern(),
                 XmlPatterns.psiElement().withParent(XmlHelper.getTypeTaggedTagAttribute())
             ),
             new MyTagGotoCompletionContributor()

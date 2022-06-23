@@ -26,12 +26,46 @@ public class TaggedParameterGotoCompletionRegistrarTest extends SymfonyLightCode
             "arguments: [!tagged foo<caret>bar]",
             PlatformPatterns.psiElement()
         );
+
+        assertNavigationMatch(
+            YAMLFileType.YML,
+            "services:\n" +
+                "    App\\HandlerCollection:\n" +
+                "        arguments:\n" +
+                "            - !tagged_iterator { tag: foo<caret>bar, default_priority_method: getPriority }",
+            PlatformPatterns.psiElement()
+        );
+
+        assertNavigationMatch(
+            YAMLFileType.YML,
+            "services:\n" +
+                "    App\\HandlerCollection:\n" +
+                "        arguments:\n" +
+                "            - !tagged_iterator foo<caret>bar",
+            PlatformPatterns.psiElement()
+        );
     }
 
     public void testThatYamlTaggedParameterProvidesCompletion() {
         assertCompletionContains(
             YAMLFileType.YML,
             "arguments: [!tagged <caret>]",
+            "foobar"
+        );
+
+        assertCompletionContains(YAMLFileType.YML, "" +
+                "services:\n" +
+                "    App\\HandlerCollection:\n" +
+                "        arguments:\n" +
+                "            - !tagged_iterator { tag: <caret>, default_priority_method: getPriority }",
+            "foobar"
+        );
+
+        assertCompletionContains(YAMLFileType.YML, "" +
+                "services:\n" +
+                "    App\\HandlerCollection:\n" +
+                "        arguments:\n" +
+                "            - !tagged_iterator <caret>",
             "foobar"
         );
     }
