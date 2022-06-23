@@ -857,6 +857,13 @@ public class YamlElementPatternHelper {
         return PlatformPatterns.or(argumentPattern, incompleteCodePattern, incompleteCodePattern2);
     }
 
+    public static ElementPattern<PsiElement> getTaggedIteratorTagNamePattern() {
+        return PlatformPatterns.psiElement().afterLeafSkipping(
+            PlatformPatterns.psiElement(PsiWhiteSpace.class),
+            PlatformPatterns.psiElement().withElementType(YAMLTokenTypes.TAG).withText("!tagged_iterator")
+        );
+    }
+
     /**
      * Match elements types
      */

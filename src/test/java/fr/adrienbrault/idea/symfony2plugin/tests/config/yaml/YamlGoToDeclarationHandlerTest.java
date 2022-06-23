@@ -175,13 +175,6 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
         assertNavigationMatch(YAMLFileType.YML, "" +
                 "App\\HandlerCollection:\n" +
                 "   arguments:\n" +
-                "       - !tagged_iterator { tag: my_ni<caret>ce_tag, default_priority_method: getPriority }\n",
-            PlatformPatterns.psiElement(PhpClass.class)
-        );
-
-        assertNavigationMatch(YAMLFileType.YML, "" +
-                "App\\HandlerCollection:\n" +
-                "   arguments:\n" +
                 "       - !tagged_it<caret>erator { tag: my_nice_tag, default_priority_method: getPriority }\n",
             PlatformPatterns.psiElement(PhpClass.class)
         );

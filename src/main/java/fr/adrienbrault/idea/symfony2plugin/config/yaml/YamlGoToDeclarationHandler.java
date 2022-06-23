@@ -194,17 +194,9 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
             targets.addAll(attachResourceOrExcludeGlobNamespaceElements(psiElement));
         }
 
-        // !tagged_iterator app.handler
-        if (PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).accepts(psiElement) || PlatformPatterns.psiElement(YAMLTokenTypes.TAG).accepts(psiElement)) {
+        // !tagged_iterator
+        if (PlatformPatterns.psiElement(YAMLTokenTypes.TAG).accepts(psiElement)) {
             targets.addAll(attachTaggedIteratorClasses(psiElement));
-        }
-
-        // !tagged_iterator { tag: app.handler, default_priority_method: getPriority }
-        if (YamlElementPatternHelper.getSingleLineScalarKey("tag").accepts(psiElement)) {
-            String tag = psiElement.getText();
-            if (StringUtils.isNotBlank(tag)) {
-                targets.addAll(ServiceUtil.getTaggedClassesWithCompiled(psiElement.getProject(), tag));
-            }
         }
 
         return targets.toArray(new PsiElement[0]);
@@ -528,23 +520,13 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
     }
 
     /**
-     * Both elements are clickable, as parent element does not allow navigation
+     * Click on "tagged_iterator"
      *
      * "!tagged_iterator app.handler"
      */
     @NotNull
     private Collection<PsiElement> attachTaggedIteratorClasses(@NotNull PsiElement psiElement) {
-        if (psiElement.getNode().getElementType() == YAMLTokenTypes.TEXT) {
-            PsiElement prevLeaf = PsiTreeUtil.prevCodeLeaf(psiElement);
-            if (prevLeaf != null && prevLeaf.getNode().getElementType() == YAMLTokenTypes.TAG) {
-                if ("!tagged_iterator".equals(prevLeaf.getText())) {
-                    String tag = psiElement.getText();
-                    if (StringUtils.isNotBlank(tag)) {
-                        return new ArrayList<>(ServiceUtil.getTaggedClassesWithCompiled(psiElement.getProject(), tag));
-                    }
-                }
-            }
-        } else if (psiElement.getNode().getElementType() == YAMLTokenTypes.TAG) {
+        if (psiElement.getNode().getElementType() == YAMLTokenTypes.TAG) {
             // - !tagged_iterator ...
 
             if ("!tagged_iterator".equals(psiElement.getText())) {
