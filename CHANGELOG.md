@@ -19,6 +19,15 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 0.23.229 / 2022.1.229
+* Provide complete for tag name of yaml "!tagged_iterator" (Daniel Espendiller)
+* Named argument completion can now reflect the "bind" or "service" scope (Daniel Espendiller)
+* Provide incomplete named argument complete for yaml with: "tagged_iterator", dotenv, service names and parameters (Daniel Espendiller)
+* Fix incomplete named argument key complete pattern, for newest PhpStorm versions (Daniel Espendiller)
+* Ignore suggestion for some service names (Daniel Espendiller)
+* Provide navigation for "tagged_iterator" tag in yaml (Daniel Espendiller)
+* Inspection for named arguments in yaml (Daniel Espendiller)
+
 ## 0.23.228 / 2022.1.228
 * Provide linemarker for route annotations imports (Daniel Espendiller)
 * Inspection for deprecated "controller" targets on route (Daniel Espendiller)
