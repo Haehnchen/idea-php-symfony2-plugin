@@ -316,7 +316,7 @@ public class ServiceUtil {
         return service;
     }
 
-    public static Collection<PhpClass> getTaggedClasses(@NotNull Project project, @NotNull String tagName) {
+    private static Collection<PhpClass> getTaggedClassesOnIndex(@NotNull Project project, @NotNull String tagName) {
 
         List<PhpClass> phpClasses = new ArrayList<>();
 
@@ -340,17 +340,17 @@ public class ServiceUtil {
     }
 
     public static boolean isPhpClassTaggedWith(@NotNull PhpClass phpClass, @NotNull String tagName) {
-        return ServiceUtil.getTaggedClasses(phpClass.getProject(), tagName).stream()
+        return ServiceUtil.getTaggedClassesOnIndex(phpClass.getProject(), tagName).stream()
             .anyMatch(phpClass1 -> phpClass1.getFQN().equalsIgnoreCase(phpClass1.getFQN()));
     }
 
     @NotNull
-    public static Collection<PhpClass> getTaggedClassesWithCompiled(@NotNull Project project, @NotNull String tagName) {
+    public static Collection<PhpClass> getTaggedClasses(@NotNull Project project, @NotNull String tagName) {
 
         Set<String> uniqueClass = new HashSet<>();
 
         Collection<PhpClass> taggedClasses = new ArrayList<>();
-        for(PhpClass phpClass: getTaggedClasses(project, tagName)) {
+        for(PhpClass phpClass: getTaggedClassesOnIndex(project, tagName)) {
             String presentableFQN = phpClass.getPresentableFQN();
             if(!uniqueClass.contains(presentableFQN)) {
                 uniqueClass.add(presentableFQN);
