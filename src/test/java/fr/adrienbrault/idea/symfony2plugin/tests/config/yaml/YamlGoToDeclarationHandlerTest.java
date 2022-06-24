@@ -169,6 +169,13 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
                 "       - !tagged_<caret>iterator my_nice_tag\n",
             PlatformPatterns.psiElement(PhpClass.class)
         );
+
+        assertNavigationMatch(YAMLFileType.YML, "" +
+                "App\\HandlerCollection:\n" +
+                "   arguments:\n" +
+                "       - !tagged_<caret>iterator 'my_nice_tag'\n",
+            PlatformPatterns.psiElement(PhpClass.class)
+        );
     }
 
     public void testNavigateToTagInsideHash() {
@@ -176,6 +183,13 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
                 "App\\HandlerCollection:\n" +
                 "   arguments:\n" +
                 "       - !tagged_it<caret>erator { tag: my_nice_tag, default_priority_method: getPriority }\n",
+            PlatformPatterns.psiElement(PhpClass.class)
+        );
+
+        assertNavigationMatch(YAMLFileType.YML, "" +
+                "App\\HandlerCollection:\n" +
+                "   arguments:\n" +
+                "       - !tagged_it<caret>erator { tag: 'my_nice_tag', default_priority_method: getPriority }\n",
             PlatformPatterns.psiElement(PhpClass.class)
         );
     }

@@ -532,11 +532,11 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
             if ("!tagged_iterator".equals(psiElement.getText())) {
                 PsiElement nextLeaf = PsiTreeUtil.nextCodeLeaf(psiElement);
 
-                if (nextLeaf != null && nextLeaf.getNode().getElementType() == YAMLTokenTypes.TEXT) {
+                if (nextLeaf != null && (nextLeaf.getNode().getElementType() == YAMLTokenTypes.TEXT || nextLeaf.getNode().getElementType() == YAMLTokenTypes.SCALAR_STRING)) {
                     // - !tagged_iterator app.handler
-                    String tag = nextLeaf.getText();
+                    String tag = PsiElementUtils.trimQuote(nextLeaf.getText());
                     if (StringUtils.isNotBlank(tag)) {
-                        return new ArrayList<>(ServiceUtil.getTaggedClassesWithCompiled(psiElement.getProject(), tag));
+                        return new ArrayList<>(ServiceUtil.getTaggedClasses(psiElement.getProject(), tag));
                     }
                 } else {
                     // - !tagged_iterator { tag: app.handler, default_priority_method: getPriority }
@@ -547,9 +547,9 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
                         .orElse(null);
 
                     if (tagKeyValue != null) {
-                        String tag = tagKeyValue.getValueText();
+                        String tag = PsiElementUtils.trimQuote(tagKeyValue.getValueText());
                         if (StringUtils.isNotBlank(tag)) {
-                            return new ArrayList<>(ServiceUtil.getTaggedClassesWithCompiled(psiElement.getProject(), tag));
+                            return new ArrayList<>(ServiceUtil.getTaggedClasses(psiElement.getProject(), tag));
                         }
                     }
                 }
@@ -576,7 +576,7 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
             return Collections.emptyList();
         }
 
-        return new ArrayList<>(ServiceUtil.getTaggedClassesWithCompiled(psiElement.getProject(), tagName));
+        return new ArrayList<>(ServiceUtil.getTaggedClasses(psiElement.getProject(), tagName));
     }
 
     private Collection<PsiElement> getEventGoto(@NotNull PsiElement psiElement) {
