@@ -19,6 +19,11 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.230
+* [#1969](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1969) Support translation autocomplete on form constraints with named arguments (Daniel Espendiller)
+* [paid]  [#1977](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1977) fix inspection for querybuilder chaining (Daniel Espendiller)
+* Support tags can also be strings in yaml (Daniel Espendiller)
+
 ## 0.23.229 / 2022.1.229
 * Provide complete for tag name of yaml "!tagged_iterator" (Daniel Espendiller)
 * Named argument completion can now reflect the "bind" or "service" scope (Daniel Espendiller)
