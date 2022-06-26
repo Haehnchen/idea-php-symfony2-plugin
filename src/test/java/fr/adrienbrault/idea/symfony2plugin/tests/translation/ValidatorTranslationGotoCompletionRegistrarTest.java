@@ -29,6 +29,17 @@ public class ValidatorTranslationGotoCompletionRegistrarTest extends SymfonyLigh
         );
     }
 
+    public void testThatMessageValueForConstraintForNamedMessageIsTranslationed() {
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "$f = new MyConstraintMessage(message: '<caret>')",
+            "foo_yaml.symfony.great"
+        );
+
+        assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
+                "$f = new MyConstraintMessage(message: 'foo_yaml.symfony<caret>.great')"
+        );
+    }
+
     public void testThatExecutionContextProvidesTranslation() {
         assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
                 "/** @var $f \\Symfony\\Component\\Validator\\Context\\ExecutionContextInterface */\n" +
