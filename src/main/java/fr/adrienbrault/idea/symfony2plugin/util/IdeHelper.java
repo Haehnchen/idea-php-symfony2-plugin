@@ -161,7 +161,7 @@ public class IdeHelper {
             }
         });
 
-        notification.addAction(new NotificationAction("Dont`t show again") {
+        notification.addAction(new NotificationAction("Don't show again") {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e, @NotNull Notification notification) {
                 // user doesnt want to show notification again
