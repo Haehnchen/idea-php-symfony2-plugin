@@ -30,6 +30,10 @@ namespace Symfony\Component\Form {
     }
 
     interface FormTypeExtensionInterface {}
+
+    abstract class AbstractType implements FormTypeInterface
+    {
+    }
 }
 
 
