@@ -17,7 +17,7 @@ public class PhpLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTes
         return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/form/fixtures";
     }
 
-    public void testThatRouteLineMarkerForControllerIsGiven() {
+    public void testThatFormCanNavigateToDataClass() {
         assertLineMarker(
             myFixture.configureByText(
                 PhpFileType.INSTANCE,
@@ -38,6 +38,17 @@ public class PhpLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTes
             ),
             new LineMarker.ToolTipEqualsAssert("Navigate to data class")
         );
+    }
 
+    public void testThatDataClassCanNavigateToForm() {
+        assertLineMarker(
+            myFixture.configureByText(
+                PhpFileType.INSTANCE,
+                "<?php\n" +
+                    "namespace App;\n" +
+                    "class FoobarDataClass {}\n"
+            ),
+            new LineMarker.ToolTipEqualsAssert("Navigate to form")
+        );
     }
 }
