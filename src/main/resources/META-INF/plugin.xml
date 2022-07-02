@@ -227,6 +227,7 @@
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerIdUsagesStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigBlockIndexExtension"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigControllerStubIndex"/>
+        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.FormDataClassStubIndex"/>
 
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.ServiceLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.ControllerMethodLineMarkerProvider"/>
