@@ -63,4 +63,73 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
             PlatformPatterns.psiElement()
         );
     }
+
+    public void testParameterContributorForDefaultAttribute() {
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\Autowire;\n" +
+                "\n" +
+                "class MyService\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[Autowire('<caret>')]\n" +
+                "        private $parameter2" +
+                "    ) {}\n" +
+                "}",
+            "foo"
+        );
+
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\Autowire;\n" +
+                "\n" +
+                "class MyService\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[Autowire(\"<caret>\")]\n" +
+                "        private $parameter2" +
+                "    ) {}\n" +
+                "}",
+            "foo"
+        );
+
+        assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\Autowire;\n" +
+                "\n" +
+                "class MyService\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[Autowire('fo<caret>o')]\n" +
+                "        private $parameter2" +
+                "    ) {}\n" +
+                "}",
+            PlatformPatterns.psiElement()
+        );
+    }
+
+    public void testParameterContributorForNamedAttribute() {
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\Autowire;\n" +
+                "\n" +
+                "class MyService\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[Autowire(value: '<caret>')]\n" +
+                "        private $parameter2" +
+                "    ) {}\n" +
+                "}",
+            "foo"
+        );
+
+        assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\Autowire;\n" +
+                "\n" +
+                "class MyService\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[Autowire(value: 'fo<caret>o')]\n" +
+                "        private $parameter2" +
+                "    ) {}\n" +
+                "}",
+            PlatformPatterns.psiElement()
+        );
+    }
 }

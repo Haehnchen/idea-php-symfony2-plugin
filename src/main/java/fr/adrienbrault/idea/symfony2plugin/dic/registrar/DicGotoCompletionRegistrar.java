@@ -3,6 +3,8 @@ package fr.adrienbrault.idea.symfony2plugin.dic.registrar;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.jetbrains.php.lang.psi.elements.PhpAttribute;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
@@ -10,6 +12,7 @@ import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarPa
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.utils.GotoCompletionUtil;
 import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -25,7 +28,6 @@ import java.util.Map;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
-
     @Override
     public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
         // getParameter('FOO')
@@ -63,6 +65,30 @@ public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
                 }
 
                 return new ParameterContributor((StringLiteralExpression) context);
+            }
+        );
+
+        // #[Autowire('<caret>')]
+        // #[Autowire(value: '<caret>')]
+        registrar.register(
+            PlatformPatterns.or(
+                PhpElementsUtil.getFirstAttributeStringPattern(ServiceContainerUtil.AUTOWIRE_ATTRIBUTE_CLASS),
+                PhpElementsUtil.getAttributeNamedArgumentStringPattern(ServiceContainerUtil.AUTOWIRE_ATTRIBUTE_CLASS, "value")
+            ), psiElement -> {
+                PsiElement context = psiElement.getContext();
+                if (!(context instanceof StringLiteralExpression)) {
+                    return null;
+                }
+
+                PhpAttribute phpAttribute = PsiTreeUtil.getParentOfType(context, PhpAttribute.class);
+                if (phpAttribute != null) {
+                    String fqn = phpAttribute.getFQN();
+                    if (fqn != null && PhpElementsUtil.isInstanceOf(psiElement.getProject(), fqn, ServiceContainerUtil.AUTOWIRE_ATTRIBUTE_CLASS)) {
+                        return new ParameterContributor((StringLiteralExpression) context);
+                    }
+                }
+
+                return null;
             }
         );
     }

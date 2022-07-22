@@ -69,6 +69,8 @@ public class ServiceContainerUtil {
         "debug", "default", "abstract", "inner", "chain", "decorate", "delegat"
     };
 
+    public static final String AUTOWIRE_ATTRIBUTE_CLASS = "\\Symfony\\Component\\DependencyInjection\\Attribute\\Autowire";
+
     @NotNull
     public static Collection<ServiceSerializable> getServicesInFile(@NotNull PsiFile psiFile) {
         final Collection<ServiceSerializable> services = new ArrayList<>();
