@@ -3,7 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.tests.dic.registrar;
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.PhpFileType;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import org.jetbrains.yaml.YAMLFileType;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -13,8 +12,7 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
     public void setUp() throws Exception {
         super.setUp();
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("classes.php"));
-        myFixture.configureByText(YAMLFileType.YML, "parameters:\n  foo: foo");
-
+        myFixture.copyFileToProject("services.yml");
     }
 
     public String getTestDataPath() {
@@ -127,6 +125,42 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
                 "    public function __construct(\n" +
                 "        #[Autowire(value: 'fo<caret>o')]\n" +
                 "        private $parameter2" +
+                "    ) {}\n" +
+                "}",
+            PlatformPatterns.psiElement()
+        );
+    }
+
+    public void testTagContributorForTaggedIterator() {
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\TaggedIterator;\n" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "    public function __construct(\n" +
+                "        #[TaggedIterator('<caret>')] iterable $handlers\n" +
+                "    ) {}\n" +
+                "}",
+            "yaml_type_tag"
+        );
+
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\TaggedIterator;\n" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "    public function __construct(\n" +
+                "        #[TaggedIterator(tag: '<caret>')] iterable $handlers\n" +
+                "    ) {}\n" +
+                "}",
+            "yaml_type_tag"
+        );
+
+        assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\TaggedIterator;\n" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[TaggedIterator('yaml_t<caret>ype_tag')] iterable $handlers\n" +
                 "    ) {}\n" +
                 "}",
             PlatformPatterns.psiElement()
