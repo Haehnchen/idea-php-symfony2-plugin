@@ -3,6 +3,8 @@ package fr.adrienbrault.idea.symfony2plugin.dic.registrar;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiElementResolveResult;
+import com.intellij.psi.ResolveResult;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.elements.PhpAttribute;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
@@ -16,6 +18,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUt
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.completion.TagNameCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -82,10 +85,27 @@ public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
 
                 PhpAttribute phpAttribute = PsiTreeUtil.getParentOfType(context, PhpAttribute.class);
                 if (phpAttribute != null) {
-                    String fqn = phpAttribute.getFQN();
-                    if (fqn != null && PhpElementsUtil.isInstanceOf(psiElement.getProject(), fqn, ServiceContainerUtil.AUTOWIRE_ATTRIBUTE_CLASS)) {
-                        return new ParameterContributor((StringLiteralExpression) context);
-                    }
+                    return new ParameterContributor((StringLiteralExpression) context);
+                }
+
+                return null;
+            }
+        );
+
+        // #[TaggedIterator('app.handler')] iterable $handlers
+        registrar.register(
+            PlatformPatterns.or(
+                PhpElementsUtil.getFirstAttributeStringPattern(ServiceContainerUtil.TAGGET_ITERATOR_ATTRIBUTE_CLASS),
+                PhpElementsUtil.getAttributeNamedArgumentStringPattern(ServiceContainerUtil.TAGGET_ITERATOR_ATTRIBUTE_CLASS, "tag")
+            ), psiElement -> {
+                PsiElement context = psiElement.getContext();
+                if (!(context instanceof StringLiteralExpression)) {
+                    return null;
+                }
+
+                PhpAttribute phpAttribute = PsiTreeUtil.getParentOfType(context, PhpAttribute.class);
+                if (phpAttribute != null) {
+                    return new TaggedIteratorContributor((StringLiteralExpression) context);
                 }
 
                 return null;
@@ -104,7 +124,7 @@ public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
         public Collection<LookupElement> getLookupElements() {
             Collection<LookupElement> results = new ArrayList<>();
 
-            for(Map.Entry<String, ContainerParameter> entry: ContainerCollectionResolver.getParameters(getElement().getProject()).entrySet()) {
+            for (Map.Entry<String, ContainerParameter> entry: ContainerCollectionResolver.getParameters(getElement().getProject()).entrySet()) {
                 results.add(new ParameterLookupElement(entry.getValue()));
             }
 
@@ -115,11 +135,34 @@ public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
         @Override
         public Collection<PsiElement> getPsiTargets(PsiElement element) {
             String contents = GotoCompletionUtil.getStringLiteralValue(element);
-            if(contents == null) {
+            if (contents == null) {
                 return Collections.emptyList();
             }
 
             return ServiceUtil.getParameterDefinition(element.getProject(), contents);
+        }
+    }
+
+    private static class TaggedIteratorContributor extends GotoCompletionProvider {
+        public TaggedIteratorContributor(StringLiteralExpression element) {
+            super(element);
+        }
+
+        @NotNull
+        @Override
+        public Collection<LookupElement> getLookupElements() {
+            return TagNameCompletionProvider.getTagLookupElements(getElement().getProject());
+        }
+
+        @NotNull
+        @Override
+        public Collection<PsiElement> getPsiTargets(PsiElement element) {
+            String contents = GotoCompletionUtil.getStringLiteralValue(element);
+            if(contents == null) {
+                return Collections.emptyList();
+            }
+
+            return new ArrayList<>(ServiceUtil.getTaggedClasses(getElement().getProject(), contents));
         }
     }
 }
