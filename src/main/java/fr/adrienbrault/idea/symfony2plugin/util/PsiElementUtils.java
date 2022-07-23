@@ -12,7 +12,9 @@ import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Processor;
 import com.jetbrains.php.lang.PhpLanguage;
+import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.psi.elements.*;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -387,6 +389,14 @@ public class PsiElementUtils {
 
         String content = literal.getContents();
         return content.length() >= cursorOffsetClean ? content.substring(0, cursorOffsetClean) : null;
+    }
+
+    @Nullable
+    public static PsiElement getTextLeafElementFromStringLiteralExpression(@NotNull StringLiteralExpression psiElement) {
+        return Arrays.stream(YamlHelper.getChildrenFix(psiElement))
+            .filter(p -> p.getNode().getElementType() == PhpTokenTypes.STRING_LITERAL_SINGLE_QUOTE || p.getNode().getElementType() == PhpTokenTypes.STRING_LITERAL)
+            .findFirst()
+            .orElse(null);
     }
 
     @NotNull

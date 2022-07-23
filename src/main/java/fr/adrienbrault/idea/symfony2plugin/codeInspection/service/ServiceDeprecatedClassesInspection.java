@@ -169,6 +169,20 @@ public class ServiceDeprecatedClassesInspection extends LocalInspectionTool {
                 return;
             }
 
+            // #[Autowire(service: 'foobar')]
+            PsiElement leafText = PsiElementUtils.getTextLeafElementFromStringLiteralExpression((StringLiteralExpression) psiElement);
+
+            if (leafText != null && PhpElementsUtil.getAttributeNamedArgumentStringPattern(ServiceContainerUtil.AUTOWIRE_ATTRIBUTE_CLASS, "service").accepts(leafText)) {
+                String contents = ((StringLiteralExpression) psiElement).getContents();
+                if(StringUtils.isNotBlank(contents)) {
+                    this.problemRegistrar.attachDeprecatedProblem(psiElement, contents, holder);
+                    this.problemRegistrar.attachServiceDeprecatedProblem(psiElement, contents, holder);
+                }
+
+                super.visitElement(psiElement);
+                return;
+            }
+
             MethodReference methodReference = PsiElementUtils.getMethodReferenceWithFirstStringParameter((StringLiteralExpression) psiElement);
             if (methodReference == null || !PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, ServiceContainerUtil.SERVICE_GET_SIGNATURES)) {
                 super.visitElement(psiElement);

@@ -6,7 +6,6 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.jetbrains.php.lang.PhpLanguage;
-import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -19,8 +18,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLLanguage;
-
-import java.util.Arrays;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -59,11 +56,7 @@ public class MissingServiceInspection extends LocalInspectionTool {
                 }
 
                 // #[Autowire(service: 'foobar')]
-                // get leaf element
-                PsiElement leafText = Arrays.stream(YamlHelper.getChildrenFix(element))
-                    .filter(p -> p.getNode().getElementType() == PhpTokenTypes.STRING_LITERAL_SINGLE_QUOTE || p.getNode().getElementType() == PhpTokenTypes.STRING_LITERAL)
-                    .findFirst()
-                    .orElse(null);
+                PsiElement leafText = PsiElementUtils.getTextLeafElementFromStringLiteralExpression((StringLiteralExpression) element);
 
                 if (leafText != null && PhpElementsUtil.getAttributeNamedArgumentStringPattern(ServiceContainerUtil.AUTOWIRE_ATTRIBUTE_CLASS, "service").accepts(leafText)) {
                     String serviceName = ((StringLiteralExpression) element).getContents();

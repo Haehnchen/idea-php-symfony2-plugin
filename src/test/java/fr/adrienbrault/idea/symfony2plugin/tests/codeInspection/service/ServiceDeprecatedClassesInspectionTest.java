@@ -36,6 +36,30 @@ public class ServiceDeprecatedClassesInspectionTest extends SymfonyLightCodeInsi
         );
     }
 
+    public void testPhpServiceInsideAutowireAttributeDeprecated() {
+        assertLocalInspectionContains("foo.php", "<?php" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[\\Symfony\\Component\\DependencyInjection\\Attribute\\Autowire(service: 'foo_depr<caret>ecated')] $handlers\n" +
+                "    ) {}\n" +
+                "}",
+            "Service 'foo_deprecated' is deprecated"
+        );
+
+        assertLocalInspectionContains("foo.php", "<?php" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[\\Symfony\\Component\\DependencyInjection\\Attribute\\Autowire(service: \"foo_depr<caret>ecated\")] $handlers\n" +
+                "    ) {}\n" +
+                "}",
+            "Service 'foo_deprecated' is deprecated"
+        );
+    }
+
     public void testYmlClassDocBlockDeprecated() {
         assertLocalInspectionContains("foo.yml", "@f<caret>oo", "Class 'FooBar' is deprecated");
         assertLocalInspectionContains("foo.yml", "class: Foo\\Bar<caret>\\FooBar", "Class 'FooBar' is deprecated");
