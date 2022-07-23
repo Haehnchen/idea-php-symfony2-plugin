@@ -47,6 +47,16 @@ namespace Symfony\Component\DependencyInjection\Attribute
         ) {
         }
     }
+
+    class AsDecorator
+    {
+        public function __construct(
+            public string $decorates,
+            public int $priority = 0,
+            public int $onInvalid = ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE,
+        ) {
+        }
+    }
 }
 
 namespace

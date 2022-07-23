@@ -228,4 +228,54 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
             PlatformPatterns.psiElement()
         );
     }
+
+    public void testServiceContributorDecoratesAttribute() {
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\AsDecorator;\n" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[AsDecorator('<caret>')]" +
+                "    ) {}\n" +
+                "}",
+            "foo_bar_service"
+        );
+
+        assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\AsDecorator;\n" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[AsDecorator('foo_bar<caret>_service')] $handlers\n" +
+                "    ) {}\n" +
+                "}",
+            PlatformPatterns.psiElement()
+        );
+
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\AsDecorator;\n" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[AsDecorator(decorates: '<caret>')]" +
+                "    ) {}\n" +
+                "}",
+            "foo_bar_service"
+        );
+
+        assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\AsDecorator;\n" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[AsDecorator(decorates: 'foo_bar<caret>_service')] $handlers\n" +
+                "    ) {}\n" +
+                "}",
+            PlatformPatterns.psiElement()
+        );
+    }
 }

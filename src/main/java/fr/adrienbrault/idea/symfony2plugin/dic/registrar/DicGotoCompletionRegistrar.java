@@ -113,8 +113,13 @@ public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
         );
 
         // #[Autowire(service: 'some_service')]
+        // #[AsDecorator(decorates: 'some_service')]
         registrar.register(
-            PhpElementsUtil.getAttributeNamedArgumentStringPattern(ServiceContainerUtil.AUTOWIRE_ATTRIBUTE_CLASS, "service"),
+            PlatformPatterns.or(
+                PhpElementsUtil.getAttributeNamedArgumentStringPattern(ServiceContainerUtil.AUTOWIRE_ATTRIBUTE_CLASS, "service"),
+                PhpElementsUtil.getAttributeNamedArgumentStringPattern(ServiceContainerUtil.DECORATOR_ATTRIBUTE_CLASS, "decorates"),
+                PhpElementsUtil.getFirstAttributeStringPattern(ServiceContainerUtil.DECORATOR_ATTRIBUTE_CLASS)
+            ),
             psiElement -> {
                 PsiElement context = psiElement.getContext();
                 if (!(context instanceof StringLiteralExpression)) {
