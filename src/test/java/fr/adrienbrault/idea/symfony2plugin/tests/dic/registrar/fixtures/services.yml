@@ -5,3 +5,6 @@ services:
   Foo\Bar:
     tags:
       - { name: yaml_type_tag }
+
+  foo_bar_service:
+    class: Foo\Bar

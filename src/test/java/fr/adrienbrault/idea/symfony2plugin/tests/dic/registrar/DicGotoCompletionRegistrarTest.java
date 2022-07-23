@@ -166,4 +166,30 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
             PlatformPatterns.psiElement()
         );
     }
+
+    public void testServiceContributorForNamedAttribute() {
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\Autowire;\n" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[Autowire(service: '<caret>')]" +
+                "    ) {}\n" +
+                "}",
+            "foo_bar_service"
+        );
+
+        assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\Autowire;\n" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[Autowire(service: 'foo_bar<caret>_service')] $handlers\n" +
+                "    ) {}\n" +
+                "}",
+            PlatformPatterns.psiElement()
+        );
+    }
 }
