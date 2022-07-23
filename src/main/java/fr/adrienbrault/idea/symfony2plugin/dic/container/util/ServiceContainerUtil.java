@@ -74,6 +74,7 @@ public class ServiceContainerUtil {
     public static final String TAGGED_ITERATOR_ATTRIBUTE_CLASS = "\\Symfony\\Component\\DependencyInjection\\Attribute\\TaggedIterator";
     public static final String TAGGED_LOCATOR_ATTRIBUTE_CLASS = "\\Symfony\\Component\\DependencyInjection\\Attribute\\TaggedLocator";
     public static final String DECORATOR_ATTRIBUTE_CLASS = "\\Symfony\\Component\\DependencyInjection\\Attribute\\AsDecorator";
+    public static final String AUTOCONFIGURE_ATTRIBUTE_CLASS = "\\Symfony\\Component\\DependencyInjection\\Attribute\\Autoconfigure";
 
     @NotNull
     public static Collection<ServiceSerializable> getServicesInFile(@NotNull PsiFile psiFile) {

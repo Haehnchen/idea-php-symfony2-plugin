@@ -89,14 +89,42 @@ public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
             }
         );
 
-        // #[TaggedIterator('app.handler')] iterable $handlers
-        // #[TaggedLocator('app.handler')] ContainerInterface $handlers
         registrar.register(
             PlatformPatterns.or(
+                // #[TaggedIterator('app.handler')] iterable $handlers
+                // #[TaggedIterator(tag: 'app.handler')] iterable $handlers
                 PhpElementsUtil.getFirstAttributeStringPattern(ServiceContainerUtil.TAGGED_ITERATOR_ATTRIBUTE_CLASS),
                 PhpElementsUtil.getAttributeNamedArgumentStringPattern(ServiceContainerUtil.TAGGED_ITERATOR_ATTRIBUTE_CLASS, "tag"),
+
+                // #[TaggedLocator('app.handler')] ContainerInterface $handlers
+                // #[TaggedLocator(tag: 'app.handler')] ContainerInterface $handlers
                 PhpElementsUtil.getFirstAttributeStringPattern(ServiceContainerUtil.TAGGED_LOCATOR_ATTRIBUTE_CLASS),
-                PhpElementsUtil.getAttributeNamedArgumentStringPattern(ServiceContainerUtil.TAGGED_LOCATOR_ATTRIBUTE_CLASS, "tag")
+                PhpElementsUtil.getAttributeNamedArgumentStringPattern(ServiceContainerUtil.TAGGED_LOCATOR_ATTRIBUTE_CLASS, "tag"),
+
+                // #[Autoconfigure(['app.some_tag'])]
+                // #[Autoconfigure(tags: ['app.some_tag'])]
+                PhpElementsUtil.getFirstAttributeArrayStringPattern(ServiceContainerUtil.AUTOCONFIGURE_ATTRIBUTE_CLASS),
+                PhpElementsUtil.getAttributeNamedArgumentArrayStringPattern(ServiceContainerUtil.AUTOCONFIGURE_ATTRIBUTE_CLASS, "tags")
+            ), psiElement -> {
+                PsiElement context = psiElement.getContext();
+                if (!(context instanceof StringLiteralExpression)) {
+                    return null;
+                }
+
+                PhpAttribute phpAttribute = PsiTreeUtil.getParentOfType(context, PhpAttribute.class);
+                if (phpAttribute != null) {
+                    return new TaggedIteratorContributor((StringLiteralExpression) context);
+                }
+
+                return null;
+            }
+        );
+
+        // #[Autoconfigure(tags: ['app.some_tag'])]
+        // #[Autoconfigure(['app.some_tag'])]
+        registrar.register(
+            PlatformPatterns.or(
+
             ), psiElement -> {
                 PsiElement context = psiElement.getContext();
                 if (!(context instanceof StringLiteralExpression)) {
