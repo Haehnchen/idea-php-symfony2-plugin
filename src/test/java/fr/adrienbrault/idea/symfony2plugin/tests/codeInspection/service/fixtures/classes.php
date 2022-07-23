@@ -26,3 +26,8 @@ namespace Tag\InstanceCheck
 {
     class EmptyClass {}
 }
+
+namespace Symfony\Component\DependencyInjection\Attribute
+{
+    class Autowire {}
+}
