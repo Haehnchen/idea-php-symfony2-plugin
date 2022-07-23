@@ -258,4 +258,34 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
             PlatformPatterns.psiElement()
         );
     }
+
+    public void testTagContributorForAutoconfigureTagsAttribute() {
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\Autoconfigure;\n" +
+                "#[Autoconfigure(['<caret>'])]\n" +
+                "class HandlerCollection {}",
+            "yaml_type_tag"
+        );
+
+        assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\Autoconfigure;\n" +
+                "#[Autoconfigure(['yaml_<caret>type_tag'])]\n" +
+                "class HandlerCollection {}",
+            PlatformPatterns.psiElement()
+        );
+
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\Autoconfigure;\n" +
+                "#[Autoconfigure(tags: ['<caret>'])]\n" +
+                "class HandlerCollection {}",
+            "yaml_type_tag"
+        );
+
+        assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\Autoconfigure;\n" +
+                "#[Autoconfigure(tags: ['yaml_<caret>type_tag'])]\n" +
+                "class HandlerCollection {}",
+            PlatformPatterns.psiElement()
+        );
+    }
 }

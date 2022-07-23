@@ -382,9 +382,9 @@ public class PhpElementsUtil {
             .withLanguage(PhpLanguage.INSTANCE);
     }
 
-    private static final PatternCondition<StringLiteralExpression> EMPTY_PREVIOUS_LEAF = new PatternCondition<>("previous leaf empty") {
+    private static final PatternCondition<PsiElement> EMPTY_PREVIOUS_LEAF = new PatternCondition<>("previous leaf empty") {
         @Override
-        public boolean accepts(@NotNull StringLiteralExpression stringLiteralExpression, ProcessingContext context) {
+        public boolean accepts(@NotNull PsiElement stringLiteralExpression, ProcessingContext context) {
             return stringLiteralExpression.getPrevSibling() == null;
         }
     };
@@ -405,6 +405,26 @@ public class PhpElementsUtil {
                         .with(new AttributeInstancePatternCondition(clazz))
                     )
                 )
+            );
+    }
+
+    /**
+     * #[Security("is_granted(['POST_SHOW'])")]
+     */
+    @NotNull
+    public static PsiElementPattern.Capture<PsiElement> getFirstAttributeArrayStringPattern(@NotNull String clazz) {
+        return PlatformPatterns.psiElement().withElementType(PlatformPatterns.elementType().or(
+                PhpTokenTypes.STRING_LITERAL_SINGLE_QUOTE,
+                PhpTokenTypes.STRING_LITERAL
+            ))
+            .withParent(PlatformPatterns.psiElement(StringLiteralExpression.class)
+                .withParent(PlatformPatterns.psiElement(PhpElementTypes.ARRAY_VALUE).withParent(
+                    PlatformPatterns.psiElement(ArrayCreationExpression.class).with(EMPTY_PREVIOUS_LEAF).withParent(PlatformPatterns.psiElement(ParameterList.class)
+                        .withParent(PlatformPatterns.psiElement(PhpAttribute.class)
+                            .with(new AttributeInstancePatternCondition(clazz))
+                        )
+                    )
+                ))
             );
     }
 
@@ -430,6 +450,33 @@ public class PhpElementsUtil {
                         .with(new AttributeInstancePatternCondition(clazz))
                     )
                 )
+            );
+    }
+
+    /**
+     * #[Security(tags: ['foobar']])]
+     */
+    @NotNull
+    public static PsiElementPattern.Capture<PsiElement> getAttributeNamedArgumentArrayStringPattern(@NotNull String clazz, @NotNull String namedArgument) {
+        return PlatformPatterns.psiElement().withElementType(PlatformPatterns.elementType().or(
+                PhpTokenTypes.STRING_LITERAL_SINGLE_QUOTE,
+                PhpTokenTypes.STRING_LITERAL
+            ))
+            .withParent(PlatformPatterns.psiElement(StringLiteralExpression.class)
+                .withParent(PlatformPatterns.psiElement(PhpElementTypes.ARRAY_VALUE).withParent(
+                    PlatformPatterns.psiElement(ArrayCreationExpression.class).afterLeafSkipping(
+                            PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                            PlatformPatterns.psiElement(PhpTokenTypes.opCOLON).afterLeafSkipping(
+                                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                                PlatformPatterns.psiElement(PhpTokenTypes.IDENTIFIER).withText(namedArgument)
+                            )
+                        )
+                        .withParent(PlatformPatterns.psiElement(ParameterList.class)
+                            .withParent(PlatformPatterns.psiElement(PhpAttribute.class)
+                                .with(new AttributeInstancePatternCondition(clazz))
+                            )
+                        )
+                ))
             );
     }
 
