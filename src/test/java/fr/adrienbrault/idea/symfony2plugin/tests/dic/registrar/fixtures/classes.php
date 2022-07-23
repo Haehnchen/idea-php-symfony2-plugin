@@ -35,6 +35,18 @@ namespace Symfony\Component\DependencyInjection\Attribute
             public string|array $exclude = [],
         ) {}
     }
+
+    class TaggedLocator
+    {
+        public function __construct(
+            public string $tag,
+            public ?string $indexAttribute = null,
+            public ?string $defaultIndexMethod = null,
+            public ?string $defaultPriorityMethod = null,
+            public string|array $exclude = [],
+        ) {
+        }
+    }
 }
 
 namespace

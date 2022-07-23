@@ -3,8 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.dic.registrar;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiElementResolveResult;
-import com.intellij.psi.ResolveResult;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.elements.PhpAttribute;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
@@ -92,10 +90,13 @@ public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
         );
 
         // #[TaggedIterator('app.handler')] iterable $handlers
+        // #[TaggedLocator('app.handler')] ContainerInterface $handlers
         registrar.register(
             PlatformPatterns.or(
-                PhpElementsUtil.getFirstAttributeStringPattern(ServiceContainerUtil.TAGGET_ITERATOR_ATTRIBUTE_CLASS),
-                PhpElementsUtil.getAttributeNamedArgumentStringPattern(ServiceContainerUtil.TAGGET_ITERATOR_ATTRIBUTE_CLASS, "tag")
+                PhpElementsUtil.getFirstAttributeStringPattern(ServiceContainerUtil.TAGGED_ITERATOR_ATTRIBUTE_CLASS),
+                PhpElementsUtil.getAttributeNamedArgumentStringPattern(ServiceContainerUtil.TAGGED_ITERATOR_ATTRIBUTE_CLASS, "tag"),
+                PhpElementsUtil.getFirstAttributeStringPattern(ServiceContainerUtil.TAGGED_LOCATOR_ATTRIBUTE_CLASS),
+                PhpElementsUtil.getAttributeNamedArgumentStringPattern(ServiceContainerUtil.TAGGED_LOCATOR_ATTRIBUTE_CLASS, "tag")
             ), psiElement -> {
                 PsiElement context = psiElement.getContext();
                 if (!(context instanceof StringLiteralExpression)) {
