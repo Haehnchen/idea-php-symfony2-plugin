@@ -228,4 +228,34 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
             PlatformPatterns.psiElement()
         );
     }
+
+    public void testServiceContributorDecoratesAttribute() {
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\AsDecorator;\n" +
+                "#[AsDecorator('<caret>')]\n" +
+                "class HandlerCollection {}",
+            "foo_bar_service"
+        );
+
+        assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\AsDecorator;\n" +
+                "#[AsDecorator(decorates: 'foo_bar<caret>_service')]\n" +
+                "class HandlerCollection {}",
+            PlatformPatterns.psiElement()
+        );
+
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\AsDecorator;\n" +
+                "#[AsDecorator(decorates: '<caret>')]\n" +
+                "class HandlerCollection {}",
+            "foo_bar_service"
+        );
+
+        assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\AsDecorator;\n" +
+                "#[AsDecorator(decorates: 'foo_bar<caret>_service')]\n" +
+                "class HandlerCollection {}",
+            PlatformPatterns.psiElement()
+        );
+    }
 }
