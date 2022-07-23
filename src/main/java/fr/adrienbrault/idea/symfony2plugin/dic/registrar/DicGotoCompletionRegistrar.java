@@ -7,6 +7,7 @@ import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.ResolveResult;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.elements.PhpAttribute;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
@@ -14,6 +15,7 @@ import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarPa
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.utils.GotoCompletionUtil;
 import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
+import fr.adrienbrault.idea.symfony2plugin.dic.ServiceCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
@@ -22,10 +24,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.completion.TagNameCompletionProv
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -111,6 +110,24 @@ public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
                 return null;
             }
         );
+
+        // #[Autowire(service: 'some_service')]
+        registrar.register(
+            PhpElementsUtil.getAttributeNamedArgumentStringPattern(ServiceContainerUtil.AUTOWIRE_ATTRIBUTE_CLASS, "service"),
+            psiElement -> {
+                PsiElement context = psiElement.getContext();
+                if (!(context instanceof StringLiteralExpression)) {
+                    return null;
+                }
+
+                PhpAttribute phpAttribute = PsiTreeUtil.getParentOfType(context, PhpAttribute.class);
+                if (phpAttribute != null) {
+                    return new ServiceContributor((StringLiteralExpression) context);
+                }
+
+                return null;
+            }
+        );
     }
 
     private static class ParameterContributor extends GotoCompletionProvider {
@@ -163,6 +180,32 @@ public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
             }
 
             return new ArrayList<>(ServiceUtil.getTaggedClasses(getElement().getProject(), contents));
+        }
+    }
+
+    private static class ServiceContributor extends GotoCompletionProvider {
+        public ServiceContributor(@NotNull StringLiteralExpression element) {
+            super(element);
+        }
+
+        @Override
+        public @NotNull Collection<LookupElement> getLookupElements() {
+            return ServiceCompletionProvider.getLookupElements(this.getElement(), ContainerCollectionResolver.getServices(getProject()).values()).getLookupElements();
+        }
+
+        @Override
+        public @NotNull Collection<PsiElement> getPsiTargets(PsiElement element) {
+            String contents = GotoCompletionUtil.getStringLiteralValue(element);
+            if (contents == null) {
+                return Collections.emptyList();
+            }
+
+            PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(element.getProject(), contents);
+            if (phpClass == null) {
+                return Collections.emptyList();
+            }
+
+            return List.of(phpClass);
         }
     }
 }

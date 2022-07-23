@@ -14,6 +14,7 @@ import com.intellij.psi.xml.*;
 import com.intellij.util.Consumer;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.refactoring.PhpNamespaceBraceConverter;
@@ -434,6 +435,58 @@ public class ServiceContainerUtil {
         }
 
         return getYamlConstructorTypeHint((YAMLScalar) yamlScalar, lazyServiceCollector);
+    }
+
+    /**
+     * Resolve class for attribute and its parameter index
+     *
+     * class OurClass {
+     *   public function __construct(#[Autowire(service: 'some_service')] private $service1) {}
+     *   public function setFoo(#[Autowire(service: 'some_service')] private $service1) {}
+     *  }
+     */
+    public static ServiceTypeHint getPhpAttributeConstructorTypeHint(@NotNull PsiElement psiElement) {
+        if (!(psiElement instanceof StringLiteralExpression)) {
+            return null;
+        }
+
+        PsiElement parameterList = psiElement.getContext();
+        if (!(parameterList instanceof ParameterList)) {
+            return null;
+        }
+
+        PsiElement colon = PsiTreeUtil.prevCodeLeaf(psiElement);
+        if (colon == null || colon.getNode().getElementType() != PhpTokenTypes.opCOLON) {
+            return null;
+        }
+
+        PsiElement argumentName = PsiTreeUtil.prevCodeLeaf(colon);
+        if (argumentName == null || argumentName.getNode().getElementType() != PhpTokenTypes.IDENTIFIER) {
+            return null;
+        }
+
+        // now resolve method attribute: its class and parameter index
+        PsiElement phpAttribute = parameterList.getParent();
+        if (phpAttribute instanceof PhpAttribute) {
+            PsiElement phpAttributesList = phpAttribute.getParent();
+            if (phpAttributesList instanceof PhpAttributesList)  {
+                PsiElement parameter = phpAttributesList.getParent();
+                if (parameter instanceof Parameter) {
+                    PsiElement parameterListMethod = parameter.getParent();
+                    if (parameterListMethod instanceof ParameterList) {
+                        PsiElement method = parameterListMethod.getParent();
+                        if (method instanceof Method) {
+                            ParameterBag currentParameterIndex = PsiElementUtils.getCurrentParameterIndex((Parameter) parameter);
+                            if (currentParameterIndex != null) {
+                                return new ServiceTypeHint((Method) method, currentParameterIndex.getIndex(), psiElement);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     /**

@@ -6,10 +6,7 @@ import com.intellij.codeInsight.lookup.LookupElementWeigher;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.suggestion.ServiceSuggestionCollector;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.suggestion.XmlCallServiceSuggestionCollector;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.suggestion.XmlConstructServiceSuggestionCollector;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.suggestion.YamlConstructServiceSuggestionCollector;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.suggestion.*;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import org.jetbrains.annotations.NotNull;
@@ -28,6 +25,7 @@ public class ServiceCompletionProvider extends CompletionProvider<CompletionPara
         new XmlConstructServiceSuggestionCollector(),
         new YamlConstructServiceSuggestionCollector(),
         new XmlCallServiceSuggestionCollector(),
+        new PhpAttributeServiceSuggestionCollector(),
     };
 
     public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
@@ -39,7 +37,8 @@ public class ServiceCompletionProvider extends CompletionProvider<CompletionPara
         PsiElement element = parameters.getPosition();
 
         PrioritizedLookupResult result = getLookupElements(
-            element, ContainerCollectionResolver.getServices(element.getProject()).values()
+            element,
+            ContainerCollectionResolver.getServices(element.getProject()).values()
         );
 
         addPrioritizedServiceLookupElements(parameters, resultSet, result);
