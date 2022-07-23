@@ -167,6 +167,42 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
         );
     }
 
+    public void testTagContributorForTaggedLocator() {
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\TaggedLocator;\n" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "    public function __construct(\n" +
+                "        #[TaggedLocator('<caret>')] ContainerInterface $handlers\n" +
+                "    ) {}\n" +
+                "}",
+            "yaml_type_tag"
+        );
+
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\TaggedLocator;\n" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "    public function __construct(\n" +
+                "        #[TaggedLocator(tag: '<caret>')] ContainerInterface $handlers\n" +
+                "    ) {}\n" +
+                "}",
+            "yaml_type_tag"
+        );
+
+        assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\TaggedLocator;\n" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[TaggedLocator('yaml_t<caret>ype_tag')] ContainerInterface $handlers\n" +
+                "    ) {}\n" +
+                "}",
+            PlatformPatterns.psiElement()
+        );
+    }
+
     public void testServiceContributorForNamedAttribute() {
         assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
                 "use Symfony\\Component\\DependencyInjection\\Attribute\\Autowire;\n" +
