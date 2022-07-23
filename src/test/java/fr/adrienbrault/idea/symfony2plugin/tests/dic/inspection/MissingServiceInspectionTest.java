@@ -32,6 +32,32 @@ public class MissingServiceInspectionTest extends SymfonyLightCodeInsightFixture
         );
     }
 
+    public void testThatPhpAttributesForServiceAutowireIsInspected() {
+        assertLocalInspectionContains("test.php", "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\Autowire;\n" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[Autowire(service: 'fo<caret>obar')]" +
+                "    ) {}\n" +
+                "}",
+            MissingServiceInspection.INSPECTION_MESSAGE
+        );
+
+        assertLocalInspectionContains("test.php", "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\Autowire;\n" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[Autowire(service: \"fo<caret>obar\")]" +
+                "    ) {}\n" +
+                "}",
+            MissingServiceInspection.INSPECTION_MESSAGE
+        );
+    }
+
     public void testThatYamlServiceInterfaceForGetMethodIsInspected() {
         assertLocalInspectionContains("services.yml", "services:\n   @args<caret>_unknown", MissingServiceInspection.INSPECTION_MESSAGE);
         assertLocalInspectionContains("services.yml", "services:\n   @Args<caret>_unknown", MissingServiceInspection.INSPECTION_MESSAGE);

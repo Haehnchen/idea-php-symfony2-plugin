@@ -22,3 +22,8 @@ namespace Foobar
         }
     }
 }
+
+namespace  Symfony\Component\DependencyInjection\Attribute
+{
+    class Autowire {}
+}

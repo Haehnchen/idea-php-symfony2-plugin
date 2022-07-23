@@ -6,6 +6,7 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.jetbrains.php.lang.PhpLanguage;
+import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -18,6 +19,8 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLLanguage;
+
+import java.util.Arrays;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -50,23 +53,34 @@ public class MissingServiceInspection extends LocalInspectionTool {
                 MethodReference methodReference = PsiElementUtils.getMethodReferenceWithFirstStringParameter((StringLiteralExpression) element);
                 if (methodReference != null && PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, ServiceContainerUtil.SERVICE_GET_SIGNATURES)) {
                     String serviceName = PhpElementsUtil.getFirstArgumentStringValue(methodReference);
-                    if(StringUtils.isNotBlank(serviceName)) {
-                        if(!hasService(serviceName)) {
-                            holder.registerProblem(element, INSPECTION_MESSAGE, ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
-                        }
+                    if (StringUtils.isNotBlank(serviceName) && !hasService(serviceName)) {
+                        holder.registerProblem(element, INSPECTION_MESSAGE, ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
                     }
                 }
+
+                // #[Autowire(service: 'foobar')]
+                // get leaf element
+                PsiElement leafText = Arrays.stream(YamlHelper.getChildrenFix(element))
+                    .filter(p -> p.getNode().getElementType() == PhpTokenTypes.STRING_LITERAL_SINGLE_QUOTE || p.getNode().getElementType() == PhpTokenTypes.STRING_LITERAL)
+                    .findFirst()
+                    .orElse(null);
+
+                if (leafText != null && PhpElementsUtil.getAttributeNamedArgumentStringPattern(ServiceContainerUtil.AUTOWIRE_ATTRIBUTE_CLASS, "service").accepts(leafText)) {
+                    String serviceName = ((StringLiteralExpression) element).getContents();
+                    if (StringUtils.isNotBlank(serviceName) && !hasService(serviceName)) {
+                        holder.registerProblem(element, INSPECTION_MESSAGE, ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
+                    }
+                }
+
             } else if(element.getLanguage() == YAMLLanguage.INSTANCE) {
                 // yaml
 
-                if(YamlElementPatternHelper.getServiceDefinition().accepts(element) && YamlElementPatternHelper.getInsideServiceKeyPattern().accepts(element)) {
+                if (YamlElementPatternHelper.getServiceDefinition().accepts(element) && YamlElementPatternHelper.getInsideServiceKeyPattern().accepts(element)) {
                     String serviceName = YamlHelper.trimSpecialSyntaxServiceName(PsiElementUtils.getText(element));
 
                     // dont mark "@", "@?", "@@" escaping and expressions
-                    if(serviceName.length() > 2 && !serviceName.startsWith("=") && !serviceName.startsWith("@")) {
-                        if(!hasService(serviceName)) {
-                            holder.registerProblem(element, INSPECTION_MESSAGE, ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
-                        }
+                    if (serviceName.length() > 2 && !serviceName.startsWith("=") && !serviceName.startsWith("@") && !hasService(serviceName)) {
+                        holder.registerProblem(element, INSPECTION_MESSAGE, ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
                     }
                 }
             }
