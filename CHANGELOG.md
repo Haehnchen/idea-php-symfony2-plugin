@@ -19,6 +19,20 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.231
+* [#1991](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1991) support "tags" inside "Autoconfigure" attribute (Daniel Espendiller)
+* [#1991](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1991) support "decorates" inside "AsDecorator" attribute (Daniel Espendiller)
+* [#1984](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1984) support parameter inside "TaggedLocator" attribute (Daniel Espendiller)
+* [#1984](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1984) detected deprecated services usage inside "Autowire" attribute (Daniel Espendiller)
+* [#1984](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1984) detected missing services inside "Autowire" attribute (Daniel Espendiller)
+* [#1984](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1984) support service inside "Autowire" attribute (Daniel Espendiller)
+* [#1984](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1984) support parameter inside "TaggedIterator" attribute (Daniel Espendiller)
+* [#1984](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1984) support parameters inside "Autowire" attribute (Daniel Espendiller)
+* [Paid] add inspection for deprecated conditional Twig "for" syntax: "{% for u in us if u.act %}" (Daniel Espendiller)
+* [#907](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/907) linemarker for linking a data_class to related forms (Daniel Espendiller)
+* provide a form data_class linemarker (Daniel Espendiller)
+* Fix typo in notification (Gabriel Wanzek)
+
 ## 2022.1.230
 * [#1969](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1969) Support translation autocomplete on form constraints with named arguments (Daniel Espendiller)
 * [paid]  [#1977](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1977) fix inspection for querybuilder chaining (Daniel Espendiller)
