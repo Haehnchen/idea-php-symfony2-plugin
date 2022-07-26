@@ -58,6 +58,15 @@ public class MissingServiceInspectionTest extends SymfonyLightCodeInsightFixture
         );
     }
 
+    public void testThatPhpAttributesForServiceAsDecoratorIsInspected() {
+        assertLocalInspectionContains("test.php", "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\AsDecorator;\n" +
+                "#[AsDecorator(\"fo<caret>obar\")]\n" +
+                "class HandlerCollection {}",
+            MissingServiceInspection.INSPECTION_MESSAGE
+        );
+    }
+
     public void testThatYamlServiceInterfaceForGetMethodIsInspected() {
         assertLocalInspectionContains("services.yml", "services:\n   @args<caret>_unknown", MissingServiceInspection.INSPECTION_MESSAGE);
         assertLocalInspectionContains("services.yml", "services:\n   @Args<caret>_unknown", MissingServiceInspection.INSPECTION_MESSAGE);

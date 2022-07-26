@@ -58,7 +58,12 @@ public class MissingServiceInspection extends LocalInspectionTool {
                 // #[Autowire(service: 'foobar')]
                 PsiElement leafText = PsiElementUtils.getTextLeafElementFromStringLiteralExpression((StringLiteralExpression) element);
 
-                if (leafText != null && PhpElementsUtil.getAttributeNamedArgumentStringPattern(ServiceContainerUtil.AUTOWIRE_ATTRIBUTE_CLASS, "service").accepts(leafText)) {
+                boolean isAttributeLeaf = leafText != null && (
+                    PhpElementsUtil.getAttributeNamedArgumentStringPattern(ServiceContainerUtil.AUTOWIRE_ATTRIBUTE_CLASS, "service").accepts(leafText)
+                        || PhpElementsUtil.getFirstAttributeStringPattern(ServiceContainerUtil.DECORATOR_ATTRIBUTE_CLASS).accepts(leafText)
+                );
+
+                if (isAttributeLeaf) {
                     String serviceName = ((StringLiteralExpression) element).getContents();
                     if (StringUtils.isNotBlank(serviceName) && !hasService(serviceName)) {
                         holder.registerProblem(element, INSPECTION_MESSAGE, ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
