@@ -52,3 +52,27 @@ namespace Sensio\Bundle\FrameworkExtraBundle\Configuration
     {
     }
 }
+
+namespace Symfony\Component\Asset
+{
+    class Packages
+    {
+        public function getVersion(string $path, string $packageName = null)
+        {
+        }
+
+        public function getUrl(string $path, string $packageName = null)
+        {
+        }
+    }
+
+    interface PackageInterface
+    {
+        public function getVersion(string $path): string;
+        public function getUrl(string $path): string;
+    }
+
+    class Package implements PackageInterface
+    {
+    }
+}
