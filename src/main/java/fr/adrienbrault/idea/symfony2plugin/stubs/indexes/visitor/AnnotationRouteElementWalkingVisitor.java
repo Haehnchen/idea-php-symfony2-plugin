@@ -184,7 +184,7 @@ public class AnnotationRouteElementWalkingVisitor extends PsiRecursiveElementWal
                 route.setPath(routePathPrefix + pathAttribute);
             }
 
-            Collection<String> methods = PhpPsiAttributesUtil.getAttributeValueByNameAsArray(attribute, "methods");
+            Collection<String> methods = PhpPsiAttributesUtil.getAttributeValueByNameAsArrayLocalResolve(attribute, "methods");
             if (!methods.isEmpty()) {
                 // array: needed for serialize
                 route.setMethods(new ArrayList<>(methods));

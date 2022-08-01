@@ -24,7 +24,7 @@ public class JavascriptServiceNameStrategyTest extends SymfonyLightCodeInsightFi
         JavascriptServiceNameStrategy defaultNaming = new JavascriptServiceNameStrategy();
 
         Settings.getInstance(getProject()).serviceJsNameStrategy = "return args.projectName;";
-        assertTrue(defaultNaming.getServiceName(new ServiceNameStrategyParameter(getProject(), "asas")).contains("light"));
+        assertTrue(defaultNaming.getServiceName(new ServiceNameStrategyParameter(getProject(), "asas")).contains("GetServiceName"));
 
         Settings.getInstance(getProject()).serviceJsNameStrategy = "return args.className.replace(\"Foo\", \"Bar\");";
         assertEquals("Bar\\Class", defaultNaming.getServiceName(getParameter("Foo\\Class")));

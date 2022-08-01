@@ -15,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
 
 /**
  * Helpers for PHP 8 Attributes psi access
@@ -48,6 +48,30 @@ public class PhpPsiAttributesUtil {
         }
 
         return Collections.emptyList();
+    }
+
+    @NotNull
+    public static Collection<String> getAttributeValueByNameAsArrayLocalResolve(@NotNull PhpAttribute attribute, @NotNull String attributeName) {
+        PsiElement nextSibling = findAttributeByName(attribute, attributeName);
+
+        Collection<String> values = new HashSet<>();
+        if (nextSibling instanceof ArrayCreationExpression) {
+            for (PsiElement arrayValue : PhpElementsUtil.getArrayValues((ArrayCreationExpression) nextSibling)) {
+                if (arrayValue instanceof StringLiteralExpression) {
+                    String contents = ((StringLiteralExpression) arrayValue).getContents();
+                    if (StringUtils.isNotBlank(contents)) {
+                        values.add(contents);
+                    }
+                } else if(arrayValue instanceof ClassConstantReference) {
+                    String contents = resolveLocalValue(attribute, (ClassConstantReference) arrayValue);
+                    if (StringUtils.isNotBlank(contents)) {
+                        values.add(contents);
+                    }
+                }
+            }
+        }
+
+        return values;
     }
 
     /**
