@@ -483,6 +483,13 @@
                          language="Twig"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigAssetMissingInspection"/>
 
+        <localInspection groupPath="Symfony" shortName="PhpAssetMissingInspection" displayName="Symfony: Missing Asset"
+                         groupName="Asset"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         language="PHP"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.inspection.PhpAssetMissingInspection"/>
+
         <localInspection groupPath="Symfony" shortName="TwigAssetsTagMissingInspection" displayName="Twig: Missing Asset"
                          groupName="Asset"
                          enabledByDefault="true"
@@ -626,6 +633,7 @@
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.translation.TranslationPlaceholderGotoCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.dic.TaggedParameterGotoCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.templating.RenderParameterGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.templating.AssetPackageGotoCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.security.AnnotationExpressionGotoCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.templating.webpack.WebpackEncoreGotoCompletionRegistrar"/>
 
