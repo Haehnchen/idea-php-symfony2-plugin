@@ -15,6 +15,7 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.codeInspection.*;
+import com.intellij.codeInspection.defaultFileTemplateUsage.DefaultFileTemplateUsageInspection;
 import com.intellij.lang.LanguageAnnotators;
 import com.intellij.lang.annotation.Annotation;
 import com.intellij.lang.annotation.AnnotationSession;
@@ -572,6 +573,11 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
         for (LocalInspectionEP localInspectionEP : LocalInspectionEP.LOCAL_INSPECTION.getExtensions()) {
             Object object = localInspectionEP.getInstance();
             if(!(object instanceof LocalInspectionTool)) {
+                continue;
+            }
+
+            // fix for: "Default template not found: File Header"
+            if(object instanceof DefaultFileTemplateUsageInspection) {
                 continue;
             }
 

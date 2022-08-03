@@ -28,6 +28,7 @@ import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLFile;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -269,8 +270,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
                 "{{ source('source_function.html.twig') }}" +
                 "{% embed 'embed.html.twig' %}" +
                 "{% form_theme form.foobar \":Foobar:fields_foobar.html.twig\" %}" +
-                "{% form_theme form.foobar with [\":Foobar:fields_foobar_1.html.twig\"] %}" +
-                "{% form_theme form.foobar with {\":Foobar:fields_foobar_2.html.twig\", \":Foobar:fields_foobar_3.html.twig\", \":Foobar:fields_foobar_4.html.twig\"} %}"
+                "{% form_theme form.foobar with [\":Foobar:fields_foobar_1.html.twig\", \":Foobar:fields_foobar_2.html.twig\"] %}"
         );
 
         TwigUtil.visitTemplateIncludes((TwigFile) fileFromText, templateInclude ->
@@ -278,8 +278,8 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         );
 
         assertContainsElements(includes, "include.html.twig", "import.html.twig", "from.html.twig", "include_function.html.twig", "source_function.html.twig", "embed.html.twig");
-        assertContainsElements(includes, ":Foobar:fields.html.twig", ":Foobar:fields_foobar.html.twig", ":Foobar:fields_foobar_1.html.twig");
-        assertContainsElements(includes, ":Foobar:fields_foobar_2.html.twig", ":Foobar:fields_foobar_3.html.twig", ":Foobar:fields_foobar_4.html.twig");
+        assertContainsElements(includes, ":Foobar:fields.html.twig", ":Foobar:fields_foobar.html.twig");
+        assertContainsElements(includes, ":Foobar:fields_foobar_1.html.twig", ":Foobar:fields_foobar_2.html.twig");
     }
 
     /**
@@ -738,10 +738,12 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertEqual(getIncludeTemplates("{% include ['foo.html.twig'] %}"), "foo.html.twig");
         assertEqual(getIncludeTemplates("{% include ['foo.html.twig',''] %}"), "foo.html.twig");
 
-        assertEqual(getIncludeTemplates(
-            "{% include ['foo.html.twig', 'foo_1.html.twig', , ~ 'foo_2.html.twig', 'foo_3.html.twig' ~, 'foo' ~ 'foo_4.html.twig', 'end.html.twig'] %}"),
-            "foo.html.twig", "foo_1.html.twig", "end.html.twig"
-        );
+        List<String> collect = getIncludeTemplates("{% include ['foo.html.twig', 'foo_1.html.twig', , ~ 'foo_2.html.twig', 'foo_3.html.twig' ~, 'foo' ~ 'foo_4.html.twig', 'end.html.twig'] %}")
+            .stream()
+            .sorted()
+            .collect(Collectors.toList());
+
+        assertEqual(collect, "end.html.twig", "foo.html.twig", "foo_1.html.twig");
     }
 
     /**

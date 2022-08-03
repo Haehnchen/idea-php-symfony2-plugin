@@ -443,7 +443,7 @@ public class TwigUtil {
         // Elements that match a simple parameter foo(<caret>,)
         IElementType[] skipArrayElements = {
             TwigElementTypes.LITERAL, TwigTokenTypes.LBRACE_SQ, TwigTokenTypes.RBRACE_SQ, TwigTokenTypes.IDENTIFIER,
-            TwigElementTypes.VARIABLE_REFERENCE, TwigElementTypes.FIELD_REFERENCE
+            TwigElementTypes.VARIABLE_REFERENCE, TwigElementTypes.FIELD_REFERENCE, TwigElementTypes.ARRAY_LITERAL
         };
 
         String filterNameText = filterName.getText();
@@ -1643,9 +1643,9 @@ public class TwigUtil {
         }
 
         // {% include ['foo.html.twig', 'foo_1.html.twig'] %}
-        PsiElement arrayMatch = PsiElementUtils.getNextSiblingOfType(firstChild, PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_SQ));
-        if(arrayMatch != null) {
-            visitStringInArray(arrayMatch, pair ->
+        PsiElement arrayMatch = PsiElementUtils.getNextSiblingOfType(firstChild, PlatformPatterns.psiElement(TwigElementTypes.ARRAY_LITERAL));
+        if(arrayMatch instanceof TwigArrayLiteral) {
+            visitStringInArray((TwigArrayLiteral) arrayMatch, pair ->
                 strings.add(pair.getFirst())
             );
         }
@@ -1664,26 +1664,17 @@ public class TwigUtil {
      * ["foobar", "foobar"]
      * {"foobar", "foobar"}
      */
-    private static void visitStringInArray(@NotNull PsiElement arrayStartBrace, @NotNull Consumer<Pair<String, PsiElement>> pair) {
+    private static void visitStringInArray(@NotNull TwigArrayLiteral twigArrayLiteral, @NotNull Consumer<Pair<String, PsiElement>> pair) {
         // match: "([,)''(,])"
-        Collection<PsiElement> questString = PsiElementUtils.getNextSiblingOfTypes(arrayStartBrace, PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
-                .afterLeafSkipping(
-                    TwigPattern.STRING_WRAP_PATTERN,
-                    PlatformPatterns.or(
-                        PlatformPatterns.psiElement(TwigTokenTypes.COMMA),
-                        PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_SQ),
-                        PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_CURL)
-                   )
-                )
-                .beforeLeafSkipping(
-                    TwigPattern.STRING_WRAP_PATTERN,
-                    PlatformPatterns.or(
-                        PlatformPatterns.psiElement(TwigTokenTypes.COMMA),
-                        PlatformPatterns.psiElement(TwigTokenTypes.RBRACE_SQ),
-                        PlatformPatterns.psiElement(TwigTokenTypes.RBRACE_CURL)
-                    )
-                )
-        );
+        Collection<PsiElement> questString = new HashSet<>();
+        for (TwigArrayValue arrayValue : twigArrayLiteral.getArrayValues()) {
+            // ignore concat: ~
+            if (!PsiElementUtils.getChildrenOfTypeAsList(arrayValue, PlatformPatterns.psiElement(TwigTokenTypes.CONCAT)).isEmpty()) {
+                continue;
+            }
+
+            questString.addAll(PsiElementUtils.getChildrenOfTypeAsList(arrayValue, PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)));
+        }
 
         for (PsiElement psiElement : questString) {
             String text = psiElement.getText();
@@ -2357,17 +2348,10 @@ public class TwigUtil {
                         PsiElement withElement = PsiElementUtils.getNextSiblingOfType(tagElement, PlatformPatterns.psiElement().withElementType(TwigTokenTypes.IDENTIFIER).withText("with"));
                         if(withElement != null) {
                             // find LITERAL "[", "{"
-                            PsiElement arrayStart = PsiElementUtils.getNextSiblingAndSkip(tagElement, TwigElementTypes.LITERAL,
-                                TwigTokenTypes.IDENTIFIER, TwigTokenTypes.SINGLE_QUOTE, TwigTokenTypes.DOUBLE_QUOTE, TwigTokenTypes.DOT
-                            );
-
-                            if(arrayStart != null) {
-                                PsiElement firstChild = arrayStart.getFirstChild();
-                                if(firstChild != null) {
-                                    visitStringInArray(firstChild, pair ->
-                                        consumer.consume(new TemplateInclude(psiElement, pair.getFirst(), TemplateInclude.TYPE.FORM_THEME))
-                                    );
-                                }
+                            for (TwigArrayLiteral twigArrayLiteral : PsiElementUtils.getNextSiblingOfTypes(tagElement, TwigArrayLiteral.class)) {
+                                visitStringInArray(twigArrayLiteral, pair ->
+                                    consumer.consume(new TemplateInclude(psiElement, pair.getFirst(), TemplateInclude.TYPE.FORM_THEME))
+                                );
                             }
                         }
                     }
