@@ -97,7 +97,7 @@
       ]]></description>
 
     <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
-    <idea-version since-build="213.6461.21"/>
+    <idea-version since-build="221.5080.224"/>
 
     <extensions defaultExtensionNs="com.jetbrains.php">
         <typeProvider4 implementation="fr.adrienbrault.idea.symfony2plugin.dic.SymfonyContainerTypeProvider"/>
