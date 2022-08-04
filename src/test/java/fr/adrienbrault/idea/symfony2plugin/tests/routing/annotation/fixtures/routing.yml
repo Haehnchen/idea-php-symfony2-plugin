@@ -1,0 +1,5 @@
+route_bar:
+    path: /bar
+    defaults:
+        _controller: FooBundle:Default:indexBar
+

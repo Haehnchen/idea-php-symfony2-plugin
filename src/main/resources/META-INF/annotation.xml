@@ -6,6 +6,9 @@
         <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineAnnotationReferencedColumnReferences"/>
         <PhpAnnotationDocTagGotoHandler implementation="fr.adrienbrault.idea.symfony2plugin.twig.annotation.TemplateAnnotationGotoHandler"/>
 
+        <!-- @Route("/foobar1") -->
+        <PhpAnnotationCompletionProvider implementation="fr.adrienbrault.idea.symfony2plugin.routing.annotation.RouteUrlAnnotationCompletionProvider"/>
+
         <!-- @IsGranted -->
         <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.security.IsGrantedAnnotationReferences"/>
 
