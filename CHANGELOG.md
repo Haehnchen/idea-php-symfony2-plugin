@@ -19,6 +19,13 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.232
+* Provide yaml route path value completion (Daniel Espendiller)
+* Provide completion for route urls inside php annotations (Daniel Espendiller)
+* Update to "2022.2"; reimplement features for new ast node structure (Daniel Espendiller)
+* Support asset packages (like Twig) also in PHP (Daniel Espendiller)
+* Support missing service inspection in AsDecorator (Daniel Espendiller)
+
 ## 2022.1.231
 * [#1991](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1991) support "tags" inside "Autoconfigure" attribute (Daniel Espendiller)
 * [#1991](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1991) support "decorates" inside "AsDecorator" attribute (Daniel Espendiller)
