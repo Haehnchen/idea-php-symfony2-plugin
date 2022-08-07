@@ -1236,6 +1236,24 @@ public class RouteHelper {
         );
     }
 
+    @NotNull
+    public static Collection<LookupElement> getRoutesPathLookupElements(final @NotNull Project project) {
+        Collection<LookupElement> lookupElements = new ArrayList<>();
+
+        for (Route route : RouteHelper.getAllRoutes(project).values()) {
+            String path = route.getPath();
+            if (path != null && !route.getName().startsWith("_")) {
+                LookupElementBuilder element = LookupElementBuilder.create(path)
+                    .withTypeText(route.getName())
+                    .withIcon(Symfony2Icons.ROUTE_WEAK);
+
+                lookupElements.add(element);
+            }
+        }
+
+        return lookupElements;
+    }
+
     /**
      * Foobar/Bar => Foobar\Bar
      * \\Foobar\Foobar => Foobar\Bar

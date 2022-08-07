@@ -20,6 +20,7 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
         myFixture.configureByFile("tagged.services.xml");
         myFixture.configureByFile("classes.php");
         myFixture.configureByFile("YamlCompletionContributor.env");
+        myFixture.configureByFile("routes.yml");
     }
 
     public String getTestDataPath() {
@@ -97,6 +98,15 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
                 "    pattern:  /hello/{name}\n" +
                 "    controller: <caret>",
             "FooBundle:Foo:foo"
+        );
+    }
+
+    public void testRouteControllerActionCompletionForRoutePath() {
+        assertCompletionContains("routing.yml", "" +
+                "foo:\n" +
+                "    path: <caret>\n" +
+                "    foobar: foo\n",
+            "/my/test/route"
         );
     }
 
