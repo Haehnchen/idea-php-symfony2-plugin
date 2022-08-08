@@ -120,9 +120,10 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         // {{ goto<caret>_me() }}
         // {% if goto<caret>_me() %}
         // {% set foo = foo<caret>_test() %}
+        // {{ macro.test() }}
         if (TwigPattern.getPrintBlockFunctionPattern().accepts(psiElement)) {
             targets.addAll(this.getMacros(psiElement));
-            targets.addAll(this.getFunctions(psiElement));
+            targets.addAll(getFunctions(psiElement));
         }
 
         // {% from 'boo.html.twig' import goto_me %}

@@ -135,12 +135,18 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             new CompletionProvider<>() {
                 public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
 
-                    if (!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                    PsiElement position = parameters.getPosition();
+                    if (!Symfony2ProjectComponent.isEnabled(position)) {
+                        return;
+                    }
+
+                    PsiElement parent = position.getParent();
+                    if (parent == null) {
                         return;
                     }
 
                     // find {% from "<template.name>"
-                    PsiElement psiElement = PsiElementUtils.getPrevSiblingOfType(parameters.getPosition(), TwigPattern.getFromTemplateElementPattern());
+                    PsiElement psiElement = PsiElementUtils.getPrevSiblingOfType(parent, TwigPattern.getFromTemplateElementPattern());
                     if (psiElement == null) {
                         return;
                     }
@@ -156,7 +162,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         return;
                     }
 
-                    Collection<PsiFile> twigFilesByName = TwigUtil.getTemplatePsiElements(parameters.getPosition().getProject(), templateName);
+                    Collection<PsiFile> twigFilesByName = TwigUtil.getTemplatePsiElements(position.getProject(), templateName);
                     if (twigFilesByName.size() == 0) {
                         return;
                     }
