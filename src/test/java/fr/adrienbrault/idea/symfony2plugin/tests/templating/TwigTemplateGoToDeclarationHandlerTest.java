@@ -225,4 +225,36 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
             "{% tag_foobar 'foo' %}{% endtag_<caret>foobar %}", PlatformPatterns.psiElement()
         );
     }
+
+    public void testMacroImport() {
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{% import _self as macros %}\n" +
+                "{% macro renderItem(form) %}{% endmacro %}\n" +
+                "\n" +
+                "{{ macros.rend<caret>erItem(foo) }}" +
+                "",
+            PlatformPatterns.psiElement()
+        );
+
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{% import _self as macros %}\n" +
+                "{% macro renderItem(form) %}{% endmacro %}\n" +
+                "\n" +
+                "{{ macros.rend<caret>erItem() }}" +
+                "",
+            PlatformPatterns.psiElement()
+        );
+
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{% import _self as macros %}\n" +
+                "{% macro renderItem(form) %}{% endmacro %}\n" +
+                "\n" +
+                "{{ macros.rend<caret>erItem }}" +
+                "",
+            PlatformPatterns.psiElement()
+        );
+    }
 }

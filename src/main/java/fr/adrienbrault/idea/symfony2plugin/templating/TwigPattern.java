@@ -567,11 +567,13 @@ public class TwigPattern {
         return getTagNameParameterPattern(TwigElementTypes.EMBED_TAG, "embed");
     }
 
-    static ElementPattern<PsiElement> getPrintBlockFunctionPattern() {
+    public static ElementPattern<PsiElement> getPrintBlockFunctionPattern() {
       return PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER)
           .inside(PlatformPatterns.or(
               PlatformPatterns.psiElement(TwigPsiReference.class),
-              PlatformPatterns.psiElement(TwigElementTypes.FUNCTION_CALL)))
+              PlatformPatterns.psiElement(TwigElementTypes.FUNCTION_CALL),
+              PlatformPatterns.psiElement(TwigElementTypes.METHOD_CALL)
+          ))
           .inside(getFunctionCallScopePattern())
           .withLanguage(TwigLanguage.INSTANCE);
     }
@@ -880,11 +882,12 @@ public class TwigPattern {
 
     /**
      * {{ foo.fo<caret>o }}
+     * {{ foo.fo<caret>o() }}
      */
     public static ElementPattern<PsiElement> getTypeCompletionPattern() {
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)
-            .withParent(PlatformPatterns.psiElement(TwigElementTypes.FIELD_REFERENCE))
+            .afterLeaf(PlatformPatterns.psiElement(TwigTokenTypes.DOT))
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
@@ -1059,29 +1062,18 @@ public class TwigPattern {
         // second: {% from '<xxx>' import <|>  %}
         // and not: {% from '<xxx>' import foo as <|>  %}
 
-        //noinspection unchecked
         return PlatformPatterns
             .psiElement()
-            .withParent(PlatformPatterns.psiElement(TwigElementTypes.IMPORT_TAG))
-            .afterLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.COMMA),
-                    PlatformPatterns.psiElement(TwigTokenTypes.AS_KEYWORD),
-                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER)
-                ),
-                PlatformPatterns.psiElement(TwigTokenTypes.IMPORT_KEYWORD)
-            ).andNot(PlatformPatterns
-                    .psiElement()
-                    .afterLeafSkipping(
-                        PlatformPatterns.or(
-                            PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                            PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER)
-                        ),
-                        PlatformPatterns.psiElement(TwigTokenTypes.AS_KEYWORD)
-                    )
+            .withParent(
+                PlatformPatterns.psiElement(TwigElementTypes.VARIABLE_REFERENCE).andNot(PlatformPatterns.psiElement().afterLeafSkipping(
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                    ),
+                    PlatformPatterns.psiElement(TwigTokenTypes.AS_KEYWORD)
+                )).withParent(
+                    PlatformPatterns.psiElement(TwigElementTypes.IMPORT_TAG)
+                )
             )
             .withLanguage(TwigLanguage.INSTANCE);
     }

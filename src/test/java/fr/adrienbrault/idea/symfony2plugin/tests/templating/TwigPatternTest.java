@@ -117,11 +117,47 @@ public class TwigPatternTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getTypeCompletionPattern().accepts(
             findElementAt(TwigFileType.INSTANCE, "{{ foo.b<caret>ar }}")
         ));
+
         assertFalse(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getTypeCompletionPattern().accepts(
             findElementAt(TwigFileType.INSTANCE, "{{ <caret>foo.foo }}")
         ));
+
         assertFalse(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getTypeCompletionPattern().accepts(
             findElementAt(TwigFileType.INSTANCE, "{{ <caret>foo }}")
+        ));
+
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getTypeCompletionPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ foo.b<caret>ar }}")
+        ));
+
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getTypeCompletionPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ foo.b<caret>ar() }}")
+        ));
+
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getTypeCompletionPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ foo.foobar.b<caret>ar() }}")
+        ));
+
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getTypeCompletionPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ foo.foobar.b<caret>ar }}")
+        ));
+    }
+
+    public void testGetPrintBlockFunctionPattern() {
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getPrintBlockFunctionPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ goto<caret>_me() }}")
+        ));
+
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getPrintBlockFunctionPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{% if goto<caret>_me() %}")
+        ));
+
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getPrintBlockFunctionPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{% set foo = foo<caret>_test() %}")
+        ));
+
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getPrintBlockFunctionPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ macro.te<caret>st() }}")
         ));
     }
 
@@ -274,23 +310,23 @@ public class TwigPatternTest extends SymfonyLightCodeInsightFixtureTestCase {
      */
     public void testGetTemplateImportFileReferenceTagPattern() {
         assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getTemplateImportFileReferenceTagPattern().accepts(
-            findElementAt(TwigFileType.INSTANCE, "{% from 'foo.html.twig' import <caret> %}")
+            findElementAt(TwigFileType.INSTANCE, "{% from 'foo.html.twig' import te<caret>st %}")
         ));
 
         assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getTemplateImportFileReferenceTagPattern().accepts(
-            findElementAt(TwigFileType.INSTANCE, "{% from 'foo.html.twig' import <caret> %}")
+            findElementAt(TwigFileType.INSTANCE, "{% from 'foo.html.twig' import test2, te<caret>st %}")
         ));
 
         assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getTemplateImportFileReferenceTagPattern().accepts(
-            findElementAt(TwigFileType.INSTANCE, "{% from 'foo.html.twig' import foo, <caret> %}")
+            findElementAt(TwigFileType.INSTANCE, "{% from 'foo.html.twig' import test2 as foo, te<caret>st %}")
+        ));
+
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getTemplateImportFileReferenceTagPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{% from 'foo.html.twig' import test2 as foo, te<caret>st %}")
         ));
 
         assertFalse(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getTemplateImportFileReferenceTagPattern().accepts(
-            findElementAt(TwigFileType.INSTANCE, "{% from 'foo.html.twig' import foo as <caret> %}")
-        ));
-
-        assertFalse(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getTemplateImportFileReferenceTagPattern().accepts(
-            findElementAt(TwigFileType.INSTANCE, "{% from 'foo.html.twig' import foo as a<caret> %}")
+            findElementAt(TwigFileType.INSTANCE, "{% from 'foo.html.twig' import test2 as fo<caret>o, test %}")
         ));
     }
 
