@@ -16,6 +16,7 @@ import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -576,6 +577,30 @@ public class TwigPattern {
           ))
           .inside(getFunctionCallScopePattern())
           .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    /**
+     * "{{ _self.input('password', '', 'password') }}"
+     */
+    public static ElementPattern<PsiElement> getSelfMacroFunctionPattern() {
+        return PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).with(PhpElementsUtil.EMPTY_PREVIOUS_LEAF)
+            .inside(PlatformPatterns.psiElement(TwigElementTypes.FUNCTION_CALL)
+                .afterLeaf(PlatformPatterns.psiElement(TwigTokenTypes.DOT).afterLeaf(PlatformPatterns.psiElement(TwigTokenTypes.RESERVED_ID)))
+            )
+            .inside(getFunctionCallScopePattern())
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    /**
+     * {{ _self.input() }}
+     */
+    public static ElementPattern<PsiElement> getSelfMacroIdentifierPattern() {
+        return PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).afterLeaf(
+            PlatformPatterns.psiElement(TwigTokenTypes.DOT)
+                .afterLeaf(PlatformPatterns.psiElement(TwigTokenTypes.RESERVED_ID))
+            )
+            .inside(getFunctionCallScopePattern())
+            .withLanguage(TwigLanguage.INSTANCE);
     }
 
     public static ElementPattern<PsiElement> getLeafFunctionPattern(@NotNull String ...functionName) {

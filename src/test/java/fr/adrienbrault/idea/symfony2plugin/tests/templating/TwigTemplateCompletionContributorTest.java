@@ -159,6 +159,14 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         );
     }
 
+    public void testSelfMacroImport() {
+        assertCompletionContains(TwigFileType.INSTANCE, "\n" +
+                "{% macro foobar(name) %}{% endmacro %}\n" +
+                "{{ _self.f<caret>o }}",
+            "foobar"
+        );
+    }
+
     private void createWorkaroundFile(@NotNull String file, @NotNull String content) {
 
         try {

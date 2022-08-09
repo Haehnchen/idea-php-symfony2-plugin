@@ -161,6 +161,12 @@ public class TwigPatternTest extends SymfonyLightCodeInsightFixtureTestCase {
         ));
     }
 
+    public void testSelfMacroFunctionPattern() {
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getSelfMacroFunctionPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ _self.in<caret>put('password', '', 'password') }}")
+        ));
+    }
+
     /**
      * @see TwigPattern#getAfterOperatorPattern
      */
