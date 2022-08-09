@@ -6,6 +6,7 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -25,9 +26,19 @@ public class SymfonyWebpackUtilTest extends SymfonyLightCodeInsightFixtureTestCa
         myFixture.copyFileToProject("entrypoints_invalid.json");
 
         Set<String> entries = new HashSet<>();
+        Set<String> targets = new HashSet<>();
 
-        SymfonyWebpackUtil.visitAllEntryFileTypes(myFixture.getProject(), pair -> entries.add(pair.second));
+        SymfonyWebpackUtil.visitAllEntryFileTypes(myFixture.getProject(), webpackAsset -> {
+            entries.add(webpackAsset.getEntry());
+
+            String entryTarget = webpackAsset.getEntryTarget();
+            if (entryTarget != null) {
+                targets.add(entryTarget);
+            }
+        });
+
         assertContainsElements(entries, "foo", "foobar", "entry_foobar_2", "addStyleEntryFoobar");
+        assertContainsElements(targets, "./assets/app.js");
     }
 
     public void testVisitManifestJsonEntries() {

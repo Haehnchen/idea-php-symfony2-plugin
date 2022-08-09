@@ -20,6 +20,7 @@ import com.intellij.lang.LanguageAnnotators;
 import com.intellij.lang.annotation.Annotation;
 import com.intellij.lang.annotation.AnnotationSession;
 import com.intellij.lang.annotation.Annotator;
+import com.intellij.lang.javascript.inspections.JSInspection;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.editor.Editor;
@@ -577,7 +578,8 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
             }
 
             // fix for: "Default template not found: File Header"
-            if(object instanceof DefaultFileTemplateUsageInspection) {
+            // fix for: should not be called, use visitFile in createVisitor instead
+            if(object instanceof DefaultFileTemplateUsageInspection || object instanceof JSInspection) {
                 continue;
             }
 

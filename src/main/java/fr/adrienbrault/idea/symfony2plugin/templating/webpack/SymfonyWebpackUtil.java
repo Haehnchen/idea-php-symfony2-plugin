@@ -4,36 +4,42 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
+import com.intellij.lang.javascript.psi.JSCallExpression;
+import com.intellij.lang.javascript.psi.JSExpression;
+import com.intellij.lang.javascript.psi.JSLiteralExpression;
+import com.intellij.lang.javascript.psi.JSReferenceExpression;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.io.StreamUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
+import com.intellij.psi.PsiRecursiveElementVisitor;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class SymfonyWebpackUtil {
-
     /**
      * - webpack.config.js
      * - entrypoints.json
      */
-    public static void visitAllEntryFileTypes(@NotNull Project project, @NotNull Consumer<Pair<VirtualFile, String>> consumer) {
+    public static void visitAllEntryFileTypes(@NotNull Project project, @NotNull Consumer<WebpackAsset> consumer) {
         for (VirtualFile virtualFile : FilenameIndex.getVirtualFilesByName("webpack.config.js", GlobalSearchScope.allScope(project))) {
             if (!isTestFile(project, virtualFile)) {
-                visitWebpackConfiguration(virtualFile, consumer);
+                visitWebpackConfiguration(project, virtualFile, consumer);
             }
         }
 
@@ -66,7 +72,7 @@ public class SymfonyWebpackUtil {
      *   }
      * }
      */
-    private static void visitEntryPointJson(@NotNull VirtualFile virtualFile, @NotNull Consumer<Pair<VirtualFile, String>> consumer) {
+    private static void visitEntryPointJson(@NotNull VirtualFile virtualFile, @NotNull Consumer<WebpackAsset> consumer) {
         String s;
 
         try {
@@ -97,7 +103,7 @@ public class SymfonyWebpackUtil {
         }
 
         for (String s1 : asJsonObject.keySet()) {
-            consumer.accept(Pair.create(virtualFile, s1));
+            consumer.accept(new WebpackAsset(virtualFile, s1));
         }
     }
 
@@ -105,20 +111,45 @@ public class SymfonyWebpackUtil {
      * .addEntry('foobar', './assets/app.js')
      * .addEntry("foo")
      */
-    private static void visitWebpackConfiguration(@NotNull VirtualFile virtualFile, @NotNull Consumer<Pair<VirtualFile, String>> consumer) {
-        String s;
-
-        try {
-            s = StreamUtil.readText(virtualFile.getInputStream(), "UTF-8");
-        } catch (IOException e) {
+    private static void visitWebpackConfiguration(@NotNull Project project, @NotNull VirtualFile virtualFile, @NotNull Consumer<WebpackAsset> consumer) {
+        PsiFile file = PsiManager.getInstance(project).findFile(virtualFile);
+        if (file == null) {
             return;
         }
 
-        // if adding "javascript" plugin; would resolve better but not for now
-        Matcher matcher = Pattern.compile("(addEntry|addStyleEntry)\\s*\\(\\s*['\"]([^'\"]+)['\"]").matcher(s);
-        while(matcher.find()){
-            consumer.accept(Pair.create(virtualFile, matcher.group(2)));
-        }
+        file.acceptChildren(new PsiRecursiveElementVisitor() {
+            @Override
+            public void visitElement(@NotNull PsiElement element) {
+                if (element instanceof JSCallExpression) {
+                    PsiElement methodExpression = element.getFirstChild();
+                    if (methodExpression instanceof JSReferenceExpression) {
+                        String name = ((JSReferenceExpression) methodExpression).getReferenceName();
+                        if ("addStyleEntry".equals(name) || "addEntry".equals(name)) {
+                            JSExpression[] arguments = ((JSCallExpression) element).getArguments();
+                            if (arguments.length >= 1) {
+                                if (arguments[0] instanceof JSLiteralExpression) {
+                                    String parameter1 = ((JSLiteralExpression) arguments[0]).getStringValue();
+                                    String parameter2 = null;
+
+                                    if (StringUtils.isNotBlank(parameter1)) {
+                                        if (arguments.length >= 2) {
+                                            String parameter2Value = ((JSLiteralExpression) arguments[1]).getStringValue();
+                                            if (StringUtils.isNotBlank(parameter2Value)) {
+                                                parameter2 = parameter2Value;
+                                            }
+                                        }
+
+                                        consumer.accept(new WebpackAsset(virtualFile, parameter1, parameter2, arguments[0]));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                super.visitElement(element);
+            }
+        });
     }
 
     /**
@@ -162,5 +193,39 @@ public class SymfonyWebpackUtil {
         }
 
         return false;
+    }
+
+    public static class WebpackAsset {
+        private VirtualFile virtualFile;
+        private String entry;
+        private String entryTarget;
+        private PsiElement psiElement;
+
+        public WebpackAsset(@NotNull VirtualFile virtualFile, @NotNull String entry, @Nullable String entryTarget, @Nullable PsiElement psiElement) {
+            this.virtualFile = virtualFile;
+            this.entry = entry;
+            this.entryTarget = entryTarget;
+            this.psiElement = psiElement;
+        }
+
+        public WebpackAsset(@NotNull VirtualFile virtualFile, @NotNull String entry) {
+            this(virtualFile, entry, null, null);
+        }
+
+        public VirtualFile getVirtualFile() {
+            return virtualFile;
+        }
+
+        public String getEntry() {
+            return entry;
+        }
+
+        public String getEntryTarget() {
+            return entryTarget;
+        }
+
+        public PsiElement getPsiElement() {
+            return psiElement;
+        }
     }
 }

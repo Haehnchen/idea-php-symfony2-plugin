@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.templating.webpack;
 
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
@@ -9,7 +10,6 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
-import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -49,11 +49,33 @@ public class WebpackEncoreGotoCompletionRegistrar implements GotoCompletionRegis
             }
 
             HashSet<PsiElement> targets = new HashSet<>();
-            SymfonyWebpackUtil.visitAllEntryFileTypes(element.getProject(), pair -> {
-                if (contents.equalsIgnoreCase(pair.second)) {
-                    PsiFile file = PsiManager.getInstance(getProject()).findFile(pair.getFirst());
-                    if (file != null) {
-                        targets.add(file);
+            SymfonyWebpackUtil.visitAllEntryFileTypes(element.getProject(), triple -> {
+                if (contents.equalsIgnoreCase(triple.getEntry())) {
+                    String entryTarget = triple.getEntryTarget();
+                    if (entryTarget != null) {
+                        // "./foobar" => "foobar"
+                        String replace = entryTarget.replace("\\", "/");
+                        if (replace.startsWith("./")) {
+                            replace = replace.substring(2);
+                        }
+
+                        VirtualFile relativeFile = VfsUtil.findRelativeFile(triple.getVirtualFile().getParent(), replace.split("/"));
+                        if (relativeFile != null) {
+                            PsiFile file = PsiManager.getInstance(getProject()).findFile(relativeFile);
+                            if (file != null) {
+                                targets.add(file);
+                            }
+                        }
+                    }
+
+                    PsiElement target = triple.getPsiElement();
+                    if (target != null) {
+                        targets.add(target);
+                    } else {
+                        PsiFile file = PsiManager.getInstance(getProject()).findFile(triple.getVirtualFile());
+                        if (file != null) {
+                            targets.add(file);
+                        }
                     }
                 }
             });
@@ -65,9 +87,9 @@ public class WebpackEncoreGotoCompletionRegistrar implements GotoCompletionRegis
         public void getLookupElements(@NotNull GotoCompletionProviderLookupArguments arguments) {
             SymfonyWebpackUtil.visitAllEntryFileTypes(getProject(), pair ->
                 {
-                    LookupElementBuilder lookupElement = LookupElementBuilder.create(pair.getSecond())
+                    LookupElementBuilder lookupElement = LookupElementBuilder.create(pair.getEntry())
                         .withIcon(Symfony2Icons.SYMFONY)
-                        .withTypeText(pair.first.getName());
+                        .withTypeText(pair.getVirtualFile().getName());
 
                     arguments.getResultSet().addElement(lookupElement);
                 }
