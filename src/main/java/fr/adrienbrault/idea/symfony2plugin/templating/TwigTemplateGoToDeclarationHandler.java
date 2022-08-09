@@ -126,6 +126,11 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             targets.addAll(getFunctions(psiElement));
         }
 
+        // {{ _self.input() }}
+        if (TwigPattern.getSelfMacroFunctionPattern().accepts(psiElement) || TwigPattern.getSelfMacroIdentifierPattern().accepts(psiElement)) {
+            targets.addAll(this.getSelfMacros(psiElement));
+        }
+
         // {% from 'boo.html.twig' import goto_me %}
         if (TwigPattern.getTemplateImportFileReferenceTagPattern().accepts(psiElement)) {
             targets.addAll(this.getMacros(psiElement));
@@ -486,6 +491,20 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
 
         // {% from _self import foobar as input, foobar %}
         return TwigUtil.getImportedMacros(psiElement.getContainingFile(), funcName);
+    }
+
+    private Collection<PsiElement> getSelfMacros(@NotNull PsiElement psiElement) {
+        Collection <PsiElement> psiElements = new ArrayList<>();
+
+        String funcName = psiElement.getText();
+
+        TwigUtil.visitMacros(psiElement.getContainingFile(), pair -> {
+            if (funcName.equals(pair.getFirst().getName())) {
+                psiElements.add(pair.getSecond());
+            }
+        });
+
+        return psiElements;
     }
 
     @NotNull

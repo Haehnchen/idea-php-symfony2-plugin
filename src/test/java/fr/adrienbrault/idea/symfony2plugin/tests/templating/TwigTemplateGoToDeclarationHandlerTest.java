@@ -257,4 +257,27 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
             PlatformPatterns.psiElement()
         );
     }
+
+    public void testSelfMacroImport() {
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+                "{% macro foobar(name) %}{% endmacro %}\n" +
+                "{{ _self.foo<caret>bar('password') }}",
+            PlatformPatterns.psiElement()
+        );
+
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{% macro foobar(name) %}{% endmacro %}\n" +
+                "{{ _self.foo<caret>bar }}",
+            PlatformPatterns.psiElement()
+        );
+
+        assertNavigationIsEmpty(
+            TwigFileType.INSTANCE,
+                "{% macro foobarUnknown(name) %}\n" +
+                "{% endmacro %}\n" +
+                "{{ _self.foo<caret>bar('password') }}"
+        );
+    }
 }

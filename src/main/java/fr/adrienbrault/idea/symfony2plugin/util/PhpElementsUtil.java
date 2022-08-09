@@ -382,7 +382,7 @@ public class PhpElementsUtil {
             .withLanguage(PhpLanguage.INSTANCE);
     }
 
-    private static final PatternCondition<PsiElement> EMPTY_PREVIOUS_LEAF = new PatternCondition<>("previous leaf empty") {
+    public static final PatternCondition<PsiElement> EMPTY_PREVIOUS_LEAF = new PatternCondition<>("previous leaf empty") {
         @Override
         public boolean accepts(@NotNull PsiElement stringLiteralExpression, ProcessingContext context) {
             return stringLiteralExpression.getPrevSibling() == null;

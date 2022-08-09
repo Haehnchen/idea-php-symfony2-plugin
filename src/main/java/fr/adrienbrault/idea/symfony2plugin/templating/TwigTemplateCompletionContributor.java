@@ -32,10 +32,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.MethodReferenceBag;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.completion.QuotedInsertionLookupElement;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtensionLookupElement;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacro;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacroTagInterface;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
@@ -218,6 +215,19 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
                     for(Map.Entry<String, TwigExtension> entry : TwigExtensionParser.getFunctions(parameters.getPosition().getProject()).entrySet()) {
                         resultSet.addElement(new TwigExtensionLookupElement(psiElement.getProject(), entry.getKey(), entry.getValue()));
+                    }
+
+                    // {{ _self.inp }} => {{ _self.input() }}
+                    if (TwigPattern.getSelfMacroIdentifierPattern().accepts(psiElement)) {
+                        TwigUtil.visitMacros(psiElement.getContainingFile(), pair -> {
+                            TwigMacroTag twigMacro = pair.getFirst();
+
+                            resultSet.addElement(LookupElementBuilder
+                                .create(twigMacro.getName())
+                                .withIcon(TwigIcons.TwigFileIcon)
+                                .withInsertHandler(FunctionInsertHandler.getInstance())
+                            );
+                        });
                     }
 
                     // {% import 'forms.html' as forms %}
