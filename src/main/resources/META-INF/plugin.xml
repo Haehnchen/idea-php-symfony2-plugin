@@ -659,6 +659,7 @@
 
     <depends>com.jetbrains.twig</depends>
     <depends>com.jetbrains.php</depends>
+    <depends>JavaScript</depends>
     <depends>com.intellij.modules.platform</depends>
     <depends>org.jetbrains.plugins.yaml</depends>
     <depends config-file="annotation.xml">de.espend.idea.php.annotation</depends>
