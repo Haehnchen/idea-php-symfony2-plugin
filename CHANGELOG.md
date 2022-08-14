@@ -19,6 +19,11 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.233
+* Support "_self" syntax for Twig macros (Daniel Espendiller)
+* Support webencore entry target for "encore_entry_link_tags" and "encore_entry_script_tags" (Daniel Espendiller)
+* [#1464](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1464) reflect api changes to Twig "macro" feature (Daniel Espendiller)
+
 ## 2022.1.232
 * Provide yaml route path value completion (Daniel Espendiller)
 * Provide completion for route urls inside php annotations (Daniel Espendiller)
