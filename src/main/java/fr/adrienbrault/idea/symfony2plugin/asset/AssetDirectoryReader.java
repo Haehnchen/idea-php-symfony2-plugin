@@ -5,6 +5,8 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.psi.PsiDirectory;
+import com.intellij.psi.search.FilenameIndex;
+import com.intellij.psi.search.GlobalSearchScope;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.templating.webpack.SymfonyWebpackUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
@@ -62,7 +64,8 @@ public class AssetDirectoryReader {
     public Collection<AssetFile> getAssetFiles(@NotNull Project project) {
         Collection<AssetFile> files = new ArrayList<>();
 
-        for (VirtualFile webDirectory : getProjectAssetRoot(project)) {
+        Collection<VirtualFile> projectAssetRoots = getProjectAssetRoot(project);
+        for (VirtualFile webDirectory : projectAssetRoots) {
             VfsUtil.visitChildrenRecursively(webDirectory, new VirtualFileVisitor<VirtualFile>() {
                 @Override
                 public boolean visitFile(@NotNull VirtualFile virtualFile) {
@@ -72,14 +75,13 @@ public class AssetDirectoryReader {
                     return super.visitFile(virtualFile);
                 }
             });
+        }
 
-            VirtualFile fileByRelativePath = webDirectory.findFileByRelativePath("build/manifest.json");
-            if (fileByRelativePath != null) {
-                SymfonyWebpackUtil.visitManifestJsonEntries(
-                    fileByRelativePath,
-                    pair -> files.add(AssetFile.createVirtualManifestEntry(fileByRelativePath, pair.getFirst()))
-                );
-            }
+        for (VirtualFile projectManifestJsonFile : getProjectManifestJsonFiles(project, projectAssetRoots)) {
+            SymfonyWebpackUtil.visitManifestJsonEntries(
+                projectManifestJsonFile,
+                pair -> files.add(AssetFile.createVirtualManifestEntry(projectManifestJsonFile, pair.getFirst()))
+            );
         }
 
         if(!this.includeBundleDir) {
@@ -155,7 +157,8 @@ public class AssetDirectoryReader {
 
         Collection<VirtualFile> files = new HashSet<>();
 
-        for (VirtualFile webDirectory : getProjectAssetRoot(project)) {
+        Collection<VirtualFile> projectAssetRoots = getProjectAssetRoot(project);
+        for (VirtualFile webDirectory : projectAssetRoots) {
             Matcher matcher = Pattern.compile("^(.*[/\\\\])\\*([.\\w+]*)$").matcher(assetName);
             if (!matcher.find()) {
                 VirtualFile assetFile = VfsUtil.findRelativeFile(webDirectory, assetName.split("/"));
@@ -167,18 +170,17 @@ public class AssetDirectoryReader {
                 // "/*.js"
                 files.addAll(collectWildcardDirectories(matcher, webDirectory));
             }
+        }
 
-            VirtualFile fileByRelativePath = webDirectory.findFileByRelativePath("build/manifest.json");
-            if (fileByRelativePath != null) {
-                SymfonyWebpackUtil.visitManifestJsonEntries(
-                    fileByRelativePath,
-                    pair -> {
-                        if (filename.equalsIgnoreCase(pair.getFirst())) {
-                            files.add(fileByRelativePath);
-                        }
+        for (VirtualFile projectManifestJsonFile : getProjectManifestJsonFiles(project, projectAssetRoots)) {
+            SymfonyWebpackUtil.visitManifestJsonEntries(
+                projectManifestJsonFile,
+                pair -> {
+                    if (filename.equalsIgnoreCase(pair.getFirst())) {
+                        files.add(projectManifestJsonFile);
                     }
-                );
-            }
+                }
+            );
         }
 
         return files;
@@ -222,5 +224,22 @@ public class AssetDirectoryReader {
 
         String extension = virtualFile.getExtension();
         return extension != null && this.filterExtension.contains(extension);
+    }
+
+    @NotNull
+    private Collection<VirtualFile> getProjectManifestJsonFiles(@NotNull Project project, @NotNull Collection<VirtualFile> webDirectories) {
+        HashSet<VirtualFile> manifestFiles = new HashSet<>(
+            FilenameIndex.getVirtualFilesByName("manifest.json", GlobalSearchScope.allScope(project))
+        );
+
+        // for files which are ignored by indexing, resolve based on project web folder
+        for (VirtualFile webDirectory : webDirectories) {
+            VirtualFile fileByRelativePath = webDirectory.findFileByRelativePath("build/manifest.json");
+            if (fileByRelativePath != null) {
+                manifestFiles.add(fileByRelativePath);
+            }
+        }
+
+        return manifestFiles;
     }
 }
