@@ -71,8 +71,7 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
             }
 
             MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.ArrayParameterMatcher(parent, 3)
-                .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamedBuilder")
-                .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamed")
+                .withSignature(FormUtil.PHP_FORM_NAMED_BUILDER_SIGNATURES)
                 .match();
 
             if(methodMatchParameter == null) {
@@ -94,16 +93,7 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
             }
 
             MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.ArrayParameterMatcher(parent, 2)
-                .withSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "createForm")
-
-                // Symfony 3.3 / 3.4
-                .withSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "createForm")
-
-                // Symfony 4
-                .withSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "createForm")
-
-                .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "create")
-                .withSignature("\\Symfony\\Component\\Form\\FormFactory", "createBuilder")
+                .withSignature(FormUtil.FORM_FACTORY_SIGNATURES)
                 .match();
 
             if(methodMatchParameter == null) {
@@ -146,8 +136,7 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
             }
 
             MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(parent, 1)
-                .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamedBuilder")
-                .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamed")
+                .withSignature(FormUtil.PHP_FORM_NAMED_BUILDER_SIGNATURES)
                 .match();
 
             if(methodMatchParameter == null) {
