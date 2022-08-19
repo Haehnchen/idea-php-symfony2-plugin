@@ -609,6 +609,7 @@
         <ControllerActionGotoRelatedCollector implementation="fr.adrienbrault.idea.symfony2plugin.navigation.controller.ModelsControllerRelatedGotoCollector"/>
         <ControllerActionGotoRelatedCollector implementation="fr.adrienbrault.idea.symfony2plugin.navigation.controller.TemplatesControllerRelatedGotoCollector"/>
         <ControllerActionGotoRelatedCollector implementation="fr.adrienbrault.idea.symfony2plugin.navigation.controller.TwigControllerUsageControllerRelatedGotoCollector"/>
+        <ControllerActionGotoRelatedCollector implementation="fr.adrienbrault.idea.symfony2plugin.navigation.controller.FormControllerRelatedGotoCollector"/>
 
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.form.FormOptionGotoCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.templating.BlockGotoCompletionRegistrar"/>

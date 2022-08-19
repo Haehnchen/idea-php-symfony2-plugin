@@ -123,8 +123,7 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
 
                     if(methodMatchParameter == null) {
                         methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement, 1)
-                            .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamedBuilder")
-                            .withSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamed")
+                            .withSignature(FormUtil.PHP_FORM_NAMED_BUILDER_SIGNATURES)
                             .match();
                     }
 

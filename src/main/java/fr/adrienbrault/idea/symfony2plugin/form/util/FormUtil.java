@@ -15,7 +15,6 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
-import com.jetbrains.php.lang.psi.elements.impl.PhpTypedElementImpl;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.form.FormTypeLookup;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.EnumFormTypeSource;
@@ -48,6 +47,21 @@ public class FormUtil {
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormBuilderInterface", "create"),
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormInterface", "add"),
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormInterface", "create")
+    };
+
+    public static MethodMatcher.CallToSignature[] FORM_FACTORY_SIGNATURES = new MethodMatcher.CallToSignature[] {
+        new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "createForm"),
+        // Symfony 3.3 / 3.4
+        new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "createForm"),
+        // Symfony 4
+        new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "createForm"),
+        new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "create"),
+        new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormFactory", "createBuilder"),
+    };
+
+    public static MethodMatcher.CallToSignature[] PHP_FORM_NAMED_BUILDER_SIGNATURES = new MethodMatcher.CallToSignature[] {
+        new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamedBuilder"),
+        new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamed"),
     };
 
     @Nullable
@@ -206,17 +220,17 @@ public class FormUtil {
     @Nullable
     public static PhpClass getFormTypeClassOnParameter(@NotNull PsiElement psiElement) {
 
-        if(psiElement instanceof StringLiteralExpression) {
+        if (psiElement instanceof StringLiteralExpression) {
             return getFormTypeToClass(psiElement.getProject(), ((StringLiteralExpression) psiElement).getContents());
         }
 
-        if(psiElement instanceof PhpTypedElementImpl) {
-            String typeName = ((PhpTypedElementImpl) psiElement).getType().toString();
-            return getFormTypeToClass(psiElement.getProject(), typeName);
+        if (psiElement instanceof ClassConstantReference) {
+            return PhpElementsUtil.getClassConstantPhpClass((ClassConstantReference) psiElement);
         }
 
-        if(psiElement instanceof ClassConstantReference) {
-            return PhpElementsUtil.getClassConstantPhpClass((ClassConstantReference) psiElement);
+        if (psiElement instanceof PhpTypedElement) {
+            String typeName = ((PhpTypedElement) psiElement).getType().toString();
+            return getFormTypeToClass(psiElement.getProject(), typeName);
         }
 
         return null;
