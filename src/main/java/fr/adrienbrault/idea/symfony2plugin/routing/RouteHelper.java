@@ -20,7 +20,6 @@ import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
-import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
@@ -39,6 +38,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.AnnotationRouteElementWalkingVisitor;
 import fr.adrienbrault.idea.symfony2plugin.ui.dict.AbstractUiFilePath;
 import fr.adrienbrault.idea.symfony2plugin.util.*;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerAction;
@@ -1021,60 +1021,34 @@ public class RouteHelper {
     /**
      * Find every possible route name declaration inside yaml, xml or @Route annotation
      */
-    @Nullable
-    public static PsiElement getRouteNameTarget(@NotNull Project project, @NotNull String routeName) {
+    @NotNull
+    public static Collection<PsiElement> getRouteNameTarget(@NotNull Project project, @NotNull String routeName) {
         for(VirtualFile virtualFile: RouteHelper.getRouteDefinitionInsideFile(project, routeName)) {
             PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
 
             if(psiFile instanceof YAMLFile) {
-                return YAMLUtil.getQualifiedKeyInFile((YAMLFile) psiFile, routeName);
+                return Collections.singletonList(YAMLUtil.getQualifiedKeyInFile((YAMLFile) psiFile, routeName));
             } else if(psiFile instanceof XmlFile) {
                 PsiElement target = RouteHelper.getXmlRouteNameTarget((XmlFile) psiFile, routeName);
                 if(target != null) {
-                    return target;
+                    return Collections.singletonList(target);
                 }
             } else if(psiFile instanceof PhpFile) {
-                // find on @Route annotation
+                Collection<PsiElement> targets = new ArrayList<>();
+
                 for (PhpClass phpClass : PhpPsiUtil.findAllClasses((PhpFile) psiFile)) {
-                    // get prefix by PhpClass
-                    String prefix = getRouteNamePrefix(phpClass);
-
-                    for (Method method : phpClass.getOwnMethods()) {
-                        PhpDocComment docComment = method.getDocComment();
-                        if(docComment == null) {
-                            continue;
+                    phpClass.accept(new AnnotationRouteElementWalkingVisitor(pair -> {
+                        if (routeName.equalsIgnoreCase(pair.getFirst())) {
+                            targets.add(pair.getSecond());
                         }
-
-                        PhpDocCommentAnnotation container = AnnotationUtil.getPhpDocCommentAnnotationContainer(docComment);
-                        if(container == null) {
-                            continue;
-                        }
-
-                        // multiple @Route annotation in bundles are allowed
-                        for (String routeClass : ROUTE_CLASSES) {
-                            PhpDocTagAnnotation phpDocTagAnnotation = container.getPhpDocBlock(routeClass);
-                            if(phpDocTagAnnotation != null) {
-                                String annotationRouteName = phpDocTagAnnotation.getPropertyValue("name");
-                                if(annotationRouteName != null) {
-                                    // name provided @Route(name="foobar")
-                                    if(routeName.equals(prefix + annotationRouteName)) {
-                                        return phpDocTagAnnotation.getPropertyValuePsi("name");
-                                    }
-                                } else {
-                                    // just @Route() without name provided
-                                    String routeByMethod = AnnotationBackportUtil.getRouteByMethod(phpDocTagAnnotation.getPhpDocTag());
-                                    if(routeName.equals(prefix + routeByMethod)) {
-                                        return phpDocTagAnnotation.getPhpDocTag();
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    }));
                 }
+
+                return targets;
             }
         }
 
-        return null;
+        return Collections.emptyList();
     }
 
     /**
@@ -1160,12 +1134,7 @@ public class RouteHelper {
 
         List<PsiElement> targets = new ArrayList<>();
         Collections.addAll(targets, RouteHelper.getMethods(project, routeName));
-
-        PsiElement yamlKey = RouteHelper.getRouteNameTarget(project, routeName);
-        if(yamlKey != null) {
-            targets.add(yamlKey);
-        }
-
+        targets.addAll(RouteHelper.getRouteNameTarget(project, routeName));
         return targets;
     }
 

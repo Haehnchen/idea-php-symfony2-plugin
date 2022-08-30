@@ -401,27 +401,31 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
      * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#getRouteNameTarget
      */
     public void testGetRouteNameTarget() {
-        PsiElement element = RouteHelper.getRouteNameTarget(getProject(), "my_car_foo_stuff");
+        PsiElement element = RouteHelper.getRouteNameTarget(getProject(), "my_car_foo_stuff").iterator().next();
         assertNotNull(element);
         assertTrue(element.getText().contains("my_car_foo_stuff"));
 
-        element = RouteHelper.getRouteNameTarget(getProject(), "myfoobar_car_index");
+        element = RouteHelper.getRouteNameTarget(getProject(), "myfoobar_car_index").iterator().next();
         assertNotNull(element);
         assertTrue(element.getText().contains("Route"));
 
-        element = RouteHelper.getRouteNameTarget(getProject(), "my_car_foo_stuff_2");
+        element = RouteHelper.getRouteNameTarget(getProject(), "my_car_foo_stuff_2").iterator().next();
         assertNotNull(element);
         assertTrue(element.getText().contains("my_car_foo_stuff_2"));
+
+        element = RouteHelper.getRouteNameTarget(getProject(), "my_car_foo_stuff_attribute").iterator().next();
+        assertNotNull(element);
+        assertTrue(element.getText().contains("my_car_foo_stuff_attribute"));
     }
 
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#getRouteNameTarget
      */
     public void testGetRouteNameTargetForPrefixedControler() {
-        PsiElement element = RouteHelper.getRouteNameTarget(getProject(), "foobar_myfoobar_apple_index");
+        PsiElement element = RouteHelper.getRouteNameTarget(getProject(), "foobar_myfoobar_apple_index").iterator().next();
         assertNotNull(element);
 
-        element = RouteHelper.getRouteNameTarget(getProject(), "foobar_my_foo");
+        element = RouteHelper.getRouteNameTarget(getProject(), "foobar_my_foo").iterator().next();
         assertNotNull(element);
     }
 
