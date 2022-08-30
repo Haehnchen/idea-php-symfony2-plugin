@@ -68,4 +68,12 @@ namespace MyFooBarBundle\Controller
         {
         }
     }
+
+    class CarAttributeController
+    {
+         #[Route(path: '/edit/{id}', name: 'my_car_foo_stuff_attribute')]
+        public function fooAction()
+        {
+        }
+    }
 }

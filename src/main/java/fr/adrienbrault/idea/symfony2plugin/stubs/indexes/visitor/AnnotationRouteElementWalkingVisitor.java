@@ -15,14 +15,13 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
 import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpPsiAttributesUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import kotlin.Pair;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,8 +37,17 @@ public class AnnotationRouteElementWalkingVisitor extends PsiRecursiveElementWal
     @Nullable
     private Map<String, String> fileImports;
 
+    @NotNull
+    private final Consumer<Pair<String, PsiElement>> consumer;
+
+    public AnnotationRouteElementWalkingVisitor(@NotNull Consumer<Pair<String, PsiElement>> consumer) {
+        this.consumer = consumer;
+        this.map = new HashMap<>();
+    }
+
     public AnnotationRouteElementWalkingVisitor(@NotNull Map<String, StubIndexedRoute> map) {
         this.map = map;
+        this.consumer = c -> {};
     }
 
     @Override
@@ -120,6 +128,7 @@ public class AnnotationRouteElementWalkingVisitor extends PsiRecursiveElementWal
             extractMethods(phpDocTag, route);
 
             map.put(routeName, route);
+            this.consumer.accept(new Pair<>(route.getName(), phpDocTag));
         }
     }
 
@@ -191,6 +200,7 @@ public class AnnotationRouteElementWalkingVisitor extends PsiRecursiveElementWal
             }
 
             map.put(route.getName(), route);
+            this.consumer.accept(new Pair<>(route.getName(), attribute));
         }
     }
 

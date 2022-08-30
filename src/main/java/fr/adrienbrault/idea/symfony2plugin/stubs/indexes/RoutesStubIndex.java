@@ -10,6 +10,8 @@ import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
 import com.jetbrains.php.lang.psi.PhpFile;
+import com.jetbrains.php.lang.psi.PhpPsiUtil;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
@@ -81,7 +83,9 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, StubIndexed
                     return map;
                 }
 
-                psiFile.accept(new AnnotationRouteElementWalkingVisitor(map));
+                for (PhpClass phpClass : PhpPsiUtil.findAllClasses((PhpFile) psiFile)) {
+                    phpClass.accept(new AnnotationRouteElementWalkingVisitor(map));
+                }
             }
 
             return map;
