@@ -19,6 +19,11 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.234
+* Support attributes targets for route name navigation and allow multiple targets (Daniel Espendiller)
+* Provide related goto and linemarker for form classes (Daniel Espendiller)
+* [#2006](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2006) Support manifest.json w/o Webpack Encore (Daniel Espendiller)
+
 ## 2022.1.233
 * Support "_self" syntax for Twig macros (Daniel Espendiller)
 * Support webencore entry target for "encore_entry_link_tags" and "encore_entry_script_tags" (Daniel Espendiller)
