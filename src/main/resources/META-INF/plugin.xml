@@ -228,6 +228,7 @@
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigBlockIndexExtension"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigControllerStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.FormDataClassStubIndex"/>
+        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.SerializerClassUsageStubIndex"/>
 
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.ServiceLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.ControllerMethodLineMarkerProvider"/>
@@ -240,6 +241,7 @@
         <codeInsight.lineMarkerProvider language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.ConfigLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.DoctrineMetadataLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.form.PhpLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.util.PhpSerializerLineMarkerProvider"/>
 
         <gotoSymbolContributor implementation="fr.adrienbrault.idea.symfony2plugin.navigation.ServiceSymbolContributor"/>
         <gotoSymbolContributor implementation="fr.adrienbrault.idea.symfony2plugin.navigation.RouteSymbolContributor"/>
