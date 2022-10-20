@@ -58,6 +58,16 @@ public class TwigExtensionParserTest extends SymfonyLightCodeInsightFixtureTestC
             "#M#C\\ClassInstance.getFoobar",
             TwigExtensionParser.getFunctions(getProject()).get("class_instance_foobar").getSignature()
         );
+
+        assertEquals(
+            "#M#C\\Twig\\Extensions.getFoobar",
+            TwigExtensionParser.getFunctions(getProject()).get("class_php_callable_method_foobar").getSignature()
+        );
+
+        assertEquals(
+            "#Fmax",
+            TwigExtensionParser.getFunctions(getProject()).get("class_php_callable_function_foobar").getSignature()
+        );
     }
 
     public void testExtensionAreCollectedForDeprecated() {
