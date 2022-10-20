@@ -1,7 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Key;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
@@ -153,13 +152,13 @@ public class TwigExtensionParser  {
         // array($this, 'getUrl')
         if(psiElement instanceof ArrayCreationExpression) {
             List<PsiElement> arrayValues = (List<PsiElement>) PsiElementUtils.getChildrenOfTypeAsList(psiElement, PlatformPatterns.psiElement(PhpElementTypes.ARRAY_VALUE));
-            if(arrayValues.size() > 1) {
+            if (arrayValues.size() > 1) {
                 PsiElement firstChild = arrayValues.get(0).getFirstChild();
-                if(firstChild instanceof Variable && "this".equals(((Variable) firstChild).getName())) {
+                if (firstChild instanceof Variable && "this".equals(((Variable) firstChild).getName())) {
                     String methodName = PhpElementsUtil.getStringValue(arrayValues.get(1).getFirstChild());
-                    if(StringUtils.isNotBlank(methodName)) {
+                    if (StringUtils.isNotBlank(methodName)) {
                         PhpClass phpClass = method.getContainingClass();
-                        if(phpClass != null) {
+                        if (phpClass != null) {
                             return String.format("#M#C\\%s.%s", phpClass.getPresentableFQN(), methodName);
                         }
                     }
@@ -167,14 +166,30 @@ public class TwigExtensionParser  {
                     String classConstantPhpFqn = PhpElementsUtil.getClassConstantPhpFqn((ClassConstantReference) firstChild);
                     if (StringUtils.isNotEmpty(classConstantPhpFqn)) {
                         String methodName = PhpElementsUtil.getStringValue(arrayValues.get(1).getFirstChild());
-                        if(StringUtils.isNotBlank(methodName)) {
+                        if (StringUtils.isNotBlank(methodName)) {
                             PhpClass phpClass = method.getContainingClass();
-                            if(phpClass != null) {
+                            if (phpClass != null) {
                                 return String.format("#M#C\\%s.%s", classConstantPhpFqn, methodName);
                             }
                         }
                     }
                 }
+            }
+        } else if(psiElement instanceof PhpCallableMethod) {
+            // we need to resolve the type, no api support
+            // $this->foobar(...)
+            PsiElement firstChild = ((PhpCallableMethod) psiElement).getFirstPsiChild();
+            if (firstChild instanceof Variable && "this".equals(((Variable) firstChild).getName())) {
+                PhpClass phpClass = method.getContainingClass();
+                if (phpClass != null) {
+                    return String.format("#M#C\\%s.%s", phpClass.getPresentableFQN(), ((PhpCallableMethod) psiElement).getName());
+                }
+            }
+        } else if(psiElement instanceof PhpCallableFunction) {
+            // foobar(...)
+            String name = ((PhpCallableFunction) psiElement).getName();
+            if (StringUtils.isNotBlank(name)) {
+                return "#F" + name;
             }
         } else {
             String funcTargetName = PhpElementsUtil.getStringValue(psiElement);
@@ -470,7 +485,7 @@ public class TwigExtensionParser  {
                         }
 
                         // creation options like: needs_environment
-                        Map<String, String> options;
+                        Map<String, String> options = new HashMap<>();
                         if(psiElement.length > 2 && psiElement[2] instanceof ArrayCreationExpression) {
                             options = getOptions((ArrayCreationExpression) psiElement[2]);
                         } else {

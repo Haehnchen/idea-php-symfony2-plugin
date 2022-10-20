@@ -109,6 +109,8 @@ namespace Twig
                 new \Twig_Function('max_2', 'max'),
                 new TwigFunction('max_3', 'max'),
                 new TwigFunction('class_instance_foobar', [\ClassInstance::class, 'getFoobar']),
+                new TwigFunction('class_php_callable_method_foobar', $this->getFoobar(...)),
+                new TwigFunction('class_php_callable_function_foobar', max(...)),
             ];
         }
 
