@@ -9,7 +9,6 @@ import com.jetbrains.php.lang.psi.elements.ParameterList;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
@@ -33,36 +32,30 @@ public class TranslationReferenceContributor extends PsiReferenceContributor {
                     }
 
                     ParameterList parameterList = (ParameterList) psiElement.getContext();
-                    PsiElement methodReference = parameterList.getContext();
+                    PsiElement methodReferenceOrNewExpression = parameterList.getContext();
 
-                    int domainParameter = -1;
-                    if (methodReference instanceof MethodReference && PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) methodReference, TranslationUtil.PHP_TRANSLATION_SIGNATURES)) {
-                        domainParameter = 2;
-                        if("transChoice".equals(((MethodReference) methodReference).getName())) {
-                            domainParameter = 3;
-                        }
-                    } else if(methodReference instanceof NewExpression && PhpElementsUtil.isNewExpressionPhpClassWithInstance((NewExpression) methodReference, TranslationUtil.PHP_TRANSLATION_TRANSLATABLE_MESSAGE)) {
-                        domainParameter = 2;
-                    }
-
-                    if (domainParameter < 0) {
+                    if (!(
+                        (methodReferenceOrNewExpression instanceof MethodReference && PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) methodReferenceOrNewExpression, TranslationUtil.PHP_TRANSLATION_SIGNATURES)) ||
+                            (methodReferenceOrNewExpression instanceof NewExpression && PhpElementsUtil.isNewExpressionPhpClassWithInstance((NewExpression) methodReferenceOrNewExpression, TranslationUtil.PHP_TRANSLATION_TRANSLATABLE_MESSAGE)))
+                    ) {
                         return new PsiReference[0];
                     }
 
-                    ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(psiElement);
-                    if(currentIndex == null) {
-                        return new PsiReference[0];
-                    }
+                    int domainParameter = PhpTranslationDomainInspection.getDomainParameter(methodReferenceOrNewExpression);
 
-                    if(currentIndex.getIndex() == domainParameter) {
+                    if (PsiElementUtils.isCurrentParameter(psiElement, "domain", domainParameter)) {
                         return new PsiReference[]{ new TranslationDomainReference((StringLiteralExpression) psiElement) };
                     }
 
-                    if(currentIndex.getIndex() == 0) {
-                        String domain = PsiElementUtils.getMethodParameterAt(parameterList, domainParameter);
+                    if (PsiElementUtils.isCurrentParameter(psiElement, "id", 0)) {
+                        PsiElement domainPsi = parameterList.getParameter("domain", domainParameter);
 
-                        if(domain == null) {
-                            domain = "messages";
+                        String domain = "messages";
+                        if (domainPsi != null) {
+                            String stringValue = PhpElementsUtil.getStringValue(domainPsi);
+                            if (stringValue != null) {
+                                domain = stringValue;
+                            }
                         }
 
                         return new PsiReference[]{ new TranslationReference((StringLiteralExpression) psiElement, domain) };
@@ -70,11 +63,7 @@ public class TranslationReferenceContributor extends PsiReferenceContributor {
 
                     return new PsiReference[0];
                 }
-
             }
-
         );
-
     }
-
 }

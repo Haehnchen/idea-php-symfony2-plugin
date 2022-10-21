@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.util;
 
+import com.intellij.lang.ASTNode;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.ElementPattern;
@@ -8,12 +9,14 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiWhiteSpace;
+import com.intellij.psi.formatter.FormatterUtil;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Processor;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.psi.elements.*;
+import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -117,17 +120,30 @@ public class PsiElementUtils {
 
     @Nullable
     public static ParameterBag getCurrentParameterIndex(PsiElement psiElement) {
-
-        if (!(psiElement.getContext() instanceof ParameterList)) {
+        PsiElement parameterList = psiElement.getContext();
+        if (!(parameterList instanceof ParameterList)) {
             return null;
         }
 
-        ParameterList parameterList = (ParameterList) psiElement.getContext();
-        if (!(parameterList.getContext() instanceof ParameterListOwner)) {
-            return null;
+        return getCurrentParameterIndex(((ParameterList) parameterList).getParameters(), psiElement);
+    }
+
+    public static boolean isCurrentParameter(@NotNull PsiElement psiElement, @NotNull String namedParameter, int index) {
+        PsiElement parameterList = psiElement.getContext();
+        if (!(parameterList instanceof ParameterList)) {
+            return false;
         }
 
-        return getCurrentParameterIndex(parameterList.getParameters(), psiElement);
+        ASTNode previousNonWhitespaceSibling = FormatterUtil.getPreviousNonWhitespaceSibling(psiElement.getNode());
+        if (previousNonWhitespaceSibling != null && previousNonWhitespaceSibling.getElementType() == PhpTokenTypes.opCOLON) {
+            ASTNode previousNonWhitespaceSibling1 = FormatterUtil.getPreviousNonWhitespaceSibling(previousNonWhitespaceSibling);
+            if (previousNonWhitespaceSibling1 != null && previousNonWhitespaceSibling1.getElementType() == PhpTokenTypes.IDENTIFIER && namedParameter.equals(previousNonWhitespaceSibling1.getText())) {
+                return true;
+            }
+        }
+
+        ParameterBag currentParameterIndex = getCurrentParameterIndex(((ParameterList) parameterList).getParameters(), psiElement);
+        return currentParameterIndex != null && currentParameterIndex.getIndex() == index;
     }
 
     public static int getParameterIndexValue(@Nullable PsiElement parameterListChild) {
