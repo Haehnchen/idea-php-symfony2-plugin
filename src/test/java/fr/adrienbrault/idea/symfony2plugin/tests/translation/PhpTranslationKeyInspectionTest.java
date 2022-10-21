@@ -53,9 +53,21 @@ public class PhpTranslationKeyInspectionTest extends SymfonyLightCodeInsightFixt
             PhpTranslationKeyInspection.MESSAGE
         );
 
+        assertLocalInspectionContains("test.php", "<?php\n" +
+                "/** @var $x Symfony\\Component\\Translation\\TranslatorInterface */" +
+                "$x->trans(id: 'symfon<caret>y.great')",
+            PhpTranslationKeyInspection.MESSAGE
+        );
+
         assertLocalInspectionNotContains("test.php", "<?php\n" +
                 "/** @var $x Symfony\\Component\\Translation\\TranslatorInterface */" +
                 "$x->trans('symfon<caret>y.great', [], 'symfony')",
+            PhpTranslationKeyInspection.MESSAGE
+        );
+
+        assertLocalInspectionNotContains("test.php", "<?php\n" +
+                "/** @var $x Symfony\\Component\\Translation\\TranslatorInterface */" +
+                "$x->trans('symfon<caret>y.great', domain: 'symfony')",
             PhpTranslationKeyInspection.MESSAGE
         );
 
@@ -101,6 +113,11 @@ public class PhpTranslationKeyInspectionTest extends SymfonyLightCodeInsightFixt
     public void testThatPhpTranslationKeyInspectionsForTranslatableMessageAreProvided() {
         assertLocalInspectionContains("test.php", "<?php\n" +
                 "new \\Symfony\\Component\\Translation\\TranslatableMessage('symfon<caret>y.great');",
+            PhpTranslationKeyInspection.MESSAGE
+        );
+
+        assertLocalInspectionNotContains("test.php", "<?php\n" +
+                "new \\Symfony\\Component\\Translation\\TranslatableMessage('symfon<caret>y.great', domain: 'symfony');",
             PhpTranslationKeyInspection.MESSAGE
         );
 

@@ -26,11 +26,27 @@ public class TranslationReferenceContributorTest extends SymfonyLightCodeInsight
                 "$x->trans('foobar', [], 'sym<caret>fony')",
             PlatformPatterns.psiFile()
         );
+
+        assertReferenceMatchOnParent(PhpFileType.INSTANCE, "<?php\n" +
+                "/** @var $x Symfony\\Component\\Translation\\TranslatorInterface */" +
+                "$x->trans('foobar', domain: 'sym<caret>fony')",
+            PlatformPatterns.psiFile()
+        );
     }
 
     public void testThatPhpTranslatableMessageDomainProvidesNavigation() {
         assertReferenceMatchOnParent(PhpFileType.INSTANCE, "<?php\n" +
                 "new \\Symfony\\Component\\Translation\\TranslatableMessage('foobar', [], 'sym<caret>fony');",
+            PlatformPatterns.psiFile()
+        );
+
+        assertReferenceMatchOnParent(PhpFileType.INSTANCE, "<?php\n" +
+                "new \\Symfony\\Component\\Translation\\TranslatableMessage(domain: 'sym<caret>fony');",
+            PlatformPatterns.psiFile()
+        );
+
+        assertReferenceMatchOnParent(PhpFileType.INSTANCE, "<?php\n" +
+                "new \\Symfony\\Component\\Translation\\TranslatableMessage(id: 'foobar', domain: 'symf<caret>ony');",
             PlatformPatterns.psiFile()
         );
     }
@@ -47,11 +63,28 @@ public class TranslationReferenceContributorTest extends SymfonyLightCodeInsight
                 "$x->trans('symfony<caret>_message')",
             PlatformPatterns.psiElement()
         );
+
+        assertReferenceMatchOnParent("test.php", "<?php\n" +
+                "/** @var $x Symfony\\Component\\Translation\\TranslatorInterface */" +
+                "$x->trans('symfony.gr<caret>eat', domain: 'symfony')",
+            PlatformPatterns.psiElement()
+        );
+
+        assertReferenceMatchOnParent("test.php", "<?php\n" +
+                "/** @var $x Symfony\\Component\\Translation\\TranslatorInterface */" +
+                "$x->trans(id: 'symfony.gr<caret>eat', domain: 'symfony')",
+            PlatformPatterns.psiElement()
+        );
     }
 
     public void testThatPhpTranslatableMessageKeyProvidesNavigation() {
         assertReferenceMatchOnParent("test.php", "<?php\n" +
                 "new \\Symfony\\Component\\Translation\\TranslatableMessage('symfony.gr<caret>eat', [], 'symfony');",
+            PlatformPatterns.psiElement()
+        );
+
+        assertReferenceMatchOnParent("test.php", "<?php\n" +
+                "new \\Symfony\\Component\\Translation\\TranslatableMessage('symfony.gr<caret>eat', domain: 'symfony');",
             PlatformPatterns.psiElement()
         );
 

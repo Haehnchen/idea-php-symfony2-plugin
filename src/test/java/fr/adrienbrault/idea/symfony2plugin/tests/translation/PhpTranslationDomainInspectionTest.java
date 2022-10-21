@@ -48,6 +48,12 @@ public class PhpTranslationDomainInspectionTest extends SymfonyLightCodeInsightF
                 "$x->trans('foo<caret>bar')",
             PhpTranslationDomainInspection.MESSAGE
         );
+
+        assertLocalInspectionContains("test.php", "<?php\n" +
+                "/** @var $x Symfony\\Component\\Translation\\TranslatorInterface */" +
+                "$x->trans('id', domain: 'dom<caret>ain')",
+            PhpTranslationDomainInspection.MESSAGE
+        );
     }
 
     public void testThatPhpTranslationDomainInspectionsForTranslatableMessageAreProvided() {
@@ -63,6 +69,11 @@ public class PhpTranslationDomainInspectionTest extends SymfonyLightCodeInsightF
 
         assertLocalInspectionNotContains("test.php", "<?php\n" +
                 "new \\Symfony\\Component\\Translation\\TranslatableMessage('foobar', [], 'sym<caret>fony');",
+            PhpTranslationDomainInspection.MESSAGE
+        );
+
+        assertLocalInspectionNotContains("test.php", "<?php\n" +
+                "new \\Symfony\\Component\\Translation\\TranslatableMessage(domain: 'sym<caret>fony');",
             PhpTranslationDomainInspection.MESSAGE
         );
     }
