@@ -19,6 +19,14 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.235
+* [#2015](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2015) [Translation] Add inspection, autocompletion and navigation for named arguments (Daniel Espendiller)
+* [#2017](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2017) fix [Twig] Go to function definition does not work when using the first-class callable syntax (Daniel Espendiller)
+* Add linemarker for serializer usage for classes (Daniel Espendiller)
+* [paid] Add inspection for RequestStack usages in router action (Daniel Espendiller)
+* [paid] Add description for heavy constructor usages (Daniel Espendiller)
+* [paid] Add deprecation for injection "Session" and "FlashBag" services (Daniel Espendiller)
+
 ## 2022.1.234
 * Support attributes targets for route name navigation and allow multiple targets (Daniel Espendiller)
 * Provide related goto and linemarker for form classes (Daniel Espendiller)
