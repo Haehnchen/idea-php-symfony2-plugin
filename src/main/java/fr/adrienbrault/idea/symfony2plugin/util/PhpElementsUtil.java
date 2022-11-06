@@ -1328,10 +1328,6 @@ public class PhpElementsUtil {
         }
 
         final String name = variable.getName();
-        if(name == null) {
-            return null;
-        }
-
         final String[] result = {null};
         searchScope.acceptChildren(new PsiRecursiveElementVisitor() {
             @Override
@@ -1348,6 +1344,50 @@ public class PhpElementsUtil {
                                     result[0] = classSignature;
                                 }
                             }
+                        }
+                    }
+                }
+
+                super.visitElement(element);
+            }
+        });
+
+        return result[0];
+    }
+
+    /**
+     * Find first variable declaration in parent scope of a given variable:
+     *
+     * function() {
+     *   $event = new FooEvent();
+     *   dispatch('foo', $event);
+     * }
+     */
+    @Nullable
+    public static PhpPsiElement getFirstVariableAssignmentInScope(@NotNull Variable variable) {
+
+        // parent search scope, eg Method else fallback to a grouped statement
+        PsiElement searchScope = PsiTreeUtil.getParentOfType(variable, Function.class);
+        if(searchScope == null) {
+            searchScope = PsiTreeUtil.getParentOfType(variable, GroupStatement.class);
+        }
+
+        if(searchScope == null) {
+            return null;
+        }
+
+        final String name = variable.getName();
+        final PhpPsiElement[] result = {null};
+
+        searchScope.acceptChildren(new PsiRecursiveElementVisitor() {
+            @Override
+            public void visitElement(@NotNull PsiElement element) {
+                if(element instanceof Variable && name.equals(((Variable) element).getName())) {
+                    PsiElement assignmentExpression = element.getParent();
+                    if(assignmentExpression instanceof AssignmentExpression) {
+                        PhpPsiElement value = ((AssignmentExpression) assignmentExpression).getValue();
+                        if(value != null) {
+                            result[0] = value;
                         }
                     }
                 }
