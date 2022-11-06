@@ -167,6 +167,10 @@ public class SymfonyWebpackUtil {
             return;
         }
 
+        if (!(jsonElement instanceof JsonObject))  {
+            return;
+        }
+
         for (Map.Entry<String, JsonElement> entry : jsonElement.getAsJsonObject().entrySet()) {
             String key = entry.getKey();
             if (StringUtils.isBlank(key)) {

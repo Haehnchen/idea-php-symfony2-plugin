@@ -49,4 +49,14 @@ public class SymfonyWebpackUtilTest extends SymfonyLightCodeInsightFixtureTestCa
         SymfonyWebpackUtil.visitManifestJsonEntries(virtualFile, pair -> entries.add(pair.getFirst()));
         assertContainsElements(entries, "build/app.js", "build/dashboard.css", "build/images/logo.png");
     }
+
+    public void testVisitManifestJsonArrayMustNotBreakParsing() {
+        VirtualFile virtualFile = myFixture.copyFileToProject("entrypoints_invalid2.json");
+
+        Set<String> entries = new HashSet<>();
+
+        SymfonyWebpackUtil.visitManifestJsonEntries(virtualFile, pair -> entries.add(pair.getFirst()));
+
+        assertTrue(entries.isEmpty());
+    }
 }
