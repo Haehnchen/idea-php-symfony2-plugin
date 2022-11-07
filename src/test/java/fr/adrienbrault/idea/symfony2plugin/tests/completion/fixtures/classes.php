@@ -21,3 +21,19 @@ namespace Symfony\Contracts\HttpClient
         public function withOptions(array $options): static;
     }
 }
+
+namespace Symfony\Component\HttpFoundation
+{
+    class Request
+    {
+        public function getMethod() {}
+    }
+}
+
+namespace Doctrine\ORM
+{
+    class QueryBuilder
+    {
+        public function add() {}
+    }
+}
