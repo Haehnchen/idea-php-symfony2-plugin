@@ -104,7 +104,7 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
     public void registerReferenceProviders(PsiReferenceRegistrar psiReferenceRegistrar) {
 
         psiReferenceRegistrar.registerReferenceProvider(
-            PlatformPatterns.psiElement(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE),
+            PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern(),
             new PsiReferenceProvider() {
                 @NotNull
                 @Override
@@ -124,7 +124,7 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
             }
         );
         psiReferenceRegistrar.registerReferenceProvider(
-            PlatformPatterns.psiElement(StringLiteralExpression.class),
+            PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern(),
             new PsiReferenceProvider() {
                 @NotNull
                 @Override
@@ -145,7 +145,7 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
         );
 
         psiReferenceRegistrar.registerReferenceProvider(
-                PlatformPatterns.psiElement(StringLiteralExpression.class),
+                PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern(),
                 new PsiReferenceProvider() {
                     @NotNull
                     @Override
@@ -172,7 +172,7 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
         );
 
         psiReferenceRegistrar.registerReferenceProvider(
-            PlatformPatterns.psiElement(StringLiteralExpression.class),
+            PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern(),
             new PsiReferenceProvider() {
                 @NotNull
                 @Override

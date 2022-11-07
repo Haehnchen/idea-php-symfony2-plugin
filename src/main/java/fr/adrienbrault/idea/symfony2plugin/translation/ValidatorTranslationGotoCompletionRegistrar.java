@@ -51,7 +51,7 @@ public class ValidatorTranslationGotoCompletionRegistrar implements GotoCompleti
         // addViolation('<caret>')
         // buildViolation('<caret>')
         registrar.register(
-            PlatformPatterns.psiElement().withParent(PhpElementsUtil.getMethodWithFirstStringPattern()), psiElement -> {
+            PlatformPatterns.psiElement().withParent(PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern()), psiElement -> {
                 PsiElement context = psiElement.getContext();
                 if (!(context instanceof StringLiteralExpression)) {
                     return null;
@@ -72,7 +72,7 @@ public class ValidatorTranslationGotoCompletionRegistrar implements GotoCompleti
 
         // setTranslationDomain('<caret>')
         registrar.register(
-            PlatformPatterns.psiElement().withParent(PhpElementsUtil.getMethodWithFirstStringPattern()), psiElement -> {
+            PlatformPatterns.psiElement().withParent(PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern()), psiElement -> {
                 PsiElement context = psiElement.getContext();
                 if (!(context instanceof StringLiteralExpression)) {
                     return null;

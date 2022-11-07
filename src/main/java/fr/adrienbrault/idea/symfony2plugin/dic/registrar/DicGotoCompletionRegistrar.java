@@ -32,7 +32,7 @@ public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
     public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
         // getParameter('FOO')
         registrar.register(
-            PlatformPatterns.psiElement().withParent(PhpElementsUtil.getMethodWithFirstStringPattern()), psiElement -> {
+            PlatformPatterns.psiElement().withParent(PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern()), psiElement -> {
 
                 PsiElement context = psiElement.getContext();
                 if (!(context instanceof StringLiteralExpression)) {

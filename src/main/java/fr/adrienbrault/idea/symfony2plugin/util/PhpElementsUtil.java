@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.util;
 
 import com.intellij.codeInsight.completion.CompletionResultSet;
+import com.intellij.lang.ASTNode;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.util.text.StringUtil;
@@ -9,6 +10,7 @@ import com.intellij.patterns.PatternCondition;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.*;
+import com.intellij.psi.formatter.FormatterUtil;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.intellij.util.Processor;
@@ -48,6 +50,18 @@ import java.util.stream.Collectors;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class PhpElementsUtil {
+
+    /**
+     * Only parameter on first index or named: "a('caret'), a(test: 'caret')"
+     */
+    private static final PatternCondition<StringLiteralExpression> WITH_PREVIOUS_WHITESPACE_OR_COLON = new PatternCondition<>("whitespace or colon") {
+        @Override
+        public boolean accepts(@NotNull StringLiteralExpression element, ProcessingContext context) {
+            ASTNode previousNonWhitespaceSibling = FormatterUtil.getPreviousNonWhitespaceSibling(element.getNode());
+            return previousNonWhitespaceSibling == null || previousNonWhitespaceSibling.getElementType() == PhpTokenTypes.opCOLON;
+        }
+    };
+
     /**
      * Gets all array keys as string of an ArrayCreationExpression
      *
@@ -347,6 +361,11 @@ public class PhpElementsUtil {
         return null != methodRefName && Arrays.asList(methodName).contains(methodRefName);
     }
 
+    /**
+     *
+     * @deprecated use getMethodWithFirstStringOrNamedArgumentPattern
+     */
+    @Deprecated
     static public PsiElementPattern.Capture<StringLiteralExpression> getMethodWithFirstStringPattern() {
         return PlatformPatterns
             .psiElement(StringLiteralExpression.class)
@@ -362,6 +381,39 @@ public class PhpElementsUtil {
             .withLanguage(PhpLanguage.INSTANCE);
     }
 
+    /**
+     * "$var->format(x: 'te<caret>st')"
+     * "$var->format($x, 'te<caret>st')"
+     * "$var->format('te<caret>st')"
+     *
+     * "not $var->format('', 'te<caret>st')"
+     */
+    static public PsiElementPattern.Capture<StringLiteralExpression> getMethodWithFirstStringOrNamedArgumentPattern() {
+        return PlatformPatterns
+            .psiElement(StringLiteralExpression.class)
+            .withParent(
+                PlatformPatterns.psiElement(PhpElementTypes.PARAMETER_LIST)
+            )
+            .with(WITH_PREVIOUS_WHITESPACE_OR_COLON)
+            .withLanguage(PhpLanguage.INSTANCE);
+    }
+
+    /**
+     * "$var->format(x: 'te<caret>st')"
+     * "$var->format($x, 'te<caret>st')"
+     * "$var->format('te<caret>st')"
+     */
+    static public PsiElementPattern.Capture<StringLiteralExpression> getMethodParameterListStringPattern() {
+        return PlatformPatterns
+            .psiElement(StringLiteralExpression.class)
+            .withParent(
+                PlatformPatterns.psiElement(PhpElementTypes.PARAMETER_LIST).withParent(
+                    PlatformPatterns.psiElement(PhpElementTypes.METHOD_REFERENCE)
+                )
+            )
+            .withLanguage(PhpLanguage.INSTANCE);
+    }
+
     static public PsiElementPattern.Capture<StringLiteralExpression> getFunctionWithFirstStringPattern(@NotNull String... functionName) {
         return PlatformPatterns
             .psiElement(StringLiteralExpression.class)
@@ -371,7 +423,7 @@ public class PhpElementsUtil {
                         PlatformPatterns.psiElement(PhpElementTypes.STRING)
                     )
                     .withParent(
-                        PlatformPatterns.psiElement(FunctionReference.class).with(new PatternCondition<FunctionReference>("function match") {
+                        PlatformPatterns.psiElement(FunctionReference.class).with(new PatternCondition<>("function match") {
                             @Override
                             public boolean accepts(@NotNull FunctionReference functionReference, ProcessingContext processingContext) {
                                 return ArrayUtils.contains(functionName, functionReference.getName());
@@ -919,6 +971,21 @@ public class PhpElementsUtil {
         }
 
         return null;
+    }
+
+    static public PsiElementPattern.Capture<StringLiteralExpression> getPar() {
+        return PlatformPatterns
+            .psiElement(StringLiteralExpression.class)
+            .withParent(
+                PlatformPatterns.psiElement(PhpElementTypes.PARAMETER_LIST)
+                    .withFirstChild(
+                        PlatformPatterns.psiElement(PhpElementTypes.STRING)
+                    )
+                    .withParent(
+                        PlatformPatterns.psiElement(PhpElementTypes.METHOD_REFERENCE)
+                    )
+            )
+            .withLanguage(PhpLanguage.INSTANCE);
     }
 
     public static Collection<PhpClass> getClassFromPhpTypeSet(Project project, Set<String> types) {

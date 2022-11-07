@@ -3,12 +3,12 @@ package fr.adrienbrault.idea.symfony2plugin.routing;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.*;
 import com.intellij.util.ProcessingContext;
-import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpExpression;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerReference;
 import org.jetbrains.annotations.NotNull;
@@ -48,7 +48,7 @@ public class PhpRouteReferenceContributor extends PsiReferenceContributor {
     @Override
     public void registerReferenceProviders(@NotNull PsiReferenceRegistrar psiReferenceRegistrar) {
         psiReferenceRegistrar.registerReferenceProvider(
-            PlatformPatterns.psiElement(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE),
+            PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern(),
             new PsiReferenceProvider() {
                 @NotNull
                 @Override
@@ -77,7 +77,7 @@ public class PhpRouteReferenceContributor extends PsiReferenceContributor {
         );
 
         psiReferenceRegistrar.registerReferenceProvider(
-            PlatformPatterns.psiElement(StringLiteralExpression.class),
+            PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern(),
             new PsiReferenceProvider() {
                 @NotNull
                 @Override

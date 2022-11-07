@@ -30,7 +30,7 @@ public class PhpRouteMissingInspection extends LocalInspectionTool {
         return new PsiElementVisitor() {
             @Override
             public void visitElement(@NotNull PsiElement element) {
-                if(PhpElementsUtil.getMethodWithFirstStringPattern().accepts(element)) {
+                if(PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern().accepts(element)) {
                     String contents = PhpElementsUtil.getStringValue(element);
                     if(StringUtils.isNotBlank(contents)) {
                         invoke(contents, element, holder);
