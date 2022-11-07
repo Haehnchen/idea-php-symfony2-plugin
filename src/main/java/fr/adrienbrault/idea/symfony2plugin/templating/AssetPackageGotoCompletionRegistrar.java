@@ -42,7 +42,7 @@ public class AssetPackageGotoCompletionRegistrar implements GotoCompletionRegist
     @Override
     public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
         registrar.register(
-            PlatformPatterns.psiElement().withParent(PhpElementsUtil.getMethodWithFirstStringPattern()), psiElement -> {
+            PlatformPatterns.psiElement().withParent(PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern()), psiElement -> {
                 PsiElement context = psiElement.getContext();
                 if (!(context instanceof StringLiteralExpression)) {
                     return null;

@@ -27,7 +27,7 @@ import java.util.Objects;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class FormTypeReferenceContributor extends PsiReferenceContributor {
-    private static MethodMatcher.CallToSignature[] BUILDER_SIGNATURES = new MethodMatcher.CallToSignature[] {
+    private static final MethodMatcher.CallToSignature[] BUILDER_SIGNATURES = new MethodMatcher.CallToSignature[] {
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormTypeInterface", "buildForm"),
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormTypeInterface", "buildView"),
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormTypeInterface", "finishView"),

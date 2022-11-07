@@ -47,7 +47,7 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
          * eg "$resolver->setDefault('<caret>')"
          */
         registrar.register(
-            PlatformPatterns.psiElement().withParent(PhpElementsUtil.getMethodWithFirstStringPattern()),
+            PlatformPatterns.psiElement().withParent(PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern()),
             new OptionDefaultCompletionContributor()
         );
     }

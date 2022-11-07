@@ -324,4 +324,71 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
         assertEquals(secondClass.findOwnMethodByName("method"), actualResult[0]);
         assertEquals(firstClass.findOwnMethodByName("method"), actualResult[1]);
     }
+
+    public void testGetMethodParameterListStringPattern() {
+        StringLiteralExpression psiElement = (StringLiteralExpression) myFixture.configureByText(PhpFileType.INSTANCE, "<?php" +
+            "function foobar() {\n" +
+            "  $var = new \\DateTime();\n" +
+            "  $var->format('te<caret>st');\n" +
+            "}").findElementAt(myFixture.getCaretOffset()).getParent();
+
+        assertTrue(PhpElementsUtil.getMethodParameterListStringPattern().accepts(psiElement));
+
+        StringLiteralExpression psiElement2 = (StringLiteralExpression) myFixture.configureByText(PhpFileType.INSTANCE, "<?php" +
+            "function foobar() {\n" +
+            "  $var = new \\DateTime();\n" +
+            "  $var->format(test: 'te<caret>st');\n" +
+            "}").findElementAt(myFixture.getCaretOffset()).getParent();
+
+        assertTrue(PhpElementsUtil.getMethodParameterListStringPattern().accepts(psiElement2));
+
+        StringLiteralExpression psiElement3 = (StringLiteralExpression) myFixture.configureByText(PhpFileType.INSTANCE, "<?php" +
+            "function foobar() {\n" +
+            "  $var = new \\DateTime();\n" +
+            "  $var->format($x, $z, null, 'te<caret>st');\n" +
+            "}").findElementAt(myFixture.getCaretOffset()).getParent();
+
+        assertTrue(PhpElementsUtil.getMethodParameterListStringPattern().accepts(psiElement3));
+    }
+
+    public void testGetMethodWithFirstStringOrNamedArgumentPattern() {
+        StringLiteralExpression psiElement = (StringLiteralExpression) myFixture.configureByText(PhpFileType.INSTANCE, "<?php" +
+            "function foobar() {\n" +
+            "  $var = new \\DateTime();\n" +
+            "  $var->format('te<caret>st');\n" +
+            "}").findElementAt(myFixture.getCaretOffset()).getParent();
+
+        assertTrue(PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern().accepts(psiElement));
+
+        StringLiteralExpression psiElement2 = (StringLiteralExpression) myFixture.configureByText(PhpFileType.INSTANCE, "<?php" +
+            "function foobar() {\n" +
+            "  $var = new \\DateTime();\n" +
+            "  $var->format(test: 'te<caret>st');\n" +
+            "}").findElementAt(myFixture.getCaretOffset()).getParent();
+
+        assertTrue(PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern().accepts(psiElement2));
+
+        StringLiteralExpression psiElement3 = (StringLiteralExpression) myFixture.configureByText(PhpFileType.INSTANCE, "<?php" +
+            "function foobar() {\n" +
+            "  $var = new \\DateTime();\n" +
+            "  $var->format(null, 'te<caret>st');\n" +
+            "}").findElementAt(myFixture.getCaretOffset()).getParent();
+
+        assertFalse(PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern().accepts(psiElement3));
+
+        StringLiteralExpression psiElement4 = (StringLiteralExpression) myFixture.configureByText(PhpFileType.INSTANCE, "<?php" +
+            "function foobar() {\n" +
+            "  $var = new \\DateTime();\n" +
+            "  $var->format(, 'te<caret>st');\n" +
+            "}").findElementAt(myFixture.getCaretOffset()).getParent();
+
+        assertFalse(PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern().accepts(psiElement4));
+
+        StringLiteralExpression psiElement5 = (StringLiteralExpression) myFixture.configureByText(PhpFileType.INSTANCE, "<?php" +
+            "function foobar() {\n" +
+            "  format('te<caret>st');\n" +
+            "}").findElementAt(myFixture.getCaretOffset()).getParent();
+
+        assertTrue(PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern().accepts(psiElement5));
+    }
 }

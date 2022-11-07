@@ -24,7 +24,7 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
 
     @Override
     public void registerReferenceProviders(@NotNull PsiReferenceRegistrar psiReferenceRegistrar) {
-        psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.getMethodWithFirstStringPattern(), new PhpStringLiteralExpressionReference(ServiceReference.class)
+        psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern(), new PhpStringLiteralExpressionReference(ServiceReference.class)
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "has")
             .addCall("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "has")
             .addCall("\\Psr\\Container\\ContainerInterface", "has")
@@ -38,7 +38,7 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
             .addCall("\\Symfony\\Component\\DependencyInjection\\ParameterBag\\ContainerBagInterface", "has")
         );
 
-        psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.getMethodWithFirstStringPattern(), new PhpStringLiteralExpressionReference(ServiceIndexedReference.class)
+        psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern(), new PhpStringLiteralExpressionReference(ServiceIndexedReference.class)
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "hasDefinition")
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "getDefinition")
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "setAlias", 1)
@@ -50,7 +50,7 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
             .addCall("\\Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\AbstractServiceConfigurator", "alias", 1)
         );
 
-        psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.getMethodWithFirstStringPattern(), new PhpStringLiteralExpressionReference(TagReference.class)
+        psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern(), new PhpStringLiteralExpressionReference(TagReference.class)
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "findTaggedServiceIds")
             .addCall("\\Symfony\\Component\\DependencyInjection\\Definition", "addTag")
             .addCall("\\Symfony\\Component\\DependencyInjection\\Definition", "hasTag")
@@ -59,12 +59,12 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
             .addCall("\\Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\Traits\\TagTrait", "tag")
         );
 
-        psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.getMethodWithFirstStringPattern(), new PhpStringLiteralExpressionReference(EventDispatcherEventReference.class)
+        psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern(), new PhpStringLiteralExpressionReference(EventDispatcherEventReference.class)
             .addCall("\\Symfony\\Component\\EventDispatcher\\EventDispatcherInterface", "dispatch")
         );
 
         psiReferenceRegistrar.registerReferenceProvider(
-            PlatformPatterns.psiElement(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE),
+            PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern(),
             new PsiReferenceProvider() {
                 @NotNull
                 @Override
@@ -113,7 +113,7 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
         );
 
         psiReferenceRegistrar.registerReferenceProvider(
-            PlatformPatterns.psiElement(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE),
+            PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern(),
             new PsiReferenceProvider() {
                 @NotNull
                 @Override
