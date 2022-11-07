@@ -32,7 +32,7 @@ public class DocHashTagReferenceContributor extends PsiReferenceContributor {
             new PsiReferenceProvider() {
                 @NotNull
                 @Override
-                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+                public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
 
                     if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
                         return new PsiReference[0];
@@ -52,8 +52,12 @@ public class DocHashTagReferenceContributor extends PsiReferenceContributor {
                         this.attachReferences((StringLiteralExpression) psiElement, phpDocParamTag, docTagHashing.getParameters().get(i++), docTagHashing.getParameterList() , psiReferences);
                     }
 
-                    return psiReferences.toArray(new PsiReference[psiReferences.size()]);
+                    return psiReferences.toArray(new PsiReference[0]);
+                }
 
+                @Override
+                public boolean acceptsTarget(@NotNull PsiElement target) {
+                    return Symfony2ProjectComponent.isEnabled(target);
                 }
 
                 private void attachReferences(StringLiteralExpression psiElement, PhpDocParamTag phpDocParamTag, Parameter[] parameters, ParameterList parameterList, ArrayList<PsiReference> psiReferences) {

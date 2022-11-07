@@ -63,6 +63,11 @@ public class TranslationReferenceContributor extends PsiReferenceContributor {
 
                     return new PsiReference[0];
                 }
+
+                @Override
+                public boolean acceptsTarget(@NotNull PsiElement target) {
+                    return Symfony2ProjectComponent.isEnabled(target);
+                }
             }
         );
     }

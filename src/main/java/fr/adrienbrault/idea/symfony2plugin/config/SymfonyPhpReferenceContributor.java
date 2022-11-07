@@ -108,14 +108,18 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
             new PsiReferenceProvider() {
                 @NotNull
                 @Override
-                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+                public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
 
                     if (MethodMatcher.getMatchedSignatureWithDepth(psiElement, CONTAINER_SIGNATURES) == null) {
                         return new PsiReference[0];
                     }
 
                     return new PsiReference[]{ new ServiceReference((StringLiteralExpression) psiElement, false) };
+                }
 
+                @Override
+                public boolean acceptsTarget(@NotNull PsiElement target) {
+                    return Symfony2ProjectComponent.isEnabled(target);
                 }
             }
         );
@@ -124,13 +128,18 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
             new PsiReferenceProvider() {
                 @NotNull
                 @Override
-                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+                public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
 
                     if (MethodMatcher.getMatchedSignatureWithDepth(psiElement, TEMPLATE_SIGNATURES) == null) {
                         return new PsiReference[0];
                     }
 
                     return new PsiReference[]{ new TemplateReference((StringLiteralExpression) psiElement) };
+                }
+
+                @Override
+                public boolean acceptsTarget(@NotNull PsiElement target) {
+                    return Symfony2ProjectComponent.isEnabled(target);
                 }
             }
         );
@@ -140,7 +149,7 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
                 new PsiReferenceProvider() {
                     @NotNull
                     @Override
-                    public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+                    public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
 
                         MethodMatcher.MethodMatchParameter methodMatchParameter = MethodMatcher.getMatchedSignatureWithDepth(psiElement, REPOSITORY_SIGNATURES);
                         if (methodMatchParameter == null) {
@@ -154,6 +163,11 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
 
                         return new PsiReference[]{ new EntityReference((StringLiteralExpression) psiElement) };
                     }
+
+                    @Override
+                    public boolean acceptsTarget(@NotNull PsiElement target) {
+                        return Symfony2ProjectComponent.isEnabled(target);
+                    }
                 }
         );
 
@@ -162,7 +176,7 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
             new PsiReferenceProvider() {
                 @NotNull
                 @Override
-                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+                public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
 
                     MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement, 0)
                         .withSignature("\\Doctrine\\Common\\Persistence\\ObjectManager", "find")
@@ -180,6 +194,11 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
 
                     return new PsiReference[]{ new EntityReference((StringLiteralExpression) psiElement) };
                 }
+
+                @Override
+                public boolean acceptsTarget(@NotNull PsiElement target) {
+                    return Symfony2ProjectComponent.isEnabled(target);
+                }
             }
         );
 
@@ -188,7 +207,7 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
             new PsiReferenceProvider() {
                 @NotNull
                 @Override
-                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+                public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
 
                     if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
                         return new PsiReference[0];
@@ -222,6 +241,11 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
                     }
 
                     return null;
+                }
+
+                @Override
+                public boolean acceptsTarget(@NotNull PsiElement target) {
+                    return Symfony2ProjectComponent.isEnabled(target);
                 }
             }
         );

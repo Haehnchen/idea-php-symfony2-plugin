@@ -68,7 +68,7 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
             new PsiReferenceProvider() {
                 @NotNull
                 @Override
-                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+                public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
 
                     if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
                         return new PsiReference[0];
@@ -83,6 +83,11 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
 
                     return new PsiReference[]{ new ServiceReference((StringLiteralExpression) psiElement, true) };
                 }
+
+                @Override
+                public boolean acceptsTarget(@NotNull PsiElement target) {
+                    return Symfony2ProjectComponent.isEnabled(target);
+                }
             }
         );
 
@@ -92,12 +97,17 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
             new PsiReferenceProvider() {
                 @NotNull
                 @Override
-                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+                public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
                     if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
                         return new PsiReference[0];
                     }
 
                     return new PsiReference[]{ new ServiceReference((StringLiteralExpression) psiElement, true) };
+                }
+
+                @Override
+                public boolean acceptsTarget(@NotNull PsiElement target) {
+                    return Symfony2ProjectComponent.isEnabled(target);
                 }
             }
         );
@@ -107,8 +117,7 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
             new PsiReferenceProvider() {
                 @NotNull
                 @Override
-                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
-
+                public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
                     if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
                         return new PsiReference[0];
                     }
@@ -118,6 +127,11 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
                     }
 
                     return new PsiReference[]{ new PhpClassReference((StringLiteralExpression) psiElement, true) };
+                }
+
+                @Override
+                public boolean acceptsTarget(@NotNull PsiElement target) {
+                    return Symfony2ProjectComponent.isEnabled(target);
                 }
             }
         );
@@ -129,7 +143,7 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
             new PsiReferenceProvider() {
                 @NotNull
                 @Override
-                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+                public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
                     if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
                         return new PsiReference[0];
                     }
@@ -153,6 +167,10 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
                     return new PsiReference[] { new EventDispatcherEventReference((StringLiteralExpression) psiElement) };
                 }
 
+                @Override
+                public boolean acceptsTarget(@NotNull PsiElement target) {
+                    return Symfony2ProjectComponent.isEnabled(target);
+                }
             }
         );
     }

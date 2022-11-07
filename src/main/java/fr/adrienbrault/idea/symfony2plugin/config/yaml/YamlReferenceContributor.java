@@ -37,6 +37,11 @@ public class YamlReferenceContributor extends PsiReferenceContributor {
                         new ConstantYamlReference(scalar)
                     };
                 }
+
+                @Override
+                public boolean acceptsTarget(@NotNull PsiElement target) {
+                    return Symfony2ProjectComponent.isEnabled(target);
+                }
             }
         );
 
@@ -278,6 +283,10 @@ public class YamlReferenceContributor extends PsiReferenceContributor {
 
         private boolean isValidServiceNameWithPrefix(@NotNull String serviceName) {
             return serviceName.length() > 1 && serviceName.startsWith(PREFIX) && !serviceName.startsWith(ESCAPED_PREFIX);
+        }
+
+        public boolean acceptsTarget(@NotNull PsiElement target) {
+            return Symfony2ProjectComponent.isEnabled(target);
         }
     }
 }

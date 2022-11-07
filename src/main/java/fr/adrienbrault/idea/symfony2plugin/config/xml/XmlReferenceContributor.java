@@ -65,6 +65,11 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                     String value = ((XmlText) parent).getValue();
                     return new PsiReference[]{ new PhpClassReference(psiElement, value) };
                 }
+
+                @Override
+                public boolean acceptsTarget(@NotNull PsiElement target) {
+                    return Symfony2ProjectComponent.isEnabled(target);
+                }
             }
         );
 
@@ -97,7 +102,11 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                     // get the service name "service_container"
                     String text = psiElement.getText();
                     return new PsiReference[]{ new PhpClassReference(psiElement, text) };
+                }
 
+                @Override
+                public boolean acceptsTarget(@NotNull PsiElement target) {
+                    return Symfony2ProjectComponent.isEnabled(target);
                 }
             }
         );
@@ -109,7 +118,6 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                 @NotNull
                 @Override
                 public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
-
                     if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
                         return new PsiReference[0];
                     }
@@ -125,6 +133,11 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                     }
 
                     return new PsiReference[]{ new ParameterXmlReference(psiElement, value) };
+                }
+
+                @Override
+                public boolean acceptsTarget(@NotNull PsiElement target) {
+                    return Symfony2ProjectComponent.isEnabled(target);
                 }
             }
         );
@@ -152,6 +165,11 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
 
                     return new PsiReference[]{ new ConstantXmlReference(psiElement, value) };
                 }
+
+                @Override
+                public boolean acceptsTarget(@NotNull PsiElement target) {
+                    return Symfony2ProjectComponent.isEnabled(target);
+                }
             }
         );
 
@@ -165,7 +183,6 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
             ),
 
             new PsiReferenceProvider() {
-
                 @NotNull
                 @Override
                 public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element, @NotNull ProcessingContext context) {
@@ -179,6 +196,11 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                     }
 
                     return new PsiReference[0];
+                }
+
+                @Override
+                public boolean acceptsTarget(@NotNull PsiElement target) {
+                    return Symfony2ProjectComponent.isEnabled(target);
                 }
             }
         );
@@ -238,11 +260,9 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                     .inFile(XmlHelper.getXmlFilePattern())
             ),
             new PsiReferenceProvider() {
-
                 @NotNull
                 @Override
                 public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element, @NotNull ProcessingContext context) {
-
                     if(!Symfony2ProjectComponent.isEnabled(element)) {
                         return new PsiReference[0];
                     }
@@ -255,6 +275,11 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
 
                     return new PsiReference[0];
                 }
+
+                @Override
+                public boolean acceptsTarget(@NotNull PsiElement target) {
+                    return Symfony2ProjectComponent.isEnabled(target);
+                }
             }
         );
 
@@ -264,7 +289,6 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                 XmlHelper.getTagAttributePattern("tag", "event").inside(XmlHelper.getInsideTagPattern("services"))
             ),
             new PsiReferenceProvider() {
-
                 @NotNull
                 @Override
                 public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element, @NotNull ProcessingContext context) {
@@ -277,6 +301,11 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                         new EventDispatcherEventReference(element, PsiElementUtils.removeIdeaRuleHack(PsiElementUtils.trimQuote(element.getText())))
                     };
 
+                }
+
+                @Override
+                public boolean acceptsTarget(@NotNull PsiElement target) {
+                    return Symfony2ProjectComponent.isEnabled(target);
                 }
             }
         );
@@ -294,6 +323,10 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
             return new PsiReference[] {
                 new ServiceIdReference((XmlAttributeValue) psiElement)
             };
+        }
+
+        public boolean acceptsTarget(@NotNull PsiElement target) {
+            return Symfony2ProjectComponent.isEnabled(target);
         }
     }
 
@@ -324,6 +357,10 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
             return new PsiReference[] {
                 new ServiceIdWithoutParameterReference((XmlAttributeValue) psiElement)
             };
+        }
+
+        public boolean acceptsTarget(@NotNull PsiElement target) {
+            return Symfony2ProjectComponent.isEnabled(target);
         }
     }
 
@@ -357,6 +394,10 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                 new ClassMethodStringPsiReference(psiElement, phpClass.getFQN(), targetMethod.getName()),
             };
         }
+
+        public boolean acceptsTarget(@NotNull PsiElement target) {
+            return Symfony2ProjectComponent.isEnabled(target);
+        }
     }
 
     private static class ClassMethodReferenceProvider extends PsiReferenceProvider {
@@ -379,6 +420,10 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
             }
 
             return new PsiReference[] { new ClassPublicMethodReference(psiElement, serviceDefinitionClass)};
+        }
+
+        public boolean acceptsTarget(@NotNull PsiElement target) {
+            return Symfony2ProjectComponent.isEnabled(target);
         }
     }
 
@@ -474,6 +519,10 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                 new ClassMethodStringPsiReference(psiElement, phpClass.getFQN(), classMethod.getName()),
             };
         }
+
+        public boolean acceptsTarget(@NotNull PsiElement target) {
+            return Symfony2ProjectComponent.isEnabled(target);
+        }
     }
 
     private static class ChainPsiReferenceProvider extends PsiReferenceProvider {
@@ -494,6 +543,10 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
             }
 
             return psiReferences.toArray(new PsiReference[0]);
+        }
+
+        public boolean acceptsTarget(@NotNull PsiElement target) {
+            return Symfony2ProjectComponent.isEnabled(target);
         }
     }
 
