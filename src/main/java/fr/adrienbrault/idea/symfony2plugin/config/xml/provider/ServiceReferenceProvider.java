@@ -16,7 +16,7 @@ public class ServiceReferenceProvider extends PsiReferenceProvider {
 
     @NotNull
     @Override
-    public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+    public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
 
         if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
             return new PsiReference[0];
@@ -28,4 +28,7 @@ public class ServiceReferenceProvider extends PsiReferenceProvider {
         return new PsiReference[]{ new ServiceXmlReference(psiElement, text) };
     }
 
+    public boolean acceptsTarget(@NotNull PsiElement target) {
+        return Symfony2ProjectComponent.isEnabled(target);
+    }
 }

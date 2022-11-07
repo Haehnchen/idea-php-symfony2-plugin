@@ -68,6 +68,11 @@ public class PhpRouteReferenceContributor extends PsiReferenceContributor {
 
                     return new PsiReference[]{ new RouteReference((StringLiteralExpression) psiElement) };
                 }
+
+                @Override
+                public boolean acceptsTarget(@NotNull PsiElement target) {
+                    return Symfony2ProjectComponent.isEnabled(target);
+                }
             }
         );
 
@@ -76,7 +81,7 @@ public class PhpRouteReferenceContributor extends PsiReferenceContributor {
             new PsiReferenceProvider() {
                 @NotNull
                 @Override
-                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+                public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
 
                     if (MethodMatcher.getMatchedSignatureWithDepth(psiElement, FORWARD_SIGNATURES) == null) {
                         return new PsiReference[0];
@@ -85,6 +90,10 @@ public class PhpRouteReferenceContributor extends PsiReferenceContributor {
                     return new PsiReference[]{ new ControllerReference((StringLiteralExpression) psiElement) };
                 }
 
+                @Override
+                public boolean acceptsTarget(@NotNull PsiElement target) {
+                    return Symfony2ProjectComponent.isEnabled(target);
+                }
             }
 
         );
@@ -94,7 +103,7 @@ public class PhpRouteReferenceContributor extends PsiReferenceContributor {
             new PsiReferenceProvider() {
                 @NotNull
                 @Override
-                public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+                public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
 
                     if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
                         return new PsiReference[0];
@@ -114,9 +123,12 @@ public class PhpRouteReferenceContributor extends PsiReferenceContributor {
                     }
 
                     return new PsiReference[]{ new RouteParameterReference((StringLiteralExpression) psiElement, routeName) };
-
                 }
 
+                @Override
+                public boolean acceptsTarget(@NotNull PsiElement target) {
+                    return Symfony2ProjectComponent.isEnabled(target);
+                }
             }
 
         );

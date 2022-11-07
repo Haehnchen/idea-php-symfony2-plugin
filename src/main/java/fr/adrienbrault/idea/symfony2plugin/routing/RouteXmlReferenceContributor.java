@@ -32,6 +32,11 @@ public class RouteXmlReferenceContributor extends PsiReferenceContributor {
                         new RouteActionReference(psiElement)
                     };
                 }
+
+                @Override
+                public boolean acceptsTarget(@NotNull PsiElement target) {
+                    return Symfony2ProjectComponent.isEnabled(target);
+                }
             }
         );
 

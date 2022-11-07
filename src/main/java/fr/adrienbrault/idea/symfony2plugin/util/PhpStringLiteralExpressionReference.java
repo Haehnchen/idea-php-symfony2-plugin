@@ -96,4 +96,8 @@ public class PhpStringLiteralExpressionReference extends PsiReferenceProvider {
             return methodName;
         }
     }
+
+    public boolean acceptsTarget(@NotNull PsiElement target) {
+        return Symfony2ProjectComponent.isEnabled(target);
+    }
 }
