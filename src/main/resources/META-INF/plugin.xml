@@ -108,9 +108,8 @@
         <typeProvider4 implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectManagerFindContextTypeProvider"/>
         <typeProvider4 implementation="fr.adrienbrault.idea.symfony2plugin.assistant.signature.MethodSignatureTypeProvider"/>
 
-
-        <libraryRoot implementation="fr.adrienbrault.idea.symfony2plugin.library.SymfonyMetaLibraryRootProvider"/>
-        <libraryRoot implementation="fr.adrienbrault.idea.symfony2plugin.library.DoctrineMetaLibraryRootProvider"/>
+        <libraryRoot id="doctrine-meta" path="/doctrine-meta" runtime="false"/>
+        <libraryRoot id="symfony-meta" path="/symfony-meta" runtime="false"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
