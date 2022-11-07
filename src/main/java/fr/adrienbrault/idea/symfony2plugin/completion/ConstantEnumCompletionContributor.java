@@ -19,10 +19,6 @@ import org.jetbrains.annotations.NotNull;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class ConstantEnumCompletionContributor extends CompletionContributor {
-
-
-    private static String[] HTTP_METHODS = new String[] {"POST", "GET", "HEAD", "DELETE", "PATCH", "PUT", "post", "get", "head", "delete", "patch", "put"};
-
     public static ConstantEnumCompletionProvider[] CONSTANTS_ENUMS = new ConstantEnumCompletionProvider[] {
         new ConstantEnumCompletionProvider(
             new MethodMatcher.CallToSignature("\\Symfony\\Component\\HttpFoundation\\Response", "setStatusCode"),
@@ -34,11 +30,6 @@ public class ConstantEnumCompletionContributor extends CompletionContributor {
             new EnumConstantFilter("\\Symfony\\Component\\HttpFoundation\\Response", "HTTP_"),
             ConstantEnumCompletionProvider.EnumType.RETURN
         ),
-        new ConstantEnumCompletionProvider(
-            new MethodMatcher.CallToSignature("\\Symfony\\Component\\HttpFoundation\\Request", "getMethod"),
-            new EnumConstantFilter(HTTP_METHODS),
-            ConstantEnumCompletionProvider.EnumType.RETURN
-        ),
     };
 
     public ConstantEnumCompletionContributor() {
@@ -46,16 +37,16 @@ public class ConstantEnumCompletionContributor extends CompletionContributor {
         // fields
 
         // $this->method(TEST:HTTP);
-        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<CompletionParameters>() {
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
             @Override
-            protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+            protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
                 PsiElement psiElement = completionParameters.getOriginalPosition();
-                if(psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getParent() instanceof MethodReference)) {
+                if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getParent() instanceof MethodReference)) {
                     return;
                 }
 
-                for(ConstantEnumCompletionProvider enumProvider: CONSTANTS_ENUMS) {
-                    if(enumProvider.getEnumType() == ConstantEnumCompletionProvider.EnumType.PARAMETER) {
+                for (ConstantEnumCompletionProvider enumProvider : CONSTANTS_ENUMS) {
+                    if (enumProvider.getEnumType() == ConstantEnumCompletionProvider.EnumType.PARAMETER) {
                         attachLookup(completionResultSet, (MethodReference) psiElement.getParent(), enumProvider);
                     }
                 }
@@ -64,29 +55,29 @@ public class ConstantEnumCompletionContributor extends CompletionContributor {
         });
 
         // $test = TEST::HTTP
-        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<CompletionParameters>() {
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
             @Override
-            protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+            protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
                 PsiElement psiElement = completionParameters.getOriginalPosition();
-                if(psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
+                if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
                     return;
                 }
 
                 BinaryExpression binaryExpression = PsiTreeUtil.getPrevSiblingOfType(psiElement, BinaryExpression.class);
-                if(binaryExpression == null) {
+                if (binaryExpression == null) {
                     return;
                 }
 
                 // OK: $response->getStatusCode() == Response::HTTP_BAD_GATEWAY
                 // @TODO: error we are complete outside of context: $response->getStatusCode() == Response::HTTP_BAD_GATEWAY || $response->getStatusCode() ==
                 PsiElement leftOperand = binaryExpression.getLeftOperand();
-                if(!(leftOperand instanceof MethodReference)) {
+                if (!(leftOperand instanceof MethodReference)) {
                     return;
                 }
 
-                for(ConstantEnumCompletionProvider enumProvider: CONSTANTS_ENUMS) {
-                    if(enumProvider.getEnumType() == ConstantEnumCompletionProvider.EnumType.RETURN) {
+                for (ConstantEnumCompletionProvider enumProvider : CONSTANTS_ENUMS) {
+                    if (enumProvider.getEnumType() == ConstantEnumCompletionProvider.EnumType.RETURN) {
                         attachLookup(completionResultSet, (MethodReference) leftOperand, enumProvider);
                     }
                 }
@@ -95,29 +86,29 @@ public class ConstantEnumCompletionContributor extends CompletionContributor {
 
         });
 
-        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<CompletionParameters>() {
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
             @Override
-            protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+            protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
                 PsiElement psiElement = completionParameters.getOriginalPosition();
-                if(psiElement == null|| !Symfony2ProjectComponent.isEnabled(psiElement)) {
+                if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
                     return;
                 }
 
                 BinaryExpression binaryExpression = PsiTreeUtil.getPrevSiblingOfType(psiElement, BinaryExpression.class);
-                if(binaryExpression == null) {
+                if (binaryExpression == null) {
                     return;
                 }
 
                 // OK: $response->getStatusCode() == Response::HTTP_BAD_GATEWAY
                 // @TODO: error we are complete outside of context: $response->getStatusCode() == Response::HTTP_BAD_GATEWAY || $response->getStatusCode() ==
                 PsiElement leftOperand = binaryExpression.getLeftOperand();
-                if(!(leftOperand instanceof MethodReference)) {
+                if (!(leftOperand instanceof MethodReference)) {
                     return;
                 }
 
-                for(ConstantEnumCompletionProvider enumProvider: CONSTANTS_ENUMS) {
-                    if(enumProvider.getEnumType() == ConstantEnumCompletionProvider.EnumType.RETURN) {
+                for (ConstantEnumCompletionProvider enumProvider : CONSTANTS_ENUMS) {
+                    if (enumProvider.getEnumType() == ConstantEnumCompletionProvider.EnumType.RETURN) {
                         attachLookup(completionResultSet, (MethodReference) leftOperand, enumProvider);
                     }
                 }
@@ -128,19 +119,19 @@ public class ConstantEnumCompletionContributor extends CompletionContributor {
 
         // strings
 
-        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<CompletionParameters>() {
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
             @Override
-            protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+            protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
                 PsiElement psiElement = completionParameters.getPosition().getOriginalElement();
-                if(!(psiElement.getParent() instanceof StringLiteralExpression) || !Symfony2ProjectComponent.isEnabled(psiElement)) {
+                if (!(psiElement.getParent() instanceof StringLiteralExpression) || !Symfony2ProjectComponent.isEnabled(psiElement)) {
                     return;
                 }
 
-                for(ConstantEnumCompletionProvider enumProvider: CONSTANTS_ENUMS) {
-                    if(enumProvider.getEnumType() == ConstantEnumCompletionProvider.EnumType.PARAMETER && enumProvider.getEnumConstantFilter().getStringValues() != null) {
-                        if(MethodMatcher.getMatchedSignatureWithDepth(psiElement.getParent(), new MethodMatcher.CallToSignature[] {enumProvider.getCallToSignature()}) != null) {
-                            for(String stringValue: enumProvider.getEnumConstantFilter().getStringValues()) {
+                for (ConstantEnumCompletionProvider enumProvider : CONSTANTS_ENUMS) {
+                    if (enumProvider.getEnumType() == ConstantEnumCompletionProvider.EnumType.PARAMETER && enumProvider.getEnumConstantFilter().getStringValues() != null) {
+                        if (MethodMatcher.getMatchedSignatureWithDepth(psiElement.getParent(), new MethodMatcher.CallToSignature[]{enumProvider.getCallToSignature()}) != null) {
+                            for (String stringValue : enumProvider.getEnumConstantFilter().getStringValues()) {
                                 completionResultSet.addElement(LookupElementBuilder.create(stringValue));
                             }
                         }
@@ -151,16 +142,16 @@ public class ConstantEnumCompletionContributor extends CompletionContributor {
 
         });
 
-        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<CompletionParameters>() {
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
             @Override
-            protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+            protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
                 PsiElement psiElement = completionParameters.getPosition().getOriginalElement();
-                if(!(psiElement.getParent() instanceof StringLiteralExpression) || !Symfony2ProjectComponent.isEnabled(psiElement)) {
+                if (!(psiElement.getParent() instanceof StringLiteralExpression) || !Symfony2ProjectComponent.isEnabled(psiElement)) {
                     return;
                 }
 
-                if(!(psiElement.getParent().getParent() instanceof BinaryExpression)) {
+                if (!(psiElement.getParent().getParent() instanceof BinaryExpression)) {
                     return;
                 }
 
@@ -170,13 +161,13 @@ public class ConstantEnumCompletionContributor extends CompletionContributor {
                 // OK: $response->getStatusCode() == Response::HTTP_BAD_GATEWAY
                 // @TODO: error we are complete outside of context: $response->getStatusCode() == Response::HTTP_BAD_GATEWAY || $response->getStatusCode() ==
                 PsiElement leftOperand = binaryExpression.getLeftOperand();
-                if(!(leftOperand instanceof MethodReference)) {
+                if (!(leftOperand instanceof MethodReference)) {
                     return;
                 }
 
-                for(ConstantEnumCompletionProvider enumProvider: CONSTANTS_ENUMS) {
-                    if(enumProvider.getEnumType() == ConstantEnumCompletionProvider.EnumType.RETURN && enumProvider.getEnumConstantFilter().getStringValues() != null && PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) leftOperand, enumProvider.getCallToSignature())) {
-                        for(String stringValue: enumProvider.getEnumConstantFilter().getStringValues()) {
+                for (ConstantEnumCompletionProvider enumProvider : CONSTANTS_ENUMS) {
+                    if (enumProvider.getEnumType() == ConstantEnumCompletionProvider.EnumType.RETURN && enumProvider.getEnumConstantFilter().getStringValues() != null && PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) leftOperand, enumProvider.getCallToSignature())) {
+                        for (String stringValue : enumProvider.getEnumConstantFilter().getStringValues()) {
                             completionResultSet.addElement(LookupElementBuilder.create(stringValue));
                         }
                     }
