@@ -14,8 +14,14 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.PhpPresentationUtil;
+import com.jetbrains.php.config.PhpLanguageFeature;
+import com.jetbrains.php.config.PhpLanguageLevel;
 import com.jetbrains.php.lang.lexer.PhpTokenTypes;
+import com.jetbrains.php.lang.parser.PhpElementTypes;
+import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
+import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.lang.psi.elements.impl.PhpPromotedFieldParameterImpl;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.php.refactoring.PhpRefactoringUtil;
 import com.jetbrains.php.refactoring.changeSignature.PhpChangeSignatureProcessor;
@@ -236,8 +242,132 @@ public class IncompletePropertyServiceInjectionContributor extends CompletionCon
             add(new Triple<>("twig", new String[] {"\\Twig\\Environment"}, new String[] {"render"}));
             add(new Triple<>(null, new String[] {"\\Psr\\Log\\LoggerInterface"}, new String[] {"error", "debug", "info"}));
             add(new Triple<>(null, new String[] {"\\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface"}, new String[] {"generate"}));
+            add(new Triple<>("router", new String[] {"\\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface"}, new String[] {"generate"}));
             add(new Triple<>(null, new String[] {"\\Doctrine\\ORM\\EntityManagerInterface", "\\Doctrine\\Persistence\\ObjectManager"}, new String[] {"flush", "find", "remove", "persist", "getRepository"}));
         }};
+    }
+
+    public static List<String> getInjectionService(@NotNull Project project, @NotNull String propertyNameFind) {
+        return getInjectionService(project, propertyNameFind, null);
+    }
+
+    public static List<String> getInjectionService(@NotNull Project project, @NotNull String propertyNameFindRaw, @Nullable String methodName) {
+        // @TODO: fill this list based on project usage
+
+        final String propertyNameFind = normalizeClassTypeKeywords(propertyNameFindRaw);
+
+        Map<String, Match> servicesMatch = new HashMap<>();
+
+        HashMap<String, String> alias = new HashMap<>() {{
+            put("twig", "\\Twig\\Environment");
+            put("template", "\\Twig\\Environment");
+            put("router", "\\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface");
+            put("em", "Doctrine\\ORM\\EntityManagerInterface");
+            put("om", "\\Doctrine\\Persistence\\ObjectManager");
+        }};
+
+        if (alias.containsKey(propertyNameFind.toLowerCase())) {
+            String key = propertyNameFind.toLowerCase();
+            if (PhpIndex.getInstance(project).getAnyByFQN(alias.get(key)).size() > 0) {
+                String fqn = alias.get(key);
+                servicesMatch.put(fqn, new Match(fqn, 4));
+            }
+        }
+
+        HashSet<String> objects = new HashSet<>();
+
+        objects.addAll(PhpIndex.getInstance(project).getAllClassFqns(PrefixMatcher.ALWAYS_TRUE));
+        objects.addAll(PhpIndex.getInstance(project).getAllInterfacesFqns(PrefixMatcher.ALWAYS_TRUE));
+
+        Set<String> collect = objects.stream().filter(s -> {
+            int i = s.lastIndexOf("\\");
+            if (i > 0) {
+                if (s.toLowerCase().contains("\\test\\")) {
+                    return false;
+                }
+
+                s = s.substring(i);
+            }
+
+            return !s.endsWith("Test")
+                && s.replaceAll("_", "").toLowerCase().contains(s.replaceAll("_", "").toLowerCase());
+        }).collect(Collectors.toSet());
+
+        for (String fqn : collect) {
+            // Bar\Foo => Foo
+            int i = fqn.lastIndexOf("\\");
+            String classPropertyNameRaw = i > 0
+                ? fqn.substring(i + 1)
+                : fqn;
+
+            String classPropertyName = normalizeClassTypeKeywords(classPropertyNameRaw);
+            if (StringUtils.isBlank(classPropertyName) || !classPropertyName.equalsIgnoreCase(propertyNameFind)) {
+                continue;
+            }
+
+            Collection<PhpClass> anyByFQN = PhpIndex.getInstance(project).getAnyByFQN(fqn);
+            if (anyByFQN.size() == 0) {
+                continue;
+            }
+
+            int weight = 0;
+            if (methodName != null && !hasMethodMatch(methodName, anyByFQN)) {
+                weight += 4;
+            }
+
+            if (anyByFQN.stream().anyMatch(PhpClass::isInterface)) {
+                weight += 2;
+            }
+
+            if (anyByFQN.stream().anyMatch(PhpClass::isAbstract)) {
+                weight += 1;
+            }
+
+            if (classPropertyNameRaw.toLowerCase().contains("decorator")) {
+                weight -= 3;
+            }
+
+            if (servicesMatch.containsKey(fqn)) {
+                servicesMatch.get(fqn).modifyWeight(weight);
+            } else {
+                servicesMatch.put(fqn, new Match(fqn, weight));
+            }
+        }
+
+        return servicesMatch.values().stream()
+            .sorted((o1, o2) -> Integer.compare(o2.weight, o1.weight))
+            .map(m -> m.fqn)
+            .collect(Collectors.toList());
+    }
+
+    private static class Match {
+        private final String fqn;
+        private int weight = 0;
+
+        public Match(@NotNull String fqn, int weight) {
+            this.fqn = fqn;
+            this.modifyWeight(weight);
+        }
+
+        public void modifyWeight(int weight) {
+            this.weight += weight;
+        }
+    }
+
+    private static boolean hasMethodMatch(@NotNull String methodName, Collection<PhpClass> anyByFQN) {
+        return anyByFQN.stream()
+            .anyMatch(phpClass -> phpClass.findMethodByName(methodName) != null);
+    }
+
+    private static String normalizeClassTypeKeywords(@NotNull String classPropertyName) {
+        classPropertyName = classPropertyName.replaceAll("_", "").toLowerCase();
+
+        for (String replace : new String[]{"interface", "abstract", "factory", "decorator"}) {
+            classPropertyName = StringUtils.removeEndIgnoreCase(classPropertyName, replace);
+            classPropertyName = StringUtils.removeStartIgnoreCase(classPropertyName, replace);
+        }
+
+        return classPropertyName;
     }
 
     @Nullable
@@ -306,5 +436,65 @@ public class IncompletePropertyServiceInjectionContributor extends CompletionCon
                 context.getEditor().getCaretModel().moveCaretRelatively(-2, 0, false, false, true);
             }
         }
+    }
+
+    public static void appendPropertyInjection(@NotNull PhpClass parentOfType, @NotNull String propertyName, @NotNull String typePhpClass) {
+        Method constructor = PhpIntroduceFieldHandler.getOrCreateConstructor(parentOfType);
+        if (constructor == null) {
+            return;
+        }
+
+        // use + constructor(Foo $foo)
+        String importedClass = PhpElementsUtil.insertUseIfNecessary(parentOfType, typePhpClass);
+
+        // "private readonly Foo $foo"
+        if (shouldUsePropertyPromotion(constructor)) {
+            Parameter parameter = PhpPsiElementFactory.createComplexParameter(parentOfType.getProject(), String.format("private readonly %s $%s", importedClass, propertyName));
+            Parameter parameterToInsertAfter = PhpChangeSignatureProcessor.findParameterToInsertAfter(constructor);
+            if (parameterToInsertAfter != null) {
+                addParameterAfter(constructor, parameter, parameterToInsertAfter);
+            } else if (constructor.getParameters().length == 0) {
+                PhpChangeSignatureProcessor.appendParameterToParameterList(constructor, parameter);
+            }
+
+            return;
+        }
+
+        PhpParameterInfo phpParameterInfo = new PhpParameterInfo(0, propertyName);
+        phpParameterInfo.setType(new PhpType().add(typePhpClass), importedClass);
+
+        // find added parameter; should mostly the last
+        PhpChangeSignatureProcessor.addParameterToFunctionSignature(parentOfType.getProject(), constructor, List.of(phpParameterInfo));
+
+        Parameter parameter = Arrays.stream(constructor.getParameters())
+            .filter(parameter1 -> propertyName.equalsIgnoreCase(parameter1.getName()))
+            .findFirst()
+            .orElse(null);
+
+        // add $this->foo
+        if (parameter != null) {
+            PhpRefactoringUtil.initializeFieldsByParameters(parentOfType, List.of(parameter), PhpModifier.Access.PRIVATE);
+        }
+    }
+
+    private static @Nullable Parameter addParameterAfter(@NotNull Function function, @NotNull Parameter parameter, @NotNull Parameter parameterToInsertAfter) {
+        PsiElement parameterList = PhpPsiUtil.getChildOfType(function, PhpElementTypes.PARAMETER_LIST);
+        assert parameterList != null;
+        return (Parameter)parameterList.addAfter(parameter, parameterList.addAfter(PhpPsiElementFactory.createComma(parameterList.getProject()), parameterToInsertAfter));
+    }
+
+    public static boolean shouldUsePropertyPromotion(@NotNull Function function) {
+        Parameter[] parameters = function.getParameters();
+        if (parameters.length == 0) {
+            return PhpLanguageLevel.current(function.getProject()).hasFeature(PhpLanguageFeature.PROPERTY_PROMOTION);
+        }
+
+        for (Parameter parameter : parameters) {
+            if (parameter instanceof PhpPromotedFieldParameterImpl) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

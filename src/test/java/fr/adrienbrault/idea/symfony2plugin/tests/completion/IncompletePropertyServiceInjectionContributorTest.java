@@ -1,7 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.completion;
 
 import com.jetbrains.php.lang.PhpFileType;
+import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
+import fr.adrienbrault.idea.symfony2plugin.completion.IncompletePropertyServiceInjectionContributor;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+
+import java.util.List;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -10,12 +15,11 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
 public class IncompletePropertyServiceInjectionContributorTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
         super.setUp();
-        myFixture.copyFileToProject("classes.php");
-        myFixture.copyFileToProject("classes_services.yml");
+        myFixture.copyFileToProject("IncompletePropertyServiceInjectionContributor.php");
     }
 
     public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/completion/yaml/fixtures";
+        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/completion/fixtures";
     }
 
     public void testInjectionCompletionUnknownPropertyProvidesInjectionCompletion() {
@@ -287,5 +291,64 @@ public class IncompletePropertyServiceInjectionContributorTest extends SymfonyLi
                 "}",
             "translator"
         );
+    }
+
+    public void testAppendPropertyInjection() {
+        PhpClass fromText = PhpPsiElementFactory.createFromText(getProject(), PhpClass.class, "<?php\n" +
+            "\n" +
+            "class Foobar\n" +
+            "{\n" +
+            "    public function __construct(private readonly \\DateTime $d)\n" +
+            "    {\n" +
+            "    }\n" +
+            "}"
+        );
+
+        IncompletePropertyServiceInjectionContributor.appendPropertyInjection(fromText, "router", "\\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface");
+
+        String text = fromText.getText();
+        assertTrue(text.contains("public function __construct(private readonly \\DateTime $d,private readonly UrlGeneratorInterface $router)"));
+
+        // test case for missing "__construct" not possible: "Template not found: PHP Getter Method" exception
+    }
+
+    public void testInjectionService() {
+        List<String> classes1 = IncompletePropertyServiceInjectionContributor.getInjectionService(getProject(), "router");
+        assertContainsElements(classes1, "\\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface");
+
+        List<String> classes2 = IncompletePropertyServiceInjectionContributor.getInjectionService(getProject(), "urlgenerator");
+        assertContainsElements(classes2, "\\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface");
+
+        List<String> classes3 = IncompletePropertyServiceInjectionContributor.getInjectionService(getProject(), "urlGenerator");
+        assertContainsElements(classes3, "\\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface");
+
+        List<String> classes4 = IncompletePropertyServiceInjectionContributor.getInjectionService(getProject(), "_urlGenerator");
+        assertContainsElements(classes4, "\\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface");
+
+        List<String> classes5 = IncompletePropertyServiceInjectionContributor.getInjectionService(getProject(), "__url_generator");
+        assertContainsElements(classes5, "\\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface");
+
+        List<String> classes6 = IncompletePropertyServiceInjectionContributor.getInjectionService(getProject(), "_router");
+        assertContainsElements(classes6, "\\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface");
+
+        List<String> classes7 = IncompletePropertyServiceInjectionContributor.getInjectionService(getProject(), "foobar");
+        assertContainsElements(classes7, "\\App\\Service\\FoobarInterface");
+
+        List<String> classes8 = IncompletePropertyServiceInjectionContributor.getInjectionService(getProject(), "_routerInterface");
+        assertContainsElements(classes8, "\\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface");
+
+        List<String> classes9 = IncompletePropertyServiceInjectionContributor.getInjectionService(getProject(), "foobarCar");
+        assertContainsElements(classes9, "\\App\\Service\\InterfaceFoobarCar");
+
+        List<String> classes10 = IncompletePropertyServiceInjectionContributor.getInjectionService(getProject(), "foobarCarInterface");
+        assertContainsElements(classes10, "\\App\\Service\\InterfaceFoobarCar");
+    }
+
+    public void testInjectionServiceWithName() {
+        List<String> classes1 = IncompletePropertyServiceInjectionContributor.getInjectionService(getProject(), "urlGenerator", "foobarUnknown");
+        assertContainsElements(classes1, "\\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface");
+
+        List<String> classes2 = IncompletePropertyServiceInjectionContributor.getInjectionService(getProject(), "urlGenerator", "generate");
+        assertContainsElements(classes2, "\\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface");
     }
 }
