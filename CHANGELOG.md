@@ -19,6 +19,16 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.236
+* Add quickfix for missing property: try to find a valid service injection and autowire it (Daniel Espendiller)
+* Remove custom implemention to fix phpstorm meta data files and use plugin "libraryRoot" path (Daniel Espendiller)
+* Psi reference only need to be provided when plugin is active (Daniel Espendiller)
+* [#2025](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2025) fix "Not a JSON Object" java error for Webpack manifest parsing (Daniel Espendiller)
+* [paid] Inspection for properly missing 'throw' for exception (Daniel Espendiller)
+* [paid] Inspection for supported shortcut method existence for Exceptions (Daniel Espendiller)
+* [paid] Inspection for supported shortcut method existence for "BinaryFileResponse" (Daniel Espendiller)
+* [paid] Inspection for supported shortcut method existence (Daniel Espendiller)
+
 ## 2022.1.235
 * [#2015](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2015) [Translation] Add inspection, autocompletion and navigation for named arguments (Daniel Espendiller)
 * [#2017](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2017) fix [Twig] Go to function definition does not work when using the first-class callable syntax (Daniel Espendiller)
