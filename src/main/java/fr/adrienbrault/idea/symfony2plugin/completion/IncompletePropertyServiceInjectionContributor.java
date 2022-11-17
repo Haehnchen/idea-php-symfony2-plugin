@@ -254,7 +254,13 @@ public class IncompletePropertyServiceInjectionContributor extends CompletionCon
     public static List<String> getInjectionService(@NotNull Project project, @NotNull String propertyNameFindRaw, @Nullable String methodName) {
         // @TODO: fill this list based on project usage
 
-        final String propertyNameFind = normalizeClassTypeKeywords(propertyNameFindRaw);
+        final Set<String> propertyNameFind = new HashSet<>();
+        propertyNameFind.add(normalizeClassTypeKeywords(propertyNameFindRaw));
+
+        // LoggerInterface $fooBarLogger
+        if (propertyNameFindRaw.endsWith("Logger") && !propertyNameFindRaw.equalsIgnoreCase("logger")) {
+            propertyNameFind.add("logger");
+        }
 
         Map<String, Match> servicesMatch = new HashMap<>();
 
@@ -266,11 +272,13 @@ public class IncompletePropertyServiceInjectionContributor extends CompletionCon
             put("om", "\\Doctrine\\Persistence\\ObjectManager");
         }};
 
-        if (alias.containsKey(propertyNameFind.toLowerCase())) {
-            String key = propertyNameFind.toLowerCase();
-            if (PhpIndex.getInstance(project).getAnyByFQN(alias.get(key)).size() > 0) {
-                String fqn = alias.get(key);
-                servicesMatch.put(fqn, new Match(fqn, 4));
+        for (String property : propertyNameFind) {
+            if (alias.containsKey(property.toLowerCase())) {
+                String key = property.toLowerCase();
+                if (PhpIndex.getInstance(project).getAnyByFQN(alias.get(key)).size() > 0) {
+                    String fqn = alias.get(key);
+                    servicesMatch.put(fqn, new Match(fqn, 4));
+                }
             }
         }
 
@@ -301,7 +309,7 @@ public class IncompletePropertyServiceInjectionContributor extends CompletionCon
                 : fqn;
 
             String classPropertyName = normalizeClassTypeKeywords(classPropertyNameRaw);
-            if (StringUtils.isBlank(classPropertyName) || !classPropertyName.equalsIgnoreCase(propertyNameFind)) {
+            if (StringUtils.isBlank(classPropertyName) || propertyNameFind.stream().noneMatch(classPropertyName::equalsIgnoreCase)) {
                 continue;
             }
 
@@ -317,6 +325,14 @@ public class IncompletePropertyServiceInjectionContributor extends CompletionCon
 
             if (anyByFQN.stream().anyMatch(PhpClass::isInterface)) {
                 weight += 2;
+
+                // Symfony\Contracts\EventDispatcher\EventDispatcherInterface
+                // Psr\Log\LoggerInterface
+                if (fqn.toLowerCase().contains("\\contracts\\") && fqn.toLowerCase().contains("\\symfony\\")) {
+                    weight += 2;
+                } else if(fqn.toLowerCase().contains("\\psr\\")) {
+                    weight += 2;
+                }
             }
 
             if (anyByFQN.stream().anyMatch(PhpClass::isAbstract)) {
