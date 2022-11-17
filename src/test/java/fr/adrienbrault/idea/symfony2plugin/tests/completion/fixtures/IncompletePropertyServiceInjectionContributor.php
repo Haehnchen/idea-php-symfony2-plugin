@@ -19,4 +19,13 @@ namespace App\Service
     {
         public function bar();
     }
+
+    class FoobarLongClassNameServiceFactory
+    {
+    }
+}
+
+namespace Psr\Log
+{
+    interface LoggerInterface() {}
 }

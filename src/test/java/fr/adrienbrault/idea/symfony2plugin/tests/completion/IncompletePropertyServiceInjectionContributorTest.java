@@ -342,6 +342,12 @@ public class IncompletePropertyServiceInjectionContributorTest extends SymfonyLi
 
         List<String> classes10 = IncompletePropertyServiceInjectionContributor.getInjectionService(getProject(), "foobarCarInterface");
         assertContainsElements(classes10, "\\App\\Service\\InterfaceFoobarCar");
+
+        List<String> classes11 = IncompletePropertyServiceInjectionContributor.getInjectionService(getProject(), "fooBarLogger");
+        assertContainsElements(classes11, "\\Psr\\Log\\LoggerInterface");
+
+        List<String> classes12 = IncompletePropertyServiceInjectionContributor.getInjectionService(getProject(), "foobarLongClassNameServiceFactory");
+        assertContainsElements(classes12, "\\App\\Service\\FoobarLongClassNameServiceFactory");
     }
 
     public void testInjectionServiceWithName() {
