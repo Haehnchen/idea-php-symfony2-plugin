@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.completion;
 
+import com.intellij.application.options.CodeStyle;
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
@@ -16,6 +17,7 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.PhpPresentationUtil;
 import com.jetbrains.php.config.PhpLanguageFeature;
 import com.jetbrains.php.config.PhpLanguageLevel;
+import com.jetbrains.php.lang.formatter.PhpCodeStyleSettings;
 import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
@@ -23,6 +25,8 @@ import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.elements.impl.PhpPromotedFieldParameterImpl;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
+import com.jetbrains.php.refactoring.PhpNameStyle;
+import com.jetbrains.php.refactoring.PhpNameUtil;
 import com.jetbrains.php.refactoring.PhpRefactoringUtil;
 import com.jetbrains.php.refactoring.changeSignature.PhpChangeSignatureProcessor;
 import com.jetbrains.php.refactoring.changeSignature.PhpParameterInfo;
@@ -43,6 +47,8 @@ import java.util.stream.Collectors;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class IncompletePropertyServiceInjectionContributor extends CompletionContributor {
+    private static final String[] CLASS_TYPE_NAMES = {"interface", "abstract", "decorator"};
+
     private static final PatternCondition<FieldReference> THIS_FIELD_NAME_PATTERN = new PatternCondition<>("this pattern") {
         @Override
         public boolean accepts(@NotNull FieldReference fieldReference, ProcessingContext context) {
@@ -282,6 +288,27 @@ public class IncompletePropertyServiceInjectionContributor extends CompletionCon
             }
         }
 
+        // try to find partial ending match for normalized properties: fooBarCar => barCar
+        String classPropertyNameForEndingMatch = fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(StringUtils.strip(propertyNameFindRaw, "_"));
+        for (String replace : CLASS_TYPE_NAMES) {
+            classPropertyNameForEndingMatch = StringUtils.removeEndIgnoreCase(classPropertyNameForEndingMatch, replace);
+            classPropertyNameForEndingMatch = StringUtils.removeStartIgnoreCase(classPropertyNameForEndingMatch, replace);
+        }
+
+        classPropertyNameForEndingMatch = fr.adrienbrault.idea.symfony2plugin.util.StringUtils.camelize(classPropertyNameForEndingMatch, true);
+
+        // collect partial match with least 3 parts
+        Set<String> endingMatches = new HashSet<>();
+        List<String> nameParts = PhpNameUtil.splitName(classPropertyNameForEndingMatch);
+        if (nameParts.size() > 2) {
+            PhpCodeStyleSettings settings = CodeStyle.getCustomSettings(PhpPsiElementFactory.createPsiFileFromText(project, "<?php"), PhpCodeStyleSettings.class);
+            endingMatches.addAll(PhpNameStyle.DECAPITALIZE.withStyle(settings.VARIABLE_NAMING_STYLE).generateNames(nameParts)
+                .stream()
+                .filter(s -> fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(s).split("_").length > 2)
+                .collect(Collectors.toSet())
+            );
+        }
+
         HashSet<String> objects = new HashSet<>();
 
         objects.addAll(PhpIndex.getInstance(project).getAllClassFqns(PrefixMatcher.ALWAYS_TRUE));
@@ -297,8 +324,7 @@ public class IncompletePropertyServiceInjectionContributor extends CompletionCon
                 s = s.substring(i);
             }
 
-            return !s.endsWith("Test")
-                && s.replaceAll("_", "").toLowerCase().contains(s.replaceAll("_", "").toLowerCase());
+            return !s.endsWith("Test");
         }).collect(Collectors.toSet());
 
         for (String fqn : collect) {
@@ -309,7 +335,18 @@ public class IncompletePropertyServiceInjectionContributor extends CompletionCon
                 : fqn;
 
             String classPropertyName = normalizeClassTypeKeywords(classPropertyNameRaw);
-            if (StringUtils.isBlank(classPropertyName) || propertyNameFind.stream().noneMatch(classPropertyName::equalsIgnoreCase)) {
+            if (StringUtils.isBlank(classPropertyName)) {
+                continue;
+            }
+
+            int weight;
+            if (propertyNameFind.stream().anyMatch(classPropertyName::equalsIgnoreCase)) {
+                // direct property match
+                weight = 3;
+            } else if(endingMatches.stream().anyMatch(s -> classPropertyName.toLowerCase().endsWith(s.toLowerCase()))) {
+                // partial property with ending match
+                weight = 1;
+            } else {
                 continue;
             }
 
@@ -318,7 +355,6 @@ public class IncompletePropertyServiceInjectionContributor extends CompletionCon
                 continue;
             }
 
-            int weight = 0;
             if (methodName != null && !hasMethodMatch(methodName, anyByFQN)) {
                 weight += 4;
             }
@@ -378,7 +414,7 @@ public class IncompletePropertyServiceInjectionContributor extends CompletionCon
     private static String normalizeClassTypeKeywords(@NotNull String classPropertyName) {
         classPropertyName = classPropertyName.replaceAll("_", "").toLowerCase();
 
-        for (String replace : new String[]{"interface", "abstract", "factory", "decorator"}) {
+        for (String replace : CLASS_TYPE_NAMES) {
             classPropertyName = StringUtils.removeEndIgnoreCase(classPropertyName, replace);
             classPropertyName = StringUtils.removeStartIgnoreCase(classPropertyName, replace);
         }
