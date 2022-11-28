@@ -309,7 +309,17 @@ public class IncompletePropertyServiceInjectionContributorTest extends SymfonyLi
         String text = fromText.getText();
         assertTrue(text.contains("public function __construct(private readonly \\DateTime $d,private readonly UrlGeneratorInterface $router)"));
 
-        // test case for missing "__construct" not possible: "Template not found: PHP Getter Method" exception
+        PhpClass fromText2 = PhpPsiElementFactory.createFromText(getProject(), PhpClass.class, "<?php\n" +
+            "\n" +
+            "class Foobar\n" +
+            "{\n" +
+            "}"
+        );
+
+        IncompletePropertyServiceInjectionContributor.appendPropertyInjection(fromText2, "router", "\\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface");
+
+        String text2 = fromText2.getText();
+        assertTrue(text2.contains("public function __construct(UrlGeneratorInterface $router)"));
     }
 
     public void testInjectionService() {

@@ -76,7 +76,7 @@
     <li>Several stub indexer to provide some live generation provider in replacement for compiled container</li>
     <li>Linemarker and "Related File" to provide possible goto targets and controller action</li>
     <li>Search Everywhere support and custom search for only Symfony related Symbols "Navigate > Symfony Symbol"</li>
-    <li>Bridge for <a href="http://plugins.jetbrains.com/plugin/7320">PHP Annotations</a> to support annotation related stuff</li>
+    <li>Bridge for <a href="https://plugins.jetbrains.com/plugin/7320">PHP Annotations</a> to support annotation related stuff</li>
     <li>Dotenv and Docker environments variable extraction for DIC parameter</li>
 </ul>
 
