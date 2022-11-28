@@ -260,8 +260,13 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
         Map<String, Route> routes = RouteHelper.getRoutesInsideUrlGeneratorFile(getProject(), myFixture.copyFileToProject("appTestUrlGenerator.php"));
         assertEquals("Lol\\CoreBundle\\Controller\\FeedbackController::feedbackAction", routes.get("feedback").getController());
         assertEquals("Lol\\ApiBundle\\Controller\\UsersController::getInfoAction", routes.get("api_users_getInfo").getController());
+        assertEquals("/api/users/getInfo", routes.get("api_users_getInfo").getPath());
+
         assertNull(routes.get("ru__RG__page"));
         assertNull(routes.get("_assetic_91dd2a8"));
+
+        assertEquals("/en/{alias}/", routes.get("page").getPath());
+        assertEquals("/en/feedback/", routes.get("feedback").getPath());
     }
 
     /**
@@ -272,6 +277,7 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         Route previewError = routes.get("_preview_error");
         assertEquals("error_controller::preview", previewError.getController());
+        assertEquals("/_error/{code}.{_format}", previewError.getPath());
         assertContainsElements(previewError.getDefaults().keySet(), "_format", "_controller");
         assertContainsElements(previewError.getRequirements().keySet(), "code");
         assertContainsElements(previewError.getVariables(), "code", "_format");
@@ -279,6 +285,9 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
         Route profiler = routes.get("_profiler");
         assertEquals("web_profiler.controller.profiler::panelAction", profiler.getController());
         assertContainsElements(profiler.getVariables(), "token");
+
+        Route exceptionCss = routes.get("_profiler_exception_css");
+        assertEquals("/_profiler/{token}/exception.css", exceptionCss.getPath());
     }
 
     /**

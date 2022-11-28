@@ -20,6 +20,7 @@ import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
+import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
@@ -54,7 +55,9 @@ import org.jetbrains.yaml.psi.*;
 
 import java.io.File;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -573,14 +576,38 @@ public class RouteHelper {
             }
         }
 
+        StringBuilder path = new StringBuilder();
         List<Collection<String>> tokens = new ArrayList<>();
         if(hashElementCollection.size() >= 4 && hashElementCollection.get(3) != null) {
             ArrayCreationExpression tokenArray = hashElementCollection.get(3);
             if(tokenArray != null) {
-                for(ArrayHashElement tokenArrayConfig: tokenArray.getHashElements()) {
-                    if(tokenArrayConfig.getValue() instanceof ArrayCreationExpression) {
-                        Map<String, String> arrayKeyValueMap = PhpElementsUtil.getArrayKeyValueMap((ArrayCreationExpression) tokenArrayConfig.getValue());
-                        tokens.add(arrayKeyValueMap.values());
+                List<PsiElement> urlParts = PhpPsiUtil.getChildren(tokenArray, psiElement ->
+                    psiElement.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE
+                );
+
+                Collections.reverse(urlParts);
+
+                for(PsiElement tokenArrayConfig: urlParts) {
+                    PsiElement firstChild = tokenArrayConfig.getFirstChild();
+                    if(firstChild instanceof ArrayCreationExpression) {
+                        List<PsiElement> foo = PhpPsiUtil.getChildren(firstChild, psiElement ->
+                            psiElement.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE
+                        );
+
+                        List<String> collect = foo.stream()
+                            .map(psiElement -> psiElement.getFirstChild() instanceof StringLiteralExpression ? ((StringLiteralExpression) psiElement.getFirstChild()).getContents() : null)
+                            .collect(Collectors.toList());
+
+                        if (collect.size() > 0) {
+                            path.append(collect.get(1));
+                        }
+
+                        if (collect.size() > 2) {
+                            String var = collect.get(3);
+                            if (var != null) {
+                                path.append("{").append(var).append("}");
+                            }
+                        }
                     }
                 }
             }
@@ -588,7 +615,7 @@ public class RouteHelper {
         }
 
         // hostTokens = 4 need them?
-        return new Route(routeName, variables, defaults, requirements, tokens);
+        return new Route(routeName, variables, defaults, requirements, tokens, (path.length() == 0) ? null : path.toString());
     }
 
     /**
@@ -623,13 +650,26 @@ public class RouteHelper {
             }
         }
 
+        StringBuilder path = new StringBuilder();
         List<Collection<String>> tokens = new ArrayList<>();
         if(hashElementCollection.size() >= 4 && hashElementCollection.get(3).getValue() instanceof ArrayCreationExpression) {
             ArrayCreationExpression tokenArray = (ArrayCreationExpression) hashElementCollection.get(3).getValue();
             if(tokenArray != null) {
-                for(ArrayHashElement tokenArrayConfig: tokenArray.getHashElements()) {
+                List<ArrayHashElement> result = StreamSupport.stream(tokenArray.getHashElements().spliterator(), false)
+                        .collect(Collectors.toList());
+
+                Collections.reverse(result);
+
+                for(ArrayHashElement tokenArrayConfig: result) {
                     if(tokenArrayConfig.getValue() instanceof ArrayCreationExpression) {
                         Map<String, String> arrayKeyValueMap = PhpElementsUtil.getArrayKeyValueMap((ArrayCreationExpression) tokenArrayConfig.getValue());
+                        path.append(arrayKeyValueMap.getOrDefault("1", null));
+
+                        String var = arrayKeyValueMap.getOrDefault("3", null);
+                        if (var != null) {
+                            path.append("{").append(var).append("}");
+                        }
+
                         tokens.add(arrayKeyValueMap.values());
                     }
                 }
@@ -638,7 +678,7 @@ public class RouteHelper {
         }
 
         // hostTokens = 4 need them?
-        return new Route(routeName, variables, defaults, requirements, tokens);
+        return new Route(routeName, variables, defaults, requirements, tokens, (path.length() == 0) ? null : path.toString());
     }
 
     private static boolean isProductionRouteName(String routeName) {

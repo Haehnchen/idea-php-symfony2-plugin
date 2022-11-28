@@ -44,6 +44,12 @@ public class Route implements RouteInterface {
             }
         }
     }
+
+    public Route(@NotNull String name, @NotNull Set<String> variables, @NotNull Map<String, String> defaults, @NotNull Map<String, String> requirements, @NotNull List<Collection<String>> tokens, @Nullable String path) {
+        this(name, variables, defaults, requirements, tokens);
+        this.path = path;
+    }
+
     public Route(@NotNull String name) {
         this.name = name;
     }
@@ -72,12 +78,7 @@ public class Route implements RouteInterface {
 
     @NotNull
     public Set<String> getVariables() {
-
-        if(this.path == null) {
-            return variables;
-        }
-
-        if(this.pathCache != null) {
+        if (this.pathCache != null) {
             return this.pathCache;
         }
 
@@ -85,7 +86,7 @@ public class Route implements RouteInterface {
         // /hello/{foo}/{foo1}/bar
         // /hello/{!foo}/{!foo<\d+>}
         // /hello/{foo<\d+>}
-        Set<String> hashSet = new TreeSet<>();
+        Set<String> hashSet = new TreeSet<>(this.variables);
         Matcher matcher = Pattern.compile("\\{!?(\\w+)[<[^}].*>]*}").matcher(this.path);
         while(matcher.find()){
             hashSet.add(matcher.group(1));
