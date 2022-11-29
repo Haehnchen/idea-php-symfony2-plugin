@@ -643,11 +643,10 @@ public class TwigPattern {
     }
 
     /**
-     * {{ form(foo) }}, {{ foo }}
+     * {{ form(foo) }}, {{ foo }}, {% if foo %}
      * NOT: {{ foo.bar }}, {{ 'foo.bar' }}
      */
     public static ElementPattern<PsiElement> getCompletablePattern() {
-        //noinspection unchecked
         return  PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER)
             .inside(PlatformPatterns.psiElement(TwigElementTypes.VARIABLE_REFERENCE))
             .andNot(
@@ -655,7 +654,8 @@ public class TwigPattern {
             ).inside(
                 PlatformPatterns.or(
                     PlatformPatterns.psiElement(TwigElementTypes.PRINT_BLOCK),
-                    PlatformPatterns.psiElement(TwigElementTypes.SET_TAG)
+                    PlatformPatterns.psiElement(TwigElementTypes.SET_TAG),
+                    PlatformPatterns.psiElement(TwigElementTypes.IF_TAG)
                 )
             )
             .withLanguage(TwigLanguage.INSTANCE);

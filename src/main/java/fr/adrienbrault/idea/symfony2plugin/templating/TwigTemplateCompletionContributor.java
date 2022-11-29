@@ -204,16 +204,16 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         extend(
             CompletionType.BASIC,
             TwigPattern.getCompletablePattern(),
-            new CompletionProvider<CompletionParameters>() {
+            new CompletionProvider<>() {
                 public void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet resultSet) {
 
-                    if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                    if (!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
                         return;
                     }
 
                     PsiElement psiElement = parameters.getPosition().getOriginalElement();
 
-                    for(Map.Entry<String, TwigExtension> entry : TwigExtensionParser.getFunctions(parameters.getPosition().getProject()).entrySet()) {
+                    for (Map.Entry<String, TwigExtension> entry : TwigExtensionParser.getFunctions(parameters.getPosition().getProject()).entrySet()) {
                         resultSet.addElement(new TwigExtensionLookupElement(psiElement.getProject(), entry.getKey(), entry.getValue()));
                     }
 
@@ -231,28 +231,28 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                     }
 
                     // {% import 'forms.html' as forms %}
-                    for(TwigMacro twigMacro: TwigUtil.getImportedMacros(psiElement.getContainingFile())) {
+                    for (TwigMacro twigMacro : TwigUtil.getImportedMacros(psiElement.getContainingFile())) {
                         resultSet.addElement(LookupElementBuilder.create(twigMacro.getName()).withTypeText(twigMacro.getTemplate(), true).withIcon(TwigIcons.TwigFileIcon).withInsertHandler(FunctionInsertHandler.getInstance()));
                     }
 
                     // {% from 'forms.html' import input as input_field, textarea %}
-                    for(TwigMacro twigMacro: TwigUtil.getImportedMacrosNamespaces(psiElement.getContainingFile())) {
+                    for (TwigMacro twigMacro : TwigUtil.getImportedMacrosNamespaces(psiElement.getContainingFile())) {
                         resultSet.addElement(LookupElementBuilder.create(twigMacro.getName())
                             .withTypeText(twigMacro.getTemplate(), true)
                             .withIcon(TwigIcons.TwigFileIcon).withInsertHandler(FunctionInsertHandler.getInstance())
                         );
                     }
 
-                    for(String twigSet: TwigUtil.getSetDeclaration(psiElement.getContainingFile())) {
+                    for (String twigSet : TwigUtil.getSetDeclaration(psiElement.getContainingFile())) {
                         resultSet.addElement(LookupElementBuilder.create(twigSet).withTypeText("set", true));
                     }
 
-                    for(Map.Entry<String, PsiVariable> entry: TwigTypeResolveUtil.collectScopeVariables(parameters.getOriginalPosition()).entrySet()) {
+                    for (Map.Entry<String, PsiVariable> entry : TwigTypeResolveUtil.collectScopeVariables(parameters.getOriginalPosition()).entrySet()) {
                         resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(TwigTypeResolveUtil.getTypeDisplayName(psiElement.getProject(), entry.getValue().getTypes()), true).withIcon(PhpIcons.CLASS));
                     }
 
-                    for(Map.Entry<String, TwigGlobalVariable> entry: ServiceXmlParserFactory.getInstance(psiElement.getProject(), TwigGlobalsServiceParser.class).getTwigGlobals().entrySet()) {
-                        if(entry.getValue().getTwigGlobalEnum() == TwigGlobalEnum.TEXT) {
+                    for (Map.Entry<String, TwigGlobalVariable> entry : ServiceXmlParserFactory.getInstance(psiElement.getProject(), TwigGlobalsServiceParser.class).getTwigGlobals().entrySet()) {
+                        if (entry.getValue().getTwigGlobalEnum() == TwigGlobalEnum.TEXT) {
                             resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(entry.getValue().getValue(), true).withIcon(PhpIcons.CONSTANT));
                         }
                     }
