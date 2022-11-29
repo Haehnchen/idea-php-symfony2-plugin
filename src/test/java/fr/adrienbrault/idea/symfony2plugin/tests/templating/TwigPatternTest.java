@@ -192,12 +192,27 @@ public class TwigPatternTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getCompletablePattern().accepts(
             findElementAt(TwigFileType.INSTANCE, "{{ b<caret>ar }}")
         ));
+
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getCompletablePattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{% if b<caret>ar %}{% endif %}")
+        ));
+
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getCompletablePattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ foo ? '' : b<caret>ar }}")
+        ));
+
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getCompletablePattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ foo ? b<caret>ar : '' }}")
+        ));
+
         assertFalse(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getCompletablePattern().accepts(
             findElementAt(TwigFileType.INSTANCE, "{{ foo.b<caret>ar }")
         ));
+
         assertFalse(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getCompletablePattern().accepts(
             findElementAt(TwigFileType.INSTANCE, "{{ <caret>foo.bar }")
         ));
+
         assertFalse(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getCompletablePattern().accepts(
             findElementAt(TwigFileType.INSTANCE, "{% b<caret>ar %}")
         ));
