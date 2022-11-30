@@ -19,6 +19,12 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.237
+* Provide route name completion by guessing it based on the following method (Daniel Espendiller)
+* Whitelist function completion for Twig in if tag (Daniel Espendiller)
+* Support path resolving for compiled routes (Daniel Espendiller)
+* Some more service name weight sorting based on fqn (Daniel Espendiller)
+
 ## 2022.1.236
 * Add quickfix for missing property: try to find a valid service injection and autowire it (Daniel Espendiller)
 * Remove custom implemention to fix phpstorm meta data files and use plugin "libraryRoot" path (Daniel Espendiller)
