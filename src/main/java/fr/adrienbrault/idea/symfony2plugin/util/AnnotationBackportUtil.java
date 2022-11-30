@@ -171,6 +171,7 @@ public class AnnotationBackportUtil {
      * "AppBundle\Controller\DefaultController::fooAction" => app_default_foo"
      * "Foo\ParkResortBundle\Controller\SubController\BundleController\FooController::nestedFooAction" => foo_parkresort_sub_bundle_foo_nestedfoo"
      */
+    @Nullable
     public static String getRouteByMethod(@NotNull PhpDocTag phpDocTag) {
         Method method = getMethodScope(phpDocTag);
         if (method == null) {
