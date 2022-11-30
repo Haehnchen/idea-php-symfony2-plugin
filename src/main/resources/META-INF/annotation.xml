@@ -9,6 +9,10 @@
         <!-- @Route("/foobar1") -->
         <PhpAnnotationCompletionProvider implementation="fr.adrienbrault.idea.symfony2plugin.routing.annotation.RouteUrlAnnotationCompletionProvider"/>
 
+        <!-- @Route(name="/foobar1") -->
+        <!-- #[Route(name: '/foobar1')] -->
+        <PhpAnnotationCompletionProvider implementation="fr.adrienbrault.idea.symfony2plugin.routing.annotation.RouteNameAnnotationCompletionProvider"/>
+
         <!-- @IsGranted -->
         <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.security.IsGrantedAnnotationReferences"/>
 
