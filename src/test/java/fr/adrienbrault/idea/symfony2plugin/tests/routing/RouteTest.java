@@ -3,6 +3,8 @@ package fr.adrienbrault.idea.symfony2plugin.tests.routing;
 import com.google.common.collect.ImmutableMap;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -35,7 +37,7 @@ public class RouteTest extends Assert {
 
     @Test
     public void testControllerNullable() {
-        assertNull(new Route("foo", new HashSet<>(), new HashMap<String, String>() {{
+        assertNull(new Route("foo", new HashSet<>(), new HashMap<>() {{
             put("_controller", null);
         }}, new HashMap<>(), new ArrayList<>()).getController());
 
@@ -52,6 +54,15 @@ public class RouteTest extends Assert {
         Set<String> variables = new Route(route).getVariables();
         assertEquals(2, variables.size());
         assertTrue("foobar", variables.containsAll(Arrays.asList("foo", "foobar")));
+
+        HashSet<String> variables1 = new HashSet<>();
+        variables1.add("foobar");
+
+        Set<String> variables2 = new Route("foobar_route", variables1, new HashMap<>(), new HashMap<>(), new ArrayList<>(), "/test/{car}").getVariables();
+        assertArrayEquals(new String[] {"car", "foobar"}, variables2.toArray());
+
+        Set<String> variables3 = new Route("foobar_route", variables1, new HashMap<>(), new HashMap<>(), new ArrayList<>(), null).getVariables();
+        assertArrayEquals(new String[] {"foobar"}, variables3.toArray());
     }
 
     @Test
