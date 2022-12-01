@@ -5,11 +5,13 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
-import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.psi.elements.*;
+import de.espend.idea.php.annotation.pattern.AnnotationPattern;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.routing.Route;
+import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import icons.SymfonyIcons;
@@ -18,9 +20,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -54,10 +54,58 @@ public class PhpGotoDeclarationCompletionContributor {
                             }
                         });
                     }
+
+                    // #[Route('/test/te<caret>st/test')]
+                    if (AnnotationPattern.getDefaultPropertyValue().accepts(psiElement) || AnnotationPattern.getAttributesDefaultPattern().accepts(context)) {
+                       psiElements.addAll(partialRouteNavigation(contents, psiElement, offset));
+                    }
                 }
             }
 
             return psiElements.toArray(new PsiElement[0]);
+        }
+
+        /**
+         * "#[Route('/test/te<caret>st/test')] => '/test/"
+         */
+        private static Collection<PsiElement> partialRouteNavigation(@NotNull String contents, @NotNull PsiElement psiElement, int offset) {
+            int calulatedOffset = offset - psiElement.getTextRange().getStartOffset();
+            if (calulatedOffset < 0) {
+                calulatedOffset = 0;
+            }
+
+            // find the nearest full path: "foo/fo<caret>/foo" => "/foo/"
+            int lastSlash = contents.indexOf("/", calulatedOffset);
+            if (lastSlash < 0) {
+                lastSlash = contents.length();
+            }
+
+            String partialUrl = contents.substring(0, lastSlash);
+            if (partialUrl.equalsIgnoreCase(contents) || partialUrl.length() < 3) {
+                return Collections.emptyList();
+            }
+
+            String partialUrlWithSlash = "/" + StringUtils.strip(contents.substring(0, lastSlash), "/") + "/";
+
+            Set<PsiElement> targets = new HashSet<>();
+
+            for (Route route : RouteHelper.getAllRoutes(psiElement.getProject()).values()) {
+                String path = route.getPath();
+                if (path == null) {
+                    continue;
+                }
+
+                if (StringUtils.strip(contents, "/").equalsIgnoreCase(StringUtils.strip(path, "/"))) {
+                    continue;
+                }
+
+                String routePathWithSlash = "/" + StringUtils.strip(path, "/") .toLowerCase() + "/";
+                if (routePathWithSlash.startsWith(partialUrlWithSlash.toLowerCase())) {
+                    targets.addAll(RouteHelper.getRouteDefinitionTargets(psiElement.getProject(), route.getName()));
+                }
+            }
+
+            return targets;
         }
     }
 

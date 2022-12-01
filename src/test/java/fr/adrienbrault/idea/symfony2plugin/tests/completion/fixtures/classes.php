@@ -37,3 +37,11 @@ namespace Doctrine\ORM
         public function add() {}
     }
 }
+
+namespace App\Controller
+{
+    class FooControllerInvoke
+    {
+        public function __invoke() {}
+    }
+}
