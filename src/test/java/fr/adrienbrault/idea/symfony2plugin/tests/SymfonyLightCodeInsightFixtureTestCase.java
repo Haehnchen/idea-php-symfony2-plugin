@@ -260,7 +260,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
 
         for (GotoDeclarationHandler gotoDeclarationHandler : Extensions.getExtensions(GotoDeclarationHandler.EP_NAME)) {
 
-            PsiElement[] gotoDeclarationTargets = gotoDeclarationHandler.getGotoDeclarationTargets(psiElement, 0, myFixture.getEditor());
+            PsiElement[] gotoDeclarationTargets = gotoDeclarationHandler.getGotoDeclarationTargets(psiElement, myFixture.getCaretOffset(), myFixture.getEditor());
             if(gotoDeclarationTargets == null || gotoDeclarationTargets.length == 0) {
                 continue;
             }

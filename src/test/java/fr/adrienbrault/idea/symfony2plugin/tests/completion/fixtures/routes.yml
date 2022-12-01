@@ -1,0 +1,4 @@
+foo_controller_invoke:
+  path: '/test/foobar/car/foobar'
+  defaults:
+    _controller: App\Controller\FooControllerInvoke
