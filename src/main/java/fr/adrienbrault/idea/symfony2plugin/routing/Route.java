@@ -82,11 +82,15 @@ public class Route implements RouteInterface {
             return this.pathCache;
         }
 
+        Set<String> hashSet = new TreeSet<>(this.variables);
+        if (this.path == null) {
+            return this.pathCache = hashSet;
+        }
+
         // possible fallback
         // /hello/{foo}/{foo1}/bar
         // /hello/{!foo}/{!foo<\d+>}
         // /hello/{foo<\d+>}
-        Set<String> hashSet = new TreeSet<>(this.variables);
         Matcher matcher = Pattern.compile("\\{!?(\\w+)[<[^}].*>]*}").matcher(this.path);
         while(matcher.find()){
             hashSet.add(matcher.group(1));
