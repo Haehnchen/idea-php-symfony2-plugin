@@ -37,6 +37,13 @@ namespace MyFooBarBundle\Controller
         public function foo2Action()
         {
         }
+
+        /**
+         * @Route("/foobar/edit/{id}/foo/{foo}")
+         */
+        public function indexFooBarEditAction()
+        {
+        }
     }
 
     /**
