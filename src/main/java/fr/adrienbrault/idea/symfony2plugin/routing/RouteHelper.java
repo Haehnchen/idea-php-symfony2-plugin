@@ -55,7 +55,8 @@ import org.jetbrains.yaml.psi.*;
 
 import java.io.File;
 import java.util.*;
-import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -135,13 +136,60 @@ public class RouteHelper {
 
     @NotNull
     public static PsiElement[] getMethods(@NotNull Project project, @NotNull String routeName) {
-        Collection<PsiElement> targets = new ArrayList<>();
+        Set<PsiElement> targets = new HashSet<>();
 
         for (Route route : getRoute(project, routeName)) {
             targets.addAll(Arrays.asList(getMethodsOnControllerShortcut(project, route.getController())));
         }
 
-        return targets.toArray(new PsiElement[targets.size()]);
+        return targets.toArray(new PsiElement[0]);
+    }
+
+    /**
+     * "/foo/bar" => "/foo/{edit}"
+     */
+    @NotNull
+    public static PsiElement[] getMethodsForPathWithPlaceholderMatch(@NotNull Project project, @NotNull String path) {
+        Set<PsiElement> targets = new HashSet<>();
+
+        Pattern placeholderMatcher = null;
+
+        for (Route route : RouteHelper.getAllRoutes(project).values()) {
+            String routePath = route.getPath();
+            if (routePath == null) {
+                continue;
+            }
+
+            if (path.equalsIgnoreCase(routePath)) {
+                targets.addAll(Arrays.asList(getMethodsOnControllerShortcut(project, route.getController())));
+            }
+
+            if (placeholderMatcher == null) {
+                placeholderMatcher = Pattern.compile("\\{[\\w-]+}");
+            }
+
+            Matcher matcher = placeholderMatcher.matcher(routePath);
+
+            // /foo/{foo} => // \Q/foo/\E{foo}
+            StringBuilder quoteWrapped = new StringBuilder();
+            int lastRegMatch = 0;
+            while (matcher.find()) {
+                int start = matcher.start();
+                quoteWrapped.append(Pattern.quote(routePath.substring(lastRegMatch, start))).append("[\\w-]+");
+                lastRegMatch = matcher.end();
+            }
+
+            String substring = routePath.substring(lastRegMatch);
+            if (!substring.isEmpty()) {
+                quoteWrapped.append(Pattern.quote(substring));
+            }
+
+            if (Pattern.matches(quoteWrapped.toString(), path)) {
+                targets.addAll(Arrays.asList(getMethodsOnControllerShortcut(project, route.getController())));
+            }
+        }
+
+        return targets.toArray(new PsiElement[0]);
     }
 
     /**

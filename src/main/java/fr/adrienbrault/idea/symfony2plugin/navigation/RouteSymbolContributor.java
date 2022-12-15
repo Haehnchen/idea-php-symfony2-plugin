@@ -5,7 +5,6 @@ import com.intellij.navigation.NavigationItem;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ArrayUtil;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
@@ -20,7 +19,7 @@ public class RouteSymbolContributor implements ChooseByNameContributor {
 
     @NotNull
     @Override
-    public String[] getNames(Project project, boolean b) {
+    public String @NotNull [] getNames(Project project, boolean b) {
         if(!Symfony2ProjectComponent.isEnabled(project)) {
             return new String[0];
         }
@@ -31,6 +30,11 @@ public class RouteSymbolContributor implements ChooseByNameContributor {
 
         for (Route route : routes.values()) {
             routeNames.add(route.getName());
+
+            String path = route.getPath();
+            if (path != null) {
+                routeNames.add(path);
+            }
         }
 
         return ArrayUtil.toStringArray(routeNames);
@@ -38,21 +42,21 @@ public class RouteSymbolContributor implements ChooseByNameContributor {
 
     @NotNull
     @Override
-    public NavigationItem[] getItemsByName(String routeName, String s2, Project project, boolean b) {
+    public NavigationItem @NotNull [] getItemsByName(String search, String s2, Project project, boolean b) {
         if(!Symfony2ProjectComponent.isEnabled(project)) {
             return new NavigationItem[0];
         }
 
         List<NavigationItem> navigationItems = new ArrayList<>();
 
-        for (PsiElement psiElement : RouteHelper.getMethods(project, routeName)) {
-            if(psiElement instanceof NavigationItem) {
-                navigationItems.add(new NavigationItemEx(psiElement, routeName, Symfony2Icons.ROUTE, "Route"));
-            }
+        for (PsiElement psiElement : RouteHelper.getMethods(project, search)) {
+            navigationItems.add(new NavigationItemEx(psiElement, search, psiElement.getIcon(0), "Symfony Route"));
         }
 
-        return navigationItems.toArray(new NavigationItem[navigationItems.size()]);
+        for (PsiElement psiElement : RouteHelper.getMethodsForPathWithPlaceholderMatch(project, s2)) {
+            navigationItems.add(new NavigationItemEx(psiElement, search, psiElement.getIcon(0), "Symfony Route"));
+        }
 
+        return navigationItems.toArray(new NavigationItem[0]);
     }
-
 }
