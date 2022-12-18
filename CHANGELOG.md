@@ -19,6 +19,11 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.238
+* "Search Everywhere": support search for controller action with url matching including placeholder (Daniel Espendiller)
+* Add partial url navigation for path definitions inside php (Daniel Espendiller)
+* [#2040](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2040) fix nullable path regression for: Twig path autocomplete stopped working after plugin update (Daniel Espendiller)
+
 ## 2022.1.237
 * Provide route name completion by guessing it based on the following method (Daniel Espendiller)
 * Whitelist function completion for Twig in if tag (Daniel Espendiller)
