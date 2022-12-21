@@ -24,3 +24,9 @@ namespace Sensio\Bundle\FrameworkExtraBundle\Configuration
     {
     }
 }
+
+namespace Symfony\Component\Security\Http\Attribute {
+    class IsGranted
+    {
+    }
+}
