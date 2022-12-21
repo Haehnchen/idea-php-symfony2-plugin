@@ -28,6 +28,16 @@ public class IsGrantedAnnotationReferencesTest extends SymfonyLightCodeInsightFi
                 "",
             "YAML_ROLE_USER_FOOBAR"
         );
+
+        assertCompletionContains(
+            "test.php",
+            "<?php\n" +
+                "use Symfony\\Component\\Security\\Http\\Attribute\\IsGranted;\n" +
+                "#[IsGranted('<caret>')]\n" +
+                "function test() {};\n" +
+                "",
+            "YAML_ROLE_USER_FOOBAR"
+        );
     }
 
     public void testThatIsGrantedAnnotationProvidesRoleNavigation() {
@@ -38,6 +48,16 @@ public class IsGrantedAnnotationReferencesTest extends SymfonyLightCodeInsightFi
                 "/**\n" +
                 "* @IsGranted(\"YAML_ROLE<caret>_USER_FOOBAR\")\n" +
                 "*/\n" +
+                "function test() {};\n" +
+                "",
+            PlatformPatterns.psiElement()
+        );
+
+        assertReferenceMatchOnParent(
+            "test.php",
+            "<?php\n" +
+                "use Symfony\\Component\\Security\\Http\\Attribute\\IsGranted;\n" +
+                "#[IsGranted('YAML_ROLE<caret>_USER_FOOBAR')]\n" +
                 "function test() {};\n" +
                 "",
             PlatformPatterns.psiElement()

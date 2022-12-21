@@ -12,17 +12,22 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
+
 /**
  * Support: @IsGranted("VOTER_ATTRIBUTE")
  */
 public class IsGrantedAnnotationReferences implements PhpAnnotationReferenceProvider {
-    private static String IS_GRANTED_CLASS = "Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\IsGranted";
+    private static final String[] IS_GRANTED_CLASS = new String[] {
+        "Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\IsGranted",
+        "Symfony\\Component\\Security\\Http\\Attribute\\IsGranted" // Symfony 6.2
+    };
 
     @Nullable
     @Override
     public PsiReference[] getPropertyReferences(AnnotationPropertyParameter annotationPropertyParameter, PhpAnnotationReferenceProviderParameter phpAnnotationReferenceProviderParameter) {
         Project project = annotationPropertyParameter.getProject();
-        if(!Symfony2ProjectComponent.isEnabled(project) || !(annotationPropertyParameter.getElement() instanceof StringLiteralExpression) || !PhpElementsUtil.isEqualClassName(annotationPropertyParameter.getPhpClass(), IS_GRANTED_CLASS)) {
+        if(!Symfony2ProjectComponent.isEnabled(project) || !(annotationPropertyParameter.getElement() instanceof StringLiteralExpression) || Arrays.stream(IS_GRANTED_CLASS).noneMatch(s -> PhpElementsUtil.isEqualClassName(annotationPropertyParameter.getPhpClass(), s))) {
             return new PsiReference[0];
         }
 
