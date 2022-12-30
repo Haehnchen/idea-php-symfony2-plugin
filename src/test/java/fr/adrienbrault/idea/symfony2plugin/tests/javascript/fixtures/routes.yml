@@ -1,0 +1,4 @@
+foo_controller_invoke:
+  pattern: /test/{foo}/car/foobar
+  defaults:
+    _controller: App\Controller\AppController

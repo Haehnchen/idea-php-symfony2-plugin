@@ -206,6 +206,9 @@
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.PhpGotoDeclarationCompletionContributor$Completion"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.completion.PhpGotoDeclarationCompletionContributor$GotoDeclaration"/>
 
+        <completion.contributor language="JavaScript" implementationClass="fr.adrienbrault.idea.symfony2plugin.javascript.JavascriptCompletionNavigationContributor$Completion"/>
+        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.javascript.JavascriptCompletionNavigationContributor$GotoDeclaration"/>
+
         <!---
         <completion.contributor language="PHP" order="last" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.IncompletePropertyServiceInjectionContributor"/>
         -->
