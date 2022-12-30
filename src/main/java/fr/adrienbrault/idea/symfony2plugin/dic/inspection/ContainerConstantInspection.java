@@ -27,7 +27,7 @@ public class ContainerConstantInspection extends LocalInspectionTool {
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
         return new PsiElementVisitor() {
             @Override
-            public void visitFile(PsiFile psiFile) {
+            public void visitFile(@NotNull PsiFile psiFile) {
                 if(psiFile instanceof XmlFile) {
                     xmlVisitor(holder, psiFile);
                 } else if(psiFile instanceof YAMLFile) {
@@ -39,10 +39,10 @@ public class ContainerConstantInspection extends LocalInspectionTool {
     private void yamlVisitor(@NotNull ProblemsHolder holder, @NotNull PsiFile psiFile) {
         psiFile.acceptChildren(new PsiRecursiveElementVisitor() {
             @Override
-            public void visitElement(PsiElement psiElement) {
+            public void visitElement(@NotNull PsiElement psiElement) {
                 if(psiElement instanceof YAMLScalar) {
                     String textValue = ((YAMLScalar) psiElement).getTextValue();
-                    if(textValue.length() > 0 && textValue.startsWith("!php/const:")) {
+                    if(textValue.startsWith("!php/const:")) {
                         String constantName = textValue.substring(11);
                         if(StringUtils.isNotBlank(constantName) && ServiceContainerUtil.getTargetsForConstant(psiElement.getProject(), constantName).size() == 0) {
                             holder.registerProblem(psiElement, MESSAGE, ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
@@ -58,7 +58,7 @@ public class ContainerConstantInspection extends LocalInspectionTool {
     private void xmlVisitor(@NotNull ProblemsHolder holder, @NotNull PsiFile psiFile) {
         psiFile.acceptChildren(new PsiRecursiveElementVisitor() {
             @Override
-            public void visitElement(PsiElement psiElement) {
+            public void visitElement(@NotNull PsiElement psiElement) {
                 if(!XmlHelper.getArgumentValueWithTypePattern("constant").accepts(psiElement)) {
                     super.visitElement(psiElement);
                     return;

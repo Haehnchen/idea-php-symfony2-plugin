@@ -515,69 +515,81 @@
                          groupName="Service"
                          enabledByDefault="true"
                          level="WARNING"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.ServiceNamedArgumentExistsInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.ServiceNamedArgumentExistsInspection"
+                         language="yaml"/>
 
         <intentionAction>
+            <language>PHP</language>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.PhpServiceIntention</className>
             <category>PHP</category>
             <descriptionDirectoryName>Symfony2ConstructorCreateServer</descriptionDirectoryName>
         </intentionAction>
 
         <intentionAction>
+            <language>XML</language>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.XmlServiceArgumentIntention</className>
             <category>XML</category>
             <descriptionDirectoryName>XmlServiceArgumentIntention</descriptionDirectoryName>
         </intentionAction>
 
         <intentionAction>
+            <language>XML</language>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.xml.XmlServiceSuggestIntention</className>
             <category>XML</category>
             <descriptionDirectoryName>XmlServiceSuggestIntention</descriptionDirectoryName>
         </intentionAction>
 
         <intentionAction>
+            <language>XML</language>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.xml.XmlServiceTagIntention</className>
             <category>XML</category>
             <descriptionDirectoryName>SymfonyXmlServiceTagIntention</descriptionDirectoryName>
         </intentionAction>
 
         <intentionAction>
+            <language>yaml</language>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.yaml.YamlServiceTagIntention</className>
             <category>yaml</category>
             <descriptionDirectoryName>SymfonyYamlServiceTagIntention</descriptionDirectoryName>
         </intentionAction>
 
         <intentionAction>
+            <language>PHP</language>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.PhpBundleCompilerPassIntention</className>
             <category>PHP</category>
             <descriptionDirectoryName>PhpBundleCompilerPassIntention</descriptionDirectoryName>
         </intentionAction>
 
         <intentionAction>
+            <language>PHP</language>
             <className>fr.adrienbrault.idea.symfony2plugin.form.intention.FormStringToClassConstantIntention</className>
             <category>PHP</category>
             <descriptionDirectoryName>FormStringToClassConstantIntention</descriptionDirectoryName>
         </intentionAction>
 
         <intentionAction>
+            <language>PHP</language>
             <className>fr.adrienbrault.idea.symfony2plugin.doctrine.intention.DoctrineRepositoryClassConstantIntention</className>
             <category>PHP</category>
             <descriptionDirectoryName>DoctrineRepositoryClassConstantIntention</descriptionDirectoryName>
         </intentionAction>
 
         <intentionAction>
+            <language>Twig</language>
             <className>fr.adrienbrault.idea.symfony2plugin.translation.intention.TwigTranslationKeyIntention</className>
             <category>Twig</category>
             <descriptionDirectoryName>TwigTranslationKeyIntention</descriptionDirectoryName>
         </intentionAction>
 
         <intentionAction>
+            <language>PHP</language>
             <className>fr.adrienbrault.idea.symfony2plugin.dic.intention.PhpServiceArgumentIntention</className>
             <category>PHP</category>
             <descriptionDirectoryName>DoctrineRepositoryClassConstantIntention</descriptionDirectoryName>
         </intentionAction>
 
         <intentionAction>
+            <language>PHP</language>
             <className>fr.adrienbrault.idea.symfony2plugin.dic.intention.PhpPropertyArgumentIntention</className>
             <category>PHP</category>
             <descriptionDirectoryName>PhpPropertyArgumentIntention</descriptionDirectoryName>
