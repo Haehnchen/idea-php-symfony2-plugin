@@ -53,7 +53,7 @@ public class EventMethodCallInspection extends LocalInspectionTool {
 
         return new PsiElementVisitor() {
             @Override
-            public void visitFile(PsiFile psiFile) {
+            public void visitFile(@NotNull PsiFile psiFile) {
                 if(psiFile instanceof XmlFile) {
                     visitXmlFile(psiFile, holder, new ContainerCollectionResolver.LazyServiceCollector(holder.getProject()));
                 } else if(psiFile instanceof YAMLFile) {
@@ -73,7 +73,7 @@ public class EventMethodCallInspection extends LocalInspectionTool {
 
         psiFile.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
             @Override
-            public void visitElement(PsiElement element) {
+            public void visitElement(@NotNull PsiElement element) {
                 annotateCallMethod(element, holder, lazyServiceCollector);
                 super.visitElement(element);
             }
@@ -85,7 +85,7 @@ public class EventMethodCallInspection extends LocalInspectionTool {
 
         psiFile.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
             @Override
-            public void visitElement(PsiElement element) {
+            public void visitElement(@NotNull PsiElement element) {
 
                 if(XmlHelper.getTagAttributePattern("tag", "method").inside(XmlHelper.getInsideTagPattern("services")).inFile(XmlHelper.getXmlFilePattern()).accepts(element) ||
                    XmlHelper.getTagAttributePattern("call", "method").inside(XmlHelper.getInsideTagPattern("services")).inFile(XmlHelper.getXmlFilePattern()).accepts(element)
@@ -99,7 +99,7 @@ public class EventMethodCallInspection extends LocalInspectionTool {
                     }
 
                     String serviceClassValue = XmlHelper.getServiceDefinitionClass(element);
-                    if(serviceClassValue != null && StringUtils.isNotBlank(serviceClassValue)) {
+                    if(StringUtils.isNotBlank(serviceClassValue)) {
                         registerMethodProblem(psiElements[1], holder, serviceClassValue, lazyServiceCollector);
                     }
 
@@ -240,7 +240,7 @@ public class EventMethodCallInspection extends LocalInspectionTool {
         }
 
         @Override
-        public void visitElement(PsiElement element) {
+        public void visitElement(@NotNull PsiElement element) {
             super.visitElement(element);
 
             if(!(element instanceof StringLiteralExpression)) {
