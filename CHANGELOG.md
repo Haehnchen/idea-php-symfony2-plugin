@@ -19,6 +19,12 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.239
+* Disable new preview feature for "PhpPropertyArgumentIntention"; throw exception also when the feature is not really used (Daniel Espendiller)
+* Support javascript / typescript url pattern for completion and navigation (Daniel Espendiller)
+* Provide intentionAction / localInspection where only one language is needed (Daniel Espendiller)
+* Support IsGranted via new Symfony 6.2 attribute class (Daniel Espendiller)
+
 ## 2022.1.238
 * "Search Everywhere": support search for controller action with url matching including placeholder (Daniel Espendiller)
 * Add partial url navigation for path definitions inside php (Daniel Espendiller)
