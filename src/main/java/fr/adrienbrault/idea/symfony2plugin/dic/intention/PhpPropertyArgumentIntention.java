@@ -41,6 +41,11 @@ public class PhpPropertyArgumentIntention extends IntentionAndQuickFixAction imp
     }
 
     @Override
+    public @NotNull IntentionPreviewInfo generatePreview(@NotNull Project project, @NotNull Editor editor, @NotNull PsiFile file) {
+        return IntentionPreviewInfo.EMPTY;
+    }
+
+    @Override
     public @NotNull IntentionPreviewInfo generatePreview(@NotNull Project project, @NotNull ProblemDescriptor previewDescriptor) {
         return IntentionPreviewInfo.EMPTY;
     }
