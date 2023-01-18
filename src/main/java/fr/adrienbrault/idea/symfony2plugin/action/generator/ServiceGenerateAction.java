@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.action.generator;
 
 import com.intellij.codeInsight.CodeInsightActionHandler;
 import com.intellij.codeInsight.actions.CodeInsightAction;
+import com.intellij.codeInsight.intention.FileModifier;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
@@ -63,6 +64,11 @@ public class ServiceGenerateAction extends CodeInsightAction {
                     return;
                 }
 
+            }
+
+            @Override
+            public @Nullable FileModifier getFileModifierForPreview(@NotNull PsiFile target) {
+                return null;
             }
 
             @Override
