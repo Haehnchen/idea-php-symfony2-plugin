@@ -19,6 +19,9 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.242
+* Fix more preview intention features breaks: Exceptions occurred on invoking the intention 'Generate Symfony service' on a copy of the file. (Daniel Espendiller)
+
 ## 2022.1.241
 * Fix more preview intention features breaks (Daniel Espendiller)
 
