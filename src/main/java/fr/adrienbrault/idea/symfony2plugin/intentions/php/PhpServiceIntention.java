@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.intentions.php;
 
 import com.intellij.codeInsight.intention.FileModifier;
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
+import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
@@ -22,6 +23,11 @@ public class PhpServiceIntention extends PsiElementBaseIntentionAction {
     @Override
     public @Nullable FileModifier getFileModifierForPreview(@NotNull PsiFile target) {
         return null;
+    }
+
+    @Override
+    public @NotNull IntentionPreviewInfo generatePreview(@NotNull Project project, @NotNull Editor editor, @NotNull PsiFile file) {
+        return IntentionPreviewInfo.EMPTY;
     }
 
     @Override
