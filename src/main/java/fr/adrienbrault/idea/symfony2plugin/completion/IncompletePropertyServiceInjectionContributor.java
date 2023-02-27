@@ -324,7 +324,9 @@ public class IncompletePropertyServiceInjectionContributor extends CompletionCon
                 s = s.substring(i);
             }
 
-            return !s.endsWith("Test");
+            return !s.endsWith("Test")
+                && !s.toLowerCase().contains("_phpstan_")
+                && !s.toLowerCase().contains("rectorprefix");
         }).collect(Collectors.toSet());
 
         for (String fqn : collect) {
@@ -367,7 +369,7 @@ public class IncompletePropertyServiceInjectionContributor extends CompletionCon
                 if (fqn.toLowerCase().contains("\\contracts\\") && fqn.toLowerCase().contains("\\symfony\\")) {
                     weight += 2;
                 } else if(fqn.toLowerCase().contains("\\psr\\")) {
-                    weight += 2;
+                    weight += 3;
                 }
             }
 
