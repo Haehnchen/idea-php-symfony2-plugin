@@ -453,7 +453,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                 if(field.getRelationType() != null) {
                     lookup = lookup.withTailText("(" + field.getRelationType() + ")", true);
                     lookup = lookup.withTypeText(field.getRelation(), true);
-                    lookup = lookup.withIcon(PhpIcons.CLASS_ICON);
+                    lookup = lookup.withIcon(PhpIcons.CLASS);
                 } else {
                     // relation tail text wins
                     String column = field.getColumn();

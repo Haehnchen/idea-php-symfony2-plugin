@@ -15,7 +15,6 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.codeInspection.*;
-import com.intellij.codeInspection.defaultFileTemplateUsage.DefaultFileTemplateUsageInspection;
 import com.intellij.lang.LanguageAnnotators;
 import com.intellij.lang.annotation.Annotation;
 import com.intellij.lang.annotation.AnnotationSession;
@@ -577,9 +576,8 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
                 continue;
             }
 
-            // fix for: "Default template not found: File Header"
             // fix for: should not be called, use visitFile in createVisitor instead
-            if(object instanceof DefaultFileTemplateUsageInspection || object instanceof JSInspection) {
+            if(object instanceof JSInspection) {
                 continue;
             }
 
@@ -587,7 +585,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
 
             psiFile.acceptChildren(new PsiRecursiveElementVisitor() {
                 @Override
-                public void visitElement(PsiElement element) {
+                public void visitElement(@NotNull PsiElement element) {
                     psiElementVisitor.visitElement(element);
                     super.visitElement(element);
                 }

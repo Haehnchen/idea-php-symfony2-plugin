@@ -55,7 +55,7 @@ public class ControllerToolboxProvider implements PhpToolboxProviderInterface {
             @Nullable
             @Override
             public Icon getIcon() {
-                return PhpIcons.METHOD_ICON;
+                return PhpIcons.METHOD;
             }
 
             @Nullable

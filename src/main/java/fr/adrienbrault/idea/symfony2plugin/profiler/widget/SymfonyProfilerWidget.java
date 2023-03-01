@@ -6,7 +6,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.popup.ListPopup;
+import com.intellij.openapi.ui.popup.JBPopup;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.openapi.wm.StatusBarWidget;
@@ -140,9 +140,8 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
         }
     }
 
-    @Nullable
     @Override
-    public ListPopup getPopupStep() {
+    public @Nullable JBPopup getPopup() {
         if (isDisposed()) {
             return null;
         }

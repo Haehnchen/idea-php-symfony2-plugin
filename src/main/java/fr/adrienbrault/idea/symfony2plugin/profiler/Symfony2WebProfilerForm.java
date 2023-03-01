@@ -120,7 +120,7 @@ public class Symfony2WebProfilerForm {
             }
 
             if(defaultDataCollector.getController() != null) {
-                listModel.addElement(new RequestDetails(defaultDataCollector.getController(), PhpIcons.METHOD_ICON));
+                listModel.addElement(new RequestDetails(defaultDataCollector.getController(), PhpIcons.METHOD));
             }
 
             if(defaultDataCollector.getTemplate() != null) {
