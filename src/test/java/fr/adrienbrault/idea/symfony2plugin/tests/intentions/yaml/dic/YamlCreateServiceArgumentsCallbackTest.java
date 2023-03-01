@@ -6,7 +6,6 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.containers.ContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.intentions.yaml.dict.YamlCreateServiceArgumentsCallback;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import org.jetbrains.yaml.YAMLElementGenerator;
 import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
@@ -20,10 +19,11 @@ import java.util.Collection;
 public class YamlCreateServiceArgumentsCallbackTest extends SymfonyLightCodeInsightFixtureTestCase {
 
     public void testYamlServiceArgumentCreation() {
-        YAMLFile yamlFile = YAMLElementGenerator.getInstance(getProject()).createDummyYamlWithText("" +
-            "services:\n" +
-            "    foo:\n" +
-            "        class: Foo\\Foo\n"
+        YAMLFile yamlFile = (YAMLFile) myFixture.configureByText("test.yml", """
+            services:
+                foo:
+                    class: Foo\\Foo
+            """
         );
 
         Collection<YAMLKeyValue> yamlKeyValues = PsiTreeUtil.collectElementsOfType(yamlFile, YAMLKeyValue.class);
@@ -33,26 +33,21 @@ public class YamlCreateServiceArgumentsCallbackTest extends SymfonyLightCodeInsi
 
         final YamlCreateServiceArgumentsCallback callback = new YamlCreateServiceArgumentsCallback(services);
 
-        CommandProcessor.getInstance().executeCommand(getProject(), new Runnable() {
-            @Override
-            public void run() {
-                ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                    @Override
-                    public void run() {
-                        callback.insert(Arrays.asList("foo", null, ""));
-                    }
-                });
+        CommandProcessor.getInstance().executeCommand(
+            getProject(),
+            () -> ApplicationManager.getApplication().runWriteAction(() -> callback.insert(Arrays.asList("foo", null, ""))),
+            null,
+            null
+        );
 
-            }
-        }, null, null);
-
-        assertEquals("" +
-                        "services:\n" +
-                        "    foo:\n" +
-                        "      class: Foo\\Foo\n" +
-                        "      arguments:\n" +
-                        "        [ '@foo', '@?', '@?' ]\n",
-                yamlFile.getText()
+        assertEquals("""
+                services:
+                    foo:
+                      class: Foo\\Foo
+                      arguments:
+                        [ '@foo', '@?', '@?' ]
+                """,
+            yamlFile.getText()
         );
     }
 }

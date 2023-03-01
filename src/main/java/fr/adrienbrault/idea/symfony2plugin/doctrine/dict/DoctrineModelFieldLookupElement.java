@@ -47,7 +47,7 @@ public class DoctrineModelFieldLookupElement extends LookupElement {
 
         if(this.doctrineModelField.getRelation() != null) {
             presentation.setTypeText(this.doctrineModelField.getRelation());
-            presentation.setIcon(PhpIcons.CLASS_ICON);
+            presentation.setIcon(PhpIcons.CLASS);
         }
 
     }

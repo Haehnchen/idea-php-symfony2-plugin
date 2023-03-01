@@ -278,7 +278,7 @@ public class TwigExtensionParser  {
     @NotNull
     public static Icon getIcon(@NotNull TwigExtensionType twigExtensionType) {
         if(twigExtensionType == TwigExtensionType.FUNCTION_NODE) {
-            return PhpIcons.CLASS_INITIALIZER;
+            return PhpIcons.CONSTRUCTOR;
         }
 
         if(twigExtensionType == TwigExtensionType.SIMPLE_FUNCTION) {
@@ -286,7 +286,7 @@ public class TwigExtensionParser  {
         }
 
         if(twigExtensionType == TwigExtensionType.FUNCTION_METHOD) {
-            return PhpIcons.METHOD_ICON;
+            return PhpIcons.METHOD;
         }
 
         if(twigExtensionType == TwigExtensionType.FILTER) {
@@ -301,7 +301,7 @@ public class TwigExtensionParser  {
             return PhpIcons.VARIABLE;
         }
 
-        return PhpIcons.WEB_ICON;
+        return PhpIcons.CLASS_ATTRIBUTE;
     }
 
     @Nullable

@@ -27,7 +27,7 @@ public class ControllerActionLookupElement extends LookupElement {
         presentation.setItemText(getLookupString());
         presentation.setTypeText(StringUtils.stripStart(controllerAction.getMethod().getFQN(), "\\"));
         presentation.setTypeGrayed(true);
-        presentation.setIcon(PhpIcons.METHOD_ICON);
+        presentation.setIcon(PhpIcons.METHOD);
     }
 
 }

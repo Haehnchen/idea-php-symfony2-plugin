@@ -8,7 +8,6 @@ import com.intellij.util.containers.ContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.intentions.yaml.dict.YamlUpdateArgumentServicesCallback;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.yaml.YAMLElementGenerator;
 import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
@@ -25,8 +24,7 @@ public class YamlUpdateArgumentServicesCallbackTest extends SymfonyLightCodeInsi
      * @see YamlUpdateArgumentServicesCallback#insert(java.util.List)
      */
     public void testArgumentInsertOfArrayArguments() {
-
-        YAMLFile yamlFile = YAMLElementGenerator.getInstance(getProject()).createDummyYamlWithText("" +
+        YAMLFile yamlFile = (YAMLFile) myFixture.configureByText("test.yml","" +
             "services:\n" +
             "    foo:\n" +
             "        class: Foo\\Foo\n" +
@@ -48,8 +46,7 @@ public class YamlUpdateArgumentServicesCallbackTest extends SymfonyLightCodeInsi
      * @see YamlUpdateArgumentServicesCallback#insert(java.util.List)
      */
     public void testArgumentInsertOfSequenceArrayArguments() {
-
-        YAMLFile yamlFile = YAMLElementGenerator.getInstance(getProject()).createDummyYamlWithText("" +
+        YAMLFile yamlFile = (YAMLFile) myFixture.configureByText("test.yml","" +
             "services:\n" +
             "    foo:\n" +
             "        class: Foo\\Foo\n" +
@@ -80,18 +77,12 @@ public class YamlUpdateArgumentServicesCallbackTest extends SymfonyLightCodeInsi
             ContainerUtil.find(yamlKeyValues, new YAMLKeyValueCondition("foo"))
         );
 
-        CommandProcessor.getInstance().executeCommand(getProject(), new Runnable() {
-            @Override
-            public void run() {
-                ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                    @Override
-                    public void run() {
-                        callback.insert(Arrays.asList("foo", "bar"));
-                    }
-                });
-
-            }
-        }, null, null);
+        CommandProcessor.getInstance().executeCommand(
+            getProject(),
+            () -> ApplicationManager.getApplication().runWriteAction(() -> callback.insert(Arrays.asList("foo", "bar"))),
+            null,
+            null
+        );
     }
 
     public static class YAMLKeyValueCondition implements Condition<YAMLKeyValue> {
