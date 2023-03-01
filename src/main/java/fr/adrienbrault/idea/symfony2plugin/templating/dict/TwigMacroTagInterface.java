@@ -10,8 +10,8 @@ import org.jetbrains.annotations.Nullable;
  */
 public interface TwigMacroTagInterface {
     @NotNull
-    String getName();
+    String name();
 
     @Nullable
-    String getParameters();
+    String parameters();
 }

@@ -924,15 +924,15 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         assertEquals(
             "(name, value, type, size)",
-            macros.stream().filter(twigMacroTag -> "input".equals(twigMacroTag.getName())).findFirst().get().getParameters()
+            macros.stream().filter(twigMacroTag -> "input".equals(twigMacroTag.name())).findFirst().get().parameters()
         );
 
         assertNull(
-            macros.stream().filter(twigMacroTag -> "foobar".equals(twigMacroTag.getName())).findFirst().get().getParameters()
+            macros.stream().filter(twigMacroTag -> "foobar".equals(twigMacroTag.name())).findFirst().get().parameters()
         );
 
         assertNull(
-            macros.stream().filter(twigMacroTag -> "foobar_if".equals(twigMacroTag.getName())).findFirst().get().getParameters()
+            macros.stream().filter(twigMacroTag -> "foobar_if".equals(twigMacroTag.name())).findFirst().get().parameters()
         );
     }
 

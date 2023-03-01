@@ -72,29 +72,17 @@ public class YamlSuggestIntentionAction extends LocalQuickFixAndIntentionActionO
     /**
      * This class replace a service name by plain text modification.
      * This resolve every crazy yaml use case and lexer styles like:
-     *
-     *  - @, @?
-     *  - "@foo", '@foo', @foo
+     * <p>
+     * - @, @?
+     * - "@foo", '@foo', @foo
      */
-    private static class MyInsertCallback implements ServiceSuggestDialog.Callback {
-
-        @NotNull
-        private final Editor editor;
-
-        @NotNull
-        private final PsiElement psiElement;
-
-        public MyInsertCallback(@NotNull Editor editor, @NotNull PsiElement psiElement) {
-            this.editor = editor;
-            this.psiElement = psiElement;
-        }
-
+    private record MyInsertCallback(@NotNull Editor editor, @NotNull PsiElement psiElement) implements ServiceSuggestDialog.Callback {
         @Override
         public void insert(@NotNull String selected) {
             String text = this.psiElement.getText();
 
             int i = getServiceChar(text);
-            if(i < 0) {
+            if (i < 0) {
                 HintManager.getInstance().showErrorHint(editor, "No valid char in text range");
                 return;
             }
@@ -113,7 +101,7 @@ public class YamlSuggestIntentionAction extends LocalQuickFixAndIntentionActionO
 
         private int getServiceChar(@NotNull String text) {
             int i = text.lastIndexOf("@?");
-            if(i >= 0) {
+            if (i >= 0) {
                 return i + 1;
             }
 

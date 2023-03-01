@@ -148,11 +148,9 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
                     }
 
                     ArrayCreationExpression arrayCreationExpression = PhpElementsUtil.getCompletableArrayCreationElement(psiElement);
-                    if(arrayCreationExpression == null || !(arrayCreationExpression.getContext() instanceof PhpReturn)) {
+                    if(arrayCreationExpression == null || !(arrayCreationExpression.getContext() instanceof PhpReturn phpReturn)) {
                         return new PsiReference[0];
                     }
-
-                    PhpReturn phpReturn = (PhpReturn) arrayCreationExpression.getContext();
 
                     Method method = PsiTreeUtil.getParentOfType(phpReturn, Method.class);
                     if(method == null) {
@@ -176,12 +174,11 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
 
     private static boolean phpStringLiteralExpressionClassReference(String signature, int index, PsiElement psiElement) {
 
-        if (!(psiElement.getContext() instanceof ParameterList)) {
+        if (!(psiElement.getContext() instanceof ParameterList parameterList)) {
             return false;
         }
 
-        ParameterList parameterList = (ParameterList) psiElement.getContext();
-        if (!(parameterList.getContext() instanceof NewExpression)) {
+        if (!(parameterList.getContext() instanceof NewExpression newExpression)) {
             return false;
         }
 
@@ -189,7 +186,6 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
             return false;
         }
 
-        NewExpression newExpression = (NewExpression) parameterList.getContext();
         ClassReference classReference = newExpression.getClassReference();
         if(classReference == null) {
             return false;

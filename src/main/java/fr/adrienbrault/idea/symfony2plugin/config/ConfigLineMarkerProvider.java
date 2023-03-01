@@ -96,22 +96,7 @@ public class ConfigLineMarkerProvider implements LineMarkerProvider {
         result.add(builder.createLineMarkerInfo(psiElement));
     }
 
-    private static class MyClassIdLazyValue implements Supplier<Collection<? extends PsiElement>> {
-        @NotNull
-        private final Project project;
-
-        @NotNull
-        private final Collection<String> configuration;
-
-        @NotNull
-        private final String root;
-
-        MyClassIdLazyValue(@NotNull Project project, @NotNull Collection<String> configuration, @NotNull String root) {
-            this.project = project;
-            this.configuration = configuration;
-            this.root = root;
-        }
-
+    private record MyClassIdLazyValue(@NotNull Project project, @NotNull Collection<String> configuration, @NotNull String root) implements Supplier<Collection<? extends PsiElement>> {
         @Override
         public Collection<? extends PsiElement> get() {
             return ConfigUtil.getTreeSignatureTargets(project, root, configuration);

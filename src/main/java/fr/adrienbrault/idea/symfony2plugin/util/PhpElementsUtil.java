@@ -778,11 +778,10 @@ public class PhpElementsUtil {
             return null;
         }
 
-        if(!(translationArrayHashElement.getValue() instanceof StringLiteralExpression)) {
+        if(!(translationArrayHashElement.getValue() instanceof StringLiteralExpression valueString)) {
             return null;
         }
 
-        StringLiteralExpression valueString = (StringLiteralExpression) translationArrayHashElement.getValue();
         if(valueString == null) {
             return null;
         }
@@ -1096,11 +1095,10 @@ public class PhpElementsUtil {
     public static MethodReferenceBag getMethodParameterReferenceBag(PsiElement psiElement, int wantIndex) {
 
         PsiElement variableContext = psiElement.getContext();
-        if(!(variableContext instanceof ParameterList)) {
+        if(!(variableContext instanceof ParameterList parameterList)) {
             return null;
         }
 
-        ParameterList parameterList = (ParameterList) variableContext;
         if (!(parameterList.getContext() instanceof MethodReference)) {
             return null;
         }

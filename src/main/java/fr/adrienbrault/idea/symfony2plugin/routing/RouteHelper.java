@@ -675,24 +675,21 @@ public class RouteHelper {
         hashValue.getHashElements().forEach(hashElementCollection::add);
 
         Set<String> variables = new HashSet<>();
-        if(hashElementCollection.size() >= 1 && hashElementCollection.get(0).getValue() instanceof ArrayCreationExpression) {
-            ArrayCreationExpression value = (ArrayCreationExpression) hashElementCollection.get(0).getValue();
+        if(hashElementCollection.size() >= 1 && hashElementCollection.get(0).getValue() instanceof ArrayCreationExpression value) {
             if(value != null) {
                 variables.addAll(PhpElementsUtil.getArrayKeyValueMap(value).values());
             }
         }
 
         Map<String, String> defaults = new HashMap<>();
-        if(hashElementCollection.size() >= 2 && hashElementCollection.get(1).getValue() instanceof ArrayCreationExpression) {
-            ArrayCreationExpression value = (ArrayCreationExpression) hashElementCollection.get(1).getValue();
+        if(hashElementCollection.size() >= 2 && hashElementCollection.get(1).getValue() instanceof ArrayCreationExpression value) {
             if(value != null) {
                 defaults = PhpElementsUtil.getArrayKeyValueMap(value);
             }
         }
 
         Map<String, String>requirements = new HashMap<>();
-        if(hashElementCollection.size() >= 3 && hashElementCollection.get(2).getValue() instanceof ArrayCreationExpression) {
-            ArrayCreationExpression value = (ArrayCreationExpression) hashElementCollection.get(2).getValue();
+        if(hashElementCollection.size() >= 3 && hashElementCollection.get(2).getValue() instanceof ArrayCreationExpression value) {
             if(value != null) {
                 requirements = PhpElementsUtil.getArrayKeyValueMap(value);
             }
@@ -700,8 +697,7 @@ public class RouteHelper {
 
         StringBuilder path = new StringBuilder();
         List<Collection<String>> tokens = new ArrayList<>();
-        if(hashElementCollection.size() >= 4 && hashElementCollection.get(3).getValue() instanceof ArrayCreationExpression) {
-            ArrayCreationExpression tokenArray = (ArrayCreationExpression) hashElementCollection.get(3).getValue();
+        if(hashElementCollection.size() >= 4 && hashElementCollection.get(3).getValue() instanceof ArrayCreationExpression tokenArray) {
             if(tokenArray != null) {
                 List<ArrayHashElement> result = StreamSupport.stream(tokenArray.getHashElements().spliterator(), false)
                         .collect(Collectors.toList());

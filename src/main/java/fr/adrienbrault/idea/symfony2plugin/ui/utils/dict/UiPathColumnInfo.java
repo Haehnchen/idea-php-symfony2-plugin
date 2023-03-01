@@ -36,7 +36,7 @@ public class UiPathColumnInfo {
         @Nullable
         @Override
         public String valueOf(UiFilePathInterface file) {
-            return UiSettingsUtil.getPresentableFilePath(project, file).getInfo();
+            return UiSettingsUtil.getPresentableFilePath(project, file).info();
         }
     }
 

@@ -730,11 +730,10 @@ public class YamlHelper {
         for(YAMLSequenceItem yamlSequenceItem: ((YAMLSequence) tagsValue).getItems()) {
             final YAMLValue itemValue = yamlSequenceItem.getValue();
 
-            if(itemValue instanceof YAMLMapping) {
+            if(itemValue instanceof final YAMLMapping yamlHash) {
                 // tags:
                 //  - {name: foobar}
 
-                final YAMLMapping yamlHash = (YAMLMapping) itemValue;
                 String tagName = YamlHelper.getYamlKeyValueAsString(yamlHash, "name");
                 if(tagName != null) {
                     visitor.visit(new YamlServiceTag(serviceId, tagName, yamlHash));
@@ -1136,16 +1135,12 @@ public class YamlHelper {
      */
     public static void visitServiceCallArgument(@NotNull YAMLScalar yamlScalar, @NotNull Consumer<ParameterVisitor> consumer) {
         PsiElement context = yamlScalar.getContext();
-        if(context instanceof YAMLSequenceItem) {
+        if(context instanceof YAMLSequenceItem argumentSequenceItem) {
             // [@foobar, @fo<caret>obar]
-            YAMLSequenceItem argumentSequenceItem = (YAMLSequenceItem) context;
-            if (argumentSequenceItem.getContext() instanceof YAMLSequence) {
-                YAMLSequence yamlCallParameterArray = (YAMLSequence) argumentSequenceItem.getContext();
+            if (argumentSequenceItem.getContext() instanceof YAMLSequence yamlCallParameterArray) {
                 PsiElement callSequenceItem = yamlCallParameterArray.getContext();
-                if(callSequenceItem instanceof YAMLSequenceItem) {
-                    YAMLSequenceItem enclosingItem = (YAMLSequenceItem) callSequenceItem;
-                    if (enclosingItem.getContext() instanceof YAMLSequence) {
-                        YAMLSequence yamlCallArray = (YAMLSequence) enclosingItem.getContext();
+                if(callSequenceItem instanceof YAMLSequenceItem enclosingItem) {
+                    if (enclosingItem.getContext() instanceof YAMLSequence yamlCallArray) {
                         PsiElement seqItem = yamlCallArray.getContext();
                         if(seqItem instanceof YAMLSequenceItem) {
                             // - [ setFoo, [@args_bar] ]

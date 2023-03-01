@@ -126,11 +126,9 @@ public class DoctrineUtil {
             }
 
             PhpPsiElement phpClass = phpDocComment.getNextPsiSibling();
-            if (!(phpClass instanceof PhpClass)) {
+            if (!(phpClass instanceof PhpClass phpClassScope)) {
                 return false;
             }
-
-            PhpClass phpClassScope = (PhpClass) phpClass;
 
             pairs.add(Pair.create(
                 phpClassScope.getPresentableFQN(),

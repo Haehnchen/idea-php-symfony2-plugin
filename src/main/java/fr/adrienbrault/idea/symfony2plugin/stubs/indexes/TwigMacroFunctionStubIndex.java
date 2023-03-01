@@ -47,9 +47,9 @@ public class TwigMacroFunctionStubIndex extends FileBasedIndexExtension<String, 
             }
 
             TwigUtil.visitMacros(psiFile, pair -> {
-                String templateName = pair.getFirst().getName();
+                String templateName = pair.getFirst().name();
                 if (templateName.length() < 255) {
-                    map.put(templateName, new TwigMacroTagIndex(templateName, pair.getFirst().getParameters()));
+                    map.put(templateName, new TwigMacroTagIndex(templateName, pair.getFirst().parameters()));
                 }
             });
 

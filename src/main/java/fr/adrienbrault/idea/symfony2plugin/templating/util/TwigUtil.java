@@ -625,7 +625,7 @@ public class TwigUtil {
 
             for (PsiFile file : foreignPsiFile) {
                 visitMacros(file, pair -> {
-                    if(macroName.equals(pair.getFirst().getName())) {
+                    if(macroName.equals(pair.getFirst().name())) {
                         psiElements.add(pair.getSecond());
                     }
                 });
@@ -711,7 +711,7 @@ public class TwigUtil {
             if(macroFiles.size() > 0) {
                 for (PsiFile macroFile : macroFiles) {
                     TwigUtil.visitMacros(macroFile, tagPair -> consumer.consume(Pair.create(
-                        new TwigMacro(asName + '.' + tagPair.getFirst().getName(), template).withParameter(tagPair.getFirst().getParameters()),
+                        new TwigMacro(asName + '.' + tagPair.getFirst().name(), template).withParameter(tagPair.getFirst().parameters()),
                         tagPair.getSecond()
                     )));
                 }

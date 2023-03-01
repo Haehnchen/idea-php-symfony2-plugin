@@ -443,15 +443,7 @@ public class IncompletePropertyServiceInjectionContributor extends CompletionCon
         return null;
     }
 
-    private static class LookupElementInsertHandler implements InsertHandler<LookupElement> {
-        private final String propertyName;
-        private final String typePhpClass;
-
-        public LookupElementInsertHandler(String propertyName, String typePhpClass) {
-            this.propertyName = propertyName;
-            this.typePhpClass = typePhpClass;
-        }
-
+    private record LookupElementInsertHandler(String propertyName, String typePhpClass) implements InsertHandler<LookupElement> {
         @Override
         public void handleInsert(@NotNull InsertionContext context, @NotNull LookupElement item) {
             SmartPsiElementPointer<PhpClass> parentOfType2 = (SmartPsiElementPointer<PhpClass>) item.getObject();

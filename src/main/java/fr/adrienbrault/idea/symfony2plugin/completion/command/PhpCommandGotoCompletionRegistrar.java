@@ -221,16 +221,10 @@ public class PhpCommandGotoCompletionRegistrar implements GotoCompletionRegistra
             return targets;
         }
 
-        private static class CommandDefPsiElementFilter implements Processor<PsiElement> {
-            private final String methodName;
-
-            public CommandDefPsiElementFilter(String methodName) {
-                this.methodName = methodName;
-            }
-
+        private record CommandDefPsiElementFilter(String methodName) implements Processor<PsiElement> {
             @Override
             public boolean process(PsiElement psiElement) {
-                if(!(psiElement instanceof MethodReference)) {
+                if (!(psiElement instanceof MethodReference)) {
                     return false;
                 }
 

@@ -387,10 +387,8 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         }
     }
 
-    private static class MyCollectionNotNullLazyValue implements Supplier<Collection<? extends PsiElement>> {
-        private final Collection<ClassServiceDefinitionTargetLazyValue> targets;
-
-        public MyCollectionNotNullLazyValue(@NotNull Collection<ClassServiceDefinitionTargetLazyValue> targets) {
+    private record MyCollectionNotNullLazyValue(Collection<ClassServiceDefinitionTargetLazyValue> targets) implements Supplier<Collection<? extends PsiElement>> {
+        private MyCollectionNotNullLazyValue(@NotNull Collection<ClassServiceDefinitionTargetLazyValue> targets) {
             this.targets = targets;
         }
 

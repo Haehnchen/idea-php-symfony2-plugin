@@ -6,6 +6,6 @@ public class VersionUtil {
     public static boolean productVersionGreaterThanOrEqual(int major, int minor) {
         ApplicationInfo instance = ApplicationInfo.getInstance();
 
-        return Integer.valueOf(instance.getMajorVersion()) > major || (Integer.valueOf(instance.getMajorVersion()).equals(major) && Integer.valueOf(instance.getMinorVersionMainPart()) >= minor);
+        return Integer.parseInt(instance.getMajorVersion()) > major || (Integer.valueOf(instance.getMajorVersion()).equals(major) && Integer.parseInt(instance.getMinorVersionMainPart()) >= minor);
     }
 }

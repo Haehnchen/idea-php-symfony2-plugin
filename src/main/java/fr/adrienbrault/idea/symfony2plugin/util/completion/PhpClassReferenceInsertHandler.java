@@ -16,12 +16,11 @@ public class PhpClassReferenceInsertHandler implements InsertHandler<LookupEleme
     public void handleInsert(@NotNull InsertionContext context, @NotNull LookupElement lookupElement) {
         Object object = lookupElement.getObject();
 
-        if (!(object instanceof PhpClass)) {
+        if (!(object instanceof PhpClass aClass)) {
             return;
         }
 
         StringBuilder textToInsertBuilder = new StringBuilder();
-        PhpClass aClass = (PhpClass)object;
         String fqn = aClass.getNamespaceName();
 
         if(fqn.startsWith("\\")) {

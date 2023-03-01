@@ -55,7 +55,7 @@ public class LocalProfilerRequest implements ProfilerRequestInterface {
         }
 
         try {
-            return Integer.valueOf(this.separatedLine.get(6));
+            return Integer.parseInt(this.separatedLine.get(6));
         } catch (NumberFormatException e) {
             return 0;
         }

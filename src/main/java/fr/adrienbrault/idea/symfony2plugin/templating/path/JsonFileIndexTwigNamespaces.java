@@ -61,17 +61,9 @@ public class JsonFileIndexTwigNamespaces implements TwigNamespaceExtension {
         return twigPaths;
     }
 
-    private static class MyJsonCachedValueProvider implements CachedValueProvider<Collection<TwigPath>> {
-        private final PsiFile psiFile;
-
-        public MyJsonCachedValueProvider(PsiFile psiFile) {
-            this.psiFile = psiFile;
-        }
-
-        @Nullable
+    private record MyJsonCachedValueProvider(PsiFile psiFile) implements CachedValueProvider<Collection<TwigPath>> {
         @Override
         public Result<Collection<TwigPath>> compute() {
-
             Collection<TwigPath> twigPaths = new ArrayList<>();
 
             String text = psiFile.getText();
@@ -81,36 +73,36 @@ public class JsonFileIndexTwigNamespaces implements TwigNamespaceExtension {
             } catch (JsonSyntaxException | JsonIOException | IllegalStateException ignored) {
             }
 
-            if(configJson == null) {
+            if (configJson == null) {
                 return Result.create(twigPaths, psiFile, psiFile.getVirtualFile());
             }
 
-            for(TwigPathJson twigPath : configJson.getNamespaces()) {
+            for (TwigPathJson twigPath : configJson.getNamespaces()) {
                 String path = twigPath.getPath();
-                if(path == null || path.equals(".")) {
+                if (path == null || path.equals(".")) {
                     path = "";
                 }
 
                 path = StringUtils.stripStart(path.replace("\\", "/"), "/");
                 PsiDirectory parent = psiFile.getParent();
-                if(parent == null) {
+                if (parent == null) {
                     continue;
                 }
 
                 // current directory check and subfolder
                 VirtualFile twigRoot;
-                if(path.length() > 0) {
+                if (path.length() > 0) {
                     twigRoot = VfsUtil.findRelativeFile(parent.getVirtualFile(), path.split("/"));
                 } else {
                     twigRoot = psiFile.getParent().getVirtualFile();
                 }
 
-                if(twigRoot == null) {
+                if (twigRoot == null) {
                     continue;
                 }
 
                 String relativePath = VfsExUtil.getRelativeProjectPath(psiFile.getProject(), twigRoot);
-                if(relativePath == null) {
+                if (relativePath == null) {
                     continue;
                 }
 
@@ -118,13 +110,13 @@ public class JsonFileIndexTwigNamespaces implements TwigNamespaceExtension {
 
                 TwigUtil.NamespaceType pathType = TwigUtil.NamespaceType.ADD_PATH;
                 String type = twigPath.getType();
-                if("bundle".equalsIgnoreCase(type)) {
+                if ("bundle".equalsIgnoreCase(type)) {
                     pathType = TwigUtil.NamespaceType.BUNDLE;
                 }
 
                 String namespacePath = StringUtils.stripStart(relativePath, "/");
 
-                if(StringUtils.isNotBlank(namespace)) {
+                if (StringUtils.isNotBlank(namespace)) {
                     twigPaths.add(new TwigPath(namespacePath, namespace, pathType, true));
                 } else {
                     twigPaths.add(new TwigPath(namespacePath, TwigUtil.MAIN, pathType, true));

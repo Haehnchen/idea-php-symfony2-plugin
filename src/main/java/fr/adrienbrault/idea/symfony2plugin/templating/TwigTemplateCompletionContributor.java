@@ -170,7 +170,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 private void attachLookupElements(@NotNull CompletionResultSet resultSet, Collection<PsiFile> psiFiles) {
                     for (PsiFile psiFile : psiFiles) {
                         for (TwigMacroTagInterface entry : TwigUtil.getMacros(psiFile)) {
-                            resultSet.addElement(LookupElementBuilder.create(entry.getName()).withTypeText(entry.getParameters(), true).withIcon(TwigIcons.TwigFileIcon));
+                            resultSet.addElement(LookupElementBuilder.create(entry.name()).withTypeText(entry.parameters(), true).withIcon(TwigIcons.TwigFileIcon));
                         }
                     }
                 }
@@ -223,7 +223,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                             TwigMacroTag twigMacro = pair.getFirst();
 
                             resultSet.addElement(LookupElementBuilder
-                                .create(twigMacro.getName())
+                                .create(twigMacro.name())
                                 .withIcon(TwigIcons.TwigFileIcon)
                                 .withInsertHandler(FunctionInsertHandler.getInstance())
                             );
@@ -1145,11 +1145,10 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
             for (PsiElement psiElement : psiElements) {
                 PsiElement variableContext = psiElement.getContext();
-                if(!(variableContext instanceof ParameterList)) {
+                if(!(variableContext instanceof ParameterList parameterList)) {
                     continue;
                 }
 
-                ParameterList parameterList = (ParameterList) variableContext;
                 PsiElement context = parameterList.getContext();
                 // @TODO: support functions also
                 if (context instanceof MethodReference) {

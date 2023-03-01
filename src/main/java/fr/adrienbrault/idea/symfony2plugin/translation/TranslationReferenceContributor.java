@@ -27,11 +27,10 @@ public class TranslationReferenceContributor extends PsiReferenceContributor {
                 @NotNull
                 @Override
                 public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
-                    if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof ParameterList)) {
+                    if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof ParameterList parameterList)) {
                         return new PsiReference[0];
                     }
 
-                    ParameterList parameterList = (ParameterList) psiElement.getContext();
                     PsiElement methodReferenceOrNewExpression = parameterList.getContext();
 
                     if (!(

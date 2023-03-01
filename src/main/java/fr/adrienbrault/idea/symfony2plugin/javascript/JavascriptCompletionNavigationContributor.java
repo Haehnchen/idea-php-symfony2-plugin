@@ -40,11 +40,10 @@ public class JavascriptCompletionNavigationContributor {
             @Override
             protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
                 PsiElement psiElement = parameters.getOriginalPosition();
-                if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof JSLiteralExpression)) {
+                if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof JSLiteralExpression jsLiteral)) {
                     return;
                 }
 
-                JSLiteralExpression jsLiteral = (JSLiteralExpression) psiElement.getContext();
                 if (!isAcceptedUrlPattern(jsLiteral)) {
                     return;
                 }

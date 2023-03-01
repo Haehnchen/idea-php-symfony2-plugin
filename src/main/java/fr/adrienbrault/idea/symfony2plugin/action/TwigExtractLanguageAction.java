@@ -165,23 +165,7 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
 
     }
 
-    private static class MyOnOkCallback implements TranslatorKeyExtractorDialog.OnOkCallback {
-        private final Project project;
-        private final Editor editor;
-        private final String finalDefaultDomain;
-        private final int finalStartOffset;
-        private final int finalEndOffset;
-        private final String finalTranslationText;
-
-        MyOnOkCallback(Project project, Editor editor, String finalDefaultDomain, int finalStartOffset, int finalEndOffset, String finalTranslationText) {
-            this.project = project;
-            this.editor = editor;
-            this.finalDefaultDomain = finalDefaultDomain;
-            this.finalStartOffset = finalStartOffset;
-            this.finalEndOffset = finalEndOffset;
-            this.finalTranslationText = finalTranslationText;
-        }
-
+    private record MyOnOkCallback(Project project, Editor editor, String finalDefaultDomain, int finalStartOffset, int finalEndOffset, String finalTranslationText) implements TranslatorKeyExtractorDialog.OnOkCallback {
         @Override
         public void onClick(List<TranslationFileModel> files, final String keyName, final String domain, boolean navigateTo) {
             PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(editor.getDocument());
@@ -191,7 +175,7 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
                 String insertString;
 
                 // check for file context domain
-                if(finalDefaultDomain.equals(domain)) {
+                if (finalDefaultDomain.equals(domain)) {
                     insertString = String.format("{{ '%s'|trans }}", keyName);
                 } else {
                     insertString = String.format("{{ '%s'|trans({}, '%s') }}", keyName, domain);
@@ -204,16 +188,16 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
             Collection<PsiElement> targets = new ArrayList<>();
 
             // so finally insert it; first file can be a navigation target
-            for(TranslationFileModel transPsiFile: files) {
+            for (TranslationFileModel transPsiFile : files) {
                 PsiFile psiFile = transPsiFile.getPsiFile();
 
                 CommandProcessor.getInstance().executeCommand(psiFile.getProject(), () -> ApplicationManager.getApplication().runWriteAction(() ->
-                    ContainerUtil.addIfNotNull(targets, TranslationInsertUtil.invokeTranslation(psiFile, keyName, finalTranslationText))),
+                        ContainerUtil.addIfNotNull(targets, TranslationInsertUtil.invokeTranslation(psiFile, keyName, finalTranslationText))),
                     "Translation Insert " + psiFile.getName(), null
                 );
             }
 
-            if(navigateTo && targets.size() > 0) {
+            if (navigateTo && targets.size() > 0) {
                 PsiDocumentManager.getInstance(project).commitAndRunReadAction(() ->
                     IdeHelper.navigateToPsiElement(targets.iterator().next())
                 );

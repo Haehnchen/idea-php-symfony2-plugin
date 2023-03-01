@@ -28,11 +28,9 @@ import java.util.*;
 public class PsiElementUtils {
     public static String getMethodParameter(PsiElement parameter) {
 
-        if (!(parameter instanceof StringLiteralExpression)) {
+        if (!(parameter instanceof StringLiteralExpression stringLiteralExpression)) {
             return null;
         }
-
-        StringLiteralExpression stringLiteralExpression = (StringLiteralExpression) parameter;
 
         String stringValue = stringLiteralExpression.getText();
         String value = stringValue.substring(stringLiteralExpression.getValueRange().getStartOffset(), stringLiteralExpression.getValueRange().getEndOffset());

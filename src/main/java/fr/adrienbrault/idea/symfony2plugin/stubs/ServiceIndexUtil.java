@@ -398,18 +398,7 @@ public class ServiceIndexUtil {
         return services;
     }
 
-    private static class MyServiceIdLazyValue implements Supplier<Collection<? extends PsiElement>> {
-        @NotNull
-        private final Project project;
-
-        @NotNull
-        private final Collection<String> ids;
-
-        MyServiceIdLazyValue(@NotNull Project project, @NotNull Collection<String> ids) {
-            this.project = project;
-            this.ids = ids;
-        }
-
+    private record MyServiceIdLazyValue(@NotNull Project project, @NotNull Collection<String> ids) implements Supplier<Collection<? extends PsiElement>> {
         @Override
         public Collection<? extends PsiElement> get() {
             Collection<PsiElement> psiElements = new HashSet<>();
