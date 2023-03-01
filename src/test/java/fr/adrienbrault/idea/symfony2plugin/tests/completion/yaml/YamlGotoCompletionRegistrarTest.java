@@ -67,10 +67,10 @@ public class YamlGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixt
     }
 
     public void testThatDecoratesServiceTagProvidesReferences() {
-        Collection<String[]> strings = new ArrayList<String[]>() {{
-            add(new String[] {"<caret>", "foo.bar<caret>_factory"});
-            add(new String[] {"'<caret>'", "'foo.bar<caret>_factory'"});
-            add(new String[] {"\"<caret>\"", "\"foo.bar<caret>_factory\""});
+        Collection<String[]> strings = new ArrayList<>() {{
+            add(new String[]{"<caret>", "foo.bar<caret>_factory"});
+            add(new String[]{"'<caret>'", "'foo.bar<caret>_factory'"});
+            add(new String[]{"\"<caret>\"", "\"foo.bar<caret>_factory\""});
         }};
 
         for (String[] s : strings) {

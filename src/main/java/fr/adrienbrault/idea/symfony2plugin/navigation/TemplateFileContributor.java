@@ -22,7 +22,7 @@ public class TemplateFileContributor implements ChooseByNameContributor {
         }
 
         Collection<String> twigFileNames = TwigUtil.getTemplateMap(project).keySet();
-        return twigFileNames.toArray(new String[twigFileNames.size()]);
+        return twigFileNames.toArray(new String[0]);
     }
 
     @NotNull

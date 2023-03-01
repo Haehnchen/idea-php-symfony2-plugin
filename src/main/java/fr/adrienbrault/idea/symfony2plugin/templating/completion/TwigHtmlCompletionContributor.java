@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.templating.completion;
 
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
@@ -51,29 +50,29 @@ public class TwigHtmlCompletionContributor extends CompletionContributor {
                 TwigHtmlCompletionUtil.getHrefAttributePattern(),
                 TwigHtmlCompletionUtil.getFormActionAttributePattern()
             ),
-            new CompletionProvider<CompletionParameters>() {
-            @Override
-            protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
-                if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
-                    return;
-                }
-
-                List<LookupElement> routesLookupElements = RouteHelper.getRoutesLookupElements(parameters.getPosition().getProject());
-                for(LookupElement element: routesLookupElements) {
-                    if(element instanceof RouteLookupElement) {
-                        ((RouteLookupElement) element).withInsertHandler(TwigPathFunctionInsertHandler.getInstance());
+            new CompletionProvider<>() {
+                @Override
+                protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
+                    if (!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                        return;
                     }
-                }
 
-                resultSet.addAllElements(routesLookupElements);
-            }
-        });
+                    List<LookupElement> routesLookupElements = RouteHelper.getRoutesLookupElements(parameters.getPosition().getProject());
+                    for (LookupElement element : routesLookupElements) {
+                        if (element instanceof RouteLookupElement) {
+                            ((RouteLookupElement) element).withInsertHandler(TwigPathFunctionInsertHandler.getInstance());
+                        }
+                    }
+
+                    resultSet.addAllElements(routesLookupElements);
+                }
+            });
 
         // <link href="<caret>" rel="stylesheet" />
-        extend(CompletionType.BASIC, TwigHtmlCompletionUtil.getAssetCssAttributePattern(), new CompletionProvider<CompletionParameters>() {
+        extend(CompletionType.BASIC, TwigHtmlCompletionUtil.getAssetCssAttributePattern(), new CompletionProvider<>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
-                if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                if (!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
                     return;
                 }
 
@@ -84,10 +83,10 @@ public class TwigHtmlCompletionContributor extends CompletionContributor {
         });
 
         // <script src="<caret>"></script>
-        extend(CompletionType.BASIC, TwigHtmlCompletionUtil.getAssetJsAttributePattern(), new CompletionProvider<CompletionParameters>() {
+        extend(CompletionType.BASIC, TwigHtmlCompletionUtil.getAssetJsAttributePattern(), new CompletionProvider<>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
-                if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                if (!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
                     return;
                 }
 
@@ -98,10 +97,10 @@ public class TwigHtmlCompletionContributor extends CompletionContributor {
         });
 
         // <img src="<caret>">
-        extend(CompletionType.BASIC, TwigHtmlCompletionUtil.getAssetImageAttributePattern(), new CompletionProvider<CompletionParameters>() {
+        extend(CompletionType.BASIC, TwigHtmlCompletionUtil.getAssetImageAttributePattern(), new CompletionProvider<>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
-                if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                if (!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
                     return;
                 }
 
@@ -114,11 +113,11 @@ public class TwigHtmlCompletionContributor extends CompletionContributor {
         // <a><caret></a>
         // <input value"<caret>"></input>
         // <h1...h6> value"<caret>"></h1...h6>
-        extend(CompletionType.BASIC, TWIG_TRANSLATIONS, new CompletionProvider<CompletionParameters>() {
+        extend(CompletionType.BASIC, TWIG_TRANSLATIONS, new CompletionProvider<>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
                 PsiElement position = parameters.getOriginalPosition();
-                if(position == null || !Symfony2ProjectComponent.isEnabled(position)) {
+                if (position == null || !Symfony2ProjectComponent.isEnabled(position)) {
                     return;
                 }
 

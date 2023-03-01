@@ -11,7 +11,6 @@ import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUt
 import fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtension;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoader;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoaderParameter;
-import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;

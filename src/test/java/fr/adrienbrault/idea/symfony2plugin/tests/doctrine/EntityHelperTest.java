@@ -90,7 +90,7 @@ public class EntityHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void testGetModelClasses() {
         Collection<DoctrineModel> modelClasses = EntityHelper.getModelClasses(getProject());
 
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         for (DoctrineModel modelClass : modelClasses) {
             map.put(modelClass.getRepositoryName(), modelClass.getDoctrineNamespace());
         }
@@ -116,11 +116,9 @@ public class EntityHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void testGetModelFieldTargets() {
         PsiElement[] names = EntityHelper.getModelFieldTargets(PhpElementsUtil.getClass(getProject(), "FooBundle\\Entity\\Yaml"), "name");
 
-        assertNotNull(ContainerUtil.find(names, new Condition<PsiElement>() {
-            @Override
-            public boolean value(PsiElement psiElement) {
-                return psiElement instanceof YAMLKeyValue && ((YAMLKeyValue) psiElement).getKeyText().equals("name");
-            }
-        }));
+        assertNotNull(ContainerUtil.find(
+            names,
+            psiElement -> psiElement instanceof YAMLKeyValue && ((YAMLKeyValue) psiElement).getKeyText().equals("name")
+        ));
     }
 }

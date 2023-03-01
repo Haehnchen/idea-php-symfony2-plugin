@@ -34,7 +34,7 @@ public class RouteParameterReference extends PsiPolyVariantReferenceBase<PsiElem
             results.add(new PsiElementResolveResult(psiParameter));
         }
 
-        return results.toArray(new ResolveResult[results.size()]);
+        return results.toArray(new ResolveResult[0]);
     }
 
     @NotNull

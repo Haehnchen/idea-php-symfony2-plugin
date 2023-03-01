@@ -176,7 +176,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
             targetShortcut = "\\" + targetShortcut;
         }
 
-        Set<String> classTargets = new HashSet<String>();
+        Set<String> classTargets = new HashSet<>();
 
         for (GotoDeclarationHandler gotoDeclarationHandler : Extensions.getExtensions(GotoDeclarationHandler.EP_NAME)) {
             PsiElement[] gotoDeclarationTargets = gotoDeclarationHandler.getGotoDeclarationTargets(psiElement, 0, myFixture.getEditor());
@@ -255,7 +255,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
 
         PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
 
-        Set<String> targetStrings = new HashSet<String>();
+        Set<String> targetStrings = new HashSet<>();
 
         for (GotoDeclarationHandler gotoDeclarationHandler : Extensions.getExtensions(GotoDeclarationHandler.EP_NAME)) {
 
@@ -279,7 +279,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
         myFixture.configureByText(languageFileType, configureByText);
         PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
 
-        Set<String> targets = new HashSet<String>();
+        Set<String> targets = new HashSet<>();
 
         for (GotoDeclarationHandler gotoDeclarationHandler : Extensions.getExtensions(GotoDeclarationHandler.EP_NAME)) {
             PsiElement[] gotoDeclarationTargets = gotoDeclarationHandler.getGotoDeclarationTargets(psiElement, 0, myFixture.getEditor());
@@ -441,14 +441,11 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
     public void assertIndex(@NotNull ID<String, ?> id, boolean notCondition, @NotNull String... keys) {
         for (String key : keys) {
 
-            final Collection<VirtualFile> virtualFiles = new ArrayList<VirtualFile>();
+            final Collection<VirtualFile> virtualFiles = new ArrayList<>();
 
-            FileBasedIndex.getInstance().getFilesWithKey(id, new HashSet<String>(Collections.singletonList(key)), new Processor<VirtualFile>() {
-                @Override
-                public boolean process(VirtualFile virtualFile) {
-                    virtualFiles.add(virtualFile);
-                    return true;
-                }
+            FileBasedIndex.getInstance().getFilesWithKey(id, new HashSet<>(Collections.singletonList(key)), virtualFile -> {
+                virtualFiles.add(virtualFile);
+                return true;
             }, GlobalSearchScope.allScope(getProject()));
 
             if(notCondition && virtualFiles.size() > 0) {
@@ -475,7 +472,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
     }
 
     public void assertLocalInspectionContains(String filename, String content, String contains) {
-        Set<String> matches = new HashSet<String>();
+        Set<String> matches = new HashSet<>();
 
         Pair<List<ProblemDescriptor>, Integer> localInspectionsAtCaret = getLocalInspectionsAtCaret(filename, content);
         for (ProblemDescriptor result : localInspectionsAtCaret.getFirst()) {
@@ -491,7 +488,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
     }
 
     public void assertAnnotationContains(String filename, String content, String contains) {
-        List<String> matches = new ArrayList<String>();
+        List<String> matches = new ArrayList<>();
         for (Annotation annotation : getAnnotationsAtCaret(filename, content)) {
             matches.add(annotation.toString());
             if(annotation.getMessage().contains(contains)) {
@@ -612,7 +609,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
         final List<PsiElement> elements = collectPsiElementsRecursive(psiElement);
 
         for (LineMarkerProvider lineMarkerProvider : LineMarkerProviders.getInstance().allForLanguage(psiElement.getLanguage())) {
-            Collection<LineMarkerInfo> lineMarkerInfos = new ArrayList<LineMarkerInfo>();
+            Collection<LineMarkerInfo> lineMarkerInfos = new ArrayList<>();
             lineMarkerProvider.collectSlowLineMarkers(elements, lineMarkerInfos);
 
             if(lineMarkerInfos.size() == 0) {
@@ -634,7 +631,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
         final List<PsiElement> elements = collectPsiElementsRecursive(psiElement);
 
         for (LineMarkerProvider lineMarkerProvider : LineMarkerProviders.getInstance().allForLanguage(psiElement.getLanguage())) {
-            Collection<LineMarkerInfo> lineMarkerInfos = new ArrayList<LineMarkerInfo>();
+            Collection<LineMarkerInfo> lineMarkerInfos = new ArrayList<>();
             lineMarkerProvider.collectSlowLineMarkers(elements, lineMarkerInfos);
 
             if(lineMarkerInfos.size() > 0) {
@@ -700,7 +697,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
 
     @NotNull
     private List<PsiElement> collectPsiElementsRecursive(@NotNull PsiElement psiElement) {
-        final List<PsiElement> elements = new ArrayList<PsiElement>();
+        final List<PsiElement> elements = new ArrayList<>();
         elements.add(psiElement.getContainingFile());
 
         psiElement.acceptChildren(new PsiRecursiveElementVisitor() {
@@ -823,41 +820,33 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
 
         @Override
         public void run() {
-            CommandProcessor.getInstance().executeCommand(getProject(), new Runnable() {
-                @Override
-                public void run() {
-                    final CodeCompletionHandlerBase handler = new CodeCompletionHandlerBase(CompletionType.BASIC) {
+            CommandProcessor.getInstance().executeCommand(getProject(), () -> {
+                final CodeCompletionHandlerBase handler = new CodeCompletionHandlerBase(CompletionType.BASIC) {
 
-                        @Override
-                        protected void completionFinished(final CompletionProgressIndicator indicator, boolean hasModifiers) {
+                    @Override
+                    protected void completionFinished(final CompletionProgressIndicator indicator, boolean hasModifiers) {
 
-                            // find our lookup element
-                            final LookupElement lookupElement = ContainerUtil.find(indicator.getLookup().getItems(), new Condition<LookupElement>() {
-                                @Override
-                                public boolean value(LookupElement lookupElement) {
-                                    return insert.match(lookupElement);
-                                }
-                            });
+                        // find our lookup element
+                        final LookupElement lookupElement = ContainerUtil.find(
+                            indicator.getLookup().getItems(),
+                            insert::match
+                        );
 
-                            if(lookupElement == null) {
-                                fail("No matching lookup element found");
-                            }
-
-                            // overwrite behavior and force completion + insertHandler
-                            CommandProcessor.getInstance().executeCommand(indicator.getProject(), new Runnable() {
-                                @Override
-                                public void run() {
-                                    CommandProcessor.getInstance().setCurrentCommandGroupId("Completion" + indicator.hashCode());
-                                    indicator.getLookup().finishLookup(Lookup.AUTO_INSERT_SELECT_CHAR, lookupElement);
-                                }
-                            }, "Autocompletion", null);
+                        if(lookupElement == null) {
+                            fail("No matching lookup element found");
                         }
-                    };
 
-                    Editor editor = InjectedLanguageUtil.getEditorForInjectedLanguageNoCommit(getEditor(), getFile());
-                    handler.invokeCompletion(getProject(), editor);
-                    PsiDocumentManager.getInstance(getProject()).commitAllDocuments();
-                }
+                        // overwrite behavior and force completion + insertHandler
+                        CommandProcessor.getInstance().executeCommand(indicator.getProject(), () -> {
+                            CommandProcessor.getInstance().setCurrentCommandGroupId("Completion" + indicator.hashCode());
+                            indicator.getLookup().finishLookup(Lookup.AUTO_INSERT_SELECT_CHAR, lookupElement);
+                        }, "Autocompletion", null);
+                    }
+                };
+
+                Editor editor = InjectedLanguageUtil.getEditorForInjectedLanguageNoCommit(getEditor(), getFile());
+                handler.invokeCompletion(getProject(), editor);
+                PsiDocumentManager.getInstance(getProject()).commitAllDocuments();
             }, null, null);
         }
     }

@@ -67,7 +67,7 @@ public class PhpFoldingBuilder extends FoldingBuilderEx {
             attachRouteShortcuts(descriptors, stringLiteralExpressiones);
         }
 
-        return descriptors.toArray(new FoldingDescriptor[descriptors.size()]);
+        return descriptors.toArray(new FoldingDescriptor[0]);
     }
 
 

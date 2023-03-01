@@ -3,8 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.tests.routing;
 import com.google.common.collect.ImmutableMap;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.junit.Assert;
 import org.junit.Test;
 

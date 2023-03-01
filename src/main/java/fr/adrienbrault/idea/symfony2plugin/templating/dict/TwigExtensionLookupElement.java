@@ -90,7 +90,7 @@ public class TwigExtensionLookupElement extends LookupElement {
                 parameters.remove(0);
             }
 
-            presentation.setTailText(PhpPresentationUtil.formatParameters(null, parameters.toArray(new Parameter[parameters.size()])).toString(), true);
+            presentation.setTailText(PhpPresentationUtil.formatParameters(null, parameters.toArray(new Parameter[0])).toString(), true);
         }
     }
 }

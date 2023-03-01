@@ -157,8 +157,7 @@ public class ServiceActionUtil {
         matchedContainer.sort(new SymfonyCreateService.ContainerServicePriorityNameComparator());
 
         matchedContainer.sort((o1, o2) ->
-            ((Integer)ServiceContainerUtil.getServiceUsage(phpClass.getProject(), o2.getName()))
-                .compareTo(ServiceContainerUtil.getServiceUsage(phpClass.getProject(), o1.getName()))
+            Integer.compare(ServiceContainerUtil.getServiceUsage(phpClass.getProject(), o2.getName()), ServiceContainerUtil.getServiceUsage(phpClass.getProject(), o1.getName()))
         );
 
         return matchedContainer.stream()

@@ -38,7 +38,7 @@ public class EventDispatcherEventReference extends PsiPolyVariantReferenceBase<P
             resolveResults.add(new PsiElementResolveResult(psiElement));
         }
 
-        return resolveResults.toArray(new ResolveResult[resolveResults.size()]);
+        return resolveResults.toArray(new ResolveResult[0]);
     }
 
     @NotNull

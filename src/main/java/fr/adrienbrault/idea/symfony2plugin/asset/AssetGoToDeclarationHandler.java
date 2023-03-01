@@ -46,7 +46,7 @@ public class AssetGoToDeclarationHandler implements GotoDeclarationHandler {
             }
         }
 
-        return psiElements.toArray(new PsiElement[psiElements.size()]);
+        return psiElements.toArray(new PsiElement[0]);
     }
 
     private String[] findValidAssetFilter(PsiElement psiElement) {
@@ -72,14 +72,11 @@ public class AssetGoToDeclarationHandler implements GotoDeclarationHandler {
                 continue;
             }
 
-            switch (tag) {
-                case "stylesheets":
-                    return TwigUtil.CSS_FILES_EXTENSIONS;
-                case "javascripts":
-                    return TwigUtil.JS_FILES_EXTENSIONS;
-                default:
-                    return null;
-            }
+            return switch (tag) {
+                case "stylesheets" -> TwigUtil.CSS_FILES_EXTENSIONS;
+                case "javascripts" -> TwigUtil.JS_FILES_EXTENSIONS;
+                default -> null;
+            };
         }
 
         return null;

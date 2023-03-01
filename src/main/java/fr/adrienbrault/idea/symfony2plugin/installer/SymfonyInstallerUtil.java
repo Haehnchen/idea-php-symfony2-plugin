@@ -293,15 +293,15 @@ public class SymfonyInstallerUtil {
 
             BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 
-            String content = "";
+            StringBuilder content = new StringBuilder();
             String line;
             while ((line = in.readLine()) != null) {
-                content += line;
+                content.append(line);
             }
 
             in.close();
 
-            return content;
+            return content.toString();
         } catch (IOException e) {
             return null;
         }

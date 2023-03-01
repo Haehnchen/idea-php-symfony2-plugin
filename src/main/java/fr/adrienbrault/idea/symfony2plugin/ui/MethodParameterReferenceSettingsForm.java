@@ -84,7 +84,7 @@ public class MethodParameterReferenceSettingsForm  implements Configurable {
     @Nullable
     @Override
     public JComponent createComponent() {
-        ToolbarDecorator tablePanel = ToolbarDecorator.createDecorator(this.tableView, new ElementProducer<MethodParameterSetting>() {
+        ToolbarDecorator tablePanel = ToolbarDecorator.createDecorator(this.tableView, new ElementProducer<>() {
             @Override
             public MethodParameterSetting createElement() {
                 //IdeFocusManager.getInstance(TwigSettingsForm.this.project).requestFocus(TwigNamespaceDialog.getWindows(), true);

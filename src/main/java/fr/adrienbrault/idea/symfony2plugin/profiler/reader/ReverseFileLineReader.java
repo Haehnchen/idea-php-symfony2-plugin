@@ -44,7 +44,7 @@ public class ReverseFileLineReader {
         channel.close();
         raf.close();
 
-        return lines.toArray(new String[lines.size()]);
+        return lines.toArray(new String[0]);
     }
 
     private String readLine() throws IOException {

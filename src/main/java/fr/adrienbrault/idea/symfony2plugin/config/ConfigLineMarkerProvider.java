@@ -21,6 +21,7 @@ import org.jetbrains.yaml.psi.YAMLValue;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 /**
@@ -129,11 +130,10 @@ public class ConfigLineMarkerProvider implements LineMarkerProvider {
 
         @NotNull
         public Map<String, Collection<String>> value() {
-            if(this.treeSignatures == null) {
-                return this.treeSignatures = ConfigUtil.getTreeSignatures(project);
-            }
-
-            return this.treeSignatures;
+            return Objects.requireNonNullElseGet(
+                this.treeSignatures,
+                () -> this.treeSignatures = ConfigUtil.getTreeSignatures(project)
+            );
         }
     }
 }

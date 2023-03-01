@@ -113,21 +113,21 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
     public void testIsInstanceOf() {
         myFixture.copyFileToProject("InstanceOf.php");
 
-        Collection<String[]> providers = new ArrayList<String[]>() {{
-            add(new String[] {"\\Instance\\Of\\Foo", "\\Instance\\Of\\Bar"});
-            add(new String[] {"\\Instance\\Of\\Foo", "\\Instance\\Of\\Cool"});
-            add(new String[] {"\\Instance\\Of\\Car", "\\Instance\\Of\\Bar"});
-            add(new String[] {"\\Instance\\Of\\Car", "\\Instance\\Of\\Foo"});
-            add(new String[] {"\\Instance\\Of\\Car", "\\Instance\\Of\\Cool"});
+        Collection<String[]> providers = new ArrayList<>() {{
+            add(new String[]{"\\Instance\\Of\\Foo", "\\Instance\\Of\\Bar"});
+            add(new String[]{"\\Instance\\Of\\Foo", "\\Instance\\Of\\Cool"});
+            add(new String[]{"\\Instance\\Of\\Car", "\\Instance\\Of\\Bar"});
+            add(new String[]{"\\Instance\\Of\\Car", "\\Instance\\Of\\Foo"});
+            add(new String[]{"\\Instance\\Of\\Car", "\\Instance\\Of\\Cool"});
 
             // backslash
-            add(new String[] {"Instance\\Of\\Car", "Instance\\Of\\Cool"});
-            add(new String[] {"Instance\\Of\\Car", "\\Instance\\Of\\Cool"});
-            add(new String[] {"\\Instance\\Of\\Car", "Instance\\Of\\Cool"});
+            add(new String[]{"Instance\\Of\\Car", "Instance\\Of\\Cool"});
+            add(new String[]{"Instance\\Of\\Car", "\\Instance\\Of\\Cool"});
+            add(new String[]{"\\Instance\\Of\\Car", "Instance\\Of\\Cool"});
 
             // dups
-            add(new String[] {"\\Instance\\Of\\Car", "Instance\\Of\\Apple"});
-            add(new String[] {"\\Instance\\Of\\Foo", "Instance\\Of\\Apple"});
+            add(new String[]{"\\Instance\\Of\\Car", "Instance\\Of\\Apple"});
+            add(new String[]{"\\Instance\\Of\\Foo", "Instance\\Of\\Apple"});
         }};
 
         for (String[] provider : providers) {

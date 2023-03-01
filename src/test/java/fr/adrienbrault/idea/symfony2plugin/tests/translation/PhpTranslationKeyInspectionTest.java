@@ -1,7 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.translation;
 
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import fr.adrienbrault.idea.symfony2plugin.translation.PhpTranslationDomainInspection;
 import fr.adrienbrault.idea.symfony2plugin.translation.PhpTranslationKeyInspection;
 
 /**

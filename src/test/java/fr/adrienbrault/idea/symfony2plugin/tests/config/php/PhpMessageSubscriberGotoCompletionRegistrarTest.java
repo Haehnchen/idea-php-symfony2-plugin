@@ -3,11 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.config.php;
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.elements.Method;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * @author Stefano Arlandini <sarlandini@alice.it>

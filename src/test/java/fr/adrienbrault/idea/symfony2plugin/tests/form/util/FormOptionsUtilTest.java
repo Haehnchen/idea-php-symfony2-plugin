@@ -78,7 +78,7 @@ public class FormOptionsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
 
     public void testClassOptionsVisitorWithExtensionAndParents() {
 
-        final Set<String> options = new HashSet<String>();
+        final Set<String> options = new HashSet<>();
 
         FormOptionsUtil.visitFormOptions(getProject(), "foo", (psiElement, option, formClass, optionEnum) ->
             options.add(option)
@@ -89,14 +89,13 @@ public class FormOptionsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
 
     public void testClassOptionsVisitorWithExtensionAndParentsWithClassConstant() {
 
-        final Set<String> optionsClass = new HashSet<String>();
+        final Set<String> optionsClass = new HashSet<>();
 
-        FormOptionsUtil.visitFormOptions(getProject(), "Options\\Bar\\Foobar", new FormOptionVisitor() {
-            @Override
-            public void visit(@NotNull PsiElement psiElement, @NotNull String option, @NotNull FormClass formClass, @NotNull FormOptionEnum optionEnum) {
-                optionsClass.add(option);
-            }
-        });
+        FormOptionsUtil.visitFormOptions(
+            getProject(),
+            "Options\\Bar\\Foobar",
+            (psiElement, option, formClass, optionEnum) -> optionsClass.add(option)
+        );
 
         assertContainsElements(optionsClass, "BarType");
     }

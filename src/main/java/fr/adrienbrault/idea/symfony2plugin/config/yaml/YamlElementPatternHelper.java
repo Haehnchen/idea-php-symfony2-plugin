@@ -49,7 +49,7 @@ public class YamlElementPatternHelper {
      *
      * /../config/packages/doctrine.yaml
      */
-    private static final PatternCondition<PsiFile> CONFIG_YAML_PATTERN = new PatternCondition<PsiFile>("Yaml Configuration") {
+    private static final PatternCondition<PsiFile> CONFIG_YAML_PATTERN = new PatternCondition<>("Yaml Configuration") {
         @Override
         public boolean accepts(@NotNull PsiFile psiFile, ProcessingContext processingContext) {
             if (psiFile.getFileType() != YAMLFileType.YML) {
@@ -316,7 +316,7 @@ public class YamlElementPatternHelper {
      * Proxy for getWithFirstRootKey to filter with file name condition
      */
     public static ElementPattern<? extends PsiElement> getOrmRoot() {
-        return PlatformPatterns.and(PlatformPatterns.psiElement().with(new PatternCondition<PsiElement>("Doctrine file") {
+        return PlatformPatterns.and(PlatformPatterns.psiElement().with(new PatternCondition<>("Doctrine file") {
             @Override
             public boolean accepts(@NotNull PsiElement psiElement, ProcessingContext processingContext) {
                 return getOrmFilePattern().accepts(psiElement.getContainingFile());
@@ -806,7 +806,7 @@ public class YamlElementPatternHelper {
      */
     public static ElementPattern<PsiElement> getNamedDefaultBindPattern() {
         // "__defaults" key
-        PsiElementPattern.Capture<YAMLMapping> defaultsKey = PlatformPatterns.psiElement(YAMLMapping.class).withParent(PlatformPatterns.psiElement(YAMLKeyValue.class).with(new PatternCondition<YAMLKeyValue>("KeyText") {
+        PsiElementPattern.Capture<YAMLMapping> defaultsKey = PlatformPatterns.psiElement(YAMLMapping.class).withParent(PlatformPatterns.psiElement(YAMLKeyValue.class).with(new PatternCondition<>("KeyText") {
             @Override
             public boolean accepts(@NotNull YAMLKeyValue yamlKeyValue, ProcessingContext context) {
                 return "_defaults".equals(yamlKeyValue.getKeyText());
@@ -814,7 +814,7 @@ public class YamlElementPatternHelper {
         }));
 
         // "bind" bind
-        PsiElementPattern.Capture<YAMLMapping> bindKey = PlatformPatterns.psiElement(YAMLMapping.class).withParent(PlatformPatterns.psiElement(YAMLKeyValue.class).with(new PatternCondition<YAMLKeyValue>("KeyText") {
+        PsiElementPattern.Capture<YAMLMapping> bindKey = PlatformPatterns.psiElement(YAMLMapping.class).withParent(PlatformPatterns.psiElement(YAMLKeyValue.class).with(new PatternCondition<>("KeyText") {
             @Override
             public boolean accepts(@NotNull YAMLKeyValue yamlKeyValue, ProcessingContext context) {
                 return "bind".equals(yamlKeyValue.getKeyText());
@@ -822,7 +822,7 @@ public class YamlElementPatternHelper {
         }).withParent(defaultsKey));
 
         // "arguments" bind
-        PsiElementPattern.Capture<YAMLMapping> argumentsKey = PlatformPatterns.psiElement(YAMLMapping.class).withParent(PlatformPatterns.psiElement(YAMLKeyValue.class).with(new PatternCondition<YAMLKeyValue>("KeyText") {
+        PsiElementPattern.Capture<YAMLMapping> argumentsKey = PlatformPatterns.psiElement(YAMLMapping.class).withParent(PlatformPatterns.psiElement(YAMLKeyValue.class).with(new PatternCondition<>("KeyText") {
             @Override
             public boolean accepts(@NotNull YAMLKeyValue yamlKeyValue, ProcessingContext context) {
                 return "arguments".equals(yamlKeyValue.getKeyText());
@@ -846,7 +846,7 @@ public class YamlElementPatternHelper {
         // incomplete code 2.0 for new phpstorm version.
         // bind:
         // $<caret>
-        PsiElementPattern.Capture<PsiElement> incompleteCodePattern2 = PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).withText(PlatformPatterns.string().startsWith("$")).withParent(PlatformPatterns.psiElement(YAMLScalar.class).withParent(PlatformPatterns.psiElement(YAMLKeyValue.class).with(new PatternCondition<YAMLKeyValue>("KeyText") {
+        PsiElementPattern.Capture<PsiElement> incompleteCodePattern2 = PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).withText(PlatformPatterns.string().startsWith("$")).withParent(PlatformPatterns.psiElement(YAMLScalar.class).withParent(PlatformPatterns.psiElement(YAMLKeyValue.class).with(new PatternCondition<>("KeyText") {
             @Override
             public boolean accepts(@NotNull YAMLKeyValue yamlKeyValue, ProcessingContext context) {
                 String keyText = yamlKeyValue.getKeyText();

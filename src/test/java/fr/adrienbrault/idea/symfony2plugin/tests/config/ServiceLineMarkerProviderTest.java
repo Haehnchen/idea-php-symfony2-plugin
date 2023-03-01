@@ -129,7 +129,7 @@ public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtur
             "namespace Service{\n" +
             "    class YamlBar{}\n" +
             "}"
-        ), new LineMarker.TargetAcceptsPattern("Navigate to definition", PlatformPatterns.psiElement(YAMLKeyValue.class).with(new PatternCondition<YAMLKeyValue>("KeyText") {
+        ), new LineMarker.TargetAcceptsPattern("Navigate to definition", PlatformPatterns.psiElement(YAMLKeyValue.class).with(new PatternCondition<>("KeyText") {
             @Override
             public boolean accepts(@NotNull YAMLKeyValue yamlKeyValue, ProcessingContext processingContext) {
                 return yamlKeyValue.getKeyText().equals("foo");
@@ -147,7 +147,7 @@ public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtur
             "namespace Service{\n" +
             "    class YamlBar{}\n" +
             "}"
-        ), new LineMarker.TargetAcceptsPattern("Navigate to definition", PlatformPatterns.psiElement(YAMLKeyValue.class).with(new PatternCondition<YAMLKeyValue>("KeyText") {
+        ), new LineMarker.TargetAcceptsPattern("Navigate to definition", PlatformPatterns.psiElement(YAMLKeyValue.class).with(new PatternCondition<>("KeyText") {
             @Override
             public boolean accepts(@NotNull YAMLKeyValue yamlKeyValue, ProcessingContext processingContext) {
                 return yamlKeyValue.getKeyText().equals("Service\\YamlBar");

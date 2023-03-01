@@ -44,7 +44,7 @@ public class PhpMessageSubscriberGotoCompletionRegistrar implements GotoCompleti
                         PlatformPatterns.or(
                             PlatformPatterns.psiElement(ArrayHashElement.class)
                                 .withParent(PlatformPatterns.psiElement(ArrayCreationExpression.class).withParent(PhpReturn.class))
-                                .with(new PatternCondition<ArrayHashElement>("Key Type") {
+                                .with(new PatternCondition<>("Key Type") {
                                     @Override
                                     public boolean accepts(@NotNull ArrayHashElement arrayHashElement, ProcessingContext context) {
                                         PhpPsiElement keyElement = arrayHashElement.getKey();
@@ -53,7 +53,7 @@ public class PhpMessageSubscriberGotoCompletionRegistrar implements GotoCompleti
                                     }
                                 }),
                             PlatformPatterns.psiElement(ArrayHashElement.class)
-                                .with(new PatternCondition<ArrayHashElement>("Key Text") {
+                                .with(new PatternCondition<>("Key Text") {
                                     @Override
                                     public boolean accepts(@NotNull ArrayHashElement arrayHashElement, ProcessingContext context) {
                                         PhpPsiElement keyElement = arrayHashElement.getKey();
@@ -68,7 +68,7 @@ public class PhpMessageSubscriberGotoCompletionRegistrar implements GotoCompleti
                                 .withParent(
                                     PlatformPatterns.psiElement(ArrayCreationExpression.class).withParent(
                                         PlatformPatterns.psiElement(PhpYield.class)
-                                            .with(new PatternCondition<PhpYield>("Yield Key Type") {
+                                            .with(new PatternCondition<>("Yield Key Type") {
                                                 @Override
                                                 public boolean accepts(@NotNull PhpYield phpYield, ProcessingContext context) {
                                                     PsiElement keyElement = phpYield.getArgument();

@@ -48,7 +48,7 @@ public class QueryBuilderGotoDeclarationHandler implements GotoDeclarationHandle
         // $qb->from('', '', '<foo>');
         attachFromIndexGoto(context, psiElements);
 
-        return psiElements.toArray(new PsiElement[psiElements.size()]);
+        return psiElements.toArray(new PsiElement[0]);
     }
 
     private void attachPartialGoto(@NotNull StringLiteralExpression psiElement, @NotNull List<PsiElement> targets, int offset) {

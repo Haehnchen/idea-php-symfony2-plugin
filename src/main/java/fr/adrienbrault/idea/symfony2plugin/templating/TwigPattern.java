@@ -923,7 +923,7 @@ public class TwigPattern {
             patterns.add(PlatformPatterns.psiElement(TwigTokenTypes.COMMENT_TEXT).withText(PlatformPatterns.string().matches(s)).withLanguage(TwigLanguage.INSTANCE));
         }
 
-        return PlatformPatterns.or(patterns.toArray(new ElementPattern[patterns.size()]));
+        return PlatformPatterns.or(patterns.toArray(new ElementPattern[0]));
     }
 
     /**
@@ -1144,7 +1144,7 @@ public class TwigPattern {
                     PlatformPatterns.psiElement(PsiWhiteSpace.class),
                     PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
                 ),
-                PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).with(new PatternCondition<PsiElement>("aa") {
+                PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).with(new PatternCondition<>("aa") {
                     @Override
                     public boolean accepts(@NotNull PsiElement psiElement, ProcessingContext processingContext) {
                         return "apply".equalsIgnoreCase(psiElement.getText());

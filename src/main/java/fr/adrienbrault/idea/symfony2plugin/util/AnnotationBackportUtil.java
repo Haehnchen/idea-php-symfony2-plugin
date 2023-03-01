@@ -24,7 +24,7 @@ import java.util.*;
  */
 public class AnnotationBackportUtil {
 
-    public static Set<String> NON_ANNOTATION_TAGS = new HashSet<String>() {{
+    public static Set<String> NON_ANNOTATION_TAGS = new HashSet<>() {{
         addAll(Arrays.asList(PhpDocUtil.ALL_TAGS));
         add("@Annotation");
         add("@inheritDoc");
@@ -80,11 +80,7 @@ public class AnnotationBackportUtil {
         for (PhpUseList phpUseList : PhpCodeInsightUtil.collectImports(scope)) {
             for (PhpUse phpUse : phpUseList.getDeclarations()) {
                 String alias = phpUse.getAliasName();
-                if (alias != null) {
-                    useImports.put(alias, phpUse.getFQN());
-                } else {
-                    useImports.put(phpUse.getName(), phpUse.getFQN());
-                }
+                useImports.put(Objects.requireNonNullElseGet(alias, phpUse::getName), phpUse.getFQN());
             }
         }
 

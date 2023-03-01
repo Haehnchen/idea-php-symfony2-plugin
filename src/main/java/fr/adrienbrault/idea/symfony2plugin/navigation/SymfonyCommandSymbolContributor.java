@@ -50,7 +50,7 @@ public class SymfonyCommandSymbolContributor implements ChooseByNameContributor 
             }
         }
 
-        return navigationItems.toArray(new NavigationItem[navigationItems.size()]);
+        return navigationItems.toArray(new NavigationItem[0]);
     }
 
 }

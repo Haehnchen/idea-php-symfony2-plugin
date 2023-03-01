@@ -3,7 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
@@ -18,7 +17,6 @@ import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslation
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import gnu.trove.THashMap;
-import kotlin.Pair;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -29,7 +27,6 @@ import org.jetbrains.yaml.psi.YAMLFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

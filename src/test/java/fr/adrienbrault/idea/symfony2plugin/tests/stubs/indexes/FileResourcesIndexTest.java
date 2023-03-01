@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.stubs.indexes;
 
-import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
@@ -8,7 +7,6 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.dict.FileResource;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.FileResourceContextTypeEnum;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.FileResourcesIndex;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import org.jetbrains.yaml.YAMLFileType;
 
 import java.util.Map;
 import java.util.TreeMap;

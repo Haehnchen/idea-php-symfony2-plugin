@@ -70,7 +70,7 @@ public class FormFieldNameReference extends PsiReferenceBase<PsiElement> impleme
             }
         }
 
-        return lookupElements.toArray(new LookupElement[lookupElements.size()]);
+        return lookupElements.toArray(new LookupElement[0]);
     }
 
 }

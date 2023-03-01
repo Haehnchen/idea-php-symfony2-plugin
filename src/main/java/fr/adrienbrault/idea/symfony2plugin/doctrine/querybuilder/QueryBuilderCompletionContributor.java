@@ -72,7 +72,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
 
     public QueryBuilderCompletionContributor() {
 
-        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<CompletionParameters>() {
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
@@ -85,22 +85,22 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                     .withSignature("\\Doctrine\\ORM\\QueryBuilder", "setParameter")
                     .match();
 
-                if(methodMatchParameter == null) {
+                if (methodMatchParameter == null) {
                     methodMatchParameter = new MethodMatcher.ArrayParameterMatcher(psiElement.getContext(), 0)
                         .withSignature("\\Doctrine\\ORM\\QueryBuilder", "setParameters")
                         .match();
                 }
 
-                if(methodMatchParameter == null) {
+                if (methodMatchParameter == null) {
                     return;
                 }
 
                 QueryBuilderMethodReferenceParser qb = getQueryBuilderParser(methodMatchParameter.getMethodReference());
-                if(qb == null) {
+                if (qb == null) {
                     return;
                 }
 
-                for(String parameter: qb.collect().getParameters()) {
+                for (String parameter : qb.collect().getParameters()) {
                     completionResultSet.addElement(LookupElementBuilder.create(parameter));
                 }
 
@@ -108,7 +108,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
 
         });
 
-        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<CompletionParameters>() {
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
@@ -121,18 +121,18 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                     .withSignature(JOINS)
                     .match();
 
-                if(methodMatchParameter == null) {
+                if (methodMatchParameter == null) {
                     return;
                 }
 
                 QueryBuilderMethodReferenceParser qb = getQueryBuilderParser(methodMatchParameter.getMethodReference());
-                if(qb == null) {
+                if (qb == null) {
                     return;
                 }
 
                 QueryBuilderScopeContext collect = qb.collect();
-                for(Map.Entry<String, List<QueryBuilderRelation>> parameter: collect.getRelationMap().entrySet()) {
-                    for(QueryBuilderRelation relation: parameter.getValue()) {
+                for (Map.Entry<String, List<QueryBuilderRelation>> parameter : collect.getRelationMap().entrySet()) {
+                    for (QueryBuilderRelation relation : parameter.getValue()) {
                         completionResultSet.addElement(LookupElementBuilder.create(parameter.getKey() + "." + relation.getFieldName()).withTypeText(relation.getTargetEntity(), true));
                     }
                 }
@@ -141,22 +141,22 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
 
         });
 
-        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<CompletionParameters>() {
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
                 PsiElement psiElement = completionParameters.getOriginalPosition();
-                if(psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
+                if (psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
                     return;
                 }
 
                 MethodMatcher.MethodMatchParameter methodMatchParameter = MatcherUtil.matchPropertyField(psiElement.getContext());
-                if(methodMatchParameter == null) {
+                if (methodMatchParameter == null) {
                     return;
                 }
 
                 QueryBuilderMethodReferenceParser qb = getQueryBuilderParser(methodMatchParameter.getMethodReference());
-                if(qb == null) {
+                if (qb == null) {
                     return;
                 }
 
@@ -167,12 +167,12 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
 
         });
 
-        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<CompletionParameters>() {
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
                 PsiElement psiElement = completionParameters.getOriginalPosition();
-                if(psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
+                if (psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
                     return;
                 }
 
@@ -180,15 +180,15 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                     .withSignature(WHERES)
                     .match();
 
-                if(methodMatchParameter == null) {
+                if (methodMatchParameter == null) {
                     return;
                 }
 
                 // querybuilder parser is too slow longer values, and that dont make sense here at all
                 // user can fire a manual completion event, when needed...
-                if(completionParameters.isAutoPopup()) {
-                    if(psiElement instanceof StringLiteralExpression) {
-                        if(((StringLiteralExpression) psiElement).getContents().length() > 5) {
+                if (completionParameters.isAutoPopup()) {
+                    if (psiElement instanceof StringLiteralExpression) {
+                        if (((StringLiteralExpression) psiElement).getContents().length() > 5) {
                             return;
                         }
                     }
@@ -198,7 +198,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                 addParameterNameCompletion(completionParameters, completionResultSet, psiElement);
 
                 QueryBuilderMethodReferenceParser qb = getQueryBuilderParser(methodMatchParameter.getMethodReference());
-                if(qb == null) {
+                if (qb == null) {
                     return;
                 }
 
@@ -210,12 +210,12 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
             private void addParameterNameCompletion(CompletionParameters completionParameters, CompletionResultSet completionResultSet, PsiElement psiElement) {
 
                 PsiElement literalExpr = psiElement.getParent();
-                if(!(literalExpr instanceof StringLiteralExpression)) {
+                if (!(literalExpr instanceof StringLiteralExpression)) {
                     return;
                 }
 
                 String content = PsiElementUtils.getStringBeforeCursor((StringLiteralExpression) literalExpr, completionParameters.getOffset());
-                if(content == null) {
+                if (content == null) {
                     return;
                 }
 
@@ -224,12 +224,12 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                     final String complete = matcher.group(1) + "_" + matcher.group(2);
 
                     // fill underscore and underscore completion
-                    Set<String> strings = new HashSet<String>() {{
+                    Set<String> strings = new HashSet<>() {{
                         add(complete);
                         add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.camelize(complete, true));
                     }};
 
-                    for(String string: strings) {
+                    for (String string : strings) {
                         completionResultSet.addElement(LookupElementBuilder.create(":" + string).withIcon(Symfony2Icons.DOCTRINE));
                     }
 
@@ -239,7 +239,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
         });
 
         // $qb->join('test.foo', 'foo');
-        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<CompletionParameters>() {
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
@@ -252,23 +252,23 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                     .withSignature(JOINS)
                     .match();
 
-                if(methodMatchParameter != null) {
+                if (methodMatchParameter != null) {
                     MethodReference methodReference = PsiTreeUtil.getParentOfType(psiElement, MethodReference.class);
-                    if(methodReference != null) {
+                    if (methodReference != null) {
                         String joinTable = PhpElementsUtil.getStringValue(PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 0));
-                        if(joinTable != null && StringUtils.isNotBlank(joinTable)) {
+                        if (joinTable != null && StringUtils.isNotBlank(joinTable)) {
                             int pos = joinTable.lastIndexOf(".");
-                            if(pos > 0) {
+                            if (pos > 0) {
                                 final String aliasName = joinTable.substring(pos + 1);
-                                if(StringUtils.isNotBlank(aliasName)) {
+                                if (StringUtils.isNotBlank(aliasName)) {
 
-                                    Set<String> strings = new HashSet<String>() {{
+                                    Set<String> strings = new HashSet<>() {{
                                         add(aliasName);
                                         add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.camelize(aliasName, true));
                                         add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(aliasName));
                                     }};
 
-                                    for(String string: strings) {
+                                    for (String string : strings) {
                                         completionResultSet.addElement(LookupElementBuilder.create(string));
                                     }
 
@@ -284,12 +284,12 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
 
         // $qb->expr()->in('')
         // $qb->expr()->eg('')
-        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<CompletionParameters>() {
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
                 PsiElement psiElement = completionParameters.getOriginalPosition();
-                if(psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
+                if (psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
                     return;
                 }
 
@@ -297,7 +297,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                     .withSignature(EXPR)
                     .match();
 
-                if(methodMatchParameter == null) {
+                if (methodMatchParameter == null) {
                     return;
                 }
 
@@ -305,12 +305,12 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                 // $qb->expr()->in('')
                 MethodReference methodReference = methodMatchParameter.getMethodReference();
                 PsiElement methodReferenceChild = methodReference.getFirstChild();
-                if(!(methodReferenceChild instanceof MethodReference)) {
+                if (!(methodReferenceChild instanceof MethodReference)) {
                     return;
                 }
 
                 QueryBuilderMethodReferenceParser qb = getQueryBuilderParser((MethodReference) methodReferenceChild);
-                if(qb == null) {
+                if (qb == null) {
                     return;
                 }
 
@@ -321,7 +321,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
 
         });
 
-        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<CompletionParameters>() {
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
@@ -334,12 +334,12 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                     .withSignature("\\Doctrine\\ORM\\QueryBuilder", "from")
                     .match();
 
-                if(methodMatchParameter == null) {
+                if (methodMatchParameter == null) {
                     return;
                 }
 
                 QueryBuilderMethodReferenceParser qb = getQueryBuilderParser(methodMatchParameter.getMethodReference());
-                if(qb == null) {
+                if (qb == null) {
                     return;
                 }
 
@@ -351,7 +351,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
         });
 
 
-        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<CompletionParameters>() {
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
@@ -364,14 +364,14 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                     .withSignature("\\Doctrine\\ORM\\EntityRepository", "createQueryBuilder")
                     .match();
 
-                if(methodMatchParameter == null) {
+                if (methodMatchParameter == null) {
                     return;
                 }
 
-                for(String type: methodMatchParameter.getMethodReference().getType().getTypes()) {
+                for (String type : methodMatchParameter.getMethodReference().getType().getTypes()) {
 
                     // strip last method call
-                    if(type.endsWith(".createQueryBuilder"))  {
+                    if (type.endsWith(".createQueryBuilder")) {
                         attachClassNames(completionResultSet, type.substring(0, type.length() - ".createQueryBuilder".length()));
                     }
 
@@ -379,7 +379,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
             }
         });
 
-        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<CompletionParameters>() {
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
@@ -392,13 +392,13 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                     .withSignature("\\Doctrine\\ORM\\QueryBuilder", "from")
                     .match();
 
-                if(methodMatchParameter == null) {
+                if (methodMatchParameter == null) {
                     return;
                 }
 
                 MethodReference methodReference = methodMatchParameter.getMethodReference();
                 String repoName = PhpElementsUtil.getStringValue(methodReference.getParameters()[0]);
-                if(repoName != null) {
+                if (repoName != null) {
                     attachClassNames(completionResultSet, repoName);
                 }
 
@@ -480,7 +480,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
         processor.collectMethods();
 
         // @TODO: pipe factory method
-        return new QueryBuilderMethodReferenceParser(methodReference.getProject(), new ArrayList<MethodReference>() {{
+        return new QueryBuilderMethodReferenceParser(methodReference.getProject(), new ArrayList<>() {{
             addAll(processor.getQueryBuilderFactoryMethods());
             addAll(processor.getQueryBuilderMethodReferences());
         }});

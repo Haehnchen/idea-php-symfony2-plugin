@@ -24,7 +24,7 @@ public class TwigFileUtil {
      */
     @NotNull
     public static Collection<VirtualFile> collectParentFiles(boolean includeSelf, @NotNull Collection<PsiFile> psiFiles) {
-        return collectParentFiles(includeSelf, psiFiles.toArray(new PsiFile[psiFiles.size()]));
+        return collectParentFiles(includeSelf, psiFiles.toArray(new PsiFile[0]));
     }
 
     /**

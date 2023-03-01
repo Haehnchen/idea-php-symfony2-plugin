@@ -72,7 +72,7 @@ public class YamlHelper {
 
         PsiElement startElement = psiElement.getFirstChild();
         if(startElement == null) {
-            return psiElements.toArray(new PsiElement[psiElements.size()]);
+            return psiElements.toArray(new PsiElement[0]);
         }
 
         psiElements.add(startElement);
@@ -81,7 +81,7 @@ public class YamlHelper {
             psiElements.add(child);
         }
 
-        return psiElements.toArray(new PsiElement[psiElements.size()]);
+        return psiElements.toArray(new PsiElement[0]);
     }
 
     /**
@@ -1208,14 +1208,11 @@ public class YamlHelper {
         }
 
         String textValue = ((YAMLScalar) value).getTextValue().toLowerCase();
-        switch (textValue) {
-            case "false":
-                return false;
-            case "true":
-                return true;
-            default:
-                return null;
-        }
+        return switch (textValue) {
+            case "false" -> false;
+            case "true" -> true;
+            default -> null;
+        };
     }
 
     /**

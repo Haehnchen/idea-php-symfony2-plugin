@@ -13,7 +13,7 @@ import java.util.Map;
  */
 public class DefaultServiceCollector implements ServiceCollector {
 
-    private static Map<String, String> DEFAULTS = new HashMap<String, String>() {{
+    private static Map<String, String> DEFAULTS = new HashMap<>() {{
         put("service_container", "Symfony\\Component\\DependencyInjection\\ContainerInterface");
         put("kernel", "Symfony\\Component\\HttpKernel\\KernelInterface");
         put("controller_resolver", "Symfony\\Component\\HttpKernel\\Controller\\ControllerResolverInterface");

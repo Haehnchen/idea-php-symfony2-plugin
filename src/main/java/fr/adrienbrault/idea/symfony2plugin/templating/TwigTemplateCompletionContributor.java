@@ -85,14 +85,14 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         extend(
             CompletionType.BASIC,
             TwigPattern.getTranslationKeyPattern("trans", "transchoice"),
-            new CompletionProvider<CompletionParameters>() {
+            new CompletionProvider<>() {
                 public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
-                    if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                    if (!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
                         return;
                     }
 
                     PsiElement psiElement = parameters.getPosition();
-                    String domainName =  TwigUtil.getPsiElementTranslationDomain(psiElement);
+                    String domainName = TwigUtil.getPsiElementTranslationDomain(psiElement);
 
                     resultSet.addAllElements(TranslationUtil.getTranslationLookupElementsOnDomain(psiElement.getProject(), domainName));
                 }
@@ -104,13 +104,13 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         extend(
             CompletionType.BASIC,
             TwigPattern.getTransDomainPattern(),
-            new CompletionProvider<CompletionParameters>() {
+            new CompletionProvider<>() {
                 public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
-                    if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                    if (!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
                         return;
                     }
 
-                    if(PsiElementUtils.getPrevSiblingOfType(parameters.getPosition(), PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice"))) == null) {
+                    if (PsiElementUtils.getPrevSiblingOfType(parameters.getPosition(), PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice"))) == null) {
                         return;
                     }
 
@@ -189,11 +189,11 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         extend(
             CompletionType.BASIC,
             TwigPattern.getApplyFilterPattern(),
-            new CompletionProvider<CompletionParameters>() {
+            new CompletionProvider<>() {
                 @Override
                 protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
                     Project project = completionParameters.getPosition().getProject();
-                    for(Map.Entry<String, TwigExtension> entry : TwigExtensionParser.getFilters(project).entrySet()) {
+                    for (Map.Entry<String, TwigExtension> entry : TwigExtensionParser.getFilters(project).entrySet()) {
                         completionResultSet.addElement(new TwigExtensionLookupElement(project, entry.getKey(), entry.getValue()));
                     }
                 }
@@ -264,18 +264,18 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         extend(
             CompletionType.BASIC,
             TwigPattern.getVariableTypePattern(),
-            new CompletionProvider<CompletionParameters>() {
+            new CompletionProvider<>() {
                 public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
-                    if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                    if (!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
                         return;
                     }
 
                     PsiElement psiElement = parameters.getOriginalPosition();
-                    if(psiElement == null) {
+                    if (psiElement == null) {
                         return;
                     }
 
-                    for(Map.Entry<String, PsiVariable> entry: TwigTypeResolveUtil.collectScopeVariables(parameters.getOriginalPosition()).entrySet()) {
+                    for (Map.Entry<String, PsiVariable> entry : TwigTypeResolveUtil.collectScopeVariables(parameters.getOriginalPosition()).entrySet()) {
                         resultSet.addElement(LookupElementBuilder.create(entry.getKey()).withTypeText(TwigTypeResolveUtil.getTypeDisplayName(psiElement.getProject(), entry.getValue().getTypes())).withIcon(PhpIcons.CLASS));
                     }
                 }
@@ -413,15 +413,15 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         extend(
             CompletionType.BASIC,
             TwigPattern.getPrintBlockOrTagFunctionPattern("constant"),
-            new CompletionProvider<CompletionParameters>() {
+            new CompletionProvider<>() {
                 public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
                     PsiElement position = parameters.getPosition();
-                    if(!Symfony2ProjectComponent.isEnabled(position)) {
+                    if (!Symfony2ProjectComponent.isEnabled(position)) {
                         return;
                     }
 
                     PhpIndex instance = PhpIndex.getInstance(position.getProject());
-                    for(String constant : instance.getAllConstantNames(PrefixMatcher.ALWAYS_TRUE)) {
+                    for (String constant : instance.getAllConstantNames(PrefixMatcher.ALWAYS_TRUE)) {
                         resultSet.addElement(LookupElementBuilder.create(constant).withIcon(PhpIcons.CONSTANT));
                     }
 
@@ -429,9 +429,9 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                     String before = position.getText().substring(0, foo);
                     String[] parts = before.split("::");
 
-                    if(parts.length >= 1) {
+                    if (parts.length >= 1) {
                         PhpClass phpClass = PhpElementsUtil.getClassInterface(position.getProject(), parts[0].replace("\\\\", "\\"));
-                        if(phpClass != null) {
+                        if (phpClass != null) {
                             phpClass.getFields().stream().filter(Field::isConstant).forEach(field ->
                                 resultSet.addElement(LookupElementBuilder.create(phpClass.getPresentableFQN().replace("\\", "\\\\") + "::" + field.getName()).withIcon(PhpIcons.CONSTANT))
                             );

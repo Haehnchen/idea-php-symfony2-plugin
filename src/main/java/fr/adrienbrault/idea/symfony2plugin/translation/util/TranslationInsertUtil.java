@@ -16,6 +16,7 @@ import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -115,12 +116,8 @@ public class TranslationInsertUtil {
 
             // version="2.0"
             XmlTag group = file.findFirstSubTag("group");
-            if(group != null) {
-                return func20.apply(group);
-            } else {
-                // version="2.0" shortcut
-                return func20.apply(file);
-            }
+            // version="2.0" shortcut
+            return func20.apply(Objects.requireNonNullElse(group, file));
         }
 
         return null;
@@ -135,9 +132,9 @@ public class TranslationInsertUtil {
                 continue;
             }
 
-            Integer integer;
+            int integer;
             try {
-                integer = Integer.valueOf(id);
+                integer = Integer.parseInt(id);
             } catch (NumberFormatException e) {
                 continue;
             }

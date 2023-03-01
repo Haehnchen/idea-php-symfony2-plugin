@@ -90,7 +90,7 @@ public class ProfilerUtil {
         }
 
         // we need at least this fields
-        if(!header.containsAll(Arrays.asList("token", "url"))) {
+        if(!new HashSet<>(header).containsAll(Arrays.asList("token", "url"))) {
             return Collections.emptyList();
         }
 
@@ -274,9 +274,9 @@ public class ProfilerUtil {
                 continue;
             }
 
-            Integer count;
+            int count;
             try {
-                count = Integer.valueOf(stripHtmlTags(StringUtils.trim(tds[1].getValue().getText())));
+                count = Integer.parseInt(stripHtmlTags(StringUtils.trim(tds[1].getValue().getText())));
             } catch (NumberFormatException e) {
                 count = 0;
             }

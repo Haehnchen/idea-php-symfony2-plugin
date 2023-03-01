@@ -36,7 +36,7 @@ public class NewBundleTwigExtensionAction extends NewBundleFileActionAbstract {
                     }
 
                     final String finalName = name;
-                    bundleFile = PhpBundleFileFactory.createBundleFile(phpClass, "twig_extension", "Twig\\Extension\\" + className, new HashMap<String, String>() {{
+                    bundleFile = PhpBundleFileFactory.createBundleFile(phpClass, "twig_extension", "Twig\\Extension\\" + className, new HashMap<>() {{
                         put("name", fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(finalName));
                     }});
 

@@ -96,7 +96,7 @@ public class MethodSignatureTypeSettingsForm  implements Configurable {
     @Nullable
     @Override
     public JComponent createComponent() {
-        ToolbarDecorator tablePanel = ToolbarDecorator.createDecorator(this.tableView, new ElementProducer<MethodSignatureSetting>() {
+        ToolbarDecorator tablePanel = ToolbarDecorator.createDecorator(this.tableView, new ElementProducer<>() {
             @Override
             public MethodSignatureSetting createElement() {
                 //IdeFocusManager.getInstance(TwigSettingsForm.this.project).requestFocus(TwigNamespaceDialog.getWindows(), true);

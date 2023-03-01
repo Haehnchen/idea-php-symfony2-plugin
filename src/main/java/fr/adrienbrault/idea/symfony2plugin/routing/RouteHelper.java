@@ -94,7 +94,7 @@ public class RouteHelper {
             lookupElements.add(LookupElementBuilder.create("_fragment").withIcon(Symfony2Icons.ROUTE));
         }
 
-        return lookupElements.toArray(new LookupElement[lookupElements.size()]);
+        return lookupElements.toArray(new LookupElement[0]);
     }
 
     @NotNull
@@ -130,7 +130,7 @@ public class RouteHelper {
 
         }
 
-        return results.toArray(new PsiElement[results.size()]);
+        return results.toArray(new PsiElement[0]);
 
     }
 
@@ -1147,7 +1147,7 @@ public class RouteHelper {
     private static String getRouteNamePrefix(@NotNull  PhpClass phpClass) {
         PhpDocCommentAnnotation phpClassContainer = AnnotationUtil.getPhpDocCommentAnnotationContainer(phpClass.getDocComment());
         if(phpClassContainer != null) {
-            PhpDocTagAnnotation firstPhpDocBlock = phpClassContainer.getFirstPhpDocBlock(ROUTE_CLASSES.toArray(new String[ROUTE_CLASSES.size()]));
+            PhpDocTagAnnotation firstPhpDocBlock = phpClassContainer.getFirstPhpDocBlock(ROUTE_CLASSES.toArray(new String[0]));
             if(firstPhpDocBlock != null) {
                 String name = firstPhpDocBlock.getPropertyValue("name");
                 if(name != null && StringUtils.isNotBlank(name)) {
