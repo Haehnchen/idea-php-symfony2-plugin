@@ -205,40 +205,33 @@ public class TranslationPlaceholderGotoCompletionRegistrar implements GotoComple
     /**
      * {{ 'symfony.great'|trans({'fo<caret>f'}, 'symfony')) }}
      */
-    private static class MyTwigTransFilterCompletionContributor implements GotoCompletionContributor {
-        @NotNull
-        private final String filter;
-
-        MyTwigTransFilterCompletionContributor(@NotNull String filter) {
-            this.filter = filter;
-        }
-
+    private record MyTwigTransFilterCompletionContributor(@NotNull String filter) implements GotoCompletionContributor {
         @Nullable
         @Override
         public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
             PsiElement parent = psiElement.getParent();
-            if(parent.getNode().getElementType() != TwigElementTypes.LITERAL) {
+            if (parent.getNode().getElementType() != TwigElementTypes.LITERAL) {
                 return null;
             }
 
             PsiElement functionCall = parent.getParent();
-            if(functionCall.getNode().getElementType() != TwigElementTypes.FUNCTION_CALL) {
+            if (functionCall.getNode().getElementType() != TwigElementTypes.FUNCTION_CALL) {
                 return null;
             }
 
             // find translation key: 'symfony.great'
             PsiElement function = PsiElementUtils.getPrevSiblingOfType(functionCall, TwigPattern.getTranslationKeyPattern(this.filter));
-            if(function == null) {
+            if (function == null) {
                 return null;
             }
 
             String key = function.getText();
-            if(StringUtils.isBlank(key)) {
+            if (StringUtils.isBlank(key)) {
                 return null;
             }
 
             String domain = TwigUtil.getPsiElementTranslationDomain(function);
-            if(StringUtils.isBlank(domain)) {
+            if (StringUtils.isBlank(domain)) {
                 return null;
             }
 

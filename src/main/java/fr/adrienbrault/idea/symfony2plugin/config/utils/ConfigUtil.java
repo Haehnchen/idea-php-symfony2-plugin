@@ -137,23 +137,7 @@ public class ConfigUtil {
         }
     }
 
-    private static class TreeVisitor {
-        @NotNull
-        private final PhpClass phpClass;
-
-        @NotNull
-        private final PsiElement psiElement;
-
-        @NotNull
-        private final String contents;
-
-        public TreeVisitor(@NotNull PhpClass phpClass, @NotNull PsiElement psiElement, @NotNull String contents) {
-
-            this.phpClass = phpClass;
-            this.psiElement = psiElement;
-            this.contents = contents;
-        }
-    }
+    private record TreeVisitor(@NotNull PhpClass phpClass, @NotNull PsiElement psiElement, @NotNull String contents) {}
 
     /**
      * app/config[..].yml

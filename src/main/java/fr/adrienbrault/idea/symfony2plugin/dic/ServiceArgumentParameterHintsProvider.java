@@ -221,15 +221,5 @@ public class ServiceArgumentParameterHintsProvider implements InlayParameterHint
         return parameter.getName();
     }
 
-    private static class Match {
-        @NotNull
-        private final String parameter;
-
-        private final int targetOffset;
-
-        Match(@NotNull String parameter, int targetOffset) {
-            this.parameter = parameter;
-            this.targetOffset = targetOffset;
-        }
-    }
+    private record Match(@NotNull String parameter, int targetOffset) {}
 }

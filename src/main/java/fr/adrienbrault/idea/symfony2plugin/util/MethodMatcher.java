@@ -241,10 +241,9 @@ public class MethodMatcher {
                 return null;
             }
 
-            if (!(parameterList.getContext() instanceof MethodReference)) {
+            if (!(parameterList.getContext() instanceof MethodReference methodReference)) {
                 return null;
             }
-            MethodReference methodReference = (MethodReference) parameterList.getContext();
 
             ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(arrayCreationExpression);
             if (currentIndex == null || currentIndex.getIndex() != this.parameterIndex) {

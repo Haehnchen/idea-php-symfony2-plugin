@@ -39,11 +39,10 @@ public class PhpStringLiteralExpressionReference extends PsiReferenceProvider {
     @NotNull
     @Override
     public PsiReference[] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
-        if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof ParameterList)) {
+        if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof ParameterList parameterList)) {
             return new PsiReference[0];
         }
 
-        ParameterList parameterList = (ParameterList) psiElement.getContext();
         PsiElement methodReference = parameterList.getContext();
         if (!(methodReference instanceof MethodReference)) {
             return new PsiReference[0];

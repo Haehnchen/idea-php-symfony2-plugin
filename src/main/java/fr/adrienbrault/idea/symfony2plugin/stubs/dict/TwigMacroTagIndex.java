@@ -11,31 +11,7 @@ import java.util.Objects;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class TwigMacroTagIndex implements TwigMacroTagInterface, Serializable {
-
-    @NotNull
-    private final String name;
-
-    @Nullable
-    private final String parameters;
-
-    public TwigMacroTagIndex(@NotNull String name, @Nullable String parameters) {
-        this.name = name;
-        this.parameters = parameters;
-    }
-
-    @NotNull
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Nullable
-    @Override
-    public String getParameters() {
-        return parameters;
-    }
-
+public record TwigMacroTagIndex(@NotNull String name, @Nullable String parameters) implements TwigMacroTagInterface, Serializable {
     @Override
     public int hashCode() {
         return new HashCodeBuilder()
@@ -47,7 +23,7 @@ public class TwigMacroTagIndex implements TwigMacroTagInterface, Serializable {
     @Override
     public boolean equals(Object obj) {
         return obj instanceof TwigMacroTagInterface &&
-            Objects.equals(((TwigMacroTagInterface) obj).getName(), this.name) &&
-            Objects.equals(((TwigMacroTagInterface) obj).getParameters(), this.parameters);
+            Objects.equals(((TwigMacroTagInterface) obj).name(), this.name) &&
+            Objects.equals(((TwigMacroTagInterface) obj).parameters(), this.parameters);
     }
 }

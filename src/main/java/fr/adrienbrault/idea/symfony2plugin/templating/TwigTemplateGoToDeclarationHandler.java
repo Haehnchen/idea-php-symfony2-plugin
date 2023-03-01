@@ -499,7 +499,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         String funcName = psiElement.getText();
 
         TwigUtil.visitMacros(psiElement.getContainingFile(), pair -> {
-            if (funcName.equals(pair.getFirst().getName())) {
+            if (funcName.equals(pair.getFirst().name())) {
                 psiElements.add(pair.getSecond());
             }
         });

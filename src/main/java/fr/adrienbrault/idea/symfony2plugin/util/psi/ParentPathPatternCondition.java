@@ -13,6 +13,7 @@ public class ParentPathPatternCondition extends PatternCondition<PsiElement> {
     @NotNull
     private final Class<? extends PsiElement>[] classes;
 
+    @SafeVarargs
     public ParentPathPatternCondition(@NotNull Class<? extends PsiElement>... parentClasses) {
         super("Parent path pattern");
         this.classes = parentClasses;

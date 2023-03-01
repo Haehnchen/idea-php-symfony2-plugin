@@ -40,7 +40,7 @@ public class MethodSignatureTypeProvider implements PhpTypeProvider4 {
     @Nullable
     @Override
     public PhpType getType(PsiElement e) {
-        if (!Settings.getInstance(e.getProject()).pluginEnabled || !(e instanceof MethodReference)) {
+        if (!Settings.getInstance(e.getProject()).pluginEnabled || !(e instanceof MethodReference methodReference)) {
             return null;
         }
 
@@ -49,7 +49,6 @@ public class MethodSignatureTypeProvider implements PhpTypeProvider4 {
             return null;
         }
 
-        MethodReference methodReference = (MethodReference) e;
         Collection<MethodSignatureSetting> matchedSignatures = getSignatureSetting(methodReference.getName(), signatures);
         if(matchedSignatures.size() == 0) {
             return null;

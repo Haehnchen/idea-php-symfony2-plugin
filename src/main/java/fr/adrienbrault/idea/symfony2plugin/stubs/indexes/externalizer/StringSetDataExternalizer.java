@@ -23,10 +23,8 @@ public class StringSetDataExternalizer implements DataExternalizer<Set<String>> 
 
     public synchronized void save(@NotNull DataOutput out, Set<String> value) throws IOException {
         out.writeInt(value.size());
-        Iterator var = value.iterator();
 
-        while(var.hasNext()) {
-            String s = (String)var.next();
+        for (String s : value) {
             EnumeratorStringDescriptor.INSTANCE.save(out, s);
         }
     }

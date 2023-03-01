@@ -151,11 +151,9 @@ public class ConstantEnumCompletionContributor extends CompletionContributor {
                     return;
                 }
 
-                if (!(psiElement.getParent().getParent() instanceof BinaryExpression)) {
+                if (!(psiElement.getParent().getParent() instanceof BinaryExpression binaryExpression)) {
                     return;
                 }
-
-                BinaryExpression binaryExpression = (BinaryExpression) psiElement.getParent().getParent();
 
 
                 // OK: $response->getStatusCode() == Response::HTTP_BAD_GATEWAY

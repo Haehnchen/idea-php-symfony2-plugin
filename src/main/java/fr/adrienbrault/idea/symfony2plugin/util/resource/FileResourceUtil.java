@@ -332,11 +332,8 @@ public class FileResourceUtil {
         return psiFiles;
     }
 
-    private static class FileResourceNotNullLazyValue implements Supplier<Collection<? extends PsiElement>> {
-        private final Project project;
-        private final VirtualFile virtualFile;
-
-        public FileResourceNotNullLazyValue(@NotNull Project project, @NotNull VirtualFile virtualFile) {
+    private record FileResourceNotNullLazyValue(Project project, VirtualFile virtualFile) implements Supplier<Collection<? extends PsiElement>> {
+        private FileResourceNotNullLazyValue(@NotNull Project project, @NotNull VirtualFile virtualFile) {
             this.project = project;
             this.virtualFile = virtualFile;
         }

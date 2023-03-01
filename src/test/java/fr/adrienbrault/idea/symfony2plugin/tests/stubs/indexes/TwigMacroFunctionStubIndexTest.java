@@ -19,7 +19,7 @@ public class TwigMacroFunctionStubIndexTest extends SymfonyLightCodeInsightFixtu
         assertIndexContains(TwigMacroFunctionStubIndex.KEY, "foobar", "foobar2");
 
         assertIndexContainsKeyWithValue(TwigMacroFunctionStubIndex.KEY, "foobar2", value ->
-            "(foobar, foo)".equals(value.getParameters())
+            "(foobar, foo)".equals(value.parameters())
         );
     }
 }

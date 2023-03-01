@@ -55,11 +55,9 @@ public class MethodParameterReferenceContributor extends PsiReferenceContributor
                         return new PsiReference[0];
                     }
 
-                    if(!(parameterList.getContext() instanceof MethodReference)) {
+                    if(!(parameterList.getContext() instanceof MethodReference method)) {
                         return new PsiReference[0];
                     }
-
-                    MethodReference method = (MethodReference) parameterList.getContext();
 
                     List<PsiReference> psiReferences = new ArrayList<>();
 

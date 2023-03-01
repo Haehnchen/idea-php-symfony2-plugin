@@ -200,11 +200,10 @@ public class DocHashTagReferenceContributor extends PsiReferenceContributor {
             }
 
             PsiElement resolvedReference = psiReference.resolve();
-            if (!(resolvedReference instanceof Method)) {
+            if (!(resolvedReference instanceof Method method)) {
                 return false;
             }
 
-            Method method = (Method) resolvedReference;
             Parameter[] methodParameter = method.getParameters();
             if(methodParameter.length -1 < currentIndex.getIndex()) {
                 return false;

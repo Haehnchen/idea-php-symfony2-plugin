@@ -56,11 +56,9 @@ public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider4 {
     @Nullable
     @Override
     public PhpType getType(PsiElement e) {
-        if (!(e instanceof MethodReference) || !Settings.getInstance(e.getProject()).pluginEnabled) {
+        if (!(e instanceof MethodReference methodRef) || !Settings.getInstance(e.getProject()).pluginEnabled) {
             return null;
         }
-
-        MethodReference methodRef = (MethodReference) e;
 
         String refSignature = ((MethodReference)e).getSignature();
         if(StringUtil.isEmpty(refSignature)) {

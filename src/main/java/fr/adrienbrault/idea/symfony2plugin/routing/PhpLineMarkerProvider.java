@@ -54,11 +54,9 @@ public class PhpLineMarkerProvider implements LineMarkerProvider {
         }
 
         PsiElement psiElement = leaf.getParent();
-        if (!(psiElement instanceof MethodReference) || !"controller".equalsIgnoreCase(((MethodReference) psiElement).getName()) || !PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) psiElement, "\\Symfony\\Component\\Routing\\Loader\\Configurator\\Traits\\RouteTrait", "controller")) {
+        if (!(psiElement instanceof MethodReference methodCall) || !"controller".equalsIgnoreCase(((MethodReference) psiElement).getName()) || !PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) psiElement, "\\Symfony\\Component\\Routing\\Loader\\Configurator\\Traits\\RouteTrait", "controller")) {
             return;
         }
-
-        MethodReference methodCall = (MethodReference) psiElement;
 
         PsiElement[] methods = RouteHelper.getPhpController(methodCall);
         if(methods.length > 0) {

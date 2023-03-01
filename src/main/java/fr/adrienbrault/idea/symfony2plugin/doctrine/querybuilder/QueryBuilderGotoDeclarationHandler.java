@@ -31,13 +31,12 @@ public class QueryBuilderGotoDeclarationHandler implements GotoDeclarationHandle
     @Override
     public PsiElement[] getGotoDeclarationTargets(PsiElement psiElement, int offset, Editor editor) {
 
-        if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof StringLiteralExpression)) {
+        if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof StringLiteralExpression context)) {
             return new PsiElement[0];
         }
 
         List<PsiElement> psiElements = new ArrayList<>();
 
-        StringLiteralExpression context = (StringLiteralExpression) psiElement.getContext();
         attachPropertyGoto(context, psiElements);
         attachJoinGoto(context, psiElements);
         attachPartialGoto(context, psiElements, offset);

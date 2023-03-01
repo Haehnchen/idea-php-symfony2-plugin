@@ -44,8 +44,6 @@ public class ServiceContainerRemoteFileStorage implements RemoteFileStorageInter
                 inputStream = new ResetOnCloseInputStream(new ByteArrayInputStream(
                     IOUtils.getInputStreamBytes(fileObject.getContent().getInputStream()))
                 );
-            } catch (FileSystemException ignored) {
-                continue;
             } catch (IOException ignored) {
                 continue;
             }

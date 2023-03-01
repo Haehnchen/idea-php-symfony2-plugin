@@ -260,14 +260,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         return builder.createLineMarkerInfo(psiElement);
     }
 
-    private static class BlockImplementationLazyValue implements Supplier<Collection<? extends PsiElement>> {
-        @NotNull
-        private final PsiElement psiElement;
-
-        BlockImplementationLazyValue(@NotNull PsiElement psiElement) {
-            this.psiElement = psiElement;
-        }
-
+    private record BlockImplementationLazyValue(@NotNull PsiElement psiElement) implements Supplier<Collection<? extends PsiElement>> {
         @Override
         public Collection<? extends PsiElement> get() {
             return TwigBlockUtil.getBlockImplementationTargets(psiElement);
@@ -277,14 +270,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
     /**
      * Provides lazy targets for given template scope
      */
-    private static class BlockOverwriteLazyValue implements Supplier<Collection<? extends PsiElement>> {
-        @NotNull
-        private final PsiElement psiElement;
-
-        BlockOverwriteLazyValue(@NotNull PsiElement psiElement) {
-            this.psiElement = psiElement;
-        }
-
+    private record BlockOverwriteLazyValue(@NotNull PsiElement psiElement) implements Supplier<Collection<? extends PsiElement>> {
         @Override
         public Collection<? extends PsiElement> get() {
             return TwigBlockUtil.getBlockOverwriteTargets(psiElement);
@@ -375,25 +361,14 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         }
     }
 
-    private static class MyTemplateIncludeLazyValue implements Supplier<Collection<? extends PsiElement>> {
-        @NotNull
-        private final TwigFile twigFile;
-
-        @NotNull
-        private final Collection<String> templateNames;
-
-        MyTemplateIncludeLazyValue(@NotNull TwigFile twigFile, @NotNull Collection<String> templateNames) {
-            this.twigFile = twigFile;
-            this.templateNames = templateNames;
-        }
-
+    private record MyTemplateIncludeLazyValue(@NotNull TwigFile twigFile, @NotNull Collection<String> templateNames) implements Supplier<Collection<? extends PsiElement>> {
         @Override
         public Collection<? extends PsiElement> get() {
             Collection<VirtualFile> twigFiles = new ArrayList<>();
 
             Project project = twigFile.getProject();
 
-            for(String templateName: this.templateNames) {
+            for (String templateName : this.templateNames) {
                 // collect files which contains given template name for inclusion
                 twigFiles.addAll(FileBasedIndex.getInstance().getContainingFiles(
                     TwigIncludeStubIndex.KEY,
@@ -407,21 +382,21 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             for (VirtualFile virtualFile : twigFiles) {
                 // resolve virtual file
                 PsiFile myTwigFile = PsiManager.getInstance(project).findFile(virtualFile);
-                if(!(myTwigFile instanceof TwigFile)) {
+                if (!(myTwigFile instanceof TwigFile)) {
                     continue;
                 }
 
                 Collection<PsiElement> fileTargets = new ArrayList<>();
 
                 TwigUtil.visitTemplateIncludes((TwigFile) myTwigFile, templateInclude -> {
-                        if(this.templateNames.contains(templateInclude.getTemplateName()) || this.templateNames.contains(TwigUtil.normalizeTemplateName(templateInclude.getTemplateName()))) {
+                        if (this.templateNames.contains(templateInclude.getTemplateName()) || this.templateNames.contains(TwigUtil.normalizeTemplateName(templateInclude.getTemplateName()))) {
                             fileTargets.add(templateInclude.getPsiElement());
                         }
                     }
                 );
 
                 // navigate to include pattern; else fallback to file scope
-                if(fileTargets.size() > 0) {
+                if (fileTargets.size() > 0) {
                     targets.addAll(fileTargets);
                 } else {
                     targets.add(myTwigFile);
@@ -460,17 +435,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
     /**
      * Find "extends" which are targeting the given template file
      */
-    private static class TemplateExtendsLazyTargets implements Supplier<Collection<? extends PsiElement>> {
-        @NotNull
-        private final Project project;
-        @NotNull
-        private final VirtualFile virtualFile;
-
-        TemplateExtendsLazyTargets(@NotNull Project project, @NotNull VirtualFile virtualFile) {
-            this.project = project;
-            this.virtualFile = virtualFile;
-        }
-
+    private record TemplateExtendsLazyTargets(@NotNull Project project, @NotNull VirtualFile virtualFile) implements Supplier<Collection<? extends PsiElement>> {
         @Override
         public Collection<? extends PsiElement> get() {
             return PsiElementUtils.convertVirtualFilesToPsiFiles(project, TwigUtil.getTemplatesExtendingFile(project, virtualFile));

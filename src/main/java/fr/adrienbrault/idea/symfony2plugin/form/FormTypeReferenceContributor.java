@@ -64,7 +64,7 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                     }
 
                     ArrayHashElement arrayHash = PsiTreeUtil.getParentOfType(psiElement, ArrayHashElement.class);
-                    if(arrayHash != null && arrayHash.getKey() instanceof StringLiteralExpression) {
+                    if(arrayHash != null && arrayHash.getKey() instanceof StringLiteralExpression key) {
                         ArrayCreationExpression arrayCreation = PsiTreeUtil.getParentOfType(psiElement, ArrayCreationExpression.class);
 
                         if(arrayCreation == null) {
@@ -77,7 +77,6 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                             return new PsiReference[0];
                         }
 
-                        StringLiteralExpression key = (StringLiteralExpression) arrayHash.getKey();
                         if(key == null) {
                             return new PsiReference[0];
                         }
@@ -153,11 +152,9 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                 @NotNull
                 @Override
                 public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
-                    if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof ParameterList)) {
+                    if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof ParameterList parameterList)) {
                         return new PsiReference[0];
                     }
-
-                    ParameterList parameterList = (ParameterList) psiElement.getContext();
 
                     PsiElement methodReference = parameterList.getContext();
                     if (!(methodReference instanceof MethodReference)) {
@@ -206,11 +203,9 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                         return new PsiReference[0];
                     }
 
-                    if(!(parameterList.getContext() instanceof MethodReference)) {
+                    if(!(parameterList.getContext() instanceof MethodReference method)) {
                         return new PsiReference[0];
                     }
-
-                    MethodReference method = (MethodReference) parameterList.getContext();
 
                     // Symfony 2 and 3 BC fix
                     if(!(PhpElementsUtil.isMethodReferenceInstanceOf(method, "\\Symfony\\Component\\OptionsResolver\\OptionsResolverInterface", "setDefaults") ||

@@ -473,11 +473,10 @@ public class TranslationUtil {
             return;
         }
 
-        if(!(result instanceof NodeList)) {
+        if(!(result instanceof NodeList nodeList)) {
             return;
         }
 
-        NodeList nodeList = (NodeList) result;
         for (int i = 0; i < nodeList.getLength(); i++) {
             Element node = (Element) nodeList.item(i);
             String textContent = node.getTextContent();
@@ -504,39 +503,28 @@ public class TranslationUtil {
 
     /**
      * <trans-unit id="29">
-     *  <source>foo</source>
-     *  <target>foo</target>
+     * <source>foo</source>
+     * <target>foo</target>
      * </trans-unit>
      */
-    private static class MyXlfTranslationConsumer implements Consumer<Pair<String, Node>> {
-        @NotNull
-        private final Set<String> placeholder;
-
-        @NotNull
-        private final String key;
-
-        MyXlfTranslationConsumer(@NotNull Set<String> placeholder, @NotNull String key) {
-            this.placeholder = placeholder;
-            this.key = key;
-        }
+    private record MyXlfTranslationConsumer(@NotNull Set<String> placeholder, @NotNull String key) implements Consumer<Pair<String, Node>> {
 
         @Override
         public void consume(Pair<String, Node> pair) {
-            if(!(pair.getSecond() instanceof Element) || !"source".equalsIgnoreCase(pair.getSecond().getNodeName())) {
+            if (!(pair.getSecond() instanceof Element source) || !"source".equalsIgnoreCase(pair.getSecond().getNodeName())) {
                 return;
             }
 
-            Element source = (Element) pair.getSecond();
-            if(!key.equalsIgnoreCase(source.getTextContent())) {
+            if (!key.equalsIgnoreCase(source.getTextContent())) {
                 return;
             }
 
             visitNodeText(source);
 
             Node transUnit = source.getParentNode();
-            if(transUnit instanceof Element) {
+            if (transUnit instanceof Element) {
                 NodeList target = ((Element) transUnit).getElementsByTagName("target");
-                if(target.getLength() > 0) {
+                if (target.getLength() > 0) {
                     visitNodeText(target.item(0));
                 }
             }
@@ -544,7 +532,7 @@ public class TranslationUtil {
 
         private void visitNodeText(@NotNull Node target) {
             String nodeValue = target.getTextContent();
-            if(StringUtils.isNotBlank(nodeValue)) {
+            if (StringUtils.isNotBlank(nodeValue)) {
                 placeholder.addAll(
                     TranslationUtil.getPlaceholderFromTranslation(nodeValue)
                 );

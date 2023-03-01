@@ -530,16 +530,14 @@ public class ServiceContainerUtil {
                     }
                 }
             }
-        } else if(context instanceof YAMLSequenceItem) {
+        } else if(context instanceof YAMLSequenceItem sequenceItem) {
             // arguments: ['@foobar']
 
-            YAMLSequenceItem sequenceItem = (YAMLSequenceItem) context;
             PsiElement yamlSequenceItem = sequenceItem.getContext();
             if(yamlSequenceItem instanceof YAMLSequence) {
                 YAMLSequence yamlArray = (YAMLSequence) sequenceItem.getContext();
                 PsiElement yamlKeyValue = yamlArray.getContext();
-                if(yamlKeyValue instanceof YAMLKeyValue) {
-                    YAMLKeyValue yamlKeyValueArguments = (YAMLKeyValue) yamlKeyValue;
+                if(yamlKeyValue instanceof YAMLKeyValue yamlKeyValueArguments) {
                     if(yamlKeyValueArguments.getKeyText().equals("arguments")) {
                         YAMLMapping parentMapping = yamlKeyValueArguments.getParentMapping();
                         if(parentMapping != null) {

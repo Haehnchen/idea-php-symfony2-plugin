@@ -136,7 +136,7 @@ public class ProfilerUtil {
             int statusCode = 0;
             if(row.containsKey("status")) {
                 try {
-                    statusCode = Integer.valueOf(row.get("status").getSecond());
+                    statusCode = Integer.parseInt(row.get("status").getSecond());
                 } catch (NumberFormatException ignored) {
                 }
             }
