@@ -128,7 +128,7 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
      */
     public void testGetTables() {
 
-        Map<String, PsiElement> items = new HashMap<String, PsiElement>();
+        Map<String, PsiElement> items = new HashMap<>();
 
         Collection<Pair<String, PsiElement>> tables = DoctrineMetadataUtil.getTables(getProject());
         for (Pair<String, PsiElement> pair : tables) {
@@ -154,7 +154,7 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
      */
     public void testGetModels() {
 
-        Set<String> classes = new HashSet<String>();
+        Set<String> classes = new HashSet<>();
         for (PhpClass phpClass : DoctrineMetadataUtil.getModels(getProject())) {
             classes.add(phpClass.getPresentableFQN());
         }
@@ -166,12 +166,10 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
      * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil#getObjectRepositoryLookupElements
      */
     public void testGetObjectRepositoryLookupElements() {
-        assertNotNull(ContainerUtil.find(DoctrineMetadataUtil.getObjectRepositoryLookupElements(getProject()), new Condition<LookupElement>() {
-            @Override
-            public boolean value(LookupElement lookupElement) {
-                return lookupElement.getLookupString().equals("Foo\\Bar\\Repository\\FooBarRepository");
-            }
-        }));
+        assertNotNull(ContainerUtil.find(
+            DoctrineMetadataUtil.getObjectRepositoryLookupElements(getProject()),
+            lookupElement -> lookupElement.getLookupString().equals("Foo\\Bar\\Repository\\FooBarRepository")
+        ));
     }
 
     /**
@@ -196,12 +194,7 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
      * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil#findMetadataForRepositoryClass
      */
     public void testFindMetadataForRepositoryClass() {
-        Condition<VirtualFile> condition = new Condition<VirtualFile>() {
-            @Override
-            public boolean value(VirtualFile virtualFile) {
-                return virtualFile.getName().equals("doctrine.odm.xml");
-            }
-        };
+        Condition<VirtualFile> condition = virtualFile -> virtualFile.getName().equals("doctrine.odm.xml");
 
         assertNotNull(ContainerUtil.find(DoctrineMetadataUtil.findMetadataForRepositoryClass(getProject(), "Foo\\Bar\\Repository\\FooBarRepository"), condition));
         assertNotNull(ContainerUtil.find(DoctrineMetadataUtil.findMetadataForRepositoryClass(getProject(), "Entity\\BarRepository"), condition));

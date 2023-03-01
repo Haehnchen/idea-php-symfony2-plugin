@@ -304,7 +304,7 @@ public class EntityHelper {
             psiElements.add(method);
         }
 
-        return psiElements.toArray(new PsiElement[psiElements.size()]);
+        return psiElements.toArray(new PsiElement[0]);
 
     }
 
@@ -698,7 +698,7 @@ public class EntityHelper {
      */
     public static Collection<DoctrineModel> getModelClasses(final Project project) {
 
-        HashMap<String, String> shortcutNames = new HashMap<String, String>() {{
+        HashMap<String, String> shortcutNames = new HashMap<>() {{
             putAll(ServiceXmlParserFactory.getInstance(project, EntityNamesServiceParser.class).getEntityNameMap());
             putAll(ServiceXmlParserFactory.getInstance(project, DocumentNamespacesParser.class).getNamespaceMap());
         }};
@@ -807,7 +807,7 @@ public class EntityHelper {
      * - "Bar" append to the namespace name
      */
     public static String resolveDoctrineLikePropertyClass(@NotNull PhpClass phpClass, @NotNull String text, @NotNull String propertyName, @NotNull Function<Void, Map<String, String>> useImportMap) {
-        Map<String, Matcher> matches = new HashMap<String, Matcher>() {{
+        Map<String, Matcher> matches = new HashMap<>() {{
             put("string", Pattern.compile(propertyName + "\\s*=\\s*\"([^\"]*)\"").matcher(text)); // targetEntity="Foobar"
             put("class", Pattern.compile(propertyName + "\\s*=\\s*([^\\s:]*)::class").matcher(text));  // targetEntity=Foobar::class
         }};

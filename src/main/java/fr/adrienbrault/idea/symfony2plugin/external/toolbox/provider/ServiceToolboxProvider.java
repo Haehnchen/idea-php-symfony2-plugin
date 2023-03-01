@@ -40,8 +40,8 @@ public class ServiceToolboxProvider extends PhpToolboxProviderAbstract implement
 
         List<LookupElement> results = new ArrayList<>();
 
-        Boolean aPrivate = parameter.getParameterBag().getParameterBool("private", false);
-        Boolean aPublic = parameter.getParameterBag().getParameterBool("public", true);
+        boolean aPrivate = parameter.getParameterBag().getParameterBool("private", false);
+        boolean aPublic = parameter.getParameterBag().getParameterBool("public", true);
 
         for (ContainerService service : ContainerCollectionResolver.getServices(parameter.getProject()).values()) {
             if(service.isPrivate() == aPrivate) {
@@ -69,7 +69,7 @@ public class ServiceToolboxProvider extends PhpToolboxProviderAbstract implement
             return Collections.emptyList();
         }
 
-        return new ArrayList<PsiElement>() {{
+        return new ArrayList<>() {{
             add(serviceClass);
         }};
     }
@@ -114,7 +114,7 @@ public class ServiceToolboxProvider extends PhpToolboxProviderAbstract implement
             return null;
         }
 
-        return new ArrayList<PhpNamedElement>(){{
+        return new ArrayList<>() {{
             add(serviceClass);
         }};
     }

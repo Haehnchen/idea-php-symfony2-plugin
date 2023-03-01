@@ -18,7 +18,6 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.EventAnnotationStubInde
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Collections;

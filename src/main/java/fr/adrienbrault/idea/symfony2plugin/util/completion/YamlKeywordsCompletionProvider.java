@@ -18,7 +18,7 @@ import java.util.Map;
  * @author Thomas Schulz <mail@king2500.net>
  */
 public class YamlKeywordsCompletionProvider extends CompletionProvider<CompletionParameters> {
-    private final static Map<String, String> YAML_KEYWORDS = new HashMap<String, String>() {{
+    private final static Map<String, String> YAML_KEYWORDS = new HashMap<>() {{
         put("~", "null");
         put("null", "null");
         put("true", "bool");

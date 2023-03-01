@@ -10,16 +10,12 @@ public enum FormOptionEnum {
 
     public static FormOptionEnum getEnum(@NotNull String s) {
 
-        switch (s) {
-            case "setDefault":
-                return DEFAULT;
-            case "setRequired":
-                return REQUIRED;
-            case "setDefined":
-            case "setOptional":
-                return DEFINED;
-        }
+        return switch (s) {
+            case "setDefault" -> DEFAULT;
+            case "setRequired" -> REQUIRED;
+            case "setDefined", "setOptional" -> DEFINED;
+            default -> UNKNOWN;
+        };
 
-        return UNKNOWN;
     }
 }

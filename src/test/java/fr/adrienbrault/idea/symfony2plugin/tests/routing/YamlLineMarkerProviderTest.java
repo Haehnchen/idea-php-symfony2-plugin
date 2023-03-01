@@ -43,14 +43,14 @@ public class YamlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTe
 
     public void testDoctrineMetadataRelation() {
 
-        Collection<String[]> providers = new ArrayList<String[]>() {{
-            add(new String[] {"targetEntity", "Foo\\Apple"});
-            add(new String[] {"targetEntity", "\\Foo\\Apple"});
-            add(new String[] {"targetEntity", "Apple"});
-            add(new String[] {"targetEntity", "'Apple'"});
-            add(new String[] {"targetEntity", "\"Apple\""});
-            add(new String[] {"targetDocument", "Apple"});
-            add(new String[] {"targetDocument", "Car"});
+        Collection<String[]> providers = new ArrayList<>() {{
+            add(new String[]{"targetEntity", "Foo\\Apple"});
+            add(new String[]{"targetEntity", "\\Foo\\Apple"});
+            add(new String[]{"targetEntity", "Apple"});
+            add(new String[]{"targetEntity", "'Apple'"});
+            add(new String[]{"targetEntity", "\"Apple\""});
+            add(new String[]{"targetDocument", "Apple"});
+            add(new String[]{"targetDocument", "Car"});
         }};
 
         for (String[] provider : providers) {

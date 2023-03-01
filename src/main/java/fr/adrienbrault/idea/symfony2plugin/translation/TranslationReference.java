@@ -35,7 +35,7 @@ public class TranslationReference extends PsiPolyVariantReferenceBase<PsiElement
             results.add(new PsiElementResolveResult(psiElement));
         }
 
-        return results.toArray(new ResolveResult[results.size()]);
+        return results.toArray(new ResolveResult[0]);
     }
 
     @NotNull

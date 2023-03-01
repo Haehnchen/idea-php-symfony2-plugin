@@ -255,12 +255,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
             List<PsiElement> elements = YamlHelper.getYamlArrayOnSequenceOrArrayElements(fromText);
             assertNotNull(elements);
 
-            String join = StringUtils.join(ContainerUtil.map(elements, new Function<PsiElement, String>() {
-                @Override
-                public String fun(PsiElement psiElement) {
-                    return psiElement.getText();
-                }
-            }), ",");
+            String join = StringUtils.join(ContainerUtil.map(elements, PsiElement::getText), ",");
 
             assertTrue(join.contains("foo"));
             assertTrue(join.contains("bar"));
@@ -277,12 +272,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
         );
 
         assertNotNull(fromText);
-        String join = StringUtils.join(ContainerUtil.map(YamlHelper.getYamlArrayOnSequenceOrArrayElements(fromText), new Function<PsiElement, String>() {
-            @Override
-            public String fun(PsiElement psiElement) {
-                return psiElement.getText();
-            }
-        }), ",");
+        String join = StringUtils.join(ContainerUtil.map(YamlHelper.getYamlArrayOnSequenceOrArrayElements(fromText), PsiElement::getText), ",");
 
         assertTrue(join.contains("foo"));
         assertTrue(join.contains("bar"));
@@ -687,7 +677,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
 
     private static class ListYamlTagVisitor implements YamlTagVisitor {
 
-        private List<YamlServiceTag> items = new ArrayList<YamlServiceTag>();
+        private List<YamlServiceTag> items = new ArrayList<>();
 
         @Override
         public void visit(@NotNull YamlServiceTag args) {

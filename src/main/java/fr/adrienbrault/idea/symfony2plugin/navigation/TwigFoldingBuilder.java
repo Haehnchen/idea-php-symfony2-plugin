@@ -50,7 +50,7 @@ public class TwigFoldingBuilder extends FoldingBuilderEx {
             attachConstantFoldingDescriptors(psiElement, descriptors);
         }
 
-        return descriptors.toArray(new FoldingDescriptor[descriptors.size()]);
+        return descriptors.toArray(new FoldingDescriptor[0]);
     }
 
     private void attachTemplateFoldingDescriptors(PsiElement psiElement, List<FoldingDescriptor> descriptors) {

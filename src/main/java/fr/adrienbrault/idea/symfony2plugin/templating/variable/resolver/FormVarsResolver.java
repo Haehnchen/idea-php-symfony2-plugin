@@ -22,8 +22,8 @@ public class FormVarsResolver implements TwigTypeResolver {
         }
 
         List<TwigTypeContainer> lastTwigTypeContainer = null;
-        for (Iterator collectionItr = previousElements.iterator(); collectionItr.hasNext(); ) {
-            lastTwigTypeContainer = (List<TwigTypeContainer>) collectionItr.next();
+        for (List<TwigTypeContainer> element : previousElements) {
+            lastTwigTypeContainer = element;
         }
 
         for(TwigTypeContainer twigTypeContainer: lastTwigTypeContainer) {

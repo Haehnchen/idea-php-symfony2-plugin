@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.installer;
 
-import fr.adrienbrault.idea.symfony2plugin.installer.dict.SymfonyInstallerVersion;
 import org.jdesktop.swingx.combobox.ListComboBoxModel;
 import org.jetbrains.annotations.NotNull;
 

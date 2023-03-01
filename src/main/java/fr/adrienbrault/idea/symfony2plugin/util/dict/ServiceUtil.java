@@ -102,7 +102,7 @@ public class ServiceUtil {
      *
      * TODO: replace with live fetch; now redundant because of @Event const in Symfony itself
      */
-    public static final Map<String , String> TAGS = new HashMap<String , String>() {{
+    public static final Map<String , String> TAGS = new HashMap<>() {{
         put("kernel.request", "\\Symfony\\Component\\HttpKernel\\Event\\GetResponseEvent");
         put("kernel.view", "\\Symfony\\Component\\HttpKernel\\Event\\GetResponseForControllerResultEvent");
         put("kernel.controller", "\\Symfony\\Component\\HttpKernel\\Event\\FilterControllerEvent");
@@ -612,7 +612,7 @@ public class ServiceUtil {
     private static Collection<String> getParameterParametersInner(@NotNull Project project) {
         Collection<String> parameters = new HashSet<>();
 
-        Collection<PhpClass> phpClasses = new HashSet<PhpClass>() {{
+        Collection<PhpClass> phpClasses = new HashSet<>() {{
             addAll(PhpIndex.getInstance(project).getAnyByFQN("Symfony\\Component\\HttpKernel\\Kernel"));
             addAll(PhpIndex.getInstance(project).getAllSubclasses("Symfony\\Component\\HttpKernel\\Kernel"));
         }};

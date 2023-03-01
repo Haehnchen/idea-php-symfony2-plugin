@@ -49,7 +49,7 @@ public class TwigNamedAssetsServiceParser extends AbstractServiceParser {
                     }
                 }
 
-                namedAssets.put(key, files.toArray(new String[files.size()]));
+                namedAssets.put(key, files.toArray(new String[0]));
 
             }
         }

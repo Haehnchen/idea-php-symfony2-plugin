@@ -23,7 +23,7 @@ import java.util.Collection;
 public class CompletionContributor extends com.intellij.codeInsight.completion.CompletionContributor {
 
     public CompletionContributor() {
-        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<CompletionParameters>() {
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
@@ -34,17 +34,17 @@ public class CompletionContributor extends com.intellij.codeInsight.completion.C
 
                 GotoCompletionProviderLookupArguments arguments = null;
                 Collection<GotoCompletionContributor> contributors = GotoCompletionUtil.getContributors(psiElement);
-                for(GotoCompletionContributor contributor: contributors) {
+                for (GotoCompletionContributor contributor : contributors) {
                     GotoCompletionProviderInterface formReferenceCompletionContributor = contributor.getProvider(psiElement);
-                    if(formReferenceCompletionContributor != null) {
+                    if (formReferenceCompletionContributor != null) {
                         completionResultSet.addAllElements(
                             formReferenceCompletionContributor.getLookupElements()
                         );
                     }
 
                     // extension to provide full argument pipes
-                    if(formReferenceCompletionContributor instanceof GotoCompletionProviderInterfaceEx) {
-                        if(arguments == null) {
+                    if (formReferenceCompletionContributor instanceof GotoCompletionProviderInterfaceEx) {
+                        if (arguments == null) {
                             arguments = new GotoCompletionProviderLookupArguments(completionParameters, processingContext, completionResultSet);
                         }
 

@@ -1464,12 +1464,12 @@ public class TwigUtil {
 
         ElementPattern<PsiElement> pattern = PlatformPatterns.psiElement(TwigTokenTypes.RBRACE);
 
-        String currentText = transPsiElement.getText();
+        StringBuilder currentText = new StringBuilder(transPsiElement.getText());
         for (PsiElement child = transPsiElement.getNextSibling(); child != null; child = child.getNextSibling()) {
-            currentText = currentText + child.getText();
+            currentText.append(child.getText());
             if (pattern.accepts(child)) {
                 //noinspection unchecked
-                return currentText;
+                return currentText.toString();
             }
         }
 
@@ -2096,16 +2096,16 @@ public class TwigUtil {
 
         final TwigCreateContainer containerElement = new TwigCreateContainer();
 
-        VfsUtil.processFilesRecursively(startDirectory, new Processor<VirtualFile>() {
+        VfsUtil.processFilesRecursively(startDirectory, new Processor<>() {
             @Override
             public boolean process(VirtualFile virtualFile) {
 
-                if(virtualFile.getFileType() != TwigFileType.INSTANCE) {
+                if (virtualFile.getFileType() != TwigFileType.INSTANCE) {
                     return true;
                 }
 
                 PsiFile twigFile = PsiManager.getInstance(project).findFile(virtualFile);
-                if(twigFile instanceof TwigFile) {
+                if (twigFile instanceof TwigFile) {
                     collect((TwigFile) twigFile);
                 }
 
@@ -2113,16 +2113,16 @@ public class TwigUtil {
             }
 
             private void collect(TwigFile twigFile) {
-                for(PsiElement psiElement: twigFile.getChildren()) {
-                    if(psiElement instanceof TwigExtendsTag) {
+                for (PsiElement psiElement : twigFile.getChildren()) {
+                    if (psiElement instanceof TwigExtendsTag) {
                         for (String s : getTwigExtendsTagTemplates((TwigExtendsTag) psiElement)) {
                             containerElement.addExtend(s);
                         }
-                    } else if(psiElement.getNode().getElementType() == TwigElementTypes.BLOCK_STATEMENT) {
+                    } else if (psiElement.getNode().getElementType() == TwigElementTypes.BLOCK_STATEMENT) {
                         PsiElement blockTag = psiElement.getFirstChild();
-                        if(blockTag instanceof TwigBlockTag) {
+                        if (blockTag instanceof TwigBlockTag) {
                             String name = ((TwigBlockTag) blockTag).getName();
-                            if(StringUtils.isNotBlank(name)) {
+                            if (StringUtils.isNotBlank(name)) {
                                 containerElement.addBlock(name);
                             }
                         }

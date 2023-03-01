@@ -390,11 +390,11 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void testGetControllerMethodShortcut() {
         myFixture.copyFileToProject("controller_method.php");
 
-        Collection<String[]> dataProvider = new ArrayList<String[]>() {{
-            add(new String[] {"fo<caret>obarAction", "foobar"});
-            add(new String[] {"fo<caret>obar", "foobar"});
-            add(new String[] {"editAction", "edit"});
-            add(new String[] {"ed<caret>it", "edit"});
+        Collection<String[]> dataProvider = new ArrayList<>() {{
+            add(new String[]{"fo<caret>obarAction", "foobar"});
+            add(new String[]{"fo<caret>obar", "foobar"});
+            add(new String[]{"editAction", "edit"});
+            add(new String[]{"ed<caret>it", "edit"});
         }};
 
         for (String[] string : dataProvider) {

@@ -77,7 +77,7 @@ abstract public class SymfonyTempCodeInsightFixtureTestCase extends UsefulTestCa
             virtualFiles.add(createFile(file));
         }
 
-        return virtualFiles.toArray(new VirtualFile[virtualFiles.size()]);
+        return virtualFiles.toArray(new VirtualFile[0]);
     }
 
     protected VirtualFile createFile(@NotNull String file, @Nullable String content) {

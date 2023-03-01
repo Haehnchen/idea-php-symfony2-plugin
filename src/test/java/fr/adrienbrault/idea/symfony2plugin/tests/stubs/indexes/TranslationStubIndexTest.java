@@ -1,18 +1,14 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.stubs.indexes;
 
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.util.Processor;
 import com.intellij.util.containers.ArrayListSet;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
-import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TranslationStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -148,7 +144,7 @@ public class TranslationStubIndexTest extends SymfonyLightCodeInsightFixtureTest
 
     @NotNull
     private Set<String> getDomainKeys(@NotNull String domain) {
-        Set<String> uniqueKeySet = new ArrayListSet<String>();
+        Set<String> uniqueKeySet = new ArrayListSet<>();
 
         for(Set<String> splits: FileBasedIndex.getInstance().getValues(TranslationStubIndex.KEY, domain, GlobalSearchScope.allScope(getProject()))) {
             ContainerUtil.addAll(uniqueKeySet, splits);

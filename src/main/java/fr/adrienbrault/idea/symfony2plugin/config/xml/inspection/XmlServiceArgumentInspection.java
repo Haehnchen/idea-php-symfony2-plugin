@@ -17,6 +17,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -54,11 +55,11 @@ public class XmlServiceArgumentInspection extends LocalInspectionTool {
         }
 
         private ContainerCollectionResolver.LazyServiceCollector getLazyServiceCollector(XmlTag xmlTag) {
-            if(this.lazyServiceCollector != null) {
-                return this.lazyServiceCollector;
-            }
+            return Objects.requireNonNullElseGet(
+                this.lazyServiceCollector,
+                () -> this.lazyServiceCollector = new ContainerCollectionResolver.LazyServiceCollector(xmlTag.getProject())
+            );
 
-            return this.lazyServiceCollector = new ContainerCollectionResolver.LazyServiceCollector(xmlTag.getProject());
         }
 
         private void visitService(XmlTag xmlTag, @NotNull ProblemsHolder holder) {

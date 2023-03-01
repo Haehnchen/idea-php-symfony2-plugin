@@ -380,14 +380,11 @@ public class SymfonyCreateService extends JDialog {
             method.getName();
         }
 
-        modelParameters.sort((o1, o2) -> {
-            int i = o1.getName().compareTo(o2.getName());
-            if (i != 0) {
-                return i;
-            }
-
-            return Integer.valueOf(o1.getIndex()).compareTo(o2.getIndex());
-        });
+        modelParameters.sort(
+            Comparator
+                .comparing(MethodParameter.MethodModelParameter::getName)
+                .thenComparingInt(MethodParameter.MethodModelParameter::getIndex)
+        );
 
         while(this.modelList.getRowCount() > 0) {
             this.modelList.removeRow(0);
@@ -466,7 +463,7 @@ public class SymfonyCreateService extends JDialog {
         public TableCellEditor getEditor(MethodParameter.MethodModelParameter modelParameter) {
 
             Set<String> sorted = modelParameter.getPossibleServices();
-            ComboBox comboBox = new ComboBox(sorted.toArray(new String[sorted.size()] ), 200);
+            ComboBox comboBox = new ComboBox(sorted.toArray(new String[0]), 200);
             comboBox.setEditable(true);
 
             return new DefaultCellEditor(comboBox);

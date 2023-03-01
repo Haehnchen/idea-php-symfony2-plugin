@@ -49,11 +49,11 @@ public class RouteSettingDeprecatedInspectionTest extends SymfonyLightCodeInsigh
 
     public void testYmlRequirementsAreDeprecated() {
 
-        Collection<String[]> providers = new ArrayList<String[]>() {{
-            add(new String[] {"_m<caret>ethod: foo", "The '_method' requirement is deprecated"});
-            add(new String[] {"'_m<caret>ethod': foo", "The '_method' requirement is deprecated"});
-            add(new String[] {"\"_m<caret>ethod\": foo", "The '_method' requirement is deprecated"});
-            add(new String[] {"'_sch<caret>eme': foo", "The '_scheme' requirement is deprecated"});
+        Collection<String[]> providers = new ArrayList<>() {{
+            add(new String[]{"_m<caret>ethod: foo", "The '_method' requirement is deprecated"});
+            add(new String[]{"'_m<caret>ethod': foo", "The '_method' requirement is deprecated"});
+            add(new String[]{"\"_m<caret>ethod\": foo", "The '_method' requirement is deprecated"});
+            add(new String[]{"'_sch<caret>eme': foo", "The '_scheme' requirement is deprecated"});
         }};
 
         for (String[] s : providers) {

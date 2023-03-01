@@ -25,12 +25,12 @@ public class DoctrineXmlCompletionContributor extends CompletionContributor {
             DoctrineMetadataPattern.getXmlTargetEntityClass(),
             DoctrineMetadataPattern.getXmlTargetDocumentClass(),
             DoctrineMetadataPattern.getEmbeddableNameClassPattern()
-        )), new CompletionProvider<CompletionParameters>() {
+        )), new CompletionProvider<>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
 
                 PsiElement psiElement = parameters.getOriginalPosition();
-                if(psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
+                if (psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
                     return;
                 }
 
@@ -41,20 +41,20 @@ public class DoctrineXmlCompletionContributor extends CompletionContributor {
         // <entity repository-class="Class\Name"/>
         // <document repository-class="Class\Name"/>
         extend(CompletionType.BASIC, XmlPatterns.psiElement().withParent(PlatformPatterns.or(DoctrineMetadataPattern.getXmlRepositoryClass())),
-            new CompletionProvider<CompletionParameters>() {
-            @Override
-            protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
+            new CompletionProvider<>() {
+                @Override
+                protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
 
-                PsiElement psiElement = parameters.getOriginalPosition();
-                if(psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
-                    return;
+                    PsiElement psiElement = parameters.getOriginalPosition();
+                    if (psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
+                        return;
+                    }
+
+                    // @TODO: filter on doctrine manager
+                    resultSet.addAllElements(
+                        DoctrineMetadataUtil.getObjectRepositoryLookupElements(psiElement.getProject())
+                    );
                 }
-
-                // @TODO: filter on doctrine manager
-                resultSet.addAllElements(
-                    DoctrineMetadataUtil.getObjectRepositoryLookupElements(psiElement.getProject())
-                );
-            }
-        });
+            });
    }
 }

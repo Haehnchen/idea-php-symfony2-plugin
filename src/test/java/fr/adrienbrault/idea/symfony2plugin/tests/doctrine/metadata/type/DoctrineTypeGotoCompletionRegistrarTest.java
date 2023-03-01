@@ -137,14 +137,14 @@ public class DoctrineTypeGotoCompletionRegistrarTest extends SymfonyLightCodeIns
      */
     public void testPropertyFieldName() {
 
-        Collection<String[]> providers = new ArrayList<String[]>() {{
-            add(new String[] {"document", "document", "field"});
-            add(new String[] {"document", "embedded", "field"});
-            add(new String[] {"orm", "entity", "field"});
+        Collection<String[]> providers = new ArrayList<>() {{
+            add(new String[]{"document", "document", "field"});
+            add(new String[]{"document", "embedded", "field"});
+            add(new String[]{"orm", "entity", "field"});
 
-            add(new String[] {"document", "document", "id"});
-            add(new String[] {"document", "embedded", "id"});
-            add(new String[] {"orm", "entity", "id"});
+            add(new String[]{"document", "document", "id"});
+            add(new String[]{"document", "embedded", "id"});
+            add(new String[]{"orm", "entity", "id"});
         }};
 
         for (String[] provider : providers) {
@@ -172,15 +172,15 @@ public class DoctrineTypeGotoCompletionRegistrarTest extends SymfonyLightCodeIns
      */
     public void testPropertyRelations() {
 
-        Collection<String[]> providers = new ArrayList<String[]>() {{
-            add(new String[] {"orm", "entity", "one-to-one"});
-            add(new String[] {"orm", "entity", "one-to-many"});
-            add(new String[] {"orm", "entity", "many-to-one"});
-            add(new String[] {"orm", "entity", "many-to-many"});
-            add(new String[] {"mongodb", "document", "reference-one"});
-            add(new String[] {"mongodb", "document", "reference-many"});
-            add(new String[] {"mongodb", "document", "embed-many"});
-            add(new String[] {"mongodb", "document", "embed-one"});
+        Collection<String[]> providers = new ArrayList<>() {{
+            add(new String[]{"orm", "entity", "one-to-one"});
+            add(new String[]{"orm", "entity", "one-to-many"});
+            add(new String[]{"orm", "entity", "many-to-one"});
+            add(new String[]{"orm", "entity", "many-to-many"});
+            add(new String[]{"mongodb", "document", "reference-one"});
+            add(new String[]{"mongodb", "document", "reference-many"});
+            add(new String[]{"mongodb", "document", "embed-many"});
+            add(new String[]{"mongodb", "document", "embed-one"});
         }};
 
         for (String[] provider : providers) {
@@ -208,17 +208,17 @@ public class DoctrineTypeGotoCompletionRegistrarTest extends SymfonyLightCodeIns
      */
     public void testYamlPropertyFieldNameNavigation() {
 
-        Collection<String[]> providers = new ArrayList<String[]>() {{
-            add(new String[] {"orm", "id"});
-            add(new String[] {"orm", "fields"});
-            add(new String[] {"orm", "oneToOne"});
-            add(new String[] {"orm", "oneToMany"});
-            add(new String[] {"orm", "manyToOne"});
-            add(new String[] {"orm", "manyToMany"});
-            add(new String[] {"mondodb", "embedOne"});
-            add(new String[] {"mondodb", "embedMany"});
-            add(new String[] {"mondodb", "referenceOne"});
-            add(new String[] {"mondodb", "referenceMany"});
+        Collection<String[]> providers = new ArrayList<>() {{
+            add(new String[]{"orm", "id"});
+            add(new String[]{"orm", "fields"});
+            add(new String[]{"orm", "oneToOne"});
+            add(new String[]{"orm", "oneToMany"});
+            add(new String[]{"orm", "manyToOne"});
+            add(new String[]{"orm", "manyToMany"});
+            add(new String[]{"mondodb", "embedOne"});
+            add(new String[]{"mondodb", "embedMany"});
+            add(new String[]{"mondodb", "referenceOne"});
+            add(new String[]{"mondodb", "referenceMany"});
         }};
 
         for (String[] provider : providers) {

@@ -26,11 +26,11 @@ public class PhpRouteReferenceContributorTest extends SymfonyLightCodeInsightFix
 
     public void testGenerateUrlProvidesNavigation() {
 
-        Collection<String[]> providers = new ArrayList<String[]>() {{
-            add(new String[] {"Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface", "generate"});
-            add(new String[] {"Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "generateUrl"});
-            add(new String[] {"Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "redirectToRoute"});
-            add(new String[] {"My\\Proxy\\Routing\\Controller", "generateUrl"});
+        Collection<String[]> providers = new ArrayList<>() {{
+            add(new String[]{"Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface", "generate"});
+            add(new String[]{"Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "generateUrl"});
+            add(new String[]{"Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "redirectToRoute"});
+            add(new String[]{"My\\Proxy\\Routing\\Controller", "generateUrl"});
         }};
 
         for (String[] provider : providers) {

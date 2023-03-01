@@ -45,14 +45,14 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
      * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#getYamlRouteDefinitions
      */
     public void testGetYamlRouteDefinitionsAsHashAndKeyValue() {
-        Collection<String[]> providers = new ArrayList<String[]>() {{
-            add(new String[] {"'MyController::fooAction'", "MyController::fooAction"});
-            add(new String[] {"MyController::fooAction", "MyController::fooAction"});
-            add(new String[] {"\"MyController::fooAction\"", "MyController::fooAction"});
+        Collection<String[]> providers = new ArrayList<>() {{
+            add(new String[]{"'MyController::fooAction'", "MyController::fooAction"});
+            add(new String[]{"MyController::fooAction", "MyController::fooAction"});
+            add(new String[]{"\"MyController::fooAction\"", "MyController::fooAction"});
         }};
 
         for (String[] provider : providers) {
-            Collection<YAMLDocument> yamlDocuments = new ArrayList<YAMLDocument>();
+            Collection<YAMLDocument> yamlDocuments = new ArrayList<>();
 
             yamlDocuments.add(YamlPsiElementFactory.createFromText(getProject(), YAMLDocument.class, String.format(
                     "route1:\n" +
@@ -129,7 +129,7 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
      * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#getXmlRouteDefinitions
      */
     public void testGetXmlRouteDefinitions() {
-        Collection<XmlFile> xmlFiles = new ArrayList<XmlFile>();
+        Collection<XmlFile> xmlFiles = new ArrayList<>();
 
         xmlFiles.add(createXmlFile("" +
                 "<routes>\n" +
@@ -245,12 +245,10 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
      * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#getRoutesLookupElements
      */
     public void testGetRoutesLookupElements() {
-        assertNotNull(ContainerUtil.find(RouteHelper.getRoutesLookupElements(getProject()), new Condition<LookupElement>() {
-            @Override
-            public boolean value(LookupElement lookupElement) {
-                return "myfoobar_car_index".equals(lookupElement.getLookupString());
-            }
-        }));
+        assertNotNull(ContainerUtil.find(
+            RouteHelper.getRoutesLookupElements(getProject()),
+            lookupElement -> "myfoobar_car_index".equals(lookupElement.getLookupString())
+        ));
     }
 
     /**

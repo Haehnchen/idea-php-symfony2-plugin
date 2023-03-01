@@ -35,13 +35,13 @@ public class FormExtensionKeyReference extends PsiPolyVariantReferenceBase<PsiEl
     @Override
     public ResolveResult[] multiResolve(boolean b) {
         return PsiElementResolveResult.createResults(
-            FormOptionsUtil.getFormExtensionsKeysTargets(element, formTypes.toArray(new String[formTypes.size()]))
+            FormOptionsUtil.getFormExtensionsKeysTargets(element, formTypes.toArray(new String[0]))
         );
     }
 
     @NotNull
     @Override
     public Object[] getVariants() {
-        return FormOptionsUtil.getFormExtensionKeysLookupElements(getElement().getProject(), formTypes.toArray(new String[formTypes.size()])).toArray();
+        return FormOptionsUtil.getFormExtensionKeysLookupElements(getElement().getProject(), formTypes.toArray(new String[0])).toArray();
     }
 }

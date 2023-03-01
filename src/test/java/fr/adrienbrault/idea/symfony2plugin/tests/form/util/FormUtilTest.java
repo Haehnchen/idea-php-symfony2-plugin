@@ -189,13 +189,13 @@ public class FormUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         // Symfony 2.8
         // class name as type but stripped Type
-        Collection<String[]> providers = new ArrayList<String[]>() {{
-            add(new String[] {"foo", "Foo"});
-            add(new String[] {"foo", "FooType"});
-            add(new String[] {"foo_bar", "FooBar"});
-            add(new String[] {"foo_bar", "fooBar"});
-            add(new String[] {"foo", "footype"});
-            add(new String[] {"type", "type"});
+        Collection<String[]> providers = new ArrayList<>() {{
+            add(new String[]{"foo", "Foo"});
+            add(new String[]{"foo", "FooType"});
+            add(new String[]{"foo_bar", "FooBar"});
+            add(new String[]{"foo_bar", "fooBar"});
+            add(new String[]{"foo", "footype"});
+            add(new String[]{"type", "type"});
         }};
 
         for (String[] provider : providers) {

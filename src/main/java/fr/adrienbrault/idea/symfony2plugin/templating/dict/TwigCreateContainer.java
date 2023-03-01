@@ -62,7 +62,7 @@ public class TwigCreateContainer {
     private static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map )
     {
         List<Map.Entry<K, V>> list = new LinkedList<>(map.entrySet());
-        list.sort(Comparator.comparing(o -> (o.getValue())));
+        list.sort(Map.Entry.comparingByValue());
 
         Collections.reverse(list);
 

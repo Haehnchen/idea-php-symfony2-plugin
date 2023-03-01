@@ -105,19 +105,19 @@ public class YamlCompletionContributor extends CompletionContributor {
         put("exclude", ">= 2.8");
     }});
 
-    private static final Map<String, String> ROUTE_KEYS = Collections.unmodifiableMap(new HashMap<>() {{
-        put("pattern", "deprecated");
-        put("defaults", "(bool)");
-        put("path", "(string)");
-        put("requirements", "(array)");
-        put("methods", "(array|string)");
-        put("condition", "(string / expression)");
-        put("resource", "(string)");
-        put("prefix", "(string)");
-        put("schemes", "(array|string)");
-        put("host", "(string)");
-        put("controller", "(string)");
-    }});
+    private static final Map<String, String> ROUTE_KEYS = Map.ofEntries(
+        Map.entry("pattern", "deprecated"),
+        Map.entry("defaults", "(bool)"),
+        Map.entry("path", "(string)"),
+        Map.entry("requirements", "(array)"),
+        Map.entry("methods", "(array|string)"),
+        Map.entry("condition", "(string / expression)"),
+        Map.entry("resource", "(string)"),
+        Map.entry("prefix", "(string)"),
+        Map.entry("schemes", "(array|string)"),
+        Map.entry("host", "(string)"),
+        Map.entry("controller", "(string)")
+    );
 
     public YamlCompletionContributor() {
 

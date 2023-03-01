@@ -37,9 +37,9 @@ public class NewBundleCommandAction extends NewBundleFileActionAbstract {
                 PsiElement bundleFile = null;
                 try {
 
-                    bundleFile = PhpBundleFileFactory.createBundleFile(phpClass, "command", "Command\\" + finalClassName, new HashMap<String, String>() {{
+                    bundleFile = PhpBundleFileFactory.createBundleFile(phpClass, "command", "Command\\" + finalClassName, new HashMap<>() {{
                         String name = phpClass.getName();
-                        if(name.endsWith("Bundle")) {
+                        if (name.endsWith("Bundle")) {
                             name = name.substring(0, name.length() - "Bundle".length());
                         }
                         put("name", StringUtils.underscore(name) + ":" + StringUtils.underscore(finalClassName));

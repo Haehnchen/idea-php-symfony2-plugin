@@ -35,7 +35,7 @@ public class GotoHandler implements GotoDeclarationHandler {
             }
         }
 
-        return psiTargets.toArray(new PsiElement[psiTargets.size()]);
+        return psiTargets.toArray(new PsiElement[0]);
     }
 
     @Nullable

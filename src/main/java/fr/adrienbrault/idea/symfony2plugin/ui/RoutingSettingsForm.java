@@ -96,7 +96,7 @@ public class RoutingSettingsForm implements Configurable {
     @Nullable
     @Override
     public JComponent createComponent() {
-        ToolbarDecorator tablePanel = ToolbarDecorator.createDecorator(this.tableView, new ElementProducer<RoutingFile>() {
+        ToolbarDecorator tablePanel = ToolbarDecorator.createDecorator(this.tableView, new ElementProducer<>() {
             @Override
             public RoutingFile createElement() {
                 return null;

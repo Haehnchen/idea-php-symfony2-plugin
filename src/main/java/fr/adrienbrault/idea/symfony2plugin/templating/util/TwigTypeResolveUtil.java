@@ -341,7 +341,7 @@ public class TwigTypeResolveUtil {
     private static Collection<String> collectForArrayScopeVariablesFoo(@NotNull Project project, @NotNull Collection<String> typeName, @NotNull PsiVariable psiVariable) {
         Collection<String> previousElements = psiVariable.getTypes();
 
-        String[] strings = typeName.toArray(new String[typeName.size()]);
+        String[] strings = typeName.toArray(new String[0]);
 
         for (int i = 1; i <= strings.length - 1; i++ ) {
             previousElements = resolveTwigMethodName(project, previousElements, strings[i]);

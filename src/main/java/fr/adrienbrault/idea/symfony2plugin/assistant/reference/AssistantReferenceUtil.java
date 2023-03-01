@@ -26,7 +26,7 @@ public class AssistantReferenceUtil {
             contributorAliases.add(referenceProvider.getAlias());
         }
 
-        return contributorAliases.toArray(new String[contributorAliases.size()]);
+        return contributorAliases.toArray(new String[0]);
     }
 
     public static String[] getContributorProvider(Project project) {
@@ -36,7 +36,7 @@ public class AssistantReferenceUtil {
             contributorAliases.add(assistantReferenceContributor.getAlias());
         }
 
-        return contributorAliases.toArray(new String[contributorAliases.size()]);
+        return contributorAliases.toArray(new String[0]);
     }
 
     @Nullable

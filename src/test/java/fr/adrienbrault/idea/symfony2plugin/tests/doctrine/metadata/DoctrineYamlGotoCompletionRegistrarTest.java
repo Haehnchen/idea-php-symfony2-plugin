@@ -24,11 +24,11 @@ public class DoctrineYamlGotoCompletionRegistrarTest extends SymfonyLightCodeIns
 
     public void testRepositoryClass() {
 
-        Collection<String[]> providers = new ArrayList<String[]>() {{
-            add(new String[] {"orm", "repositoryClass"});
-            add(new String[] {"odm", "repositoryClass"});
-            add(new String[] {"couchdb", "repositoryClass"});
-            add(new String[] {"mongodb", "repositoryClass"});
+        Collection<String[]> providers = new ArrayList<>() {{
+            add(new String[]{"orm", "repositoryClass"});
+            add(new String[]{"odm", "repositoryClass"});
+            add(new String[]{"couchdb", "repositoryClass"});
+            add(new String[]{"mongodb", "repositoryClass"});
         }};
 
         for (String[] provider : providers) {

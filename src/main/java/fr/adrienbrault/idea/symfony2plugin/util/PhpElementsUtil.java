@@ -307,7 +307,7 @@ public class PhpElementsUtil {
         }
 
         Collection<? extends PhpNamedElement> phpNamedElementCollections = PhpIndex.getInstance(project).getBySignature(signature, null, 0);
-        return phpNamedElementCollections.toArray(new PsiElement[phpNamedElementCollections.size()]);
+        return phpNamedElementCollections.toArray(new PsiElement[0]);
     }
 
     @Nullable
@@ -842,7 +842,7 @@ public class PhpElementsUtil {
 
     public static Method[] getImplementedMethods(@NotNull Method method) {
         ArrayList<Method> items = getImplementedMethods(method.getContainingClass(), method, new ArrayList<>(), new HashSet<>());
-        return items.toArray(new Method[items.size()]);
+        return items.toArray(new Method[0]);
     }
 
     private static ArrayList<Method> getImplementedMethods(@Nullable PhpClass phpClass, @NotNull Method method, ArrayList<Method> implementedMethods, Set<PhpClass> visitedClasses) {
@@ -918,20 +918,20 @@ public class PhpElementsUtil {
     }
 
     public static String getPrevSiblingAsTextUntil(PsiElement psiElement, ElementPattern pattern, boolean includeMatching) {
-        String prevText = "";
+        StringBuilder prevText = new StringBuilder();
 
         for (PsiElement child = psiElement.getPrevSibling(); child != null; child = child.getPrevSibling()) {
             if(pattern.accepts(child)) {
                 if(includeMatching) {
                     return child.getText() + prevText;
                 }
-                return prevText;
+                return prevText.toString();
             } else {
-                prevText = child.getText() + prevText;
+                prevText.insert(0, child.getText());
             }
         }
 
-        return prevText;
+        return prevText.toString();
     }
 
     public static String getPrevSiblingAsTextUntil(PsiElement psiElement, ElementPattern pattern) {

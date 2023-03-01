@@ -84,21 +84,19 @@ public class TranslationKeyGuessTypoQuickFix extends IntentionAndQuickFixAction 
             });
         } else if (parent instanceof StringLiteralExpression) {
             // PHP + DocTag
-            suggestionSelected = selectedValue -> {
-                WriteCommandAction.runWriteCommandAction(project, "Translation Key Suggestion", null, () -> {
-                    String contents = parent.getText();
-                    String wrap = "'";
-                    if (contents.length() > 0) {
-                        String wrap2 = contents.substring(0, 1);
-                        if (wrap2.equals("\"") || wrap2.equals("'")) {
-                            wrap = wrap2;
-                        }
+            suggestionSelected = selectedValue -> WriteCommandAction.runWriteCommandAction(project, "Translation Key Suggestion", null, () -> {
+                String contents = parent.getText();
+                String wrap = "'";
+                if (contents.length() > 0) {
+                    String wrap2 = contents.substring(0, 1);
+                    if (wrap2.equals("\"") || wrap2.equals("'")) {
+                        wrap = wrap2;
                     }
+                }
 
-                    StringLiteralExpression firstFromText = PhpPsiElementFactory.createFirstFromText(project, StringLiteralExpression.class, wrap + selectedValue + wrap);
-                    parent.replace(firstFromText);
-                });
-            };
+                StringLiteralExpression firstFromText = PhpPsiElementFactory.createFirstFromText(project, StringLiteralExpression.class, wrap + selectedValue + wrap);
+                parent.replace(firstFromText);
+            });
         }
 
         if (suggestionSelected == null) {

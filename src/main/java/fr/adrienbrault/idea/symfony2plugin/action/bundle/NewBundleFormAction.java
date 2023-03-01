@@ -38,7 +38,7 @@ public class NewBundleFormAction extends NewBundleFileActionAbstract {
                 PsiElement bundleFile = null;
                 try {
 
-                    bundleFile = PhpBundleFileFactory.createBundleFile(phpClass, fileTemplate, "Form\\" + className, new HashMap<String, String>() {{
+                    bundleFile = PhpBundleFileFactory.createBundleFile(phpClass, fileTemplate, "Form\\" + className, new HashMap<>() {{
                         put("name", fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(phpClass.getName() + className));
                     }});
 

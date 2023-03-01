@@ -20,9 +20,10 @@ public class TemplatesControllerRelatedGotoCollector implements ControllerAction
     public void collectGotoRelatedItems(ControllerActionGotoRelatedCollectorParameter parameter) {
         Set<String> uniqueTemplates = new HashSet<>();
 
-        PhpMethodVariableResolveUtil.visitRenderTemplateFunctions(parameter.getMethod(), triple -> {
-            uniqueTemplates.add(triple.getFirst());
-        });
+        PhpMethodVariableResolveUtil.visitRenderTemplateFunctions(
+            parameter.getMethod(),
+            triple -> uniqueTemplates.add(triple.getFirst())
+        );
 
         for (String uniqueTemplate : uniqueTemplates) {
             for(PsiFile templateTarget: TwigUtil.getTemplatePsiElements(parameter.getProject(), uniqueTemplate)) {

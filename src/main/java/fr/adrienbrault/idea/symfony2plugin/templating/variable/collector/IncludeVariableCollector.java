@@ -101,8 +101,9 @@ public class IncludeVariableCollector implements TwigFileVariableCollector {
                     // include('template.html', with_context = false)
                     // include('template.html', {foo: 'bar'}, with_context = false)
                     for (int i = 1; i < group.length; i++) {
-                        if(group[i].equals("with_context=false")) {
+                        if (group[i].equals("with_context=false")) {
                             addContextVar = false;
+                            break;
                         }
                     }
                 }
@@ -119,9 +120,7 @@ public class IncludeVariableCollector implements TwigFileVariableCollector {
 
         // add context vars
         if(addContextVar) {
-            for(Map.Entry<String, PsiVariable> entry: stringPsiVariableHashMap.entrySet()) {
-                variables.put(entry.getKey(), entry.getValue());
-            }
+            variables.putAll(stringPsiVariableHashMap);
         }
 
         // add alias vars

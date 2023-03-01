@@ -98,7 +98,7 @@ public class ServiceBuilder {
         List<String> methodCalls = new ArrayList<>();
 
         // sort by indexes parameter
-        methodModelParameters.sort((o1, o2) -> ((Integer) o1.getIndex()).compareTo(o2.getIndex()));
+        methodModelParameters.sort(Comparator.comparingInt(MethodParameter.MethodModelParameter::getIndex));
 
         for(MethodParameter.MethodModelParameter methodModelParameter: methodModelParameters) {
 

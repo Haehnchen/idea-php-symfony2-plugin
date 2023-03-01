@@ -148,7 +148,7 @@ public class ServiceIndexUtil {
             psiElements.addAll(findServiceDefinitions(phpClass.getProject(), serviceName));
         }
 
-        return psiElements.toArray(new PsiElement[psiElements.size()]);
+        return psiElements.toArray(new PsiElement[0]);
     }
 
     @Nullable

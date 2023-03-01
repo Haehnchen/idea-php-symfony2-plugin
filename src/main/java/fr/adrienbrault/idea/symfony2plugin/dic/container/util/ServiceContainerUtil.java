@@ -407,14 +407,11 @@ public class ServiceContainerUtil {
             return null;
         }
 
-        switch (value.toLowerCase()) {
-            case "false":
-                return false;
-            case "true":
-                return true;
-            default:
-                return null;
-        }
+        return switch (value.toLowerCase()) {
+            case "false" -> false;
+            case "true" -> true;
+            default -> null;
+        };
 
     }
 
@@ -928,8 +925,7 @@ public class ServiceContainerUtil {
         myIds.sort(new ServiceContainerUtil.ContainerServiceIdPriorityNameComparator());
 
         myIds.sort((o1, o2) ->
-            ((Integer) ServiceContainerUtil.getServiceUsage(project, o2))
-                .compareTo(ServiceContainerUtil.getServiceUsage(project, o1))
+            Integer.compare(ServiceContainerUtil.getServiceUsage(project, o2), ServiceContainerUtil.getServiceUsage(project, o1))
         );
 
         return myIds;
