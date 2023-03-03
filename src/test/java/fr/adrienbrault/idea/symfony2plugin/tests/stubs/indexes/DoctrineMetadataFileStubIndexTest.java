@@ -148,6 +148,11 @@ public class DoctrineMetadataFileStubIndexTest extends SymfonyLightCodeInsightFi
         assertIndexContainsKeyWithValue(DoctrineMetadataFileStubIndex.KEY, "Doctrine\\Orm\\Annotation", new IndexValueRepositoryClassEquals("Doctrine\\Orm\\Foo"));
     }
 
+    public void testPhpOrmAttributeMetadata() {
+        assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "Doctrine\\Orm\\AttributeEntity");
+        assertIndexContainsKeyWithValue(DoctrineMetadataFileStubIndex.KEY, "Doctrine\\Orm\\AttributeEntity", new IndexValueRepositoryClassEquals("Doctrine\\OrmRepository\\AttributeEntityRepository"));
+    }
+
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineUtil#getClassRepositoryPair
      */

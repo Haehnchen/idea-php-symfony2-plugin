@@ -14,12 +14,10 @@ import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
-import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionArgument;
-import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionClassConstantArgument;
 import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.AnnotationElementWalkingVisitor;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.AttributeElementWalkingVisitor;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpPsiAttributesUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang.ArrayUtils;
@@ -141,15 +139,7 @@ public class DoctrineUtil {
         // Attributes:
         // #[Entity(repositoryClass: UserRepository::class)]
         phpFile.acceptChildren(new AttributeElementWalkingVisitor(pair -> {
-            String repositoryClass = null;
-
-            PhpExpectedFunctionArgument argument = PhpElementsUtil.findAttributeArgumentByName("repositoryClass", pair.getFirst());
-            if (argument instanceof PhpExpectedFunctionClassConstantArgument) {
-                String repositoryClassRaw = ((PhpExpectedFunctionClassConstantArgument) argument).getClassFqn();
-                if (StringUtils.isNotBlank(repositoryClassRaw)) {
-                    repositoryClass = repositoryClassRaw;
-                }
-            }
+            String repositoryClass = PhpPsiAttributesUtil.getAttributeValueByNameAsString(pair.getFirst(), "repositoryClass");
 
             pairs.add(Pair.create(
                 StringUtils.stripStart(pair.getSecond().getFQN(), "\\"),
