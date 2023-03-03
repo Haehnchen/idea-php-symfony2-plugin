@@ -19,12 +19,19 @@ namespace Doctrine\ODM\CouchDB\Mapping\Annotations {
 namespace Doctrine\Orm {
 
     use Doctrine\ORM\Mapping AS ORM;
+    use Doctrine\OrmRepository\AttributeEntityRepository;
 
     /**
      * @ORM\Entity(repositoryClass="Foo")
      */
-    class Annotation {};
+    class Annotation {}
 
+    #[ORM\Entity(repositoryClass: AttributeEntityRepository::class)]
+    class AttributeEntity {}
+}
+
+namespace Doctrine\OrmRepository {
+    class AttributeEntityRepository {};
 }
 
 namespace Doctrine\Flow\Orm {

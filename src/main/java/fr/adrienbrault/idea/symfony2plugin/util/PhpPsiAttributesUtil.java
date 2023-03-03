@@ -180,27 +180,34 @@ public class PhpPsiAttributesUtil {
     @Nullable
     private static String resolveLocalValue(@NotNull PhpAttribute attribute, @NotNull ClassConstantReference nextSibling) {
         PhpExpression classReference = nextSibling.getClassReference();
-        if (classReference != null) {
+        if (classReference instanceof ClassReference) {
             String name = classReference.getName();
             if (name != null && (name.equals("self") || name.equals("static"))) {
                 PsiElement phpAttributesList = attribute.getParent();
                 if (phpAttributesList instanceof PhpAttributesList) {
                     PsiElement method = phpAttributesList.getParent();
-                    if (method instanceof Method) {
-                        PsiElement phpClass = method.getParent();
-                        if (phpClass instanceof PhpClass) {
-                            String fieldName = nextSibling.getName();
-                            Field ownFieldByName = ((PhpClass) phpClass).findOwnFieldByName(fieldName, true);
-                            if (ownFieldByName != null) {
-                                PsiElement defaultValue = ownFieldByName.getDefaultValue();
-                                if (defaultValue instanceof StringLiteralExpression) {
-                                    String contents = ((StringLiteralExpression) defaultValue).getContents();
-                                    if (StringUtils.isNotBlank(contents)) {
-                                        return contents;
-                                    }
+
+                    PsiElement phpClass = method instanceof Method ? ((Method) method).getContainingClass() : method;
+                    if (phpClass instanceof PhpClass) {
+                        String fieldName = nextSibling.getName();
+                        Field ownFieldByName = ((PhpClass) phpClass).findOwnFieldByName(fieldName, true);
+                        if (ownFieldByName != null) {
+                            PsiElement defaultValue = ownFieldByName.getDefaultValue();
+                            if (defaultValue instanceof StringLiteralExpression) {
+                                String contents = ((StringLiteralExpression) defaultValue).getContents();
+                                if (StringUtils.isNotBlank(contents)) {
+                                    return contents;
                                 }
                             }
                         }
+                    }
+                }
+            } else {
+                String s = nextSibling.getText().toLowerCase();
+                if (s.endsWith("::class")) {
+                    String fqn = ((ClassReference) classReference).getFQN();
+                    if (StringUtils.isNotBlank(fqn)) {
+                        return fqn;
                     }
                 }
             }
