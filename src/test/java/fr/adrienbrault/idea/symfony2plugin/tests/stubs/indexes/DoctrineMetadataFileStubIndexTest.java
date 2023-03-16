@@ -31,8 +31,10 @@ public class DoctrineMetadataFileStubIndexTest extends SymfonyLightCodeInsightFi
         myFixture.configureByText("doctrine.yml", "" +
             "Documents\\Yml\\OdmUser:\n" +
             "  db: documents\n" +
+            "  collection: ~" +
             "\n" +
             "Documents\\Yml\\OrmUser:\n" +
+            "  type: entity\n" +
             "  repositoryClass: Documents\\Yml\\OrmUserRepository"
         );
 
@@ -97,33 +99,38 @@ public class DoctrineMetadataFileStubIndexTest extends SymfonyLightCodeInsightFi
     public void testYamlMetadataValidByStructure() {
         myFixture.configureByText("foo.yml", "" +
             "FooFields:\n" +
+            "  type: entity\n" +
             "  fields: ~"
         );
         assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "FooFields");
 
         myFixture.configureByText("foo.yml", "" +
             "FooId:\n" +
+            "  type: entity\n" +
             "  id: ~"
         );
         assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "FooId");
 
         myFixture.configureByText("foo.yml", "" +
             "FooCollection:\n" +
+            "  type: document\n" +
             "  collection: ~"
         );
         assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "FooCollection");
 
         myFixture.configureByText("foo.yml", "" +
             "FooDb:\n" +
+            "  type: document\n" +
             "  db: ~"
         );
         assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "FooDb");
 
         myFixture.configureByText("foo.yml", "" +
             "FooIndexes:\n" +
+            "  type: entity\n" +
             "  indexes: ~"
         );
-        assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "FooIndexes");
+        assertIndexNotContains(DoctrineMetadataFileStubIndex.KEY, "FooIndexes");
     }
 
     /**

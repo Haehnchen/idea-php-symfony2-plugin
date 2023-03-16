@@ -6,8 +6,11 @@ import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import org.jetbrains.yaml.YAMLFileType;
+import org.jetbrains.yaml.psi.YAMLFile;
 
 import java.util.Collection;
+import java.util.Objects;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -164,5 +167,116 @@ public class DoctrineUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         Pair<String, String> white = classRepositoryPair.stream().filter(stringStringPair -> "Foo\\White".equals(stringStringPair.getFirst())).findFirst().get();
         assertEquals("Foo\\Foobar", white.getSecond());
+    }
+
+    public void testGetClassRepositoryPairForClassConstantForYaml() {
+        YAMLFile yamlFile = (YAMLFile) myFixture.configureByText(YAMLFileType.YML, "Doctrine\\Tests\\ORM\\Mapping\\User:\n" +
+            "  type: entity\n" +
+            "  fields: {}"
+        );
+
+        assertTrue(Objects.requireNonNull(DoctrineUtil.getClassRepositoryPair(yamlFile)).stream().anyMatch(
+            stringStringPair -> "Doctrine\\Tests\\ORM\\Mapping\\User".equals(stringStringPair.getFirst())
+        ));
+
+        YAMLFile yamlFile2 = (YAMLFile) myFixture.configureByText(YAMLFileType.YML, "Doctrine\\Tests\\ORM\\Mapping\\User:\n" +
+            "  type: entity2\n"
+        );
+
+        assertNull(DoctrineUtil.getClassRepositoryPair(yamlFile2));
+
+        YAMLFile yamlFile3 = (YAMLFile) myFixture.configureByText(YAMLFileType.YML, "User:\n" +
+            "  type: entity\n" +
+            "  embedded:\n" +
+            "    address:\n" +
+            "      class: Address"
+        );
+
+        assertTrue(Objects.requireNonNull(DoctrineUtil.getClassRepositoryPair(yamlFile3)).stream().anyMatch(
+            stringStringPair -> "User".equals(stringStringPair.getFirst())
+        ));
+
+        YAMLFile yamlFile4 = (YAMLFile) myFixture.configureByText(YAMLFileType.YML, "MyProject\\Model\\Admin:\n" +
+            "  type: entity\n" +
+            "  associationOverride:\n" +
+            "    address:\n" +
+            "      joinColumn:\n" +
+            "        adminaddress_id:\n" +
+            "          name: adminaddress_id\n" +
+            "          referencedColumnName: id"
+        );
+
+        assertTrue(Objects.requireNonNull(DoctrineUtil.getClassRepositoryPair(yamlFile4)).stream().anyMatch(
+            stringStringPair -> "MyProject\\Model\\Admin".equals(stringStringPair.getFirst())
+        ));
+
+        YAMLFile yamlFile5 = (YAMLFile) myFixture.configureByText(YAMLFileType.YML, "MyProject\\Model\\User2:\n" +
+            "  type: mappedSuperclass\n" +
+            "  # other fields mapping\n" +
+            "  manyToOne:\n" +
+            "    address:\n" +
+            "      targetEntity: Address\n"
+        );
+
+        assertTrue(Objects.requireNonNull(DoctrineUtil.getClassRepositoryPair(yamlFile5)).stream().anyMatch(
+            stringStringPair -> "MyProject\\Model\\User2".equals(stringStringPair.getFirst())
+        ));
+
+        YAMLFile yamlFile6 = (YAMLFile) myFixture.configureByText(YAMLFileType.YML, "\\Doctrine\\Foobar:\n" +
+            "  type: entity\n" +
+            "  fields: {}"
+        );
+
+        assertTrue(Objects.requireNonNull(DoctrineUtil.getClassRepositoryPair(yamlFile6)).stream().anyMatch(
+            stringStringPair -> "\\Doctrine\\Foobar".equals(stringStringPair.getFirst())
+        ));
+
+        YAMLFile yamlFile7 = (YAMLFile) myFixture.configureByText(YAMLFileType.YML, "'\\Doctrine\\Foobar':\n" +
+            "  type: entity\n" +
+            "  fields: {}"
+        );
+
+        assertTrue(Objects.requireNonNull(DoctrineUtil.getClassRepositoryPair(yamlFile7)).stream().anyMatch(
+            stringStringPair -> "\\Doctrine\\Foobar".equals(stringStringPair.getFirst())
+        ));
+    }
+
+    public void testGetClassRepositoryPairForClassConstantForYamlNoMatch() {
+        YAMLFile yamlFile = (YAMLFile) myFixture.configureByText(YAMLFileType.YML, "Foobar:\n" +
+            "    id: foobar\n" +
+            "    type: foo\n"
+        );
+
+        assertNull(DoctrineUtil.getClassRepositoryPair(yamlFile));
+
+        YAMLFile yamlFile2 = (YAMLFile) myFixture.configureByText(YAMLFileType.YML, "Doctrine\\Tes-ts\\ORM\\Mapping\\User:\n" +
+            "  type: entity\n" +
+            "  fields: {}"
+        );
+
+        assertNull(DoctrineUtil.getClassRepositoryPair(yamlFile2));
+    }
+
+    public void testGetClassRepositoryPairForClassConstantForYamlForOdm() {
+        YAMLFile yamlFile = (YAMLFile) myFixture.configureByText(YAMLFileType.YML, "Documents\\User:\n" +
+            "  db: documents\n" +
+            "  collection: user\n" +
+            "  fields: {}"
+        );
+
+        assertTrue(Objects.requireNonNull(DoctrineUtil.getClassRepositoryPair(yamlFile)).stream().anyMatch(
+            stringStringPair -> "Documents\\User".equals(stringStringPair.getFirst())
+        ));
+
+        YAMLFile yamlFile2 = (YAMLFile) myFixture.configureByText(YAMLFileType.YML, "User:\n" +
+            "  type: document\n" +
+            "  embedOne:\n" +
+            "    address:\n" +
+            "      targetDocument: Address"
+        );
+
+        assertTrue(Objects.requireNonNull(DoctrineUtil.getClassRepositoryPair(yamlFile2)).stream().anyMatch(
+            stringStringPair -> "User".equals(stringStringPair.getFirst())
+        ));
     }
 }
