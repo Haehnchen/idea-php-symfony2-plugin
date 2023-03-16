@@ -8,12 +8,14 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
+import com.jetbrains.php.config.PhpLanguageLevel;
 import com.jetbrains.php.lang.documentation.phpdoc.parser.PhpDocElementTypes;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
+import com.jetbrains.php.refactoring.PhpNameUtil;
 import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.AnnotationElementWalkingVisitor;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.AttributeElementWalkingVisitor;
@@ -192,7 +194,11 @@ public class DoctrineUtil {
         // we are indexing all yaml files for prefilter on path,
         // if false if check on parse
         String name = yamlFile.getName().toLowerCase();
-        boolean iAmMetadataFile = name.contains(".odm.") || name.contains(".orm.") || name.contains(".mongodb.") || name.contains(".couchdb.");
+        boolean iAmMetadataFile = name.contains(".odm.")
+            || name.contains(".orm.")
+            || name.contains(".dcm.")
+            || name.contains(".mongodb.")
+            || name.contains(".couchdb.");
 
         YAMLDocument yamlDocument = PsiTreeUtil.getChildOfType(yamlFile, YAMLDocument.class);
         if(yamlDocument == null) {
@@ -205,10 +211,55 @@ public class DoctrineUtil {
         }
 
         Collection<Pair<String, String>> pairs = new ArrayList<>();
-
         for (YAMLKeyValue yamlKey : ((YAMLMapping) topLevelValue).getKeyValues()) {
             String keyText = yamlKey.getKeyText();
-            if(StringUtils.isBlank(keyText)) {
+            if (StringUtils.isBlank(keyText) || !PhpNameUtil.isValidNamespaceFullName(keyText, true, PhpLanguageLevel.current(yamlFile.getProject()))) {
+                continue;
+            }
+
+            boolean isValidEntry = iAmMetadataFile;
+
+            if (!isValidEntry) {
+                @Nullable String type = YamlHelper.getYamlKeyValueAsString(yamlKey, "type");
+                if ("entity".equalsIgnoreCase(type) || "embeddable".equalsIgnoreCase(type) || "mappedSuperclass".equalsIgnoreCase(type)) {
+                    isValidEntry = YamlHelper.getYamlKeyValue(yamlKey, "fields") != null
+                        || YamlHelper.getYamlKeyValue(yamlKey, "repositoryClass") != null
+                        || YamlHelper.getYamlKeyValue(yamlKey, "id") != null
+                        || YamlHelper.getYamlKeyValue(yamlKey, "embedded") != null
+                        || YamlHelper.getYamlKeyValue(yamlKey, "associationOverride") != null
+                        || YamlHelper.getYamlKeyValue(yamlKey, "manyToOne") != null
+                        || YamlHelper.getYamlKeyValue(yamlKey, "manyToMany") != null
+                        || YamlHelper.getYamlKeyValue(yamlKey, "oneToMany") != null
+                        || YamlHelper.getYamlKeyValue(yamlKey, "oneToOne") != null;
+                }
+
+                if (!isValidEntry) {
+                    @Nullable String db = YamlHelper.getYamlKeyValueAsString(yamlKey, "db");
+                    @Nullable String typeOdm = YamlHelper.getYamlKeyValueAsString(yamlKey, "type");
+                    if ("documents".equalsIgnoreCase(db) || "embeddable".equalsIgnoreCase(db) || "mappedSuperclass".equalsIgnoreCase(db) || "document".equalsIgnoreCase(typeOdm)|| "embeddedDocument".equalsIgnoreCase(typeOdm)) {
+                        isValidEntry = YamlHelper.getYamlKeyValue(yamlKey, "fields") != null
+                            || YamlHelper.getYamlKeyValue(yamlKey, "embedOne") != null
+                            || YamlHelper.getYamlKeyValue(yamlKey, "embedMany") != null
+                            || YamlHelper.getYamlKeyValue(yamlKey, "referenceOne") != null
+                            || YamlHelper.getYamlKeyValue(yamlKey, "referenceMany") != null
+                            || YamlHelper.getYamlKeyValue(yamlKey, "collection") != null
+                            || YamlHelper.getYamlKeyValue(yamlKey, "db") != null;
+                    }
+                }
+
+                if (!isValidEntry) {
+                    @Nullable String db = YamlHelper.getYamlKeyValueAsString(yamlKey, "db");
+                    if ("documents".equalsIgnoreCase(db) || "embeddable".equalsIgnoreCase(db) || "mappedSuperclass".equalsIgnoreCase(db)) {
+                        isValidEntry = YamlHelper.getYamlKeyValue(yamlKey, "fields") != null
+                            || YamlHelper.getYamlKeyValue(yamlKey, "embedOne") != null
+                            || YamlHelper.getYamlKeyValue(yamlKey, "embedMany") != null
+                            || YamlHelper.getYamlKeyValue(yamlKey, "referenceOne") != null
+                            || YamlHelper.getYamlKeyValue(yamlKey, "referenceMany") != null;
+                    }
+                }
+            }
+
+            if (!isValidEntry) {
                 continue;
             }
 
@@ -218,26 +269,6 @@ public class DoctrineUtil {
             String repositoryClass = null;
             if(StringUtils.isNotBlank(repositoryClassValue)) {
                 repositoryClass = repositoryClassValue;
-            }
-
-            // fine repositoryClass exists a valid metadata file
-            if(!iAmMetadataFile && repositoryClass != null) {
-                iAmMetadataFile = true;
-            }
-
-            // currently not valid metadata file find valid keys
-            // else we are not allowed to store values
-            if(!iAmMetadataFile) {
-                Set<String> keySet = YamlHelper.getKeySet(yamlKey);
-                if(keySet == null) {
-                    continue;
-                }
-
-                if(!(keySet.contains("fields") || keySet.contains("id") || keySet.contains("collection") || keySet.contains("db") || keySet.contains("indexes"))) {
-                    continue;
-                }
-
-                iAmMetadataFile = true;
             }
 
             pairs.add(Pair.create(keyText, repositoryClass));
