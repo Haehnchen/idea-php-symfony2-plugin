@@ -19,6 +19,11 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.243
+* Fix Doctrine yaml index false positive file detection (Daniel Espendiller)
+* Fix attribute resolve for class constants to support repositoryClass metadata for entity again (Daniel Espendiller)
+* Ignore prefix classnames for property import (Daniel Espendiller)
+
 ## 2022.1.242
 * Fix more preview intention features breaks: Exceptions occurred on invoking the intention 'Generate Symfony service' on a copy of the file. (Daniel Espendiller)
 
