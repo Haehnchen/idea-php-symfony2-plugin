@@ -99,10 +99,6 @@ public class TwigUtil {
         "fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension"
     );
 
-    public static final ExtensionPointName<TwigFileUsage> TWIG_FILE_USAGE_EXTENSIONS = new ExtensionPointName<>(
-        "fr.adrienbrault.idea.symfony2plugin.extension.TwigFileUsage"
-    );
-
     private static final Key<CachedValue<Map<String, Set<VirtualFile>>>> TEMPLATE_CACHE_TWIG = new Key<>("TEMPLATE_CACHE_TWIG");
 
     private static final Key<CachedValue<Map<String, Set<VirtualFile>>>> TEMPLATE_CACHE_ALL = new Key<>("TEMPLATE_CACHE_ALL");
@@ -2357,14 +2353,6 @@ public class TwigUtil {
                     }
                 }
             }
-
-            for (TwigFileUsage extension : TWIG_FILE_USAGE_EXTENSIONS.getExtensions()) {
-                if (extension.isIncludeTemplate(psiElement)) {
-                    for (String template : extension.getIncludeTemplate(psiElement)) {
-                        consumer.consume(new TemplateInclude(psiElement, template, TemplateInclude.TYPE.INCLUDE));
-                    }
-                }
-            }
         }
     }
 
@@ -2814,16 +2802,6 @@ public class TwigUtil {
                 if (element instanceof TwigExtendsTag) {
                     for (String s : TwigUtil.getTwigExtendsTagTemplates((TwigExtendsTag) element)) {
                         consumer.consume(Pair.create(TwigUtil.normalizeTemplateName(s), element));
-                    }
-                }
-
-                for (TwigFileUsage extension : TWIG_FILE_USAGE_EXTENSIONS.getExtensions()) {
-                    if (!extension.isExtendsTemplate(element)) {
-                       continue;
-                    }
-
-                    for (String template : extension.getExtendsTemplate(element)) {
-                        consumer.consume(Pair.create(TwigUtil.normalizeTemplateName(template), element));
                     }
                 }
 

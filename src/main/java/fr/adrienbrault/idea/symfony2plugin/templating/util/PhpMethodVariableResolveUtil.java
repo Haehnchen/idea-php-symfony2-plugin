@@ -262,12 +262,10 @@ public class PhpMethodVariableResolveUtil {
     private static class TemplateRenderPsiRecursiveElementWalkingVisitor extends PsiRecursiveElementWalkingVisitor {
         private final PsiElement context;
         private final Consumer<Triple<String, PhpNamedElement, FunctionReference>> consumer;
-        private Set<String> methods;
 
         TemplateRenderPsiRecursiveElementWalkingVisitor(PsiElement context, Consumer<Triple<String, PhpNamedElement, FunctionReference>> consumer) {
             this.context = context;
             this.consumer = consumer;
-            methods = null;
         }
 
         @Override
@@ -312,22 +310,7 @@ public class PhpMethodVariableResolveUtil {
                 return;
             }
 
-            // init methods once per file
-            if(methods == null) {
-                methods = new HashSet<>();
-
-                PluginConfigurationExtension[] extensions = Symfony2ProjectComponent.PLUGIN_CONFIGURATION_EXTENSION.getExtensions();
-                if(extensions.length > 0) {
-                    PluginConfigurationExtensionParameter pluginConfiguration = new PluginConfigurationExtensionParameter(context.getProject());
-                    for (PluginConfigurationExtension extension : extensions) {
-                        extension.invokePluginConfiguration(pluginConfiguration);
-                    }
-
-                    methods.addAll(pluginConfiguration.getTemplateUsageMethod());
-                }
-            }
-
-            if(!methods.contains(methodName) && !methodName.toLowerCase().contains("render")) {
+            if (!methodName.toLowerCase().contains("render")) {
                 return;
             }
 
