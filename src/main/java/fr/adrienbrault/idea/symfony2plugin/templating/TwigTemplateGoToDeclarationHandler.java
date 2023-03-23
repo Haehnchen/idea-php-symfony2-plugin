@@ -362,7 +362,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             if (matcher.find()) {
                 String className = matcher.group("class");
                 if(StringUtils.isNotBlank(className)) {
-                    return PhpElementsUtil.getClassesInterface(psiElement.getProject(), className);
+                    return PhpElementsUtil.getClassesInterface(psiElement.getProject(), StringUtils.stripEnd(className, "[]"));
                 }
             }
         }

@@ -858,7 +858,6 @@ public class TwigPattern {
      * {{ path('_profiler_info', {'foobar': 'foobar', '<caret>'}) }}
      */
     public static ElementPattern<PsiElement> getPathAfterLeafPattern() {
-        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
             .afterLeafSkipping(
@@ -917,7 +916,7 @@ public class TwigPattern {
     }
 
     public static ElementPattern<PsiComment> getTwigTypeDocBlockPattern() {
-        Collection<ElementPattern> patterns = new ArrayList<>();
+        Collection<PsiElementPattern.Capture<PsiElement>> patterns = new ArrayList<>();
 
         for (String s : TwigTypeResolveUtil.DOC_TYPE_PATTERN_SINGLE) {
             patterns.add(PlatformPatterns.psiElement(TwigTokenTypes.COMMENT_TEXT).withText(PlatformPatterns.string().matches(s)).withLanguage(TwigLanguage.INSTANCE));
@@ -940,7 +939,6 @@ public class TwigPattern {
     }
 
     public static ElementPattern<PsiElement> getAutocompletableRoutePattern() {
-        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
             .afterLeafSkipping(
