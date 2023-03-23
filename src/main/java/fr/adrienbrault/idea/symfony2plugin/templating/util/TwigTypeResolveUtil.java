@@ -56,13 +56,13 @@ public class TwigTypeResolveUtil {
      * {# @var variable \AppBundle\Entity\Foo[] #}
      * {# @var variable \AppBundle\Entity\Foo #}
      */
-    private static final String DOC_TYPE_PATTERN_CLASS_SECOND = "@var[\\s]+(?<var>[\\w]+)[\\s]+(?<class>[\\w\\\\\\[\\]]+)[\\s]*";
+    private static final String DOC_TYPE_PATTERN_CLASS_SECOND = "@var\\s+(?<var>\\w+)\\s+(?<class>[\\w\\\\\\[\\]]+)\\s*";
 
     /**
      * {# @var \AppBundle\Entity\Foo[] variable #}
      * {# @var \AppBundle\Entity\Foo variable #}
      */
-    private static final String DOC_TYPE_PATTERN_CLASS_FIRST = "@var[\\s]+(?<class>[\\w\\\\\\[\\]]+)[\\s]+(?<var>[\\w]+)[\\s]*";
+    private static final String DOC_TYPE_PATTERN_CLASS_FIRST = "@var\\s+(?<class>[\\w\\\\\\[\\]]+)\\s+(?<var>\\w+)\\s*";
 
     public static final Pattern[] INLINE_DOC_REGEX = {
         Pattern.compile(DOC_TYPE_PATTERN_CLASS_SECOND, Pattern.MULTILINE),
