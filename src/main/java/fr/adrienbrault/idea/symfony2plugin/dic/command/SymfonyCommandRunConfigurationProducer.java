@@ -18,6 +18,7 @@ import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.util.List;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -36,10 +37,12 @@ public class SymfonyCommandRunConfigurationProducer extends LazyRunConfiguration
         if (location instanceof PsiLocation) {
             PhpClass phpClass = SymfonyCommandTestRunLineMarkerProvider.getCommandContext(location.getPsiElement());
             if (phpClass != null) {
-                String commandNameFromClass = SymfonyCommandTestRunLineMarkerProvider.getCommandNameFromClass(phpClass);
-                if (commandNameFromClass != null) {
-                    configuration.setCommandName(commandNameFromClass);
-                    configuration.setName(commandNameFromClass);
+                List<String> commandNameFromClass = SymfonyCommandTestRunLineMarkerProvider.getCommandNameFromClass(phpClass);
+                if (!commandNameFromClass.isEmpty()) {
+                    // first name; on alias
+                    String commandName = commandNameFromClass.iterator().next();
+                    configuration.setCommandName(commandName);
+                    configuration.setName(commandName);
                     return true;
                 }
             }
@@ -54,7 +57,7 @@ public class SymfonyCommandRunConfigurationProducer extends LazyRunConfiguration
         if (location instanceof PsiLocation) {
             PhpClass phpClass = SymfonyCommandTestRunLineMarkerProvider.getCommandContext(location.getPsiElement());
             if (phpClass != null) {
-                return SymfonyCommandTestRunLineMarkerProvider.getCommandNameFromClass(phpClass) != null;
+                return !SymfonyCommandTestRunLineMarkerProvider.getCommandNameFromClass(phpClass).isEmpty();
             }
         }
 
