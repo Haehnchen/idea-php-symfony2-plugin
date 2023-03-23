@@ -12,10 +12,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.command.SymfonyCommandTestRunLine
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyCommand;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -36,8 +33,7 @@ public class SymfonyCommandUtil {
                         continue;
                     }
 
-                    String commandName = SymfonyCommandTestRunLineMarkerProvider.getCommandNameFromClass(phpClass);
-                    if (commandName != null) {
+                    for (String commandName : SymfonyCommandTestRunLineMarkerProvider.getCommandNameFromClass(phpClass)) {
                         symfonyCommands.put(commandName, phpClass.getFQN());
                     }
                 }

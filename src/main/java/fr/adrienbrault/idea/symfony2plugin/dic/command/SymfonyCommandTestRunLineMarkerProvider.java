@@ -18,6 +18,10 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -26,8 +30,8 @@ public class SymfonyCommandTestRunLineMarkerProvider extends RunLineMarkerContri
     public @Nullable Info getInfo(@NotNull PsiElement leaf) {
         PhpClass phpClass = getCommandContext(leaf);
         if (phpClass != null) {
-            String commandNameFromClass = getCommandNameFromClass(phpClass);
-            if (commandNameFromClass != null) {
+            List<String> commandNameFromClass = getCommandNameFromClass(phpClass);
+            if (!commandNameFromClass.isEmpty()) {
                 BaseRunConfigurationAction baseRunConfigurationAction = new RunContextAction(DefaultRunExecutor.getRunExecutorInstance());
                 return new Info(AllIcons.RunConfigurations.TestState.Run, new AnAction[]{baseRunConfigurationAction}, (psiElement) -> "Run Command");
             }
@@ -50,8 +54,8 @@ public class SymfonyCommandTestRunLineMarkerProvider extends RunLineMarkerContri
         return null;
     }
 
-    @Nullable
-    public static String getCommandNameFromClass(@NotNull PhpClass phpClass) {
+    @NotNull
+    public static List<String> getCommandNameFromClass(@NotNull PhpClass phpClass) {
         if (PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Console\\Command\\Command")) {
             // lazy naming:
             // protected static $defaultName = 'app:create-user'
@@ -59,7 +63,11 @@ public class SymfonyCommandTestRunLineMarkerProvider extends RunLineMarkerContri
             if (defaultName != null) {
                 PsiElement defaultValue = defaultName.getDefaultValue();
                 if (defaultValue != null) {
-                    return PhpElementsUtil.getStringValue(defaultValue);
+                    String stringValue = PhpElementsUtil.getStringValue(defaultValue);
+
+                    return stringValue != null
+                        ? List.of(stringValue.split("\\|"))
+                        : Collections.emptyList();
                 }
             }
 
@@ -68,9 +76,15 @@ public class SymfonyCommandTestRunLineMarkerProvider extends RunLineMarkerContri
             // #[AsCommand(name: 'app:create-user')]
             for (PhpAttribute attribute : phpClass.getAttributes("\\Symfony\\Component\\Console\\Attribute\\AsCommand")) {
                 String name = PhpPsiAttributesUtil.getAttributeValueByNameAsStringWithDefaultParameterFallback(attribute, "name");
+                List<String> names = new ArrayList<>();
+
                 if (name != null) {
-                    return name;
+                    names.add(name);
                 }
+
+                names.addAll(PhpPsiAttributesUtil.getAttributeValueByNameAsArray(attribute, "aliases"));
+
+                return names;
             }
 
             // @TODO: provide tag resolving here
@@ -98,11 +112,11 @@ public class SymfonyCommandTestRunLineMarkerProvider extends RunLineMarkerContri
                         continue;
                     }
 
-                    return stringValue;
+                    return Collections.singletonList(stringValue);
                 }
             }
         }
 
-        return null;
+        return Collections.emptyList();
     }
 }

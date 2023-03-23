@@ -5,6 +5,8 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.dic.command.SymfonyCommandTestRunLineMarkerProvider;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
+import java.util.List;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see SymfonyCommandTestRunLineMarkerProvider
@@ -26,7 +28,15 @@ public class SymfonyCommandTestRunLineMarkerProviderTest extends SymfonyLightCod
             "}"
         );
 
-        assertEquals("app:create-user", SymfonyCommandTestRunLineMarkerProvider.getCommandNameFromClass(phpClass));
+        assertEquals(List.of("app:create-user"), SymfonyCommandTestRunLineMarkerProvider.getCommandNameFromClass(phpClass));
+
+        PhpClass phpClass1 = PhpPsiElementFactory.createFromText(getProject(), PhpClass.class, "<?php\n" +
+            "class FoobarCommand extends \\Symfony\\Component\\Console\\Command\\Command {\n" +
+            "    protected static $defaultName = 'app:create-user|foobar|car';\n" +
+            "}"
+        );
+
+        assertEquals(List.of("app:create-user", "foobar", "car"), SymfonyCommandTestRunLineMarkerProvider.getCommandNameFromClass(phpClass1));
     }
 
     public void testCommandNameFromDefaultPhpProperty() {
@@ -37,13 +47,13 @@ public class SymfonyCommandTestRunLineMarkerProviderTest extends SymfonyLightCod
             "    name: 'app:create-user',\n" +
             "    description: 'Creates a new user.',\n" +
             "    hidden: false,\n" +
-            "    aliases: ['app:add-user']\n" +
+            "    aliases: ['app:add-user', 'foo']\n" +
             ")]\n" +
             "class FoobarCommand extends \\Symfony\\Component\\Console\\Command\\Command {\n" +
             "}"
         );
 
-        assertEquals("app:create-user", SymfonyCommandTestRunLineMarkerProvider.getCommandNameFromClass(phpClass));
+        assertEquals(List.of("app:create-user", "app:add-user", "foo"), SymfonyCommandTestRunLineMarkerProvider.getCommandNameFromClass(phpClass));
     }
 
     public void testCommandNameFromDefaultPhpPropertyAsDefault() {
@@ -55,7 +65,7 @@ public class SymfonyCommandTestRunLineMarkerProviderTest extends SymfonyLightCod
             "}"
         );
 
-        assertEquals("app:create-user", SymfonyCommandTestRunLineMarkerProvider.getCommandNameFromClass(phpClass));
+        assertEquals(List.of("app:create-user"), SymfonyCommandTestRunLineMarkerProvider.getCommandNameFromClass(phpClass));
     }
 
     public void testCommandNameFromSetName() {
@@ -69,6 +79,6 @@ public class SymfonyCommandTestRunLineMarkerProviderTest extends SymfonyLightCod
             "}"
         );
 
-        assertEquals("set-const-command", SymfonyCommandTestRunLineMarkerProvider.getCommandNameFromClass(phpClass));
+        assertEquals(List.of("set-const-command"), SymfonyCommandTestRunLineMarkerProvider.getCommandNameFromClass(phpClass));
     }
 }
