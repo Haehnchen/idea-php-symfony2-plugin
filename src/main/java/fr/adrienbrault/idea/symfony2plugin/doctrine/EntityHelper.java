@@ -92,7 +92,7 @@ public class EntityHelper {
         if(docAnnotation != null) {
             // search for repositoryClass="Foo\Bar\RegisterRepository"; repositoryClass=Foo\Bar\RegisterRepository::class
             // @MongoDB\Document; @ORM\Entity
-            Collection<Pair<String, String>> classRepositoryPair = DoctrineUtil.getClassRepositoryPair(docAnnotation);
+            Collection<Pair<String, String>> classRepositoryPair = DoctrineUtil.extractAnnotations(phpClass, docAnnotation);
             if (!classRepositoryPair.isEmpty()) {
                 Pair<String, String> next = classRepositoryPair.iterator().next();
                 if (next.getSecond() != null) {

@@ -8,17 +8,24 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.config.PhpLanguageLevel;
+import com.jetbrains.php.lang.documentation.phpdoc.PhpDocUtil;
 import com.jetbrains.php.lang.documentation.phpdoc.parser.PhpDocElementTypes;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpFile;
+import com.jetbrains.php.lang.psi.PhpPsiUtil;
+import com.jetbrains.php.lang.psi.elements.PhpAttribute;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
 import com.jetbrains.php.refactoring.PhpNameUtil;
 import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.AnnotationElementWalkingVisitor;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.AttributeElementWalkingVisitor;
+import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpPsiAttributesUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
@@ -28,9 +35,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -57,8 +62,8 @@ public class DoctrineUtil {
             pairs = getClassRepositoryPair((XmlFile) psiFile);
         } else if(psiFile instanceof YAMLFile) {
             pairs = getClassRepositoryPair((YAMLFile) psiFile);
-        } else if(psiFile instanceof PhpFile) {
-            pairs = getClassRepositoryPair((PsiElement) psiFile);
+        } else if(psiFile instanceof PhpFile phpFile) {
+            pairs = getClassRepositoryPair(phpFile);
         }
 
         return pairs;
@@ -114,44 +119,48 @@ public class DoctrineUtil {
      * We support multiple use case like orm an so on
      */
     @NotNull
-    public static Collection<Pair<String, String>> getClassRepositoryPair(@NotNull PsiElement phpFile) {
+    public static Collection<Pair<String, String>> getClassRepositoryPair(@NotNull PhpFile phpFile) {
         final Collection<Pair<String, String>> pairs = new ArrayList<>();
+        Collection<PhpClass> classes = PhpPsiUtil.findAllClasses(phpFile);
 
-        // Annotations:
-        // @ORM\Entity("repositoryClass": YYY)
-        phpFile.acceptChildren(new AnnotationElementWalkingVisitor(phpDocTag -> {
-            PhpDocComment phpDocComment = PsiTreeUtil.getParentOfType(phpDocTag, PhpDocComment.class);
-            if (phpDocComment == null) {
-                return false;
+        for (PhpClass phpClass : classes) {
+            PhpDocComment docComment = phpClass.getDocComment();
+            if (docComment != null) {
+                pairs.addAll(extractAnnotations(phpClass, docComment));
             }
-
-            PhpPsiElement phpClass = phpDocComment.getNextPsiSibling();
-            if (!(phpClass instanceof PhpClass phpClassScope)) {
-                return false;
+            for (PhpAttribute attribute : phpClass.getAttributes()) {
+                String attributeFQN = attribute.getFQN();
+                if (attributeFQN == null) continue;
+                if (PhpElementsUtil.isEqualClassName(attributeFQN, MODEL_CLASS_ANNOTATION)) {
+                    String repositoryClass = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, "repositoryClass");
+                    pairs.add(Pair.create(StringUtils.stripStart(phpClass.getFQN(), "\\"),
+                            repositoryClass != null ? StringUtils.stripStart(repositoryClass, "\\") : null));
+                }
             }
-
-            pairs.add(Pair.create(
-                phpClassScope.getPresentableFQN(),
-                getAnnotationRepositoryClass(phpDocTag, phpClassScope))
-            );
-
-            return false;
-        }, MODEL_CLASS_ANNOTATION));
-
-        // Attributes:
-        // #[Entity(repositoryClass: UserRepository::class)]
-        phpFile.acceptChildren(new AttributeElementWalkingVisitor(pair -> {
-            String repositoryClass = PhpPsiAttributesUtil.getAttributeValueByNameAsString(pair.getFirst(), "repositoryClass");
-
-            pairs.add(Pair.create(
-                StringUtils.stripStart(pair.getSecond().getFQN(), "\\"),
-                repositoryClass != null ? StringUtils.stripStart(repositoryClass, "\\") : null
-            ));
-
-            return false;
-        }, MODEL_CLASS_ANNOTATION));
+        }
 
         return pairs;
+    }
+
+    public static Collection<Pair<String, String>> extractAnnotations(@NotNull PhpClass phpClass, @NotNull PhpDocComment docComment) {
+        Collection<Pair<String, String>> result = new ArrayList<>();
+        PhpDocUtil.processTagElementsByName(docComment, null, phpDocTag -> {
+            if (AnnotationBackportUtil.NON_ANNOTATION_TAGS.contains(phpDocTag.getName())) {
+                return true;
+            }
+
+            Map<String, String> fileImports = AnnotationBackportUtil.getUseImportMap(phpDocTag);
+            if (fileImports.isEmpty()) {
+                return true;
+            }
+
+            String annotationFqnName = AnnotationBackportUtil.getClassNameReference(phpDocTag, fileImports);
+            if (ContainerUtil.exists(MODEL_CLASS_ANNOTATION, c -> c.equals(annotationFqnName))) {
+                result.add(Pair.create(phpClass.getPresentableFQN(), getAnnotationRepositoryClass(phpDocTag, phpClass)));
+            }
+            return true;
+        });
+        return result;
     }
 
     /**
