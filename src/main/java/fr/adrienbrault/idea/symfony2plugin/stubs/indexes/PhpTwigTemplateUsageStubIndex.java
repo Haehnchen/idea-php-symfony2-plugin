@@ -5,16 +5,25 @@ import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
+import com.jetbrains.php.codeInsight.controlFlow.PhpControlFlowUtil;
+import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
+import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpCallInstruction;
+import com.jetbrains.php.lang.documentation.phpdoc.PhpDocUtil;
+import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.psi.PhpFile;
+import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.stubs.indexes.PhpConstantNameIndex;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateUsage;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.PhpMethodVariableResolveUtil;
+import kotlin.Triple;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.function.Consumer;
+
+import static fr.adrienbrault.idea.symfony2plugin.templating.util.PhpMethodVariableResolveUtil.TemplateRenderPsiRecursiveElementWalkingVisitor.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -46,8 +55,7 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
             }
 
             Map<String, Set<String>> items = new HashMap<>();
-
-            PhpMethodVariableResolveUtil.visitRenderTemplateFunctions(psiFile, triple -> {
+            Consumer<Triple<String, PhpNamedElement, FunctionReference>> consumer = triple -> {
                 String templateName = triple.getFirst();
 
                 if (templateName.length() > 255) {
@@ -59,7 +67,26 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
                 }
 
                 items.get(templateName).add(StringUtils.stripStart(triple.getSecond().getFQN(), "\\"));
-            });
+            };
+            Set<String> methods = collectMethods(psiFile.getProject());
+            for (PhpNamedElement topLevelElement : ((PhpFile) psiFile).getTopLevelDefs().values()) {
+                if (topLevelElement instanceof PhpClass clazz) {
+                    for (Method method : clazz.getOwnMethods()) {
+                        processMethodAttributes(method, consumer);
+                        PhpDocComment docComment = method.getDocComment();
+                        if (docComment != null) {
+                            PhpDocUtil.processTagElementsByName(docComment, null, docTag -> {
+                                processDocTag(docTag, consumer);
+                                return true;
+                            });
+                        }
+                        processMethodReferences(consumer, methods, method);
+                    }
+                }
+                if (topLevelElement instanceof Function function) {
+                    processMethodReferences(consumer, methods, function);
+                }
+            }
 
             Map<String, TemplateUsage> map = new HashMap<>();
 
@@ -69,6 +96,18 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
 
             return map;
         };
+    }
+
+    private static void processMethodReferences(Consumer<Triple<String, PhpNamedElement, FunctionReference>> consumer, Set<String> methods, Function function) {
+        PhpControlFlowUtil.processFlow(function.getControlFlow(), new PhpInstructionProcessor() {
+            @Override
+            public boolean processPhpCallInstruction(PhpCallInstruction instruction) {
+                if (instruction.getFunctionReference() instanceof MethodReference methodReference) {
+                    processMethodReference(methodReference, methods, consumer);
+                }
+                return super.processPhpCallInstruction(instruction);
+            }
+        });
     }
 
     @NotNull
