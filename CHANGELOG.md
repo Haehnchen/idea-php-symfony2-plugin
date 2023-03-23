@@ -19,6 +19,12 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.244
+* Add support for alias names of commands (Daniel Espendiller)
+* Allow navigation for twig doc types when using array (Daniel Espendiller)
+* [performance] speed up PhpTwigTemplateUsageStubIndex: replace recursive visitor with linear scans (Artemy Pestretsov)
+* [performance] speed up DoctrineMetadataFileStubIndex: replace recursive visitor with linear scan (Artemy Pestretsov)
+
 ## 2022.1.243
 * Fix Doctrine yaml index false positive file detection (Daniel Espendiller)
 * Fix attribute resolve for class constants to support repositoryClass metadata for entity again (Daniel Espendiller)
