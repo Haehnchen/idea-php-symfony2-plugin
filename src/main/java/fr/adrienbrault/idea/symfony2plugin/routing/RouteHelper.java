@@ -39,7 +39,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.AnnotationRouteElementWalkingVisitor;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.AnnotationRouteElementVisitor;
 import fr.adrienbrault.idea.symfony2plugin.ui.dict.AbstractUiFilePath;
 import fr.adrienbrault.idea.symfony2plugin.util.*;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerAction;
@@ -1121,11 +1121,11 @@ public class RouteHelper {
                 Collection<PsiElement> targets = new ArrayList<>();
 
                 for (PhpClass phpClass : PhpPsiUtil.findAllClasses((PhpFile) psiFile)) {
-                    phpClass.accept(new AnnotationRouteElementWalkingVisitor(pair -> {
+                    new AnnotationRouteElementVisitor(pair -> {
                         if (routeName.equalsIgnoreCase(pair.getFirst())) {
                             targets.add(pair.getSecond());
                         }
-                    }));
+                    }).visitFile(phpClass);
                 }
 
                 return targets;
