@@ -16,7 +16,6 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.ArrayReturnPsiR
 import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationVisitor;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
-import gnu.trove.THashMap;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -75,7 +74,7 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
                         return Collections.emptyMap();
                     }
                     
-                    Map<String, Set<String>> map = new THashMap<>();
+                    Map<String, Set<String>> map = new HashMap<>();
                     map.put(domainName, translationKeySet);
 
                     return map;
@@ -90,7 +89,7 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
                         return Collections.emptyMap();
                     }
 
-                    Map<String, Set<String>> map = new THashMap<>();
+                    Map<String, Set<String>> map = new HashMap<>();
                     map.put(domainName, translationKeySet);
                     return map;
                 }
@@ -162,7 +161,7 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
                 }
 
                 // wrap with domain
-                Map<String, Set<String>> map = new THashMap<>();
+                Map<String, Set<String>> map = new HashMap<>();
                 map.put(domainName, set);
                 return map;
             }

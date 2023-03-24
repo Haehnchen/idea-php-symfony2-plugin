@@ -12,10 +12,10 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModel;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelSerializable;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.inputFilter.FileInputFilter;
-import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -25,16 +25,16 @@ public class DoctrineMetadataFileStubIndex extends FileBasedIndexExtension<Strin
 
     public static final ID<String, DoctrineModelSerializable> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.doctrine_metadata");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
-    private static ObjectStreamDataExternalizer<DoctrineModelSerializable> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
+    private static final ObjectStreamDataExternalizer<DoctrineModelSerializable> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
 
-    private static int MAX_FILE_BYTE_SIZE = 1048576;
+    private static final int MAX_FILE_BYTE_SIZE = 1048576;
 
     private static class MyStringStringFileContentDataIndexer implements DataIndexer<String, DoctrineModelSerializable, FileContent> {
         @NotNull
         @Override
         public Map<String, DoctrineModelSerializable> map(@NotNull FileContent fileContent) {
 
-            Map<String, DoctrineModelSerializable> map = new THashMap<>();
+            Map<String, DoctrineModelSerializable> map = new HashMap<>();
 
             PsiFile psiFile = fileContent.getPsiFile();
             if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject()) || !isValidForIndex(fileContent, psiFile)) {

@@ -12,11 +12,11 @@ import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUt
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.inputFilter.FileInputFilter;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
-import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -24,11 +24,11 @@ import java.util.Map;
  */
 public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String, ServiceSerializable> {
 
-    private static int MAX_FILE_BYTE_SIZE = 5242880;
+    private static final int MAX_FILE_BYTE_SIZE = 5242880;
 
     public static final ID<String, ServiceSerializable> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.service_definition");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
-    private static ObjectStreamDataExternalizer<ServiceSerializable> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
+    private static final ObjectStreamDataExternalizer<ServiceSerializable> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
 
     @NotNull
     @Override
@@ -36,7 +36,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
 
         return inputData -> {
 
-            Map<String, ServiceSerializable> map = new THashMap<>();
+            Map<String, ServiceSerializable> map = new HashMap<>();
 
             PsiFile psiFile = inputData.getPsiFile();
             if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject()) || !isValidForIndex(inputData, psiFile)) {

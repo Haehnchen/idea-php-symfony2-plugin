@@ -10,10 +10,10 @@ import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -41,7 +41,7 @@ public class TwigControllerStubIndex extends FileBasedIndexExtension<String, Voi
                 return Collections.emptyMap();
             }
 
-            final Map<String, Void> map = new THashMap<>();
+            final Map<String, Void> map = new HashMap<>();
             TwigUtil.visitControllerFunctions(psiFile, pair -> {
                 String name = pair.getFirst();
                 if (name.length() < 255) {

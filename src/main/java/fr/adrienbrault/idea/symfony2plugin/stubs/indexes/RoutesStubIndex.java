@@ -19,11 +19,11 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStre
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.inputFilter.FileInputFilter;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.AnnotationRouteElementWalkingVisitor;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
-import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLFile;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -33,7 +33,7 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, StubIndexed
 
     public static final ID<String, StubIndexedRoute> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.routes_object");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
-    private static ObjectStreamDataExternalizer<StubIndexedRoute> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
+    private static final ObjectStreamDataExternalizer<StubIndexedRoute> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
 
     @NotNull
     @Override
@@ -45,7 +45,7 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, StubIndexed
     @Override
     public DataIndexer<String, StubIndexedRoute, FileContent> getIndexer() {
         return inputData -> {
-            Map<String, StubIndexedRoute> map = new THashMap<>();
+            Map<String, StubIndexedRoute> map = new HashMap<>();
 
             PsiFile psiFile = inputData.getPsiFile();
             if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject())) {

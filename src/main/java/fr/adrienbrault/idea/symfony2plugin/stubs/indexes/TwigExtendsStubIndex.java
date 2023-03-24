@@ -10,9 +10,9 @@ import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -33,7 +33,7 @@ public class TwigExtendsStubIndex extends FileBasedIndexExtension<String, Void> 
     @Override
     public DataIndexer<String, Void, FileContent> getIndexer() {
         return inputData -> {
-            Map<String, Void> map = new THashMap<>();
+            Map<String, Void> map = new HashMap<>();
 
             PsiFile psiFile = inputData.getPsiFile();
             if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject())) {

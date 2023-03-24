@@ -9,10 +9,10 @@ import com.intellij.util.io.VoidDataExternalizer;
 import com.jetbrains.php.lang.PhpFileType;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.SerializerUtil;
-import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -40,7 +40,7 @@ public class SerializerClassUsageStubIndex extends FileBasedIndexExtension<Strin
                 return Collections.emptyMap();
             }
 
-            final Map<String, Void> map = new THashMap<>();
+            final Map<String, Void> map = new HashMap<>();
 
             SerializerUtil.visitSerializerMethodReference(psiFile, pair -> map.put(pair.getFirst(), null));
 
