@@ -21,11 +21,11 @@ import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ContainerBuilderCa
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
-import gnu.trove.THashMap;
 import one.util.streamex.StreamEx;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -63,7 +63,7 @@ public class ContainerBuilderStubIndex extends FileBasedIndexExtension<String, C
 
         return inputData -> {
 
-            Map<String, ContainerBuilderCall> map = new THashMap<>();
+            Map<String, ContainerBuilderCall> map = new HashMap<>();
 
             PsiFile psiFile = inputData.getPsiFile();
             if(!(psiFile instanceof PhpFile) ||

@@ -10,10 +10,10 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.StringSetDataExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.inputFilter.FileInputFilter;
-import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLFile;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,7 +31,7 @@ public class ServicesTagStubIndex extends FileBasedIndexExtension<String, Set<St
 
         return inputData -> {
 
-            Map<String, Set<String>> map = new THashMap<>();
+            Map<String, Set<String>> map = new HashMap<>();
 
             PsiFile psiFile = inputData.getPsiFile();
             if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject())) {

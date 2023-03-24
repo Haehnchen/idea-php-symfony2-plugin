@@ -10,10 +10,10 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.dict.FileResource;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.inputFilter.FileInputFilter;
 import fr.adrienbrault.idea.symfony2plugin.util.FileResourceVisitorUtil;
-import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -21,8 +21,8 @@ import java.util.Map;
  */
 public class FileResourcesIndex extends FileBasedIndexExtension<String, FileResource> {
 
-    private static int MAX_FILE_BYTE_SIZE = 1048576;
-    private static ObjectStreamDataExternalizer<FileResource> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
+    private static final int MAX_FILE_BYTE_SIZE = 1048576;
+    private static final ObjectStreamDataExternalizer<FileResource> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
 
     public static final ID<String, FileResource> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.file_resources");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
@@ -42,7 +42,7 @@ public class FileResourcesIndex extends FileBasedIndexExtension<String, FileReso
                 return Collections.emptyMap();
             }
 
-            final Map<String, FileResource> items = new THashMap<>();
+            final Map<String, FileResource> items = new HashMap<>();
 
             FileResourceVisitorUtil.visitFile(psiFile, consumer -> {
                 String resource = consumer.getResource();

@@ -11,9 +11,9 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TwigMacroTagIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -23,7 +23,7 @@ public class TwigMacroFunctionStubIndex extends FileBasedIndexExtension<String, 
 
     public static final ID<String, TwigMacroTagIndex> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.twig_macro_function");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
-    private static ObjectStreamDataExternalizer<TwigMacroTagIndex> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
+    private static final ObjectStreamDataExternalizer<TwigMacroTagIndex> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
 
     @NotNull
     @Override
@@ -35,7 +35,7 @@ public class TwigMacroFunctionStubIndex extends FileBasedIndexExtension<String, 
     @Override
     public DataIndexer<String, TwigMacroTagIndex, FileContent> getIndexer() {
         return inputData -> {
-            final Map<String, TwigMacroTagIndex> map = new THashMap<>();
+            final Map<String, TwigMacroTagIndex> map = new HashMap<>();
 
             PsiFile psiFile = inputData.getPsiFile();
             if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject())) {

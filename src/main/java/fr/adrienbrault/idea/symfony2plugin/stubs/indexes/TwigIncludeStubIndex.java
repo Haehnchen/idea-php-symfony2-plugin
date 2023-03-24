@@ -11,9 +11,9 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateInclude;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -35,7 +35,7 @@ public class TwigIncludeStubIndex extends FileBasedIndexExtension<String, Templa
     @Override
     public DataIndexer<String, TemplateInclude, FileContent> getIndexer() {
         return inputData -> {
-            final Map<String, TemplateInclude> map = new THashMap<>();
+            final Map<String, TemplateInclude> map = new HashMap<>();
 
             PsiFile psiFile = inputData.getPsiFile();
             if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject())) {
