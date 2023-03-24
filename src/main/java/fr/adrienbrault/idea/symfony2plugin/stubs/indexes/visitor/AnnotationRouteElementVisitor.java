@@ -2,9 +2,9 @@ package fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.containers.ContainerUtil;
+import com.jetbrains.php.lang.documentation.phpdoc.PhpDocUtil;
 import com.jetbrains.php.lang.documentation.phpdoc.parser.PhpDocElementTypes;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
  *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class AnnotationRouteElementWalkingVisitor extends PsiRecursiveElementWalkingVisitor {
+public class AnnotationRouteElementVisitor {
     @NotNull
     private final Map<String, StubIndexedRoute> map;
 
@@ -40,32 +40,35 @@ public class AnnotationRouteElementWalkingVisitor extends PsiRecursiveElementWal
     @NotNull
     private final Consumer<Pair<String, PsiElement>> consumer;
 
-    public AnnotationRouteElementWalkingVisitor(@NotNull Consumer<Pair<String, PsiElement>> consumer) {
+    public AnnotationRouteElementVisitor(@NotNull Consumer<Pair<String, PsiElement>> consumer) {
         this.consumer = consumer;
         this.map = new HashMap<>();
     }
 
-    public AnnotationRouteElementWalkingVisitor(@NotNull Map<String, StubIndexedRoute> map) {
+    public AnnotationRouteElementVisitor(@NotNull Map<String, StubIndexedRoute> map) {
         this.map = map;
         this.consumer = c -> {};
     }
 
-    @Override
-    public void visitElement(PsiElement element) {
-        if ((element instanceof PhpDocTag)) {
-            visitPhpDocTag((PhpDocTag) element);
-        }
+    public void visitFile(@NotNull PhpClass phpClass) {
+        for (Method method : phpClass.getOwnMethods()) {
+            PhpDocComment docComment = method.getDocComment();
+            if (docComment != null) {
+                PhpDocUtil.processTagElementsByName(docComment, null, docTag -> {
+                    visitPhpDocTag(docTag);
+                    return true;
+                });
+            }
 
-        if ((element instanceof PhpAttributesList)) {
-            visitPhpAttributesList((PhpAttributesList) element);
+            PhpAttributesList childOfType = PsiTreeUtil.getChildOfType(method, PhpAttributesList.class);
+            if (childOfType != null) {
+                visitPhpAttributesList(childOfType);
+            }
         }
-
-        super.visitElement(element);
     }
-
     private void visitPhpDocTag(@NotNull PhpDocTag phpDocTag) {
 
-        // "@var" and user non related tags dont need an action
+        // "@var" and user non-related tags don't need an action
         if(AnnotationBackportUtil.NON_ANNOTATION_TAGS.contains(phpDocTag.getName())) {
             return;
         }
@@ -89,7 +92,7 @@ public class AnnotationRouteElementWalkingVisitor extends PsiRecursiveElementWal
             routeName = AnnotationBackportUtil.getRouteByMethod(phpDocTag);
         }
 
-        if(routeName != null && StringUtils.isNotBlank(routeName)) {
+        if(StringUtils.isNotBlank(routeName)) {
             // prepend route name on PhpClass scope
             String routeNamePrefix = getRouteNamePrefix(phpDocTag);
             if(routeNamePrefix != null) {
