@@ -1,12 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor;
 
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression;
-import com.jetbrains.php.lang.psi.elements.ArrayHashElement;
-import com.jetbrains.php.lang.psi.elements.PhpReturn;
-import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import com.jetbrains.php.codeInsight.controlFlow.PhpControlFlowUtil;
+import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
+import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpReturnInstruction;
+import com.jetbrains.php.lang.psi.PhpFile;
+import com.jetbrains.php.lang.psi.elements.*;
 import kotlin.Pair;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -16,30 +16,34 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
+ * "return ['key' => 'value1', 'key2' => 'value1']"
+ *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class ArrayReturnPsiRecursiveVisitor extends PsiRecursiveElementWalkingVisitor {
+public class TranslationArrayReturnVisitor {
 
-    @NotNull
-    private final Consumer<Pair<String, PsiElement>> arrayKeyVisitor;
+    public static void visitPhpReturn(@NotNull PhpFile phpFile, @NotNull Consumer<Pair<String, PsiElement>> arrayKeyVisitor) {
 
-    public ArrayReturnPsiRecursiveVisitor(@NotNull Consumer<Pair<String, PsiElement>> arrayKeyVisitor) {
-        this.arrayKeyVisitor = arrayKeyVisitor;
-    }
+        PhpInstructionProcessor processor = new PhpInstructionProcessor() {
+            @Override
+            public boolean processReturnInstruction(PhpReturnInstruction instruction) {
+                PsiElement argument = instruction.getArgument();
+                if (argument instanceof ArrayCreationExpression arrayCreationExpression) {
+                    collectConfigKeys(arrayCreationExpression, arrayKeyVisitor);
+                }
 
-    @Override
-    public void visitElement(@NotNull PsiElement element) {
-        if(element instanceof PhpReturn) {
-            visitPhpReturn((PhpReturn) element);
-        }
+                return super.processReturnInstruction(instruction);
+            }
+        };
 
-        super.visitElement(element);
-    }
+        // toplevel "returns"
+        PhpControlFlowUtil.processFlow(phpFile.getControlFlow(), processor);
 
-    public void visitPhpReturn(PhpReturn phpReturn) {
-        PsiElement arrayCreation = phpReturn.getFirstPsiChild();
-        if(arrayCreation instanceof ArrayCreationExpression) {
-            collectConfigKeys((ArrayCreationExpression) arrayCreation, this.arrayKeyVisitor);
+        // toplevel "return" with namespace in file (for imports)
+        for (PhpNamedElement value : phpFile.getTopLevelDefs().values()) {
+            if (value instanceof PhpNamespace phpNamespace) {
+                PhpControlFlowUtil.processFlow(phpNamespace.getControlFlow(), processor);
+            }
         }
     }
 
@@ -48,9 +52,7 @@ public class ArrayReturnPsiRecursiveVisitor extends PsiRecursiveElementWalkingVi
     }
 
     public static void collectConfigKeys(@NotNull ArrayCreationExpression creationExpression, @NotNull Consumer<Pair<String, PsiElement>> arrayKeyVisitor, @NotNull List<String> context) {
-
         for(ArrayHashElement hashElement: PsiTreeUtil.getChildrenOfTypeAsList(creationExpression, ArrayHashElement.class)) {
-
             PsiElement arrayKey = hashElement.getKey();
             PsiElement arrayValue = hashElement.getValue();
 
