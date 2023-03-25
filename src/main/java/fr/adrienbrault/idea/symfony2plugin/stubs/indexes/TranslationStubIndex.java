@@ -12,7 +12,7 @@ import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.StringSetDataExternalizer;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.ArrayReturnPsiRecursiveVisitor;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.TranslationArrayReturnVisitor;
 import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationVisitor;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
@@ -68,7 +68,7 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
 
                 if (psiFile instanceof PhpFile) {
                     Set<String> translationKeySet = new HashSet<>();
-                    psiFile.acceptChildren(new ArrayReturnPsiRecursiveVisitor(pair -> translationKeySet.add(pair.getFirst())));
+                    TranslationArrayReturnVisitor.visitPhpReturn((PhpFile) psiFile, pair -> translationKeySet.add(pair.getFirst()));
 
                     if (translationKeySet.size() == 0) {
                         return Collections.emptyMap();

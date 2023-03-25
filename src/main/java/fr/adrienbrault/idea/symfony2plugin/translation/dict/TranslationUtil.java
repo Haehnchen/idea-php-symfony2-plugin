@@ -19,7 +19,7 @@ import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProvider;
 import fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProviderDict;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TranslationStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.ArrayReturnPsiRecursiveVisitor;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.TranslationArrayReturnVisitor;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationVisitor;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.DomainMappings;
@@ -152,11 +152,11 @@ public class TranslationUtil {
                 return true;
             });
         } else if(psiFile instanceof PhpFile) {
-            psiFile.acceptChildren(new ArrayReturnPsiRecursiveVisitor(pair -> {
+            TranslationArrayReturnVisitor.visitPhpReturn((PhpFile) psiFile, pair -> {
                 if (translationKey.equals(pair.getFirst())) {
                     elements.add(pair.getSecond());
                 }
-            }));
+            });
         } else if(TranslationUtil.isSupportedXlfFile(psiFile)) {
             // fine: xlf registered as XML file. try to find source value
             elements.addAll(TranslationUtil.getTargetForXlfAsXmlFile((XmlFile) psiFile, translationKey));
