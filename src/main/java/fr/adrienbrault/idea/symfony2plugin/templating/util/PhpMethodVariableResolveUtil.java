@@ -1,10 +1,13 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.openapi.util.Pair;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.jetbrains.php.codeInsight.controlFlow.PhpControlFlowUtil;
+import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
+import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpCallInstruction;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
@@ -238,57 +241,32 @@ public class PhpMethodVariableResolveUtil {
      *
      * As annotations are not in scope of the method itself
      */
-    public static void visitRenderTemplateFunctions(@NotNull Method method, @NotNull Consumer<Triple<String, PhpNamedElement, FunctionReference>> consumer) {
-        TemplateRenderPsiRecursiveElementWalkingVisitor psiElementVisitor = new TemplateRenderPsiRecursiveElementWalkingVisitor(method, consumer);
-
-        PhpDocComment docComment = method.getDocComment();
+    public static void visitRenderTemplateFunctions(@NotNull Function function, @NotNull Consumer<Triple<String, PhpNamedElement, FunctionReference>> consumer) {
+        PhpDocComment docComment = function.getDocComment();
         for (PhpDocTag phpDocTag : PsiTreeUtil.getChildrenOfTypeAsList(docComment, PhpDocTag.class)) {
-            psiElementVisitor.visitPhpDocTag(phpDocTag);
+            TemplateRenderVisitor.processDocTag(phpDocTag, consumer);
         }
 
-        for (PhpAttributesList phpAttributesList : PsiTreeUtil.getChildrenOfTypeAsList(method, PhpAttributesList.class)) {
-            psiElementVisitor.visitPhpAttribute(phpAttributesList);
-        }
-
-        method.accept(psiElementVisitor);
-    }
-
-    /**
-     * Visit all possible elements for render clements, scope shop be the class or a file itself
-     */
-    public static void visitRenderTemplateFunctions(@NotNull PsiElement context, @NotNull Consumer<Triple<String, PhpNamedElement, FunctionReference>> consumer) {
-        context.accept(new TemplateRenderPsiRecursiveElementWalkingVisitor(context, consumer));
-    }
-
-    public static class TemplateRenderPsiRecursiveElementWalkingVisitor extends PsiRecursiveElementWalkingVisitor {
-        private final PsiElement context;
-        private final Consumer<Triple<String, PhpNamedElement, FunctionReference>> consumer;
-        private Set<String> methods;
-
-        TemplateRenderPsiRecursiveElementWalkingVisitor(PsiElement context, Consumer<Triple<String, PhpNamedElement, FunctionReference>> consumer) {
-            this.context = context;
-            this.consumer = consumer;
-            methods = null;
-        }
-
-        @Override
-        public void visitElement(@NotNull PsiElement element) {
-            if(element instanceof MethodReference) {
-                visitMethodReference((MethodReference) element);
-            } else if(element instanceof PhpDocTag) {
-                visitPhpDocTag((PhpDocTag) element);
-            } else if(element instanceof PhpAttributesList) {
-                visitPhpAttribute((PhpAttributesList) element);
-            }
-            super.visitElement(element);
-        }
-
-        private void visitPhpAttribute(@NotNull PhpAttributesList phpAttributesList) {
-            if (phpAttributesList.getParent() instanceof Method method) {
-                processMethodAttributes(method, consumer);
+        for (PhpAttributesList phpAttributesList : PsiTreeUtil.getChildrenOfTypeAsList(function, PhpAttributesList.class)) {
+            if (phpAttributesList.getParent() instanceof Method phpAttributeMethod) {
+                TemplateRenderVisitor.processMethodAttributes(phpAttributeMethod, consumer);
             }
         }
 
+        NotNullLazyValue<Set<String>> lazyMethodNamesCollector = TemplateRenderVisitor.createLazyMethodNamesCollector(function.getProject());
+
+        PhpControlFlowUtil.processFlow(function.getControlFlow(), new PhpInstructionProcessor() {
+            @Override
+            public boolean processPhpCallInstruction(PhpCallInstruction instruction) {
+                if (instruction.getFunctionReference() instanceof MethodReference methodReference) {
+                    TemplateRenderVisitor.processMethodReference(methodReference, lazyMethodNamesCollector, consumer);
+                }
+                return super.processPhpCallInstruction(instruction);
+            }
+        });
+    }
+
+    public static class TemplateRenderVisitor {
         public static void processMethodAttributes(@NotNull Method method, Consumer<Triple<String, PhpNamedElement, FunctionReference>> consumer) {
             Collection<@NotNull PhpAttribute> attributes = method.getAttributes(TwigUtil.TEMPLATE_ANNOTATION_CLASS);
             for (PhpAttribute attribute : attributes) {
@@ -306,22 +284,8 @@ public class PhpMethodVariableResolveUtil {
             }
         }
 
-        private void visitMethodReference(@NotNull MethodReference methodReference) {
-            String methodName = methodReference.getName();
-            if (methodName == null) {
-                return;
-            }
-
-            // init methods once per file
-            if(methods == null) {
-                methods = collectMethods(context.getProject());
-            }
-
-            processMethodReference(methodReference, methods, consumer);
-        }
-
         @NotNull
-        public static Set<String> collectMethods(Project project) {
+        private static Set<String> collectMethodInner(@NotNull Project project) {
             Set<String> methods = new HashSet<>();
 
             PluginConfigurationExtension[] extensions = Symfony2ProjectComponent.PLUGIN_CONFIGURATION_EXTENSION.getExtensions();
@@ -336,13 +300,17 @@ public class PhpMethodVariableResolveUtil {
             return methods;
         }
 
-        public static void processMethodReference(@NotNull MethodReference methodReference, Set<String> methods, Consumer<Triple<String, PhpNamedElement, FunctionReference>> consumer) {
+        public static @NotNull NotNullLazyValue<Set<String>> createLazyMethodNamesCollector(@NotNull Project project) {
+            return NotNullLazyValue.lazy(() -> collectMethodInner(project));
+        }
+
+        public static void processMethodReference(@NotNull MethodReference methodReference, NotNullLazyValue<Set<String>> methods, Consumer<Triple<String, PhpNamedElement, FunctionReference>> consumer) {
             String methodName = methodReference.getName();
             if (methodName == null) {
                 return;
             }
 
-            if(!methods.contains(methodName) && !methodName.toLowerCase().contains("render")) {
+            if(!methods.get().contains(methodName) && !methodName.toLowerCase().contains("render")) {
                 return;
             }
 
@@ -432,12 +400,8 @@ public class PhpMethodVariableResolveUtil {
          * "@Template("foobar.html.twig")"
          * "@Template(template="foobar.html.twig")"
          */
-        private void visitPhpDocTag(@NotNull PhpDocTag phpDocTag) {
-            processDocTag(phpDocTag, consumer);
-        }
-
         public static void processDocTag(@NotNull PhpDocTag phpDocTag, Consumer<Triple<String, PhpNamedElement, FunctionReference>> consumer) {
-            // "@var" and user non related tags dont need an action
+            // "@var" and user non-related tags don't need an action
             if(AnnotationBackportUtil.NON_ANNOTATION_TAGS.contains(phpDocTag.getName())) {
                 return;
             }

@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
+import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
@@ -16,14 +17,13 @@ import com.jetbrains.php.lang.psi.stubs.indexes.PhpConstantNameIndex;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateUsage;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.PhpMethodVariableResolveUtil;
 import kotlin.Triple;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Consumer;
-
-import static fr.adrienbrault.idea.symfony2plugin.templating.util.PhpMethodVariableResolveUtil.TemplateRenderPsiRecursiveElementWalkingVisitor.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -32,8 +32,8 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
 
     public static final ID<String, TemplateUsage> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.twig_php_usage");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
-    private static int MAX_FILE_BYTE_SIZE = 2097152;
-    private static ObjectStreamDataExternalizer<TemplateUsage> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
+    private static final int MAX_FILE_BYTE_SIZE = 2097152;
+    private static final ObjectStreamDataExternalizer<TemplateUsage> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
 
     @NotNull
     @Override
@@ -68,15 +68,16 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
 
                 items.get(templateName).add(StringUtils.stripStart(triple.getSecond().getFQN(), "\\"));
             };
-            Set<String> methods = collectMethods(psiFile.getProject());
+
+            @NotNull NotNullLazyValue<Set<String>> methods = PhpMethodVariableResolveUtil.TemplateRenderVisitor.createLazyMethodNamesCollector(psiFile.getProject());
             for (PhpNamedElement topLevelElement : ((PhpFile) psiFile).getTopLevelDefs().values()) {
                 if (topLevelElement instanceof PhpClass clazz) {
                     for (Method method : clazz.getOwnMethods()) {
-                        processMethodAttributes(method, consumer);
+                        PhpMethodVariableResolveUtil.TemplateRenderVisitor.processMethodAttributes(method, consumer);
                         PhpDocComment docComment = method.getDocComment();
                         if (docComment != null) {
                             PhpDocUtil.processTagElementsByName(docComment, null, docTag -> {
-                                processDocTag(docTag, consumer);
+                                PhpMethodVariableResolveUtil.TemplateRenderVisitor.processDocTag(docTag, consumer);
                                 return true;
                             });
                         }
@@ -98,12 +99,12 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
         };
     }
 
-    private static void processMethodReferences(Consumer<Triple<String, PhpNamedElement, FunctionReference>> consumer, Set<String> methods, Function function) {
+    private static void processMethodReferences(@NotNull Consumer<Triple<String, PhpNamedElement, FunctionReference>> consumer, @NotNull NotNullLazyValue<Set<String>> methods, @NotNull Function function) {
         PhpControlFlowUtil.processFlow(function.getControlFlow(), new PhpInstructionProcessor() {
             @Override
             public boolean processPhpCallInstruction(PhpCallInstruction instruction) {
                 if (instruction.getFunctionReference() instanceof MethodReference methodReference) {
-                    processMethodReference(methodReference, methods, consumer);
+                    PhpMethodVariableResolveUtil.TemplateRenderVisitor.processMethodReference(methodReference, methods, consumer);
                 }
                 return super.processPhpCallInstruction(instruction);
             }
