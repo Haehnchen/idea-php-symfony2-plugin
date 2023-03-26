@@ -8,3 +8,8 @@ namespace Foo\Service\Method
     }
 }
 
+namespace Symfony\Component\EventDispatcher
+{
+    interface EventSubscriberInterface {}
+}
+

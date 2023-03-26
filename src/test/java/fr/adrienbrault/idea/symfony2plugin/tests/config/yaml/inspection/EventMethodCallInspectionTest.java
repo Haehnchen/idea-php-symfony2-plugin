@@ -41,4 +41,59 @@ public class EventMethodCallInspectionTest extends SymfonyLightCodeInsightFixtur
             , "Missing Method");
     }
 
+    public void testThatPhpCallsProvidesMethodExistsCheck() {
+        assertLocalInspectionContains("test.php", "<?php\n" +
+                "" +
+                "use Symfony\\Component\\EventDispatcher\\EventSubscriberInterface;\n" +
+                "" +
+                "class ExceptionSubscriber implements EventSubscriberInterface\n" +
+                "{\n" +
+                "    public static function getSubscribedEvents(): array\n" +
+                "    {\n" +
+                "        // return the subscribed events, their methods and priorities\n" +
+                "        return [\n" +
+                "            KernelEvents::EXCEPTION => [\n" +
+                "                ['proces<caret>sException', 10],\n" +
+                "            ],\n" +
+                "        ];\n" +
+                "    }\n" +
+                "\n" +
+                "}",
+            "Missing Method"
+        );
+    }
+
+    public void testThatXmlCallsProvidesMethodExistsCheck() {
+        assertLocalInspectionContains("test.xml", "" +
+                "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" +
+                "<container xmlns=\"http://symfony.com/schema/dic/services\"\n" +
+                "    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+                "    xsi:schemaLocation=\"http://symfony.com/schema/dic/services\n" +
+                "        https://symfony.com/schema/dic/services/services-1.0.xsd\">\n" +
+                "\n" +
+                "    <services>\n" +
+                "        <service id=\"Foo\\Service\\Method\\MyFoo\">\n" +
+                "            <call method=\"get<caret>Foos\"></call>\n" +
+                "        </service>\n" +
+                "    </services>\n" +
+                "</container>",
+            "Missing Method"
+        );
+
+        assertLocalInspectionContains("test.xml", "" +
+                "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" +
+                "<container xmlns=\"http://symfony.com/schema/dic/services\"\n" +
+                "    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+                "    xsi:schemaLocation=\"http://symfony.com/schema/dic/services\n" +
+                "        https://symfony.com/schema/dic/services/services-1.0.xsd\">\n" +
+                "\n" +
+                "    <services>\n" +
+                "        <service id=\"Foo\\Service\\Method\\MyFoo\">\n" +
+                "            <tag name=\"kernel.event_listener\" method=\"get<caret>Foos\"></call>\n" +
+                "        </service>\n" +
+                "    </services>\n" +
+                "</container>",
+            "Missing Method"
+        );
+    }
 }
