@@ -185,7 +185,7 @@ public class SymfonyImplicitUsageProvider implements ImplicitUsageProvider {
 
     private boolean isAsEventListenerMethodPhpAttribute(@NotNull Method method) {
         PhpClass containingClass = method.getContainingClass();
-        if (containingClass == null || !PhpElementsUtil.isInstanceOf(containingClass, "\\Symfony\\Component\\EventDispatcher\\EventSubscriberInterface")) {
+        if (containingClass == null) {
             return false;
         }
 

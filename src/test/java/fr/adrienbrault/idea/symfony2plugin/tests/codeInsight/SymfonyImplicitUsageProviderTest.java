@@ -229,7 +229,7 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
                 "use Symfony\\Component\\EventDispatcher\\Attribute\\AsEventListener;\n" +
                 "\n" +
                 "#[AsEventListener(event: 'bar', method: 'onFoo')]\n" +
-                "final class MyMultiListener implements \\Symfony\\Component\\EventDispatcher\\EventSubscriberInterface\n" +
+                "final class MyMultiListener\n" +
                 "{\n" +
                 "    public function onFoo(): void\n" +
                 "    {\n" +
