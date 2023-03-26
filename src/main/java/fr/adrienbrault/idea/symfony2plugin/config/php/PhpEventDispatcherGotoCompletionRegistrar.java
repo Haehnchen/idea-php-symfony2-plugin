@@ -7,10 +7,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
-import com.jetbrains.php.lang.psi.elements.Method;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.PhpReturn;
-import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
@@ -38,14 +35,12 @@ public class PhpEventDispatcherGotoCompletionRegistrar implements GotoCompletion
      *
      */
     public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
-
         registrar.register(PlatformPatterns.psiElement().withParent(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE), psiElement -> {
-            PsiElement parent = psiElement.getParent();
-            if(!(parent instanceof StringLiteralExpression)) {
+            if(!(psiElement.getParent() instanceof StringLiteralExpression stringLiteralExpression)) {
                 return null;
             }
 
-            PsiElement arrayValue = parent.getParent();
+            PsiElement arrayValue = stringLiteralExpression.getParent();
             if(arrayValue != null && arrayValue.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE) {
                 PhpReturn phpReturn = PsiTreeUtil.getParentOfType(arrayValue, PhpReturn.class);
                 if(phpReturn != null) {
@@ -65,8 +60,21 @@ public class PhpEventDispatcherGotoCompletionRegistrar implements GotoCompletion
             return null;
         });
 
-    }
+        registrar.register(PhpElementsUtil.getAttributeNamedArgumentStringPattern("\\Symfony\\Component\\EventDispatcher\\Attribute\\AsEventListener", "method"), psiElement -> {
+            if(!(psiElement.getParent() instanceof StringLiteralExpression stringLiteralExpression)) {
+                return null;
+            }
 
+            if (stringLiteralExpression.getParent() instanceof ParameterList parameterList) {
+                PhpAttribute parentOfType = PsiTreeUtil.getParentOfType(parameterList, PhpAttribute.class);
+                if (parentOfType.getOwner() instanceof PhpClass phpClass) {
+                    return new PhpClassPublicMethodProvider(phpClass);
+                }
+            }
+
+            return null;
+        });
+    }
 
     private static class PhpClassPublicMethodProvider extends GotoCompletionProvider {
 
