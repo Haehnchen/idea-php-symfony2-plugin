@@ -5,16 +5,21 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionScalarArgument;
 import de.espend.idea.php.annotation.dict.PhpDocCommentAnnotation;
 import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -28,18 +33,19 @@ public class SymfonyImplicitUsageProvider implements ImplicitUsageProvider {
 
     @Override
     public boolean isImplicitUsage(@NotNull PsiElement element) {
-        if (element instanceof Method && ((Method) element).getAccess() == PhpModifier.Access.PUBLIC) {
-            return isMethodARoute((Method) element)
-                || isSubscribedEvent((Method) element);
-        } else if (element instanceof PhpClass) {
-            return isRouteClass((PhpClass) element)
-                || isCommandAndService((PhpClass) element)
-                || isSubscribedEvent((PhpClass) element)
-                || isVoter((PhpClass) element)
-                || isTwigExtension((PhpClass) element)
-                || isEntityRepository((PhpClass) element)
-                || isConstraint((PhpClass) element)
-                || isKernelEventListener((PhpClass) element);
+        if (element instanceof Method method && method.getAccess() == PhpModifier.Access.PUBLIC) {
+            return isMethodARoute(method)
+                || isSubscribedEvent(method)
+                || isAsEventListenerMethodPhpAttribute(method);
+        } else if (element instanceof PhpClass phpClass) {
+            return isRouteClass(phpClass)
+                || isCommandAndService(phpClass)
+                || isSubscribedEvent(phpClass)
+                || isVoter(phpClass)
+                || isTwigExtension(phpClass)
+                || isEntityRepository(phpClass)
+                || isConstraint(phpClass)
+                || isKernelEventListener(phpClass);
         }
 
         return false;
@@ -168,6 +174,27 @@ public class SymfonyImplicitUsageProvider implements ImplicitUsageProvider {
                 if (psiElement instanceof StringLiteralExpression) {
                     String contents = ((StringLiteralExpression) psiElement).getContents();
                     if (StringUtils.isNotBlank(contents) && contents.equalsIgnoreCase(method.getName())) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isAsEventListenerMethodPhpAttribute(@NotNull Method method) {
+        PhpClass containingClass = method.getContainingClass();
+        if (containingClass == null || !PhpElementsUtil.isInstanceOf(containingClass, "\\Symfony\\Component\\EventDispatcher\\EventSubscriberInterface")) {
+            return false;
+        }
+
+        for (PhpAttribute attribute : containingClass.getAttributes("\\Symfony\\Component\\EventDispatcher\\Attribute\\AsEventListener")) {
+            for (PhpAttribute.PhpAttributeArgument argument : attribute.getArguments()) {
+                if ("method".equals(argument.getName()) && argument.getArgument() instanceof PhpExpectedFunctionScalarArgument scalarArgument) {
+                    String value = PsiElementUtils.trimQuote(scalarArgument.getNormalizedValue());
+
+                    if (method.getName().equals(value)) {
                         return true;
                     }
                 }
