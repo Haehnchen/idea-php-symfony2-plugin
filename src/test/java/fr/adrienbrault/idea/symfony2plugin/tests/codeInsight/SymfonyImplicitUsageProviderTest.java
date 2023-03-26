@@ -221,6 +221,27 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
         assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass));
     }
 
+
+    public void testEventSubscriberGetAsEventListener() {
+        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+                "namespace App\\EventListener;\n" +
+                "\n" +
+                "use Symfony\\Component\\EventDispatcher\\Attribute\\AsEventListener;\n" +
+                "\n" +
+                "#[AsEventListener(event: 'bar', method: 'onFoo')]\n" +
+                "final class MyMultiListener implements \\Symfony\\Component\\EventDispatcher\\EventSubscriberInterface\n" +
+                "{\n" +
+                "    public function onFoo(): void\n" +
+                "    {\n" +
+                "    }\n" +
+                "\n" +
+                "}"
+        );
+
+        PhpClass phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
+
+        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("onFoo")));
+    }
     public void testTwigExtensionRegisteredAsServiceWithFunctionMethodImplementedIsMarkedUsed() {
         PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
             "\n" +
