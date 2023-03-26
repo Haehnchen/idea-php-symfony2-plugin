@@ -333,7 +333,8 @@
         <localInspection groupPath="Symfony" shortName="EventMethodCall" displayName="Create Method"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.inspection.EventMethodCallInspection"/>
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.inspection.EventMethodCallInspection"
+                         language=""/>
 
         <localInspection groupPath="Symfony" shortName="XmlServiceArgumentInspection" displayName="Symfony: XML Arguments"
                          groupName="Service"
