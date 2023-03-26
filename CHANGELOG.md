@@ -19,6 +19,19 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.245
+* Replace recursive visiting for twig extends indexer (Daniel Espendiller)
+* Replace recursive visiting for controller method inspection (Daniel Espendiller)
+* Replace recursive visiting for service tag "extends" inspection (Daniel Espendiller)
+* Replace recursive visiting for service deprecation inspection (Daniel Espendiller)
+* Replace recursive visiting for yaml / xml const inspection (Daniel Espendiller)
+* Replace recursive visiting for event methods inspection (Daniel Espendiller)
+* Replace recursive php translation index visitor by controlflow (Daniel Espendiller)
+* Fully replace recursive template method scanning (Daniel Espendiller)
+* Replace recursive visting of elements inside Routing indexer with direct level visiting (Daniel Espendiller)
+* Replace recursive visting of elements inside "@Event" indexer with direct level visting (Daniel Espendiller)
+* Migrate form data class indexer to use control flow (Daniel Espendiller)
+
 ## 2022.1.244
 * Add support for alias names of commands (Daniel Espendiller)
 * Allow navigation for twig doc types when using array (Daniel Espendiller)
