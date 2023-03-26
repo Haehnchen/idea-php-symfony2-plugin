@@ -2807,29 +2807,38 @@ public class TwigUtil {
         return lookupElements;
     }
 
-    public static void visitTemplateExtends(@NotNull TwigFile twigFile,@NotNull Consumer<Pair<String, PsiElement>> consumer) {
-        twigFile.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
-            @Override
-            public void visitElement(PsiElement element) {
-                if (element instanceof TwigExtendsTag) {
-                    for (String s : TwigUtil.getTwigExtendsTagTemplates((TwigExtendsTag) element)) {
-                        consumer.consume(Pair.create(TwigUtil.normalizeTemplateName(s), element));
-                    }
+    public static void visitTemplateExtends(@NotNull TwigFile twigFile, @NotNull Consumer<Pair<String, PsiElement>> consumer) {
+        for (PsiElement element : twigFile.getChildren()) {
+            // "extends" must not be nested, support 1 level at least for invalid files
+            if (element instanceof TwigBlockStatement || element.getNode().getElementType() == TwigElementTypes.IF_STATEMENT) {
+                for (PsiElement child : element.getChildren()) {
+                    visitTemplateExtendsConsumer(child, consumer);
                 }
 
-                for (TwigFileUsage extension : TWIG_FILE_USAGE_EXTENSIONS.getExtensions()) {
-                    if (!extension.isExtendsTemplate(element)) {
-                       continue;
-                    }
-
-                    for (String template : extension.getExtendsTemplate(element)) {
-                        consumer.consume(Pair.create(TwigUtil.normalizeTemplateName(template), element));
-                    }
-                }
-
-                super.visitElement(element);
+                continue;
             }
-        });
+
+            visitTemplateExtendsConsumer(element, consumer);
+        }
+    }
+
+    private static void visitTemplateExtendsConsumer(@NotNull PsiElement element, @NotNull Consumer<Pair<String, PsiElement>> consumer) {
+        if (element instanceof TwigExtendsTag) {
+            for (String s : TwigUtil.getTwigExtendsTagTemplates((TwigExtendsTag) element)) {
+                String first = TwigUtil.normalizeTemplateName(s);
+                consumer.consume(new Pair<>(first, element));
+            }
+        }
+
+        for (TwigFileUsage extension : TWIG_FILE_USAGE_EXTENSIONS.getExtensions()) {
+            if (!extension.isExtendsTemplate(element)) {
+                continue;
+            }
+
+            for (String template : extension.getExtendsTemplate(element)) {
+                consumer.consume(Pair.create(TwigUtil.normalizeTemplateName(template), element));
+            }
+        }
     }
 
     public static List<String> getIncludeTemplateUsageAsOrderedList(@NotNull Project project) {
