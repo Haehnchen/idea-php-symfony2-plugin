@@ -14,10 +14,7 @@ import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
-import com.jetbrains.php.lang.psi.elements.Method;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.PhpReturn;
-import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.codeInspection.quickfix.CreateMethodQuickFix;
 import fr.adrienbrault.idea.symfony2plugin.config.EventDispatcherSubscriberUtil;
@@ -221,11 +218,11 @@ public class EventMethodCallInspection extends LocalInspectionTool {
      *
      */
     private static void visitPhpElement(@NotNull StringLiteralExpression element, @NotNull ProblemsHolder holder) {
-        PsiElement arrayValue = element.getParent();
-        if (arrayValue != null && arrayValue.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE) {
-            PhpReturn phpReturn = PsiTreeUtil.getParentOfType(arrayValue, PhpReturn.class);
+        PsiElement parent = element.getParent();
+        if (parent != null && parent.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE) {
+            PhpReturn phpReturn = PsiTreeUtil.getParentOfType(parent, PhpReturn.class);
             if (phpReturn != null) {
-                Method method = PsiTreeUtil.getParentOfType(arrayValue, Method.class);
+                Method method = PsiTreeUtil.getParentOfType(parent, Method.class);
                 if (method != null) {
                     String name = method.getName();
                     if ("getSubscribedEvents".equals(name)) {
@@ -237,6 +234,16 @@ public class EventMethodCallInspection extends LocalInspectionTool {
                             }
                         }
                     }
+                }
+            }
+        }
+
+        if (parent instanceof ParameterList parameterList && PhpElementsUtil.isAttributeNamedArgumentString(element, "method", "\\Symfony\\Component\\EventDispatcher\\Attribute\\AsEventListener")) {
+            PhpAttribute parentOfType = PsiTreeUtil.getParentOfType(parameterList, PhpAttribute.class);
+            if (parentOfType.getOwner() instanceof PhpClass phpClass) {
+                String contents = element.getContents();
+                if (!contents.isBlank() && phpClass.findMethodByName(contents) == null) {
+                    registerMethodProblem(element, holder, phpClass);
                 }
             }
         }

@@ -1688,6 +1688,31 @@ public class PhpElementsUtil {
     }
 
     /**
+     * #[AsEventListener(method:'onBarEvent')]
+     */
+    public static boolean isAttributeNamedArgumentString(@NotNull StringLiteralExpression element, @NotNull String namedArgument, @NotNull String fqn) {
+        PsiElement colon = PsiTreeUtil.prevCodeLeaf(element);
+        if (colon == null || colon.getNode().getElementType() != PhpTokenTypes.opCOLON) {
+            return false;
+        }
+
+        PsiElement argumentName = PsiTreeUtil.prevCodeLeaf(colon);
+        if (argumentName == null || argumentName.getNode().getElementType() != PhpTokenTypes.IDENTIFIER || !namedArgument.equals(argumentName.getText())) {
+            return false;
+        }
+
+
+        if (element.getParent() instanceof ParameterList parameterList) {
+            if (parameterList.getParent() instanceof PhpAttribute phpAttribute) {
+                String attributeFqn = phpAttribute.getFQN();
+                return fqn.equals(attributeFqn);
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Collects all variables in a given scope.
      * Eg find all variables usages in a given method
      */

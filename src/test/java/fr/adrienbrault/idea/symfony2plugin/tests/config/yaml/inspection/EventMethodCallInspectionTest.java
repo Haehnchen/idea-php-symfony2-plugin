@@ -96,4 +96,31 @@ public class EventMethodCallInspectionTest extends SymfonyLightCodeInsightFixtur
             "Missing Method"
         );
     }
+
+    public void testThatPhpCallsProvidesMethodExistsForPhpAttributeCheck() {
+        assertLocalInspectionContains("test.php", "<?php\n" +
+                "use Symfony\\Component\\EventDispatcher\\Attribute\\AsEventListener;\n" +
+                "\n" +
+                "#[AsEventListener(event: CustomEvent::class, method: 'onF<caret>ooBar')]\n" +
+                "final class MyMultiListener\n" +
+                "{\n" +
+                "\n" +
+                "}",
+            "Missing Method"
+        );
+
+        assertLocalInspectionNotContains("test.php", "<?php\n" +
+                "use Symfony\\Component\\EventDispatcher\\Attribute\\AsEventListener;\n" +
+                "\n" +
+                "#[AsEventListener(event: CustomEvent::class, method: 'on<caret>Foo')]\n" +
+                "final class MyMultiListener\n" +
+                "{\n" +
+                "    public static function onFoo()\n" +
+                "    {\n" +
+                "    }\n" +
+                "\n" +
+                "}",
+            "Missing Method"
+        );
+    }
 }

@@ -1,18 +1,5 @@
 <?php
 
-namespace Foo\Service\Method
-{
-    class MyFoo
-    {
-        public function getFoo() {}
-    }
-}
-
-namespace Symfony\Component\EventDispatcher
-{
-    interface EventSubscriberInterface {}
-}
-
 namespace Symfony\Component\EventDispatcher\Attribute
 {
     #[\Attribute(\Attribute::TARGET_CLASS | \Attribute::TARGET_METHOD | \Attribute::IS_REPEATABLE)]
@@ -26,4 +13,9 @@ namespace Symfony\Component\EventDispatcher\Attribute
         ) {
         }
     }
+}
+
+namespace Symfony\Component\EventDispatcher
+{
+    interface EventSubscriberInterface {}
 }
