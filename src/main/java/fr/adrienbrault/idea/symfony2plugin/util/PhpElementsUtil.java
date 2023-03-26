@@ -489,7 +489,14 @@ public class PhpElementsUtil {
                 PhpTokenTypes.STRING_LITERAL_SINGLE_QUOTE,
                 PhpTokenTypes.STRING_LITERAL
             ))
-            .withParent(PlatformPatterns.psiElement(StringLiteralExpression.class)
+            .withParent(getAttributeNamedArgumentStringLiteralPattern(clazz, namedArgument));
+    }
+
+    /**
+     * #[Security(foobar: "is_granted('POST_SHOW')")]
+     */
+    public static PsiElementPattern.@NotNull Capture<StringLiteralExpression> getAttributeNamedArgumentStringLiteralPattern(@NotNull String clazz, @NotNull String namedArgument) {
+        return PlatformPatterns.psiElement(StringLiteralExpression.class)
                 .afterLeafSkipping(
                     PlatformPatterns.psiElement(PsiWhiteSpace.class),
                     PlatformPatterns.psiElement(PhpTokenTypes.opCOLON).afterLeafSkipping(
@@ -501,8 +508,7 @@ public class PhpElementsUtil {
                     .withParent(PlatformPatterns.psiElement(PhpAttribute.class)
                         .with(new AttributeInstancePatternCondition(clazz))
                     )
-                )
-            );
+                );
     }
 
     /**
