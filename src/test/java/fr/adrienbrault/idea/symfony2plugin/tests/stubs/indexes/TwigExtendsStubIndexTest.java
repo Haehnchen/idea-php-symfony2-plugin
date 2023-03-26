@@ -18,7 +18,11 @@ public class TwigExtendsStubIndexTest extends SymfonyLightCodeInsightFixtureTest
             "{% extends '@Bar/extends.html.twig' %}\n" +
             "{% extends '@!Bar/extends_overwrite.html.twig' %}\n" +
             "{% extends ajax ? 'extends_statement_0.html.twig' : 'extends_statement_1.html.twig' %}\n" +
-            "{% extends request.ajax ? foo ~ \"extends_statement_2.html.twig\" : \"extends_statement_3.html.twig\" %}\n"
+            "{% extends request.ajax ? foo ~ \"extends_statement_2.html.twig\" : \"extends_statement_3.html.twig\" %}\n" +
+
+            // invalid cases to support
+            "{% if '' %}{% extends 'extends_nested_if.html.twig' %}{% endif %}\n" +
+            "{% block foo %}{% extends 'extends_nested_block.html.twig' %}{% endblock %}\n"
         );
     }
 
@@ -28,7 +32,7 @@ public class TwigExtendsStubIndexTest extends SymfonyLightCodeInsightFixtureTest
     public void testTemplateExtendsIndexer() {
         assertIndexContains(TwigExtendsStubIndex.KEY,
             "extends.html.twig", "extends_statement_0.html.twig", "extends_statement_1.html.twig",
-            "extends_statement_3.html.twig", "@Bar/extends_overwrite.html.twig"
+            "extends_statement_3.html.twig", "@Bar/extends_overwrite.html.twig", "extends_nested_if.html.twig", "extends_nested_block.html.twig"
         );
 
         assertIndexNotContains(TwigExtendsStubIndex.KEY,
