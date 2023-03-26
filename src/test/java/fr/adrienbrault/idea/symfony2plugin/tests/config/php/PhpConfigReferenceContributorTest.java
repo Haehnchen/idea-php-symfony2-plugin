@@ -38,4 +38,19 @@ public class PhpConfigReferenceContributorTest extends SymfonyLightCodeInsightFi
             "foobar"
         );
     }
+
+    public void testEventNameCompletionForAsEventListener() {
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "namespace App\\EventListener;\n" +
+                "\n" +
+                "use Symfony\\Component\\EventDispatcher\\Attribute\\AsEventListener;\n" +
+                "\n" +
+                "#[AsEventListener(event: '<caret>')]\n" +
+                "final class MyMultiListener implements \\Symfony\\Component\\EventDispatcher\\EventSubscriberInterface\n" +
+                "{\n" +
+                "\n" +
+                "}",
+            "yaml_event_2"
+        );
+    }
 }

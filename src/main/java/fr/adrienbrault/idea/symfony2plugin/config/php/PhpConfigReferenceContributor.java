@@ -62,13 +62,33 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
             .addCall("\\Symfony\\Component\\EventDispatcher\\EventDispatcherInterface", "dispatch")
         );
 
+        // #[AsEventListener(event: '<caret>')]
+        psiReferenceRegistrar.registerReferenceProvider(
+            PhpElementsUtil.getAttributeNamedArgumentStringLiteralPattern("\\Symfony\\Component\\EventDispatcher\\Attribute\\AsEventListener", "event"),
+            new PsiReferenceProvider() {
+                @Override
+                public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element, @NotNull ProcessingContext context) {
+                    if (!Symfony2ProjectComponent.isEnabled(element) || !(element instanceof StringLiteralExpression stringLiteralExpression)) {
+                        return new PsiReference[0];
+                    }
+
+                    return new PsiReference[]{
+                        new EventDispatcherEventReference(element, stringLiteralExpression.getContents())
+                    };
+                }
+
+                public boolean acceptsTarget(@NotNull PsiElement target) {
+                    return Symfony2ProjectComponent.isEnabled(target);
+                }
+            }
+        );
+
         psiReferenceRegistrar.registerReferenceProvider(
             PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern(),
             new PsiReferenceProvider() {
                 @NotNull
                 @Override
                 public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
-
                     if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
                         return new PsiReference[0];
                     }
