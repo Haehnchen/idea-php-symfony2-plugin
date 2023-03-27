@@ -1,6 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.util;
 
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.PhpFileType;
@@ -349,6 +352,14 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
             "}").findElementAt(myFixture.getCaretOffset()).getParent();
 
         assertTrue(PhpElementsUtil.getMethodParameterListStringPattern().accepts(psiElement3));
+    }
+    public void testGetMethodReturnAsStrings() {
+        PsiFile psiFile = myFixture.configureByFile("PhpElementsUtilReturn.php");
+        PhpClass phpClass = PsiTreeUtil.collectElementsOfType(psiFile, PhpClass.class).iterator().next();
+
+        assertContainsElements(PhpElementsUtil.getMethodReturnAsStrings(phpClass, "foo1"), "foo1_1", "foo1_2", "foo1_3", "foo1_4_const", "Foo");
+        assertContainsElements(PhpElementsUtil.getMethodReturnAsStrings(phpClass, "foo2"), "foo2_1", "foo2_2", "foo2_3", "foo2_4", "foo2_x");
+        assertContainsElements(PhpElementsUtil.getMethodReturnAsStrings(phpClass, "foo3"), "foo3_1", "foo3_2", "foo3_3");
     }
 
     public void testGetMethodWithFirstStringOrNamedArgumentPattern() {
