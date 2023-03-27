@@ -1,8 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.config.xml.inspection;
 
 import com.intellij.codeInspection.ProblemsHolder;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
-import com.intellij.psi.PsiFile;
+import com.intellij.psi.xml.XmlAttributeValue;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,8 +21,12 @@ public class XmlDuplicateParameterKeyInspection extends XmlDuplicateServiceKeyIn
 
         return new PsiElementVisitor() {
             @Override
-            public void visitFile(PsiFile file) {
-                visitRoot(file, holder, "parameters", "parameter", "key");
+            public void visitElement(@NotNull PsiElement element) {
+                if (element instanceof XmlAttributeValue xmlAttributeValue) {
+                    visitRoot(xmlAttributeValue, holder, "parameters", "parameter", "key");
+                }
+
+                super.visitElement(element);
             }
         };
     }
