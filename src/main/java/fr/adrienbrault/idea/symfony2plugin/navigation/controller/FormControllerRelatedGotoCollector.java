@@ -1,7 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.navigation.controller;
 
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiRecursiveElementVisitor;
+import com.jetbrains.php.codeInsight.controlFlow.PhpControlFlowUtil;
+import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
+import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpCallInstruction;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
@@ -11,7 +13,6 @@ import fr.adrienbrault.idea.symfony2plugin.extension.ControllerActionGotoRelated
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import org.apache.commons.lang.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,14 +28,13 @@ public class FormControllerRelatedGotoCollector implements ControllerActionGotoR
 
         Collection<MethodReference> methodReferences = new ArrayList<>();
 
-        parameter.getMethod().acceptChildren(new PsiRecursiveElementVisitor() {
+        PhpControlFlowUtil.processFlow(parameter.getMethod().getControlFlow(), new PhpInstructionProcessor() {
             @Override
-            public void visitElement(@NotNull PsiElement element) {
-                if (element instanceof MethodReference) {
-                    methodReferences.add((MethodReference) element);
+            public boolean processPhpCallInstruction(PhpCallInstruction instruction) {
+                if (instruction.getFunctionReference() instanceof MethodReference methodReference) {
+                    methodReferences.add(methodReference);
                 }
-
-                super.visitElement(element);
+                return super.processPhpCallInstruction(instruction);
             }
         });
 
