@@ -4,13 +4,11 @@ import com.intellij.codeInspection.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
-import com.intellij.psi.PsiFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.YAMLMapping;
 
@@ -49,30 +47,30 @@ public class YamlServiceArgumentInspection extends LocalInspectionTool {
         }
 
         @Override
-        public void visitFile(PsiFile file) {
-            if(!(file instanceof YAMLFile)) {
-                return;
+        public void visitElement(@NotNull PsiElement element) {
+            if (element instanceof YAMLKeyValue yamlKeyValue && yamlKeyValue.getParent() instanceof YAMLMapping yamlMapping && yamlMapping.getParent() instanceof YAMLKeyValue yamlKeyValue1 && "services".equals(yamlKeyValue1.getKeyText())) {
+                // we don't support parent services for now
+                if (!"_defaults".equalsIgnoreCase(yamlKeyValue.getKeyText()) && isValidService(yamlKeyValue)) {
+                    ServiceActionUtil.ServiceYamlContainer container = ServiceActionUtil.ServiceYamlContainer.create(yamlKeyValue);
+                    if (container != null) {
+                        List<String> yamlMissingArgumentTypes = ServiceActionUtil.getYamlMissingArgumentTypes(
+                            problemsHolder.getProject(),
+                            container,
+                            false,
+                            getLazyServiceCollector(problemsHolder.getProject())
+                        );
+
+                        if (yamlMissingArgumentTypes.size() > 0) {
+                            problemsHolder.registerProblem(yamlKeyValue.getFirstChild(), "Missing argument", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, new YamlArgumentQuickfix());
+                        }
+                    }
+                }
             }
 
-            for (ServiceActionUtil.ServiceYamlContainer serviceYamlContainer : ServiceActionUtil.getYamlContainerServiceArguments((YAMLFile) file)) {
-
-                // we dont support parent services for now
-                if("_defaults".equalsIgnoreCase(serviceYamlContainer.getServiceKey().getKeyText()) || !isValidService(serviceYamlContainer)) {
-                    continue;
-                }
-
-                List<String> yamlMissingArgumentTypes = ServiceActionUtil.getYamlMissingArgumentTypes(problemsHolder.getProject(), serviceYamlContainer, false, getLazyServiceCollector(problemsHolder.getProject()));
-                if(yamlMissingArgumentTypes.size() > 0) {
-                    problemsHolder.registerProblem(serviceYamlContainer.getServiceKey().getFirstChild(), "Missing argument", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, new YamlArgumentQuickfix());
-                }
-            }
-
-            this.lazyServiceCollector = null;
+            super.visitElement(element);
         }
 
-        private boolean isValidService(ServiceActionUtil.ServiceYamlContainer serviceYamlContainer) {
-            YAMLKeyValue serviceKey = serviceYamlContainer.getServiceKey();
-
+        private boolean isValidService(@NotNull YAMLKeyValue serviceKey) {
             Set<String> keySet = YamlHelper.getKeySet(serviceKey);
             if(keySet == null) {
                 return true;
@@ -88,9 +86,7 @@ public class YamlServiceArgumentInspection extends LocalInspectionTool {
             Boolean serviceAutowire = YamlHelper.getYamlKeyValueAsBoolean(serviceKey, "autowire");
             if(serviceAutowire != null) {
                 // use service scope for autowire
-                if(serviceAutowire) {
-                    return false;
-                }
+                return !serviceAutowire;
             } else {
                 // find file scope defaults
                 // defaults: [autowire: true]
@@ -99,9 +95,7 @@ public class YamlServiceArgumentInspection extends LocalInspectionTool {
                     YAMLKeyValue defaults = YamlHelper.getYamlKeyValue(key, "_defaults");
                     if(defaults != null) {
                         Boolean autowire = YamlHelper.getYamlKeyValueAsBoolean(defaults, "autowire");
-                        if(autowire != null && autowire) {
-                            return false;
-                        }
+                        return autowire == null || !autowire;
                     }
                 }
             }
