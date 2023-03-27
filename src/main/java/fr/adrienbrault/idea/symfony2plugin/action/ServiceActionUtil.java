@@ -165,28 +165,6 @@ public class ServiceActionUtil {
             .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    @NotNull
-    public static Collection<XmlTag> getXmlContainerServiceDefinition(PsiFile psiFile) {
-
-        Collection<XmlTag> xmlTags = new ArrayList<>();
-
-        for(XmlTag xmlTag: PsiTreeUtil.getChildrenOfTypeAsList(psiFile.getFirstChild(), XmlTag.class)) {
-            if(xmlTag.getName().equals("container")) {
-                for(XmlTag servicesTag: xmlTag.getSubTags()) {
-                    if(servicesTag.getName().equals("services")) {
-                        for(XmlTag parameterTag: servicesTag.getSubTags()) {
-                            if(parameterTag.getName().equals("service")) {
-                                xmlTags.add(parameterTag);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return xmlTags;
-    }
-
     public static class ServiceYamlContainer {
 
         @NotNull

@@ -45,9 +45,6 @@ public class ServiceDeprecatedClassesInspection extends LocalInspectionTool {
     }
 
     private static class ProblemRegistrar {
-
-        private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
-
         public static void attachDeprecatedProblem(@NotNull PsiElement element, @NotNull String text, @NotNull ProblemsHolder holder, @NotNull NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> lazyServiceCollector) {
             PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(element.getProject(), text, lazyServiceCollector.get());
             if(phpClass == null) {
@@ -58,7 +55,6 @@ public class ServiceDeprecatedClassesInspection extends LocalInspectionTool {
             if(docComment != null && docComment.getTagElementsByName("@deprecated").length > 0) {
                 holder.registerProblem(element, String.format("Class '%s' is deprecated", phpClass.getName()), ProblemHighlightType.LIKE_DEPRECATED);
             }
-
         }
 
         public static void attachServiceDeprecatedProblem(@NotNull PsiElement element, @NotNull String serviceName, @NotNull ProblemsHolder holder, @NotNull NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> lazyServiceCollector) {
