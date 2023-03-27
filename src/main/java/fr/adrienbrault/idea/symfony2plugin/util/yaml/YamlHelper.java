@@ -1,7 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.util.yaml;
 
-import com.intellij.codeInspection.ProblemHighlightType;
-import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.openapi.application.Result;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.util.Pair;
@@ -17,7 +15,6 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Consumer;
 import com.intellij.util.ObjectUtils;
 import com.intellij.util.ProcessingContext;
-import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
@@ -460,62 +457,6 @@ public class YamlHelper {
             }
         }
 
-    }
-
-    /**
-     * Migrate to processKeysAfterRoot @TODO
-     *
-     * @param keyContext Should be Document or YAMLCompoundValueImpl which holds the key value children
-     */
-    public static void attachDuplicateKeyInspection(PsiElement keyContext, @NotNull ProblemsHolder holder) {
-
-        Map<String, PsiElement> psiElementMap = new HashMap<>();
-        Set<PsiElement> yamlKeyValues = new HashSet<>();
-
-        Collection<YAMLKeyValue> collection = PsiTreeUtil.getChildrenOfTypeAsList(keyContext, YAMLKeyValue.class);
-        for(YAMLKeyValue yamlKeyValue: collection) {
-            String keyText = PsiElementUtils.trimQuote(yamlKeyValue.getKeyText());
-            if(StringUtils.isNotBlank(keyText)) {
-                if(psiElementMap.containsKey(keyText)) {
-                    yamlKeyValues.add(psiElementMap.get(keyText));
-                    yamlKeyValues.add(yamlKeyValue);
-                } else {
-                    psiElementMap.put(keyText, yamlKeyValue);
-                }
-
-            }
-
-        }
-
-        if(yamlKeyValues.size() > 0) {
-            for(PsiElement psiElement: yamlKeyValues) {
-                if(psiElement instanceof YAMLKeyValue) {
-                    final PsiElement keyElement = ((YAMLKeyValue) psiElement).getKey();
-                    assert keyElement != null;
-                    holder.registerProblem(keyElement, "Duplicate key", ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
-                }
-            }
-        }
-
-    }
-
-    /**
-     * Process yaml key in second level filtered by a root:
-     * File > roots -> "Item"
-     * TODO: visitQualifiedKeyValuesInFile
-     */
-    public static void processKeysAfterRoot(@NotNull PsiFile psiFile, @NotNull Processor<YAMLKeyValue> yamlKeyValueProcessor, @NotNull String... roots) {
-        for (String root : roots) {
-            YAMLKeyValue yamlKeyValue = YAMLUtil.getQualifiedKeyInFile((YAMLFile) psiFile, root);
-            if(yamlKeyValue != null) {
-                YAMLCompoundValue yaml = PsiTreeUtil.findChildOfType(yamlKeyValue, YAMLCompoundValue.class);
-                if(yaml != null) {
-                    for(YAMLKeyValue yamlKeyValueVisit: PsiTreeUtil.getChildrenOfTypeAsList(yaml, YAMLKeyValue.class)) {
-                        yamlKeyValueProcessor.process(yamlKeyValueVisit);
-                    }
-                }
-            }
-        }
     }
 
     public static boolean isRoutingFile(PsiFile psiFile) {

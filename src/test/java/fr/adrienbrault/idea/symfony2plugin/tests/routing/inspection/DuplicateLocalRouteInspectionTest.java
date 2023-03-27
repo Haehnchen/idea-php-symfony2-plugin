@@ -15,7 +15,7 @@ public class DuplicateLocalRouteInspectionTest extends SymfonyLightCodeInsightFi
                 "  car: foo\n" +
                 "f<caret>oo:\n" +
                 "  car: foo\n",
-            "Duplicate key"
+            "Symfony: Duplicate key"
         );
 
         assertLocalInspectionContains("routing.yml", "" +
@@ -23,8 +23,17 @@ public class DuplicateLocalRouteInspectionTest extends SymfonyLightCodeInsightFi
                 "  car: foo\n" +
                 "foo:\n" +
                 "  car: foo\n",
-            "Duplicate key"
+            "Symfony: Duplicate key"
+        );
+
+        assertLocalInspectionNotContains("routing.yml", "" +
+                "foo:\n" +
+                "  car: foo\n" +
+                "foo<caret>bar:\n" +
+                "  car: foo\n" +
+                "foo:\n" +
+                "  car: foo\n",
+            "Symfony: Duplicate key"
         );
     }
-
 }

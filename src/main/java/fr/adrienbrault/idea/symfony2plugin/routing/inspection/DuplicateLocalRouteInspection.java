@@ -1,15 +1,16 @@
 package fr.adrienbrault.idea.symfony2plugin.routing.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
+import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.util.PsiTreeUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLDocument;
-import org.jetbrains.yaml.psi.YAMLValue;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.YAMLMapping;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -34,24 +35,34 @@ public class DuplicateLocalRouteInspection extends LocalInspectionTool {
         }
 
         @Override
-        public void visitFile(PsiFile file) {
-            // @TODO: detection of routing files in right way
-            // routing.yml
-            // comment.routing.yml
-            // routing/foo.yml
-            if(!YamlHelper.isRoutingFile(file)) {
-                return;
+        public void visitElement(@NotNull PsiElement element) {
+            if (element instanceof YAMLKeyValue yamlKeyValue && YamlHelper.isRoutingFile(yamlKeyValue.getContainingFile()) && yamlKeyValue.getParent() instanceof YAMLMapping yamlMapping && yamlMapping.getParent() instanceof YAMLDocument) {
+                String keyText1 = null;
+
+                int found = 0;
+                for (YAMLKeyValue keyValue : yamlMapping.getKeyValues()) {
+                    String keyText = keyValue.getKeyText();
+
+                    // lazy
+                    if (keyText1 == null) {
+                        keyText1 = yamlKeyValue.getKeyText();
+                    }
+
+                    if (keyText1.equals(keyText)) {
+                        found++;
+                    }
+
+                    if (found == 2) {
+                        final PsiElement keyElement = yamlKeyValue.getKey();
+                        assert keyElement != null;
+                        holder.registerProblem(keyElement, "Symfony: Duplicate key", ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
+
+                        break;
+                    }
+                }
             }
 
-            YAMLDocument document = PsiTreeUtil.findChildOfType(file, YAMLDocument.class);
-            if(document == null) {
-                return;
-            }
-
-            YAMLValue topLevelValue = document.getTopLevelValue();
-            if(topLevelValue != null) {
-                YamlHelper.attachDuplicateKeyInspection(topLevelValue, holder);
-            }
+            super.visitElement(element);
         }
     }
 }
