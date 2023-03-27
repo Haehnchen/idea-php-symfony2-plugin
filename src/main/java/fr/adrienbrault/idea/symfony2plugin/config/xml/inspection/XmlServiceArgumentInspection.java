@@ -3,10 +3,10 @@ package fr.adrienbrault.idea.symfony2plugin.config.xml.inspection;
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
+import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
-import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlTokenType;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -17,7 +17,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -35,39 +34,28 @@ public class XmlServiceArgumentInspection extends LocalInspectionTool {
     }
 
     private static class MyPsiElementVisitor extends PsiElementVisitor {
-
         private final ProblemsHolder holder;
-        private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
+        private NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> serviceCollector;
 
         MyPsiElementVisitor(@NotNull ProblemsHolder holder) {
             this.holder = holder;
         }
 
         @Override
-        public void visitFile(PsiFile file) {
-            for (XmlTag xmlTag : ServiceActionUtil.getXmlContainerServiceDefinition(file)) {
-                visitService(xmlTag, holder);
+        public void visitElement(@NotNull PsiElement element) {
+            if (element instanceof XmlTag xmlTag) {
+                visitService(xmlTag, holder, this.createLazyServiceCollector());
             }
 
-            this.lazyServiceCollector = null;
-
-            super.visitFile(file);
+            super.visitElement(element);
         }
 
-        private ContainerCollectionResolver.LazyServiceCollector getLazyServiceCollector(XmlTag xmlTag) {
-            return Objects.requireNonNullElseGet(
-                this.lazyServiceCollector,
-                () -> this.lazyServiceCollector = new ContainerCollectionResolver.LazyServiceCollector(xmlTag.getProject())
-            );
-
-        }
-
-        private void visitService(XmlTag xmlTag, @NotNull ProblemsHolder holder) {
+        private void visitService(XmlTag xmlTag, @NotNull ProblemsHolder holder, @NotNull NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> lazyServiceCollector) {
             if(!ServiceActionUtil.isValidXmlParameterInspectionService(xmlTag)) {
                 return;
             }
 
-            final List<String> args = ServiceActionUtil.getXmlMissingArgumentTypes(xmlTag, false, getLazyServiceCollector(xmlTag));
+            final List<String> args = ServiceActionUtil.getXmlMissingArgumentTypes(xmlTag, false, lazyServiceCollector.get());
             if (args.size() == 0) {
                 return;
             }
@@ -78,6 +66,14 @@ public class XmlServiceArgumentInspection extends LocalInspectionTool {
             }
 
             holder.registerProblem(childrenOfType, "Missing argument", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, new AddServiceXmlArgumentLocalQuickFix(args));
+        }
+
+        private NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> createLazyServiceCollector() {
+            if (this.serviceCollector == null) {
+                this.serviceCollector = NotNullLazyValue.lazy(() -> new ContainerCollectionResolver.LazyServiceCollector(holder.getProject()));
+            }
+
+            return this.serviceCollector;
         }
     }
 }
