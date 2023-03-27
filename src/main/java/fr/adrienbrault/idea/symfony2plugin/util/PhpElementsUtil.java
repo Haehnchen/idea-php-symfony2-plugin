@@ -17,6 +17,9 @@ import com.intellij.util.Processor;
 import com.jetbrains.php.PhpClassHierarchyUtils;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.codeInsight.PhpCodeInsightUtil;
+import com.jetbrains.php.codeInsight.controlFlow.PhpControlFlowUtil;
+import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
+import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpReturnInstruction;
 import com.jetbrains.php.completion.PhpLookupElement;
 import com.jetbrains.php.lang.PhpLangUtil;
 import com.jetbrains.php.lang.PhpLanguage;
@@ -634,26 +637,27 @@ public class PhpElementsUtil {
      * Find a string return value of a method context "function() { return 'foo'}"
      */
     @NotNull
-    static public Collection<String> getMethodReturnAsStrings(@NotNull PhpClass phpClass, @NotNull String methodName) {
-
+    public static Collection<String> getMethodReturnAsStrings(@NotNull PhpClass phpClass, @NotNull String methodName) {
         Method method = phpClass.findMethodByName(methodName);
         if(method == null) {
             return Collections.emptyList();
         }
 
-        final Set<String> values = new HashSet<>();
-        method.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
-            @Override
-            public void visitElement(PsiElement element) {
+        Set<String> values = new HashSet<>();
 
+        PhpControlFlowUtil.processFlow(method.getControlFlow(), new PhpInstructionProcessor() {
+            @Override
+            public boolean processReturnInstruction(PhpReturnInstruction instruction) {
+                PsiElement element = instruction.getArgument();
+                
                 if(PhpElementsUtil.getMethodReturnPattern().accepts(element)) {
                     String value = PhpElementsUtil.getStringValue(element);
-                    if(value != null && StringUtils.isNotBlank(value)) {
+                    if(StringUtils.isNotBlank(value)) {
                         values.add(value);
                     }
                 }
 
-                super.visitElement(element);
+                return super.processReturnInstruction(instruction);
             }
         });
 
