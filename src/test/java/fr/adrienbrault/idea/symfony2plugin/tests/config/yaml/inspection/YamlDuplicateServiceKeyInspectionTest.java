@@ -16,7 +16,7 @@ public class YamlDuplicateServiceKeyInspectionTest extends SymfonyLightCodeInsig
                 "    car: car\n" +
                 "  foo: \n" +
                 "    car: car \n",
-            "Duplicate key"
+            "Symfony: Duplicate key"
         );
 
         assertLocalInspectionContains("routing.yml", "" +
@@ -25,7 +25,16 @@ public class YamlDuplicateServiceKeyInspectionTest extends SymfonyLightCodeInsig
                 "    car: car \n" +
                 "  f<caret>oo: \n" +
                 "    car: car",
-            "Duplicate key"
+            "Symfony: Duplicate key"
+        );
+
+        assertLocalInspectionNotContains("routing.yml", "" +
+                "services:\n" +
+                "  foo1: \n" +
+                "    car: car \n" +
+                "  f<caret>oo: \n" +
+                "    car: car",
+            "Symfony: Duplicate key"
         );
     }
 
