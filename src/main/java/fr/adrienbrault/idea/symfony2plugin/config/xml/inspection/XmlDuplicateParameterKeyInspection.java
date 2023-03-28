@@ -23,7 +23,7 @@ public class XmlDuplicateParameterKeyInspection extends XmlDuplicateServiceKeyIn
             @Override
             public void visitElement(@NotNull PsiElement element) {
                 if (element instanceof XmlAttributeValue xmlAttributeValue) {
-                    visitRoot(xmlAttributeValue, holder, "parameters", "parameter", "key");
+                    visitRoot(xmlAttributeValue, holder, "parameters", "parameter", "key", "Symfony: Duplicate Key");
                 }
 
                 super.visitElement(element);

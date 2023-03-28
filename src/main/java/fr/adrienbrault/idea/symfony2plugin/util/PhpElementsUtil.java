@@ -35,6 +35,7 @@ import com.jetbrains.php.lang.psi.elements.impl.ConstantImpl;
 import com.jetbrains.php.lang.psi.elements.impl.PhpDefineImpl;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionArgument;
+import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionClassConstantArgument;
 import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionScalarArgument;
 import com.jetbrains.php.phpunit.PhpUnitUtil;
 import com.jetbrains.php.refactoring.PhpAliasImporter;
@@ -1700,7 +1701,7 @@ public class PhpElementsUtil {
     /**
      * #[AsEventListener(method:'onBarEvent')]
      */
-    public static boolean isAttributeNamedArgumentString(@NotNull StringLiteralExpression element, @NotNull String namedArgument, @NotNull String fqn) {
+    public static boolean isAttributeNamedArgumentString(@NotNull StringLiteralExpression element, @NotNull String fqn, @NotNull String namedArgument) {
         PsiElement colon = PsiTreeUtil.prevCodeLeaf(element);
         if (colon == null || colon.getNode().getElementType() != PhpTokenTypes.opCOLON) {
             return false;
@@ -1902,6 +1903,24 @@ public class PhpElementsUtil {
             }
 
             return argument.getArgument();
+        }
+
+        return null;
+    }
+
+    public static String getAttributeArgumentStringByName(@NotNull PhpAttribute phpAttribute, @NotNull String attributeName) {
+        for (PhpAttribute.PhpAttributeArgument argument : phpAttribute.getArguments()) {
+            if (!attributeName.equals(argument.getName())) {
+                continue;
+            }
+
+            if (argument.getArgument() instanceof PhpExpectedFunctionClassConstantArgument phpExpectedFunctionClassConstantArgument) {
+                return phpExpectedFunctionClassConstantArgument.getClassFqn();
+            }
+
+            if (argument.getArgument() instanceof PhpExpectedFunctionScalarArgument phpExpectedFunctionScalarArgument) {
+                return PsiElementUtils.trimQuote(phpExpectedFunctionScalarArgument.getNormalizedValue());
+            }
         }
 
         return null;
