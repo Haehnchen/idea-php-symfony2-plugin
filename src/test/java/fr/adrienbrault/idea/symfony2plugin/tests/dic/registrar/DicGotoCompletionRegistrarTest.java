@@ -288,4 +288,13 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
             PlatformPatterns.psiElement()
         );
     }
+
+    public void testTagContributorForWhenAttribute() {
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\When;\n" +
+                "#[When('<caret>')]\n" +
+                "class HandlerCollection {}",
+            "dev", "test", "prod"
+        );
+    }
 }

@@ -1,12 +1,14 @@
 package fr.adrienbrault.idea.symfony2plugin.dic.registrar;
 
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.elements.PhpAttribute;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
@@ -23,6 +25,8 @@ import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -120,26 +124,6 @@ public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
             }
         );
 
-        // #[Autoconfigure(tags: ['app.some_tag'])]
-        // #[Autoconfigure(['app.some_tag'])]
-        registrar.register(
-            PlatformPatterns.or(
-
-            ), psiElement -> {
-                PsiElement context = psiElement.getContext();
-                if (!(context instanceof StringLiteralExpression)) {
-                    return null;
-                }
-
-                PhpAttribute phpAttribute = PsiTreeUtil.getParentOfType(context, PhpAttribute.class);
-                if (phpAttribute != null) {
-                    return new TaggedIteratorContributor((StringLiteralExpression) context);
-                }
-
-                return null;
-            }
-        );
-
         // #[Autowire(service: 'some_service')]
         // #[AsDecorator(decorates: 'some_service')]
         registrar.register(
@@ -160,6 +144,20 @@ public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
                 }
 
                 return null;
+            }
+        );
+
+        // #[When('dev')]
+        registrar.register(
+            PlatformPatterns.or(
+                PhpElementsUtil.getFirstAttributeStringPattern("\\Symfony\\Component\\DependencyInjection\\Attribute\\When")
+            ), psiElement -> new GotoCompletionProvider(psiElement) {
+                @Override
+                public @NotNull Collection<LookupElement> getLookupElements() {
+                    return Arrays.stream((new String[]{"prod", "dev", "test"}))
+                        .map((Function<String, LookupElement>) s -> LookupElementBuilder.create(s).withIcon(Symfony2Icons.SYMFONY))
+                        .collect(Collectors.toList());
+                }
             }
         );
     }
