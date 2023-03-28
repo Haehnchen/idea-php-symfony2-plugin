@@ -19,6 +19,20 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.246
+* Support detection for duplicate routes in same file for xml, php attributes and docblock (Daniel Espendiller)
+* [#2102](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2102) add completion for "When" attribute (Daniel Espendiller)
+* Use control flow for collecting method return statements (Daniel Espendiller)
+* Use controlflow inside FormControllerRelatedGotoCollector for visiting method references (Daniel Espendiller)
+* Duplicate key inspections for xml should only visit the working context (Daniel Espendiller)
+* Duplicate routing key inspections for yaml should only visit the working context (Daniel Espendiller)
+* Duplicate key inspections for yaml should only visit the working context (Daniel Espendiller)
+* Missing service argument inspection should only visit the working context for yaml (Daniel Espendiller)
+* Missing service argument inspection should only visit the working context (Daniel Espendiller)
+* Implement event name references for "AsEventListener" attribute (Daniel Espendiller)
+* Implement ImplicitUsage for method inside "AsEventListener" attribute (Daniel Espendiller)
+* Support completion, navigation and method existing inspection support for "AsEventListener" attribute (Daniel Espendiller)
+
 ## 2022.1.245
 * Replace recursive visiting for twig extends indexer (Daniel Espendiller)
 * Replace recursive visiting for controller method inspection (Daniel Espendiller)
