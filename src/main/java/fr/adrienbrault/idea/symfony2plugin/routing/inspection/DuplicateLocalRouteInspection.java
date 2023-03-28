@@ -5,9 +5,27 @@ import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.xml.XmlAttributeValue;
+import com.jetbrains.php.lang.PhpLanguage;
+import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
+import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
+import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.PhpAttribute;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import de.espend.idea.php.annotation.dict.PhpDocCommentAnnotation;
+import de.espend.idea.php.annotation.dict.PhpDocTagAnnotation;
+import de.espend.idea.php.annotation.pattern.AnnotationPattern;
+import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.config.xml.inspection.XmlDuplicateServiceKeyInspection;
+import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.yaml.YAMLLanguage;
 import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.YAMLMapping;
@@ -16,6 +34,7 @@ import org.jetbrains.yaml.psi.YAMLMapping;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class DuplicateLocalRouteInspection extends LocalInspectionTool {
+    private static final String MESSAGE = "Symfony: Duplicate route name";
 
     @NotNull
     @Override
@@ -36,7 +55,19 @@ public class DuplicateLocalRouteInspection extends LocalInspectionTool {
 
         @Override
         public void visitElement(@NotNull PsiElement element) {
-            if (element instanceof YAMLKeyValue yamlKeyValue && YamlHelper.isRoutingFile(yamlKeyValue.getContainingFile()) && yamlKeyValue.getParent() instanceof YAMLMapping yamlMapping && yamlMapping.getParent() instanceof YAMLDocument) {
+            if (element instanceof YAMLKeyValue yamlKeyValue && element.getLanguage() == YAMLLanguage.INSTANCE) {
+                visitYaml(yamlKeyValue);
+            } else if(element instanceof StringLiteralExpression && element.getLanguage() == PhpLanguage.INSTANCE) {
+                visitPhp((StringLiteralExpression) element);
+            } else if(element instanceof XmlAttributeValue xmlAttributeValue) {
+                XmlDuplicateServiceKeyInspection.visitRoot(xmlAttributeValue, holder, "routes", "route", "id", MESSAGE);
+            }
+
+            super.visitElement(element);
+        }
+
+        private void visitYaml(@NotNull YAMLKeyValue yamlKeyValue) {
+            if (YamlHelper.isRoutingFile(yamlKeyValue.getContainingFile()) && yamlKeyValue.getParent() instanceof YAMLMapping yamlMapping && yamlMapping.getParent() instanceof YAMLDocument) {
                 String keyText1 = null;
 
                 int found = 0;
@@ -55,14 +86,68 @@ public class DuplicateLocalRouteInspection extends LocalInspectionTool {
                     if (found == 2) {
                         final PsiElement keyElement = yamlKeyValue.getKey();
                         assert keyElement != null;
-                        holder.registerProblem(keyElement, "Symfony: Duplicate key", ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
+                        holder.registerProblem(keyElement, "Symfony: Duplicate route name", ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
 
                         break;
                     }
                 }
             }
+        }
 
-            super.visitElement(element);
+        private void visitPhp(@NotNull StringLiteralExpression element) {
+            if (PhpElementsUtil.isAttributeNamedArgumentString(element, "\\Symfony\\Component\\Routing\\Annotation\\Route", "name")) {
+                PhpAttribute parentOfType = PsiTreeUtil.getParentOfType(element, PhpAttribute.class);
+                if (parentOfType.getOwner() instanceof Method method && method.getAccess().isPublic() && method.getContainingClass() != null) {
+                    int found = 0;
+                    String contents = element.getContents();
+
+                    for (Method ownMethod : method.getContainingClass().getOwnMethods()) {
+                        for (PhpAttribute attribute : ownMethod.getAttributes("\\Symfony\\Component\\Routing\\Annotation\\Route")) {
+                            String name = PhpElementsUtil.getAttributeArgumentStringByName(attribute, "name");
+                            if (contents.equals(name)) {
+                                found++;
+                            }
+
+                            if (found == 2) {
+                                holder.registerProblem(element, MESSAGE, ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (AnnotationPattern.getPropertyIdentifierValue("name").accepts(element)) {
+                PhpDocTag phpDocTag = PsiTreeUtil.getParentOfType(element, PhpDocTag.class);
+                if (phpDocTag != null) {
+                    PhpClass phpClass = AnnotationUtil.getAnnotationReference(phpDocTag);
+                    if (phpClass != null && RouteHelper.ROUTE_CLASSES.contains(StringUtils.stripStart(phpClass.getFQN(), "\\"))) {
+                        PhpDocComment phpDocComment = PsiTreeUtil.getParentOfType(element, PhpDocComment.class);
+                        if (phpDocComment.getNextPsiSibling() instanceof Method method && method.getAccess().isPublic() && method.getContainingClass() != null) {
+                            int found = 0;
+                            String contents = element.getContents();
+
+                            for (Method ownMethod : method.getContainingClass().getOwnMethods()) {
+                                PhpDocCommentAnnotation phpClassContainer = AnnotationUtil.getPhpDocCommentAnnotationContainer(ownMethod.getDocComment());
+                                if(phpClassContainer != null) {
+                                    PhpDocTagAnnotation firstPhpDocBlock = phpClassContainer.getFirstPhpDocBlock(RouteHelper.ROUTE_CLASSES.toArray(String[]::new));
+                                    if(firstPhpDocBlock != null) {
+                                        String name = firstPhpDocBlock.getPropertyValue("name");
+                                        if (contents.equals(name)) {
+                                            found++;
+                                        }
+
+                                        if (found == 2) {
+                                            holder.registerProblem(element, MESSAGE, ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
+                                            return;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

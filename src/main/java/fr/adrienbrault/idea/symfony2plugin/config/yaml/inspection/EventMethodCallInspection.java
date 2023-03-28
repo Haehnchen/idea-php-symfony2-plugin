@@ -238,7 +238,7 @@ public class EventMethodCallInspection extends LocalInspectionTool {
             }
         }
 
-        if (parent instanceof ParameterList parameterList && PhpElementsUtil.isAttributeNamedArgumentString(element, "method", "\\Symfony\\Component\\EventDispatcher\\Attribute\\AsEventListener")) {
+        if (parent instanceof ParameterList parameterList && PhpElementsUtil.isAttributeNamedArgumentString(element, "\\Symfony\\Component\\EventDispatcher\\Attribute\\AsEventListener", "method")) {
             PhpAttribute parentOfType = PsiTreeUtil.getParentOfType(parameterList, PhpAttribute.class);
             if (parentOfType.getOwner() instanceof PhpClass phpClass) {
                 String contents = element.getContents();

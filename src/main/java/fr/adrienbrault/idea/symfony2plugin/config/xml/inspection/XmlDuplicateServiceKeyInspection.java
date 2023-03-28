@@ -27,7 +27,7 @@ public class XmlDuplicateServiceKeyInspection extends LocalInspectionTool {
             @Override
             public void visitElement(@NotNull PsiElement element) {
                 if (element instanceof XmlAttributeValue xmlAttributeValue) {
-                    visitRoot(xmlAttributeValue, holder, "services", "service", "id");
+                    visitRoot(xmlAttributeValue, holder, "services", "service", "id", "Symfony: Duplicate Key");
                 }
 
                 super.visitElement(element);
@@ -35,7 +35,7 @@ public class XmlDuplicateServiceKeyInspection extends LocalInspectionTool {
         };
     }
 
-    protected void visitRoot(@NotNull XmlAttributeValue xmlAttributeValue, @NotNull ProblemsHolder holder, String root, String child, String tagName) {
+    public static void visitRoot(@NotNull XmlAttributeValue xmlAttributeValue, @NotNull ProblemsHolder holder, @NotNull  String root, @NotNull String child, @NotNull String tagName, @NotNull String message) {
         String value = null;
 
         if (xmlAttributeValue.getParent() instanceof XmlAttribute xmlAttribute && tagName.equals(xmlAttribute.getName())) {
@@ -55,7 +55,7 @@ public class XmlDuplicateServiceKeyInspection extends LocalInspectionTool {
                     }
 
                     if (found == 2) {
-                        holder.registerProblem(xmlAttributeValue, "Symfony: Duplicate Key", ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
+                        holder.registerProblem(xmlAttributeValue, message, ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
                         break;
                     }
                 }

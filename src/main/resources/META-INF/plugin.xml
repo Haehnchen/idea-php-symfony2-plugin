@@ -284,10 +284,10 @@
                          language="PHP"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.PhpRouteMissingInspection"/>
 
-        <localInspection groupPath="Symfony" shortName="Symfony2YamlRouteDuplicateInspection" displayName="Duplicate Route"
+        <localInspection groupPath="Symfony" shortName="DuplicateLocalRouteInspection" displayName="Duplicate Route"
                          groupName="Route"
                          enabledByDefault="true" level="WARNING"
-                         language="yaml"
+                         language=""
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.DuplicateLocalRouteInspection"/>
 
         <localInspection groupPath="Symfony" shortName="Symfony2YamlDuplicateServiceKeyInspection" displayName="Duplicate Key"
