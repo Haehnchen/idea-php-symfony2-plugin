@@ -2,17 +2,17 @@ package fr.adrienbrault.idea.symfony2plugin.profiler.widget;
 
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
+import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.JBPopup;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.IdeFocusManager;
+import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.StatusBarWidget;
 import com.intellij.openapi.wm.impl.status.EditorBasedWidget;
 import com.intellij.ui.popup.PopupFactoryImpl;
-import com.intellij.util.Consumer;
 import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerIndexInterface;
 import fr.adrienbrault.idea.symfony2plugin.profiler.collector.DefaultDataCollectorInterface;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface;
@@ -21,7 +21,6 @@ import fr.adrienbrault.idea.symfony2plugin.profiler.widget.action.SymfonyProfile
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.awt.event.MouseEvent;
 import java.util.*;
 
 /**
@@ -35,7 +34,7 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
     }
 
     @Override
-    public StatusBarWidget copy() {
+    public @NotNull StatusBarWidget copy() {
         return new SymfonyProfilerWidget(getProject());
     }
 
@@ -140,7 +139,6 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
         }
     }
 
-    @Override
     public @Nullable JBPopup getPopup() {
         if (isDisposed()) {
             return null;
@@ -191,35 +189,19 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
         return "Symfony Profiler";
     }
 
-    @Nullable
     @Override
-    public Consumer<MouseEvent> getClickConsumer() {
-        return null;
-    }
+    public void install(@NotNull StatusBar statusBar) {
+        super.install(statusBar);
 
-    @Override
-    public void selectionChanged(@NotNull FileEditorManagerEvent event) {
-        update(event.getManager().getProject());
-    }
-
-    @Override
-    public void fileOpened(@NotNull FileEditorManager source, @NotNull VirtualFile file) {
-        update(source.getProject());
-    }
-
-    @Override
-    public void fileClosed(@NotNull FileEditorManager source, @NotNull VirtualFile file) {
-        update(source.getProject());
-    }
-
-    public void update(final Project project) {
-        ApplicationManager.getApplication().invokeLater(() -> {
-            if ((getProject() == null) || getProject().isDisposed()) {
-                return;
+        myConnection.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new FileEditorManagerListener() {
+            @Override
+            public void selectionChanged(@NotNull FileEditorManagerEvent event) {
+                statusBar.updateWidget(ID());
             }
 
-            if (!isDisposed() && myStatusBar != null) {
-                myStatusBar.updateWidget(ID());
+            @Override
+            public void fileOpened(@NotNull FileEditorManager source, @NotNull VirtualFile file) {
+                statusBar.updateWidget(ID());
             }
         });
     }
