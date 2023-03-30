@@ -154,7 +154,7 @@ public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
             ), psiElement -> new GotoCompletionProvider(psiElement) {
                 @Override
                 public @NotNull Collection<LookupElement> getLookupElements() {
-                    return Arrays.stream((new String[]{"prod", "dev", "test"}))
+                    return Arrays.stream((new String[]{"prod", "dev", "test", "never"}))
                         .map((Function<String, LookupElement>) s -> LookupElementBuilder.create(s).withIcon(Symfony2Icons.SYMFONY))
                         .collect(Collectors.toList());
                 }
