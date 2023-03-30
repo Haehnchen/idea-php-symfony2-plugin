@@ -35,7 +35,7 @@ abstract public class SymfonyTempCodeInsightFixtureTestCase extends UsefulTestCa
         super.setUp();
 
         TestFixtureBuilder<IdeaProjectTestFixture> fixtureBuilder = IdeaTestFixtureFactory.getFixtureFactory()
-            .createLightFixtureBuilder(new DefaultLightProjectDescriptor());
+            .createLightFixtureBuilder(new DefaultLightProjectDescriptor(), "MyProject");
 
         myFixture = JavaTestFixtureFactory.getFixtureFactory().createCodeInsightFixture(
             fixtureBuilder.getFixture(),
