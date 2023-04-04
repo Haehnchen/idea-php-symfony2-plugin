@@ -33,6 +33,20 @@ public class XmlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFix
         );
     }
 
+    public void testMissingArgumentNotProvidesInspection() {
+        assertLocalInspectionNotContains(
+            "services.xml",
+            "<foo<caret>bar class=\"Foo\\Bar\"/>",
+            "Missing argument"
+        );
+
+        assertLocalInspectionNotContains(
+            "services.html.twig",
+            "<serv<caret>ice class=\"Foo\\Bar\"/>",
+            "Missing argument"
+        );
+    }
+
     public void testThatAllParametersAreGiven() {
         assertLocalInspectionNotContains(
             "services.xml",
