@@ -360,6 +360,9 @@ public class ServiceActionUtil {
     }
 
     public static boolean isValidXmlParameterInspectionService(@NotNull XmlTag xmlTag) {
+        if (!"service".equals(xmlTag.getName())) {
+            return false;
+        }
 
         // we dont support some attributes right now
         for(String s : INVALID_ARGUMENT_ATTRIBUTES) {
@@ -384,7 +387,7 @@ public class ServiceActionUtil {
 
         // <services autowire="true"><defaults/></services>
         PsiElement servicesTag = xmlTag.getParent();
-        if(servicesTag instanceof XmlTag &&  "services".equals(((XmlTag) servicesTag).getName())) {
+        if(servicesTag instanceof XmlTag && "services".equals(((XmlTag) servicesTag).getName())) {
             // <defaults autowire="true" />
             for (XmlTag defaults : ((XmlTag) servicesTag).findSubTags("defaults")) {
                 if("true".equalsIgnoreCase(defaults.getAttributeValue("autowire"))) {
