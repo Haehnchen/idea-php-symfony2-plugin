@@ -50,7 +50,7 @@ public class DomainFileMap {
               return null;
         }
 
-        return VfsUtil.findFileByIoFile(file, true);
+        return VfsUtil.findFileByIoFile(file, false);
     }
 
     @Nullable

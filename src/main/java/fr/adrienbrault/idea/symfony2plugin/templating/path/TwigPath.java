@@ -91,7 +91,7 @@ public class TwigPath {
         if(!FileUtil.isAbsolute(path)) {
             return VfsUtil.findRelativeFile(path, ProjectUtil.getProjectDir(project));
         } else {
-            VirtualFile fileByIoFile = VfsUtil.findFileByIoFile(new File(path), true);
+            VirtualFile fileByIoFile = VfsUtil.findFileByIoFile(new File(path), false);
             if(fileByIoFile != null) {
                 return fileByIoFile;
             }
@@ -124,7 +124,7 @@ public class TwigPath {
             return null;
         }
 
-        return VfsUtil.findFileByIoFile(file, true);
+        return VfsUtil.findFileByIoFile(file, false);
     }
 
     public boolean isCustomPath() {

@@ -48,7 +48,7 @@ public class FilesystemUtil {
 
         if(FileUtil.isAbsolute(directoryToApp)) {
             // absolute dir given
-            VirtualFile fileByIoFile = VfsUtil.findFileByIoFile(new File(directoryToApp), true);
+            VirtualFile fileByIoFile = VfsUtil.findFileByIoFile(new File(directoryToApp), false);
             if(fileByIoFile != null) {
                 virtualFiles.add(fileByIoFile);
             }
