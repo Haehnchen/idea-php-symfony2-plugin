@@ -65,7 +65,7 @@ public class TranslationStringMap {
 
         for (File path : paths) {
             File[] files = path.listFiles((directory, s) -> s.startsWith("catalogue") && s.endsWith("php"));
-            if(null == files || files.length == 0) {
+            if(null == files) {
                 continue;
             }
 
@@ -78,7 +78,7 @@ public class TranslationStringMap {
     }
 
     private void parse(@NotNull Project project, @NotNull File file) {
-        VirtualFile virtualFile = VfsUtil.findFileByIoFile(file, true);
+        VirtualFile virtualFile = VfsUtil.findFileByIoFile(file, false);
         if (virtualFile == null) {
             Symfony2ProjectComponent.getLogger().info("VfsUtil missing translation: " + file.getPath());
             return;
