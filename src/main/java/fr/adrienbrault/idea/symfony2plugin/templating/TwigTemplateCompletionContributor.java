@@ -10,10 +10,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.patterns.PatternCondition;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.StandardPatterns;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiReference;
-import com.intellij.psi.PsiWhiteSpace;
+import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.intellij.util.containers.ContainerUtil;
@@ -1085,15 +1082,20 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             for (PsiElement target : targets) {
                 PsiElement firstChild = target.getFirstChild();
 
-                CompletionService.getCompletionService().performCompletion(new CompletionParameters(
-                    firstChild,
-                    firstChild.getContainingFile(),
-                    CompletionType.BASIC,
-                    firstChild.getTextOffset(),
-                    parameters.getInvocationCount(),
-                    parameters.getEditor(),
-                    parameters.getProcess()
-                ), completionResult -> result.addElement(completionResult.getLookupElement()));
+                try {
+                    CompletionService.getCompletionService().performCompletion(new CompletionParameters(
+                        firstChild,
+                        firstChild.getContainingFile(),
+                        CompletionType.BASIC,
+                        firstChild.getTextOffset(),
+                        parameters.getInvocationCount(),
+                        parameters.getEditor(),
+                        parameters.getProcess()
+                    ), completionResult -> result.addElement(completionResult.getLookupElement()));
+                } catch (Throwable e) {
+                    // catch all external issues
+                    Symfony2ProjectComponent.getLogger().info("Twig proxy completion issue: " + e.getMessage());
+                }
 
                 for (PsiReference reference : target.getReferences()) {
                     for (Object variant : reference.getVariants()) {
