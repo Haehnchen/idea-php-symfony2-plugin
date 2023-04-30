@@ -1,7 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.inspection;
 
 import com.intellij.codeInsight.hint.HintManager;
+import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo;
 import com.intellij.codeInspection.IntentionAndQuickFixAction;
+import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;
@@ -39,6 +41,16 @@ public class TemplateGuessTypoQuickFix extends IntentionAndQuickFixAction {
     @Override
     public String getName() {
         return "Symfony: Apply Similar Suggestion";
+    }
+
+    @Override
+    public @NotNull IntentionPreviewInfo generatePreview(@NotNull Project project, @NotNull Editor editor, @NotNull PsiFile file) {
+        return IntentionPreviewInfo.EMPTY;
+    }
+
+    @Override
+    public @NotNull IntentionPreviewInfo generatePreview(@NotNull Project project, @NotNull ProblemDescriptor previewDescriptor) {
+        return IntentionPreviewInfo.EMPTY;
     }
 
     @Nls
