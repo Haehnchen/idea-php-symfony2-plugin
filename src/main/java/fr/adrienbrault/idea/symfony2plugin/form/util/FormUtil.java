@@ -12,6 +12,10 @@ import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.codeInsight.controlFlow.PhpControlFlowUtil;
+import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
+import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpReturnInstruction;
+import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpYieldInstruction;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
@@ -617,30 +621,46 @@ public class FormUtil {
         // https://symfony.com/blog/new-in-symfony-4-2-improved-form-type-extensions
         Method extendedTypes = phpClass.findMethodByName("getExtendedTypes");
         if (extendedTypes != null) {
-            // [Foo::class, FooBar::class]
-            for (PhpReturn phpReturn : PsiTreeUtil.collectElementsOfType(extendedTypes, PhpReturn.class)) {
-                PhpPsiElement arrayCreationExpression = phpReturn.getFirstPsiChild();
-                if (arrayCreationExpression instanceof ArrayCreationExpression) {
-                    Collection<PsiElement> arrayValues = PhpPsiUtil.getChildren(arrayCreationExpression, psiElement ->
-                            psiElement.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE
-                    );
+            Collection<ArrayCreationExpression> phpReturnsArray = new ArrayList<>();
+            Collection<PsiElement> yieldArguments = new ArrayList<>();
 
-                    for (PsiElement child : arrayValues) {
-                        String stringValue = PhpElementsUtil.getStringValue(child.getFirstChild());
-                        if (stringValue != null) {
-                            types.add(stringValue);
-                        }
+            PhpControlFlowUtil.processFlow(extendedTypes.getControlFlow(), new PhpInstructionProcessor() {
+                @Override
+                public boolean processYieldInstruction(PhpYieldInstruction instruction) {
+                    PsiElement argument = instruction.getArgument();
+                    if (argument != null) {
+                        yieldArguments.add(argument);
+                    }
+
+                    return super.processYieldInstruction(instruction);
+                }
+
+                @Override
+                public boolean processReturnInstruction(PhpReturnInstruction instruction) {
+                    if (instruction.getArgument() instanceof ArrayCreationExpression arrayCreationExpression) {
+                        phpReturnsArray.add(arrayCreationExpression);
+                    }
+
+                    return super.processReturnInstruction(instruction);
+                }
+            });
+
+            // [Foo::class, FooBar::class]
+            for (ArrayCreationExpression phpReturnArray : phpReturnsArray) {
+                Collection<PsiElement> arrayValues = PhpPsiUtil.getChildren(phpReturnArray, psiElement ->
+                    psiElement.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE
+                );
+
+                for (PsiElement child : arrayValues) {
+                    String stringValue = PhpElementsUtil.getStringValue(child.getFirstChild());
+                    if (stringValue != null) {
+                        types.add(stringValue);
                     }
                 }
             }
 
             // yield Foo::class
-            for (PhpYield phpReturn : PsiTreeUtil.collectElementsOfType(extendedTypes, PhpYield.class)) {
-                PsiElement yieldArgument = phpReturn.getArgument();
-                if (yieldArgument == null) {
-                    continue;
-                }
-
+            for (PsiElement yieldArgument : yieldArguments) {
                 String stringValue = PhpElementsUtil.getStringValue(yieldArgument);
                 if (stringValue != null) {
                     types.add(stringValue);
