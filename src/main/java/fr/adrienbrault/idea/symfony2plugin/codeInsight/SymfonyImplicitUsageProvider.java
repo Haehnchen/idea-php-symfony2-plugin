@@ -3,6 +3,10 @@ package fr.adrienbrault.idea.symfony2plugin.codeInsight;
 import com.intellij.codeInsight.daemon.ImplicitUsageProvider;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.jetbrains.php.codeInsight.controlFlow.PhpControlFlowUtil;
+import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
+import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpReturnInstruction;
+import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpYieldInstruction;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionScalarArgument;
@@ -16,10 +20,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -160,8 +161,18 @@ public class SymfonyImplicitUsageProvider implements ImplicitUsageProvider {
             return false;
         }
 
-        for (PhpReturn aReturn : PsiTreeUtil.collectElementsOfType(subscribedEvents, PhpReturn.class)) {
-            PsiElement[] psiElements = PsiTreeUtil.collectElements(aReturn, element -> {
+        Collection<PsiElement> returnArguments = new ArrayList<>();
+
+        PhpControlFlowUtil.processFlow(subscribedEvents.getControlFlow(), new PhpInstructionProcessor() {
+            @Override
+            public boolean processReturnInstruction(PhpReturnInstruction instruction) {
+                returnArguments.add(instruction.getArgument());
+                return super.processReturnInstruction(instruction);
+            }
+        });
+
+        for (PsiElement returnArgument : returnArguments) {
+            PsiElement[] psiElements = PsiTreeUtil.collectElements(returnArgument, element -> {
                 if (!(element instanceof StringLiteralExpression)) {
                     return false;
                 }
