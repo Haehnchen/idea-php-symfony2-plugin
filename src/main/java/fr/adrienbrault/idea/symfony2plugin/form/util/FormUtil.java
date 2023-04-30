@@ -14,6 +14,7 @@ import com.intellij.psi.xml.XmlTag;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.codeInsight.controlFlow.PhpControlFlowUtil;
 import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
+import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpAccessVariableInstruction;
 import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpReturnInstruction;
 import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpYieldInstruction;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
@@ -124,9 +125,21 @@ public class FormUtil {
                 }
 
                 String text = parameter.getName();
-                PsiElement[] psiElements = PsiTreeUtil.collectElements(method, psiElement -> psiElement instanceof Variable && text.equals(((Variable) psiElement).getName()));
 
-                for (PsiElement psiElement : psiElements) {
+                Collection<PsiElement> variables = new ArrayList<>();
+
+                PhpControlFlowUtil.processFlow(method.getControlFlow(), new PhpInstructionProcessor() {
+                    @Override
+                    public boolean processAccessVariableInstruction(PhpAccessVariableInstruction instruction) {
+                        if (text.contentEquals(instruction.getVariableName())) {
+                            variables.add(instruction.getAnchor());
+                        }
+
+                        return super.processAccessVariableInstruction(instruction);
+                    }
+                });
+
+                for (PsiElement psiElement : variables) {
                     PsiElement parameterList = psiElement.getParent();
                     if (!(parameterList instanceof ParameterList)) {
                         continue;
