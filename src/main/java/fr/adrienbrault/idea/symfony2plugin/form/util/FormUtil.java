@@ -14,6 +14,7 @@ import com.intellij.psi.xml.XmlTag;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.codeInsight.controlFlow.PhpControlFlowUtil;
 import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
+import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpCallInstruction;
 import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpReturnInstruction;
 import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpYieldInstruction;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
@@ -99,19 +100,28 @@ public class FormUtil {
         return lookupElements;
     }
 
-    public static MethodReference[] getFormBuilderTypes(@NotNull Method method) {
-        PsiElementFilter filter = methodReference -> {
-            if (methodReference instanceof MethodReference) {
-                String methodName = ((MethodReference) methodReference).getName();
-                if (methodName != null && (methodName.equals("add") || methodName.equals("create"))) {
-                    return PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) methodReference, FormUtil.PHP_FORM_BUILDER_SIGNATURES);
+    private static Collection<MethodReference> getFormBuilderTypesViaProcessFlow(@NotNull Method method) {
+        Collection<MethodReference> methodReferences = new ArrayList<>();
+
+        PhpControlFlowUtil.processFlow(method.getControlFlow(), new PhpInstructionProcessor() {
+            @Override
+            public boolean processPhpCallInstruction(PhpCallInstruction instruction) {
+                if (instruction.getFunctionReference() instanceof MethodReference methodReference) {
+                    String methodName = methodReference.getName();
+                    if (methodName != null && (methodName.equals("add") || methodName.equals("create")) && PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, FormUtil.PHP_FORM_BUILDER_SIGNATURES)) {
+                        methodReferences.add(methodReference);
+                    }
                 }
+
+                return super.processPhpCallInstruction(instruction);
             }
+        });
 
-            return false;
-        };
+        return methodReferences;
+    }
 
-        Collection<PsiElement> methodReferences = new HashSet<>(Arrays.asList(PsiTreeUtil.collectElements(method, filter)));
+    public static MethodReference[] getFormBuilderTypes(@NotNull Method method) {
+        Collection<MethodReference> methodReferences = getFormBuilderTypesViaProcessFlow(method);
 
         // some code flow detection for sub methods
         if ("buildForm".equals(method.getName())) {
@@ -127,26 +137,18 @@ public class FormUtil {
                 PsiElement[] psiElements = PsiTreeUtil.collectElements(method, psiElement -> psiElement instanceof Variable && text.equals(((Variable) psiElement).getName()));
 
                 for (PsiElement psiElement : psiElements) {
-                    PsiElement parameterList = psiElement.getParent();
-                    if (!(parameterList instanceof ParameterList)) {
-                        continue;
+                    if (psiElement.getParent() instanceof ParameterList parameterList) {
+                        if (parameterList.getParent() instanceof MethodReference methodReference) {
+                            if (methodReference.resolve() instanceof Method nextMethod) {
+                                methodReferences.addAll(getFormBuilderTypesViaProcessFlow(nextMethod));
+                            }
+                        }
                     }
-                    PsiElement methodReference = parameterList.getParent();
-                    if (!(methodReference instanceof MethodReference)) {
-                        continue;
-                    }
-
-                    PsiElement resolve = ((MethodReference) methodReference).resolve();
-                    if (!(resolve instanceof Method)) {
-                        continue;
-                    }
-
-                    Collections.addAll(methodReferences, PsiTreeUtil.collectElements(resolve, filter));
                 }
             }
         }
 
-        return methodReferences.stream().map(psiElement -> (MethodReference) psiElement).toArray(MethodReference[]::new);
+        return methodReferences.toArray(new MethodReference[0]);
     }
 
     /**
