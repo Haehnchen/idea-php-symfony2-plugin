@@ -482,21 +482,19 @@ public class FormUtil {
 
         Collection<String> parents = new HashSet<>();
 
-        for (PhpReturn phpReturn : PsiTreeUtil.collectElementsOfType(getParent, PhpReturn.class)) {
-            PhpPsiElement firstPsiChild = phpReturn.getFirstPsiChild();
-
-            if(firstPsiChild instanceof TernaryExpression) {
+        for (PsiElement phpReturnArgument : collectPhpReturnArguments(getParent)) {
+            if(phpReturnArgument instanceof TernaryExpression ternaryExpression) {
                 // true ? 'foobar' : Foo::class
-                parents.addAll(PhpElementsUtil.getTernaryExpressionConditionStrings((TernaryExpression) firstPsiChild));
-            } else if(firstPsiChild instanceof BinaryExpression && PsiElementAssertUtil.isNotNullAndIsElementType(firstPsiChild, PhpElementTypes.CONCATENATION_EXPRESSION)) {
+                parents.addAll(PhpElementsUtil.getTernaryExpressionConditionStrings(ternaryExpression));
+            } else if(phpReturnArgument instanceof BinaryExpression binaryExpression && PsiElementAssertUtil.isNotNullAndIsElementType(phpReturnArgument, PhpElementTypes.CONCATENATION_EXPRESSION)) {
                 // Symfony core: __NAMESPACE__.'\Foo'
-                PsiElement leftOperand = ((BinaryExpression) firstPsiChild).getLeftOperand();
+                PsiElement leftOperand = binaryExpression.getLeftOperand();
                 ConstantReference constantReference = PsiElementAssertUtil.getInstanceOfOrNull(leftOperand, ConstantReference.class);
                 if(constantReference == null || !"__NAMESPACE__".equals(constantReference.getName())) {
                     continue;
                 }
 
-                StringLiteralExpression stringValue = PsiElementAssertUtil.getInstanceOfOrNull(((BinaryExpression) firstPsiChild).getRightOperand(), StringLiteralExpression.class);
+                StringLiteralExpression stringValue = PsiElementAssertUtil.getInstanceOfOrNull(binaryExpression.getRightOperand(), StringLiteralExpression.class);
                 if(stringValue == null) {
                     continue;
                 }
@@ -510,7 +508,7 @@ public class FormUtil {
             }
 
             // fallback try to resolve string value
-            String contents = PhpElementsUtil.getStringValue(firstPsiChild);
+            String contents = PhpElementsUtil.getStringValue(phpReturnArgument);
             if(StringUtils.isNotBlank(contents)) {
                 parents.add(contents);
             }
@@ -544,15 +542,13 @@ public class FormUtil {
             return StringUtils.stripStart(phpClass.getFQN(), "\\");
         }
 
-        for (PhpReturn phpReturn : PsiTreeUtil.collectElementsOfType(method, PhpReturn.class)) {
-            PhpPsiElement firstPsiChild = phpReturn.getFirstPsiChild();
-
+        for (PsiElement firstPsiChild : collectPhpReturnArguments(method)) {
             // $this->getBlockPrefix()
-            if(firstPsiChild instanceof MethodReference) {
-                PhpExpression classReference = ((MethodReference) firstPsiChild).getClassReference();
+            if(firstPsiChild instanceof MethodReference methodReference) {
+                PhpExpression classReference = methodReference.getClassReference();
                 if(classReference != null && "this".equals(classReference.getName())) {
-                    String name = firstPsiChild.getName();
-                    if(name != null && "getBlockPrefix".equals(name)) {
+                    String name = methodReference.getName();
+                    if("getBlockPrefix".equals(name)) {
                         if(phpClass.findOwnMethodByName("getBlockPrefix") != null) {
                             return PhpElementsUtil.getMethodReturnAsString(phpClass, name);
                         } else {
@@ -601,15 +597,13 @@ public class FormUtil {
         // public function getExtendedType() { return true === true ? FileType::class : Form:class; }
         Method extendedType = phpClass.findMethodByName("getExtendedType");
         if(extendedType != null) {
-            for (PhpReturn phpReturn : PsiTreeUtil.collectElementsOfType(extendedType, PhpReturn.class)) {
-                PhpPsiElement firstPsiChild = phpReturn.getFirstPsiChild();
-
+            for (PsiElement phpReturnsArgument : collectPhpReturnArguments(extendedType)) {
                 // true ? 'foo' : 'foo'
-                if(firstPsiChild instanceof TernaryExpression) {
-                    types.addAll(PhpElementsUtil.getTernaryExpressionConditionStrings((TernaryExpression) firstPsiChild));
+                if(phpReturnsArgument instanceof TernaryExpression ternaryExpression) {
+                    types.addAll(PhpElementsUtil.getTernaryExpressionConditionStrings(ternaryExpression));
                 }
 
-                String stringValue = PhpElementsUtil.getStringValue(firstPsiChild);
+                String stringValue = PhpElementsUtil.getStringValue(phpReturnsArgument);
                 if(stringValue != null) {
                     types.add(stringValue);
                 }
@@ -669,6 +663,21 @@ public class FormUtil {
         }
 
         return types;
+    }
+
+    @NotNull
+    private static Collection<PsiElement> collectPhpReturnArguments(@NotNull  Method extendedType) {
+        Collection<PsiElement> phpReturnsArguments = new ArrayList<>();
+
+        PhpControlFlowUtil.processFlow(extendedType.getControlFlow(), new PhpInstructionProcessor() {
+            @Override
+            public boolean processReturnInstruction(PhpReturnInstruction instruction) {
+                phpReturnsArguments.add(instruction.getArgument());
+                return super.processReturnInstruction(instruction);
+            }
+        });
+
+        return phpReturnsArguments;
     }
 
     /**
