@@ -19,6 +19,7 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.codeInsight.PhpCodeInsightUtil;
 import com.jetbrains.php.codeInsight.controlFlow.PhpControlFlowUtil;
 import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
+import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpAccessVariableInstruction;
 import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpReturnInstruction;
 import com.jetbrains.php.completion.PhpLookupElement;
 import com.jetbrains.php.lang.PhpLangUtil;
@@ -1048,8 +1049,13 @@ public class PhpElementsUtil {
 
     @Nullable
     public static PhpClass getFirstClassFromFile(PhpFile phpFile) {
-        Collection<PhpClass> phpClasses = PsiTreeUtil.collectElementsOfType(phpFile, PhpClass.class);
-        return phpClasses.size() == 0 ? null : phpClasses.iterator().next();
+        for (PhpNamedElement topLevelElement : phpFile.getTopLevelDefs().values()) {
+            if (topLevelElement instanceof PhpClass clazz) {
+                return clazz;
+            }
+        }
+
+        return null;
     }
 
     public static boolean isEqualClassName(@Nullable PhpClass phpClass, @Nullable String... compareClassNames) {
@@ -1097,9 +1103,20 @@ public class PhpElementsUtil {
 
         String tempVariableName = parameters[parameterIndex].getName();
 
-        return PsiTreeUtil.collectElements(method.getLastChild(), element ->
-            element instanceof Variable && tempVariableName.equals(((Variable) element).getName())
-        );
+        Collection<PsiElement> psiElements = new ArrayList<>();
+
+        PhpControlFlowUtil.processFlow(method.getControlFlow(), new PhpInstructionProcessor() {
+            @Override
+            public boolean processAccessVariableInstruction(PhpAccessVariableInstruction instruction) {
+                if (tempVariableName.contentEquals(instruction.getVariableName())) {
+                    psiElements.add(instruction.getAnchor());
+                }
+
+                return super.processAccessVariableInstruction(instruction);
+            }
+        });
+
+        return psiElements.toArray(new PsiElement[0]);
     }
 
     @Nullable

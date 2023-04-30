@@ -20,6 +20,9 @@ import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.codeInsight.controlFlow.PhpControlFlowUtil;
+import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
+import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpReturnInstruction;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
 import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.DefaultServiceNameStrategy;
@@ -623,23 +626,31 @@ public class ServiceUtil {
                 continue;
             }
 
-            // search for for all return values and try to extract array keys
-            for (PhpReturn phpReturn: PsiTreeUtil.collectElementsOfType(method, PhpReturn.class)) {
-                PhpPsiElement firstPsiChild = phpReturn.getFirstPsiChild();
+            Collection<PsiElement> phpReturnArguments = new ArrayList<>();
 
-                if(firstPsiChild instanceof ArrayCreationExpression) {
+            PhpControlFlowUtil.processFlow(method.getControlFlow(), new PhpInstructionProcessor() {
+                @Override
+                public boolean processReturnInstruction(PhpReturnInstruction instruction) {
+                    phpReturnArguments.add(instruction.getArgument());
+                    return super.processReturnInstruction(instruction);
+                }
+            });
+
+            // search for all return values and try to extract array keys
+            for (PsiElement phpReturnArgument: phpReturnArguments) {
+                if(phpReturnArgument instanceof ArrayCreationExpression) {
                     // return ['foobar' => 'foo']
 
-                    parameters.addAll(PhpElementsUtil.getArrayCreationKeys((ArrayCreationExpression) firstPsiChild));
-                } else if(firstPsiChild instanceof FunctionReference && (
-                    "array_merge".equalsIgnoreCase(firstPsiChild.getName()) ||
-                    "array_merge_recursive".equalsIgnoreCase(firstPsiChild.getName()) ||
-                    "array_replace".equalsIgnoreCase(firstPsiChild.getName())
+                    parameters.addAll(PhpElementsUtil.getArrayCreationKeys((ArrayCreationExpression) phpReturnArgument));
+                } else if(phpReturnArgument instanceof FunctionReference functionReference && (
+                    "array_merge".equalsIgnoreCase(functionReference.getName()) ||
+                    "array_merge_recursive".equalsIgnoreCase(functionReference.getName()) ||
+                    "array_replace".equalsIgnoreCase(functionReference.getName())
                 )) {
                     // return array_merge(['foobar' => 'foo'])
                     // return array_merge($foobar, ['foobar' => 'foo'])
 
-                    for (PsiElement parameter : ((FunctionReference) firstPsiChild).getParameters()) {
+                    for (PsiElement parameter : ((FunctionReference) phpReturnArgument).getParameters()) {
                         if(parameter instanceof ArrayCreationExpression) {
                             parameters.addAll(PhpElementsUtil.getArrayCreationKeys((ArrayCreationExpression) parameter));
                         }
