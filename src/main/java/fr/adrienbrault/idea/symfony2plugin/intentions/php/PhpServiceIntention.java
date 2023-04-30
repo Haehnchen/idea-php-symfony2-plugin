@@ -33,12 +33,12 @@ public class PhpServiceIntention extends PsiElementBaseIntentionAction {
     @Override
     public void invoke(@NotNull Project project, Editor editor, @NotNull PsiElement psiElement) throws IncorrectOperationException {
 
-        PsiElement parentByCondition = PhpPsiUtil.getParentByCondition(psiElement, Method.INSTANCEOF);
+        PsiElement parentByCondition = PhpPsiUtil.getParentByCondition(psiElement, true, Method.INSTANCEOF, null);
         if(parentByCondition == null) {
             return;
         }
 
-        PhpClass phpClass = PhpPsiUtil.getParentByCondition(psiElement, PhpClass.INSTANCEOF);
+        PhpClass phpClass = PhpPsiUtil.getParentByCondition(psiElement, true, PhpClass.INSTANCEOF, null);
         if(phpClass == null) {
             return;
         }
@@ -52,17 +52,12 @@ public class PhpServiceIntention extends PsiElementBaseIntentionAction {
             return false;
         }
 
-        PsiElement parentByCondition = PhpPsiUtil.getParentByCondition(psiElement, Method.INSTANCEOF);
+        PsiElement parentByCondition = PhpPsiUtil.getParentByCondition(psiElement, true, Method.INSTANCEOF, null);
         if(parentByCondition == null) {
             return false;
         }
 
-        PhpClass phpClass = PhpPsiUtil.getParentByCondition(psiElement, PhpClass.INSTANCEOF);
-        if(phpClass == null) {
-            return false;
-        }
-
-        return true;
+        return PhpPsiUtil.getParentByCondition(psiElement, true, PhpClass.INSTANCEOF, null) != null;
     }
 
     @NotNull
