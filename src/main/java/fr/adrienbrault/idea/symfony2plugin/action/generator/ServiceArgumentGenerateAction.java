@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.action.generator;
 
 import com.intellij.codeInsight.CodeInsightActionHandler;
 import com.intellij.codeInsight.actions.CodeInsightAction;
-import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
@@ -14,6 +13,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
 import fr.adrienbrault.idea.symfony2plugin.intentions.php.XmlServiceArgumentIntention;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -64,7 +64,7 @@ public class ServiceArgumentGenerateAction extends CodeInsightAction {
                 }
 
                 if(!ServiceActionUtil.isValidXmlParameterInspectionService(serviceTag)) {
-                    HintManager.getInstance().showErrorHint(editor, "Sry, not supported service definition");
+                    IdeHelper.showErrorHintIfAvailable(editor, "Sry, not supported service definition");
                     return;
                 }
 

@@ -18,6 +18,7 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -91,7 +92,7 @@ public class PhpServiceArgumentIntention extends PsiElementBaseIntentionAction {
         }
 
         if (!success) {
-            HintManager.getInstance().showErrorHint(editor, "No argument update needed");
+            IdeHelper.showErrorHintIfAvailable(editor, "No argument update needed");
 
             return;
         }

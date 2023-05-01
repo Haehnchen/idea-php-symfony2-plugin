@@ -2,8 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.templating.action;
 
 import com.intellij.codeInsight.CodeInsightActionHandler;
 import com.intellij.codeInsight.actions.CodeInsightAction;
-import com.intellij.codeInsight.hint.HintManager;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
@@ -16,6 +14,7 @@ import com.jetbrains.php.completion.insert.PhpInsertHandlerUtil;
 import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -52,10 +51,7 @@ public class TwigExtendsGenerator extends CodeInsightAction {
             List<String> prioritizedKeys = TwigUtil.getExtendsTemplateUsageAsOrderedList(project);
 
             if (prioritizedKeys.size() == 0) {
-                if (!ApplicationManager.getApplication().isHeadlessEnvironment()) {
-                    HintManager.getInstance().showErrorHint(editor, "No extends found");
-                }
-
+                IdeHelper.showErrorHintIfAvailable(editor, "No extends found");
                 return;
             }
 

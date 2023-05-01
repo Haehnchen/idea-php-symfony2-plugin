@@ -1,7 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.util.dict;
 
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
-import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;
@@ -14,7 +13,10 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
-import com.intellij.psi.util.*;
+import com.intellij.psi.util.CachedValue;
+import com.intellij.psi.util.CachedValueProvider;
+import com.intellij.psi.util.CachedValuesManager;
+import com.intellij.psi.util.PsiModificationTracker;
 import com.intellij.util.Consumer;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
@@ -38,6 +40,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerParameterStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesTagStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
@@ -533,7 +536,7 @@ public class ServiceUtil {
         final List<String> list = new ArrayList<>(phpServiceTags);
 
         if(phpServiceTags.size() == 0) {
-            HintManager.getInstance().showErrorHint(editor, "Ops, no tag found");
+            IdeHelper.showErrorHintIfAvailable(editor, "Ops, no tag found");
             return;
         }
 

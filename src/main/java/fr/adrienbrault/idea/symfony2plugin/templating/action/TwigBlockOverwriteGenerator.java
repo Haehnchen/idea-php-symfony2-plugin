@@ -2,9 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.templating.action;
 
 import com.intellij.codeInsight.CodeInsightActionHandler;
 import com.intellij.codeInsight.actions.CodeInsightAction;
-import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
@@ -19,6 +17,7 @@ import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigFileUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -68,10 +67,7 @@ public class TwigBlockOverwriteGenerator extends CodeInsightAction {
                 .collect(Collectors.toList());
 
             if (items.size() == 0) {
-                if (!ApplicationManager.getApplication().isHeadlessEnvironment()) {
-                    HintManager.getInstance().showErrorHint(editor, "No block found");
-                }
-
+                IdeHelper.showErrorHintIfAvailable(editor, "No block found");
                 return;
             }
 

@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.dic.inspection.intention;
 
-import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInspection.LocalQuickFixAndIntentionActionOnPsiElement;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
@@ -12,6 +11,7 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.intentions.ui.ServiceSuggestDialog;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nls;
@@ -58,7 +58,7 @@ public class YamlSuggestIntentionAction extends LocalQuickFixAndIntentionActionO
 
         Collection<ContainerService> suggestions = ServiceUtil.getServiceSuggestionForPhpClass(anyByFQN.iterator().next(), ContainerCollectionResolver.getServices(project));
         if(suggestions.size() == 0) {
-            HintManager.getInstance().showErrorHint(editor, "No suggestion found");
+            IdeHelper.showErrorHintIfAvailable(editor, "No suggestion found");
             return;
         }
 
@@ -83,7 +83,7 @@ public class YamlSuggestIntentionAction extends LocalQuickFixAndIntentionActionO
 
             int i = getServiceChar(text);
             if (i < 0) {
-                HintManager.getInstance().showErrorHint(editor, "No valid char in text range");
+                IdeHelper.showErrorHintIfAvailable(editor, "No valid char in text range");
                 return;
             }
 

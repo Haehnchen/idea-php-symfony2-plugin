@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.doctrine.intention;
 
-import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
@@ -11,6 +10,7 @@ import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.SymfonyPhpReferenceContributor;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
+import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang.StringUtils;
@@ -35,7 +35,7 @@ public class DoctrineRepositoryClassConstantIntention extends PsiElementBaseInte
             }
             PhpElementsUtil.replaceElementWithClassConstant(phpClass, parent);
         } catch (Exception e) {
-            HintManager.getInstance().showErrorHint(editor, e.getMessage());
+            IdeHelper.showErrorHintIfAvailable(editor, e.getMessage());
         }
     }
 

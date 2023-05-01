@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.form.intention;
 
-import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
@@ -9,6 +8,7 @@ import com.intellij.util.IncorrectOperationException;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -28,7 +28,7 @@ public class FormStringToClassConstantIntention extends PsiElementBaseIntentionA
         try {
             FormUtil.replaceFormStringAliasWithClassConstant((StringLiteralExpression) parent);
         } catch (Exception e) {
-            HintManager.getInstance().showErrorHint(editor, e.getMessage());
+            IdeHelper.showErrorHintIfAvailable(editor, e.getMessage());
         }
     }
 

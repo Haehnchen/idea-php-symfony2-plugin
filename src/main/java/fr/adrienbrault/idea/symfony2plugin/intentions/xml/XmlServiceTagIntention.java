@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.intentions.xml;
 
-import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.editor.Editor;
@@ -15,6 +14,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
 import fr.adrienbrault.idea.symfony2plugin.intentions.php.XmlServiceArgumentIntention;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceTag;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.jetbrains.annotations.NotNull;
@@ -51,7 +51,7 @@ public class XmlServiceTagIntention extends PsiElementBaseIntentionAction {
 
         Set<String> phpServiceTags = ServiceUtil.getPhpClassServiceTags(phpClassFromXmlTag);
         if(phpServiceTags.size() == 0) {
-            HintManager.getInstance().showErrorHint(editor, "Ops, no possible Tag found");
+            IdeHelper.showErrorHintIfAvailable(editor, "Ops, no possible Tag found");
             return;
         }
 

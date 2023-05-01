@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.dic.container.suggestion;
 
-import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInspection.LocalQuickFixAndIntentionActionOnPsiElement;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
@@ -14,6 +13,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.intentions.ui.ServiceSuggestDialog;
 import fr.adrienbrault.idea.symfony2plugin.intentions.xml.XmlServiceSuggestIntention;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.jetbrains.annotations.Nls;
@@ -60,7 +60,7 @@ public class XmlServiceSuggestIntentionAction extends LocalQuickFixAndIntentionA
 
         Collection<ContainerService> suggestions = ServiceUtil.getServiceSuggestionForPhpClass(phpClass, ContainerCollectionResolver.getServices(project));
         if(suggestions.size() == 0) {
-            HintManager.getInstance().showErrorHint(editor, "No suggestion found");
+            IdeHelper.showErrorHintIfAvailable(editor, "No suggestion found");
             return;
         }
 
