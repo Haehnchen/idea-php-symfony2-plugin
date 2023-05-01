@@ -14,6 +14,10 @@ import com.intellij.psi.xml.*;
 import com.intellij.util.Consumer;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.codeInsight.controlFlow.PhpControlFlowUtil;
+import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
+import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpCallInstruction;
+import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpReturnInstruction;
 import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
@@ -228,7 +232,7 @@ public class ServiceContainerUtil {
             return;
         }
 
-        XmlTag xmlTags[] = PsiTreeUtil.getChildrenOfType(psiFile.getFirstChild(), XmlTag.class);
+        XmlTag[] xmlTags = PsiTreeUtil.getChildrenOfType(psiFile.getFirstChild(), XmlTag.class);
         if(xmlTags == null) {
             return;
         }
@@ -288,6 +292,7 @@ public class ServiceContainerUtil {
     private static Collection<Function> getPhpContainerConfiguratorFunctions(@NotNull PhpFile phpFile) {
         Collection<Function> functions = new HashSet<>();
 
+
         for (PhpNamespace phpNamespace : PhpNamespaceBraceConverter.getAllNamespaces(phpFile)) {
             // its used for all service files:
             // namespace \Symfony\Component\DependencyInjection\Loader\Configurator { ... }
@@ -296,7 +301,20 @@ public class ServiceContainerUtil {
                 continue;
             }
 
-            for (PhpReturn phpReturn : PsiTreeUtil.collectElementsOfType(phpNamespace, PhpReturn.class)) {
+            Collection<PhpReturn> phpReturns = new ArrayList<>();
+
+            PhpControlFlowUtil.processFlow(phpNamespace.getControlFlow(), new PhpInstructionProcessor() {
+                @Override
+                public boolean processReturnInstruction(PhpReturnInstruction instruction) {
+                    if (instruction.getArgument().getParent() instanceof PhpReturn phpReturn) {
+                        phpReturns.add(phpReturn);
+                    }
+
+                    return super.processReturnInstruction(instruction);
+                }
+            });
+
+            for (PhpReturn phpReturn : phpReturns) {
                 for (Function function : PsiTreeUtil.collectElementsOfType(phpReturn, Function.class)) {
                     Parameter parameter = function.getParameter(0);
                     if (parameter == null) {
@@ -326,15 +344,21 @@ public class ServiceContainerUtil {
     public static void visitFile(@NotNull PhpFile phpFile, @NotNull Consumer<ServiceConsumer> consumer) {
         for (Function function : getPhpContainerConfiguratorFunctions(phpFile)) {
             // we only want "set" and "alias" methods
-            PsiElement[] methodReferences = PsiTreeUtil.collectElements(
-                function,
-                psiElement -> psiElement instanceof MethodReference && ("set".equals(((MethodReference) psiElement).getName()) || "alias".equals(((MethodReference) psiElement).getName()))
-            );
+            Collection<MethodReference> methodReferences = new ArrayList<>();
 
-            for (PsiElement psiElement : methodReferences) {
+            PhpControlFlowUtil.processFlow(function.getControlFlow(), new PhpInstructionProcessor() {
+                public boolean processPhpCallInstruction(PhpCallInstruction instruction) {
+                    if (instruction.getFunctionReference() instanceof MethodReference methodReference && ("set".equals(methodReference.getName()) || "alias".equals(methodReference.getName()))) {
+                        methodReferences.add(methodReference);
+                    }
+                    return super.processPhpCallInstruction(instruction);
+                }
+            });
+
+            for (MethodReference methodReference : methodReferences) {
                 // ->set('translator.default', Translator::class)
-                if (psiElement instanceof MethodReference && "set".equals(((MethodReference) psiElement).getName())) {
-                    PsiElement[] parameters = ((MethodReference) psiElement).getParameters();
+                if ("set".equals(methodReference.getName())) {
+                    PsiElement[] parameters = methodReference.getParameters();
                     String serviceName = null;
                     if (parameters.length >= 1) {
                         serviceName = getStringValueIndexSafe(parameters[0]);
@@ -352,12 +376,12 @@ public class ServiceContainerUtil {
                         }
                     }
 
-                    consumer.consume(new ServiceConsumer(parameters[0], serviceName, new PhpKeyValueAttributeValue(psiElement, keyValue), ServiceFileDefaults.EMPTY));
+                    consumer.consume(new ServiceConsumer(parameters[0], serviceName, new PhpKeyValueAttributeValue(methodReference, keyValue), ServiceFileDefaults.EMPTY));
                 }
 
                 // ->alias(TranslatorInterface::class, 'translator')
-                if (psiElement instanceof MethodReference && "alias".equals(((MethodReference) psiElement).getName())) {
-                    PsiElement[] parameters = ((MethodReference) psiElement).getParameters();
+                if ("alias".equals(methodReference.getName())) {
+                    PsiElement[] parameters = methodReference.getParameters();
                     String serviceName = null;
                     if (parameters.length >= 1) {
                         serviceName = getStringValueIndexSafe(parameters[0]);
@@ -375,7 +399,7 @@ public class ServiceContainerUtil {
                         }
                     }
 
-                    consumer.consume(new ServiceConsumer(parameters[0], serviceName, new PhpKeyValueAttributeValue(psiElement, keyValue), ServiceFileDefaults.EMPTY));
+                    consumer.consume(new ServiceConsumer(parameters[0], serviceName, new PhpKeyValueAttributeValue(methodReference, keyValue), ServiceFileDefaults.EMPTY));
                 }
             }
         }
