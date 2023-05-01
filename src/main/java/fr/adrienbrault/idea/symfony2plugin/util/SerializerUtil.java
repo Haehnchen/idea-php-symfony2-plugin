@@ -5,32 +5,48 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.indexing.FileBasedIndex;
-import com.jetbrains.php.lang.psi.elements.ClassConstantReference;
-import com.jetbrains.php.lang.psi.elements.ConcatenationExpression;
-import com.jetbrains.php.lang.psi.elements.MethodReference;
-import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import com.jetbrains.php.codeInsight.controlFlow.PhpControlFlowUtil;
+import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
+import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpCallInstruction;
+import com.jetbrains.php.lang.psi.PhpFile;
+import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.SerializerClassUsageStubIndex;
 import kotlin.Pair;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class SerializerUtil {
     public static void visitSerializerMethodReference(@NotNull PsiFile psiFile, @NotNull Consumer<Pair<String, PsiElement>> consumer) {
-        PsiElement[] methodReferences = PsiTreeUtil.collectElements(
-            psiFile,
-            psiElement -> psiElement instanceof MethodReference && "deserialize".equalsIgnoreCase(((MethodReference) psiElement).getName())
-        );
+        Collection<MethodReference> methodReferences = new ArrayList<>();
 
-        for (MethodReference methodReference : Arrays.stream(methodReferences).map(psiElement -> (MethodReference) psiElement).collect(Collectors.toSet())) {
+        for (PhpNamedElement topLevelElement : ((PhpFile) psiFile).getTopLevelDefs().values()) {
+            if (topLevelElement instanceof PhpClass clazz) {
+                for (Method method : clazz.getOwnMethods()) {
+                    PhpControlFlowUtil.processFlow(method.getControlFlow(), new PhpInstructionProcessor() {
+                        @Override
+                        public boolean processPhpCallInstruction(PhpCallInstruction instruction) {
+                            if (instruction.getFunctionReference() instanceof MethodReference methodReference && "deserialize".equalsIgnoreCase(methodReference.getName())) {
+                                methodReferences.add(methodReference);
+                            }
+                            return super.processPhpCallInstruction(instruction);
+                        }
+                    });
+                }
+            }
+
+        }
+
+        for (MethodReference methodReference : methodReferences) {
             PsiElement parameter = methodReference.getParameter(1);
             if (parameter instanceof ClassConstantReference) {
                 String classConstantPhpFqn = PhpElementsUtil.getClassConstantPhpFqn((ClassConstantReference) parameter);
