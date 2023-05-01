@@ -6,7 +6,7 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see fr.adrienbrault.idea.symfony2plugin.completion.command.PhpCommandGotoCompletionRegistrar
  */
-public class PhpCommandGotoCompletionRegistrar extends SymfonyLightCodeInsightFixtureTestCase {
+public class PhpCommandGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtureTestCase {
 
     public void setUp() throws Exception {
         super.setUp();
