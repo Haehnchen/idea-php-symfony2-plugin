@@ -19,6 +19,26 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.247
+* Use controlflow inside service php indexer (Daniel Espendiller)
+* Fix class name for "PhpCommandGotoCompletionRegistrar" testing (Daniel Espendiller)
+* Use controlflow inside "Serializer" class usage indexer (Daniel Espendiller)
+* Wrap "showErrorHint" to only so message if available: fix "Assert: must be called on EDT" (Daniel Espendiller)
+* Some performance element collect improvements (Daniel Espendiller)
+* Collect variables via controlflow for form callbacks (Daniel Espendiller)
+* Collect all form types returns via controller flows (Daniel Espendiller)
+* Reduce out of index issues by using controlfow to extract "Form::getExtendedTypes" (Daniel Espendiller)
+* Reduce out of index issues by using controlfow to extract command names (Daniel Espendiller)
+* Avoid potential deadlocks when loading files via "VfsUtil" (Daniel Espendiller)
+* Catch all external issues on Twig proxy completion (Daniel Espendiller)
+* Replace deprecated "PhpPsiUtil.getParentByCondition" usages (Daniel Espendiller)
+* [#2130](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2130) Deactivate similar inspection preview feature for Twig template creation (Daniel Espendiller)
+* [#2128](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2128) Avoid potential deadlocks when updating translations (Daniel Espendiller)
+* [#2126](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2126) Deactivate similar inspection preview feature for inspections (Daniel Espendiller)
+* fix fails positive for xml service argument indention when using for injected languages and non-service tags (Daniel Espendiller)
+* "never" is also valid for when (Daniel Espendiller)
+* meta data submodules updates (Daniel Espendiller)
+
 ## 2022.1.246
 * Support detection for duplicate routes in same file for xml, php attributes and docblock (Daniel Espendiller)
 * [#2102](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2102) add completion for "When" attribute (Daniel Espendiller)
