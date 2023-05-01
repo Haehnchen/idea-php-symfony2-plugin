@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.routing.inspection;
 
-import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo;
 import com.intellij.codeInspection.IntentionAndQuickFixAction;
 import com.intellij.codeInspection.ProblemDescriptor;
@@ -17,6 +16,7 @@ import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigElementFactory;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
+import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.SimilarSuggestionUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -71,7 +71,7 @@ public class RouteGuessTypoQuickFix extends IntentionAndQuickFixAction {
 
         List<String> similarItems = SimilarSuggestionUtil.findSimilarString(this.missingRoute, RouteHelper.getAllRoutes(project).keySet());
         if (similarItems.size() == 0) {
-            HintManager.getInstance().showErrorHint(editor, "No similar item found");
+            IdeHelper.showErrorHintIfAvailable(editor, "No similar item found");
             return;
         }
 
@@ -102,7 +102,7 @@ public class RouteGuessTypoQuickFix extends IntentionAndQuickFixAction {
         }
 
         if (suggestionSelected == null) {
-            HintManager.getInstance().showErrorHint(editor, "No replacement provider found");
+            IdeHelper.showErrorHintIfAvailable(editor, "No replacement provider found");
             return;
         }
 

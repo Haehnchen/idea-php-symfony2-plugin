@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.form.action.generator;
 
 import com.intellij.codeInsight.CodeInsightActionHandler;
 import com.intellij.codeInsight.actions.CodeInsightAction;
-import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
@@ -14,6 +13,7 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang.StringUtils;
@@ -51,7 +51,7 @@ public class FormTypeConstantMigrationAction extends CodeInsightAction {
         public void invoke(@NotNull Project project, @NotNull Editor editor, @NotNull PsiFile psiFile) {
             PhpClass phpClass = PhpCodeEditUtil.findClassAtCaret(editor, psiFile);
             if(phpClass == null) {
-                HintManager.getInstance().showErrorHint(editor, "No class context found");
+                IdeHelper.showErrorHintIfAvailable(editor, "No class context found");
                 return;
             }
 
@@ -59,7 +59,7 @@ public class FormTypeConstantMigrationAction extends CodeInsightAction {
             phpClass.acceptChildren(new FormTypeStringElementVisitor(formTypes));
 
             if(formTypes.size() == 0) {
-                HintManager.getInstance().showErrorHint(editor, "Nothing to do for me");
+                IdeHelper.showErrorHintIfAvailable(editor, "Nothing to do for me");
                 return;
             }
 

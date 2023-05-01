@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.inspection;
 
-import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInsight.intention.HighPriorityAction;
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo;
 import com.intellij.codeInspection.IntentionAndQuickFixAction;
@@ -79,8 +78,8 @@ public class TemplateCreateByNameLocalQuickFix extends IntentionAndQuickFixActio
             Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
 
             // notify error if editor is focused
-            if(editor != null) {
-                HintManager.getInstance().showErrorHint(editor, "Can not find a target dir");
+            if (editor != null) {
+                IdeHelper.showErrorHintIfAvailable(editor, "Can not find a target dir");
             }
 
             return;

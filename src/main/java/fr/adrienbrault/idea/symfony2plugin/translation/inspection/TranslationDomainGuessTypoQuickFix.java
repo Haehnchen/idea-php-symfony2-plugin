@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.translation.inspection;
 
-import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInspection.IntentionAndQuickFixAction;
@@ -18,6 +17,7 @@ import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigElementFactory;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.SimilarSuggestionUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -79,7 +79,7 @@ public class TranslationDomainGuessTypoQuickFix extends IntentionAndQuickFixActi
 
         List<String> similarItems = SimilarSuggestionUtil.findSimilarString(this.missingTranslationDomain, domains);
         if (similarItems.size() == 0) {
-            HintManager.getInstance().showErrorHint(editor, "No similar item found");
+            IdeHelper.showErrorHintIfAvailable(editor, "No similar item found");
             return;
         }
 
@@ -110,7 +110,7 @@ public class TranslationDomainGuessTypoQuickFix extends IntentionAndQuickFixActi
         }
 
         if (suggestionSelected == null) {
-            HintManager.getInstance().showErrorHint(editor, "No replacement provider found");
+            IdeHelper.showErrorHintIfAvailable(editor, "No replacement provider found");
             return;
         }
 

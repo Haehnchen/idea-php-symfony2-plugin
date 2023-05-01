@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.intentions.yaml;
 
-import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
@@ -14,6 +13,7 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.translation.util.TranslationInsertUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceTag;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
@@ -60,7 +60,7 @@ public class YamlServiceTagIntention extends PsiElementBaseIntentionAction {
 
         Set<String> phpClassServiceTags = invoke.getSecond();
         if(phpClassServiceTags.size() == 0) {
-            HintManager.getInstance().showErrorHint(editor, "Ops, no possible Tag found");
+            IdeHelper.showErrorHintIfAvailable(editor, "Ops, no possible Tag found");
             return;
         }
 
@@ -93,7 +93,7 @@ public class YamlServiceTagIntention extends PsiElementBaseIntentionAction {
             // we found a "tags" key so update
             PsiElement value = argumentsKeyValue.getValue();
             if(!(value instanceof YAMLCompoundValue)) {
-                HintManager.getInstance().showErrorHint(editor, "Sry, not supported tags definition");
+                IdeHelper.showErrorHintIfAvailable(editor, "Sry, not supported tags definition");
                 return;
             }
 
@@ -118,7 +118,7 @@ public class YamlServiceTagIntention extends PsiElementBaseIntentionAction {
         }
 
         if(appendEndOffset == -1) {
-            HintManager.getInstance().showErrorHint(editor, "Sry, not supported service definition");
+            IdeHelper.showErrorHintIfAvailable(editor, "Sry, not supported service definition");
             return;
         }
 

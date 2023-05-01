@@ -1,12 +1,16 @@
 package fr.adrienbrault.idea.symfony2plugin.util;
 
+import com.intellij.codeInsight.hint.HintManager;
+import com.intellij.codeInsight.intention.preview.IntentionPreviewUtils;
 import com.intellij.ide.util.PsiNavigationSupport;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationAction;
 import com.intellij.notification.NotificationGroupManager;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ex.ApplicationManagerEx;
+import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
@@ -270,5 +274,19 @@ public class IdeHelper {
         }
 
         return window;
+    }
+
+    public static void showErrorHintIfAvailable(@NotNull Editor editor, @NotNull String text) {
+        if (ApplicationManager.getApplication().isHeadlessEnvironment() || IntentionPreviewUtils.isIntentionPreviewActive()) {
+            return;
+        }
+
+        Runnable runnable = () -> HintManager.getInstance().showErrorHint(editor, text);
+
+        if (!ApplicationManager.getApplication().isDispatchThread()) {
+            ApplicationManager.getApplication().invokeLater(runnable);
+        } else {
+            runnable.run();
+        }
     }
 }

@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.intentions.xml;
 
-import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
@@ -13,6 +12,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.intentions.php.XmlServiceArgumentIntention;
 import fr.adrienbrault.idea.symfony2plugin.intentions.ui.ServiceSuggestDialog;
+import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -59,7 +59,7 @@ public class XmlServiceSuggestIntention extends PsiElementBaseIntentionAction {
 
         Set<String> suggestions = ServiceUtil.getServiceSuggestionsForServiceConstructorIndex(project, aClass, argumentIndex);
         if(suggestions.size() == 0) {
-            HintManager.getInstance().showErrorHint(editor, "No suggestion found");
+            IdeHelper.showErrorHintIfAvailable(editor, "No suggestion found");
             return;
         }
 

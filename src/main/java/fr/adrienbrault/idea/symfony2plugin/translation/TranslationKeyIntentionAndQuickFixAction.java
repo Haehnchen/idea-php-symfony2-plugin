@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.translation;
 
-import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInspection.IntentionAndQuickFixAction;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
@@ -13,6 +12,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.ui.components.JBList;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.util.TranslationInsertUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nls;
@@ -97,7 +97,7 @@ public class TranslationKeyIntentionAndQuickFixAction extends IntentionAndQuickF
         }
 
         if(files.size() == 0) {
-            HintManager.getInstance().showErrorHint(editor, "Ops, no domain file found");
+            IdeHelper.showErrorHintIfAvailable(editor, "Ops, no domain file found");
             return;
         }
 

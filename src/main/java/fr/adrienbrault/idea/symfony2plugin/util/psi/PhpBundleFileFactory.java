@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.util.psi;
 
-import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
@@ -22,6 +21,7 @@ import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.refactoring.PhpAliasImporter;
 import com.jetbrains.php.refactoring.PhpNameUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -52,7 +52,7 @@ public class PhpBundleFileFactory {
             return PhpBundleFileFactory.createCompilerPass(bundleClass, className);
         } catch (Exception e) {
             if(editor != null) {
-                HintManager.getInstance().showErrorHint(editor, "Error:" + e.getMessage());
+                IdeHelper.showErrorHintIfAvailable(editor, "Error:" + e.getMessage());
             } else {
                 JOptionPane.showMessageDialog(null, "Error:" + e.getMessage());
             }
