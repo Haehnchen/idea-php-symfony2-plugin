@@ -18,28 +18,27 @@ public class Route implements RouteInterface {
     @NotNull
     final private String name;
 
-    @NotNull
-    private Collection<String> methods = new HashSet<>();
+    private Collection<String> methods = Collections.emptyList();
     private String controller;
     private String path;
     private Set<String> pathCache;
 
-    private Set<String> variables = new HashSet<>();
-    private Map<String, String> defaults = new HashMap<>();
-    private Map<String, String> requirements = new HashMap<>();
-    private List<Collection<String>> tokens = new ArrayList<>();
+    final private Set<String> variables;
+    final private Map<String, String> defaults;
+    final private Map<String, String> requirements;
+    final private List<Collection<String>> tokens;
 
     public Route(@NotNull String name, @NotNull Set<String> variables, @NotNull Map<String, String> defaults, @NotNull Map<String, String> requirements, @NotNull List<Collection<String>> tokens) {
         this.name = name;
 
-        this.variables = variables;
-        this.defaults = defaults;
-        this.requirements = requirements;
-        this.tokens = tokens;
+        this.variables = variables.isEmpty() ? Collections.emptySet() : Collections.unmodifiableSet(variables);
+        this.defaults = defaults.isEmpty() ? Collections.emptyMap() : Collections.unmodifiableMap(defaults);
+        this.requirements = requirements.isEmpty() ? Collections.emptyMap() : Collections.unmodifiableMap(requirements);
+        this.tokens = tokens.isEmpty() ? Collections.emptyList() : Collections.unmodifiableList(tokens);
 
-        if(defaults.containsKey("_controller")) {
+        if (!defaults.isEmpty() && defaults.containsKey("_controller")) {
             String controller = defaults.get("_controller");
-            if(StringUtils.isNotBlank(controller)) {
+            if (StringUtils.isNotBlank(controller)) {
                 this.controller = controller.replace("\\\\", "\\");
             }
         }
@@ -51,19 +50,22 @@ public class Route implements RouteInterface {
     }
 
     public Route(@NotNull String name) {
-        this.name = name;
+        this(name, Collections.emptySet(), Collections.emptyMap(), Collections.emptyMap(), Collections.emptyList());
     }
 
     public Route(@NotNull String name, @NotNull String controller) {
-        this.name = name;
+        this(name, Collections.emptySet(), Collections.emptyMap(), Collections.emptyMap(), Collections.emptyList());
         this.controller = controller;
     }
 
     public Route(@NotNull RouteInterface routeInterface) {
-        this.name = routeInterface.getName();
+        this(routeInterface.getName(), Collections.emptySet(), Collections.emptyMap(), Collections.emptyMap(), Collections.emptyList());
+
         this.controller = routeInterface.getController();
         this.path = routeInterface.getPath();
-        this.methods = routeInterface.getMethods();
+
+        Collection<String> methods1 = routeInterface.getMethods();
+        this.methods = methods1.isEmpty() ? Collections.emptyList() : Collections.unmodifiableCollection(methods1);
     }
 
     @NotNull

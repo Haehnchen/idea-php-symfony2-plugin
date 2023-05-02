@@ -9,6 +9,7 @@ import org.w3c.dom.NodeList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Create a service definition on a compiled debug xml file
@@ -27,11 +28,11 @@ public class XmlService implements ServiceInterface {
 
     private String alias = null;
 
-    @NotNull
-    private Collection<String> tags = new HashSet<>();
+    private Collection<String> tags;
 
     private XmlService(@NotNull String id) {
         this.id = id;
+        this.tags = Collections.emptyList();
     }
 
     @NotNull
@@ -158,7 +159,7 @@ public class XmlService implements ServiceInterface {
         }
 
         // <tag name="xml_type_tag"/>
-        Collection<String> myTags = new HashSet<>();
+        Set<String> myTags = new HashSet<>();
         NodeList tags = node.getElementsByTagName("tag");
         int numTags = tags.getLength();
         for (int i = 0; i < numTags; i++) {
@@ -170,7 +171,9 @@ public class XmlService implements ServiceInterface {
             }
         }
 
-        xmlService.tags = myTags;
+        if (!myTags.isEmpty()) {
+            xmlService.tags = Collections.unmodifiableSet(myTags);
+        }
 
         return xmlService;
     }
