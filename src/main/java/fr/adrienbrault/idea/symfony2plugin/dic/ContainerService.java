@@ -1,9 +1,11 @@
 package fr.adrienbrault.idea.symfony2plugin.dic;
 
+import fr.adrienbrault.idea.symfony2plugin.dic.container.MemoryReducedCollectionService;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -15,17 +17,15 @@ public class ContainerService {
     @Nullable
     private ServiceInterface service;
 
-    @NotNull
-    private String name;
+    final private String name;
 
-    @Nullable
-    private String className;
+    final private String className;
     private boolean isPrivate = false;
     private boolean isWeak = false;
-    private Set<String> classVariants = new HashSet<>();
+    private Set<String> classVariants = Collections.emptySet();
 
     public ContainerService(@NotNull ServiceInterface service, @Nullable String classResolved) {
-        this.service = service;
+        this.service = new MemoryReducedCollectionService(service);
         this.name = service.getId();
         this.className = classResolved != null ? classResolved : service.getClassName();
         this.isPrivate = !service.isPublic();
@@ -37,7 +37,7 @@ public class ContainerService {
         this.className = className;
     }
 
-    public ContainerService(@NotNull String name, String className, boolean isWeak) {
+    public ContainerService(@NotNull String name, @Nullable String className, boolean isWeak) {
         this(name, className);
         this.isWeak = isWeak;
     }
@@ -57,6 +57,10 @@ public class ContainerService {
     }
 
     public void addClassName(@NotNull String className) {
+        if (this.classVariants.isEmpty()) {
+            this.classVariants = new HashSet<>();
+        }
+
         this.classVariants.add(className);
     }
 
