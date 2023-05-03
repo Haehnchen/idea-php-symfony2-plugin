@@ -536,9 +536,9 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            TwigUtil.visitTokenParsers(position.getProject(), pair ->
-                resultSet.addElement(LookupElementBuilder.create(pair.getFirst()).withIcon(Symfony2Icons.SYMFONY))
-            );
+            for (String namedTokenParserTag : TwigUtil.getNamedTokenParserTags(position.getProject())) {
+                resultSet.addElement(LookupElementBuilder.create(namedTokenParserTag).withIcon(Symfony2Icons.SYMFONY));
+            }
 
             // add special tag ending, provide a static list. there no suitable safe way to extract them
             // search able via: "return $token->test(array('end"
