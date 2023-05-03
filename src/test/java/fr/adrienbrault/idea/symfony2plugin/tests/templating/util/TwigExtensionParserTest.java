@@ -68,6 +68,11 @@ public class TwigExtensionParserTest extends SymfonyLightCodeInsightFixtureTestC
             "#Fmax",
             TwigExtensionParser.getFunctions(getProject()).get("class_php_callable_function_foobar").getSignature()
         );
+
+        assertEquals(
+            "#Fmax",
+            TwigExtensionParser.getFunctions(getProject()).get("conditional_return").getSignature()
+        );
     }
 
     public void testExtensionAreCollectedForDeprecated() {

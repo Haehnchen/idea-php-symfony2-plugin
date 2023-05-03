@@ -17,9 +17,11 @@ import com.intellij.util.Processor;
 import com.jetbrains.php.PhpClassHierarchyUtils;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.codeInsight.PhpCodeInsightUtil;
+import com.jetbrains.php.codeInsight.PhpScopeHolder;
 import com.jetbrains.php.codeInsight.controlFlow.PhpControlFlowUtil;
 import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
 import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpAccessVariableInstruction;
+import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpConstructorCallInstruction;
 import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpReturnInstruction;
 import com.jetbrains.php.completion.PhpLookupElement;
 import com.jetbrains.php.lang.PhpLangUtil;
@@ -1892,6 +1894,39 @@ public class PhpElementsUtil {
         }
 
         return null;
+    }
+
+    @NotNull
+    public static Collection<NewExpression> collectNewExpressionsInsideControlFlow(@NotNull PhpScopeHolder phpScopeHolder) {
+        Collection<NewExpression> newExpressions = new ArrayList<>();
+
+        PhpControlFlowUtil.processFlow(phpScopeHolder.getControlFlow(), new PhpInstructionProcessor() {
+            @Override
+            public boolean processConstructorCallInstruction(PhpConstructorCallInstruction instruction) {
+                newExpressions.add(instruction.getNewExpression());
+                return super.processConstructorCallInstruction(instruction);
+            }
+        });
+
+        return newExpressions;
+    }
+
+    public static Collection<PsiElement> collectPhpReturnArgumentsInsideControlFlow(@NotNull PhpScopeHolder phpScopeHolder) {
+        Collection<PsiElement> elements = new ArrayList<>();
+
+        PhpControlFlowUtil.processFlow(phpScopeHolder.getControlFlow(), new PhpInstructionProcessor() {
+            @Override
+            public boolean processReturnInstruction(PhpReturnInstruction instruction) {
+                PsiElement argument = instruction.getArgument();
+                if (argument != null) {
+                    elements.add(argument);
+                }
+
+                return super.processReturnInstruction(instruction);
+            }
+        });
+
+        return elements;
     }
 
     @NotNull

@@ -102,6 +102,10 @@ namespace Twig
 
         public function getFunctions()
         {
+            if ('webpack-encore-bundle' === 'foo') {
+                return new TwigFunction('conditional_return', 'max');
+            }
+
             return [
                 new \Twig_SimpleFunction('max', 'max'),
                 'form_enctype' => new \Twig_Function_Node('Symfony\Bridge\Twig\Node\FormEnctypeNode'),
