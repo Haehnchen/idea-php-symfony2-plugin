@@ -110,6 +110,9 @@ public class TwigUtil {
     private static final Key<CachedValue<List<String>>> SYMFONY_TEMPLATE_EMBED_LIST = new Key<>("SYMFONY_TEMPLATE_EMBED_LIST");
     private static final Key<CachedValue<List<String>>> SYMFONY_TEMPLATE_EXTENDS_LIST = new Key<>("SYMFONY_TEMPLATE_EXTENDS_LIST");
 
+    private static final Key<CachedValue<Set<String>>> SYMFONY_NAMED_TOKEN_TAGS = new Key<>("SYMFONY_NAMED_TOKEN_TAGS");
+    private static final Key<CachedValue<Map<String, String>>> SYMFONY_DEPRECATED_NAMED_TOKEN_TAGS = new Key<>("SYMFONY_DEPRECATED_NAMED_TOKEN_TAGS");
+
     public static String[] CSS_FILES_EXTENSIONS = new String[] { "css", "less", "sass", "scss" };
 
     public static String[] JS_FILES_EXTENSIONS = new String[] { "js", "dart", "coffee" };
@@ -2590,18 +2593,43 @@ public class TwigUtil {
                 continue;
             }
 
-            // get string return value
-            PhpReturn childrenOfType = PsiTreeUtil.findChildOfType(getTag, PhpReturn.class);
-            if(childrenOfType != null) {
-                PhpPsiElement returnValue = childrenOfType.getFirstPsiChild();
-                if(returnValue instanceof StringLiteralExpression) {
-                    String contents = ((StringLiteralExpression) returnValue).getContents();
-                    if(StringUtils.isNotBlank(contents)) {
+            for (PsiElement returnValue : PhpElementsUtil.collectPhpReturnArgumentsInsideControlFlow(getTag)) {
+                if (returnValue instanceof StringLiteralExpression stringLiteralExpression) {
+                    String contents = stringLiteralExpression.getContents();
+                    if (StringUtils.isNotBlank(contents)) {
                         consumer.consume(new Triple<>(contents, returnValue, getTag));
                     }
                 }
             }
         }
+    }
+
+    public static Set<String> getNamedTokenParserTags(@NotNull Project project) {
+        return CachedValuesManager.getManager(project).getCachedValue(project, SYMFONY_NAMED_TOKEN_TAGS, () -> {
+            Set<String> items = new HashSet<>();
+            TwigUtil.visitTokenParsers(project, pair ->items.add(pair.getFirst()));
+            return CachedValueProvider.Result.create(Collections.unmodifiableSet(items), PsiModificationTracker.MODIFICATION_COUNT);
+        }, false);
+    }
+    @NotNull
+
+    public static Map<String, String> getNamedDeprecatedTokenParserTags(@NotNull Project project) {
+        return CachedValuesManager.getManager(project).getCachedValue(project, SYMFONY_DEPRECATED_NAMED_TOKEN_TAGS, () -> {
+            Map<String, String> deprecations = new HashMap<>();
+
+            TwigUtil.visitTokenParsers(project, triple -> {
+                String currentTagName = triple.getFirst();
+
+                PhpClass phpClass = triple.getThird().getContainingClass();
+
+                if (phpClass != null && phpClass.isDeprecated()) {
+                    PhpElementsUtil.getClassDeprecatedMessage(phpClass);
+                    deprecations.put(currentTagName, PhpElementsUtil.getClassDeprecatedMessage(phpClass));
+                }
+            });
+
+            return CachedValueProvider.Result.create(Collections.unmodifiableMap(deprecations), PsiModificationTracker.MODIFICATION_COUNT);
+        }, false);
     }
 
     /**

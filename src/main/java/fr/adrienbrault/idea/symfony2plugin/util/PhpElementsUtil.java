@@ -26,6 +26,8 @@ import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpReturnInstructi
 import com.jetbrains.php.completion.PhpLookupElement;
 import com.jetbrains.php.lang.PhpLangUtil;
 import com.jetbrains.php.lang.PhpLanguage;
+import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
+import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.patterns.PhpPatterns;
@@ -543,6 +545,29 @@ public class PhpElementsUtil {
                         )
                 ))
             );
+    }
+
+
+    @Nullable
+    public static String getClassDeprecatedMessage(@NotNull PhpClass phpClass) {
+        if (phpClass.isDeprecated()) {
+            PhpDocComment docComment = phpClass.getDocComment();
+            if (docComment != null) {
+                for (PhpDocTag deprecatedTag : docComment.getTagElementsByName("@deprecated")) {
+                    // deprecatedTag.getValue provides a number !?
+                    String tagValue = deprecatedTag.getText();
+                    if (StringUtils.isNotBlank(tagValue)) {
+                        String trim = tagValue.replace("@deprecated", "").trim();
+
+                        if (StringUtils.isNotBlank(tagValue)) {
+                            return StringUtils.abbreviate("Deprecated: " + trim, 100);
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
