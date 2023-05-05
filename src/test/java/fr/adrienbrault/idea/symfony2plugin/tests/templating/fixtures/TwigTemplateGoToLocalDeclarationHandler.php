@@ -39,3 +39,13 @@ namespace Twig\TokenParser
         public function getTag();
     }
 }
+
+namespace App\Components
+{
+    use Symfony\UX\TwigComponent\Attribute\AsTwigComponent;
+
+    #[AsTwigComponent]
+    class Alert
+    {
+    }
+}

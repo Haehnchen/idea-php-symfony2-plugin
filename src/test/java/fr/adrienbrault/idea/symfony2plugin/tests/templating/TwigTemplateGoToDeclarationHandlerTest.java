@@ -284,4 +284,20 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
                 "{{ _self.foo<caret>bar('password') }}"
         );
     }
+
+    public void testComponentNameNavigation() {
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+                "{{ component('Ale<caret>rt') }}",
+            PlatformPatterns.psiElement(PhpClass.class)
+        );
+    }
+
+    public void testComponentNameTagNavigation() {
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{% component Ale<caret>rt %}",
+            PlatformPatterns.psiElement(PhpClass.class)
+        );
+    }
 }

@@ -431,6 +431,44 @@ public class TwigPattern {
     }
 
     /**
+     * "{% tagName foo"
+     * "{% tagName 'foo'"
+     */
+    public static ElementPattern<PsiElement> getArgumentAfterTagNamePattern(@NotNull String tagName) {
+        return PlatformPatterns.or(
+            PlatformPatterns
+                .psiElement(TwigTokenTypes.IDENTIFIER)
+                .withParent(
+                    PlatformPatterns.psiElement(TwigElementTypes.TAG)
+                )
+                .afterLeafSkipping(
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                    ),
+                    PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText(tagName)
+                ).withLanguage(TwigLanguage.INSTANCE),
+            PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
+                .withParent(
+                    PlatformPatterns.psiElement(TwigElementTypes.TAG)
+                )
+                .afterLeafSkipping(
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                    ),
+                    PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText(tagName)
+                ).withLanguage(TwigLanguage.INSTANCE)
+        );
+    }
+
+    /**
      * Check for {% if foo is "foo" %}
      */
     public static ElementPattern<PsiElement> getAfterIsTokenPattern() {
@@ -733,38 +771,7 @@ public class TwigPattern {
      * {% trans_default_domain <carpet> %}
      */
     public static ElementPattern<PsiElement> getTransDefaultDomainPattern() {
-        //noinspection unchecked
-        return PlatformPatterns.or(
-            PlatformPatterns
-                .psiElement(TwigTokenTypes.IDENTIFIER)
-                .withParent(
-                    PlatformPatterns.psiElement(TwigElementTypes.TAG)
-                )
-                .afterLeafSkipping(
-                    PlatformPatterns.or(
-                        PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
-                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                        PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-                        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
-                    ),
-                    PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText("trans_default_domain")
-                ).withLanguage(TwigLanguage.INSTANCE),
-            PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
-                .withParent(
-                    PlatformPatterns.psiElement(TwigElementTypes.TAG)
-                )
-                .afterLeafSkipping(
-                    PlatformPatterns.or(
-                        PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
-                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                        PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-                        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
-                    ),
-                    PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText("trans_default_domain")
-                ).withLanguage(TwigLanguage.INSTANCE)
-        );
+        return getArgumentAfterTagNamePattern("trans_default_domain");
     }
 
     /**
@@ -956,6 +963,27 @@ public class TwigPattern {
             )
             .withLanguage(TwigLanguage.INSTANCE)
         ;
+    }
+
+    /**
+     * "{{ component('<caret>'}) }}"
+     */
+    public static ElementPattern<PsiElement> getComponentPattern() {
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.STRING_TEXT)
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                ),
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("component")
+                )
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
     }
 
     /**

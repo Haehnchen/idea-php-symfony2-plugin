@@ -45,6 +45,7 @@ import fr.adrienbrault.idea.symfony2plugin.twig.variable.globals.TwigGlobalsServ
 import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.FunctionInsertHandler;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpClassCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerCompletionProvider;
@@ -342,6 +343,22 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             }
         );
 
+        // {{ component('<caret>'}) }}
+        // {% component FOO
+        extend(
+            CompletionType.BASIC,
+            PlatformPatterns.or(TwigPattern.getComponentPattern(), TwigPattern.getArgumentAfterTagNamePattern("component")),
+            new CompletionProvider<>() {
+                public void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet resultSet) {
+                    if (!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+                        return;
+                    }
+
+                    resultSet.addAllElements(UxUtil.getComponentLookupElements(parameters.getPosition().getProject()));
+                }
+            }
+        );
+
         // routing parameter completion
         extend(
             CompletionType.BASIC,
@@ -464,6 +481,20 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             CompletionType.BASIC,
             PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME),
             new IncompleteBlockCompletionProvider()
+        );
+
+        // {% com => {% com '...'
+        extend(
+            CompletionType.BASIC,
+            PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME),
+            new IncompleteComponentCompletionProvider()
+        );
+
+        // {{ com => {{ com('...')
+        extend(
+            CompletionType.BASIC,
+            TwigPattern.getCompletablePattern(),
+            new IncompleteComponentPrintBlockCompletionProvider()
         );
 
         // {{ in => {{ include('...')
@@ -995,6 +1026,62 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
             for (LookupElement blockLookupElement : blockLookupElements) {
                 resultSet.addElement(LookupElementBuilder.create("block " + blockLookupElement.getLookupString()).withIcon(TwigIcons.TwigFileIcon));
+            }
+        }
+    }
+
+    /**
+     * {% com => {% com '...'
+     */
+    private class IncompleteComponentCompletionProvider extends CompletionProvider<CompletionParameters> {
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
+            PsiElement position = completionParameters.getOriginalPosition();
+            if(!Symfony2ProjectComponent.isEnabled(position)) {
+                return;
+            }
+
+            resultSet.restartCompletionOnPrefixChange(StandardPatterns.string().longerThan(1).with(new PatternCondition<>("component startsWith") {
+                @Override
+                public boolean accepts(@NotNull String s, ProcessingContext processingContext) {
+                    return "component".startsWith(s);
+                }
+            }));
+
+            if (!isCompletionStartingMatch("component", completionParameters, 2)) {
+                return;
+            }
+
+            for (LookupElement blockLookupElement : UxUtil.getComponentLookupElements(position.getProject())) {
+                resultSet.addElement(LookupElementBuilder.create("component " + blockLookupElement.getLookupString()).withIcon(Symfony2Icons.SYMFONY));
+            }
+        }
+    }
+
+
+    /**
+     * {{ com => {{ component('...')
+     */
+    private class IncompleteComponentPrintBlockCompletionProvider extends CompletionProvider<CompletionParameters> {
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
+            if(!Symfony2ProjectComponent.isEnabled(completionParameters.getPosition())) {
+                return;
+            }
+
+            resultSet.restartCompletionOnPrefixChange(StandardPatterns.string().longerThan(2).with(new PatternCondition<>("component startsWith") {
+                @Override
+                public boolean accepts(@NotNull String s, ProcessingContext processingContext) {
+                    return "component".startsWith(s);
+                }
+            }));
+
+            if (!isCompletionStartingMatch("component", completionParameters, 2)) {
+                return;
+            }
+
+            for (LookupElement element : UxUtil.getComponentLookupElements(completionParameters.getPosition().getProject())) {
+                resultSet.addElement(LookupElementBuilder.create(LookupElementBuilder.create(String.format("component('%s')", element.getLookupString()))).withIcon(Symfony2Icons.SYMFONY));
             }
         }
     }
