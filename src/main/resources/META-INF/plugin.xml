@@ -183,7 +183,13 @@
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.util.MethodParameterReferenceContributor"/>
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.routing.RouteXmlReferenceContributor"/>
 
+        <!-- <twig:FOOBAR> -->
+        <xml.tagNameProvider implementation="fr.adrienbrault.idea.symfony2plugin.templating.TwigComponentHtmlTagExtensions$TwigTemplateTagNameProvider"/>
+        <xml.xmlExtension implementation="fr.adrienbrault.idea.symfony2plugin.templating.TwigComponentHtmlTagExtensions$TwigTemplateXmlExtension" id="TwigTemplateXmlExtension"/>
+        <xml.xmlSuppressionProvider implementation="fr.adrienbrault.idea.symfony2plugin.templating.TwigComponentHtmlTagExtensions$TwigTemplateXmlSuppressionProvider"/>
+
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateGoToDeclarationHandler"/>
+        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.HtmlTemplateGoToDeclarationHandler"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlGoToDeclarationHandler"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.asset.AssetGoToDeclarationHandler"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateGlobalStringGoToDeclarationHandler"/>
@@ -240,6 +246,7 @@
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigControllerStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.FormDataClassStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.SerializerClassUsageStubIndex"/>
+        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.UxTemplateStubIndex"/>
 
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.ServiceLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.ControllerMethodLineMarkerProvider"/>

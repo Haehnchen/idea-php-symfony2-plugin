@@ -4,12 +4,21 @@ import com.intellij.patterns.*;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.html.HtmlTag;
 import com.intellij.psi.xml.XmlText;
+import com.intellij.psi.xml.XmlTokenType;
+import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TwigHtmlCompletionUtil {
+    public static final PatternCondition<PsiElement> HTML_TAG_TWIG_COMPONENT_PREFIX = new PatternCondition<>("twig prefix") {
+        @Override
+        public boolean accepts(@NotNull PsiElement psiElement, ProcessingContext context) {
+            String text = psiElement.getText();
+            return text.startsWith("twig:");
+        }
+    };
 
     // html inside twig: href=""
     public static PsiElementPattern.Capture<PsiElement> getHrefAttributePattern() {
@@ -128,4 +137,10 @@ public class TwigHtmlCompletionUtil {
 
     }
 
+    /**
+     * "<twig:Alert></twig:Alert>"
+     */
+    public static PsiElementPattern.Capture<PsiElement> getTwigNamespacePattern() {
+        return PlatformPatterns.psiElement().withElementType(XmlTokenType.XML_NAME).with(HTML_TAG_TWIG_COMPONENT_PREFIX);
+    }
 }

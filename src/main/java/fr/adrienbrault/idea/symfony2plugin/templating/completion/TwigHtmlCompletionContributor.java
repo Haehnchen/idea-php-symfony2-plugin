@@ -2,22 +2,31 @@ package fr.adrienbrault.idea.symfony2plugin.templating.completion;
 
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.patterns.ElementPattern;
+import com.intellij.patterns.PatternCondition;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.xml.XmlAttribute;
+import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.ProcessingContext;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.asset.AssetLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.asset.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.asset.AssetFile;
+import fr.adrienbrault.idea.symfony2plugin.asset.AssetLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHtmlCompletionUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -134,5 +143,65 @@ public class TwigHtmlCompletionContributor extends CompletionContributor {
                 resultSet.addAllElements(collect);
             }
         });
+
+        // <twig:Alert></twig:Alert>
+        extend(
+            CompletionType.BASIC,
+            TwigHtmlCompletionUtil.getTwigNamespacePattern(),
+            new CompletionProvider<>() {
+                @Override
+                protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
+                    PsiElement position = parameters.getOriginalPosition();
+                    if (!Symfony2ProjectComponent.isEnabled(position)) {
+                        return;
+                    }
+
+                    resultSet.addAllElements(UxUtil.getComponentLookupElements(position.getProject()));
+                }
+            }
+        );
+
+        // "<twig:Alert m<caret> :<caret>"
+        extend(
+            CompletionType.BASIC,
+            PlatformPatterns.psiElement().withParent(PlatformPatterns.psiElement(XmlAttribute.class).withParent(PlatformPatterns.psiElement(XmlTag.class).with(new PatternCondition<>("starting with 'twig:'") {
+                @Override
+                public boolean accepts(@NotNull XmlTag xmlTag, ProcessingContext context) {
+                    return xmlTag.getName().startsWith("twig:");
+                }
+            }))),
+            new CompletionProvider<>() {
+                @Override
+                protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
+                    PsiElement position = parameters.getOriginalPosition();
+                    if (!Symfony2ProjectComponent.isEnabled(position)) {
+                        return;
+                    }
+
+                    XmlTag parentOfType = PsiTreeUtil.getParentOfType(position, XmlTag.class);
+                    if (parentOfType == null) {
+                        return;
+                    }
+
+                    for (PhpClass phpClass : UxUtil.getTwigComponentNameTargets(position.getProject(), parentOfType.getName().substring(5))) {
+                        Arrays.stream(phpClass.getOwnFields()).filter(field -> field.getModifier().isPublic()).forEach(field -> {
+                            LookupElementBuilder element = LookupElementBuilder
+                                .create(field.getName())
+                                .withIcon(Symfony2Icons.SYMFONY)
+                                .withTypeText(field.getType().toString(), true);
+
+                            resultSet.addElement(element);
+
+                            LookupElementBuilder element2 = LookupElementBuilder
+                                .create(":" + field.getName())
+                                .withIcon(Symfony2Icons.SYMFONY)
+                                .withTypeText(field.getType().toString(), true);
+
+                            resultSet.addElement(element2);
+                        });
+                    }
+                }
+            }
+        );
     }
 }

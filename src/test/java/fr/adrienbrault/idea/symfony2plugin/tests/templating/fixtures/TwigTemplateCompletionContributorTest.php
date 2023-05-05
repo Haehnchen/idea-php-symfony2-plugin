@@ -103,3 +103,14 @@ namespace Twig\Extension
         }
     }
 }
+
+namespace App\Components
+{
+    use Symfony\UX\TwigComponent\Attribute\AsTwigComponent;
+
+    #[AsTwigComponent]
+    class Alert
+    {
+    }
+}
+

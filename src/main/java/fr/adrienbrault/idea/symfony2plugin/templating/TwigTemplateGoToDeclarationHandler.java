@@ -34,6 +34,7 @@ import fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigBlockUtil;
 import fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.ControllerDocVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -76,6 +77,12 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
 
         if (TwigPattern.getAutocompletableRoutePattern().accepts(psiElement)) {
             targets.addAll(getRouteGoTo(psiElement));
+        }
+
+        // {{ component('<caret>'}) }}
+        // {% component FOO
+        if (TwigPattern.getComponentPattern().accepts(psiElement) || TwigPattern.getArgumentAfterTagNamePattern("component").accepts(psiElement)) {
+            targets.addAll(getComponentGoTo(psiElement));
         }
 
         // find trans('', {}, '|')
@@ -288,6 +295,16 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         }
 
         return RouteHelper.getRouteDefinitionTargets(psiElement.getProject(), text);
+    }
+
+    private Collection<? extends PsiElement> getComponentGoTo(@NotNull PsiElement psiElement) {
+        String text = PsiElementUtils.getText(psiElement);
+
+        if(StringUtils.isBlank(text)) {
+            return Collections.emptyList();
+        }
+
+        return UxUtil.getTwigComponentNameTargets(psiElement.getProject(), text);
     }
 
     @NotNull
