@@ -521,6 +521,23 @@ public class PhpElementsUtil {
     }
 
     /**
+     * "#[FOO(namedArgument: '<caret>'])]"
+     */
+    public static PsiElementPattern.@NotNull Capture<StringLiteralExpression> getAttributeNamedArgumentStringLiteralPattern(@NotNull String namedArgument) {
+        return PlatformPatterns.psiElement(StringLiteralExpression.class)
+            .afterLeafSkipping(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(PhpTokenTypes.opCOLON).afterLeafSkipping(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(PhpTokenTypes.IDENTIFIER).withText(namedArgument)
+                )
+            )
+            .withParent(PlatformPatterns.psiElement(ParameterList.class)
+                .withParent(PlatformPatterns.psiElement(PhpAttribute.class))
+            );
+    }
+
+    /**
      * #[Security(tags: ['foobar']])]
      */
     @NotNull
