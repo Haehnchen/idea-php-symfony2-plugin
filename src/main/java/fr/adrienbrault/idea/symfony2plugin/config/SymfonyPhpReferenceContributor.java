@@ -10,6 +10,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.ServiceReference;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
+import fr.adrienbrault.idea.symfony2plugin.routing.RouteReference;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateReference;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
@@ -168,6 +169,40 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
                         return Symfony2ProjectComponent.isEnabled(target);
                     }
                 }
+        );
+
+        // #[Foo(template: "foo")]
+        psiReferenceRegistrar.registerReferenceProvider(
+            PhpElementsUtil.getAttributeNamedArgumentStringLiteralPattern("template"),
+            new PsiReferenceProvider() {
+                @NotNull
+                @Override
+                public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+                    return new PsiReference[]{ new TemplateReference((StringLiteralExpression) psiElement) };
+                }
+
+                @Override
+                public boolean acceptsTarget(@NotNull PsiElement target) {
+                    return Symfony2ProjectComponent.isEnabled(target);
+                }
+            }
+        );
+
+        // #[Foo(route: "foo")]
+        psiReferenceRegistrar.registerReferenceProvider(
+            PhpElementsUtil.getAttributeNamedArgumentStringLiteralPattern("route"),
+            new PsiReferenceProvider() {
+                @NotNull
+                @Override
+                public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+                    return new PsiReference[]{ new RouteReference((StringLiteralExpression) psiElement) };
+                }
+
+                @Override
+                public boolean acceptsTarget(@NotNull PsiElement target) {
+                    return Symfony2ProjectComponent.isEnabled(target);
+                }
+            }
         );
 
         psiReferenceRegistrar.registerReferenceProvider(
