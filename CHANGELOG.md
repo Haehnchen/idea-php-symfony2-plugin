@@ -19,6 +19,13 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.248
+* "route" and "template" named arguments values can have references (Daniel Espendiller)
+* [#2148](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2148) Support for Twig Component HTML Syntax (Daniel Espendiller)
+* Introduce caching for Twig "token parser" and include controlflow collecting (Daniel Espendiller)
+* TwigExtensionParser replace recursive element visiting in favor of controlflow (Daniel Espendiller)
+* Reduce memory object consumptions for main cached objects (Daniel Espendiller)
+
 ## 2022.1.247
 * Use controlflow inside service php indexer (Daniel Espendiller)
 * Fix class name for "PhpCommandGotoCompletionRegistrar" testing (Daniel Espendiller)
