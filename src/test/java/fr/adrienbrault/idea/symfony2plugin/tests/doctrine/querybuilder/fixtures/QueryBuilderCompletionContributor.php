@@ -5,6 +5,7 @@ namespace Doctrine\ORM
     class QueryBuilder
     {
         public function andWhere() {}
+        public function join() {}
     }
 
     class EntityRepository

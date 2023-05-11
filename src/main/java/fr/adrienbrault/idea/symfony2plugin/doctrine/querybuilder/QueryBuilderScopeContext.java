@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder;
 
+import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderClassJoin;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderJoin;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderPropertyAlias;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderRelation;
@@ -15,6 +16,9 @@ public class QueryBuilderScopeContext {
     final private Set<String> selects = new HashSet<>();
     final private Map<String, String> tableMap = new HashMap<>();
     final private Map<String, QueryBuilderJoin> joinMap = new HashMap<>();
+
+    final private Map<String, QueryBuilderClassJoin> joinClassMap = new HashMap<>();
+
     final private Map<String, List<QueryBuilderRelation>> relationMap = new HashMap<>();
     final private Map<String, QueryBuilderPropertyAlias> propertyAliasMap = new HashMap<>();
 
@@ -38,6 +42,10 @@ public class QueryBuilderScopeContext {
         this.joinMap.put(join, queryBuilderJoin);
     }
 
+    public void addClassJoin(String join, QueryBuilderClassJoin queryBuilderJoin) {
+        this.joinClassMap.put(join, queryBuilderJoin);
+    }
+
     public void addSelect(String select) {
         this.selects.add(select);
     }
@@ -56,6 +64,10 @@ public class QueryBuilderScopeContext {
 
     public Map<String, QueryBuilderJoin> getJoinMap() {
         return joinMap;
+    }
+
+    public Map<String, QueryBuilderClassJoin> getJoinClassMap() {
+        return joinClassMap;
     }
 
     public Map<String, String> getTableMap() {

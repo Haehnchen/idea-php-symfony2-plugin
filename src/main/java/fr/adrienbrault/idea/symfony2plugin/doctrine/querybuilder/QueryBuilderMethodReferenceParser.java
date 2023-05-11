@@ -12,6 +12,7 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.detector.FormQueryBuilderRepositoryDetector;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.detector.QueryBuilderRepositoryDetector;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.detector.QueryBuilderRepositoryDetectorParameter;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderClassJoin;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderJoin;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderPropertyAlias;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderRelation;
@@ -20,6 +21,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpTypeProviderUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -155,12 +157,32 @@ public class QueryBuilderMethodReferenceParser {
             return;
         }
 
-        String join = PsiElementUtils.getMethodParameterAt(methodReference, 0);
-        String alias = PsiElementUtils.getMethodParameterAt(methodReference, 1);
-        if(join != null && alias != null) {
-            qb.addJoin(alias, new QueryBuilderJoin(join, alias));
-        }
+        PsiElement parameter = methodReference.getParameter(0);
+        if (parameter instanceof ClassConstantReference classConstantReference) {
+            // Foobar\Foobar::class
+            String alias = PsiElementUtils.getMethodParameterAt(methodReference, 1);
 
+            if (StringUtils.isNotBlank(alias) && classConstantReference.getClassReference() instanceof ClassReference classReference) {
+                String fqn = classReference.getFQN();
+                if (fqn != null) {
+                    qb.addClassJoin(alias, new QueryBuilderClassJoin(fqn, alias));
+                }
+            }
+        } else {
+            String join = PsiElementUtils.getMethodParameterAt(methodReference, 0);
+            String alias = PsiElementUtils.getMethodParameterAt(methodReference, 1);
+
+            if (join != null && alias != null) {
+                if (!join.contains(".") && join.contains("\\")) {
+                    // Foobar\Foobar
+                    // \Foobar\Foobar
+                    qb.addClassJoin(alias, new QueryBuilderClassJoin("\\" + StringUtils.stripStart(join, "\\"), alias));
+                } else {
+                    // foo.bar
+                    qb.addJoin(alias, new QueryBuilderJoin(join, alias));
+                }
+            }
+        }
     }
 
     private void collectParameter(QueryBuilderScopeContext qb, MethodReference methodReference, String name) {
@@ -351,9 +373,9 @@ public class QueryBuilderMethodReferenceParser {
 
         for(QueryBuilderJoin join: qb.getJoinMap().values()) {
             String className = join.getResolvedClass();
-            if(className != null) {
+            if (className != null) {
                 PhpClass phpClass = PhpElementsUtil.getClassInterface(project, className);
-                if(phpClass != null) {
+                if (phpClass != null) {
                     qb.addPropertyAlias(join.getAlias(), new QueryBuilderPropertyAlias(join.getAlias(), null, new DoctrineModelField(join.getAlias()).addTarget(phpClass).setTypeName(phpClass.getPresentableFQN())));
 
                     // add entity properties
@@ -364,6 +386,17 @@ public class QueryBuilderMethodReferenceParser {
             }
         }
 
+        for(QueryBuilderClassJoin join: qb.getJoinClassMap().values()) {
+            PhpClass phpClass = PhpElementsUtil.getClassInterface(project, join.className());
+            if (phpClass != null) {
+                qb.addPropertyAlias(join.alias(), new QueryBuilderPropertyAlias(join.alias(), null, new DoctrineModelField(join.alias()).addTarget(phpClass).setTypeName(phpClass.getPresentableFQN())));
+
+                // add entity properties
+                for(DoctrineModelField field: EntityHelper.getModelFields(phpClass)) {
+                    qb.addPropertyAlias(join.alias() + "." + field.getName(), new QueryBuilderPropertyAlias(join.alias(), field.getName(), field));
+                }
+            }
+        }
     }
 
     public static List<QueryBuilderRelation> attachRelationFields(PhpClass phpClass) {
