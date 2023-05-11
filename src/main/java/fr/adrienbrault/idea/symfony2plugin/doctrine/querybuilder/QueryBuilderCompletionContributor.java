@@ -11,6 +11,7 @@ import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineUtil;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderPropertyAlias;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderRelation;
@@ -143,10 +144,10 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
 
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
             @Override
-            protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+            protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
                 PsiElement psiElement = completionParameters.getOriginalPosition();
-                if (psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
+                if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
                     return;
                 }
 
@@ -163,8 +164,14 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                 QueryBuilderScopeContext collect = qb.collect();
                 buildLookupElements(completionResultSet, collect);
 
-            }
+                for (Map.Entry<String, String> entry : DoctrineUtil.getDoctrineOrmFunctions(psiElement.getProject()).entrySet()) {
+                    LookupElementBuilder lookup = LookupElementBuilder.create(entry.getKey().toUpperCase())
+                        .withTypeText("FunctionNode")
+                        .withIcon(Symfony2Icons.DOCTRINE_WEAK);
 
+                    completionResultSet.addElement(lookup);
+                }
+            }
         });
 
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
