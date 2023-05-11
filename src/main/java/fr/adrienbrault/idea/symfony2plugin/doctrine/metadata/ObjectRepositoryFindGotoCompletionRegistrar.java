@@ -41,8 +41,10 @@ public class ObjectRepositoryFindGotoCompletionRegistrar implements GotoCompleti
             MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.ArrayParameterMatcher(context, 0)
                 .withSignature("\\Doctrine\\Common\\Persistence\\ObjectRepository", "findOneBy")
                 .withSignature("\\Doctrine\\Common\\Persistence\\ObjectRepository", "findBy")
+                .withSignature("\\Doctrine\\Common\\Persistence\\ObjectRepository", "count")
                 .withSignature("\\Doctrine\\Persistence\\ObjectRepository", "findOneBy")
                 .withSignature("\\Doctrine\\Persistence\\ObjectRepository", "findBy")
+                .withSignature("\\Doctrine\\Persistence\\ObjectRepository", "count")
                 .match();
 
             if(methodMatchParameter != null) {
