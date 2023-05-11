@@ -10,12 +10,17 @@ import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLFile;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Objects;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class DoctrineUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
+    public String getTestDataPath() {
+        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/doctrine/fixtures";
+    }
+
     /**
      * @see DoctrineUtil#getClassRepositoryPair
      */
@@ -278,5 +283,21 @@ public class DoctrineUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertTrue(Objects.requireNonNull(DoctrineUtil.getClassRepositoryPair(yamlFile2)).stream().anyMatch(
             stringStringPair -> "User".equals(stringStringPair.getFirst())
         ));
+    }
+
+    public void testGetDoctrineOrmFunctions() {
+        myFixture.copyFileToProject("doctrine_function_node.php");
+
+        Map<String, String> doctrineOrmFunctions = DoctrineUtil.getDoctrineOrmFunctions(getProject());
+
+        assertEquals("\\Doctrine\\ORM\\Query\\Functions\\MinFunction", doctrineOrmFunctions.get("min"));
+
+        assertContainsElements(
+            doctrineOrmFunctions.keySet(),
+            "min",
+            "length",
+            "substring",
+            "current_time"
+        );
     }
 }
