@@ -37,4 +37,44 @@ public class QueryBuilderCompletionContributorTest extends SymfonyLightCodeInsig
             "    }\n" +
             "}", "s.name", "s.id");
     }
+
+    public void testCompletionForJoinViaClassNameOnNoRelation() {
+        assertCompletionContains("test.php", "<?php\n" +
+            "\n" +
+            "use Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository;\n" +
+            "\n" +
+            "class Repository extends ServiceEntityRepository\n" +
+            "{\n" +
+            "    public function __construct(RegistryInterface $registry)\n" +
+            "    {\n" +
+            "        parent::__construct($registry, \\App\\Entity::class);\n" +
+            "    }\n" +
+            "\n" +
+            "    public function foobar()\n" +
+            "    {\n" +
+            "        $qb = $this->createQueryBuilder('s');\n" +
+            "        $qb->join(\\App\\Entity::class, 'foobar');\n" +
+            "        $qb->andWhere('foobar.<caret>');\n" +
+            "    }\n" +
+            "}", "foobar.name", "foobar.id");
+
+        assertCompletionContains("test.php", "<?php\n" +
+            "\n" +
+            "use Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository;\n" +
+            "\n" +
+            "class Repository extends ServiceEntityRepository\n" +
+            "{\n" +
+            "    public function __construct(RegistryInterface $registry)\n" +
+            "    {\n" +
+            "        parent::__construct($registry, \\App\\Entity::class);\n" +
+            "    }\n" +
+            "\n" +
+            "    public function foobar()\n" +
+            "    {\n" +
+            "        $qb = $this->createQueryBuilder('s');\n" +
+            "        $qb->join(\"App\\Entity\", 'foobar');\n" +
+            "        $qb->andWhere('foobar.<caret>');\n" +
+            "    }\n" +
+            "}", "foobar.name", "foobar.id");
+    }
 }
