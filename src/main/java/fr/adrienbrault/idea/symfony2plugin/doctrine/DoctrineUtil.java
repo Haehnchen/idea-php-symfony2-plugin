@@ -1,14 +1,18 @@
 package fr.adrienbrault.idea.symfony2plugin.doctrine;
 
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
+import com.intellij.psi.util.*;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.containers.ContainerUtil;
+import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.config.PhpLanguageLevel;
 import com.jetbrains.php.lang.documentation.phpdoc.PhpDocUtil;
 import com.jetbrains.php.lang.documentation.phpdoc.parser.PhpDocElementTypes;
@@ -16,8 +20,7 @@ import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
-import com.jetbrains.php.lang.psi.elements.PhpAttribute;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.refactoring.PhpNameUtil;
 import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
@@ -44,6 +47,8 @@ public class DoctrineUtil {
         "\\Doctrine\\ODM\\MongoDB\\Mapping\\Annotations\\Document",
         "\\Doctrine\\ODM\\CouchDB\\Mapping\\Annotations\\Document",
     };
+
+    private static final Key<CachedValue<Map<String, String>>> DOCTRINE_QUERY_BUILDER_NODE_FUNCTIONS = new Key<>("DOCTRINE_QUERY_BUILDER_NODE_FUNCTIONS");
 
     /**
      * Index metadata file with its class and repository.
@@ -186,6 +191,56 @@ public class DoctrineUtil {
 
         return StringUtils.stripStart(repositoryClass, "\\");
     }
+
+
+    /**
+     * Try find function via "\Doctrine\ORM\Query\AST\Functions\FunctionNode" implementations
+     *
+     * [
+     *    'concat'    => Functions\ConcatFunction::class,
+     *    'substring' => Functions\SubstringFunction::class,
+     * ]
+     */
+    public static Map<String, String> getDoctrineOrmFunctions(@NotNull Project project)
+    {
+        return CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            DOCTRINE_QUERY_BUILDER_NODE_FUNCTIONS,
+            new CachedValueProvider<>() {
+                @Override
+                public @NotNull Result<Map<String, String>> compute() {
+                    Map<String, String> items = new HashMap<>();
+
+                    for (PhpClass phpClass : PhpIndex.getInstance(project).getClassesByFQN("\\Doctrine\\ORM\\Query\\Parser")) {
+                        for (Field ownField : phpClass.getOwnFields()) {
+                            ownField.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
+                                @Override
+                                public void visitElement(@NotNull PsiElement element) {
+                                    if (element instanceof ArrayHashElement arrayHashElement) {
+                                        if (arrayHashElement.getKey() instanceof StringLiteralExpression stringLiteralExpression && arrayHashElement.getValue() instanceof ClassConstantReference classConstantReference) {
+                                            String contents = stringLiteralExpression.getContents();
+                                            if (StringUtils.isNotBlank(contents) && classConstantReference.getClassReference() instanceof ClassReference classReference) {
+                                                String fqn = classReference.getFQN();
+                                                if (StringUtils.isNotBlank(fqn) && fqn.toLowerCase().contains("\\Doctrine\\ORM\\Query\\Functions".toLowerCase()) || PhpElementsUtil.isInstanceOf(element.getProject(), fqn, "\\Doctrine\\ORM\\Query\\AST\\Functions\\FunctionNode")) {
+                                                    items.put(contents, fqn);
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    super.visitElement(element);
+                                }
+                            });
+                        }
+                    }
+
+                    return CachedValueProvider.Result.create(Collections.unmodifiableMap(items), PsiModificationTracker.MODIFICATION_COUNT);
+                }
+            },
+            false
+        );
+    }
+
 
     /**
      * Extract class and repository from all yaml files
