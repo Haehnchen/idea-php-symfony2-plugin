@@ -16,7 +16,9 @@ import com.intellij.psi.xml.XmlTokenType;
 import com.intellij.xml.XmlExtension;
 import com.intellij.xml.XmlTagNameProvider;
 import com.jetbrains.twig.TwigFile;
+import com.jetbrains.twig.TwigFileViewProvider;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
 import org.jetbrains.annotations.NotNull;
@@ -32,6 +34,10 @@ public class TwigComponentHtmlTagExtensions {
     public static class TwigTemplateTagNameProvider implements XmlTagNameProvider {
         @Override
         public void addTagNameVariants(List<LookupElement> elements, @NotNull XmlTag tag, String prefix) {
+            if (!Symfony2ProjectComponent.isEnabled(tag.getProject())) {
+                return;
+            }
+
             PsiElement elementOnTwigViewProvider = TwigUtil.getElementOnTwigViewProvider(tag);
 
             if (elementOnTwigViewProvider != null && !(elementOnTwigViewProvider.getContainingFile() instanceof TwigFile)) {
@@ -47,7 +53,11 @@ public class TwigComponentHtmlTagExtensions {
     public static class TwigTemplateXmlExtension extends XmlExtension {
         @Override
         public boolean isAvailable(PsiFile file) {
-            return true;
+            if (!Symfony2ProjectComponent.isEnabled(file.getProject())) {
+                return false;
+            }
+
+            return file.getViewProvider() instanceof TwigFileViewProvider;
         }
 
         @Override
