@@ -329,10 +329,12 @@ public class FormOptionsUtil {
                     }
                 }
 
+                Project project = phpClass.getProject();
+
                 // support: parent::setDefaultOptions($resolver)
                 // Symfony\Component\Form\Extension\Core\Type\FormType:setDefaultOptions
                 if(PhpElementsUtil.isEqualMethodReferenceName(methodReference, methodName) && methodReference.getReferenceType() == PhpModifier.State.PARENT) {
-                    PsiElement parentMethod = PhpElementsUtil.getPsiElementsBySignatureSingle(phpClass.getProject(), methodReference.getSignature());
+                    PsiElement parentMethod = PhpElementsUtil.getPsiElementsBySignatureSingle(project, methodReference.getSignature());
                     if(parentMethod instanceof Method) {
                         PhpClass phpClassInner = ((Method) parentMethod).getContainingClass();
                         if(phpClassInner != null) {

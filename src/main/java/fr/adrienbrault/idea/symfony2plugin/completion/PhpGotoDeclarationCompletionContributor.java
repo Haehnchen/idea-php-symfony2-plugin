@@ -37,7 +37,12 @@ public class PhpGotoDeclarationCompletionContributor {
     public static class GotoDeclaration implements GotoDeclarationHandler {
         @Override
         public PsiElement @Nullable [] getGotoDeclarationTargets(@Nullable PsiElement psiElement, int offset, Editor editor) {
-            if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
+            if (psiElement == null) {
+                return null;
+            }
+
+            Project project = psiElement.getProject();
+            if (!Symfony2ProjectComponent.isEnabled(project)) {
                 return new PsiElement[0];
             }
 
@@ -48,7 +53,7 @@ public class PhpGotoDeclarationCompletionContributor {
                 if (StringUtils.isNotBlank(contents)) {
                     // $httpClient->request('', '', ['<caret>' => '']);
                     if (isHttpClientOptionArgument(psiElement)) {
-                        consumeHttpClientOptions(psiElement.getProject(), pair -> {
+                        consumeHttpClientOptions(project, pair -> {
                             if (pair.getFirst().equals(contents)) {
                                 psiElements.add(pair.getSecond().getFirst());
                             }
@@ -57,7 +62,7 @@ public class PhpGotoDeclarationCompletionContributor {
 
                     // #[Route('/test/te<caret>st/test')]
                     if (AnnotationPattern.getDefaultPropertyValue().accepts(psiElement) || AnnotationPattern.getAttributesDefaultPattern().accepts(context)) {
-                       psiElements.addAll(partialRouteNavigation(contents, psiElement, offset));
+                       psiElements.addAll(partialRouteNavigation(project, contents, psiElement, offset));
                     }
                 }
             }
@@ -68,7 +73,7 @@ public class PhpGotoDeclarationCompletionContributor {
         /**
          * "#[Route('/test/te<caret>st/test')] => '/test/"
          */
-        private static Collection<PsiElement> partialRouteNavigation(@NotNull String contents, @NotNull PsiElement psiElement, int offset) {
+        private static Collection<PsiElement> partialRouteNavigation(@NotNull Project project, @NotNull String contents, @NotNull PsiElement psiElement, int offset) {
             int calulatedOffset = offset - psiElement.getTextRange().getStartOffset();
             if (calulatedOffset < 0) {
                 calulatedOffset = 0;
@@ -89,7 +94,7 @@ public class PhpGotoDeclarationCompletionContributor {
 
             Set<PsiElement> targets = new HashSet<>();
 
-            for (Route route : RouteHelper.getAllRoutes(psiElement.getProject()).values()) {
+            for (Route route : RouteHelper.getAllRoutes(project).values()) {
                 String path = route.getPath();
                 if (path == null) {
                     continue;
@@ -101,7 +106,7 @@ public class PhpGotoDeclarationCompletionContributor {
 
                 String routePathWithSlash = "/" + StringUtils.strip(path, "/") .toLowerCase() + "/";
                 if (routePathWithSlash.startsWith(partialUrlWithSlash.toLowerCase())) {
-                    targets.addAll(RouteHelper.getRouteDefinitionTargets(psiElement.getProject(), route.getName()));
+                    targets.addAll(RouteHelper.getRouteDefinitionTargets(project, route.getName()));
                 }
             }
 
@@ -112,9 +117,13 @@ public class PhpGotoDeclarationCompletionContributor {
     private static class HttpClientCompletionProvider extends CompletionProvider<CompletionParameters> {
         @Override
         protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
-
             PsiElement psiElement = completionParameters.getOriginalPosition();
-            if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof StringLiteralExpression)) {
+            if (psiElement == null) {
+                return;
+            }
+
+            Project project = psiElement.getProject();
+            if (!Symfony2ProjectComponent.isEnabled(project) || !(psiElement.getContext() instanceof StringLiteralExpression)) {
                 return;
             }
 
@@ -122,7 +131,7 @@ public class PhpGotoDeclarationCompletionContributor {
                 return;
             }
 
-            consumeHttpClientOptions(psiElement.getProject(), pair -> {
+            consumeHttpClientOptions(project, pair -> {
                 LookupElementBuilder element = LookupElementBuilder.create(pair.getFirst())
                     .withIcon(SymfonyIcons.Symfony);
 

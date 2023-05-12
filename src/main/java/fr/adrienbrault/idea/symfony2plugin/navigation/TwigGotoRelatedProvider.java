@@ -38,12 +38,14 @@ public class TwigGotoRelatedProvider extends GotoRelatedProvider {
     @NotNull
     @Override
     public List<? extends GotoRelatedItem> getItems(@NotNull PsiElement psiElement2) {
-        if (!Symfony2ProjectComponent.isEnabled(psiElement2)) {
+        Language language = psiElement2.getLanguage();
+        if (language != TwigLanguage.INSTANCE && language != HTMLLanguage.INSTANCE) {
             return Collections.emptyList();
         }
 
-        Language language = psiElement2.getLanguage();
-        if (language != TwigLanguage.INSTANCE && language != HTMLLanguage.INSTANCE) {
+        Project project = psiElement2.getProject();
+
+        if (!Symfony2ProjectComponent.isEnabled(project)) {
             return Collections.emptyList();
         }
 
@@ -61,7 +63,7 @@ public class TwigGotoRelatedProvider extends GotoRelatedProvider {
             TwigUtil.visitTemplateExtends((TwigFile) psiFile, pair -> templates.add(pair.getFirst()));
             Set<VirtualFile> virtualFiles = new HashSet<>();
             for (String template : templates) {
-                for (PsiFile templatePsiElement : TwigUtil.getTemplatePsiElements(psiElement.getProject(), template)) {
+                for (PsiFile templatePsiElement : TwigUtil.getTemplatePsiElements(project, template)) {
                     VirtualFile virtualFile = templatePsiElement.getVirtualFile();
                     if (!virtualFiles.contains(virtualFile)) {
                         virtualFiles.add(virtualFile);
@@ -93,7 +95,7 @@ public class TwigGotoRelatedProvider extends GotoRelatedProvider {
             // "include" and other file tags
             TwigTagWithFileReference twigTagWithFileReference = PsiTreeUtil.getParentOfType(psiElement, TwigTagWithFileReference.class);
             if (twigTagWithFileReference != null) {
-                visitFileReferenceElement(psiElement.getProject(), gotoRelatedItems, twigTagWithFileReference);
+                visitFileReferenceElement(project, gotoRelatedItems, twigTagWithFileReference);
             }
 
             // "embed" tag
@@ -101,7 +103,7 @@ public class TwigGotoRelatedProvider extends GotoRelatedProvider {
             if (parentOfType1 != null) {
                 PsiElement embedTag = PsiElementUtils.getChildrenOfType(parentOfType1, PlatformPatterns.psiElement().withElementType(TwigElementTypes.EMBED_TAG));
                 if (embedTag != null) {
-                    visitFileReferenceElement(psiElement.getProject(), gotoRelatedItems, embedTag);
+                    visitFileReferenceElement(project, gotoRelatedItems, embedTag);
                 }
             }
         }

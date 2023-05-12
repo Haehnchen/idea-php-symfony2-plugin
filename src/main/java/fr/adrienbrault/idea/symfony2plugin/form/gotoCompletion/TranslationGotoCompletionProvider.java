@@ -29,7 +29,7 @@ public class TranslationGotoCompletionProvider extends GotoCompletionProvider {
     @NotNull
     @Override
     public Collection<LookupElement> getLookupElements() {
-        return TranslationUtil.getTranslationLookupElementsOnDomain(getElement().getProject(), domain);
+        return TranslationUtil.getTranslationLookupElementsOnDomain(getProject(), domain);
     }
 
     @NotNull

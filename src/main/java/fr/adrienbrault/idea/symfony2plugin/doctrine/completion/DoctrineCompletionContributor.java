@@ -30,6 +30,7 @@ public class DoctrineCompletionContributor extends CompletionContributor {
         extend(CompletionType.BASIC, PlatformPatterns.psiElement().withParent(ConstantReference.class), new CompletionProvider<>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+
                 PsiElement psiElement = completionParameters.getOriginalPosition();
                 if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
                     return;

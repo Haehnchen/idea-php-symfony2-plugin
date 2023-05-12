@@ -62,12 +62,12 @@ public class PhpServiceArgumentIntention extends PsiElementBaseIntentionAction {
 
         JBPopupFactory.getInstance().createPopupChooserBuilder(new ArrayList<>(map.keySet()))
                 .setTitle("Symfony: Services Definitions")
-                .setItemChosenCallback(setSelectedValue -> WriteCommandAction.writeCommandAction(project).withName("Service Update").run(() -> invokeByScope(map.get(setSelectedValue), editor)))
+                .setItemChosenCallback(setSelectedValue -> WriteCommandAction.writeCommandAction(project).withName("Service Update").run(() -> invokeByScope(project, map.get(setSelectedValue), editor)))
                 .createPopup()
                 .showInBestPositionFor(editor);
     }
 
-    private void invokeByScope(@NotNull PsiElement psiElement, @NotNull Editor editor) {
+    private void invokeByScope(@NotNull Project project, @NotNull PsiElement psiElement, @NotNull Editor editor) {
         boolean success = false;
 
         if (psiElement instanceof XmlTag) {
@@ -79,10 +79,10 @@ public class PhpServiceArgumentIntention extends PsiElementBaseIntentionAction {
             }
         } else if (psiElement instanceof YAMLKeyValue) {
             List<String> args = ServiceActionUtil.getYamlMissingArgumentTypes(
-                    psiElement.getProject(),
-                    ServiceActionUtil.ServiceYamlContainer.create((YAMLKeyValue) psiElement),
-                    false,
-                    new ContainerCollectionResolver.LazyServiceCollector(psiElement.getProject())
+                project,
+                ServiceActionUtil.ServiceYamlContainer.create((YAMLKeyValue) psiElement),
+                false,
+                new ContainerCollectionResolver.LazyServiceCollector(psiElement.getProject())
             );
 
             success = args.size() > 0;
@@ -107,7 +107,7 @@ public class PhpServiceArgumentIntention extends PsiElementBaseIntentionAction {
 
     @Override
     public boolean isAvailable(@NotNull Project project, Editor editor, @NotNull PsiElement psiElement) {
-        return psiElement.getLanguage().equals(PhpLanguage.INSTANCE) && getServicesInScope(psiElement).size() > 0;
+        return psiElement.getLanguage().equals(PhpLanguage.INSTANCE) && getServicesInScope(project, psiElement).size() > 0;
     }
 
     @Nls
@@ -124,12 +124,12 @@ public class PhpServiceArgumentIntention extends PsiElementBaseIntentionAction {
     }
 
     @NotNull
-    private Set<String> getServicesInScope(@NotNull PsiElement psiElement) {
+    private Set<String> getServicesInScope(@NotNull Project project, @NotNull PsiElement psiElement) {
         PhpClass phpClass = PsiTreeUtil.getParentOfType(psiElement, PhpClass.class);
 
         return phpClass == null
-                ? Collections.emptySet()
-                : ContainerCollectionResolver.ServiceCollector.create(psiElement.getProject()).convertClassNameToServices(phpClass.getFQN());
+            ? Collections.emptySet()
+            : ContainerCollectionResolver.ServiceCollector.create(project).convertClassNameToServices(phpClass.getFQN());
     }
 
     @Override

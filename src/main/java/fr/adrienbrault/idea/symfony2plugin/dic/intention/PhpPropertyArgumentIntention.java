@@ -115,7 +115,7 @@ public class PhpPropertyArgumentIntention extends IntentionAndQuickFixAction imp
             return;
         }
 
-        List<PhpClass> phpClasses = injectionService.stream().map(s -> PhpIndex.getInstance(fieldReference.getProject()).getAnyByFQN(s).iterator().next())
+        List<PhpClass> phpClasses = injectionService.stream().map(s -> PhpIndex.getInstance(project).getAnyByFQN(s).iterator().next())
             .distinct()
             .collect(Collectors.toList());
 

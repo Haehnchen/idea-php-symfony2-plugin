@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder;
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
@@ -101,10 +102,12 @@ public class QueryBuilderGotoDeclarationHandler implements GotoDeclarationHandle
         }
 
         List<QueryBuilderRelation> relations = collect.getRelationMap().get(joinSplit[0]);
-        for(QueryBuilderRelation relation: relations) {
-            if(joinSplit[1].equals(relation.getFieldName()) && relation.getTargetEntity() != null) {
-                PhpClass phpClass = PhpElementsUtil.getClassInterface(psiElement.getProject(), relation.getTargetEntity());
-                if(phpClass != null) {
+        Project project = psiElement.getProject();
+
+        for (QueryBuilderRelation relation: relations) {
+            if (joinSplit[1].equals(relation.getFieldName()) && relation.getTargetEntity() != null) {
+                PhpClass phpClass = PhpElementsUtil.getClassInterface(project, relation.getTargetEntity());
+                if (phpClass != null) {
                     targets.add(phpClass);
                 }
             }

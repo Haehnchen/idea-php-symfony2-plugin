@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder;
 
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -145,9 +146,13 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
-
                 PsiElement psiElement = completionParameters.getOriginalPosition();
-                if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
+                if (psiElement == null) {
+                    return;
+                }
+
+                Project project = psiElement.getProject();
+                if (!Symfony2ProjectComponent.isEnabled(project)) {
                     return;
                 }
 
@@ -164,7 +169,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                 QueryBuilderScopeContext collect = qb.collect();
                 buildLookupElements(completionResultSet, collect);
 
-                for (Map.Entry<String, String> entry : DoctrineUtil.getDoctrineOrmFunctions(psiElement.getProject()).entrySet()) {
+                for (Map.Entry<String, String> entry : DoctrineUtil.getDoctrineOrmFunctions(project).entrySet()) {
                     LookupElementBuilder lookup = LookupElementBuilder.create(entry.getKey().toUpperCase())
                         .withTypeText("FunctionNode")
                         .withIcon(Symfony2Icons.DOCTRINE_WEAK);

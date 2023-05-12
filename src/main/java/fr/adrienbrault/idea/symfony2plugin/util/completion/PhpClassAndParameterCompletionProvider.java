@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.util.completion;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -20,15 +21,19 @@ import java.util.Map;
 public class PhpClassAndParameterCompletionProvider extends CompletionProvider<CompletionParameters> {
 
     public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, final @NotNull CompletionResultSet resultSet) {
-
         PsiElement psiElement = parameters.getOriginalPosition();
-        if(psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
+        if (psiElement == null) {
+            return;
+        }
+
+        Project project = parameters.getPosition().getProject();
+        if (!Symfony2ProjectComponent.isEnabled(project)) {
             return;
         }
 
         PhpClassCompletionProvider.addClassCompletion(parameters, resultSet, psiElement, false);
 
-        for( Map.Entry<String, ContainerParameter> entry: ContainerCollectionResolver.getParameters(psiElement.getProject()).entrySet()) {
+        for( Map.Entry<String, ContainerParameter> entry: ContainerCollectionResolver.getParameters(project).entrySet()) {
             resultSet.addElement(
                 new ParameterLookupElement(entry.getValue(), ParameterPercentWrapInsertHandler.getInstance(), psiElement.getText())
             );

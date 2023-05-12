@@ -36,7 +36,12 @@ public class ConfigLineMarkerProvider implements LineMarkerProvider {
 
     @Override
     public void collectSlowLineMarkers(@NotNull List<? extends PsiElement> psiElements, @NotNull Collection<? super LineMarkerInfo<?>> result) {
-        if(psiElements.size() == 0 || !Symfony2ProjectComponent.isEnabled(psiElements.get(0))) {
+        if(psiElements.size() == 0) {
+            return;
+        }
+
+        Project project = psiElements.get(0).getProject();
+        if (!Symfony2ProjectComponent.isEnabled(psiElements.get(0))) {
             return;
         }
 
@@ -45,14 +50,14 @@ public class ConfigLineMarkerProvider implements LineMarkerProvider {
         for (PsiElement psiElement : psiElements) {
             if(psiElement.getNode().getElementType() == YAMLTokenTypes.SCALAR_KEY && YamlElementPatternHelper.getRootConfigKeyPattern().accepts(psiElement)) {
                 if(function == null) {
-                    function = new LazyConfigTreeSignatures(psiElements.get(0).getProject());
+                    function = new LazyConfigTreeSignatures(project);
                 }
-                visitRootElements(result, psiElement, function);
+                visitRootElements(project, result, psiElement, function);
             }
         }
     }
 
-    private void visitRootElements(@NotNull Collection<? super LineMarkerInfo<?>> result, @NotNull PsiElement psiElement, @NotNull LazyConfigTreeSignatures function) {
+    private void visitRootElements(@NotNull Project project, @NotNull Collection<? super LineMarkerInfo<?>> result, @NotNull PsiElement psiElement, @NotNull LazyConfigTreeSignatures function) {
         PsiElement parent = psiElement.getParent();
         if(!(parent instanceof YAMLKeyValue)) {
             return;
@@ -72,7 +77,7 @@ public class ConfigLineMarkerProvider implements LineMarkerProvider {
                 if (StringUtils.isNotBlank(keyText1)) {
                     PsiElement key = yamlKeyValue.getKey();
                     if (key != null) {
-                        visitConfigKey(result, key, function, keyText1);
+                        visitConfigKey(project, result, key, function, keyText1);
                     }
                 }
             }
@@ -80,17 +85,17 @@ public class ConfigLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        visitConfigKey(result, psiElement, function, keyText);
+        visitConfigKey(project, result, psiElement, function, keyText);
     }
 
-    private void visitConfigKey(@NotNull Collection<? super LineMarkerInfo<?>> result, @NotNull PsiElement psiElement, @NotNull LazyConfigTreeSignatures function, String keyText) {
+    private void visitConfigKey(@NotNull Project project, @NotNull Collection<? super LineMarkerInfo<?>> result, @NotNull PsiElement psiElement, @NotNull LazyConfigTreeSignatures function, String keyText) {
         Map<String, Collection<String>> treeSignatures = function.value();
         if(!treeSignatures.containsKey(keyText)) {
             return;
         }
 
         NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.SYMFONY_LINE_MARKER)
-            .setTargets(NotNullLazyValue.lazy(new MyClassIdLazyValue(psiElement.getProject(), treeSignatures.get(keyText), keyText)))
+            .setTargets(NotNullLazyValue.lazy(new MyClassIdLazyValue(project, treeSignatures.get(keyText), keyText)))
             .setTooltipText("Navigate to configuration");
 
         result.add(builder.createLineMarkerInfo(psiElement));

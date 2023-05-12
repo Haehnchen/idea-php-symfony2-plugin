@@ -195,7 +195,7 @@ public class IncludeVariableCollector implements TwigFileVariableCollector {
         }
 
         @Override
-        public void visitElement(PsiElement element) {
+        public void visitElement(@NotNull PsiElement element) {
 
             // {% include 'template.html' %}
             if(element instanceof TwigTagWithFileReference && element.getNode().getElementType() == TwigElementTypes.INCLUDE_TAG) {

@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.util.completion.annotations;
 
 import com.intellij.codeInsight.completion.InsertionContext;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiUtilCore;
@@ -32,9 +33,11 @@ public class AnnotationUseImporter {
 
         // this looks suitable! :)
         if(PhpCodeInsightUtil.findImportedName(scopeForUseOperator, fqnAnnotation, PhpGroupUseElement.PhpUseKeyword.CLASS) == null) {
-            PsiDocumentManager.getInstance(context.getProject()).commitDocument(context.getDocument());
+            Project project = context.getProject();
+
+            PsiDocumentManager.getInstance(project).commitDocument(context.getDocument());
             PhpAliasImporter.insertUseStatement(fqnAnnotation, scopeForUseOperator);
-            PsiDocumentManager.getInstance(context.getProject()).doPostponedOperationsAndUnblockDocument(context.getDocument());
+            PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(context.getDocument());
         }
     }
 }

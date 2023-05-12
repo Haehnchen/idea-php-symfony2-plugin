@@ -76,7 +76,7 @@ public class YamlXmlServiceInstanceInspection extends LocalInspectionTool {
             }
 
             YamlHelper.visitServiceCallArgument((YAMLScalar) yamlScalar, visitor -> {
-                PhpClass serviceClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), visitor.getClassName(), getLazyServiceCollector(psiElement.getProject()));
+                PhpClass serviceClass = ServiceUtil.getResolvedClassDefinition(holder.getProject(), visitor.getClassName(), getLazyServiceCollector(holder.getProject()));
                 if(serviceClass == null) {
                     return;
                 }
@@ -86,7 +86,7 @@ public class YamlXmlServiceInstanceInspection extends LocalInspectionTool {
                     return;
                 }
 
-                YamlXmlServiceInstanceInspection.registerInstanceProblem(psiElement, holder, visitor.getParameterIndex(), method, getLazyServiceCollector(psiElement.getProject()));
+                YamlXmlServiceInstanceInspection.registerInstanceProblem(psiElement, holder, visitor.getParameterIndex(), method, getLazyServiceCollector(holder.getProject()));
             });
         }
 
@@ -98,12 +98,12 @@ public class YamlXmlServiceInstanceInspection extends LocalInspectionTool {
          *      - @<caret>
          */
         private void visitConstructor(PsiElement psiElement) {
-            ServiceTypeHint methodTypeHint = ServiceContainerUtil.getYamlConstructorTypeHint(psiElement, getLazyServiceCollector(psiElement.getProject()));
+            ServiceTypeHint methodTypeHint = ServiceContainerUtil.getYamlConstructorTypeHint(psiElement, getLazyServiceCollector(holder.getProject()));
             if(methodTypeHint == null) {
                 return;
             }
 
-            registerInstanceProblem(psiElement, holder, methodTypeHint.getIndex(), methodTypeHint.getMethod(), getLazyServiceCollector(psiElement.getProject()));
+            registerInstanceProblem(psiElement, holder, methodTypeHint.getIndex(), methodTypeHint.getMethod(), getLazyServiceCollector(holder.getProject()));
         }
 
         private ContainerCollectionResolver.LazyServiceCollector getLazyServiceCollector(@NotNull Project project) {
@@ -117,7 +117,7 @@ public class YamlXmlServiceInstanceInspection extends LocalInspectionTool {
             return;
         }
 
-        PhpClass serviceParameterClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), getServiceName(psiElement), lazyServiceCollector);
+        PhpClass serviceParameterClass = ServiceUtil.getResolvedClassDefinition(holder.getProject(), getServiceName(psiElement), lazyServiceCollector);
         if(serviceParameterClass == null) {
             return;
         }
@@ -127,7 +127,7 @@ public class YamlXmlServiceInstanceInspection extends LocalInspectionTool {
             return;
         }
 
-        PhpClass expectedClass = PhpElementsUtil.getClassInterface(psiElement.getProject(), constructorParameter[parameterIndex].getDeclaredType().toString());
+        PhpClass expectedClass = PhpElementsUtil.getClassInterface(holder.getProject(), constructorParameter[parameterIndex].getDeclaredType().toString());
         if(expectedClass == null) {
             return;
         }

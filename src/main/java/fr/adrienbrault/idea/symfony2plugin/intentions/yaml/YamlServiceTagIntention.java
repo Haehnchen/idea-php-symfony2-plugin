@@ -37,7 +37,6 @@ public class YamlServiceTagIntention extends PsiElementBaseIntentionAction {
 
     @Override
     public boolean isAvailable(@NotNull Project project, Editor editor, @NotNull PsiElement psiElement) {
-
         if(psiElement.getContainingFile().getFileType() != YAMLFileType.YML || !Symfony2ProjectComponent.isEnabled(psiElement.getProject())) {
             return false;
         }

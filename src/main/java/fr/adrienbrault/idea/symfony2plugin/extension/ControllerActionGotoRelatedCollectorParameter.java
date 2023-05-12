@@ -6,6 +6,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.ParameterList;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 
@@ -16,11 +17,13 @@ public class ControllerActionGotoRelatedCollectorParameter {
 
     private final Collection<GotoRelatedItem> relatedItems;
     private final Method method;
+    private final Project project;
     private PsiElement[] parameterLists = null;
 
-    public ControllerActionGotoRelatedCollectorParameter(Method method, Collection<GotoRelatedItem> relatedItems) {
+    public ControllerActionGotoRelatedCollectorParameter(@NotNull Method method, @NotNull Collection<GotoRelatedItem> relatedItems) {
         this.relatedItems = relatedItems;
         this.method = method;
+        this.project = method.getProject();
     }
 
     public Method getMethod() {
@@ -32,7 +35,7 @@ public class ControllerActionGotoRelatedCollectorParameter {
     }
 
     public Project getProject() {
-        return this.method.getProject();
+        return this.project;
     }
 
     public void add(GotoRelatedItem relatedItem) {

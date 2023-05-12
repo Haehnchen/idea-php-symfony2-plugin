@@ -4,6 +4,7 @@ import com.intellij.lang.ASTNode;
 import com.intellij.lang.folding.FoldingBuilderEx;
 import com.intellij.lang.folding.FoldingDescriptor;
 import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -33,14 +34,18 @@ public class PhpFoldingBuilder extends FoldingBuilderEx {
     @NotNull
     @Override
     public FoldingDescriptor[] buildFoldRegions(@NotNull PsiElement psiElement, @NotNull Document document, boolean b) {
-
-        if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement instanceof PhpFile)) {
+        if (!(psiElement instanceof PhpFile)){
             return new FoldingDescriptor[0];
         }
 
-        boolean codeFoldingPhpRoute = Settings.getInstance(psiElement.getProject()).codeFoldingPhpRoute;
-        boolean codeFoldingPhpModel = Settings.getInstance(psiElement.getProject()).codeFoldingPhpModel;
-        boolean codeFoldingPhpTemplate = Settings.getInstance(psiElement.getProject()).codeFoldingPhpTemplate;
+        Project project = psiElement.getProject();
+        if (!Symfony2ProjectComponent.isEnabled(project)){
+            return new FoldingDescriptor[0];
+        }
+
+        boolean codeFoldingPhpRoute = Settings.getInstance(project).codeFoldingPhpRoute;
+        boolean codeFoldingPhpModel = Settings.getInstance(project).codeFoldingPhpModel;
+        boolean codeFoldingPhpTemplate = Settings.getInstance(project).codeFoldingPhpTemplate;
 
         // we dont need to do anything
         if(!codeFoldingPhpRoute && !codeFoldingPhpModel && !codeFoldingPhpTemplate) {
@@ -64,14 +69,14 @@ public class PhpFoldingBuilder extends FoldingBuilderEx {
 
         // strip ".[php|html].twig"
         if(codeFoldingPhpRoute) {
-            attachRouteShortcuts(descriptors, stringLiteralExpressiones);
+            attachRouteShortcuts(project, descriptors, stringLiteralExpressiones);
         }
 
         return descriptors.toArray(new FoldingDescriptor[0]);
     }
 
 
-    private void attachRouteShortcuts(List<FoldingDescriptor> descriptors, Collection<StringLiteralExpression> stringLiteralExpressions) {
+    private void attachRouteShortcuts(@NotNull Project project, List<FoldingDescriptor> descriptors, Collection<StringLiteralExpression> stringLiteralExpressions) {
 
         Map<String,Route> routes = null;
 
@@ -81,7 +86,7 @@ public class PhpFoldingBuilder extends FoldingBuilderEx {
 
                 // cache routes if we need them
                 if(routes == null) {
-                    routes = RouteHelper.getAllRoutes(stringLiteralExpression.getProject());
+                    routes = RouteHelper.getAllRoutes(project);
                 }
 
                 String contents = stringLiteralExpression.getContents();
@@ -92,9 +97,8 @@ public class PhpFoldingBuilder extends FoldingBuilderEx {
                     if(url != null) {
                         descriptors.add(new FoldingDescriptor(stringLiteralExpression.getNode(),
                             new TextRange(stringLiteralExpression.getTextRange().getStartOffset() + 1, stringLiteralExpression.getTextRange().getEndOffset() - 1)) {
-                            @Nullable
                             @Override
-                            public String getPlaceholderText() {
+                            public @NotNull String getPlaceholderText() {
                                 return url;
                             }
                         });

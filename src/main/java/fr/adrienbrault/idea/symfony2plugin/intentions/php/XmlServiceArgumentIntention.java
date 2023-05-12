@@ -41,7 +41,7 @@ public class XmlServiceArgumentIntention extends PsiElementBaseIntentionAction {
     @Override
     public boolean isAvailable(@NotNull Project project, Editor editor, @NotNull PsiElement psiElement) {
 
-        if(psiElement.getContainingFile().getFileType() != XmlFileType.INSTANCE || !Symfony2ProjectComponent.isEnabled(psiElement.getProject())) {
+        if(psiElement.getContainingFile().getFileType() != XmlFileType.INSTANCE || !Symfony2ProjectComponent.isEnabled(project)) {
             return false;
         }
 

@@ -4,6 +4,7 @@ import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.patterns.XmlTagPattern;
@@ -32,7 +33,12 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
 
     @Override
     public void collectSlowLineMarkers(@NotNull List<? extends PsiElement> psiElements, @NotNull Collection<? super LineMarkerInfo<?>> result) {
-        if(psiElements.size() == 0 || !Symfony2ProjectComponent.isEnabled(psiElements.get(0))) {
+        if (psiElements.size() == 0) {
+            return;
+        }
+
+        Project project = psiElements.get(0).getProject();
+        if (!Symfony2ProjectComponent.isEnabled(project)) {
             return;
         }
 
@@ -55,11 +61,11 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
 
             if (getServiceIdPattern().accepts(xmlTag)) {
                 if(lazyDecoratedParentServiceValues == null) {
-                    lazyDecoratedParentServiceValues = new LazyDecoratedParentServiceValues(psiElement.getProject());
+                    lazyDecoratedParentServiceValues = new LazyDecoratedParentServiceValues(project);
                 }
 
                 // <services><service id="foo"/></services>
-                visitServiceId(psiElement, (XmlTag) xmlTag, result, lazyDecoratedParentServiceValues);
+                visitServiceId(project, psiElement, (XmlTag) xmlTag, result, lazyDecoratedParentServiceValues);
 
                 continue;
             }
@@ -86,7 +92,7 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
     /**
      * <service id="foo"/>
      */
-    private void visitServiceId(@NotNull PsiElement leafTarget, @NotNull XmlTag xmlTag, @NotNull Collection<? super LineMarkerInfo<?>> result, @NotNull LazyDecoratedParentServiceValues lazyDecoratedParentServiceValues) {
+    private void visitServiceId(@NotNull Project project, @NotNull PsiElement leafTarget, @NotNull XmlTag xmlTag, @NotNull Collection<? super LineMarkerInfo<?>> result, @NotNull LazyDecoratedParentServiceValues lazyDecoratedParentServiceValues) {
         String id = xmlTag.getAttributeValue("id");
         if(StringUtils.isBlank(id)) {
             return;
@@ -94,19 +100,19 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
 
         // <service decorates="foobar" />
         String decorates = xmlTag.getAttributeValue("decorates");
-        if(decorates != null && StringUtils.isNotBlank(decorates)) {
+        if(StringUtils.isNotBlank(decorates)) {
             result.add(ServiceUtil.getLineMarkerForDecoratesServiceId(leafTarget, ServiceUtil.ServiceLineMarker.DECORATE, decorates));
         }
 
         // <service parent="foobar" />
         String parent = xmlTag.getAttributeValue("parent");
-        if(parent != null && StringUtils.isNotBlank(parent)) {
+        if(StringUtils.isNotBlank(parent)) {
             result.add(ServiceUtil.getLineMarkerForDecoratesServiceId(leafTarget, ServiceUtil.ServiceLineMarker.PARENT, parent));
         }
 
         // foreign "decorates" linemarker
         NavigationGutterIconBuilder<PsiElement> lineMarkerDecorates = ServiceUtil.getLineMarkerForDecoratedServiceId(
-            xmlTag.getProject(),
+            project,
             ServiceUtil.ServiceLineMarker.DECORATE,
             lazyDecoratedParentServiceValues.getDecoratedServices(),
             id
@@ -118,7 +124,7 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
 
         // foreign "parent" linemarker
         NavigationGutterIconBuilder<PsiElement> lineMarkerParent = ServiceUtil.getLineMarkerForDecoratedServiceId(
-            xmlTag.getProject(),
+            project,
             ServiceUtil.ServiceLineMarker.PARENT,
             lazyDecoratedParentServiceValues.getParentServices(),
             id

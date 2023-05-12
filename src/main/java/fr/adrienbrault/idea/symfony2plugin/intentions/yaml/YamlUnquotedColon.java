@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.intentions.yaml;
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -23,7 +24,9 @@ public class YamlUnquotedColon extends LocalInspectionTool {
 
     @NotNull
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
-        if(!Symfony2ProjectComponent.isEnabled(holder.getProject()) || !SymfonyUtil.isVersionGreaterThenEquals(holder.getProject(), "2.8")) {
+        Project project = holder.getProject();
+
+        if(!Symfony2ProjectComponent.isEnabled(project) || !SymfonyUtil.isVersionGreaterThenEquals(project, "2.8")) {
             return super.buildVisitor(holder, isOnTheFly);
         }
 
@@ -38,7 +41,7 @@ public class YamlUnquotedColon extends LocalInspectionTool {
         }
 
         @Override
-        public void visitElement(PsiElement element) {
+        public void visitElement(@NotNull PsiElement element) {
             // every array element implements this interface
             // check for inside "foo: <foo: foo>"
             if(!isIllegalColonExpression(element)) {
