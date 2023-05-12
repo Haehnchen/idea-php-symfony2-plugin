@@ -158,7 +158,9 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
 
             for (String formType : DEFAULT_FORM) {
                 FormOptionsUtil.visitFormOptions(
-                    getElement().getProject(), formType, new FormOptionLookupVisitor(elements)
+                    getProject(),
+                    formType,
+                    new FormOptionLookupVisitor(elements)
                 );
             }
 
@@ -176,7 +178,9 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
             Collection<PsiElement> elements = new ArrayList<>();
             for (String formType : DEFAULT_FORM) {
                 FormOptionsUtil.visitFormOptions(
-                    getElement().getProject(), formType, new FormOptionTargetVisitor(contents, elements)
+                    getProject(),
+                    formType,
+                    new FormOptionTargetVisitor(contents, elements)
                 );
             }
 

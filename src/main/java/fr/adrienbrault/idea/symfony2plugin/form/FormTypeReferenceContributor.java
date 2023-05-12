@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.form;
 
+import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -366,12 +367,12 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
         classes.addAll(FormOptionsUtil.getMethodReferenceStringParameter(psiElement, FormOptionsUtil.FORM_OPTION_METHODS, "setDefault", "data_class"));
 
         // find first class
-        PhpClass phpClass = classes.stream()
-            .map(clazz -> PhpElementsUtil.getClassInterface(psiElement.getProject(), clazz))
+        Project project = psiElement.getProject();
+
+        return classes.stream()
+            .map(clazz -> PhpElementsUtil.getClassInterface(project, clazz))
             .filter(Objects::nonNull).findFirst()
             .orElse(null);
-
-        return phpClass;
     }
 
     private static class FormTypeReferenceRef extends FormTypeReference {

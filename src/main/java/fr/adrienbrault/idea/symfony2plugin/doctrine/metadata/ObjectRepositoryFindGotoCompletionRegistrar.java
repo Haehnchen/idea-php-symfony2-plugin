@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.doctrine.metadata;
 
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
@@ -49,10 +50,11 @@ public class ObjectRepositoryFindGotoCompletionRegistrar implements GotoCompleti
 
             if(methodMatchParameter != null) {
                 MethodReference methodReference = methodMatchParameter.getMethodReference();
+                Project project = psiElement.getProject();
 
                 // extract from type provide on completion:
                 // $foo->getRepository('MODEL')->findBy()
-                Collection<PhpClass> phpClasses = PhpElementsUtil.getClassFromPhpTypeSetArrayClean(psiElement.getProject(), methodReference.getType().getTypes());
+                Collection<PhpClass> phpClasses = PhpElementsUtil.getClassFromPhpTypeSetArrayClean(project, methodReference.getType().getTypes());
 
                 // resolve every direct repository instance $this->findBy()
                 // or direct repository instance $repository->findBy()
@@ -66,8 +68,8 @@ public class ObjectRepositoryFindGotoCompletionRegistrar implements GotoCompleti
                                 continue;
                             }
 
-                            for (DoctrineModelInterface doctrineModel : DoctrineMetadataUtil.findMetadataModelForRepositoryClass(psiElement.getProject(), s)) {
-                                phpClasses.addAll(PhpElementsUtil.getClassesInterface(psiElement.getProject(), doctrineModel.getClassName()));
+                            for (DoctrineModelInterface doctrineModel : DoctrineMetadataUtil.findMetadataModelForRepositoryClass(project, s)) {
+                                phpClasses.addAll(PhpElementsUtil.getClassesInterface(project, doctrineModel.getClassName()));
                             }
                         }
                     }

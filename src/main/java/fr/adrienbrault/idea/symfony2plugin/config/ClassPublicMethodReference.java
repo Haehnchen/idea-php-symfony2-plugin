@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.config;
 
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.PsiPolyVariantReferenceBase;
@@ -20,25 +21,24 @@ import java.util.List;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class ClassPublicMethodReference extends PsiPolyVariantReferenceBase<PsiElement> {
-
-    private String className;
-    private String method;
+    private final String className;
+    private final Project project;
 
     public ClassPublicMethodReference(@NotNull PsiElement element, @NotNull String className) {
         super(element);
         this.className = className;
-        this.method = PsiElementUtils.trimQuote(element.getText());
+        this.project = element.getProject();
     }
 
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
-        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(getElement().getProject(), this.className);
+        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(project, this.className);
         if(phpClass == null) {
             return new ResolveResult[0];
         }
 
-        Method targetMethod = phpClass.findMethodByName(this.method);
+        Method targetMethod = phpClass.findMethodByName(PsiElementUtils.trimQuote(getElement().getText()));
         if(targetMethod == null) {
             return new ResolveResult[0];
         }
@@ -51,7 +51,7 @@ public class ClassPublicMethodReference extends PsiPolyVariantReferenceBase<PsiE
     @Deprecated
     public Object[] getVariants() {
 
-        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(getElement().getProject(), this.className);
+        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(project, this.className);
         if(phpClass == null) {
             return new Object[0];
         }

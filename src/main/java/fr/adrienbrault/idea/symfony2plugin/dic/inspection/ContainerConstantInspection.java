@@ -42,10 +42,10 @@ public class ContainerConstantInspection extends LocalInspectionTool {
         };
     }
     private void visitYamlElement(@NotNull YAMLScalar psiElement, @NotNull ProblemsHolder holder) {
-        String textValue = ((YAMLScalar) psiElement).getTextValue();
+        String textValue = psiElement.getTextValue();
         if(textValue.startsWith("!php/const:")) {
             String constantName = textValue.substring(11);
-            if(StringUtils.isNotBlank(constantName) && ServiceContainerUtil.getTargetsForConstant(psiElement.getProject(), constantName).size() == 0) {
+            if(StringUtils.isNotBlank(constantName) && ServiceContainerUtil.getTargetsForConstant(holder.getProject(), constantName).size() == 0) {
                 holder.registerProblem(psiElement, MESSAGE, ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
             }
         }
@@ -66,7 +66,7 @@ public class ContainerConstantInspection extends LocalInspectionTool {
             return;
         }
 
-        if(ServiceContainerUtil.getTargetsForConstant(xmlText.getProject(), value).size() == 0) {
+        if(ServiceContainerUtil.getTargetsForConstant(holder.getProject(), value).size() == 0) {
             holder.registerProblem(xmlText, MESSAGE, ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
         }
     }

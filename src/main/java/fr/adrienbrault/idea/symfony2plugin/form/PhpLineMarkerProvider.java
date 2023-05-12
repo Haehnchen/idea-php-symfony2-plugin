@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.form;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.indexing.FileBasedIndex;
@@ -37,15 +38,16 @@ public class PhpLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
+        Project project = psiElements.get(0).getProject();
         for (PsiElement psiElement : psiElements) {
             if (PhpElementsUtil.getClassNamePattern().accepts(psiElement)) {
                 attachFormDataClass(lineMarkerInfos, psiElement);
-                attachPhpClassToFormDataClass(lineMarkerInfos, psiElement);
+                attachPhpClassToFormDataClass(project, lineMarkerInfos, psiElement);
             }
         }
     }
 
-    private void attachPhpClassToFormDataClass(@NotNull Collection<? super LineMarkerInfo<?>> lineMarkerInfos, @NotNull PsiElement leaf) {
+    private void attachPhpClassToFormDataClass(@NotNull Project project, @NotNull Collection<? super LineMarkerInfo<?>> lineMarkerInfos, @NotNull PsiElement leaf) {
         PsiElement phpClassContext = leaf.getContext();
         if(!(phpClassContext instanceof PhpClass)) {
             return;
@@ -53,14 +55,14 @@ public class PhpLineMarkerProvider implements LineMarkerProvider {
 
         String fqn = ((PhpClass) phpClassContext).getFQN();
 
-        Set<String> classes = FileBasedIndex.getInstance().getValues(FormDataClassStubIndex.KEY, "\\" + StringUtils.stripStart(fqn, "\\"), GlobalSearchScope.allScope(leaf.getProject()))
+        Set<String> classes = FileBasedIndex.getInstance().getValues(FormDataClassStubIndex.KEY, "\\" + StringUtils.stripStart(fqn, "\\"), GlobalSearchScope.allScope(project))
             .stream()
             .flatMap(Set::stream)
             .collect(Collectors.toSet());
 
         Collection<PhpClass> phpClasses = new HashSet<>();
         for (String clazz: classes) {
-            phpClasses.addAll(PhpElementsUtil.getClassesInterface(leaf.getProject(), clazz));
+            phpClasses.addAll(PhpElementsUtil.getClassesInterface(project, clazz));
         }
 
         if (!phpClasses.isEmpty()) {

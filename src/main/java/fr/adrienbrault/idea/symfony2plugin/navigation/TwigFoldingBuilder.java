@@ -4,6 +4,7 @@ import com.intellij.lang.ASTNode;
 import com.intellij.lang.folding.FoldingBuilderEx;
 import com.intellij.lang.folding.FoldingDescriptor;
 import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -31,22 +32,26 @@ public class TwigFoldingBuilder extends FoldingBuilderEx {
     @NotNull
     @Override
     public FoldingDescriptor[] buildFoldRegions(@NotNull PsiElement psiElement, @NotNull Document document, boolean b) {
+        if (!(psiElement instanceof TwigFile)) {
+            return new FoldingDescriptor[0];
+        }
 
-        if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement instanceof TwigFile)) {
+        Project project = psiElement.getProject();
+        if (!Symfony2ProjectComponent.isEnabled(project)) {
             return new FoldingDescriptor[0];
         }
 
         List<FoldingDescriptor> descriptors = new ArrayList<>();
 
-        if(Settings.getInstance(psiElement.getProject()).codeFoldingTwigRoute) {
-            attachPathFoldingDescriptors(psiElement, descriptors);
+        if (Settings.getInstance(project).codeFoldingTwigRoute) {
+            attachPathFoldingDescriptors(project, psiElement, descriptors);
         }
 
-        if(Settings.getInstance(psiElement.getProject()).codeFoldingTwigTemplate) {
+        if (Settings.getInstance(project).codeFoldingTwigTemplate) {
             attachTemplateFoldingDescriptors(psiElement, descriptors);
         }
 
-        if(Settings.getInstance(psiElement.getProject()).codeFoldingTwigConstant) {
+        if (Settings.getInstance(project).codeFoldingTwigConstant) {
             attachConstantFoldingDescriptors(psiElement, descriptors);
         }
 
@@ -58,10 +63,6 @@ public class TwigFoldingBuilder extends FoldingBuilderEx {
         PsiElement[] fileReferences = PsiTreeUtil.collectElements(psiElement, psiElement1 ->
             TwigPattern.getTemplateFileReferenceTagPattern().accepts(psiElement1) || TwigPattern.getFormThemeFileTagPattern().accepts(psiElement1)
         );
-
-        if(fileReferences.length == 0) {
-            return;
-        }
 
         for(PsiElement fileReference: fileReferences) {
             final String templateShortcutName = TwigUtil.getFoldingTemplateName(fileReference.getText());
@@ -78,7 +79,7 @@ public class TwigFoldingBuilder extends FoldingBuilderEx {
 
     }
 
-    private void attachPathFoldingDescriptors(PsiElement psiElement, List<FoldingDescriptor> descriptors) {
+    private void attachPathFoldingDescriptors(@NotNull Project project, @NotNull PsiElement psiElement, @NotNull List<FoldingDescriptor> descriptors) {
 
         // find path calls in file
         PsiElement[] psiElements = PsiTreeUtil.collectElements(psiElement, psiElement12 ->
@@ -94,7 +95,7 @@ public class TwigFoldingBuilder extends FoldingBuilderEx {
 
             // cache routes if we need them
             if(routes == null) {
-                routes = RouteHelper.getAllRoutes(psiElement.getProject());
+                routes = RouteHelper.getAllRoutes(project);
             }
 
             String contents = PsiElementUtils.trimQuote(psiElement1.getText());

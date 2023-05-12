@@ -35,6 +35,7 @@ public class DoctrineAnnotationReferencedColumnReferences implements PhpAnnotati
     public PsiReference[] getPropertyReferences(AnnotationPropertyParameter annotationPropertyParameter, PhpAnnotationReferenceProviderParameter phpAnnotationReferenceProviderParameter) {
 
         PsiElement element = annotationPropertyParameter.getElement();
+
         if(!Symfony2ProjectComponent.isEnabled(annotationPropertyParameter.getProject()) ||
             !(element instanceof StringLiteralExpression) ||
             !PhpElementsUtil.isEqualClassName(annotationPropertyParameter.getPhpClass(), "\\Doctrine\\ORM\\Mapping\\JoinColumn")

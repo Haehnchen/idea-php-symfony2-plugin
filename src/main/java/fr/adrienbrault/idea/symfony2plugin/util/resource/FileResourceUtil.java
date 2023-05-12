@@ -291,6 +291,8 @@ public class FileResourceUtil {
         }
 
         Set<PsiFile> psiFiles = new HashSet<>();
+        Project project = psiFile.getProject();
+
         if (relativeFile.isDirectory()) {
             String path = relativeFile.getPath();
             final PathMatcher pathMatcher = FileSystems.getDefault().getPathMatcher("glob:/**/*.php");
@@ -317,13 +319,13 @@ public class FileResourceUtil {
             Set<PsiFile> collect = files.stream()
                 .map(s -> VfsUtil.findFileByIoFile(new File(s), false))
                 .filter(Objects::nonNull)
-                .map(virtualFile -> PsiElementUtils.virtualFileToPsiFile(psiFile.getProject(), virtualFile))
+                .map(virtualFile -> PsiElementUtils.virtualFileToPsiFile(project, virtualFile))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
             psiFiles.addAll(collect);
         } else {
-            PsiFile targetFile = PsiElementUtils.virtualFileToPsiFile(psiFile.getProject(), relativeFile);
+            PsiFile targetFile = PsiElementUtils.virtualFileToPsiFile(project, relativeFile);
             if(targetFile != null) {
                 psiFiles.add(targetFile);
             }

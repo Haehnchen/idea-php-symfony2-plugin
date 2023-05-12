@@ -29,7 +29,7 @@ public class ServiceNamedArgumentExistsInspection extends LocalInspectionTool {
             @Override
             public void visitElement(@NotNull PsiElement element) {
                 if (YamlElementPatternHelper.getNamedArgumentPattern().accepts(element)) {
-                    if (isSupportedDefinition(element) && ServiceContainerUtil.hasMissingYamlNamedArgumentForInspection(element, new ContainerCollectionResolver.LazyServiceCollector(element.getProject()))) {
+                    if (isSupportedDefinition(element) && ServiceContainerUtil.hasMissingYamlNamedArgumentForInspection(element, new ContainerCollectionResolver.LazyServiceCollector(holder.getProject()))) {
                         holder.registerProblem(element, INSPECTION_MESSAGE, ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
                     }
                 }

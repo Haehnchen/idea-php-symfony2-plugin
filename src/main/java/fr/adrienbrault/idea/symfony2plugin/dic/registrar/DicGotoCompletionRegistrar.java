@@ -173,7 +173,7 @@ public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
         public Collection<LookupElement> getLookupElements() {
             Collection<LookupElement> results = new ArrayList<>();
 
-            for (Map.Entry<String, ContainerParameter> entry: ContainerCollectionResolver.getParameters(getElement().getProject()).entrySet()) {
+            for (Map.Entry<String, ContainerParameter> entry: ContainerCollectionResolver.getParameters(getProject()).entrySet()) {
                 results.add(new ParameterLookupElement(entry.getValue()));
             }
 
@@ -188,7 +188,7 @@ public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
                 return Collections.emptyList();
             }
 
-            return ServiceUtil.getParameterDefinition(element.getProject(), contents);
+            return ServiceUtil.getParameterDefinition(getProject(), contents);
         }
     }
 
@@ -200,7 +200,7 @@ public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
         @NotNull
         @Override
         public Collection<LookupElement> getLookupElements() {
-            return TagNameCompletionProvider.getTagLookupElements(getElement().getProject());
+            return TagNameCompletionProvider.getTagLookupElements(getProject());
         }
 
         @NotNull
@@ -211,7 +211,7 @@ public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
                 return Collections.emptyList();
             }
 
-            return new ArrayList<>(ServiceUtil.getTaggedClasses(getElement().getProject(), contents));
+            return new ArrayList<>(ServiceUtil.getTaggedClasses(getProject(), contents));
         }
     }
 
@@ -232,7 +232,7 @@ public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
                 return Collections.emptyList();
             }
 
-            PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(element.getProject(), contents);
+            PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(getProject(), contents);
             if (phpClass == null) {
                 return Collections.emptyList();
             }

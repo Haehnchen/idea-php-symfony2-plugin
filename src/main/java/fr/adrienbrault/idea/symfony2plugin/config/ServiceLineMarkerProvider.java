@@ -56,7 +56,6 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
 
     @Override
     public void collectSlowLineMarkers(@NotNull List<? extends PsiElement> psiElements, @NotNull Collection<? super LineMarkerInfo<?>> results) {
-
         // we need project element; so get it from first item
         if(psiElements.size() == 0) {
             return;
@@ -68,21 +67,20 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         }
 
         for(PsiElement psiElement: psiElements) {
-
             if(PhpElementsUtil.getMethodReturnPattern().accepts(psiElement)) {
                 this.formNameMarker(psiElement, results);
             }
 
             if(PhpElementsUtil.getClassNamePattern().accepts(psiElement)) {
-                this.classNameMarker(psiElement, results);
-                this.entityClassMarker(psiElement, results);
-                this.repositoryClassMarker(psiElement, results);
-                this.validatorClassMarker(psiElement, results);
-                this.constraintValidatorClassMarker(psiElement, results);
+                this.classNameMarker(project, psiElement, results);
+                this.entityClassMarker(project, psiElement, results);
+                this.repositoryClassMarker(project, psiElement, results);
+                this.validatorClassMarker(project, psiElement, results);
+                this.constraintValidatorClassMarker(project, psiElement, results);
             }
 
             if(PhpElementsUtil.getClassMethodNamePattern().accepts(psiElement)) {
-                this.autowireConstructorMarker(psiElement, results);
+                this.autowireConstructorMarker(project, psiElement, results);
             }
 
             // public $message = 'This value should not be blank.';
@@ -92,7 +90,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         }
     }
 
-    private void classNameMarker(PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo<?>> result) {
+    private void classNameMarker(@NotNull Project project, @NotNull PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo<?>> result) {
         PsiElement phpClassContext = psiElement.getContext();
         if(!(phpClassContext instanceof PhpClass) || ((PhpClass) phpClassContext).isAbstract()) {
             return;
@@ -108,9 +106,9 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
             targets.add(psiElements);
 
             // tags
-            ContainerCollectionResolver.ServiceCollector serviceCollector = ContainerCollectionResolver.ServiceCollector.create(psiElement.getProject());
+            ContainerCollectionResolver.ServiceCollector serviceCollector = ContainerCollectionResolver.ServiceCollector.create(project);
             for (String convertClassNameToService : serviceCollector.convertClassNameToServices(((PhpClass) phpClassContext).getFQN())) {
-                tags.addAll(ServiceUtil.getServiceTags(phpClassContext.getProject(), convertClassNameToService));
+                tags.addAll(ServiceUtil.getServiceTags(project, convertClassNameToService));
 
                 ContainerService containerService = serviceCollector.getServices().get(convertClassNameToService);
                 if (containerService != null) {
@@ -135,7 +133,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
             for (ContainerService containerService : serviceDefinitionsOfResource.getSecond()) {
                 ServiceInterface service = containerService.getService();
                 if (service != null) {
-                    tags.addAll(ServiceUtil.getServiceTags(phpClassContext.getProject(), service.getId()));
+                    tags.addAll(ServiceUtil.getServiceTags(project, service.getId()));
                 }
             }
         }
@@ -158,7 +156,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         result.add(builder.createLineMarkerInfo(psiElement));
     }
 
-    private void entityClassMarker(PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo<?>> result) {
+    private void entityClassMarker(@NotNull Project project, PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo<?>> result) {
 
         PsiElement phpClassContext = psiElement.getContext();
         if(!(phpClassContext instanceof PhpClass)) {
@@ -167,7 +165,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
 
         Collection<PsiFile> psiFiles = new ArrayList<>();
         // @TODO: use DoctrineMetadataUtil, for single resolve; we have collecting overhead here
-        for(DoctrineModel doctrineModel: EntityHelper.getModelClasses(psiElement.getProject())) {
+        for(DoctrineModel doctrineModel: EntityHelper.getModelClasses(project)) {
             PhpClass phpClass = doctrineModel.getPhpClass();
             if(!PhpElementsUtil.isEqualClassName(phpClass, (PhpClass) phpClassContext)) {
                 continue;
@@ -194,7 +192,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         result.add(builder.createLineMarkerInfo(psiElement));
     }
 
-    private void repositoryClassMarker(PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo<?>> result) {
+    private void repositoryClassMarker(@NotNull Project project, PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo<?>> result) {
 
         PsiElement phpClassContext = psiElement.getContext();
         if(!(phpClassContext instanceof PhpClass)) {
@@ -203,7 +201,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
 
         Collection<PsiFile> psiFiles = new ArrayList<>();
         for (VirtualFile virtualFile : DoctrineMetadataUtil.findMetadataForRepositoryClass((PhpClass) phpClassContext)) {
-            PsiFile file = PsiManager.getInstance(psiElement.getProject()).findFile(virtualFile);
+            PsiFile file = PsiManager.getInstance(project).findFile(virtualFile);
             if(file == null) {
                 continue;
             }
@@ -257,7 +255,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
     /**
      * Constraints in same namespace and validateBy service name
      */
-    private void validatorClassMarker(PsiElement psiElement, Collection<? super LineMarkerInfo<?>> results) {
+    private void validatorClassMarker(@NotNull Project project, PsiElement psiElement, Collection<? super LineMarkerInfo<?>> results) {
         PsiElement phpClassContext = psiElement.getContext();
         if(!(phpClassContext instanceof PhpClass) || !PhpElementsUtil.isInstanceOf((PhpClass) phpClassContext, "\\Symfony\\Component\\Validator\\Constraint")) {
             return;
@@ -265,7 +263,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
 
         // class in same namespace
         String className = ((PhpClass) phpClassContext).getFQN() + "Validator";
-        Collection<PhpClass> phpClasses = new ArrayList<>(PhpElementsUtil.getClassesInterface(psiElement.getProject(), className));
+        Collection<PhpClass> phpClasses = new ArrayList<>(PhpElementsUtil.getClassesInterface(project, className));
 
         // @TODO: validateBy alias
 
@@ -283,7 +281,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
     /**
      * "FooValidator" back to "Foo" constraint
      */
-    private void constraintValidatorClassMarker(PsiElement psiElement, Collection<? super LineMarkerInfo<?>> results) {
+    private void constraintValidatorClassMarker(@NotNull Project project, PsiElement psiElement, Collection<? super LineMarkerInfo<?>> results) {
         PsiElement phpClass = psiElement.getContext();
         if(!(phpClass instanceof PhpClass) || !PhpElementsUtil.isInstanceOf((PhpClass) phpClass, "Symfony\\Component\\Validator\\ConstraintValidatorInterface")) {
             return;
@@ -295,7 +293,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         }
 
         Collection<PhpClass> phpClasses = new ArrayList<>(
-            PhpElementsUtil.getClassesInterface(psiElement.getProject(), fqn.substring(0, fqn.length() - "Validator".length()))
+            PhpElementsUtil.getClassesInterface(project, fqn.substring(0, fqn.length() - "Validator".length()))
         );
 
         if(phpClasses.size() == 0) {
@@ -309,7 +307,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         results.add(builder.createLineMarkerInfo(psiElement));
     }
 
-    private void autowireConstructorMarker(PsiElement psiElement, Collection<? super LineMarkerInfo<?>> results) {
+    private void autowireConstructorMarker(@NotNull Project project, @NotNull PsiElement psiElement, Collection<? super LineMarkerInfo<?>> results) {
         PsiElement method = psiElement.getParent();
         if (!(method instanceof Method)) {
             return;
@@ -345,7 +343,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
 
         // direct service
         if (!isAutowire) {
-            ContainerCollectionResolver.ServiceCollector serviceCollector = ContainerCollectionResolver.ServiceCollector.create(phpClass.getProject());
+            ContainerCollectionResolver.ServiceCollector serviceCollector = ContainerCollectionResolver.ServiceCollector.create(project);
             for (String convertClassNameToService : serviceCollector.convertClassNameToServices(phpClass.getFQN())) {
                 ContainerService containerService = serviceCollector.getServices().get(convertClassNameToService);
                 if (containerService == null) {
@@ -355,7 +353,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
                 ServiceInterface service = containerService.getService();
                 if (service != null && service.isAutowire()) {
                     isAutowire = true;
-                    targets.add(new ClassServiceDefinitionTargetLazyValue(phpClass.getProject(), convertClassNameToService));
+                    targets.add(new ClassServiceDefinitionTargetLazyValue(project, convertClassNameToService));
                 }
             }
         }

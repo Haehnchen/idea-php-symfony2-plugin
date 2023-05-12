@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.dic.inspection;
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.jetbrains.php.PhpIndex;
@@ -61,14 +62,16 @@ public class YamlClassInspection extends LocalInspectionTool {
     private void invoke(@NotNull final PsiElement psiElement, @NotNull ProblemsHolder holder) {
         String className = PsiElementUtils.getText(psiElement);
 
+        Project project = holder.getProject();
+
         if (YamlHelper.isValidParameterName(className)) {
-            String resolvedParameter = ContainerCollectionResolver.resolveParameter(psiElement.getProject(), className);
-            if (resolvedParameter != null && PhpIndex.getInstance(psiElement.getProject()).getAnyByFQN(resolvedParameter).size() > 0) {
+            String resolvedParameter = ContainerCollectionResolver.resolveParameter(project, className);
+            if (resolvedParameter != null && PhpIndex.getInstance(project).getAnyByFQN(resolvedParameter).size() > 0) {
                 return;
             }
         }
 
-        PhpClass foundClass = PhpElementsUtil.getClassInterface(psiElement.getProject(), className);
+        PhpClass foundClass = PhpElementsUtil.getClassInterface(project, className);
         if (foundClass == null) {
             holder.registerProblem(psiElement, MESSAGE_MISSING_CLASS, ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
         } else if (!foundClass.getPresentableFQN().equals(className)) {

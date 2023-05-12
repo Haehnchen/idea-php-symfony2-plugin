@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.intentions.yaml;
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiErrorElement;
@@ -19,15 +20,16 @@ public class YamlQuotedEscapedInspection extends LocalInspectionTool {
 
     @NotNull
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
+        Project project = holder.getProject();
 
-        if (!Symfony2ProjectComponent.isEnabled(holder.getProject())) {
+        if (!Symfony2ProjectComponent.isEnabled(project)) {
             return super.buildVisitor(holder, isOnTheFly);
         }
 
         return new PsiElementVisitor() {
             @Override
-            public void visitElement(PsiElement element) {
-                if (element.getNode().getElementType() == YAMLTokenTypes.SCALAR_DSTRING && SymfonyUtil.isVersionGreaterThenEquals(element.getProject(), "2.8")) {
+            public void visitElement(@NotNull PsiElement element) {
+                if (element.getNode().getElementType() == YAMLTokenTypes.SCALAR_DSTRING && SymfonyUtil.isVersionGreaterThenEquals(project, "2.8")) {
                     // "Foo\Foo" -> "Foo\\Foo"
                     String text = StringUtils.strip(element.getText(), "\"");
 
@@ -36,7 +38,7 @@ public class YamlQuotedEscapedInspection extends LocalInspectionTool {
                     if (text.length() < 255 && text.matches(".*[^\\\\]\\\\[^\\\\0abtnvfre \"/N_LPxuU].*")) {
                         holder.registerProblem(element, "Not escaping a backslash in a double-quoted string is deprecated", ProblemHighlightType.WEAK_WARNING);
                     }
-                } else if (element.getNode().getElementType() == YAMLTokenTypes.TEXT && SymfonyUtil.isVersionGreaterThenEquals(element.getProject(), "2.8")) {
+                } else if (element.getNode().getElementType() == YAMLTokenTypes.TEXT && SymfonyUtil.isVersionGreaterThenEquals(project, "2.8")) {
                     // @foo -> "@foo"
                     String text;
                     if (parentIsErrorAndHasPreviousElement(element)) {

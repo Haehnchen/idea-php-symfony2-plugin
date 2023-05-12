@@ -4,6 +4,7 @@ import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -32,7 +33,12 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
 
     @Override
     public void collectSlowLineMarkers(@NotNull List<? extends PsiElement> psiElements, @NotNull Collection<? super LineMarkerInfo<?>> result) {
-        if(psiElements.size() == 0 || !Symfony2ProjectComponent.isEnabled(psiElements.get(0))) {
+        if (psiElements.size() == 0) {
+            return;
+        }
+
+        Project project = psiElements.get(0).getProject();
+        if (!Symfony2ProjectComponent.isEnabled(project)) {
             return;
         }
 
@@ -50,11 +56,11 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
             }
 
             if(lazyDecoratedServices == null) {
-                lazyDecoratedServices = new LazyDecoratedParentServiceValues(psiElement.getProject());
+                lazyDecoratedServices = new LazyDecoratedParentServiceValues(project);
             }
 
             // services -> service_name
-            visitServiceId(psiElement, (YAMLKeyValue) yamlKeyValue, result, lazyDecoratedServices);
+            visitServiceId(project, psiElement, (YAMLKeyValue) yamlKeyValue, result, lazyDecoratedServices);
 
             // services:
             //    App\:
@@ -75,7 +81,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
             .createLineMarkerInfo(leafTarget));
     }
 
-    private void visitServiceId(@NotNull PsiElement leafTarget, @NotNull YAMLKeyValue yamlKeyValue, @NotNull Collection<? super LineMarkerInfo<?>> result, @NotNull LazyDecoratedParentServiceValues lazyDecoratedServices) {
+    private void visitServiceId(@NotNull Project project, @NotNull PsiElement leafTarget, @NotNull YAMLKeyValue yamlKeyValue, @NotNull Collection<? super LineMarkerInfo<?>> result, @NotNull LazyDecoratedParentServiceValues lazyDecoratedServices) {
         String id = yamlKeyValue.getKeyText();
         if(StringUtils.isBlank(id)) {
             return;
@@ -95,7 +101,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
 
         // foreign "decorates" linemarker
         NavigationGutterIconBuilder<PsiElement> decorateLineMarker = ServiceUtil.getLineMarkerForDecoratedServiceId(
-            yamlKeyValue.getProject(),
+            project,
             ServiceUtil.ServiceLineMarker.DECORATE,
             lazyDecoratedServices.getDecoratedServices(),
             id
@@ -107,7 +113,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
 
         // foreign "parent" linemarker
         NavigationGutterIconBuilder<PsiElement> parentLineMarker = ServiceUtil.getLineMarkerForDecoratedServiceId(
-            yamlKeyValue.getProject(),
+            project,
             ServiceUtil.ServiceLineMarker.PARENT,
             lazyDecoratedServices.getDecoratedServices(),
             id

@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.routing;
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.jetbrains.php.lang.psi.elements.Method;
@@ -23,7 +24,8 @@ public class RouteControllerDeprecatedInspection extends LocalInspectionTool {
 
     @NotNull
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
-        if(!Symfony2ProjectComponent.isEnabled(holder.getProject())) {
+        Project project = holder.getProject();
+        if (!Symfony2ProjectComponent.isEnabled(project)) {
             return super.buildVisitor(holder, isOnTheFly);
         }
 
@@ -35,13 +37,13 @@ public class RouteControllerDeprecatedInspection extends LocalInspectionTool {
                     if (parent != null) {
                         String text = RouteXmlReferenceContributor.getControllerText(parent);
                         if(text != null) {
-                            extracted(element, text, holder);
+                            extracted(project, element, text, holder);
                         }
                     }
                 } else if(YamlElementPatternHelper.getSingleLineScalarKey("_controller", "controller").accepts(element)) {
                     String text = PsiElementUtils.trimQuote(element.getText());
                     if (StringUtils.isNotBlank(text)) {
-                        extracted(element, text, holder);
+                        extracted(project, element, text, holder);
                     }
                 }
 
@@ -50,8 +52,8 @@ public class RouteControllerDeprecatedInspection extends LocalInspectionTool {
         };
     }
 
-    private void extracted(@NotNull PsiElement element, String text, @NotNull ProblemsHolder holder) {
-        for (PsiElement psiElement : RouteHelper.getMethodsOnControllerShortcut(element.getProject(), text)) {
+    private void extracted(@NotNull Project project, @NotNull PsiElement element, String text, @NotNull ProblemsHolder holder) {
+        for (PsiElement psiElement : RouteHelper.getMethodsOnControllerShortcut(project, text)) {
             if (!(psiElement instanceof PhpNamedElement)) {
                 continue;
             }

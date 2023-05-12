@@ -25,7 +25,7 @@ public class TranslationDomainGotoCompletionProvider extends GotoCompletionProvi
     @NotNull
     @Override
     public Collection<LookupElement> getLookupElements() {
-        return TranslationUtil.getTranslationDomainLookupElements(getElement().getProject());
+        return TranslationUtil.getTranslationDomainLookupElements(getProject());
     }
 
     @NotNull
@@ -36,6 +36,6 @@ public class TranslationDomainGotoCompletionProvider extends GotoCompletionProvi
             return Collections.emptyList();
         }
 
-        return new ArrayList<>(TranslationUtil.getDomainPsiFiles(getElement().getProject(), stringLiteralValue));
+        return new ArrayList<>(TranslationUtil.getDomainPsiFiles(getProject(), stringLiteralValue));
     }
 }

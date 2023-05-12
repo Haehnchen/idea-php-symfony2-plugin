@@ -62,7 +62,7 @@ public class XmlServiceInstanceInspection extends LocalInspectionTool {
             // service/argument[id]
             String serviceDefName = XmlHelper.getClassFromServiceDefinition(parentXmlTag);
             if(serviceDefName != null) {
-                PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), serviceDefName, lazyServiceCollector);
+                PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(holder.getProject(), serviceDefName, lazyServiceCollector);
 
                 // check type hint on constructor
                 if(phpClass != null) {
@@ -88,7 +88,7 @@ public class XmlServiceInstanceInspection extends LocalInspectionTool {
                 if(serviceTag != null && "service".equals(serviceTag.getName())) {
                     String serviceDefName = XmlHelper.getClassFromServiceDefinition(serviceTag);
                     if(serviceDefName != null) {
-                        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), serviceDefName, lazyServiceCollector);
+                        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(holder.getProject(), serviceDefName, lazyServiceCollector);
 
                         // finally check method type hint
                         if(phpClass != null) {
@@ -113,12 +113,12 @@ public class XmlServiceInstanceInspection extends LocalInspectionTool {
         }
 
         String className = constructorParameter[parameterIndex].getDeclaredType().toString();
-        PhpClass expectedClass = PhpElementsUtil.getClassInterface(method.getProject(), className);
+        PhpClass expectedClass = PhpElementsUtil.getClassInterface(holder.getProject(), className);
         if(expectedClass == null) {
             return;
         }
 
-        PhpClass serviceParameterClass = ServiceUtil.getResolvedClassDefinition(method.getProject(), serviceName, lazyServiceCollector);
+        PhpClass serviceParameterClass = ServiceUtil.getResolvedClassDefinition(holder.getProject(), serviceName, lazyServiceCollector);
         if(serviceParameterClass != null && !PhpElementsUtil.isInstanceOf(serviceParameterClass, expectedClass)) {
             holder.registerProblem(
                 target,
