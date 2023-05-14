@@ -38,7 +38,6 @@ public class QueryBuilderGotoDeclarationHandler implements GotoDeclarationHandle
 
         List<PsiElement> psiElements = new ArrayList<>();
 
-        attachPropertyGoto(context, psiElements);
         attachJoinGoto(context, psiElements);
         attachPartialGoto(context, psiElements, offset);
 
@@ -53,11 +52,31 @@ public class QueryBuilderGotoDeclarationHandler implements GotoDeclarationHandle
 
     private void attachPartialGoto(@NotNull StringLiteralExpression psiElement, @NotNull List<PsiElement> targets, int offset) {
         MethodMatcher.MethodMatchParameter methodMatchParameter = MatcherUtil.matchWhere(psiElement);
-        if(methodMatchParameter == null) {
+        if (methodMatchParameter == null) {
+            methodMatchParameter = MatcherUtil.matchPropertyField(psiElement);
+        }
+
+        if (methodMatchParameter == null) {
+            methodMatchParameter = MatcherUtil.matchJoinCondition(psiElement);
+        }
+
+        if (methodMatchParameter == null) {
+            methodMatchParameter = MatcherUtil.matchJoinIndexBy(psiElement);
+        }
+
+        if (methodMatchParameter == null) {
+            methodMatchParameter = MatcherUtil.matchCreateQueryBuilderIndexBy(psiElement);
+        }
+
+        if (methodMatchParameter == null) {
+            methodMatchParameter = MatcherUtil.matchFromIndexBy(psiElement);
+        }
+
+        if (methodMatchParameter == null) {
             return;
         }
 
-        int calulatedOffset = offset - psiElement.getTextRange().getStartOffset();
+        int calulatedOffset = offset - psiElement.getTextRange().getStartOffset() - 1;
         if (calulatedOffset < 0) {
             calulatedOffset = 0;
         }
@@ -114,33 +133,7 @@ public class QueryBuilderGotoDeclarationHandler implements GotoDeclarationHandle
         }
     }
 
-    private void attachPropertyGoto(StringLiteralExpression psiElement, List<PsiElement> targets) {
-
-        MethodMatcher.MethodMatchParameter methodMatchParameter = MatcherUtil.matchPropertyField(psiElement);
-        if(methodMatchParameter == null) {
-            return;
-        }
-
-        QueryBuilderMethodReferenceParser qb = QueryBuilderCompletionContributor.getQueryBuilderParser(methodMatchParameter.getMethodReference());
-        if(qb == null) {
-            return;
-        }
-
-        QueryBuilderScopeContext collect = qb.collect();
-        String propertyContent = psiElement.getContents();
-
-        for(Map.Entry<String, QueryBuilderPropertyAlias> entry: collect.getPropertyAliasMap().entrySet()) {
-            if(entry.getKey().equals(propertyContent)) {
-                targets.addAll(entry.getValue().getPsiTargets());
-            }
-        }
-
-
-    }
-
     private void attachExprGoto(StringLiteralExpression psiElement, List<PsiElement> targets) {
-
-
         MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement, 0)
             .withSignature(QueryBuilderCompletionContributor.EXPR)
             .match();
