@@ -68,4 +68,34 @@ public class MatcherUtil {
             .withSignature("\\Doctrine\\ORM\\QueryBuilder", "orWhere")
             .match();
     }
+
+    public static MethodMatcher.MethodMatchParameter matchJoinCondition(PsiElement psiElement) {
+        return new MethodMatcher.StringParameterMatcher(psiElement, 3)
+            .withSignature("\\Doctrine\\ORM\\QueryBuilder", "join")
+            .withSignature("\\Doctrine\\ORM\\QueryBuilder", "leftJoin")
+            .withSignature("\\Doctrine\\ORM\\QueryBuilder", "rightJoin")
+            .withSignature("\\Doctrine\\ORM\\QueryBuilder", "innerJoin")
+            .match();
+    }
+
+    public static MethodMatcher.MethodMatchParameter matchJoinIndexBy(PsiElement psiElement) {
+        return new MethodMatcher.StringParameterMatcher(psiElement, 4)
+            .withSignature("\\Doctrine\\ORM\\QueryBuilder", "join")
+            .withSignature("\\Doctrine\\ORM\\QueryBuilder", "leftJoin")
+            .withSignature("\\Doctrine\\ORM\\QueryBuilder", "rightJoin")
+            .withSignature("\\Doctrine\\ORM\\QueryBuilder", "innerJoin")
+            .match();
+    }
+
+    public static MethodMatcher.MethodMatchParameter matchCreateQueryBuilderIndexBy(PsiElement psiElement) {
+        return new MethodMatcher.StringParameterMatcher(psiElement, 1)
+            .withSignature("\\Doctrine\\ORM\\EntityRepository", "createQueryBuilder")
+            .match();
+    }
+
+    public static MethodMatcher.MethodMatchParameter matchFromIndexBy(PsiElement psiElement) {
+        return new MethodMatcher.StringParameterMatcher(psiElement, 2)
+            .withSignature("\\Doctrine\\ORM\\QueryBuilder", "from")
+            .match();
+    }
 }

@@ -36,6 +36,10 @@ public class QueryBuilderUtilTest extends SymfonyLightCodeInsightFixtureTestCase
             add(Pair.create(">=user.ba<caret>r", "user.bar"));
             add(Pair.create("user.<caret>bar", "user.bar"));
             add(Pair.create("user<caret>.bar", "user.bar"));
+            add(Pair.create(" test.i<caret>d ", "test.id"));
+            add(Pair.create("TEST(test.i<caret>d)", "test.id"));
+            add(Pair.create(" TEST( test.i<caret>d ) ", "test.id"));
+            add(Pair.create("test.foo = test.i<caret>d", "test.id"));
             add(Pair.create("user.ba<caret>rÃ„", "user.bar")); // nice usability but should this really match?
             add(Pair.create("us<caret>er.barÃ„", "user.bar")); // nice usability but should this really match?
             add(Pair.create("us<caret>er", null));
