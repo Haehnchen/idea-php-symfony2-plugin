@@ -156,16 +156,17 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                     return;
                 }
 
-                MethodMatcher.MethodMatchParameter methodMatchParameter = MatcherUtil.matchPropertyField(psiElement.getContext());
+                PsiElement context = psiElement.getContext();
+                if (context == null) {
+                    return;
+                }
+
+                MethodMatcher.MethodMatchParameter methodMatchParameter = MatcherUtil.matchField(context);
                 if (methodMatchParameter == null) {
                     return;
                 }
 
                 QueryBuilderMethodReferenceParser qb = getQueryBuilderParser(methodMatchParameter.getMethodReference());
-                if (qb == null) {
-                    return;
-                }
-
                 QueryBuilderScopeContext collect = qb.collect();
                 buildLookupElements(completionResultSet, collect);
 
@@ -486,7 +487,6 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
         }
     }
 
-    @Nullable
     public static QueryBuilderMethodReferenceParser getQueryBuilderParser(MethodReference methodReference) {
         final QueryBuilderChainProcessor processor = new QueryBuilderChainProcessor(methodReference);
         processor.collectMethods();
@@ -496,7 +496,5 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
             addAll(processor.getQueryBuilderFactoryMethods());
             addAll(processor.getQueryBuilderMethodReferences());
         }});
-
     }
-
 }

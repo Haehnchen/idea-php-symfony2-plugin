@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.util;
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -69,7 +70,7 @@ public class MatcherUtil {
             .match();
     }
 
-    public static MethodMatcher.MethodMatchParameter matchJoinCondition(PsiElement psiElement) {
+    private static MethodMatcher.MethodMatchParameter matchJoinCondition(PsiElement psiElement) {
         return new MethodMatcher.StringParameterMatcher(psiElement, 3)
             .withSignature("\\Doctrine\\ORM\\QueryBuilder", "join")
             .withSignature("\\Doctrine\\ORM\\QueryBuilder", "leftJoin")
@@ -78,7 +79,7 @@ public class MatcherUtil {
             .match();
     }
 
-    public static MethodMatcher.MethodMatchParameter matchJoinIndexBy(PsiElement psiElement) {
+    private static MethodMatcher.MethodMatchParameter matchJoinIndexBy(PsiElement psiElement) {
         return new MethodMatcher.StringParameterMatcher(psiElement, 4)
             .withSignature("\\Doctrine\\ORM\\QueryBuilder", "join")
             .withSignature("\\Doctrine\\ORM\\QueryBuilder", "leftJoin")
@@ -87,15 +88,41 @@ public class MatcherUtil {
             .match();
     }
 
-    public static MethodMatcher.MethodMatchParameter matchCreateQueryBuilderIndexBy(PsiElement psiElement) {
+    private static MethodMatcher.MethodMatchParameter matchCreateQueryBuilderIndexBy(PsiElement psiElement) {
         return new MethodMatcher.StringParameterMatcher(psiElement, 1)
             .withSignature("\\Doctrine\\ORM\\EntityRepository", "createQueryBuilder")
             .match();
     }
 
-    public static MethodMatcher.MethodMatchParameter matchFromIndexBy(PsiElement psiElement) {
+    private static MethodMatcher.MethodMatchParameter matchFromIndexBy(PsiElement psiElement) {
         return new MethodMatcher.StringParameterMatcher(psiElement, 2)
             .withSignature("\\Doctrine\\ORM\\QueryBuilder", "from")
             .match();
+    }
+
+    @Nullable
+    public static MethodMatcher.MethodMatchParameter matchField(@NotNull PsiElement psiElement) {
+        MethodMatcher.MethodMatchParameter methodMatchParameter = MatcherUtil.matchPropertyField(psiElement);
+        if (methodMatchParameter == null) {
+            methodMatchParameter = MatcherUtil.matchFromIndexBy(psiElement);
+        }
+
+        if (methodMatchParameter == null) {
+            methodMatchParameter = MatcherUtil.matchJoinCondition(psiElement);
+        }
+
+        if (methodMatchParameter == null) {
+            methodMatchParameter = MatcherUtil.matchJoinIndexBy(psiElement);
+        }
+
+        if (methodMatchParameter == null) {
+            methodMatchParameter = MatcherUtil.matchCreateQueryBuilderIndexBy(psiElement);
+        }
+
+        if (methodMatchParameter == null) {
+            methodMatchParameter = MatcherUtil.matchFromIndexBy(psiElement);
+        }
+
+        return methodMatchParameter;
     }
 }

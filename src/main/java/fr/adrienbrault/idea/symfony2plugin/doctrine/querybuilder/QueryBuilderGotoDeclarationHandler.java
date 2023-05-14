@@ -53,23 +53,7 @@ public class QueryBuilderGotoDeclarationHandler implements GotoDeclarationHandle
     private void attachPartialGoto(@NotNull StringLiteralExpression psiElement, @NotNull List<PsiElement> targets, int offset) {
         MethodMatcher.MethodMatchParameter methodMatchParameter = MatcherUtil.matchWhere(psiElement);
         if (methodMatchParameter == null) {
-            methodMatchParameter = MatcherUtil.matchPropertyField(psiElement);
-        }
-
-        if (methodMatchParameter == null) {
-            methodMatchParameter = MatcherUtil.matchJoinCondition(psiElement);
-        }
-
-        if (methodMatchParameter == null) {
-            methodMatchParameter = MatcherUtil.matchJoinIndexBy(psiElement);
-        }
-
-        if (methodMatchParameter == null) {
-            methodMatchParameter = MatcherUtil.matchCreateQueryBuilderIndexBy(psiElement);
-        }
-
-        if (methodMatchParameter == null) {
-            methodMatchParameter = MatcherUtil.matchFromIndexBy(psiElement);
+            methodMatchParameter = MatcherUtil.matchField(psiElement);
         }
 
         if (methodMatchParameter == null) {
