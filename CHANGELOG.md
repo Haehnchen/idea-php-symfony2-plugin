@@ -19,6 +19,17 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.249
+* Support resolving parent Form types on option resolver (Daniel Espendiller)
+* Add more completion cases for Doctrine querybuilder (Daniel Espendiller)
+* Add some more partial navigation targets for Doctrine querybuilder (Daniel Espendiller)
+* Reduce heavy psi traverse for project resolving via PsiElement (Daniel Espendiller)
+* [#2153](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2153) reduce activation scope for injected Twig html implementation (Daniel Espendiller)
+* Support Doctrine querybuilder join with direct class name (Daniel Espendiller)
+* Support Doctrine function node completion for querybuilder (Daniel Espendiller)
+* Add Doctrine querybuilder function parser (Daniel Espendiller)
+* [#2115](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2115) support Autocomplete in Doctrine repository's `count()` (Daniel Espendiller)
+
 ## 2022.1.248
 * "route" and "template" named arguments values can have references (Daniel Espendiller)
 * [#2148](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2148) Support for Twig Component HTML Syntax (Daniel Espendiller)
