@@ -709,4 +709,20 @@ public class FormUtil {
 
         return null;
     }
+
+    /**
+     * public function getParent() { return ChoiceType::class; }
+     */
+    public static Collection<String> getFormTypeParentFromOptionResolverScope(@NotNull PsiElement psiElement) {
+        Method methodScope = PsiTreeUtil.getParentOfType(psiElement, Method.class);
+
+        if (methodScope != null && Arrays.stream(FormOptionsUtil.FORM_OPTION_METHODS).anyMatch(s -> s.equalsIgnoreCase(methodScope.getName()))) {
+            PhpClass phpClass = methodScope.getContainingClass();
+            if (phpClass != null) {
+                return PhpElementsUtil.getMethodReturnAsStrings(phpClass, "getParent");
+            }
+        }
+
+        return Collections.emptySet();
+    }
 }

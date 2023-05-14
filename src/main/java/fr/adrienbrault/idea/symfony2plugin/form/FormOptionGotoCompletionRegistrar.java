@@ -147,8 +147,11 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
      * eg "$resolver->setDefault('<caret>')"
      */
     private static class FormOptionGotoCompletionProvider extends GotoCompletionProvider {
-        FormOptionGotoCompletionProvider(PsiElement psiElement) {
+        private final Collection<String> formTypes;
+
+        FormOptionGotoCompletionProvider(PsiElement psiElement, @NotNull Collection<String> formTypes) {
             super(psiElement);
+            this.formTypes = formTypes;
         }
 
         @NotNull
@@ -156,7 +159,7 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
         public Collection<LookupElement> getLookupElements() {
             Collection<LookupElement> elements = new ArrayList<>();
 
-            for (String formType : DEFAULT_FORM) {
+            for (String formType : this.formTypes) {
                 FormOptionsUtil.visitFormOptions(
                     getProject(),
                     formType,
@@ -176,7 +179,7 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
             }
 
             Collection<PsiElement> elements = new ArrayList<>();
-            for (String formType : DEFAULT_FORM) {
+            for (String formType : this.formTypes) {
                 FormOptionsUtil.visitFormOptions(
                     getProject(),
                     formType,
@@ -216,7 +219,15 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
                 return null;
             }
 
-            return new FormOptionGotoCompletionProvider(psiElement);
+            Collection<String> formTypes = new HashSet<>(Set.of(DEFAULT_FORM));
+            formTypes.addAll(FormUtil.getFormTypeParentFromOptionResolverScope(psiElement));
+
+            String formTypeClassFromScope = FormUtil.getFormTypeClassFromScope(psiElement);
+            if (formTypeClassFromScope != null) {
+                formTypes.add(formTypeClassFromScope);
+            }
+
+            return new FormOptionGotoCompletionProvider(psiElement, Collections.unmodifiableCollection(formTypes));
         }
     }
 }

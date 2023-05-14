@@ -21,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -187,6 +188,7 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
             }
         );
 
+        // @see fr.adrienbrault.idea.symfony2plugin.form.FormOptionGotoCompletionRegistrar.FormOptionGotoCompletionProvider
         // TODO: migrate to FormGotoCompletionRegistrar for better performance as lazy condition
         // $resolver->setDefaults(['csrf_protection<caret>' => 'foobar']);
         psiReferenceRegistrar.registerReferenceProvider(
@@ -227,11 +229,19 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                     }
 
                     if(PhpElementsUtil.getCompletableArrayCreationElement(psiElement) != null) {
-                        return new PsiReference[]{
-                            new FormExtensionKeyReference((StringLiteralExpression) psiElement, FormUtil.getFormTypeClassFromScope(psiElement)),
-                            new FormDefaultOptionsKeyReference((StringLiteralExpression) psiElement, "form"),
-                            new FormDefaultOptionsKeyReference((StringLiteralExpression) psiElement, "Symfony\\Component\\Form\\Extension\\Core\\Type\\FormType"),
-                        };
+                        StringLiteralExpression psiElementCast = (StringLiteralExpression) psiElement;
+
+                        Collection<PsiReference> psiReferences = new ArrayList<>(Arrays.asList(
+                            new FormExtensionKeyReference(psiElementCast, FormUtil.getFormTypeClassFromScope(psiElement)),
+                            new FormDefaultOptionsKeyReference(psiElementCast, "form"),
+                            new FormDefaultOptionsKeyReference(psiElementCast, "Symfony\\Component\\Form\\Extension\\Core\\Type\\FormType")
+                        ));
+
+                        for (String formName : FormUtil.getFormTypeParentFromOptionResolverScope(psiElement)) {
+                            psiReferences.add(new FormDefaultOptionsKeyReference(psiElementCast, formName));
+                        }
+
+                        return psiReferences.toArray(new PsiReference[0]);
                     }
 
                     return new PsiReference[0];
