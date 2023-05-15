@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.form;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -49,6 +50,14 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
         registrar.register(
             PlatformPatterns.psiElement().withParent(PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern()),
             new OptionDefaultCompletionContributor()
+        );
+
+        /*
+         * eg "$resolver->setDefaults('<caret>')"
+         */
+        registrar.register(
+            PhpElementsUtil.getParameterListArrayValuePattern(),
+            new OptionDefaultsCompletionContributor()
         );
     }
 
@@ -228,6 +237,113 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
             }
 
             return new FormOptionGotoCompletionProvider(psiElement, Collections.unmodifiableCollection(formTypes));
+        }
+    }
+
+    /*
+     * eg "$resolver->setDefaults('<caret>' => '')"
+     */
+    private static class OptionDefaultsCompletionContributor implements GotoCompletionContributor {
+        @Nullable
+        @Override
+        public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
+            PsiElement context = psiElement.getContext();
+            if (!(context instanceof StringLiteralExpression)) {
+                return null;
+            }
+
+            ParameterList parameterList = PsiTreeUtil.getParentOfType(psiElement, ParameterList.class);
+            if (parameterList == null) {
+                return null;
+            }
+
+            if (!(parameterList.getContext() instanceof MethodReference method)) {
+                return null;
+            }
+
+            // Symfony 2 and 3 BC fix
+            if (!(PhpElementsUtil.isMethodReferenceInstanceOf(method, "\\Symfony\\Component\\OptionsResolver\\OptionsResolverInterface", "setDefaults") ||
+                PhpElementsUtil.isMethodReferenceInstanceOf(method, "\\Symfony\\Component\\OptionsResolver\\OptionsResolver", "setDefaults"))
+            ) {
+                return null;
+            }
+
+            // only use second parameter
+            ArrayCreationExpression arrayHash = PsiTreeUtil.getParentOfType(psiElement, ArrayCreationExpression.class);
+            if (arrayHash == null) {
+                return null;
+            }
+
+            ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(arrayHash);
+            if (currentIndex == null || currentIndex.getIndex() != 0) {
+                return null;
+            }
+
+            if (PhpElementsUtil.getCompletableArrayCreationElement(context) != null) {
+                Set<String> formTypes = new HashSet<>();
+                formTypes.add("form");
+                formTypes.add("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\FormType");
+
+                Set<String> extenTypes = new HashSet<>(formTypes);
+
+                String formTypeClassFromScope = FormUtil.getFormTypeClassFromScope(psiElement);
+                if (formTypeClassFromScope != null) {
+                    extenTypes.add(formTypeClassFromScope);
+                }
+
+                formTypes.addAll(FormUtil.getFormTypeParentFromOptionResolverScope(psiElement));
+
+                return new OptionDefaultsCompletionGotoCompletionProvider(psiElement, formTypes, extenTypes);
+            }
+
+            return null;
+        }
+    }
+
+    /*
+     * eg "$resolver->setDefaults('<caret>' => '')"
+     */
+    private static class OptionDefaultsCompletionGotoCompletionProvider extends GotoCompletionProvider {
+        private final Collection<String> formTypes;
+        private final Collection<String> extensionTypes;
+
+        OptionDefaultsCompletionGotoCompletionProvider(PsiElement psiElement, @NotNull Collection<String> formTypes, @NotNull Collection<String> extensionTypes) {
+            super(psiElement);
+            this.formTypes = formTypes;
+            this.extensionTypes = extensionTypes;
+        }
+
+        @NotNull
+        @Override
+        public Collection<LookupElement> getLookupElements() {
+            Collection<LookupElement> elements = new ArrayList<>(
+                FormOptionsUtil.getFormExtensionKeysLookupElements(getElement().getProject(), extensionTypes.toArray(new String[0]))
+            );
+
+            for (String formType : this.formTypes) {
+                elements.addAll(FormOptionsUtil.getDefaultOptionLookupElements(getElement().getProject(), formType));
+            }
+
+            return elements;
+        }
+
+        @NotNull
+        @Override
+        public Collection<PsiElement> getPsiTargets(PsiElement element) {
+            PsiElement parent = element.getParent();
+            if (!(parent instanceof StringLiteralExpression)) {
+                return Collections.emptyList();
+            }
+
+            Collection<PsiElement> targets = new HashSet<>(
+                FormOptionsUtil.getFormExtensionsKeysTargets((StringLiteralExpression) parent, extensionTypes.toArray(new String[0]))
+            );
+
+            for (String formType : this.formTypes) {
+                targets.addAll(FormOptionsUtil.getDefaultOptionTargets((StringLiteralExpression) parent, formType));
+            }
+
+            return targets;
         }
     }
 }
