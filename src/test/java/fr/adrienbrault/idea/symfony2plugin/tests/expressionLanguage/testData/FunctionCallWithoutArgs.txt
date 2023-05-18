@@ -1,0 +1,7 @@
+Expression Language File
+  ExpressionLanguageCallExprImpl(CALL_EXPR)
+    ExpressionLanguageRefExprImpl(REF_EXPR)
+      ExpressionLanguageIdentifierImpl(IDENTIFIER)
+        PsiElement( ExpressionLanguageType.id)('foo')
+    PsiElement( ExpressionLanguageType.()('(')
+    PsiElement( ExpressionLanguageType.))(')')

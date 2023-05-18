@@ -1,0 +1,4 @@
+Expression Language File
+  ExpressionLanguageLiteralExprImpl(LITERAL_EXPR)
+    ExpressionLanguageBooleanLiteralImpl(BOOLEAN_LITERAL)
+      PsiElement( ExpressionLanguageType.false)('FALSE')

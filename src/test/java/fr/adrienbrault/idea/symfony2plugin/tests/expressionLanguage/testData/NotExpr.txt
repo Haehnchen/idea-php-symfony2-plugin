@@ -1,0 +1,6 @@
+Expression Language File
+  ExpressionLanguageNotExprImpl(NOT_EXPR)
+    PsiElement( ExpressionLanguageType.!)('!')
+    ExpressionLanguageRefExprImpl(REF_EXPR)
+      ExpressionLanguageIdentifierImpl(IDENTIFIER)
+        PsiElement( ExpressionLanguageType.id)('a')

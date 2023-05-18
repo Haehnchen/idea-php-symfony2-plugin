@@ -1,0 +1,4 @@
+Expression Language File
+  ExpressionLanguageLiteralExprImpl(LITERAL_EXPR)
+    ExpressionLanguageNullLiteralImpl(NULL_LITERAL)
+      PsiElement( ExpressionLanguageType.null)('NULL')

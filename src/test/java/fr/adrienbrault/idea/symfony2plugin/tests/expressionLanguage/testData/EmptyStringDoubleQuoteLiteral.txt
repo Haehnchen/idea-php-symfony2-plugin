@@ -1,0 +1,4 @@
+Expression Language File
+  ExpressionLanguageLiteralExprImpl(LITERAL_EXPR)
+    ExpressionLanguageStringLiteralImpl(STRING_LITERAL)
+      PsiElement( ExpressionLanguageType.string)('""')

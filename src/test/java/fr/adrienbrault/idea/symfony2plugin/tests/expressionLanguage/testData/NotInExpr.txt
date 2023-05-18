@@ -1,0 +1,11 @@
+Expression Language File
+  ExpressionLanguageNotInExprImpl(NOT_IN_EXPR)
+    ExpressionLanguageRefExprImpl(REF_EXPR)
+      ExpressionLanguageIdentifierImpl(IDENTIFIER)
+        PsiElement( ExpressionLanguageType.id)('a')
+    PsiWhiteSpace(' ')
+    PsiElement( ExpressionLanguageType.not in)('not in')
+    PsiWhiteSpace(' ')
+    ExpressionLanguageRefExprImpl(REF_EXPR)
+      ExpressionLanguageIdentifierImpl(IDENTIFIER)
+        PsiElement( ExpressionLanguageType.id)('b')

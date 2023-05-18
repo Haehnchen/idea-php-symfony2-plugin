@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collections;
 import java.util.List;
 
+@Deprecated
 public class ParameterLanguageInjector implements MultiHostInjector {
 
     private static final MethodMatcher.CallToSignature[] CSS_SELECTOR_SIGNATURES = {

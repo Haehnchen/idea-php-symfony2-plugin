@@ -1,0 +1,11 @@
+Expression Language File
+  ExpressionLanguageDivExprImpl(DIV_EXPR)
+    ExpressionLanguageLiteralExprImpl(LITERAL_EXPR)
+      ExpressionLanguageNumberLiteralImpl(NUMBER_LITERAL)
+        PsiElement( ExpressionLanguageType.number)('4')
+    PsiWhiteSpace(' ')
+    PsiElement( ExpressionLanguageType./)('/')
+    PsiWhiteSpace(' ')
+    ExpressionLanguageLiteralExprImpl(LITERAL_EXPR)
+      ExpressionLanguageNumberLiteralImpl(NUMBER_LITERAL)
+        PsiElement( ExpressionLanguageType.number)('2')

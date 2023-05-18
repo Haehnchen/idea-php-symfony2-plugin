@@ -1,0 +1,4 @@
+Expression Language File
+  ExpressionLanguageArrayExprImpl(ARRAY_EXPR)
+    PsiElement( ExpressionLanguageType.[)('[')
+    PsiElement( ExpressionLanguageType.])(']')

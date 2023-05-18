@@ -1,0 +1,9 @@
+Expression Language File
+  ExpressionLanguageRangeExprImpl(RANGE_EXPR)
+    ExpressionLanguageRefExprImpl(REF_EXPR)
+      ExpressionLanguageIdentifierImpl(IDENTIFIER)
+        PsiElement( ExpressionLanguageType.id)('a')
+    PsiElement( ExpressionLanguageType...)('..')
+    ExpressionLanguageRefExprImpl(REF_EXPR)
+      ExpressionLanguageIdentifierImpl(IDENTIFIER)
+        PsiElement( ExpressionLanguageType.id)('b')

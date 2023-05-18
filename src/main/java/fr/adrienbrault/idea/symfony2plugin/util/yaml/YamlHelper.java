@@ -460,15 +460,28 @@ public class YamlHelper {
     }
 
     public static boolean isRoutingFile(PsiFile psiFile) {
-        return psiFile.getName().contains("routing") || psiFile.getVirtualFile().getPath().contains("/routing");
+        return fileNameOrPathContains(psiFile, "routing");
     }
 
     public static boolean isConfigFile(@NotNull PsiFile psiFile) {
-        return psiFile.getName().contains("config") || psiFile.getVirtualFile().getPath().contains("/config");
+        return fileNameOrPathContains(psiFile, "config");
     }
 
     public static boolean isServicesFile(@NotNull PsiFile psiFile) {
-        return psiFile.getName().contains("services") || psiFile.getVirtualFile().getPath().contains("/services");
+        return fileNameOrPathContains(psiFile, "services");
+    }
+
+    private static boolean fileNameOrPathContains(@NotNull PsiFile psiFile, @NotNull String text) {
+        if (psiFile.getName().contains(text)) {
+            return true;
+        }
+
+        var virtualFile = psiFile.getVirtualFile();
+        if (virtualFile != null) {
+            return virtualFile.getPath().contains("/" + text);
+        }
+
+        return false;
     }
 
     public static boolean isInsideServiceDefinition(@NotNull PsiElement psiElement) {
