@@ -28,7 +28,7 @@ import java.util.Objects;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class FormTypeReferenceContributor extends PsiReferenceContributor {
-    private static final MethodMatcher.CallToSignature[] BUILDER_SIGNATURES = new MethodMatcher.CallToSignature[] {
+    public static final MethodMatcher.CallToSignature[] BUILDER_SIGNATURES = new MethodMatcher.CallToSignature[] {
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormTypeInterface", "buildForm"),
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormTypeInterface", "buildView"),
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormTypeInterface", "finishView"),
@@ -210,77 +210,6 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
 
                     return new PsiReference[] {
                         new FormFieldNameReference((StringLiteralExpression) psiElement, method)
-                    };
-                }
-
-                @Override
-                public boolean acceptsTarget(@NotNull PsiElement target) {
-                    return Symfony2ProjectComponent.isEnabled(target);
-                }
-            }
-        );
-
-        /*
-         * $options
-         * public function buildForm(FormBuilderInterface $builder, array $options) {
-         *   $options['foo']
-         * }
-         *
-         * public function setDefaultOptions(OptionsResolverInterface $resolver) {
-         *   $resolver->setDefaults([
-         *    'foo' => 'bar',
-         * ]);
-         * }
-         */
-        psiReferenceRegistrar.registerReferenceProvider(
-            PlatformPatterns.psiElement(StringLiteralExpression.class),
-            new PsiReferenceProvider() {
-                @NotNull
-                @Override
-                public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
-                    if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
-                        return new PsiReference[0];
-                    }
-
-                    PsiElement context = psiElement.getContext();
-                    if(!(context instanceof ArrayIndex)) {
-                        return new PsiReference[0];
-                    }
-
-                    PhpPsiElement variable = ((ArrayIndex) context).getPrevPsiSibling();
-                    if(!(variable instanceof Variable)) {
-                        return new PsiReference[0];
-                    }
-
-                    PsiElement parameter = ((Variable) variable).resolve();
-
-                    if(!(parameter instanceof Parameter)) {
-                        return new PsiReference[0];
-                    }
-
-                    // all options keys are at parameter = 1 by now
-                    ParameterBag parameterBag = PsiElementUtils.getCurrentParameterIndex((Parameter) parameter);
-                    if(parameterBag == null || parameterBag.getIndex() != 1) {
-                        return new PsiReference[0];
-                    }
-
-                    Method method = PsiTreeUtil.getParentOfType(parameter, Method.class);
-                    if(method == null) {
-                        return new PsiReference[0];
-                    }
-
-                    if(!PhpElementsUtil.isMethodInstanceOf(method, BUILDER_SIGNATURES)) {
-                        return new PsiReference[0];
-                    }
-
-                    PhpClass phpClass = method.getContainingClass();
-                    if(phpClass == null) {
-                        return new PsiReference[0];
-                    }
-
-                    return new PsiReference[]{
-                        new FormExtensionKeyReference((StringLiteralExpression) psiElement, FormUtil.getFormTypeClassFromScope(psiElement)),
-                        new FormDefaultOptionsKeyReference((StringLiteralExpression) psiElement, phpClass.getPresentableFQN())
                     };
                 }
 
