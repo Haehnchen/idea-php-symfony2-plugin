@@ -22,9 +22,6 @@ import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.codeInsight.controlFlow.PhpControlFlowUtil;
-import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
-import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpReturnInstruction;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
 import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.DefaultServiceNameStrategy;
@@ -629,18 +626,8 @@ public class ServiceUtil {
                 continue;
             }
 
-            Collection<PsiElement> phpReturnArguments = new ArrayList<>();
-
-            PhpControlFlowUtil.processFlow(method.getControlFlow(), new PhpInstructionProcessor() {
-                @Override
-                public boolean processReturnInstruction(PhpReturnInstruction instruction) {
-                    phpReturnArguments.add(instruction.getArgument());
-                    return super.processReturnInstruction(instruction);
-                }
-            });
-
             // search for all return values and try to extract array keys
-            for (PsiElement phpReturnArgument: phpReturnArguments) {
+            for (PsiElement phpReturnArgument: PhpElementsUtil.collectPhpReturnArgumentsInsideControlFlow(method)) {
                 if(phpReturnArgument instanceof ArrayCreationExpression) {
                     // return ['foobar' => 'foo']
 
