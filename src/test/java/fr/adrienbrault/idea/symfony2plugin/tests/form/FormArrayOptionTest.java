@@ -1,6 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.form;
 
+import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.PhpFileType;
+import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
@@ -61,7 +63,6 @@ public class FormArrayOptionTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     public void testThatUnknownTypeProvidesFormFallback() {
-
         assertCompletionContains(PhpFileType.INSTANCE, "<?php\r\n" +
                 "public function buildForm(\\Symfony\\Component\\Form\\FormBuilderInterface $builder, array $options) {\n" +
                 "   $builder->add('foo', 'ops_unknown', array('<caret>'));\n" +
@@ -78,5 +79,31 @@ public class FormArrayOptionTest extends SymfonyLightCodeInsightFixtureTestCase 
 
     }
 
+    public void testGetFormPhpClassFromContextSetDefaults() {
+        myFixture.configureByText("test.php", "<?php\n" +
+            "class Foo {\n" +
+            "   public function configureOptions(\\Symfony\\Component\\Form\\FormBuilderInterface $builder, array $options) {\n" +
+            "       $foobar = '<caret>';\n" +
+            "       $resolver->setDefaults(['data_class' => \\App\\User::class]);\n" +
+            "   }\n" +
+            "}"
+        );
 
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        assertEquals("\\App\\User", FormOptionsUtil.getFormPhpClassFromContext(psiElement).getFQN());
+    }
+
+    public void testGetFormPhpClassFromContextSetDefault() {
+        myFixture.configureByText("test.php", "<?php\n" +
+            "class Foo {\n" +
+            "   public function configureOptions(\\Symfony\\Component\\Form\\FormBuilderInterface $builder, array $options) {\n" +
+            "       $foobar = '<caret>';\n" +
+            "       $resolver->setDefault('data_class', \\App\\User::class);\n" +
+            "   }\n" +
+            "}"
+        );
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        assertEquals("\\App\\User", FormOptionsUtil.getFormPhpClassFromContext(psiElement).getFQN());
+    }
 }

@@ -6,9 +6,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.indexing.FileBasedIndex;
-import com.jetbrains.php.codeInsight.controlFlow.PhpControlFlowUtil;
-import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
-import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpCallInstruction;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.SerializerClassUsageStubIndex;
@@ -32,18 +29,9 @@ public class SerializerUtil {
         for (PhpNamedElement topLevelElement : ((PhpFile) psiFile).getTopLevelDefs().values()) {
             if (topLevelElement instanceof PhpClass clazz) {
                 for (Method method : clazz.getOwnMethods()) {
-                    PhpControlFlowUtil.processFlow(method.getControlFlow(), new PhpInstructionProcessor() {
-                        @Override
-                        public boolean processPhpCallInstruction(PhpCallInstruction instruction) {
-                            if (instruction.getFunctionReference() instanceof MethodReference methodReference && "deserialize".equalsIgnoreCase(methodReference.getName())) {
-                                methodReferences.add(methodReference);
-                            }
-                            return super.processPhpCallInstruction(instruction);
-                        }
-                    });
+                    methodReferences.addAll(PhpElementsUtil.collectMethodReferencesInsideControlFlow(method, "deserialize"));
                 }
             }
-
         }
 
         for (MethodReference methodReference : methodReferences) {

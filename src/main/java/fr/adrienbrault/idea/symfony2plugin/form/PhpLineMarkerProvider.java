@@ -10,6 +10,7 @@ import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.FormDataClassStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang.StringUtils;
@@ -87,7 +88,7 @@ public class PhpLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        PhpClass formDataClass = FormTypeReferenceContributor.getFormPhpClassFromContext(leaf);
+        PhpClass formDataClass = FormOptionsUtil.getFormPhpClassFromContext(leaf);
         if (formDataClass != null) {
             NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.SYMFONY_LINE_MARKER)
                 .setTargets(formDataClass)

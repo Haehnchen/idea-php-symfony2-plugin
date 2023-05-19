@@ -442,16 +442,11 @@ public class FormOptionsUtil {
 
         for (String scopeMethod : scopeMethods) {
             Method method = phpClass.findMethodByName(scopeMethod);
-
             if(method == null) {
                 continue;
             }
 
-            for (MethodReference methodReference : PsiTreeUtil.collectElementsOfType(method, MethodReference.class)) {
-                if(!methodName.equals(methodReference.getName())) {
-                    continue;
-                }
-
+            for (MethodReference methodReference : PhpElementsUtil.collectMethodReferencesInsideControlFlow(method, methodName)) {
                 // our key to find
                 String argument = PhpElementsUtil.getMethodReferenceStringValueParameter(methodReference, 0);
                 if(!key.equals(argument)) {
@@ -469,5 +464,31 @@ public class FormOptionsUtil {
         }
 
         return values;
+    }
+
+    /**
+     * $resolver->setDefaults(['data_class' => User::class]);
+     * $resolver->setDefault('data_class', User::class);
+     */
+    @Nullable
+    public static PhpClass getFormPhpClassFromContext(@NotNull PsiElement psiElement) {
+        Collection<String> classes = new ArrayList<>();
+
+        // $resolver->setDefaults(['data_class' => User::class]);
+        String className = PhpElementsUtil.getArrayKeyValueInsideSignature(psiElement, FormOptionsUtil.FORM_OPTION_METHODS, "setDefaults", "data_class");
+        if(className != null) {
+            classes.add(className);
+        }
+
+        // $resolver->setDefault('data_class', User::class);
+        classes.addAll(FormOptionsUtil.getMethodReferenceStringParameter(psiElement, FormOptionsUtil.FORM_OPTION_METHODS, "setDefault", "data_class"));
+
+        // find first class
+        Project project = psiElement.getProject();
+
+        return classes.stream()
+            .map(clazz -> PhpElementsUtil.getClassInterface(project, clazz))
+            .filter(Objects::nonNull).findFirst()
+            .orElse(null);
     }
 }

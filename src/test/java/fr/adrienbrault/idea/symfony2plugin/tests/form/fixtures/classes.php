@@ -8,6 +8,13 @@ namespace
     }
 }
 
+namespace App
+{
+    class User
+    {
+    }
+}
+
 namespace Symfony\Component\Form {
     interface FormTypeInterface {
         public function setDefaultOptions(OptionsResolverInterface $resolver);
