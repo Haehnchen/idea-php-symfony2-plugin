@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.form;
 
-import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -18,11 +17,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Objects;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -172,7 +166,7 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                         return new PsiReference[0];
                     }
 
-                    PhpClass phpClass = getFormPhpClassFromContext(psiElement);
+                    PhpClass phpClass = FormOptionsUtil.getFormPhpClassFromContext(psiElement);
                     if(phpClass == null) {
                         return new PsiReference[0];
                     }
@@ -219,31 +213,6 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                 }
             }
         );
-    }
-
-    @Nullable
-    public static PhpClass getFormPhpClassFromContext(@NotNull PsiElement psiElement) {
-        Collection<String> classes = new ArrayList<>();
-
-        // $resolver->setDefaults(['data_class' => User::class]);
-        PsiElement className = PhpElementsUtil.getArrayKeyValueInsideSignaturePsi(psiElement, FormOptionsUtil.FORM_OPTION_METHODS, "setDefaults", "data_class");
-        if(className != null) {
-            String stringValue = PhpElementsUtil.getStringValue(className);
-            if(stringValue != null) {
-                classes.add(stringValue);
-            }
-        }
-
-        // $resolver->setDefault('data_class', User::class);
-        classes.addAll(FormOptionsUtil.getMethodReferenceStringParameter(psiElement, FormOptionsUtil.FORM_OPTION_METHODS, "setDefault", "data_class"));
-
-        // find first class
-        Project project = psiElement.getProject();
-
-        return classes.stream()
-            .map(clazz -> PhpElementsUtil.getClassInterface(project, clazz))
-            .filter(Objects::nonNull).findFirst()
-            .orElse(null);
     }
 
     private static class FormTypeReferenceRef extends FormTypeReference {

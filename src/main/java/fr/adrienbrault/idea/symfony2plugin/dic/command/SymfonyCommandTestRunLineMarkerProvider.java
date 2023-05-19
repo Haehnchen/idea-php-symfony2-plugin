@@ -8,9 +8,6 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ObjectUtils;
-import com.jetbrains.php.codeInsight.controlFlow.PhpControlFlowUtil;
-import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
-import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpCallInstruction;
 import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
@@ -21,7 +18,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -96,19 +92,7 @@ public class SymfonyCommandTestRunLineMarkerProvider extends RunLineMarkerContri
             // old style
             Method method = phpClass.findOwnMethodByName("configure");
             if(method != null) {
-                Collection<MethodReference> methodReferences = new ArrayList<>();
-
-                PhpControlFlowUtil.processFlow(method.getControlFlow(), new PhpInstructionProcessor() {
-                    @Override
-                    public boolean processPhpCallInstruction(PhpCallInstruction instruction) {
-                        if (instruction.getFunctionReference() instanceof MethodReference methodReference && "setName".equals(methodReference.getName())) {
-                            methodReferences.add(methodReference);
-                        }
-                        return super.processPhpCallInstruction(instruction);
-                    }
-                });
-
-                for (MethodReference methodReference: methodReferences) {
+                for (MethodReference methodReference: PhpElementsUtil.collectMethodReferencesInsideControlFlow(method, "setName")) {
                     PsiElement psiMethodParameter = PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 0);
                     if(psiMethodParameter == null) {
                         continue;

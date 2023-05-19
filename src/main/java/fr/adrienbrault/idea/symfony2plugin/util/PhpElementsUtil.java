@@ -21,6 +21,7 @@ import com.jetbrains.php.codeInsight.PhpScopeHolder;
 import com.jetbrains.php.codeInsight.controlFlow.PhpControlFlowUtil;
 import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
 import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpAccessVariableInstruction;
+import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpCallInstruction;
 import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpConstructorCallInstruction;
 import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpReturnInstruction;
 import com.jetbrains.php.completion.PhpLookupElement;
@@ -53,6 +54,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -309,19 +311,19 @@ public class PhpElementsUtil {
         return null;
     }
 
-    static public PsiElement[] getPsiElementsBySignature(@NotNull Project project, @Nullable String signature) {
+    static public PhpNamedElement[] getPsiElementsBySignature(@NotNull Project project, @Nullable String signature) {
 
         if(signature == null) {
-            return new PsiElement[0];
+            return new PhpNamedElement[0];
         }
 
         Collection<? extends PhpNamedElement> phpNamedElementCollections = PhpIndex.getInstance(project).getBySignature(signature, null, 0);
-        return phpNamedElementCollections.toArray(new PsiElement[0]);
+        return phpNamedElementCollections.toArray(new PhpNamedElement[0]);
     }
 
     @Nullable
-    static public PsiElement getPsiElementsBySignatureSingle(Project project, @Nullable String signature) {
-        PsiElement[] psiElements = getPsiElementsBySignature(project, signature);
+    static public PhpNamedElement getPsiElementsBySignatureSingle(Project project, @Nullable String signature) {
+        PhpNamedElement[] psiElements = getPsiElementsBySignature(project, signature);
         if(psiElements.length == 0) {
             return null;
         }
@@ -852,42 +854,28 @@ public class PhpElementsUtil {
     }
 
     @Nullable
-    static public PsiElement getArrayKeyValueInsideSignaturePsi(PsiElement psiElementInsideClass, String callTo[], String methodName, String keyName) {
+    static public String getArrayKeyValueInsideSignature(PsiElement psiElementInsideClass, String[] insideMethods, String methodName, String keyName) {
         PhpClass phpClass = PsiTreeUtil.getParentOfType(psiElementInsideClass, PhpClass.class);
-        if(phpClass == null) {
+        if (phpClass == null) {
             return null;
         }
 
-        String className = phpClass.getPresentableFQN();
-        for (String s : callTo) {
-            // @TODO: replace signature
-            PsiElement arrayKeyValueInsideSignature = PhpElementsUtil.getArrayKeyValueInsideSignaturePsi(psiElementInsideClass.getProject(), "#M#C\\" + className + "." + s, methodName, keyName);
-            if(arrayKeyValueInsideSignature != null) {
-                return arrayKeyValueInsideSignature;
+        for (String insideMethod : insideMethods) {
+            Method method = phpClass.findMethodByName(insideMethod);
+            if (method == null) {
+                continue;
             }
-        }
 
-        return null;
-    }
-
-    @Nullable
-    static public String getArrayKeyValueInsideSignature(PsiElement psiElementInsideClass, String callTo[], String methodName, String keyName) {
-        return getStringValue(getArrayKeyValueInsideSignaturePsi(psiElementInsideClass, callTo, methodName, keyName));
-    }
-
-    @Nullable
-    static private PsiElement getArrayKeyValueInsideSignaturePsi(Project project, String signature, String methodName, String keyName) {
-        PsiElement psiElement = PhpElementsUtil.getPsiElementsBySignatureSingle(project, signature);
-
-        if(psiElement == null) {
-            return null;
-        }
-
-        for(MethodReference methodReference: PsiTreeUtil.findChildrenOfType(psiElement, MethodReference.class)) {
-            if(PhpElementsUtil.isEqualMethodReferenceName(methodReference, methodName)) {
+            for (MethodReference methodReference : collectMethodReferencesInsideControlFlow(method, methodName)) {
                 PsiElement[] parameters = methodReference.getParameters();
-                if(parameters.length > 0 && parameters[0] instanceof ArrayCreationExpression) {
-                    return PhpElementsUtil.getArrayValue((ArrayCreationExpression) parameters[0], keyName);
+                if (parameters.length > 0 && parameters[0] instanceof ArrayCreationExpression) {
+                    PhpPsiElement arrayValue = PhpElementsUtil.getArrayValue((ArrayCreationExpression) parameters[0], keyName);
+                    if (arrayValue != null) {
+                        String stringValue = getStringValue(arrayValue);
+                        if (stringValue != null && !stringValue.isBlank()) {
+                            return stringValue;
+                        }
+                    }
                 }
             }
         }
@@ -1969,6 +1957,36 @@ public class PhpElementsUtil {
         });
 
         return elements;
+    }
+
+    public static Collection<MethodReference> collectMethodReferencesInsideControlFlow(@NotNull PhpScopeHolder phpScopeHolder) {
+        Collection<MethodReference> methodReferences = new ArrayList<>();
+
+        PhpControlFlowUtil.processFlow(phpScopeHolder.getControlFlow(), new PhpInstructionProcessor() {
+            public boolean processPhpCallInstruction(PhpCallInstruction instruction) {
+                if (instruction.getFunctionReference() instanceof MethodReference methodReference) {
+                    methodReferences.add(methodReference);
+                }
+                return super.processPhpCallInstruction(instruction);
+            }
+        });
+
+        return methodReferences;
+    }
+
+    public static Collection<MethodReference> collectMethodReferencesInsideControlFlow(@NotNull PhpScopeHolder phpScopeHolder, @NotNull String... methodName) {
+        Collection<MethodReference> methodReferences = new ArrayList<>();
+
+        PhpControlFlowUtil.processFlow(phpScopeHolder.getControlFlow(), new PhpInstructionProcessor() {
+            public boolean processPhpCallInstruction(PhpCallInstruction instruction) {
+                if (instruction.getFunctionReference() instanceof MethodReference methodReference && Arrays.stream(methodName).anyMatch(s -> s.equals(methodReference.getName()))) {
+                    methodReferences.add(methodReference);
+                }
+                return super.processPhpCallInstruction(instruction);
+            }
+        });
+
+        return methodReferences;
     }
 
     @NotNull

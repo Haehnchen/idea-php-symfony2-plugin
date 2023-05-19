@@ -16,7 +16,6 @@ import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.codeInsight.controlFlow.PhpControlFlowUtil;
 import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
-import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpCallInstruction;
 import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpReturnInstruction;
 import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.psi.PhpFile;
@@ -344,18 +343,7 @@ public class ServiceContainerUtil {
     public static void visitFile(@NotNull PhpFile phpFile, @NotNull Consumer<ServiceConsumer> consumer) {
         for (Function function : getPhpContainerConfiguratorFunctions(phpFile)) {
             // we only want "set" and "alias" methods
-            Collection<MethodReference> methodReferences = new ArrayList<>();
-
-            PhpControlFlowUtil.processFlow(function.getControlFlow(), new PhpInstructionProcessor() {
-                public boolean processPhpCallInstruction(PhpCallInstruction instruction) {
-                    if (instruction.getFunctionReference() instanceof MethodReference methodReference && ("set".equals(methodReference.getName()) || "alias".equals(methodReference.getName()))) {
-                        methodReferences.add(methodReference);
-                    }
-                    return super.processPhpCallInstruction(instruction);
-                }
-            });
-
-            for (MethodReference methodReference : methodReferences) {
+            for (MethodReference methodReference : PhpElementsUtil.collectMethodReferencesInsideControlFlow(function, "set", "alias")) {
                 // ->set('translator.default', Translator::class)
                 if ("set".equals(methodReference.getName())) {
                     PsiElement[] parameters = methodReference.getParameters();

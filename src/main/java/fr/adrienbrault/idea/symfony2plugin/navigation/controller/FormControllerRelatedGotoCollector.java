@@ -1,9 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.navigation.controller;
 
 import com.intellij.psi.PsiElement;
-import com.jetbrains.php.codeInsight.controlFlow.PhpControlFlowUtil;
-import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
-import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpCallInstruction;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
@@ -12,9 +9,9 @@ import fr.adrienbrault.idea.symfony2plugin.extension.ControllerActionGotoRelated
 import fr.adrienbrault.idea.symfony2plugin.extension.ControllerActionGotoRelatedCollectorParameter;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang.StringUtils;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -26,19 +23,7 @@ public class FormControllerRelatedGotoCollector implements ControllerActionGotoR
     public void collectGotoRelatedItems(ControllerActionGotoRelatedCollectorParameter parameter) {
         Collection<PhpClass> uniqueTargets = new HashSet<>();
 
-        Collection<MethodReference> methodReferences = new ArrayList<>();
-
-        PhpControlFlowUtil.processFlow(parameter.getMethod().getControlFlow(), new PhpInstructionProcessor() {
-            @Override
-            public boolean processPhpCallInstruction(PhpCallInstruction instruction) {
-                if (instruction.getFunctionReference() instanceof MethodReference methodReference) {
-                    methodReferences.add(methodReference);
-                }
-                return super.processPhpCallInstruction(instruction);
-            }
-        });
-
-        for (MethodReference methodReference : methodReferences) {
+        for (MethodReference methodReference : PhpElementsUtil.collectMethodReferencesInsideControlFlow(parameter.getMethod())) {
             PsiElement parameter0 = methodReference.getParameter(0);
             if (parameter0 == null) {
                 continue;
