@@ -713,6 +713,7 @@ public class FormUtil {
     /**
      * public function getParent() { return ChoiceType::class; }
      */
+    @NotNull
     public static Collection<String> getFormTypeParentFromOptionResolverScope(@NotNull PsiElement psiElement) {
         Method methodScope = PsiTreeUtil.getParentOfType(psiElement, Method.class);
 
@@ -724,5 +725,27 @@ public class FormUtil {
         }
 
         return Collections.emptySet();
+    }
+
+    /**
+     *
+     * public function buildForm(FormBuilderInterface $builder, array $options) {
+     *   $options['<caret>'];
+     * }
+     *
+     * public function getParent() { return ChoiceType::class; }
+     */
+    @NotNull
+    public static Collection<String> getFormTypeParentFromFormTypeImplementation(@NotNull PsiElement psiElement) {
+        Method methodScope = PsiTreeUtil.getParentOfType(psiElement, Method.class);
+
+        if (methodScope != null) {
+            PhpClass phpClass = methodScope.getContainingClass();
+            if (phpClass != null && (PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Form\\FormTypeInterface"))) {
+                return PhpElementsUtil.getMethodReturnAsStrings(phpClass, "getParent");
+            }
+        }
+
+        return Collections.emptyList();
     }
 }

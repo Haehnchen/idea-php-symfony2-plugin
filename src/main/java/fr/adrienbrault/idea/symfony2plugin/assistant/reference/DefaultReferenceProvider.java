@@ -6,7 +6,6 @@ import fr.adrienbrault.idea.symfony2plugin.config.PhpClassReference;
 import fr.adrienbrault.idea.symfony2plugin.config.component.ParameterReference;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceReference;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
-import fr.adrienbrault.idea.symfony2plugin.form.FormDefaultOptionsKeyReference;
 import fr.adrienbrault.idea.symfony2plugin.form.FormTypeReference;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteReference;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateReference;
@@ -27,7 +26,6 @@ public class DefaultReferenceProvider {
         new PhpClassReferenceProvider(),
         new ServiceReferenceProvider(),
         new FormTypeReferenceProvider(),
-        new FormOptionReferenceProvider(),
         new PhpInterfaceReferenceProvider(),
         new PhpClassInterfaceReferenceProvider(),
         new TranslationKeyReferenceProvider(),
@@ -273,24 +271,6 @@ public class DefaultReferenceProvider {
         @Override
         public String getDocBlockParamAlias() {
             return "FormType";
-        }
-    }
-
-    private static class FormOptionReferenceProvider implements AssistantReferenceProvider {
-
-        @Override
-        public PsiReference getPsiReference(AssistantReferenceProviderParameter parameter) {
-            return new FormDefaultOptionsKeyReference(parameter.getPsiElement(), "form");
-        }
-
-        @Override
-        public String getAlias() {
-            return "form_option";
-        }
-
-        @Override
-        public String getDocBlockParamAlias() {
-            return null;
         }
     }
 

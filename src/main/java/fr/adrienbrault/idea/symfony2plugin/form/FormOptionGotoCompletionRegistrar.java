@@ -59,6 +59,23 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
             PhpElementsUtil.getParameterListArrayValuePattern(),
             new OptionDefaultsCompletionContributor()
         );
+
+        /*
+         * $options
+         * public function buildForm(FormBuilderInterface $builder, array $options) {
+         *   $options['foo']
+         * }
+         *
+         * public function setDefaultOptions(OptionsResolverInterface $resolver) {
+         *   $resolver->setDefaults([
+         *    'foo' => 'bar',
+         * ]);
+         * }
+         */
+        registrar.register(
+            PlatformPatterns.psiElement().withParent(PlatformPatterns.psiElement(StringLiteralExpression.class)),
+            new FormArrayAccessOptionGotoCompletionContributor()
+        );
     }
 
     private static class FormOptionBuilderCompletionContributor implements GotoCompletionContributor {
@@ -281,19 +298,15 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
 
             if (PhpElementsUtil.getCompletableArrayCreationElement(context) != null) {
                 Set<String> formTypes = new HashSet<>();
-                formTypes.add("form");
-                formTypes.add("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\FormType");
-
-                Set<String> extenTypes = new HashSet<>(formTypes);
 
                 String formTypeClassFromScope = FormUtil.getFormTypeClassFromScope(psiElement);
                 if (formTypeClassFromScope != null) {
-                    extenTypes.add(formTypeClassFromScope);
+                    formTypes.add(formTypeClassFromScope);
                 }
 
                 formTypes.addAll(FormUtil.getFormTypeParentFromOptionResolverScope(psiElement));
 
-                return new OptionDefaultsCompletionGotoCompletionProvider(psiElement, formTypes, extenTypes);
+                return new OptionDefaultsCompletionGotoCompletionProvider(psiElement, formTypes);
             }
 
             return null;
@@ -305,19 +318,21 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
      */
     private static class OptionDefaultsCompletionGotoCompletionProvider extends GotoCompletionProvider {
         private final Collection<String> formTypes;
-        private final Collection<String> extensionTypes;
 
-        OptionDefaultsCompletionGotoCompletionProvider(PsiElement psiElement, @NotNull Collection<String> formTypes, @NotNull Collection<String> extensionTypes) {
+        OptionDefaultsCompletionGotoCompletionProvider(PsiElement psiElement, @NotNull Collection<String> formTypes) {
             super(psiElement);
-            this.formTypes = formTypes;
-            this.extensionTypes = extensionTypes;
+            this.formTypes = new HashSet<>();
+
+            this.formTypes.add("form");
+            this.formTypes.add("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\FormType");
+            this.formTypes.addAll(formTypes);
         }
 
         @NotNull
         @Override
         public Collection<LookupElement> getLookupElements() {
             Collection<LookupElement> elements = new ArrayList<>(
-                FormOptionsUtil.getFormExtensionKeysLookupElements(getElement().getProject(), extensionTypes.toArray(new String[0]))
+                FormOptionsUtil.getFormExtensionKeysLookupElements(getElement().getProject(), formTypes.toArray(new String[0]))
             );
 
             for (String formType : this.formTypes) {
@@ -336,7 +351,7 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
             }
 
             Collection<PsiElement> targets = new HashSet<>(
-                FormOptionsUtil.getFormExtensionsKeysTargets((StringLiteralExpression) parent, extensionTypes.toArray(new String[0]))
+                FormOptionsUtil.getFormExtensionsKeysTargets((StringLiteralExpression) parent, formTypes.toArray(new String[0]))
             );
 
             for (String formType : this.formTypes) {
@@ -344,6 +359,67 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
             }
 
             return targets;
+        }
+    }
+
+    private static class FormArrayAccessOptionGotoCompletionContributor implements GotoCompletionContributor {
+        @Override
+        public @Nullable GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
+            if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
+                return null;
+            }
+
+            PsiElement context = psiElement.getContext();
+            if (!(context instanceof StringLiteralExpression)) {
+                return null;
+            }
+
+            PsiElement arrayIndex = context.getContext();
+            if(!(arrayIndex instanceof ArrayIndex)) {
+                return null;
+            }
+
+            PhpPsiElement variable = ((ArrayIndex) arrayIndex).getPrevPsiSibling();
+            if(!(variable instanceof Variable)) {
+                return null;
+            }
+
+            PsiElement parameter = ((Variable) variable).resolve();
+
+            if(!(parameter instanceof Parameter)) {
+                return null;
+            }
+
+            // all options keys are at parameter = 1 by now
+            ParameterBag parameterBag = PsiElementUtils.getCurrentParameterIndex((Parameter) parameter);
+            if(parameterBag == null || parameterBag.getIndex() != 1) {
+                return null;
+            }
+
+            Method method = PsiTreeUtil.getParentOfType(parameter, Method.class);
+            if(method == null) {
+                return null;
+            }
+
+            if(!PhpElementsUtil.isMethodInstanceOf(method, FormTypeReferenceContributor.BUILDER_SIGNATURES)) {
+                return null;
+            }
+
+            PhpClass phpClass = method.getContainingClass();
+            if(phpClass == null) {
+                return null;
+            }
+
+            Set<String> formTypes = new HashSet<>();
+
+            String formTypeClassFromScope = FormUtil.getFormTypeClassFromScope(psiElement);
+            if (formTypeClassFromScope != null) {
+                formTypes.add(formTypeClassFromScope);
+            }
+
+            formTypes.addAll(FormUtil.getFormTypeParentFromFormTypeImplementation(arrayIndex));
+
+            return new OptionDefaultsCompletionGotoCompletionProvider(psiElement, formTypes);
         }
     }
 }
