@@ -495,7 +495,7 @@ public class FormUtil {
 
         Collection<String> parents = new HashSet<>();
 
-        for (PsiElement phpReturnArgument : collectPhpReturnArguments(getParent)) {
+        for (PsiElement phpReturnArgument : PhpElementsUtil.collectPhpReturnArgumentsInsideControlFlow(getParent)) {
             if(phpReturnArgument instanceof TernaryExpression ternaryExpression) {
                 // true ? 'foobar' : Foo::class
                 parents.addAll(PhpElementsUtil.getTernaryExpressionConditionStrings(ternaryExpression));
@@ -555,7 +555,7 @@ public class FormUtil {
             return StringUtils.stripStart(phpClass.getFQN(), "\\");
         }
 
-        for (PsiElement firstPsiChild : collectPhpReturnArguments(method)) {
+        for (PsiElement firstPsiChild : PhpElementsUtil.collectPhpReturnArgumentsInsideControlFlow(method)) {
             // $this->getBlockPrefix()
             if(firstPsiChild instanceof MethodReference methodReference) {
                 PhpExpression classReference = methodReference.getClassReference();
@@ -610,7 +610,7 @@ public class FormUtil {
         // public function getExtendedType() { return true === true ? FileType::class : Form:class; }
         Method extendedType = phpClass.findMethodByName("getExtendedType");
         if(extendedType != null) {
-            for (PsiElement phpReturnsArgument : collectPhpReturnArguments(extendedType)) {
+            for (PsiElement phpReturnsArgument : PhpElementsUtil.collectPhpReturnArgumentsInsideControlFlow(extendedType)) {
                 // true ? 'foo' : 'foo'
                 if(phpReturnsArgument instanceof TernaryExpression ternaryExpression) {
                     types.addAll(PhpElementsUtil.getTernaryExpressionConditionStrings(ternaryExpression));
@@ -676,21 +676,6 @@ public class FormUtil {
         }
 
         return types;
-    }
-
-    @NotNull
-    private static Collection<PsiElement> collectPhpReturnArguments(@NotNull  Method extendedType) {
-        Collection<PsiElement> phpReturnsArguments = new ArrayList<>();
-
-        PhpControlFlowUtil.processFlow(extendedType.getControlFlow(), new PhpInstructionProcessor() {
-            @Override
-            public boolean processReturnInstruction(PhpReturnInstruction instruction) {
-                phpReturnsArguments.add(instruction.getArgument());
-                return super.processReturnInstruction(instruction);
-            }
-        });
-
-        return phpReturnsArguments;
     }
 
     /**
