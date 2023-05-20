@@ -52,9 +52,7 @@ public class IsGrantedAnnotationReferences implements PhpAnnotationReferenceProv
         @NotNull
         @Override
         public Object[] getVariants() {
-            VoterUtil.LookupElementPairConsumer consumer = new VoterUtil.LookupElementPairConsumer();
-            VoterUtil.visitAttribute(this.myElement.getProject(), consumer);
-            return consumer.getLookupElements().toArray();
+            return VoterUtil.getVoterAttributeLookupElements(this.myElement.getProject()).toArray();
         }
 
         @NotNull
