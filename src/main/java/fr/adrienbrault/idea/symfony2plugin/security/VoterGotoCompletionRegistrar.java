@@ -43,38 +43,11 @@ public class VoterGotoCompletionRegistrar implements GotoCompletionRegistrar {
                 return null;
             }
 
-            MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterRecursiveMatcher(context, 0)
-                .withSignature("Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "isGranted")
-                .withSignature("Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "denyAccessUnlessGranted")
-
-                // Symfony 3.3 / 3.4
-                .withSignature("Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "isGranted")
-                .withSignature("Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "denyAccessUnlessGranted")
-
-                .withSignature("Symfony\\Component\\Security\\Core\\Authorization\\AuthorizationCheckerInterface", "isGranted")
-                .match();
-
-            if(methodMatchParameter != null) {
-                return new MyVisitorGotoCompletionProvider(psiElement);
+            if (!isIsGrantedMethodMatch((StringLiteralExpression) context)) {
+                return null;
             }
 
-            // ['foobar']
-            MethodMatcher.MethodMatchParameter arrayMatchParameter = new MethodMatcher.ArrayParameterMatcher(context, 0)
-                .withSignature("Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "isGranted")
-                .withSignature("Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "denyAccessUnlessGranted")
-
-                // Symfony 4
-                .withSignature("Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "isGranted")
-                .withSignature("Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "denyAccessUnlessGranted")
-
-                .withSignature("Symfony\\Component\\Security\\Core\\Authorization\\AuthorizationCheckerInterface", "isGranted")
-                .match();
-
-            if(arrayMatchParameter != null) {
-                return new MyVisitorGotoCompletionProvider(psiElement);
-            }
-
-            return null;
+            return new MyVisitorGotoCompletionProvider(psiElement);
         });
     }
 
@@ -86,9 +59,7 @@ public class VoterGotoCompletionRegistrar implements GotoCompletionRegistrar {
         @NotNull
         @Override
         public Collection<LookupElement> getLookupElements() {
-            VoterUtil.LookupElementPairConsumer consumer = new VoterUtil.LookupElementPairConsumer();
-            VoterUtil.visitAttribute(getProject(), consumer);
-            return consumer.getLookupElements();
+            return VoterUtil.getVoterAttributeLookupElements(getProject());
         }
 
         @NotNull
@@ -103,5 +74,35 @@ public class VoterGotoCompletionRegistrar implements GotoCompletionRegistrar {
             VoterUtil.visitAttribute(getProject(), foo);
             return foo.getValues();
         }
+    }
+
+    public static boolean isIsGrantedMethodMatch(@NotNull StringLiteralExpression stringLiteralExpression) {
+        MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterRecursiveMatcher(stringLiteralExpression, 0)
+            .withSignature("Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "isGranted")
+            .withSignature("Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "denyAccessUnlessGranted")
+
+            // Symfony 3.3 / 3.4
+            .withSignature("Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "isGranted")
+            .withSignature("Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "denyAccessUnlessGranted")
+
+            .withSignature("Symfony\\Component\\Security\\Core\\Authorization\\AuthorizationCheckerInterface", "isGranted")
+            .match();
+
+        if (methodMatchParameter != null) {
+            return true;
+        }
+
+        MethodMatcher.MethodMatchParameter arrayMatchParameter = new MethodMatcher.ArrayParameterMatcher(stringLiteralExpression, 0)
+            .withSignature("Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "isGranted")
+            .withSignature("Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "denyAccessUnlessGranted")
+
+            // Symfony 4
+            .withSignature("Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "isGranted")
+            .withSignature("Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "denyAccessUnlessGranted")
+
+            .withSignature("Symfony\\Component\\Security\\Core\\Authorization\\AuthorizationCheckerInterface", "isGranted")
+            .match();
+
+        return arrayMatchParameter != null;
     }
 }

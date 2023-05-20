@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.security.utils;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -10,7 +11,7 @@ import com.intellij.psi.PsiReference;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.tree.IElementType;
-import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.util.*;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
@@ -25,16 +26,51 @@ import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class VoterUtil {
+    private static final Key<CachedValue<Map<String, String>>> SYMFONY_VOTER_NAMES_CACHE = new Key<>("SYMFONY_VOTER_NAMES");
+
+    public static Collection<LookupElement> getVoterAttributeLookupElements(@NotNull Project project) {
+        Map<String, String> result = CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            SYMFONY_VOTER_NAMES_CACHE,
+            () -> {
+                Map<String, String> names = new HashMap<>();
+
+                visitAttribute(project, pair -> {
+                    names.putIfAbsent(pair.getFirst(), null);
+
+                    if (names.get(pair.getFirst()) == null) {
+                        PhpClass phpClass = PsiTreeUtil.getParentOfType(pair.getSecond(), PhpClass.class);
+                        if (phpClass != null) {
+                            names.put(pair.getFirst(), phpClass.getName());
+                        }
+                    }
+                });
+
+                return CachedValueProvider.Result.create(names, PsiModificationTracker.MODIFICATION_COUNT);
+            },
+            false
+        );
+
+        return result.entrySet().stream().map((Function<Map.Entry<String, String>, LookupElement>) entry -> {
+            LookupElementBuilder lookupElement = LookupElementBuilder.create(entry.getKey()).withIcon(Symfony2Icons.SYMFONY);
+
+            String value = entry.getValue();
+            if (value != null && !value.isBlank()) {
+                lookupElement = lookupElement.withTypeText(value);
+            }
+
+            return lookupElement;
+        }).collect(Collectors.toList());
+    }
 
     public static void visitAttribute(@NotNull Project project, @NotNull Consumer<Pair<String, PsiElement>> consumer) {
         for (PhpClass phpClass : PhpIndex.getInstance(project).getAllSubclasses("Symfony\\Component\\Security\\Core\\Authorization\\Voter\\Voter")) {
@@ -131,21 +167,21 @@ public class VoterUtil {
 
     private static void visitAttributeForeach(@NotNull Method method, @NotNull Consumer<Pair<String, PsiElement>> consumer) {
         Parameter[] parameters = method.getParameters();
-        if(parameters.length < 3) {
+        if (parameters.length < 3) {
             return;
         }
 
         for (Variable variable : PhpElementsUtil.getVariablesInScope(method, parameters[2])) {
             // foreach ($attributes as $attribute)
             PsiElement psiElement = PsiTreeUtil.nextVisibleLeaf(variable);
-            if(psiElement != null && psiElement.getNode().getElementType() == PhpTokenTypes.kwAS) {
+            if (psiElement != null && psiElement.getNode().getElementType() == PhpTokenTypes.kwAS) {
                 PsiElement parent = variable.getParent();
-                if(!(parent instanceof ForeachStatement)) {
+                if (!(parent instanceof ForeachStatement)) {
                     continue;
                 }
 
                 PhpPsiElement variableDecl = variable.getNextPsiSibling();
-                if(variableDecl instanceof Variable) {
+                if (variableDecl instanceof Variable) {
                     for (Variable variable1 : PhpElementsUtil.getVariablesInScope(parent, (Variable) variableDecl)) {
                         visitVariable(variable1, consumer);
                     }
@@ -154,13 +190,13 @@ public class VoterUtil {
 
             // in_array('foobar', $attributes)
             PsiElement parameterList = variable.getParent();
-            if(parameterList instanceof ParameterList && PsiElementUtils.getParameterIndexValue(variable) == 1) {
+            if (parameterList instanceof ParameterList && PsiElementUtils.getParameterIndexValue(variable) == 1) {
                 PsiElement functionCall = parameterList.getParent();
-                if(functionCall instanceof FunctionReference && "in_array".equalsIgnoreCase(((FunctionReference) functionCall).getName())) {
+                if (functionCall instanceof FunctionReference && "in_array".equalsIgnoreCase(((FunctionReference) functionCall).getName())) {
                     PsiElement[] functionParameter = ((ParameterList) parameterList).getParameters();
-                    if(functionParameter.length > 0) {
+                    if (functionParameter.length > 0) {
                         String stringValue = PhpElementsUtil.getStringValue(functionParameter[0]);
-                        if(stringValue != null && StringUtils.isNotBlank(stringValue)) {
+                        if (StringUtils.isNotBlank(stringValue)) {
                             consumer.accept(Pair.create(stringValue, functionParameter[0]));
                         }
                     }
@@ -171,7 +207,7 @@ public class VoterUtil {
 
     private static void visitAttribute(@NotNull Method method, @NotNull Consumer<Pair<String, PsiElement>> consumer) {
         Parameter[] parameters = method.getParameters();
-        if(parameters.length == 0) {
+        if (parameters.length == 0) {
             return;
         }
 
@@ -216,36 +252,6 @@ public class VoterUtil {
         public Set<PsiElement> getValues() {
             return values;
         }
-    }
-
-    public static class LookupElementPairConsumer implements Consumer<Pair<String, PsiElement>> {
-        @NotNull
-        private final Set<String> elements = new HashSet<>();
-
-        @NotNull
-        public Collection<LookupElement> getLookupElements() {
-            return lookupElements;
-        }
-
-        @Override
-        public void accept(Pair<String, PsiElement> pair) {
-            String name = pair.getFirst();
-            if (!elements.contains(name)) {
-                LookupElementBuilder lookupElement = LookupElementBuilder.create(name).withIcon(Symfony2Icons.SYMFONY);
-
-                PhpClass phpClass = PsiTreeUtil.getParentOfType(pair.getSecond(), PhpClass.class);
-                if (phpClass != null) {
-                    lookupElement = lookupElement.withTypeText(phpClass.getName(), true);
-                }
-
-                lookupElements.add(lookupElement);
-
-                elements.add(name);
-            }
-        }
-
-        @NotNull
-        private final Collection<LookupElement> lookupElements = new ArrayList<>();
     }
 
     /**

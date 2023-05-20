@@ -98,9 +98,7 @@ public class AnnotationExpressionGotoCompletionRegistrar implements GotoCompleti
             String substring = blockNamePrefix.replaceAll("^(.*(has_role|is_granted)\\s*\\(\\s*['|\"])", "");
             CompletionResultSet myResultSet = resultSet.withPrefixMatcher(substring);
 
-            VoterUtil.LookupElementPairConsumer consumer = new VoterUtil.LookupElementPairConsumer();
-            VoterUtil.visitAttribute(getProject(), consumer);
-            myResultSet.addAllElements(consumer.getLookupElements());
+            myResultSet.addAllElements(VoterUtil.getVoterAttributeLookupElements(getProject()));
         }
 
         @NotNull
