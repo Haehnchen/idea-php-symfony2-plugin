@@ -3,7 +3,9 @@ package fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder;
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
+import com.intellij.patterns.PatternCondition;
 import com.intellij.patterns.PlatformPatterns;
+import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
@@ -23,7 +25,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -73,11 +74,9 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
     };
 
     public QueryBuilderCompletionContributor() {
-
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
             @Override
-            protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
-
+            protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
                 PsiElement psiElement = completionParameters.getOriginalPosition();
                 if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof StringLiteralExpression)) {
                     return;
@@ -98,22 +97,15 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                 }
 
                 QueryBuilderMethodReferenceParser qb = getQueryBuilderParser(methodMatchParameter.getMethodReference());
-                if (qb == null) {
-                    return;
-                }
-
                 for (String parameter : qb.collect().getParameters()) {
                     completionResultSet.addElement(LookupElementBuilder.create(parameter));
                 }
-
             }
-
         });
 
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
             @Override
-            protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
-
+            protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
                 PsiElement psiElement = completionParameters.getOriginalPosition();
                 if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof StringLiteralExpression)) {
                     return;
@@ -128,19 +120,13 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                 }
 
                 QueryBuilderMethodReferenceParser qb = getQueryBuilderParser(methodMatchParameter.getMethodReference());
-                if (qb == null) {
-                    return;
-                }
-
                 QueryBuilderScopeContext collect = qb.collect();
                 for (Map.Entry<String, List<QueryBuilderRelation>> parameter : collect.getRelationMap().entrySet()) {
                     for (QueryBuilderRelation relation : parameter.getValue()) {
                         completionResultSet.addElement(LookupElementBuilder.create(parameter.getKey() + "." + relation.getFieldName()).withTypeText(relation.getTargetEntity(), true));
                     }
                 }
-
             }
-
         });
 
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
@@ -156,7 +142,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                     return;
                 }
 
-                PsiElement context = psiElement.getContext();
+                PsiElement context = psiElement.getParent();
                 if (context == null) {
                     return;
                 }
@@ -166,9 +152,43 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                     return;
                 }
 
+                StringLiteralExpression parent = (StringLiteralExpression) psiElement.getParent();
+                String content = PsiElementUtils.getStringBeforeCursor(parent, completionParameters.getOffset());
+
                 QueryBuilderMethodReferenceParser qb = getQueryBuilderParser(methodMatchParameter.getMethodReference());
                 QueryBuilderScopeContext collect = qb.collect();
                 buildLookupElements(completionResultSet, collect);
+
+
+                // "test.test"
+                if (content == null || content.isBlank() || content.matches("^[\\w+.]+$")) {
+                    buildLookupElements(completionResultSet, collect);
+                    return;
+                }
+
+                // "foo test.test"
+                Matcher matcher = Pattern.compile("(\\w+)\\.(\\w+)$").matcher(content);
+                if (matcher.find())  {
+                    String table = matcher.group(1);
+                    String field = matcher.group(2);
+
+                    buildLookupElements(completionResultSet.withPrefixMatcher(table + "." + field), collect);
+                }
+
+                // "foo test."
+                Matcher matcher2 = Pattern.compile("(\\w+)\\.$").matcher(content);
+                if (matcher2.find())  {
+                    String prefix = matcher2.group(1) + ".";
+                    buildLookupElements(completionResultSet.withPrefixMatcher(prefix), collect);
+                }
+
+                // "foo, test.test"
+                // "(test.test"
+                Matcher matcher3 = Pattern.compile("[(|,]\\s*(\\w+)$").matcher(content);
+                if (matcher3.find())  {
+                    String prefix = matcher3.group(1);
+                    buildLookupElements(completionResultSet.withPrefixMatcher(prefix), collect);
+                }
 
                 for (Map.Entry<String, String> entry : DoctrineUtil.getDoctrineOrmFunctions(project).entrySet()) {
                     LookupElementBuilder lookup = LookupElementBuilder.create(entry.getKey().toUpperCase())
@@ -182,10 +202,9 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
 
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
             @Override
-            protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
-
+            protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
                 PsiElement psiElement = completionParameters.getOriginalPosition();
-                if (psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
+                if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
                     return;
                 }
 
@@ -197,58 +216,93 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                     return;
                 }
 
-                // querybuilder parser is too slow longer values, and that dont make sense here at all
-                // user can fire a manual completion event, when needed...
-                if (completionParameters.isAutoPopup()) {
-                    if (psiElement instanceof StringLiteralExpression) {
-                        if (((StringLiteralExpression) psiElement).getContents().length() > 5) {
-                            return;
-                        }
-                    }
+                QueryBuilderMethodReferenceParser qb = getQueryBuilderParser(methodMatchParameter.getMethodReference());
+                QueryBuilderScopeContext collect = qb.collect();
+
+                StringLiteralExpression parent = (StringLiteralExpression) psiElement.getParent();
+                String content = PsiElementUtils.getStringBeforeCursor(parent, completionParameters.getOffset());
+                if (content == null || content.isBlank() || content.matches("^[\\w+.]+$")) {
+                    buildLookupElements(completionResultSet, collect);
+                    return;
+                }
+
+                Matcher matcher = Pattern.compile("(\\w+)\\.(\\w+)$").matcher(content);
+                if (matcher.find())  {
+                    String table = matcher.group(1);
+                    String field = matcher.group(2);
+
+                    buildLookupElements(completionResultSet.withPrefixMatcher(table + "." + field), collect);
+                }
+
+                Matcher matcher2 = Pattern.compile("(\\w+)\\.$").matcher(content);
+                if (matcher2.find())  {
+                    String prefix = matcher2.group(1) + ".";
+                    buildLookupElements(completionResultSet.withPrefixMatcher(prefix), collect);
+                }
+
+                Matcher matcher3 = Pattern.compile("(AND|OR|WHERE|NOT|[!=><]+)\\s+(\\w+)$").matcher(content);
+                if (matcher3.find())  {
+                    String prefix = matcher3.group(2);
+                    buildLookupElements(completionResultSet.withPrefixMatcher(prefix), collect);
                 }
 
                 // $qb->andWhere('foo.id = ":foo_id"')
-                addParameterNameCompletion(completionParameters, completionResultSet, psiElement);
-
-                QueryBuilderMethodReferenceParser qb = getQueryBuilderParser(methodMatchParameter.getMethodReference());
-                if (qb == null) {
-                    return;
-                }
-
-                QueryBuilderScopeContext collect = qb.collect();
-                buildLookupElements(completionResultSet, collect);
-
+                addParameterNameCompletion(completionResultSet.withPrefixMatcher(""), content);
             }
 
-            private void addParameterNameCompletion(CompletionParameters completionParameters, CompletionResultSet completionResultSet, PsiElement psiElement) {
+            private void addParameterNameCompletion(CompletionResultSet completionResultSet, String content) {
+                // test.test = :
+                // test.test =
+                Matcher matcher = Pattern.compile("(\\w+)\\.(\\w+)[\\s+]*[!=><]+[\\s+]*(?<colon>:*)$").matcher(content);
+                boolean hasMatch = matcher.find();
 
-                PsiElement literalExpr = psiElement.getParent();
-                if (!(literalExpr instanceof StringLiteralExpression)) {
-                    return;
+                if (!hasMatch) {
+                    // test.test = :a
+                    matcher = Pattern.compile("(\\w+)\\.(\\w+)[\\s+]*[!=><]+[\\s+]*(?<colon>:)(?<ident>\\w+)$").matcher(content);
+                    hasMatch = matcher.find();
+                    if (hasMatch) {
+                        completionResultSet = completionResultSet.withPrefixMatcher(":" + matcher.group("ident"));
+                    }
+                } else {
+                    String group = matcher.group("colon");
+                    if (group == null || group.isBlank()) {
+                        completionResultSet = completionResultSet.withPrefixMatcher("");
+                    } else {
+                        completionResultSet = completionResultSet.withPrefixMatcher(":");
+                    }
                 }
 
-                String content = PsiElementUtils.getStringBeforeCursor((StringLiteralExpression) literalExpr, completionParameters.getOffset());
-                if (content == null) {
-                    return;
-                }
-
-                Matcher matcher = Pattern.compile("(\\w+)\\.(\\w+)[\\s+]*[=><]+[\\s+]*$").matcher(content);
-                if (matcher.find()) {
+                if (hasMatch) {
                     final String complete = matcher.group(1) + "_" + matcher.group(2);
 
                     // fill underscore and underscore completion
-                    Set<String> strings = new HashSet<>() {{
-                        add(complete);
-                        add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.camelize(complete, true));
-                    }};
+                    Set<String> strings = new HashSet<>();
+
+                    strings.add(complete);
+                    strings.add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.camelize(complete, true));
+                    strings.add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(matcher.group(2)));
+                    strings.add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.camelize(matcher.group(2), true));
 
                     for (String string : strings) {
-                        completionResultSet.addElement(LookupElementBuilder.create(":" + string).withIcon(Symfony2Icons.DOCTRINE));
-                    }
+                        LookupElementBuilder parameter;
 
+                        String group = matcher.group("colon");
+                        if (group == null || group.isBlank()) {
+                            parameter = LookupElementBuilder.create(":" + string)
+                                .withIcon(Symfony2Icons.DOCTRINE)
+                                .withTypeText("parameter")
+                                .withPresentableText(":" + string);
+                        } else {
+                            parameter = LookupElementBuilder.create(":" + string)
+                                .withIcon(Symfony2Icons.DOCTRINE)
+                                .withTypeText("parameter")
+                                .withPresentableText(":" + string);
+                        }
+
+                        completionResultSet.addElement(parameter);
+                    }
                 }
             }
-
         });
 
         // $qb->join('test.foo', 'foo');
@@ -269,7 +323,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                     MethodReference methodReference = PsiTreeUtil.getParentOfType(psiElement, MethodReference.class);
                     if (methodReference != null) {
                         String joinTable = PhpElementsUtil.getStringValue(PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 0));
-                        if (joinTable != null && StringUtils.isNotBlank(joinTable)) {
+                        if (StringUtils.isNotBlank(joinTable)) {
                             int pos = joinTable.lastIndexOf(".");
                             if (pos > 0) {
                                 final String aliasName = joinTable.substring(pos + 1);
@@ -284,7 +338,6 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                                     for (String string : strings) {
                                         completionResultSet.addElement(LookupElementBuilder.create(string));
                                     }
-
                                 }
                             }
                         }
@@ -299,10 +352,9 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
         // $qb->expr()->eg('')
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
             @Override
-            protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
-
+            protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
                 PsiElement psiElement = completionParameters.getOriginalPosition();
-                if (psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
+                if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
                     return;
                 }
 
@@ -323,20 +375,14 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                 }
 
                 QueryBuilderMethodReferenceParser qb = getQueryBuilderParser((MethodReference) methodReferenceChild);
-                if (qb == null) {
-                    return;
-                }
-
                 QueryBuilderScopeContext collect = qb.collect();
                 buildLookupElements(completionResultSet, collect);
-
             }
-
         });
 
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
             @Override
-            protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+            protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
                 PsiElement psiElement = completionParameters.getOriginalPosition();
                 if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof StringLiteralExpression)) {
@@ -352,21 +398,15 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                 }
 
                 QueryBuilderMethodReferenceParser qb = getQueryBuilderParser(methodMatchParameter.getMethodReference());
-                if (qb == null) {
-                    return;
-                }
-
                 QueryBuilderScopeContext collect = qb.collect();
                 buildLookupElements(completionResultSet, collect);
-
             }
-
         });
 
 
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
             @Override
-            protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+            protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
 
                 PsiElement psiElement = completionParameters.getOriginalPosition();
                 if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof StringLiteralExpression)) {
@@ -394,8 +434,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
 
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
             @Override
-            protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
-
+            protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
                 PsiElement psiElement = completionParameters.getOriginalPosition();
                 if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof StringLiteralExpression)) {
                     return;
@@ -414,10 +453,8 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                 if (repoName != null) {
                     attachClassNames(completionResultSet, repoName);
                 }
-
             }
         });
-
     }
 
     private void attachClassNames(@NotNull CompletionResultSet completionResultSet, @NotNull String repoName) {
@@ -435,7 +472,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
             // unique list for equal underscore or camelize
             Set<String> strings = new HashSet<>();
 
-            String underscore = fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(repoName.substring(endIndex + 1, repoName.length()));
+            String underscore = fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(repoName.substring(endIndex + 1));
 
             // foo_bar => fb
             List<String> starting = new ArrayList<>();
@@ -455,26 +492,33 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
         }
     }
 
+    private static LookupElementBuilder withModelFieldInfo(@NotNull DoctrineModelField field, @NotNull LookupElementBuilder lookup) {
+        lookup = lookup.withTypeText(field.getTypeName(), true);
+
+        if(field.getRelationType() != null) {
+            lookup = lookup.withTailText("(" + field.getRelationType() + ")", true);
+            lookup = lookup.withTypeText(StringUtils.stripStart(field.getRelation(), "\\"), true);
+            lookup = lookup.withIcon(PhpIcons.CLASS);
+        } else {
+            // relation tail text wins
+            String column = field.getColumn();
+            if(column != null) {
+                lookup = lookup.withTailText("(" + column + ")", true);
+            }
+        }
+
+        return lookup;
+    }
+
     private void buildLookupElements(CompletionResultSet completionResultSet, QueryBuilderScopeContext collect) {
         for(Map.Entry<String, QueryBuilderPropertyAlias> entry: collect.getPropertyAliasMap().entrySet()) {
+            LookupElementBuilder lookup = LookupElementBuilder
+                .create(entry.getKey())
+                .withIcon(Symfony2Icons.DOCTRINE);
+
             DoctrineModelField field = entry.getValue().getField();
-            LookupElementBuilder lookup = LookupElementBuilder.create(entry.getKey());
-            lookup = lookup.withIcon(Symfony2Icons.DOCTRINE);
-            if(field != null) {
-                lookup = lookup.withTypeText(field.getTypeName(), true);
-
-                if(field.getRelationType() != null) {
-                    lookup = lookup.withTailText("(" + field.getRelationType() + ")", true);
-                    lookup = lookup.withTypeText(field.getRelation(), true);
-                    lookup = lookup.withIcon(PhpIcons.CLASS);
-                } else {
-                    // relation tail text wins
-                    String column = field.getColumn();
-                    if(column != null) {
-                        lookup = lookup.withTailText("(" + column + ")", true);
-                    }
-                }
-
+            if (field != null) {
+                lookup = withModelFieldInfo(field, lookup);
             }
 
             // highlight fields which are possible in select statement
@@ -483,7 +527,6 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
             }
 
             completionResultSet.addElement(lookup);
-
         }
     }
 
