@@ -69,10 +69,6 @@ public class QueryBuilderGotoDeclarationHandler implements GotoDeclarationHandle
         String fieldString = QueryBuilderUtil.getFieldString(contents, calulatedOffset);
         if (fieldString != null) {
             QueryBuilderMethodReferenceParser qb = QueryBuilderCompletionContributor.getQueryBuilderParser(methodMatchParameter.getMethodReference());
-            if(qb == null) {
-                return;
-            }
-
             QueryBuilderScopeContext collect = qb.collect();
             for(Map.Entry<String, QueryBuilderPropertyAlias> entry: collect.getPropertyAliasMap().entrySet()) {
                 if(entry.getKey().equals(fieldString)) {
@@ -134,9 +130,6 @@ public class QueryBuilderGotoDeclarationHandler implements GotoDeclarationHandle
             return;
         }
         QueryBuilderMethodReferenceParser qb = QueryBuilderCompletionContributor.getQueryBuilderParser((MethodReference) methodReferenceChild);
-        if(qb == null) {
-            return;
-        }
 
         String propertyContent = psiElement.getContents();
         QueryBuilderScopeContext collect = qb.collect();

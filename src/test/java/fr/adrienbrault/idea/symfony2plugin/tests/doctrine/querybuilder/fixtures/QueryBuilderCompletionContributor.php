@@ -6,6 +6,7 @@ namespace Doctrine\ORM
     {
         public function select() {}
         public function addSelect() {}
+        public function where() {}
         public function andWhere() {}
         public function join($join, $alias, $conditionType = null, $condition = null, $indexBy = null) {}
         public function innerJoin($join, $alias, $conditionType = null, $condition = null, $indexBy = null) {}
@@ -16,6 +17,8 @@ namespace Doctrine\ORM
         public function groupBy($groupBy) {}
 
         public function addGroupBy($groupBy) {}
+        public function setParameter($key, $value, $type = null) {}
+        public function setParameters($parameters) {}
     }
 
     class EntityRepository
