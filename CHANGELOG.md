@@ -19,6 +19,13 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.250
+* Provide inline completion for orm properties of querybuilder (Daniel Espendiller)
+* Introduce cache for string named voter attributes (Daniel Espendiller)
+* Optimize performance for form data_class collecting and resolving (Daniel Espendiller)
+* Replace slow / overhead reference resolve of form options array index, with implicit navigation and completion (Daniel Espendiller)
+* Replace slow / overhead reference resolve of "setDefaults" to navigation (Daniel Espendiller)
+
 ## 2022.1.249
 * Support resolving parent Form types on option resolver (Daniel Espendiller)
 * Add more completion cases for Doctrine querybuilder (Daniel Espendiller)
