@@ -690,6 +690,7 @@
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.templating.AssetPackageGotoCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.security.AnnotationExpressionGotoCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.templating.webpack.WebpackEncoreGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.routing.RoutingCompletionRegistrar"/>
 
         <TwigNamespaceExtension implementation="fr.adrienbrault.idea.symfony2plugin.templating.path.JsonFileIndexTwigNamespaces"/>
         <TwigNamespaceExtension implementation="fr.adrienbrault.idea.symfony2plugin.templating.path.ConfigAddPathTwigNamespaces"/>

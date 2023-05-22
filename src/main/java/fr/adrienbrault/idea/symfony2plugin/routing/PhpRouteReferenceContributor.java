@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.routing;
 
-import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.*;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
@@ -9,7 +8,6 @@ import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerReference;
 import org.jetbrains.annotations.NotNull;
 
@@ -95,44 +93,6 @@ public class PhpRouteReferenceContributor extends PsiReferenceContributor {
                     return Symfony2ProjectComponent.isEnabled(target);
                 }
             }
-
         );
-
-        psiReferenceRegistrar.registerReferenceProvider(
-            PlatformPatterns.psiElement(StringLiteralExpression.class),
-            new PsiReferenceProvider() {
-                @NotNull
-                @Override
-                public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
-
-                    if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
-                        return new PsiReference[0];
-                    }
-
-                    MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.ArrayParameterMatcher(psiElement, 1)
-                        .withSignature(GENERATOR_SIGNATURES)
-                        .match();
-
-                    if(methodMatchParameter == null) {
-                        return new PsiReference[0];
-                    }
-
-                    String routeName = PsiElementUtils.getMethodParameterAt(methodMatchParameter.getMethodReference(), 0);
-                    if(routeName == null) {
-                        return new PsiReference[0];
-                    }
-
-                    return new PsiReference[]{ new RouteParameterReference((StringLiteralExpression) psiElement, routeName) };
-                }
-
-                @Override
-                public boolean acceptsTarget(@NotNull PsiElement target) {
-                    return Symfony2ProjectComponent.isEnabled(target);
-                }
-            }
-
-        );
-
     }
-
 }
