@@ -114,24 +114,19 @@ public class RouteHelper {
         return routes;
     }
 
-    public static PsiElement[] getRouteParameterPsiElements(Project project, String routeName, String parameterName) {
-
-        List<PsiElement> results = new ArrayList<>();
+    public static PsiElement[] getRouteParameterPsiElements(@NotNull Project project, @NotNull String routeName, @NotNull String parameterName) {
+        Collection<PsiElement> results = new ArrayList<>();
 
         for (PsiElement psiElement : RouteHelper.getMethods(project, routeName)) {
-
-            if(psiElement instanceof Method) {
-                for(Parameter parameter: ((Method) psiElement).getParameters()) {
-                    if(parameter.getName().equals(parameterName)) {
-                        results.add(parameter);
-                    }
+            if (psiElement instanceof Method method) {
+                Parameter parameter = method.getParameter(parameterName);
+                if (parameter != null) {
+                    results.add(parameter);
                 }
             }
-
         }
 
         return results.toArray(new PsiElement[0]);
-
     }
 
     @NotNull
