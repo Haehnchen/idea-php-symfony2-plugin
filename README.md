@@ -50,6 +50,11 @@ Autocomplete (or something else) is not working! Help! :open_mouth:
 * You usually need to trigger the autocomplete popup yourself, by pressing CTRL+SPACE (may be a different shortcut depending on your keymap).
 * Check your File -> Settings -> Languages & Framework -> PHP -> Symfony -> Enable Plugin for this Project
 
+Technical Diagram (Work In Progress)
+--------------------
+
+![Symfony Plugin Technical Diagram](plugin-diagram.webp)
+
 Building, debugging and other
 --------------------
 
