@@ -20,6 +20,7 @@ import fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProvider;
 import fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProviderDict;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TranslationStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.TranslationArrayReturnVisitor;
+import fr.adrienbrault.idea.symfony2plugin.translation.TranslationKeyTargetFakePsiNavigationItem;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationVisitor;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.DomainMappings;
@@ -28,6 +29,7 @@ import fr.adrienbrault.idea.symfony2plugin.translation.provider.CompiledTranslat
 import fr.adrienbrault.idea.symfony2plugin.translation.provider.IndexTranslatorProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.apache.commons.lang.StringUtils;
@@ -174,7 +176,7 @@ public class TranslationUtil {
         return elements;
     }
 
-    public static PsiElement[] getTranslationPsiElements(@NotNull Project project, @NotNull String translationKey, @NotNull String domain) {
+    public static PsiElement[] getTranslationPsiElementsOriginPsiElement(@NotNull Project project, @NotNull String translationKey, @NotNull String domain) {
         Collection<PsiElement> targets = new HashSet<>();
 
         Arrays.stream(getTranslationProviders())
@@ -182,6 +184,15 @@ public class TranslationUtil {
             .forEach(targets::addAll);
 
         return targets.toArray(new PsiElement[0]);
+    }
+
+    public static PsiElement[] getTranslationPsiElements(@NotNull Project project, @NotNull String translationKey, @NotNull String domain) {
+        return Arrays.stream(getTranslationProviders())
+            .map(translationProvider -> translationProvider.getTranslationTargets(project, translationKey, domain))
+            .flatMap(Collection::stream)
+            .map(element -> new TranslationKeyTargetFakePsiNavigationItem(ProjectUtil.getProjectDir(project), element))
+            .sorted(Comparator.comparingInt(TranslationKeyTargetFakePsiNavigationItem::getWeight))
+            .toArray(PsiElement[]::new);
     }
 
     /**
@@ -413,7 +424,7 @@ public class TranslationUtil {
         Set<String> placeholder = new HashSet<>();
         Set<VirtualFile> visitedXlf = new HashSet<>();
 
-        for (PsiElement element : TranslationUtil.getTranslationPsiElements(project, key, domain)) {
+        for (PsiElement element : TranslationUtil.getTranslationPsiElementsOriginPsiElement(project, key, domain)) {
             if (element instanceof YAMLScalar) {
                 String textValue = ((YAMLScalar) element).getTextValue();
                 if(StringUtils.isBlank(textValue)) {
