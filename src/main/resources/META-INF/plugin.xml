@@ -175,9 +175,6 @@
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.config.SymfonyPhpReferenceContributor"
                                   language="PHP"/>
 
-        <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.translation.TranslationReferenceContributor"
-                                  language="PHP"/>
-
         <psi.referenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.routing.PhpRouteReferenceContributor"
                                   language="PHP"/>
 
@@ -242,6 +239,9 @@
 
         <completion.contributor language="JavaScript" implementationClass="fr.adrienbrault.idea.symfony2plugin.javascript.JavascriptCompletionNavigationContributor$Completion"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.javascript.JavascriptCompletionNavigationContributor$GotoDeclaration"/>
+
+        <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.translation.TranslationNavigationCompletionContributor$Completion"/>
+        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.translation.TranslationNavigationCompletionContributor$GotoDeclaration"/>
 
         <!---
         <completion.contributor language="PHP" order="last" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.IncompletePropertyServiceInjectionContributor"/>
