@@ -25,6 +25,19 @@ public class PhpPsiAttributesUtilTest extends SymfonyLightCodeInsightFixtureTest
         );
 
         assertEquals("\\Foobar", PhpPsiAttributesUtil.getAttributeValueByNameAsString(phpAttribute2, "test"));
+
+        PhpAttribute phpAttribute3 = PhpPsiElementFactory.createFromText(getProject(), PhpAttribute.class, "<?php\n" +
+            "#[Route(\n" +
+            "\n" +
+            "\r\n\t" +
+            "\n" +
+            "    name: 'testa',\n" +
+            "\n" +
+            ")]\n" +
+            "class TestController {}"
+        );
+
+        assertEquals("testa", PhpPsiAttributesUtil.getAttributeValueByNameAsString(phpAttribute3, "name"));
     }
 
     public void testGetAttributeValueByNameAsStringForLocalResolve() {
@@ -61,6 +74,40 @@ public class PhpPsiAttributesUtilTest extends SymfonyLightCodeInsightFixtureTest
         );
 
         assertEquals("test2", PhpPsiAttributesUtil.getAttributeValueByNameAsString(phpAttribute3, "test"));
+    }
+
+    public void testGetAttributeValueByNameAsStringForParameterIndex() {
+        PhpAttribute phpAttribute1 = PhpPsiElementFactory.createFromText(getProject(), PhpAttribute.class, "<?php\n" +
+            "\n" +
+            "#[Foobar(self::FOO, 'foobar')]\n" +
+            "class Foo {}"
+        );
+
+        assertEquals("foobar", PhpPsiAttributesUtil.getAttributeValueByNameAsString(phpAttribute1, 1, "UNKNOWN"));
+
+        PhpAttribute phpAttribute2 = PhpPsiElementFactory.createFromText(getProject(), PhpAttribute.class, "<?php\n" +
+            "\n" +
+            "#[Foobar(named: self::FOO, 'foobar')]\n" +
+            "class Foo {}"
+        );
+
+        assertNull(PhpPsiAttributesUtil.getAttributeValueByNameAsString(phpAttribute2, 1, "UNKNOWN"));
+
+        PhpAttribute phpAttribute3 = PhpPsiElementFactory.createFromText(getProject(), PhpAttribute.class, "<?php\n" +
+            "\n" +
+            "#[Foobar(self::FOO, named: 'foobar')]\n" +
+            "class Foo {}"
+        );
+
+        assertNull(PhpPsiAttributesUtil.getAttributeValueByNameAsString(phpAttribute3, 1, "UNKNOWN"));
+
+        PhpAttribute phpAttribute4 = PhpPsiElementFactory.createFromText(getProject(), PhpAttribute.class, "<?php\n" +
+            "\n" +
+            "#[Foobar(self::FOO, named: 'foobar')]\n" +
+            "class Foo {}"
+        );
+
+        assertEquals("foobar", PhpPsiAttributesUtil.getAttributeValueByNameAsString(phpAttribute4, 1, "named"));
     }
 
     public void testResolveForNoLocalValue() {

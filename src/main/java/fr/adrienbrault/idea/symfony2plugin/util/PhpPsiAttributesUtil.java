@@ -13,9 +13,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.*;
 
 /**
  * Helpers for PHP 8 Attributes psi access
@@ -26,7 +24,56 @@ public class PhpPsiAttributesUtil {
     @Nullable
     public static String getAttributeValueByNameAsString(@NotNull PhpAttribute attribute, @NotNull String attributeName) {
         PsiElement nextSibling = findAttributeByName(attribute, attributeName);
+        if (nextSibling != null) {
+            return getAttributeString(attribute, nextSibling);
+        }
 
+        return null;
+    }
+
+    public static String getAttributeValueByNameAsString(@NotNull PhpAttribute attribute, int parameter, @NotNull String attributeName) {
+        PsiElement nextSibling = findAttributeByName(attribute, attributeName);
+
+        //  Workaround: to find / resolve non named argument attribute: "#[Route('/attributesWithoutName', "")]"
+        if (nextSibling == null) {
+            ParameterList childOfType = PsiTreeUtil.findChildOfType(attribute, ParameterList.class);
+            if (childOfType != null) {
+                PsiElement[] parameters = getParametersBeforeFirstNamedArgument(childOfType);
+                if (parameters.length >= parameter + 1) {
+                    nextSibling = parameters[parameter];
+                }
+            }
+        }
+
+        if (nextSibling != null) {
+            return getAttributeString(attribute, nextSibling);
+        }
+
+        return null;
+    }
+
+    /**
+     * "PhpAttribute" does not work inside indexing to get the origin node tree
+     * <p>
+     * Needed to resolve for indexed non named argument by ourselves
+     */
+    private static PsiElement[] getParametersBeforeFirstNamedArgument(@NotNull ParameterList parameterList) {
+        List<PsiElement> psiElements = new ArrayList<>();
+
+        for (PsiElement psiElement : parameterList.getParameters()) {
+            PsiElement prevSiblingIgnoreWhitespace = PhpPsiUtil.getPrevSiblingIgnoreWhitespace(psiElement, true);
+            if (prevSiblingIgnoreWhitespace != null && prevSiblingIgnoreWhitespace.getNode().getElementType() == PhpTokenTypes.opCOLON) {
+                break;
+            }
+
+            psiElements.add(psiElement);
+        }
+
+        return psiElements.toArray(new PsiElement[0]);
+    }
+
+    @Nullable
+    private static String getAttributeString(@NotNull PhpAttribute attribute, @NotNull PsiElement nextSibling) {
         if (nextSibling instanceof StringLiteralExpression) {
             String contents = ((StringLiteralExpression) nextSibling).getContents();
             if (StringUtils.isNotBlank(contents)) {

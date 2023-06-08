@@ -188,6 +188,11 @@ public class RoutesStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase 
 
         RouteInterface route8 = getFirstValue("attributesWithoutNameWithConstantsInMethods");
         assertEquals(0, route8.getMethods().size());
+
+        RouteInterface route9 = getFirstValue("foo-attributes-not-named_prefix_home_not_named");
+        assertEquals("MyAttributesPrefix\\PrefixNotNamedController::editAction", route9.getController());
+        assertEquals("foo-attributes-not-named_prefix_home_not_named", route9.getName());
+        assertEquals("/foo-attributes/edit-not-named/{id}", route9.getPath());
     }
 
     @NotNull
