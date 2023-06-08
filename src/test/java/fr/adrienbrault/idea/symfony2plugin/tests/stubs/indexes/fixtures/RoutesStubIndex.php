@@ -236,6 +236,15 @@ namespace MyAttributesPrefix
         }
     }
 
+    #[Route('/foo-attributes', 'foo-attributes-not-named_')]
+    class PrefixNotNamedController
+    {
+        #[Route('/edit-not-named/{id}', 'prefix_home_not_named')]
+        public function editAction()
+        {
+        }
+    }
+
     #[Route('/foo-attributes-default')]
     class PrefixDefaultParameterController
     {

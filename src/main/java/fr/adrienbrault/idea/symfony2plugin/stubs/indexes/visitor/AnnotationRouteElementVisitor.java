@@ -150,7 +150,7 @@ public class AnnotationRouteElementVisitor {
                         continue;
                     }
 
-                    String nameAttribute = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, "name");
+                    String nameAttribute = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, 1, "name");
                     if (nameAttribute != null) {
                         routeNamePrefix = nameAttribute;
                     }
@@ -169,7 +169,7 @@ public class AnnotationRouteElementVisitor {
                 continue;
             }
 
-            String nameAttribute = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, "name");
+            String nameAttribute = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, 1, "name");
 
             String routeName = null;
             if (nameAttribute != null) {
