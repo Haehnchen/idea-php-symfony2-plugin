@@ -98,7 +98,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
 
                 QueryBuilderMethodReferenceParser qb = getQueryBuilderParser(methodMatchParameter.getMethodReference());
                 for (String parameter : qb.collect().getParameters()) {
-                    completionResultSet.addElement(LookupElementBuilder.create(parameter));
+                    completionResultSet.addElement(LookupElementBuilder.create(parameter).withIcon(Symfony2Icons.DOCTRINE));
                 }
             }
         });
@@ -123,7 +123,12 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                 QueryBuilderScopeContext collect = qb.collect();
                 for (Map.Entry<String, List<QueryBuilderRelation>> parameter : collect.getRelationMap().entrySet()) {
                     for (QueryBuilderRelation relation : parameter.getValue()) {
-                        completionResultSet.addElement(LookupElementBuilder.create(parameter.getKey() + "." + relation.getFieldName()).withTypeText(relation.getTargetEntity(), true));
+                        LookupElementBuilder element = LookupElementBuilder
+                            .create(parameter.getKey() + "." + relation.getFieldName())
+                            .withIcon(Symfony2Icons.DOCTRINE)
+                            .withTypeText(StringUtils.stripStart(relation.getTargetEntity(), "\\"), true);
+
+                        completionResultSet.addElement(element);
                     }
                 }
             }
@@ -336,7 +341,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                                     }};
 
                                     for (String string : strings) {
-                                        completionResultSet.addElement(LookupElementBuilder.create(string));
+                                        completionResultSet.addElement(LookupElementBuilder.create(string).withIcon(Symfony2Icons.DOCTRINE));
                                     }
                                 }
                             }
@@ -487,7 +492,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
             strings.add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.camelize(strings.iterator().next(), true));
 
             for(String lookup: strings) {
-                completionResultSet.addElement(LookupElementBuilder.create(lookup));
+                completionResultSet.addElement(LookupElementBuilder.create(lookup).withIcon(Symfony2Icons.DOCTRINE));
             }
         }
     }
