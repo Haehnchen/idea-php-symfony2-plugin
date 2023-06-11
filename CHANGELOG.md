@@ -19,6 +19,13 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.251
+* Doctrine querybuilder should provide an icon (Daniel Espendiller)
+* Support index based route names inside attributes (Daniel Espendiller)
+* Replace translation reference resolving with implicit navigation (Daniel Espendiller)
+* [#1584](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1584) Add better support for multiple locales in translations (Daniel Espendiller)
+* Route parameter should only provide navigation target not full heavy references (Daniel Espendiller)
+
 ## 2022.1.250
 * Provide inline completion for orm properties of querybuilder (Daniel Espendiller)
 * Introduce cache for string named voter attributes (Daniel Espendiller)
