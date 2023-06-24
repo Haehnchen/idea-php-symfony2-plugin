@@ -994,10 +994,9 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
             Project project = completionParameters.getPosition().getProject();
 
-            Collection<PsiVariable> psiVariables = new ArrayList<>();
             for (Map.Entry<String, PsiVariable> entry : TwigTypeResolveUtil.collectScopeVariables(originalPosition).entrySet()) {
                 PhpType phpType = PhpIndex.getInstance(project).completeType(project, PhpType.from(entry.getValue().getTypes().toArray(new String[0])), new HashSet<>());
-                if (phpType.types().noneMatch(s -> s.equals("\\Symfony\\Component\\Form\\FormView"))) {
+                if (!FormFieldResolver.isFormView(phpType)) {
                     continue;
                 }
 
@@ -1017,8 +1016,6 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         resultSet.addElement(element);
                     }
                 });
-
-                psiVariables.add(entry.getValue());
             }
         }
     }
@@ -1049,7 +1046,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             Project project = completionParameters.getPosition().getProject();
             for (Map.Entry<String, PsiVariable> entry : TwigTypeResolveUtil.collectScopeVariables(originalPosition).entrySet()) {
                 PhpType phpType = PhpIndex.getInstance(project).completeType(project, PhpType.from(entry.getValue().getTypes().toArray(new String[0])), new HashSet<>());
-                if (phpType.types().noneMatch(s -> s.equals("\\Symfony\\Component\\Form\\FormView"))) {
+                if (!FormFieldResolver.isFormView(phpType)) {
                     continue;
                 }
 

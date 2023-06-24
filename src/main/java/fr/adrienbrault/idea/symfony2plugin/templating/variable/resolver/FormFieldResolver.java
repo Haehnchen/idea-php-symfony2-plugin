@@ -2,10 +2,12 @@ package fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.Variable;
+import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
@@ -18,6 +20,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -32,9 +35,22 @@ public class FormFieldResolver implements TwigTypeResolver {
         }
 
         TwigTypeContainer twigTypeContainer = targets.iterator().next();
-        if (twigTypeContainer.getPhpNamedElement() instanceof PhpClass phpClass && PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Form\\FormView")) {
+        if (twigTypeContainer.getPhpNamedElement() instanceof PhpClass phpClass && isFormView(phpClass)) {
             visitFormReferencesFields(psiVariables.iterator().next().getElement(), targets::add);
         }
+    }
+
+    public static boolean isFormView(@NotNull PhpClass phpClass) {
+        return PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Form\\FormView") ||
+            PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Form\\FormInterface"); // form view is create converting by Symfony on template render
+    }
+
+    public static boolean isFormView(@NotNull PhpType phpType) {
+        return phpType.types()
+            .anyMatch(s ->
+                s.equals("\\Symfony\\Component\\Form\\FormView") ||
+                    s.equals("\\Symfony\\Component\\Form\\FormInterface") // form view is create converting by Symfony on template render
+            );
     }
 
     public static Collection<PhpClass> getFormTypeFromFormFactory(@NotNull PsiElement formReference) {
@@ -61,7 +77,24 @@ public class FormFieldResolver implements TwigTypeResolver {
         // 'foo2' => $form2 => $form2 = $form->createView() => $this->createForm(new Type();
         if (formReference instanceof Variable) {
             PsiElement varDecl = ((Variable) formReference).resolve();
-            if (varDecl instanceof Variable) {
+
+
+            // 'foo2' => $form2;
+            if (varDecl instanceof Variable variable) {
+                PhpType type = PhpIndex.getInstance(variable.getProject()).completeType(variable.getProject(), variable.getType(), new HashSet<>());
+                if (isFormView(type)) {
+                    PsiElement resolve = variable.resolve();
+                    if (resolve != null) {
+                        MethodReference nextSiblingOfType = PsiTreeUtil.getNextSiblingOfType(resolve, MethodReference.class);
+                        if (nextSiblingOfType != null) {
+                            PhpClass phpClass = resolveCall(nextSiblingOfType);
+                            if (phpClass != null) {
+                                phpClasses.add(phpClass);
+                            }
+                        }
+                    }
+                }
+
                 MethodReference methodReference = PsiTreeUtil.getNextSiblingOfType(varDecl, MethodReference.class);
                 if (methodReference != null) {
                     PsiElement scopeVar = methodReference.getFirstChild();
