@@ -1053,18 +1053,23 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                     continue;
                 }
 
+                PsiElement element = entry.getValue().getElement();
+                if (element == null)  {
+                    continue;
+                }
+
                 String typeText = null;
-                Collection<PhpClass> formTypeFromFormFactory = FormFieldResolver.getFormTypeFromFormFactory(entry.getValue().getElement());
+                Collection<PhpClass> formTypeFromFormFactory = FormFieldResolver.getFormTypeFromFormFactory(element);
                 if (formTypeFromFormFactory.size() > 0) {
                     typeText = StringUtils.stripStart(formTypeFromFormFactory.iterator().next().getFQN(), "\\");
                 }
 
                 for (String s : new String[]{"form_start", "form_rest", "form_end", "form_errors"}) {
-                    LookupElementBuilder element = LookupElementBuilder.create(s + "(" + entry.getKey() + ")")
+                    LookupElementBuilder lookupElement = LookupElementBuilder.create(s + "(" + entry.getKey() + ")")
                         .withTypeText(typeText)
                         .withIcon(Symfony2Icons.FORM_TYPE);
 
-                    resultSet.addElement(element);
+                    resultSet.addElement(lookupElement);
                 }
             }
         }
