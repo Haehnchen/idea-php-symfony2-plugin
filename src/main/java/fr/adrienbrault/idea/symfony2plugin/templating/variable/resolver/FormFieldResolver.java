@@ -155,9 +155,18 @@ public class FormFieldResolver implements TwigTypeResolver {
                 return;
             }
 
-            for (TwigTypeContainer twigTypeContainer : getTwigTypeContainer(method, phpClass)) {
-                consumer.accept(twigTypeContainer);
-            }
+            visitFormReferencesFields(phpClass, consumer);
+        }
+    }
+
+    public static void visitFormReferencesFields(@NotNull PhpClass phpClass, @NotNull Consumer<TwigTypeContainer> consumer) {
+        Method method = phpClass.findMethodByName("buildForm");
+        if(method == null) {
+            return;
+        }
+
+        for (TwigTypeContainer twigTypeContainer : getTwigTypeContainer(method, phpClass)) {
+            consumer.accept(twigTypeContainer);
         }
     }
 }
