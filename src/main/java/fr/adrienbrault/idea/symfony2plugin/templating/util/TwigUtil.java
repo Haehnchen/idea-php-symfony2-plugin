@@ -110,6 +110,8 @@ public class TwigUtil {
     private static final Key<CachedValue<List<String>>> SYMFONY_TEMPLATE_EMBED_LIST = new Key<>("SYMFONY_TEMPLATE_EMBED_LIST");
     private static final Key<CachedValue<List<String>>> SYMFONY_TEMPLATE_EXTENDS_LIST = new Key<>("SYMFONY_TEMPLATE_EXTENDS_LIST");
 
+    private static final Key<CachedValue<List<String>>> SYMFONY_TEMPLATE_FORM_THEME_LIST = new Key<>("SYMFONY_TEMPLATE_FORM_THEME_LIST");
+
     private static final Key<CachedValue<Set<String>>> SYMFONY_NAMED_TOKEN_TAGS = new Key<>("SYMFONY_NAMED_TOKEN_TAGS");
     private static final Key<CachedValue<Map<String, String>>> SYMFONY_DEPRECATED_NAMED_TOKEN_TAGS = new Key<>("SYMFONY_DEPRECATED_NAMED_TOKEN_TAGS");
 
@@ -2892,6 +2894,55 @@ public class TwigUtil {
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                 .map(Map.Entry::getKey)
                 .limit(100)
+                .collect(Collectors.toList());
+
+            return CachedValueProvider.Result.create(collect, FileIndexCaches.getModificationTrackerForIndexId(project, TwigIncludeStubIndex.KEY));
+        }, false);
+    }
+
+    public static List<String> getFormThemeTemplateUsageAsOrderedList(@NotNull Project project) {
+        return CachedValuesManager.getManager(project).getCachedValue(project, SYMFONY_TEMPLATE_FORM_THEME_LIST, () -> {
+            Set<String> allKeys = FileBasedIndex.getInstance().getAllKeys(TwigIncludeStubIndex.KEY, project)
+                .stream()
+                .filter(s -> !s.toLowerCase().contains("@webprofiler") && !s.toLowerCase().contains("/profiler/") && !s.toLowerCase().contains("@twig"))
+                .collect(Collectors.toSet());
+
+            Map<String, Integer> usage = new HashMap<>();
+
+            // try to find core; performance needed here
+            for (Map.Entry<String, Set<VirtualFile>> entry : getTemplateMap(project, true).entrySet()) {
+                for (VirtualFile virtualFile : entry.getValue()) {
+                    String path = virtualFile.getPath().replace("\\", "/");
+                    if (path.contains("/twig-bridge/Resources/views/")) {
+                        int filename = path.lastIndexOf("/");
+                        if (filename > 0) {
+                            int lastPathElement = path.lastIndexOf("/", filename - 1);
+                            if (lastPathElement > 0) {
+                                String output = path.substring(lastPathElement + 1);
+                                if (output.startsWith("Form/")) {
+                                    usage.putIfAbsent(entry.getKey(), 0);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (String allKey : allKeys) {
+              List<fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateInclude> values = FileBasedIndex.getInstance().getValues(TwigIncludeStubIndex.KEY, allKey, GlobalSearchScope.allScope(project));
+              for (fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateInclude value : values) {
+                    if (value.getType() == TemplateInclude.TYPE.FORM_THEME) {
+                        usage.putIfAbsent(allKey, 0);
+                        usage.put(allKey, usage.get(allKey) + 1);
+                    }
+                }
+            }
+
+            List<String> collect = usage.entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .map(Map.Entry::getKey)
+                .limit(10)
                 .collect(Collectors.toList());
 
             return CachedValueProvider.Result.create(collect, FileIndexCaches.getModificationTrackerForIndexId(project, TwigIncludeStubIndex.KEY));
