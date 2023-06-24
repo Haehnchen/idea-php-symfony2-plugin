@@ -19,6 +19,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -26,49 +27,57 @@ import java.util.List;
 public class FormFieldResolver implements TwigTypeResolver {
 
     public void resolve(Collection<TwigTypeContainer> targets, Collection<TwigTypeContainer> previousElement, String typeName, Collection<List<TwigTypeContainer>> previousElements, @Nullable Collection<PsiVariable> psiVariables) {
-        if(targets.size() == 0 || psiVariables == null || previousElements == null || previousElements.size() != 0) {
+        if (targets.size() == 0 || psiVariables == null || psiVariables.size() == 0 || previousElements == null || previousElements.size() != 0) {
             return;
         }
 
         TwigTypeContainer twigTypeContainer = targets.iterator().next();
+        if (twigTypeContainer.getPhpNamedElement() instanceof PhpClass phpClass && PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Form\\FormView")) {
+            visitFormReferencesFields(psiVariables.iterator().next().getElement(), targets::add);
+        }
+    }
 
-        if(twigTypeContainer.getPhpNamedElement() instanceof PhpClass) {
-            if(PhpElementsUtil.isInstanceOf((PhpClass) twigTypeContainer.getPhpNamedElement(), "\\Symfony\\Component\\Form\\FormView")) {
-                if(psiVariables.size() > 0) {
-                    PsiElement var = psiVariables.iterator().next().getElement();
+    public static Collection<PhpClass> getFormTypeFromFormFactory(@NotNull PsiElement formReference) {
+        Collection<PhpClass> phpClasses = new ArrayList<>();
 
-                    // $form->createView()
-                    if(var instanceof MethodReference) {
-                        PsiElement form = var.getFirstChild();
-                        if(form instanceof Variable) {
-                            PsiElement varDecl = ((Variable) form).resolve();
-                            if(varDecl instanceof Variable) {
-                                MethodReference methodReference = PsiTreeUtil.getNextSiblingOfType(varDecl, MethodReference.class);
-                                attachFormFields(methodReference, targets);
-                            }
+        // $form->createView()
+        if (formReference instanceof MethodReference) {
+            PsiElement form = formReference.getFirstChild();
+            if (form instanceof Variable) {
+                PsiElement varDecl = ((Variable) form).resolve();
+                if (varDecl instanceof Variable) {
+                    MethodReference methodReference = PsiTreeUtil.getNextSiblingOfType(varDecl, MethodReference.class);
+                    if (methodReference != null) {
+                        PhpClass phpClass = resolveCall(methodReference);
+                        if (phpClass != null) {
+                            phpClasses.add(phpClass);
                         }
                     }
+                }
+            }
+        }
 
+        // nested resolve of form view; @TODO: should be some nicer
+        // 'foo2' => $form2 => $form2 = $form->createView() => $this->createForm(new Type();
+        if (formReference instanceof Variable) {
+            PsiElement varDecl = ((Variable) formReference).resolve();
+            if (varDecl instanceof Variable) {
+                MethodReference methodReference = PsiTreeUtil.getNextSiblingOfType(varDecl, MethodReference.class);
+                if (methodReference != null) {
+                    PsiElement scopeVar = methodReference.getFirstChild();
 
-                    // nested resolve of form view; @TODO: should be some nicer
-                    // 'foo2' => $form2 => $form2 = $form->createView() => $this->createForm(new Type();
-                    if(var instanceof Variable) {
-                        PsiElement varDecl = ((Variable) var).resolve();
-                        if(varDecl instanceof Variable) {
-                            MethodReference methodReference = PsiTreeUtil.getNextSiblingOfType(varDecl, MethodReference.class);
-                            if(methodReference != null) {
-                                PsiElement scopeVar = methodReference.getFirstChild();
-
-                                // $form2 = $form->createView()
-                                if(scopeVar instanceof Variable) {
-                                    PsiElement varDeclParent = ((Variable) scopeVar).resolve();
-                                    if(varDeclParent instanceof Variable) {
-
-                                        // "$form"->createView();
-                                        PsiElement resolve = ((Variable) varDeclParent).resolve();
-                                        if(resolve != null) {
-                                            attachFormFields(PsiTreeUtil.getNextSiblingOfType(resolve, MethodReference.class), targets);
-                                        }
+                    // $form2 = $form->createView()
+                    if (scopeVar instanceof Variable) {
+                        PsiElement varDeclParent = ((Variable) scopeVar).resolve();
+                        if (varDeclParent instanceof Variable) {
+                            // "$form"->createView();
+                            PsiElement resolve = ((Variable) varDeclParent).resolve();
+                            if (resolve != null) {
+                                MethodReference nextSiblingOfType = PsiTreeUtil.getNextSiblingOfType(resolve, MethodReference.class);
+                                if (nextSiblingOfType != null) {
+                                    PhpClass phpClass = resolveCall(methodReference);
+                                    if (phpClass != null) {
+                                        phpClasses.add(phpClass);
                                     }
                                 }
                             }
@@ -77,13 +86,12 @@ public class FormFieldResolver implements TwigTypeResolver {
                 }
             }
         }
+
+        return phpClasses;
     }
 
-    private static void attachFormFields(@Nullable MethodReference methodReference, @NotNull Collection<TwigTypeContainer> targets) {
-        if (methodReference == null) {
-            return;
-        }
-
+    @Nullable
+    private static PhpClass resolveCall(@NotNull MethodReference methodReference) {
         int index = -1;
 
         if (PhpElementsUtil.isMethodReferenceInstanceOf(
@@ -102,24 +110,15 @@ public class FormFieldResolver implements TwigTypeResolver {
         }
 
         if (index < 0) {
-            return;
+            return null;
         }
 
         PsiElement formType = PsiElementUtils.getMethodParameterPsiElementAt(methodReference, index);
-        if(formType != null) {
-            PhpClass phpClass = FormUtil.getFormTypeClassOnParameter(formType);
-
-            if(phpClass == null) {
-                return;
-            }
-
-            Method method = phpClass.findMethodByName("buildForm");
-            if(method == null) {
-                return;
-            }
-
-            targets.addAll(getTwigTypeContainer(method, phpClass));
+        if (formType != null) {
+            return FormUtil.getFormTypeClassOnParameter(formType);
         }
+
+        return null;
     }
 
     @NotNull
@@ -146,4 +145,19 @@ public class FormFieldResolver implements TwigTypeResolver {
         return twigTypeContainers;
     }
 
+    /**
+     * Search and resolve: "$form->createView()"
+     */
+    public static void visitFormReferencesFields(PsiElement formReference, @NotNull Consumer<TwigTypeContainer> consumer) {
+        for (PhpClass phpClass : getFormTypeFromFormFactory(formReference)) {
+            Method method = phpClass.findMethodByName("buildForm");
+            if(method == null) {
+                return;
+            }
+
+            for (TwigTypeContainer twigTypeContainer : getTwigTypeContainer(method, phpClass)) {
+                consumer.accept(twigTypeContainer);
+            }
+        }
+    }
 }
