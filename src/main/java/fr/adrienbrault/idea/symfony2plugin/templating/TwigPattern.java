@@ -1180,18 +1180,17 @@ public class TwigPattern {
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
+    /**
+     * @TODO: check related features introduce by PhpStorm for Twig changes in 2020
+     */
   public static PsiElementPattern.Capture<PsiElement> captureVariableOrField() {
     return PlatformPatterns.psiElement().withElementType(TokenSet.create(TwigElementTypes.VARIABLE_REFERENCE,
         TwigElementTypes.FIELD_REFERENCE));
   }
 
-    public static ElementPattern<PsiElement> getForTagInVariablePattern() {
-
-        // {% for key, user in "users" %}
-        // {% for user in "users" %}
-        // {% for user in "users"|slice(0, 10) %}
-
-        //noinspection unchecked
+    public static ElementPattern<PsiElement> getForTagInVariableReferencePattern() {
+        // {% for user in test %}
+        // {% for user in test.test %}
         return captureVariableOrField().afterLeafSkipping(
                 PlatformPatterns.or(
                     PlatformPatterns.psiElement(PsiWhiteSpace.class),
@@ -1200,6 +1199,18 @@ public class TwigPattern {
                 PlatformPatterns.psiElement(TwigTokenTypes.IN)
             )
             .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    public static ElementPattern<PsiElement> getForTagInVariablePattern() {
+        // {% for key, user in "users" %}
+        // {% for user in "users" %}
+        // {% for user in "users"|slice(0, 10) %}
+        return PlatformPatterns.psiElement().afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+            ),
+            PlatformPatterns.psiElement(TwigTokenTypes.IN).withLanguage(TwigLanguage.INSTANCE));
     }
 
     public static ElementPattern<PsiElement> getIfVariablePattern() {
@@ -1367,6 +1378,7 @@ public class TwigPattern {
         //noinspection unchecked
         return PlatformPatterns.or(
             getForTagInVariablePattern(),
+            getForTagInVariableReferencePattern(),
             getIfVariablePattern(),
             getIfConditionVariablePattern(),
             getSetVariablePattern()

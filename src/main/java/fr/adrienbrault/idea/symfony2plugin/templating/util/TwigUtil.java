@@ -2715,7 +2715,7 @@ public class TwigUtil {
                 if(firstChild.getNode().getElementType() == TwigElementTypes.FOR_TAG) {
                     PsiElement afterIn = PsiElementUtils.getNextSiblingOfType(
                         firstChild.getFirstChild(),
-                        TwigPattern.getForTagInVariablePattern()
+                        TwigPattern.getForTagInVariableReferencePattern()
                     );
 
                     visitTemplateVariablesConsumer(afterIn, consumer);
