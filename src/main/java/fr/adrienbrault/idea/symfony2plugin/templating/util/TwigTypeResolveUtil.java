@@ -371,7 +371,7 @@ public class TwigTypeResolveUtil {
 
         // {% for user in "users" %}
         PsiElement forTag = twigCompositeElement.getFirstChild();
-        PsiElement inVariable = PsiElementUtils.getChildrenOfType(forTag, TwigPattern.getForTagInVariablePattern());
+        PsiElement inVariable = PsiElementUtils.getChildrenOfType(forTag, TwigPattern.getForTagInVariableReferencePattern());
         inVariable = inVariable instanceof TwigVariableReference ? inVariable : PsiTreeUtil.getChildOfType(inVariable, TwigVariableReference.class);
         if(inVariable == null) {
             return;
