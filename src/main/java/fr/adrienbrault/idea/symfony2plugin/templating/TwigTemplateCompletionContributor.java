@@ -10,7 +10,10 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.patterns.PatternCondition;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.StandardPatterns;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiReference;
+import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.PlatformIcons;
 import com.intellij.util.ProcessingContext;
@@ -36,6 +39,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormFieldResolver;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder.FormDataHolder;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigFileUtil;
@@ -53,6 +57,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerCompletionP
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import icons.TwigIcons;
 import org.apache.commons.lang.StringUtils;
+import org.intellij.lang.annotations.RegExp;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -518,6 +523,21 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME),
             new IncompleteIfCompletionProvider()
         );
+
+
+        // {{ form_wi => "form_wi(form.test)"
+        extend(
+            CompletionType.BASIC,
+            TwigPattern.getCompletablePattern(),
+            new IncompleteFormFieldPrintBlockCompletionProvider()
+        );
+
+        // {{ form_start => "form_start(form)"
+        extend(
+            CompletionType.BASIC,
+            TwigPattern.getCompletablePattern(),
+            new IncompleteFormPrintBlockCompletionProvider()
+        );
     }
 
     private boolean isCompletionStartingMatch(@NotNull String fullText, @NotNull CompletionParameters completionParameters, int minLength) {
@@ -532,6 +552,24 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         PsiElement position = completionParameters.getPosition();
         String text = position.getText().toLowerCase().replace("intellijidearulezzz", "");
         if (text.length() >= minLength && fullText.startsWith(text)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean isCompletionStartingRegexMatch(@RegExp String fullText, @NotNull CompletionParameters completionParameters, int minLength) {
+        PsiElement originalPosition = completionParameters.getOriginalPosition();
+        if (originalPosition != null) {
+            String text = originalPosition.getText();
+            if (text.length() >= minLength && text.matches(fullText)) {
+                return true;
+            }
+        }
+
+        PsiElement position = completionParameters.getPosition();
+        String text = position.getText().toLowerCase().replace("intellijidearulezzz", "");
+        if (text.length() >= minLength && text.startsWith(fullText)) {
             return true;
         }
 
@@ -666,6 +704,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 }
 
                 if(twigTypeContainer.getStringElement() != null) {
+                    //
                     LookupElementBuilder lookupElement = LookupElementBuilder.create(twigTypeContainer.getStringElement());
 
                     // form
@@ -926,6 +965,107 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
             for (String s : extendsTemplateUsageAsOrderedList) {
                 resultSet.addElement(LookupElementBuilder.create(String.format("include('%s')", s)).withIcon(TwigIcons.TwigFileIcon));
+            }
+        }
+    }
+
+    private class IncompleteFormFieldPrintBlockCompletionProvider extends CompletionProvider<CompletionParameters> {
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
+            PsiElement originalPosition = completionParameters.getOriginalPosition();
+            if (originalPosition == null) {
+                return;
+            }
+
+            if(!Symfony2ProjectComponent.isEnabled(originalPosition)) {
+                return;
+            }
+
+            resultSet.restartCompletionOnPrefixChange(StandardPatterns.string().longerThan(1).with(new PatternCondition<>("include startsWith") {
+                @Override
+                public boolean accepts(@NotNull String s, ProcessingContext processingContext) {
+                    return "for".startsWith(s);
+                }
+            }));
+
+            if (!isCompletionStartingRegexMatch("fo\\w+", completionParameters, 3)) {
+                return;
+            }
+
+            Project project = completionParameters.getPosition().getProject();
+
+            Collection<PsiVariable> psiVariables = new ArrayList<>();
+            for (Map.Entry<String, PsiVariable> entry : TwigTypeResolveUtil.collectScopeVariables(originalPosition).entrySet()) {
+                PhpType phpType = PhpIndex.getInstance(project).completeType(project, PhpType.from(entry.getValue().getTypes().toArray(new String[0])), new HashSet<>());
+                if (phpType.types().noneMatch(s -> s.equals("\\Symfony\\Component\\Form\\FormView"))) {
+                    continue;
+                }
+
+                FormFieldResolver.visitFormReferencesFields(entry.getValue().getElement(), twigTypeContainers -> {
+                    String typeText = null;
+
+                    if (twigTypeContainers.getDataHolder() instanceof FormDataHolder formDataHolder) {
+                        typeText = formDataHolder.getPhpClass().getName();
+                    }
+
+                    for (String s : new String[]{"form_row", "form_widget", "form_label", "form_errors", "form_help"}) {
+                        LookupElementBuilder element = LookupElementBuilder.create(s + "(" + entry.getKey() + "." + twigTypeContainers.getStringElement() + ")")
+                            .withTypeText(typeText)
+                            .withBoldness(true)
+                            .withIcon(Symfony2Icons.FORM_TYPE);
+
+                        resultSet.addElement(element);
+                    }
+                });
+
+                psiVariables.add(entry.getValue());
+            }
+        }
+    }
+
+    private class IncompleteFormPrintBlockCompletionProvider extends CompletionProvider<CompletionParameters> {
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
+            PsiElement originalPosition = completionParameters.getOriginalPosition();
+            if (originalPosition == null) {
+                return;
+            }
+
+            if(!Symfony2ProjectComponent.isEnabled(originalPosition)) {
+                return;
+            }
+
+            resultSet.restartCompletionOnPrefixChange(StandardPatterns.string().longerThan(1).with(new PatternCondition<>("include startsWith") {
+                @Override
+                public boolean accepts(@NotNull String s, ProcessingContext processingContext) {
+                    return "for".startsWith(s);
+                }
+            }));
+
+            if (!isCompletionStartingRegexMatch("fo\\w+", completionParameters, 3)) {
+                return;
+            }
+
+            Project project = completionParameters.getPosition().getProject();
+            for (Map.Entry<String, PsiVariable> entry : TwigTypeResolveUtil.collectScopeVariables(originalPosition).entrySet()) {
+                PhpType phpType = PhpIndex.getInstance(project).completeType(project, PhpType.from(entry.getValue().getTypes().toArray(new String[0])), new HashSet<>());
+                if (phpType.types().noneMatch(s -> s.equals("\\Symfony\\Component\\Form\\FormView"))) {
+                    continue;
+                }
+
+                String typeText = null;
+                Collection<PhpClass> formTypeFromFormFactory = FormFieldResolver.getFormTypeFromFormFactory(entry.getValue().getElement());
+                if (formTypeFromFormFactory.size() > 0) {
+                    typeText = StringUtils.stripStart(formTypeFromFormFactory.iterator().next().getFQN(), "\\");
+                }
+
+                for (String s : new String[]{"form_start", "form_rest", "form_end", "form_errors"}) {
+                    LookupElementBuilder element = LookupElementBuilder.create(s + "(" + entry.getKey() + ")")
+                        .withTypeText(typeText)
+                        .withIcon(Symfony2Icons.FORM_TYPE);
+
+                    resultSet.addElement(element);
+                }
             }
         }
     }
