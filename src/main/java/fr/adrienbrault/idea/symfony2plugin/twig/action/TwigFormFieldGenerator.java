@@ -22,7 +22,10 @@ import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormFiel
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -30,11 +33,24 @@ import java.util.*;
 public class TwigFormFieldGenerator extends CodeInsightAction {
     @Override
     protected boolean isValidForFile(@NotNull Project project, @NotNull Editor editor, @NotNull PsiFile file) {
-        return Symfony2ProjectComponent.isEnabled(project) && (
+        boolean b = Symfony2ProjectComponent.isEnabled(project) && (
             file instanceof TwigFile
                 || (file instanceof HtmlFileImpl && file.getName().toLowerCase().endsWith(".twig"))
                 || TwigUtil.getInjectedTwigElement(file, editor) != null
         );
+
+        if (!b) {
+            return false;
+        }
+
+        PsiElement psiElement = TwigUtil.getInjectedTwigElement(file, editor);
+        if (psiElement == null) {
+            return false;
+        }
+
+        return TwigTypeResolveUtil.collectScopeVariables(psiElement).entrySet()
+            .stream()
+            .anyMatch(entry -> FormFieldResolver.isFormView(PhpIndex.getInstance(project).completeType(project, PhpType.from(entry.getValue().getTypes().toArray(new String[0])), new HashSet<>())));
     }
 
     protected CodeInsightActionHandler getHandler() {
@@ -53,7 +69,7 @@ public class TwigFormFieldGenerator extends CodeInsightAction {
 
             for (Map.Entry<String, PsiVariable> entry : TwigTypeResolveUtil.collectScopeVariables(psiElement).entrySet()) {
                 PhpType phpType = PhpIndex.getInstance(project).completeType(project, PhpType.from(entry.getValue().getTypes().toArray(new String[0])), new HashSet<>());
-                if (phpType.types().noneMatch(s -> s.equals("\\Symfony\\Component\\Form\\FormView"))) {
+                if (!FormFieldResolver.isFormView(phpType)) {
                     continue;
                 }
 

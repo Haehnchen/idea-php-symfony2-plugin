@@ -25,15 +25,13 @@ public class FormVarsResolver implements TwigTypeResolver {
             lastTwigTypeContainer = element;
         }
 
-        for(TwigTypeContainer twigTypeContainer: lastTwigTypeContainer) {
-            if(twigTypeContainer.getPhpNamedElement() instanceof PhpClass) {
-                if(PhpElementsUtil.isInstanceOf((PhpClass) twigTypeContainer.getPhpNamedElement(), "\\Symfony\\Component\\Form\\FormView")) {
+        for (TwigTypeContainer twigTypeContainer: lastTwigTypeContainer) {
+            if (twigTypeContainer.getPhpNamedElement() instanceof PhpClass) {
+                if (FormFieldResolver.isFormView((PhpClass) twigTypeContainer.getPhpNamedElement())) {
                     attachVars(twigTypeContainer.getPhpNamedElement().getProject(), targets);
                 }
             }
-
         }
-
     }
 
     private void attachVars(Project project, Collection<TwigTypeContainer> targets) {
