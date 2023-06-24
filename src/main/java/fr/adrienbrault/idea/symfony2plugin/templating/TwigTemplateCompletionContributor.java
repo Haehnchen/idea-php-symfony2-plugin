@@ -1120,7 +1120,12 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
     private class IncompleteIfCompletionProvider extends CompletionProvider<CompletionParameters> {
         @Override
         protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
-            if(!Symfony2ProjectComponent.isEnabled(completionParameters.getPosition())) {
+            PsiElement originalPosition = completionParameters.getOriginalPosition();
+            if (originalPosition == null) {
+                return;
+            }
+
+            if (!Symfony2ProjectComponent.isEnabled(originalPosition)) {
                 return;
             }
 
@@ -1136,7 +1141,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             }
 
             resultSet.addAllElements(processVariables(
-                completionParameters.getPosition(),
+                originalPosition,
                 PhpType::isBoolean,
                 entry -> String.format("if %s", entry.getKey())
             ));
@@ -1428,10 +1433,9 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
         Map<String, Pair<String, LookupElement>> arrays = new HashMap<>();
         for(Map.Entry<String, PsiVariable> entry: TwigTypeResolveUtil.collectScopeVariables(psiElement).entrySet()) {
-            if (PhpType.from(entry.getValue().getTypes().toArray(new String[0])).isConvertibleFrom(project, new PhpType().add(PhpType.ARRAY))) {
-                PhpType phpType = PhpIndex.getInstance(project).completeType(project, PhpType.from(entry.getValue().getTypes().toArray(new String[0])), new HashSet<>());
-                System.out.println(phpType);
+            PhpType phpType = PhpType.from(entry.getValue().getTypes().toArray(new String[0]));
 
+            if (filter.test(phpType)) {
                 LookupElementBuilder lookupElement = LookupElementBuilder.create(entry.getKey())
                     .withIcon(PlatformIcons.VARIABLE_ICON)
                     .withTypeText(phpType.toString());
