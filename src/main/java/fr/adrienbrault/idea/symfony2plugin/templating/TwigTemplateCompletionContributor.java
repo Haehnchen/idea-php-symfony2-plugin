@@ -12,6 +12,7 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.PlatformIcons;
 import com.intellij.util.ProcessingContext;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.PhpIcons;
@@ -935,7 +936,12 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
     private class IncompleteForCompletionProvider extends CompletionProvider<CompletionParameters> {
         @Override
         protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
-            if (!Symfony2ProjectComponent.isEnabled(completionParameters.getPosition())) {
+            PsiElement originalPosition = completionParameters.getOriginalPosition();
+            if (originalPosition == null) {
+                return;
+            }
+
+            if (!Symfony2ProjectComponent.isEnabled(originalPosition)) {
                 return;
             }
 
@@ -951,7 +957,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             }
 
             resultSet.addAllElements(processVariables(
-                completionParameters.getPosition(),
+                originalPosition,
                 PhpType::isArray,
                 pair -> {
                     String var = pair.getValue().getFirst();
@@ -1280,8 +1286,18 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
         Map<String, Pair<String, LookupElement>> arrays = new HashMap<>();
         for(Map.Entry<String, PsiVariable> entry: TwigTypeResolveUtil.collectScopeVariables(psiElement).entrySet()) {
-            Collection<PhpClass> classFromPhpTypeSet = PhpElementsUtil.getClassFromPhpTypeSet(project, entry.getValue().getTypes());
-            for (PhpClass phpClass : classFromPhpTypeSet) {
+            if (PhpType.from(entry.getValue().getTypes().toArray(new String[0])).isConvertibleFrom(project, new PhpType().add(PhpType.ARRAY))) {
+                PhpType phpType = PhpIndex.getInstance(project).completeType(project, PhpType.from(entry.getValue().getTypes().toArray(new String[0])), new HashSet<>());
+                System.out.println(phpType);
+
+                LookupElementBuilder lookupElement = LookupElementBuilder.create(entry.getKey())
+                    .withIcon(PlatformIcons.VARIABLE_ICON)
+                    .withTypeText(phpType.toString());
+
+                arrays.put(entry.getKey(), Pair.create(entry.getKey(), lookupElement));
+            }
+
+            for (PhpClass phpClass : PhpElementsUtil.getClassFromPhpTypeSet(project, entry.getValue().getTypes())) {
                 for(Method method: phpClass.getMethods()) {
                     if(!(!method.getModifier().isPublic() || method.getName().startsWith("set") || method.getName().startsWith("__"))) {
                         if (filter.test(PhpIndex.getInstance(project).completeType(project, method.getType(), new HashSet<>()))) {
@@ -1313,10 +1329,15 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 types.addAll(((PhpTypedElement) typeElement).getType().getTypes());
             }
 
+            String typeText = StringUtils.stripStart(TwigTypeResolveUtil.getTypeDisplayName(project, types), "\\");
+            if (typeText.isBlank()) {
+                typeText = lookupElementPresentation.getTypeText();
+            }
+
             LookupElementBuilder lookupElement = LookupElementBuilder.create(map.apply(entry))
                 .withIcon(lookupElementPresentation.getIcon())
                 .withStrikeoutness(lookupElementPresentation.isStrikeout())
-                .withTypeText(StringUtils.stripStart(TwigTypeResolveUtil.getTypeDisplayName(project, types), "\\"));
+                .withTypeText(typeText);
 
             items.add(lookupElement);
         }
