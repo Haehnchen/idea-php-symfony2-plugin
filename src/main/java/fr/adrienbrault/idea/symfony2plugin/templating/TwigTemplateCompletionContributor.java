@@ -538,6 +538,13 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             TwigPattern.getCompletablePattern(),
             new IncompleteFormPrintBlockCompletionProvider()
         );
+
+        // {{ form_theme => "form_theme form 'TEMPLATE'"
+        extend(
+            CompletionType.BASIC,
+            PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME),
+            new IncompleteFormThemeTemplateCompletionProvider()
+        );
     }
 
     private boolean isCompletionStartingMatch(@NotNull String fullText, @NotNull CompletionParameters completionParameters, int minLength) {
@@ -1067,6 +1074,66 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         .withIcon(Symfony2Icons.FORM_TYPE);
 
                     resultSet.addElement(lookupElement);
+                }
+            }
+        }
+    }
+
+    private class IncompleteFormThemeTemplateCompletionProvider extends CompletionProvider<CompletionParameters> {
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
+            PsiElement originalPosition = completionParameters.getOriginalPosition();
+            if (originalPosition == null) {
+                return;
+            }
+
+            if(!Symfony2ProjectComponent.isEnabled(originalPosition)) {
+                return;
+            }
+
+            resultSet.restartCompletionOnPrefixChange(StandardPatterns.string().longerThan(1).with(new PatternCondition<>("include startsWith") {
+                @Override
+                public boolean accepts(@NotNull String s, ProcessingContext processingContext) {
+                    return "form_theme".startsWith(s);
+                }
+            }));
+
+            if (!isCompletionStartingMatch("form_theme", completionParameters, 3)) {
+                return;
+            }
+
+            List<String> orderedList = null;
+
+            Project project = completionParameters.getPosition().getProject();
+            for (Map.Entry<String, PsiVariable> entry : TwigTypeResolveUtil.collectScopeVariables(originalPosition).entrySet()) {
+                PhpType phpType = PhpIndex.getInstance(project).completeType(project, PhpType.from(entry.getValue().getTypes().toArray(new String[0])), new HashSet<>());
+                if (!FormFieldResolver.isFormView(phpType)) {
+                    continue;
+                }
+
+                PsiElement element = entry.getValue().getElement();
+                if (element == null)  {
+                    continue;
+                }
+
+                String typeText = null;
+                Collection<PhpClass> formTypeFromFormFactory = FormFieldResolver.getFormTypeFromFormFactory(element);
+                if (formTypeFromFormFactory.size() > 0) {
+                    typeText = StringUtils.stripStart(formTypeFromFormFactory.iterator().next().getFQN(), "\\");
+                }
+
+                if (orderedList == null) {
+                    orderedList = TwigUtil.getFormThemeTemplateUsageAsOrderedList(completionParameters.getPosition().getProject());
+                }
+
+                CompletionSorter completionSorter = CompletionService.getCompletionService()
+                    .defaultSorter(completionParameters, resultSet.getPrefixMatcher())
+                    .weighBefore("priority", new ServiceCompletionProvider.MyLookupElementWeigher(orderedList));
+
+                resultSet = resultSet.withRelevanceSorter(completionSorter);
+
+                for (String s : orderedList) {
+                    resultSet.addElement(LookupElementBuilder.create(String.format("form_theme %s '%s'", entry.getKey(), s)).withTypeText(typeText).withIcon(TwigIcons.TwigFileIcon));
                 }
             }
         }
