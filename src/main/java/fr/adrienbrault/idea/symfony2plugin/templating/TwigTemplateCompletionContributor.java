@@ -678,7 +678,18 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            resultSet.addAllElements(TwigUtil.getTwigLookupElements(parameters.getPosition().getProject()));
+            Project project = parameters.getPosition().getProject();
+            List<String> prioritizedKeys = TwigUtil.getFormThemeTemplateUsageAsOrderedList(project);
+
+            if (prioritizedKeys.size() > 0) {
+                CompletionSorter completionSorter = CompletionService.getCompletionService()
+                    .defaultSorter(parameters, resultSet.getPrefixMatcher())
+                    .weighBefore("priority", new ServiceCompletionProvider.MyLookupElementWeigher(prioritizedKeys));
+
+                resultSet = resultSet.withRelevanceSorter(completionSorter);
+            }
+
+            resultSet.addAllElements(TwigUtil.getTwigLookupElements(project, new HashSet<>(prioritizedKeys)));
         }
     }
 
