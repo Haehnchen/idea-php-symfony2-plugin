@@ -243,6 +243,9 @@
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.translation.TranslationNavigationCompletionContributor$Completion"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.translation.TranslationNavigationCompletionContributor$GotoDeclaration"/>
 
+        <completion.contributor language="PHP" order="last" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.PhpIncompleteCompletionContributor"/>
+
+
         <!---
         <completion.contributor language="PHP" order="last" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.IncompletePropertyServiceInjectionContributor"/>
         -->

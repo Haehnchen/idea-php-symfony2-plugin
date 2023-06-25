@@ -20,7 +20,9 @@ import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpYieldInstructio
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.FormTypeLookup;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.EnumFormTypeSource;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeClass;
@@ -31,6 +33,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.psi.PsiElementAssertUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import kotlin.Pair;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -732,5 +735,61 @@ public class FormUtil {
         }
 
         return Collections.emptyList();
+    }
+
+    public static Pair<String, Map<String, String>> getGuessedFormFieldParameters(@NotNull PhpIndex phpIndex, @NotNull Project project, @NotNull String key, @NotNull PhpNamedElement phpNamedElement) {
+        PhpType phpType = phpIndex.completeType(project, phpNamedElement.getType(), new HashSet<>());
+
+        String typeClass = null;
+        Map<String, String> options = new HashMap<>();
+
+        PhpClass phpClass = PhpElementsUtil.getClassFromPhpTypeSetArrayClean(project, phpType.getTypes()).stream().findFirst().orElse(null);
+
+        if (phpClass != null && PhpElementsUtil.isInstanceOf(phpClass, "\\DateTimeImmutable")) {
+            typeClass = "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\DateTimeType";
+            options.put("input", "'datetime_immutable'");
+        } else if (phpClass != null && PhpElementsUtil.isInstanceOf(phpClass, "\\DateTimeInterface")) {
+            typeClass = "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\DateTimeType";
+        } else if (phpClass != null && phpClass.isEnum()) {
+            typeClass = "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\EnumType";
+            options.put("class", phpClass.getFQN());
+        } else if (phpClass != null && DoctrineMetadataUtil.findMetadataFiles(project, StringUtils.stripStart(phpClass.getFQN(), "\\")).size() > 0) {
+            typeClass = "\\Symfony\\Bridge\\Doctrine\\Form\\Type\\EntityType";
+            options.put("class", phpClass.getFQN());
+        } else if (phpType.isConvertibleFrom(project, PhpType.from(PhpType.INT))) {
+            typeClass = "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\IntegerType";
+        } else if (phpType.isConvertibleFrom(project, PhpType.from(PhpType.FLOAT))) {
+            typeClass = "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\NumberType";
+        } else if (phpType.isConvertibleFrom(project, PhpType.from(PhpType.ARRAY))) {
+            typeClass = "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\ChoiceType";
+            options.put("choices", "[]");
+        } else if (phpType.isConvertibleFrom(project, PhpType.from(PhpType.STRING))) {
+            typeClass = "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\TextType";
+
+            String lowerCase = key.toLowerCase();
+            if (lowerCase.contains("description") || lowerCase.contains("note") || lowerCase.contains("beschreibung") || lowerCase.contains("comment")) {
+                typeClass = "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\TextAreaType";
+            } else if (lowerCase.contains("mail")) {
+                typeClass = "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\EmailType";
+            } else if (lowerCase.contains("password")) {
+                typeClass = "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\PasswordType";
+            } else if (lowerCase.contains("url")) {
+                typeClass = "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\UrlType";
+            } else if (lowerCase.contains("language")) {
+                typeClass = "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\LanguageType";
+            } else if (lowerCase.equals("uuid")) {
+                typeClass = "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\UuidType";
+            } else if (lowerCase.equals("ulid")) {
+                typeClass = "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\UlidType";
+            } else if (lowerCase.contains("country")) {
+                typeClass = "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\CountryType";
+            } else if (lowerCase.contains("currency")) {
+                typeClass = "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\MoneyType";
+            } else if (lowerCase.contains("telephone") || lowerCase.contains("phone") || lowerCase.contains("mobile")) {
+                typeClass = "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\TelType";
+            }
+        }
+
+        return new Pair<>(typeClass, options);
     }
 }
