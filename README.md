@@ -25,11 +25,11 @@ Freemium
 
 Since PhpStorm 2022.1 is plugin is marked a "Freemium".
 
-*   All features which are inside [GitHub](https://github.com/Haehnchen/idea-php-symfony2-plugin) are free to use, unless there is reason (e.g. Supporting old Symfony Version, ...) 
-*   Non-free features are flagged with _[paid]_ inside the [CHANGELOG](https://github.com/Haehnchen/idea-php-symfony2-plugin/blob/master/CHANGELOG.md)
-*   There is ~15min grace period after project open where all features are available
+* All features which are inside [GitHub](https://github.com/Haehnchen/idea-php-symfony2-plugin) are free to use, unless there is reason (e.g. Supporting old Symfony Version, ...) 
+* Non-free features are flagged with _[paid]_ inside [Documentation](https://espend.de/phpstorm/plugin/symfony) and inside the [CHANGELOG](https://github.com/Haehnchen/idea-php-symfony2-plugin/blob/master/CHANGELOG.md)  
+* There is ~15min grace period after project open where all features are available
 
-_A license can be bought at [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/7219-symfony-support/pricing). Free Discount Code generator for open source contributions are planned._
+_A license can be bought at [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/7219-symfony-support/pricing)_
 
 Version
 ---------------------
@@ -39,7 +39,7 @@ Version
 Documentation and tutorials
 ---------------------
 
-* Documentation [read online](http://symfony2-plugin.espend.de/) or [fork doc](https://github.com/Haehnchen/idea-php-symfony2-plugin-doc)
+* Documentation / Feature List [read online](https://espend.de/phpstorm/plugin/symfony)
 * JetBrains: [Symfony Development using PhpStorm](https://confluence.jetbrains.com/display/PhpStorm/Symfony+Development+using+PhpStorm)
 * KnpUniversity: [Lean and Mean Dev with PhpStorm (for Symfony)](https://knpuniversity.com/screencast/phpstorm)
 * Slides: [PhpStorm: Symfony2 Plugin](https://www.slideshare.net/Haehnchen/phpstorm-symfony2-plugin)
@@ -47,8 +47,8 @@ Documentation and tutorials
 Autocomplete (or something else) is not working! Help! :open_mouth:
 -------------------------------------------------------------------
 
-* You usually need to trigger the autocomplete popup yourself, by pressing CTRL+SPACE (may be a different shortcut depending on your keymap).
-* Check your File -> Settings -> Languages & Framework -> PHP -> Symfony -> Enable Plugin for this Project
+* You usually need to trigger the autocomplete popup yourself, by pressing CTRL+SPACE (maybe a different shortcut depending on your keymap).
+* Check your File -> Settings -> PHP -> Symfony -> Enable Plugin for this Project
 
 Technical Diagram (Work In Progress)
 --------------------

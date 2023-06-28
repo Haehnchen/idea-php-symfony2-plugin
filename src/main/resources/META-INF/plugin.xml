@@ -23,7 +23,7 @@
 <h2>Install</h2>
 
 <ul>
-    <li>Activate plugin per project in "File -> Settings -> Languages & Framework -> PHP -> Symfony" or use auto configuration notification</li>
+    <li>Activate plugin per project in "File -> PHP -> Symfony" or use auto configuration notification</li>
     <li>(Required) Install <a href="https://plugins.jetbrains.com/plugin/7320">PHP Annotations</a></li>
     <li>(Optional) Configure a default project connection in "Remote Hosts Access / Remote Hosts" to enable support for remote files in plugin settings</li>
     <li>(Optional) Ignore Symfony "cache" directory because of duplicate classes "Settings -> Project -> Directories"</li>
