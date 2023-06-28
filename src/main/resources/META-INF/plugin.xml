@@ -13,9 +13,10 @@
 
 <h2>Freemium</h2>
 <ul>
-    <li>All features which are inside <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin">GitHub</a> are free to use unless there is reason (e.g. Supporting old Symfony Version, ...)</li>
-    <li>Non free features are flagged with <i>[paid]</i> inside the <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/blob/master/CHANGELOG.md">CHANGELOG</a>
-    <li>There is 15min grace period after project open where all features are available</li>
+    <li>All features which are inside <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin">GitHub</a> are free to use, unless there is reason (e.g. Supporting old Symfony Version, ...)</li>
+    <li>Non-free features are flagged with <em>[paid]</em> inside <a href="https://espend.de/phpstorm/plugin/symfony">Documentation</a> and inside the <a href="https://github.com/Haehnchen/idea-php-symfony2-plugin/blob/master/CHANGELOG.md">CHANGELOG</a></li>
+    <li>There is ~15min grace period after project open where all features are available</li>
+    <li>A license must be activated via PhpStorm / Intellij: use menu "Help -> Register" or use "Search Everywhere" by searching for "Manage License..." action</li>
 </ul>
 
 <i>A license can be bought at <a href="https://www.jetbrains.com/shop/quote?item=C%3AN%3APSYMFONYPLUGIN%3AY">JetBrains Marketplace</a>. Free Discount Code generator for open source contributions are planned.</i>

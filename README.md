@@ -28,6 +28,7 @@ Since PhpStorm 2022.1 is plugin is marked a "Freemium".
 * All features which are inside [GitHub](https://github.com/Haehnchen/idea-php-symfony2-plugin) are free to use, unless there is reason (e.g. Supporting old Symfony Version, ...) 
 * Non-free features are flagged with _[paid]_ inside [Documentation](https://espend.de/phpstorm/plugin/symfony) and inside the [CHANGELOG](https://github.com/Haehnchen/idea-php-symfony2-plugin/blob/master/CHANGELOG.md)  
 * There is ~15min grace period after project open where all features are available
+* A license must be activated via PhpStorm / Intellij: use menu "Help -> Register" or use "Search Everywhere" by searching for "Manage License..." action 
 
 _A license can be bought at [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/7219-symfony-support/pricing)_
 
