@@ -19,6 +19,19 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.252
+* Fill form fields with known "data_class" properties on "FormBuilder::add" (Daniel Espendiller)
+* Provide form field generator inside "buildForm" based on data_class (Daniel Espendiller)
+* Add priority voting for Twig form_theme completion (Daniel Espendiller)
+* Fix api warning for annotations on Twig completion class (Daniel Espendiller)
+* Provide incomplete completion for "form_theme" (Daniel Espendiller)
+* Provide more completable Twig if statements (Daniel Espendiller)
+* Given "FormInterface" variable inside template render are considered as FormView (Daniel Espendiller)
+* Add form Twig fields widget generator (Daniel Espendiller)
+* Add "form_*" incomplete completion (Daniel Espendiller)
+* Fix Twig "for in" completion of variables (Daniel Espendiller)
+* Add scoped variables for Twig "for in" incomplete completion (Daniel Espendiller)
+
 ## 2022.1.251
 * Doctrine querybuilder should provide an icon (Daniel Espendiller)
 * Support index based route names inside attributes (Daniel Espendiller)
