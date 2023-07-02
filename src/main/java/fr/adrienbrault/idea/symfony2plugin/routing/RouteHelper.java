@@ -140,6 +140,14 @@ public class RouteHelper {
         return targets.toArray(new PsiElement[0]);
     }
 
+    public static Collection<Route> findRoutesByPath(@NotNull Project project, @NotNull String path) {
+        return RouteHelper.getAllRoutes(project)
+            .values()
+            .stream()
+            .filter(route -> path.equals(route.getPath()))
+            .collect(Collectors.toList());
+    }
+
     /**
      * "/foo/bar" => "/foo/{edit}"
      */

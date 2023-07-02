@@ -1,15 +1,20 @@
 package fr.adrienbrault.idea.symfony2plugin.templating;
 
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
+import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.html.HtmlTag;
+import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlElementType;
 import com.intellij.psi.xml.XmlToken;
 import com.intellij.psi.xml.XmlTokenType;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.routing.Route;
+import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHtmlCompletionUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
 import org.apache.commons.lang.StringUtils;
@@ -28,6 +33,21 @@ public class HtmlTemplateGoToDeclarationHandler implements GotoDeclarationHandle
 
         Collection<PsiElement> targets = new ArrayList<>();
 
+        // <a href="">
+        boolean isUrl = psiElement instanceof XmlToken
+            && psiElement.getNode().getElementType() == XmlTokenType.XML_ATTRIBUTE_VALUE_TOKEN
+            && (TwigHtmlCompletionUtil.getHrefAttributePattern().accepts(psiElement) || TwigHtmlCompletionUtil.getFormActionAttributePattern().accepts(psiElement));
+
+        if (isUrl && psiElement.getParent() instanceof XmlAttributeValue xmlAttributeValue) {
+            String url = xmlAttributeValue.getValue();
+            if (!url.isBlank()) {
+                Project project = psiElement.getProject();
+                for (Route route : RouteHelper.findRoutesByPath(project, url)) {
+                    targets.addAll(RouteHelper.getRouteNameTarget(project, route.getName()));
+                }
+            }
+        }
+
         // <twig:a
         if (psiElement instanceof XmlToken && psiElement.getNode().getElementType() == XmlTokenType.XML_NAME && psiElement.getText().startsWith("twig:")) {
             String text = psiElement.getText();
@@ -41,18 +61,20 @@ public class HtmlTemplateGoToDeclarationHandler implements GotoDeclarationHandle
                 calulatedOffset = 5;
             }
 
+            Project project = psiElement.getProject();
+
             // <twig:a
             if (calulatedOffset > 5) {
                 if (TwigHtmlCompletionUtil.getTwigNamespacePattern().accepts(psiElement)) {
 
                     String componentName = StringUtils.stripStart(text, "twig:");
                     if (!componentName.isBlank()) {
-                        targets.addAll(UxUtil.getTwigComponentNameTargets(psiElement.getProject(), componentName));
+                        targets.addAll(UxUtil.getTwigComponentNameTargets(project, componentName));
                     }
                 }
             } else {
                 // <twig
-                targets.addAll(UxUtil.getTwigComponentAllTargets(psiElement.getProject()));
+                targets.addAll(UxUtil.getTwigComponentAllTargets(project));
             }
         }
 
@@ -62,8 +84,9 @@ public class HtmlTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             if (parent.getNode().getElementType() == XmlElementType.XML_ATTRIBUTE) {
                 if (parent.getParent() instanceof HtmlTag htmlTag && htmlTag.getName().startsWith("twig:")) {
                     String text = psiElement.getText();
+                    Project project = psiElement.getProject();
 
-                    for (PhpClass phpClass : UxUtil.getTwigComponentNameTargets(psiElement.getProject(), htmlTag.getName().substring(5))) {
+                    for (PhpClass phpClass : UxUtil.getTwigComponentNameTargets(project, htmlTag.getName().substring(5))) {
                         Field fieldByName = phpClass.findFieldByName(StringUtils.stripStart(text, ":"), false);
                         if (fieldByName != null) {
                             targets.add(fieldByName);
