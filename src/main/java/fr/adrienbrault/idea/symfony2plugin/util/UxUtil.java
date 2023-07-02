@@ -43,27 +43,31 @@ public class UxUtil {
     public static void visitAsTwigComponent(@NotNull PhpFile phpFile, @NotNull Consumer<Triple<String, PhpClass, String>> consumer) {
         for (PhpNamedElement topLevelElement : phpFile.getTopLevelDefs().values()) {
             if (topLevelElement instanceof PhpClass clazz) {
-                for (PhpAttribute attribute : clazz.getAttributes(AS_TWIG_COMPONENT)) {
-                    String name = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, 0, "name");
-                    if (name == null) {
-                        name = clazz.getName();
-                    }
+                visitAsTwigComponent(clazz, consumer);
+            }
+        }
+    }
 
-                    String template = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, 1, "template");
-                    if (template != null && template.contains(":")) {
-                        template = template.replaceAll(":", "/");
-                        if (!template.endsWith(".twig")) {
-                            template += ".html.twig";
-                        }
+    public static void visitAsTwigComponent(@NotNull PhpClass clazz, @NotNull Consumer<Triple<String, PhpClass, String>> consumer) {
+        for (PhpAttribute attribute : clazz.getAttributes(AS_TWIG_COMPONENT)) {
+            String name = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, 0, "name");
+            if (name == null) {
+                name = clazz.getName();
+            }
 
-                        if (!template.startsWith("components/")) {
-                            template = "components/" + template;
-                        }
-                    }
+            String template = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, 1, "template");
+            if (template != null && template.contains(":")) {
+                template = template.replaceAll(":", "/");
+                if (!template.endsWith(".twig")) {
+                    template += ".html.twig";
+                }
 
-                    consumer.accept(new Triple<>(name, clazz, template));
+                if (!template.startsWith("components/")) {
+                    template = "components/" + template;
                 }
             }
+
+            consumer.accept(new Triple<>(name, clazz, template));
         }
     }
 
