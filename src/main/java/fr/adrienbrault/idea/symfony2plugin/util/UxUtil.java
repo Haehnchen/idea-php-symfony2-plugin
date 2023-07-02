@@ -4,29 +4,35 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.CachedValue;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.lang.psi.PhpFile;
+import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.PhpAttribute;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.UxTemplateStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import kotlin.Pair;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class UxUtil {
-    private static String AS_TWIG_COMPONENT = "\\Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent";
+    private static final String AS_TWIG_COMPONENT = "\\Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent";
 
     private static final Key<CachedValue<Set<String>>> TWIG_COMPONENTS = new Key<>("SYMFONY_TWIG_COMPONENTS");
 
@@ -56,6 +62,22 @@ public class UxUtil {
             PhpClass classInterface = PhpElementsUtil.getClassInterface(project, fqn);
             if (classInterface != null) {
                 phpClasses.add(classInterface);
+            }
+        }
+
+        return phpClasses;
+    }
+
+    @NotNull
+    public static Collection<PhpClass> getComponentClassesForTemplateFile(@NotNull Project project, @NotNull PsiFile psiFile) {
+        Collection<PhpClass> phpClasses = new HashSet<>();
+
+        for (String template : TwigUtil.getTemplateNamesForFile(psiFile)) {
+            // @TODO: provide support for template resolve on attribute
+            Matcher matcher = Pattern.compile("^components/([\\w-]+)\\.html\\.twig$").matcher(template);
+            if (matcher.find()) {
+                String group = matcher.group(1);
+                phpClasses.addAll(UxUtil.getTwigComponentNameTargets(project, group));
             }
         }
 
