@@ -7,6 +7,8 @@ import com.intellij.openapi.util.Key;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.CachedValue;
+import com.intellij.psi.util.CachedValueProvider;
+import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
@@ -33,6 +35,8 @@ import java.util.stream.Collectors;
 public class UxUtil {
     private static final String AS_TWIG_COMPONENT = "\\Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent";
     private static final String ATTRIBUTE_EXPOSE_IN_TEMPLATE = "\\Symfony\\UX\\TwigComponent\\Attribute\\ExposeInTemplate";
+
+    private static final Key<CachedValue<Collection<UxComponent>>> SYMFONY_UX_COMPONENTS = new Key<>("SYMFONY_UX_COMPONENTS");
 
     private static final Key<CachedValue<Set<String>>> TWIG_COMPONENTS = new Key<>("SYMFONY_TWIG_COMPONENTS");
 
@@ -81,15 +85,46 @@ public class UxUtil {
     }
 
     @NotNull
+    private static Collection<UxComponent> getAllUxComponents(@NotNull Project project) {
+        return CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            SYMFONY_UX_COMPONENTS,
+            () -> {
+                Collection<UxComponent> uxComponents = new ArrayList<>();
+
+                for (String key : FileBasedIndex.getInstance().getAllKeys(UxTemplateStubIndex.KEY, project)) {
+                    uxComponents.addAll(FileBasedIndex.getInstance().getValues(UxTemplateStubIndex.KEY, key, GlobalSearchScope.allScope(project)));
+                }
+
+                return CachedValueProvider.Result.create(uxComponents, FileIndexCaches.getModificationTrackerForIndexId(project, UxTemplateStubIndex.KEY));
+            },
+            false
+        );
+    }
+
+    @NotNull
     public static Collection<PhpClass> getComponentClassesForTemplateFile(@NotNull Project project, @NotNull PsiFile psiFile) {
         Collection<PhpClass> phpClasses = new HashSet<>();
 
+        Collection<UxComponent> uxAllComponents = null;
+
         for (String template : TwigUtil.getTemplateNamesForFile(psiFile)) {
-            // @TODO: provide support for template resolve on attribute
+            if (uxAllComponents == null) {
+                uxAllComponents = getAllUxComponents(project);
+            }
+
+            // "template:"
+            for (UxComponent uxComponent : uxAllComponents.stream().filter(uxComponent -> template.equals(uxComponent.template())).toList()) {
+                phpClasses.addAll(PhpElementsUtil.getClassesInterface(project, uxComponent.phpClass()));
+            }
+
+            // no template given
             Matcher matcher = Pattern.compile("^components/([\\w-]+)\\.html\\.twig$").matcher(template);
             if (matcher.find()) {
-                String group = matcher.group(1);
-                phpClasses.addAll(UxUtil.getTwigComponentNameTargets(project, group));
+                String name = matcher.group(1);
+                for (UxComponent uxComponent : uxAllComponents.stream().filter(uxComponent -> name.equals(uxComponent.name())).toList()) {
+                    phpClasses.addAll(PhpElementsUtil.getClassesInterface(project, uxComponent.phpClass()));
+                }
             }
         }
 
