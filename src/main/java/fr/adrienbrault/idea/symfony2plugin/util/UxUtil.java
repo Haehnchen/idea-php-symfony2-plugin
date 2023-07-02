@@ -12,11 +12,12 @@ import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
+import fr.adrienbrault.idea.symfony2plugin.stubs.dict.UxComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.UxTemplateStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import kotlin.Pair;
+import kotlin.Triple;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -35,16 +36,28 @@ public class UxUtil {
 
     private static final Key<CachedValue<Set<String>>> TWIG_COMPONENTS = new Key<>("SYMFONY_TWIG_COMPONENTS");
 
-    public static void visitAsTwigComponent(@NotNull PhpFile phpFile, @NotNull Consumer<Pair<String, PhpClass>> consumer) {
+    public static void visitAsTwigComponent(@NotNull PhpFile phpFile, @NotNull Consumer<Triple<String, PhpClass, String>> consumer) {
         for (PhpNamedElement topLevelElement : phpFile.getTopLevelDefs().values()) {
             if (topLevelElement instanceof PhpClass clazz) {
                 for (PhpAttribute attribute : clazz.getAttributes(AS_TWIG_COMPONENT)) {
-                    String name = PhpPsiAttributesUtil.getAttributeValueByNameAsStringWithDefaultParameterFallback(attribute, "name");
+                    String name = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, 0, "name");
                     if (name == null) {
                         name = clazz.getName();
                     }
 
-                    consumer.accept(new Pair<>(name, clazz));
+                    String template = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, 1, "template");
+                    if (template != null && template.contains(":")) {
+                        template = template.replaceAll(":", "/");
+                        if (!template.endsWith(".twig")) {
+                            template += ".html.twig";
+                        }
+
+                        if (!template.startsWith("components/")) {
+                            template = "components/" + template;
+                        }
+                    }
+
+                    consumer.accept(new Triple<>(name, clazz, template));
                 }
             }
         }
@@ -57,8 +70,8 @@ public class UxUtil {
     public static Set<PhpClass> getTwigComponentNameTargets(@NotNull Project project, @NotNull String name) {
         Set<PhpClass> phpClasses = new HashSet<>();
 
-        for (String fqn : FileBasedIndex.getInstance().getValues(UxTemplateStubIndex.KEY, name, GlobalSearchScope.allScope(project))) {
-            PhpClass classInterface = PhpElementsUtil.getClassInterface(project, fqn);
+        for (UxComponent fqn : FileBasedIndex.getInstance().getValues(UxTemplateStubIndex.KEY, name, GlobalSearchScope.allScope(project))) {
+            PhpClass classInterface = PhpElementsUtil.getClassInterface(project, fqn.phpClass());
             if (classInterface != null) {
                 phpClasses.add(classInterface);
             }
@@ -87,8 +100,8 @@ public class UxUtil {
         Set<PhpClass> phpClasses = new HashSet<>();
 
         for (String twigComponentName : getTwigComponentNames(project)) {
-            for (String fqn : FileBasedIndex.getInstance().getValues(UxTemplateStubIndex.KEY, twigComponentName, GlobalSearchScope.allScope(project))) {
-                PhpClass classInterface = PhpElementsUtil.getClassInterface(project, fqn);
+            for (UxComponent fqn : FileBasedIndex.getInstance().getValues(UxTemplateStubIndex.KEY, twigComponentName, GlobalSearchScope.allScope(project))) {
+                PhpClass classInterface = PhpElementsUtil.getClassInterface(project, fqn.phpClass());
                 if (classInterface != null) {
                     phpClasses.add(classInterface);
                 }
@@ -103,8 +116,8 @@ public class UxUtil {
         Map<String, String> components = new HashMap<>();
 
         for (String twigComponentName : getTwigComponentNames(project)) {
-            for (String fqn : FileBasedIndex.getInstance().getValues(UxTemplateStubIndex.KEY, twigComponentName, GlobalSearchScope.allScope(project))) {
-                components.put(twigComponentName, fqn);
+            for (UxComponent fqn : FileBasedIndex.getInstance().getValues(UxTemplateStubIndex.KEY, twigComponentName, GlobalSearchScope.allScope(project))) {
+                components.put(twigComponentName, fqn.phpClass());
             }
         }
 
