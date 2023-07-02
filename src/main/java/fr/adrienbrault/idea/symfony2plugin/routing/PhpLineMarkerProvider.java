@@ -10,15 +10,17 @@ import com.intellij.psi.PsiFile;
 import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -38,11 +40,45 @@ public class PhpLineMarkerProvider implements LineMarkerProvider {
 
         for(PsiElement psiElement : psiElements) {
             attachRouteActions(lineMarkerInfos, psiElement);
+            attachUxComponents(lineMarkerInfos, psiElement);
 
             if(psiElement instanceof PhpFile) {
                 RelatedItemLineMarkerInfo<PsiElement> lineMarker = FileResourceUtil.getFileImplementsLineMarker((PsiFile) psiElement);
                 if(lineMarker != null) {
                     lineMarkerInfos.add(lineMarker);
+                }
+            }
+        }
+    }
+
+    private void attachUxComponents(@NotNull Collection<? super LineMarkerInfo<?>> lineMarkerInfos, @NotNull PsiElement leaf) {
+        if (leaf.getNode().getElementType() != PhpTokenTypes.IDENTIFIER) {
+            return;
+        }
+
+        if (leaf.getParent() instanceof PhpClass phpClass) {
+            Collection<String> templates = new ArrayList<>();
+
+            UxUtil.visitAsTwigComponent(phpClass, t -> {
+                String template = t.getThird();
+                templates.add(Objects.requireNonNullElseGet(template, () -> "components/" + t.getFirst() + ".html.twig"));
+            });
+
+            Collection<PsiFile> files = new HashSet<>();
+
+            for (String template : templates) {
+                files.addAll(TwigUtil.getTemplatePsiElements(phpClass.getProject(), template));
+            }
+
+            if (files.size() > 0) {
+                NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.TWIG_LINE_MARKER)
+                    .setTargets(files)
+                    .setTooltipText("Navigate to UX Component template");
+
+                // leaf elements are only allowed to attach
+                ASTNode nameNode = phpClass.getNameNode();
+                if (nameNode != null) {
+                    lineMarkerInfos.add(builder.createLineMarkerInfo(nameNode.getPsi()));
                 }
             }
         }
