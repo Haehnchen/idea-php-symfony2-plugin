@@ -711,6 +711,7 @@
         <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.ServiceContainerGlobalVariableCollector"/>
         <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.FileDocVariableCollector"/>
         <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.ControllerVariableCollector"/>
+        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.UxComponentVariableCollector"/>
         <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.IncludeVariableCollector"/>
         <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.MarcoScopeVariableCollector"/>
         <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.GlobalTwigConfigVariableCollector"/>
