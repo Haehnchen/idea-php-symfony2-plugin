@@ -10,12 +10,11 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
-import kotlin.Pair;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
+import java.util.Set;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -78,10 +77,8 @@ public class UxUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
             "class Alert {}\n"
         );
 
-        assertEquals(
-            "\\App\\Components\\Alert",
-            UxUtil.getTwigComponentNameTargets(getProject(), "Alert").iterator().next().getFQN()
-        );
+        Set<PhpClass> twigComponentNameTargets = UxUtil.getTwigComponentNameTargets(getProject(), "Alert");
+        assertTrue(twigComponentNameTargets.stream().anyMatch(phpClass -> "\\App\\Components\\Alert".equals(phpClass.getFQN())));
     }
 
     public void testVisitComponentVariables() {
