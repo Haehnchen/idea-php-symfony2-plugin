@@ -12,6 +12,7 @@ import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.asset.AssetDirectoryReader;
@@ -26,7 +27,6 @@ import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -184,7 +184,9 @@ public class TwigHtmlCompletionContributor extends CompletionContributor {
                     }
 
                     for (PhpClass phpClass : UxUtil.getTwigComponentNameTargets(position.getProject(), parentOfType.getName().substring(5))) {
-                        Arrays.stream(phpClass.getOwnFields()).filter(field -> field.getModifier().isPublic()).forEach(field -> {
+                        UxUtil.visitComponentVariables(phpClass, pair -> {
+                            PhpNamedElement field = pair.getSecond();
+
                             LookupElementBuilder element = LookupElementBuilder
                                 .create(field.getName())
                                 .withIcon(Symfony2Icons.SYMFONY)

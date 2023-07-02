@@ -9,13 +9,11 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.CachedValue;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.lang.psi.PhpFile;
-import com.jetbrains.php.lang.psi.elements.Field;
-import com.jetbrains.php.lang.psi.elements.PhpAttribute;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
+import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.UxTemplateStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import kotlin.Pair;
@@ -33,6 +31,7 @@ import java.util.stream.Collectors;
  */
 public class UxUtil {
     private static final String AS_TWIG_COMPONENT = "\\Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent";
+    private static final String ATTRIBUTE_EXPOSE_IN_TEMPLATE = "\\Symfony\\UX\\TwigComponent\\Attribute\\ExposeInTemplate";
 
     private static final Key<CachedValue<Set<String>>> TWIG_COMPONENTS = new Key<>("SYMFONY_TWIG_COMPONENTS");
 
@@ -117,5 +116,66 @@ public class UxUtil {
                     .withTypeText(StringUtils.stripStart(entry.getValue(), "\\"))
             )
             .collect(Collectors.toList());
+    }
+
+    public static void visitComponentVariables(@NotNull PhpClass phpClass, @NotNull Consumer<Pair<String, PhpNamedElement>> consumer) {
+        for (Field field : phpClass.getFields()) {
+            if (field.getModifier().isPublic()) {
+                for (String name : getExposeName(field)) {
+                    consumer.accept(new Pair<>(name, field));
+                }
+            }
+
+            if (field.getModifier().isPrivate() && field.getAttributes(ATTRIBUTE_EXPOSE_IN_TEMPLATE).size() > 0) {
+                for (String name : getExposeName(field)) {
+                    consumer.accept(new Pair<>(name, field));
+                }
+            }
+        }
+
+        for (Method method : phpClass.getMethods()) {
+            if (method.getAccess().isPublic() && method.getAttributes(ATTRIBUTE_EXPOSE_IN_TEMPLATE).size() > 0) {
+                for (String name : getExposeName(method)) {
+                    consumer.accept(new Pair<>(name, method));
+                }
+            }
+        }
+    }
+
+
+    private static Collection<String> getExposeName(@NotNull PhpAttributesOwner phpAttributesOwner) {
+        Collection<String> names = new HashSet<>();
+
+        // public state
+        Collection<@NotNull PhpAttribute> attributes = phpAttributesOwner.getAttributes(ATTRIBUTE_EXPOSE_IN_TEMPLATE);
+        if (attributes.size() == 0) {
+            String name = phpAttributesOwner.getName();
+
+            if (phpAttributesOwner instanceof Method method) {
+                names.add(TwigTypeResolveUtil.getPropertyShortcutMethodName(method));
+            } else {
+                names.add(name);
+            }
+
+            return names;
+        }
+
+        // attributes given
+        for (PhpAttribute attribute : attributes) {
+            String name = PhpPsiAttributesUtil.getAttributeValueByNameAsStringWithDefaultParameterFallback(attribute, "name");
+            if (name != null && !name.isBlank()) {
+                names.add(name);
+                break;
+            }
+
+            if (phpAttributesOwner instanceof Method method) {
+                // public function getActions(): array // available as `{{ actions }}`
+                names.add(TwigTypeResolveUtil.getPropertyShortcutMethodName(method));
+            } else {
+                names.add(phpAttributesOwner.getName());
+            }
+        }
+
+        return names;
     }
 }
