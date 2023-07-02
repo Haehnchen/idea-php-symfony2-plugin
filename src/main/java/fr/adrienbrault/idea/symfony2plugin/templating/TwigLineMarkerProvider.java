@@ -40,6 +40,7 @@ import fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigBlockUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
 import icons.TwigIcons;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -64,23 +65,24 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
 
         for(PsiElement psiElement: psiElements) {
             // controller
-            if(psiElement instanceof TwigFile) {
-                attachController((TwigFile) psiElement, results);
+            if(psiElement instanceof TwigFile twigFile) {
+                attachController(twigFile, results);
+                attachUxComponent(twigFile, results);
 
                 // find foreign file references tags like:
                 // include, embed, source, from, import, ...
-                LineMarkerInfo<?> lineIncludes = attachIncludes((TwigFile) psiElement);
+                LineMarkerInfo<?> lineIncludes = attachIncludes(twigFile);
                 if(lineIncludes != null) {
                     results.add(lineIncludes);
                 }
 
-                LineMarkerInfo<?> extending = attachExtends((TwigFile) psiElement);
+                LineMarkerInfo<?> extending = attachExtends(twigFile);
                 if(extending != null) {
                     results.add(extending);
                 }
 
                 // eg bundle overwrites
-                LineMarkerInfo<?> overwrites = attachOverwrites((TwigFile) psiElement);
+                LineMarkerInfo<?> overwrites = attachOverwrites(twigFile);
                 if(overwrites != null) {
                     results.add(overwrites);
                 }
@@ -133,6 +135,18 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             setTooltipText("Navigate to controller");
 
         result.add(builder.createLineMarkerInfo(twigFile));
+    }
+
+    private void attachUxComponent(@NotNull TwigFile twigFile, @NotNull Collection<? super RelatedItemLineMarkerInfo<?>> result) {
+        Collection<PhpClass> uxComponentsClasses = UxUtil.getComponentClassesForTemplateFile(twigFile.getProject(), twigFile);
+
+        if (uxComponentsClasses.size() > 0) {
+            NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.SYMFONY)
+                .setTargets(uxComponentsClasses)
+                .setTooltipText("Navigate to UX Component");
+
+            result.add(builder.createLineMarkerInfo(twigFile));
+        }
     }
 
     @Nullable
