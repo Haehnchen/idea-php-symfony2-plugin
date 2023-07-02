@@ -12,15 +12,18 @@ import com.intellij.psi.xml.XmlToken;
 import com.intellij.psi.xml.XmlTokenType;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHtmlCompletionUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
+import kotlin.Pair;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.function.Consumer;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -87,10 +90,11 @@ public class HtmlTemplateGoToDeclarationHandler implements GotoDeclarationHandle
                     Project project = psiElement.getProject();
 
                     for (PhpClass phpClass : UxUtil.getTwigComponentNameTargets(project, htmlTag.getName().substring(5))) {
-                        Field fieldByName = phpClass.findFieldByName(StringUtils.stripStart(text, ":"), false);
-                        if (fieldByName != null) {
-                            targets.add(fieldByName);
-                        }
+                        UxUtil.visitComponentVariables(phpClass, pair -> {
+                            if (pair.getFirst().equals(StringUtils.stripStart(text, ":"))) {
+                                targets.add(pair.getSecond());
+                            }
+                        });
                     }
                 };
             }
