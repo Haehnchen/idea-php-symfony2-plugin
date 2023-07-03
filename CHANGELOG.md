@@ -20,6 +20,16 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.253
+* Provide linemarker for ux component class to its Twig template (Daniel Espendiller)
+* Provide ux component linemarker for Twig files (Daniel Espendiller)
+* Resolve ux component templates via index (Daniel Espendiller)
+* Provide more information about an "UxComponent" inside index (Daniel Espendiller)
+* Support "ExposeInTemplate" variables for html attributes of "<twig:>" prefix (Daniel Espendiller)
+* Provide "symfony ux" component variables support (Daniel Espendiller)
+* Provide navigation for potential routes in injected html content of Twig file (Daniel Espendiller)
+* [paid] Implement "path" replacement inspections (Daniel Espendiller)
+
 ## 2022.1.252
 * Fill form fields with known "data_class" properties on "FormBuilder::add" (Daniel Espendiller)
 * Provide form field generator inside "buildForm" based on data_class (Daniel Espendiller)
