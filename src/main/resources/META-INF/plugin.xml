@@ -305,7 +305,7 @@
         <multiHostInjector implementation="fr.adrienbrault.idea.symfony2plugin.lang.ParameterLanguageInjector"/>
         <iconProvider implementation="fr.adrienbrault.idea.symfony2plugin.twig.icon.TwigIconProvider"/>
 
-        <statusBarWidgetFactory implementation="fr.adrienbrault.idea.symfony2plugin.ui.SymfonyStatusbarWidgetFactory" />
+        <statusBarWidgetFactory implementation="fr.adrienbrault.idea.symfony2plugin.ui.SymfonyStatusbarWidgetFactory" id="symfony.status.bar"/>
 
         <notificationGroup id="Symfony Notifications" displayType="STICKY_BALLOON"/>
         <errorHandler implementation="fr.adrienbrault.idea.symfony2plugin.util.ide.SymfonyPluginErrorReporterSubmitter"/>
