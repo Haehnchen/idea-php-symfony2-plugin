@@ -11,16 +11,10 @@ import org.jetbrains.annotations.Nullable;
  */
 public class FormTypeClass {
 
-    final private String name;
+    private final String name;
     private PhpClass phpClass;
-    private String phpClassName;
-    final private EnumFormTypeSource source;
-
-    public FormTypeClass(@NotNull String name, @NotNull PhpClass phpClass, @NotNull EnumFormTypeSource source) {
-        this.name = name;
-        this.phpClass = phpClass;
-        this.source = source;
-    }
+    private final String phpClassName;
+    private final EnumFormTypeSource source;
 
     public FormTypeClass(@NotNull String name, @NotNull String phpClassName, @NotNull EnumFormTypeSource source) {
         this.name = name;
@@ -34,22 +28,12 @@ public class FormTypeClass {
     }
 
     @Nullable
-    public PhpClass getPhpClass() {
-        return phpClass;
-    }
-
-    @Nullable
-    public PhpClass getPhpClass(Project project) {
-
+    public PhpClass getPhpClass(@NotNull Project project) {
         if(phpClass != null) {
             return phpClass;
         }
 
-        if(this.phpClassName == null) {
-            return null;
-        }
-
-        return PhpElementsUtil.getClass(project, this.phpClassName);
+        return this.phpClass = PhpElementsUtil.getClass(project, this.phpClassName);
     }
 
     @NotNull
@@ -60,5 +44,4 @@ public class FormTypeClass {
     public String getPhpClassName() {
         return phpClassName;
     }
-
 }

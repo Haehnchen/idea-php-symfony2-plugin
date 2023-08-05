@@ -4,10 +4,10 @@ import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Key;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.impl.source.xml.XmlDocumentImpl;
-import com.intellij.psi.util.PsiElementFilter;
-import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.util.*;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
@@ -48,6 +48,7 @@ import java.util.stream.Collectors;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class FormUtil {
+    private static final Key<CachedValue<Collection<String[]>>> FORM_EXTENSION_TYPES = new Key<>("SYMFONY_FORM_EXTENSION_TYPES");
 
     final public static String ABSTRACT_FORM_INTERFACE = "\\Symfony\\Component\\Form\\FormTypeInterface";
     final public static String FORM_EXTENSION_INTERFACE = "\\Symfony\\Component\\Form\\FormTypeExtensionInterface";
@@ -79,7 +80,7 @@ public class FormUtil {
         return new FormTypeCollector(project).collect().getFormTypeToClass(formType);
     }
 
-    public static Collection<LookupElement> getFormTypeLookupElements(Project project) {
+    public static Collection<LookupElement> getFormTypeLookupElements(@NotNull Project project) {
 
         Collection<LookupElement> lookupElements = new ArrayList<>();
 
@@ -89,7 +90,7 @@ public class FormUtil {
             String name = entry.getValue().getName();
             String typeText = entry.getValue().getPhpClassName();
 
-            PhpClass phpClass = entry.getValue().getPhpClass();
+            PhpClass phpClass = entry.getValue().getPhpClass(project);
             if(phpClass != null) {
                 typeText = phpClass.getName();
             }
@@ -359,7 +360,7 @@ public class FormUtil {
                 XmlAttribute attribute = serviceSubTag.getAttribute("name");
                 if(attribute != null) {
                     String tagName = attribute.getValue();
-                    if(tagName != null && StringUtils.isNotBlank(tagName)) {
+                    if(StringUtils.isNotBlank(tagName)) {
                         tags.add(tagName);
                     }
                 }
@@ -372,20 +373,38 @@ public class FormUtil {
 
     @NotNull
     public static Map<String, FormTypeClass> getFormTypeClasses(@NotNull Project project) {
+        Collection<String[]> nameAndClass = CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            FORM_EXTENSION_TYPES,
+            new CachedValueProvider<>() {
+                @Override
+                public @NotNull Result<Collection<String[]>> compute() {
+                    Collection<String[]> items = new ArrayList<>();
+
+                    for (PhpClass phpClass : PhpIndex.getInstance(project).getAllSubclasses(ABSTRACT_FORM_INTERFACE)) {
+                        if (!isValidFormPhpClass(phpClass)) {
+                            continue;
+                        }
+
+                        String name = FormUtil.getFormNameOfPhpClass(phpClass);
+                        if (name == null) {
+                            continue;
+                        }
+
+                        items.add(new String[]{name, phpClass.getFQN()});
+
+                    }
+
+                    return Result.create(items, PsiModificationTracker.MODIFICATION_COUNT);
+                }
+            },
+            false
+        );
 
         Map<String, FormTypeClass> map = new HashMap<>();
 
-        for(PhpClass phpClass: PhpIndex.getInstance(project).getAllSubclasses(ABSTRACT_FORM_INTERFACE)) {
-            if(!isValidFormPhpClass(phpClass)) {
-                continue;
-            }
-
-            String name = FormUtil.getFormNameOfPhpClass(phpClass);
-            if (name == null) {
-                continue;
-            }
-
-            map.put(name, new FormTypeClass(name, phpClass, EnumFormTypeSource.INDEX));
+        for (String[] item : nameAndClass) {
+            map.put(item[0], new FormTypeClass(item[0], item[1], EnumFormTypeSource.INDEX));
         }
 
         return map;
@@ -460,7 +479,7 @@ public class FormUtil {
                 return null;
             }
 
-            return forms.get(formTypeName).getPhpClass();
+            return forms.get(formTypeName).getPhpClass(project);
         }
 
         public Map<String, FormTypeClass> getFormTypesMap() {
