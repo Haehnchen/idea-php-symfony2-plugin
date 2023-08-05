@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver;
 
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
@@ -18,10 +19,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -179,22 +177,53 @@ public class FormFieldResolver implements TwigTypeResolver {
     }
 
     /**
-     * Search and resolve: "$form->createView()"
+     * Search and resolve: "$form->createView()" to its PhpClass which is a form type
      */
-    public static void visitFormReferencesFields(PsiElement formReference, @NotNull Consumer<TwigTypeContainer> consumer) {
-        for (PhpClass phpClass : getFormTypeFromFormFactory(formReference)) {
+    public static void visitFormReferencesFields(@NotNull PsiElement formReference, @NotNull Consumer<TwigTypeContainer> consumer) {
+        visitFormReferencesFields(formReference.getProject(), getFormTypeFromFormFactory(formReference), consumer);
+    }
+
+    /**
+     * Field all form fields in given PhpClass which should already be just a form type
+     */
+    public static void visitFormReferencesFields(@NotNull PhpClass phpClass, @NotNull Consumer<TwigTypeContainer> consumer) {
+        visitFormReferencesFields(phpClass.getProject(), Collections.singleton(phpClass), consumer);
+    }
+
+    private static void visitFormReferencesFields(@NotNull Project project, @NotNull Collection<PhpClass> phpClasses, @NotNull Consumer<TwigTypeContainer> consumer) {
+        FormUtil.FormTypeCollector collector = null;
+
+        Collection<Method> methods = new HashSet<>();
+
+        for (PhpClass phpClass : phpClasses) {
             Method method = phpClass.findMethodByName("buildForm");
-            if(method == null) {
-                return;
+            if (method != null) {
+                methods.add(method);
             }
 
-            visitFormReferencesFields(phpClass, consumer);
+            if (collector == null) {
+                collector = new FormUtil.FormTypeCollector(project).collect();
+            }
+
+            for (PhpClass formInHierarchicalPath : FormUtil.getParentAndExtendingTypes(phpClass, collector)) {
+                Method buildFormHierarchical = formInHierarchicalPath.findMethodByName("buildForm");
+                if (buildFormHierarchical != null) {
+                    methods.add(buildFormHierarchical);
+                }
+            }
+        }
+
+        for (Method method : methods) {
+            PhpClass containingClass = method.getContainingClass();
+            if (containingClass != null) {
+                consumeFieldType(containingClass, consumer);
+            }
         }
     }
 
-    public static void visitFormReferencesFields(@NotNull PhpClass phpClass, @NotNull Consumer<TwigTypeContainer> consumer) {
+    private static void consumeFieldType(@NotNull PhpClass phpClass, @NotNull Consumer<TwigTypeContainer> consumer) {
         Method method = phpClass.findMethodByName("buildForm");
-        if(method == null) {
+        if (method == null) {
             return;
         }
 
