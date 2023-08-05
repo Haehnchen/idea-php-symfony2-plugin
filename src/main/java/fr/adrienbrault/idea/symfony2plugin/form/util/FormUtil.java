@@ -25,6 +25,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.FormTypeLookup;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.EnumFormTypeSource;
+import fr.adrienbrault.idea.symfony2plugin.form.dict.FormClass;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeClass;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
@@ -41,6 +42,7 @@ import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -398,7 +400,7 @@ public class FormUtil {
         private final Map<String, FormTypeClass> formTypesMap;
         private final Project project;
 
-        FormTypeCollector(Project project) {
+        public FormTypeCollector(Project project) {
             this.project = project;
             this.formTypesMap = new HashMap<>();
         }
@@ -791,5 +793,50 @@ public class FormUtil {
         }
 
         return new Pair<>(typeClass, options);
+    }
+
+
+    /**
+     * Get all form class which extend the given class by any type e.g. parent, extendTypes
+     */
+    @NotNull
+    public static Collection<PhpClass> getParentAndExtendingTypes(@NotNull PhpClass phpClass, @NotNull FormUtil.FormTypeCollector collector) {
+        Collection<PhpClass> parentClasses = new HashSet<>();
+        visitParentFormsRecursive(phpClass, collector, parentClasses, 10);
+
+        // current class and all parent class need to visit for extending
+        Set<String> classesToVisitForExtends = new HashSet<>() {{
+            add(phpClass.getFQN());
+            addAll(parentClasses.stream().map(PhpNamedElement::getFQN).collect(Collectors.toSet()));
+        }};
+
+        for (FormClass formClass : FormOptionsUtil.getExtendedTypeClasses(phpClass.getProject(), classesToVisitForExtends.toArray(String[]::new))) {
+            parentClasses.add(formClass.getPhpClass());
+        }
+
+        return parentClasses;
+    }
+
+    /**
+     * Visit recursive all parent forms
+     */
+    private static void visitParentFormsRecursive(@NotNull PhpClass phpClass, @NotNull FormUtil.FormTypeCollector collector, @NotNull Collection<PhpClass> parentClasses, int depth) {
+        Collection<PhpClass> scopedClasses = new HashSet<>();
+
+        for (String formParent : FormUtil.getFormParentOfPhpClass(phpClass)) {
+            PhpClass formPhpClass = collector.getFormTypeToClass(formParent);
+            if (formPhpClass != null) {
+                scopedClasses.add(formPhpClass);
+            }
+        }
+
+        for (PhpClass nextScopeClass : scopedClasses) {
+            depth--;
+            if (depth > 0) {
+                visitParentFormsRecursive(nextScopeClass, collector, parentClasses, depth);
+            }
+        }
+
+        parentClasses.addAll(scopedClasses);
     }
 }
