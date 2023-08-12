@@ -122,25 +122,23 @@ public class SymfonyWebpackUtil {
             public void visitElement(@NotNull PsiElement element) {
                 if (element instanceof JSCallExpression) {
                     PsiElement methodExpression = element.getFirstChild();
-                    if (methodExpression instanceof JSReferenceExpression) {
-                        String name = ((JSReferenceExpression) methodExpression).getReferenceName();
+                    if (methodExpression instanceof JSReferenceExpression jsReferenceExpression) {
+                        String name = jsReferenceExpression.getReferenceName();
                         if ("addStyleEntry".equals(name) || "addEntry".equals(name)) {
                             JSExpression[] arguments = ((JSCallExpression) element).getArguments();
-                            if (arguments.length >= 1) {
-                                if (arguments[0] instanceof JSLiteralExpression) {
-                                    String parameter1 = ((JSLiteralExpression) arguments[0]).getStringValue();
-                                    String parameter2 = null;
+                            if (arguments.length >= 1 && arguments[0] instanceof JSLiteralExpression jsLiteralExpressionArg1) {
+                                String parameter1 = jsLiteralExpressionArg1.getStringValue();
+                                String parameter2 = null;
 
-                                    if (StringUtils.isNotBlank(parameter1)) {
-                                        if (arguments.length >= 2) {
-                                            String parameter2Value = ((JSLiteralExpression) arguments[1]).getStringValue();
-                                            if (StringUtils.isNotBlank(parameter2Value)) {
-                                                parameter2 = parameter2Value;
-                                            }
+                                if (StringUtils.isNotBlank(parameter1)) {
+                                    if (arguments.length >= 2 && arguments[1] instanceof JSLiteralExpression jsLiteralExpressionArg2) {
+                                        String parameter2Value = jsLiteralExpressionArg2.getStringValue();
+                                        if (StringUtils.isNotBlank(parameter2Value)) {
+                                            parameter2 = parameter2Value;
                                         }
-
-                                        consumer.accept(new WebpackAsset(virtualFile, parameter1, parameter2, arguments[0]));
                                     }
+
+                                    consumer.accept(new WebpackAsset(virtualFile, parameter1, parameter2, arguments[0]));
                                 }
                             }
                         }

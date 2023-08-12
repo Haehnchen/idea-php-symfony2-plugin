@@ -36,7 +36,7 @@ public class SymfonyWebpackUtilTest extends SymfonyLightCodeInsightFixtureTestCa
             }
         });
 
-        assertContainsElements(entries, "foo", "foobar", "entry_foobar_2", "addStyleEntryFoobar");
+        assertContainsElements(entries, "foo", "foobar", "entry_foobar_2", "addStyleEntryFoobar", "function_foo");
         assertContainsElements(targets, "./assets/app.js");
     }
 
