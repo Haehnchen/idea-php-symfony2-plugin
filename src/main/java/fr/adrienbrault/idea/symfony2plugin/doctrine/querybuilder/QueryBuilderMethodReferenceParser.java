@@ -186,19 +186,21 @@ public class QueryBuilderMethodReferenceParser {
     }
 
     private void collectParameter(QueryBuilderScopeContext qb, MethodReference methodReference, String name) {
-
-        if(!collectParameter || !Arrays.asList("where", "andWhere").contains(name)) {
+        if (!collectParameter || !Arrays.asList("where", "andWhere").contains(name)) {
             return;
         }
 
-        String value = PsiElementUtils.getMethodParameterAt(methodReference, 0);
-        if(value != null) {
+        for (PsiElement parameter : methodReference.getParameters()) {
+            String value = PsiElementUtils.getMethodParameter(parameter);
+            if (value == null) {
+                continue;
+            }
+
             Matcher matcher = Pattern.compile(":(\\w+)", Pattern.MULTILINE).matcher(value);
-            while(matcher.find()){
+            while (matcher.find()){
                 qb.addParameter(matcher.group(1));
             }
         }
-
     }
 
     /**
