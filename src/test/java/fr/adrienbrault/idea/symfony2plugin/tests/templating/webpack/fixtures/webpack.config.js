@@ -22,6 +22,7 @@ Encore
      */
     .addEntry('foobar', './assets/app.js')
     .addEntry("foo")
+    .addEntry("function_foo", function() {})
     .addStyleEntry('addStyleEntryFoobar')
 
     .enableVueLoader(() => {}, { runtimeCompilerBuild: false })
