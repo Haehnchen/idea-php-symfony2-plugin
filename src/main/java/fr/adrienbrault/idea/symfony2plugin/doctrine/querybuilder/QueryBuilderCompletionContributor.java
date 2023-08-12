@@ -213,7 +213,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                     return;
                 }
 
-                MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement.getContext(), 0)
+                MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(psiElement.getContext())
                     .withSignature(WHERES)
                     .match();
 

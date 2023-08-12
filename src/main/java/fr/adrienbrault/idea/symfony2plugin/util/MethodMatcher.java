@@ -117,6 +117,10 @@ public class MethodMatcher {
             super(psiElement, parameterIndex);
         }
 
+        public StringParameterMatcher(PsiElement psiElement) {
+            super(psiElement, -1);
+        }
+
         @Nullable
         public MethodMatchParameter match() {
 
@@ -124,7 +128,10 @@ public class MethodMatcher {
                 return null;
             }
 
-            MethodReferenceBag bag = PhpElementsUtil.getMethodParameterReferenceBag(psiElement, this.parameterIndex);
+            MethodReferenceBag bag = this.parameterIndex >= 0
+                ? PhpElementsUtil.getMethodParameterReferenceBag(psiElement, this.parameterIndex)
+                : PhpElementsUtil.getMethodParameterReferenceBag(psiElement);
+
             if(bag == null) {
                 return null;
             }
