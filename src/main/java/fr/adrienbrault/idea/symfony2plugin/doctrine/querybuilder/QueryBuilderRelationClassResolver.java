@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder;
 
 import com.intellij.openapi.project.Project;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderClassJoin;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderJoin;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderRelation;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -21,15 +22,26 @@ class QueryBuilderRelationClassResolver {
     final private Map<String, List<QueryBuilderRelation>> relationMap;
     final private Map<String, QueryBuilderJoin> joinMap = new HashMap<>();
 
-    public QueryBuilderRelationClassResolver(Project project, String aliasRoot, String aliasClass, Map<String, List<QueryBuilderRelation>> relationMap, Map<String, QueryBuilderJoin> joinMap) {
+    final private Map<String, QueryBuilderClassJoin> joinMapClass = new HashMap<>();
+
+    public QueryBuilderRelationClassResolver(Project project, String aliasRoot, String aliasClass, Map<String, List<QueryBuilderRelation>> relationMap, Map<String, QueryBuilderJoin> joinMap, Map<String, QueryBuilderClassJoin> joinMapClass) {
         this.project = project;
         this.joins.put(aliasRoot, aliasClass);
         this.relationMap = relationMap;
         this.joinMap.putAll(joinMap);
+        this.joinMapClass.putAll(joinMapClass);
     }
 
     public void collect() {
+        // $qb->join(\App\Entity\Car::class, 'car');
+        for (QueryBuilderClassJoin queryBuilderJoin: joinMapClass.values()) {
+            PhpClass phpClass = PhpElementsUtil.getClassInterface(project, queryBuilderJoin.className());
+            if (phpClass != null) {
+                relationMap.put(queryBuilderJoin.alias(), QueryBuilderMethodReferenceParser.attachRelationFields(phpClass));
+            }
+        }
 
+        // $qb->join('fooBar.bird', 'bird');
         for(QueryBuilderJoin queryBuilderJoin: joinMap.values()) {
             if(queryBuilderJoin.getResolvedClass() == null) {
                 String joinName = queryBuilderJoin.getJoin();
@@ -52,17 +64,11 @@ class QueryBuilderRelationClassResolver {
                                         collect();
                                     }
                                 }
-
                             }
                         }
-
                     }
-
                 }
-
             }
         }
-
     }
-
 }

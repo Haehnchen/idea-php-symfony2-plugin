@@ -93,7 +93,7 @@ public class QueryBuilderMethodReferenceParser {
                 qb.addRelation(entry.getValue(), relationList);
             }
 
-            QueryBuilderRelationClassResolver resolver = new QueryBuilderRelationClassResolver(project, entry.getValue(), entry.getKey(), qb.getRelationMap(), qb.getJoinMap());
+            QueryBuilderRelationClassResolver resolver = new QueryBuilderRelationClassResolver(project, entry.getValue(), entry.getKey(), qb.getRelationMap(), qb.getJoinMap(), qb.getJoinClassMap());
             resolver.collect();
 
         }
