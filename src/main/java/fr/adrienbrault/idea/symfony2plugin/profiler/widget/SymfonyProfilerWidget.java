@@ -13,11 +13,15 @@ import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.StatusBarWidget;
 import com.intellij.openapi.wm.impl.status.EditorBasedWidget;
 import com.intellij.ui.popup.PopupFactoryImpl;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerIndexInterface;
 import fr.adrienbrault.idea.symfony2plugin.profiler.collector.DefaultDataCollectorInterface;
+import fr.adrienbrault.idea.symfony2plugin.profiler.collector.MailCollectorInterface;
+import fr.adrienbrault.idea.symfony2plugin.profiler.dict.MailMessage;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface;
 import fr.adrienbrault.idea.symfony2plugin.profiler.factory.ProfilerFactoryUtil;
 import fr.adrienbrault.idea.symfony2plugin.profiler.widget.action.SymfonyProfilerWidgetActions;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -75,39 +79,45 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
                 attachProfileItem(controllerActions, controllerActionsMap, collector.getController(), ProfilerTarget.CONTROLLER);
             }
 
-            // @TODO: use collector
-            //String content = profilerRequest.getContent();
-            //if(content != null && content.contains("Swift_Mime_Headers_MailboxHeader")) {
-            //    mailActions.add(new SymfonyProfilerWidgetActions.UrlAction(getProject(), profilerRequest, statusCode).withPanel("swiftmailer").withIcon(Symfony2Icons.MAIL));
-            //}
+            MailCollectorInterface collectorMail = profilerRequest.getCollector(MailCollectorInterface.class);
+            if(collectorMail != null) {
+                for (MailMessage message : collectorMail.getMessages()) {
+                    String title = message.title();
+                    if (title.isBlank()) {
+                        mailActions.add(new SymfonyProfilerWidgetActions.UrlAction(index, profilerRequest, message.panel())
+                            .withIcon(Symfony2Icons.MAIL)
+                            .withText(String.format("(%s) %s", profilerRequest.getHash(), StringUtils.abbreviate(title, 40))));
+                    }
+                }
+            }
         }
 
         // routes
-        if(urlActions.size() > 0) {
+        if(!urlActions.isEmpty()) {
             actionGroup.addSeparator("Debug-Url");
             actionGroup.addAll(urlActions);
         }
 
         // mails send by request
-        if(mailActions.size() > 0) {
+        if(!mailActions.isEmpty()) {
             actionGroup.addSeparator("E-Mail");
             actionGroup.addAll(mailActions);
         }
 
         // routes
-        if(routeActions.size() > 0) {
+        if(!routeActions.isEmpty()) {
             actionGroup.addSeparator("Routes");
             actionGroup.addAll(routeActions);
         }
 
         // controller methods
-        if(controllerActions.size() > 0) {
+        if(!controllerActions.isEmpty()) {
             actionGroup.addSeparator("Controller");
             actionGroup.addAll(controllerActions);
         }
 
         // template should be most use case; so keep it in cursor range
-        if(templateActions.size() > 0) {
+        if(!templateActions.isEmpty()) {
             actionGroup.addSeparator("Template");
             actionGroup.addAll(templateActions);
         }

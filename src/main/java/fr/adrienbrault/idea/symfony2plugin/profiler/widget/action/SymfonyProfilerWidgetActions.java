@@ -120,11 +120,22 @@ public class SymfonyProfilerWidgetActions {
             return this;
         }
 
+        public UrlAction withText(String text) {
+            Presentation presentation = getTemplatePresentation();
+            presentation.setText(text);
+
+            return this;
+        }
+
         @Override
         public void actionPerformed(AnActionEvent event) {
             String urlForRequest = profilerIndex.getUrlForRequest(profilerRequest);
             if(urlForRequest == null) {
                 return;
+            }
+
+            if (this.panel != null) {
+                urlForRequest += "?panel=" + this.panel;
             }
 
             Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;

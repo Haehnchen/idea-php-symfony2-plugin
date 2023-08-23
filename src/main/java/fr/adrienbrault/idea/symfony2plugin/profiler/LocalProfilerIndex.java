@@ -11,9 +11,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -74,7 +72,7 @@ public class LocalProfilerIndex implements ProfilerIndexInterface {
             return this.baseUrl  + "/" + StringUtils.stripStart(request.getProfilerUrl(), "/");
         }
 
-        return ProfilerUtil.getBaseProfilerUrlFromRequest(request.getProfilerUrl());
+        return ProfilerUtil.getBaseProfilerUrlFromRequest(request) + "/" + StringUtils.stripStart(request.getProfilerUrl(), "/");
     }
 
     @NotNull
@@ -102,19 +100,7 @@ public class LocalProfilerIndex implements ProfilerIndexInterface {
             return  null;
         }
 
-        StringBuilder content = new StringBuilder();
-
-        try {
-            BufferedReader in = new BufferedReader(new FileReader(file));
-            String str;
-            while ((str = in.readLine()) != null) {
-                content.append(str);
-            }
-            in.close();
-        } catch (IOException ignored) {
-        }
-
-        return content.toString();
+        return ProfilerUtil.getContentForFile(file);
     }
 
     private class MyProfilerRequestBuilderCallable implements Callable<ProfilerRequestInterface> {
@@ -125,7 +111,7 @@ public class LocalProfilerIndex implements ProfilerIndexInterface {
         }
 
         @Override
-        public ProfilerRequestInterface call() throws Exception {
+        public ProfilerRequestInterface call() {
             String content = getContentForHash(split[0]);
             if(content == null) {
                 return new LocalProfilerRequest(split);

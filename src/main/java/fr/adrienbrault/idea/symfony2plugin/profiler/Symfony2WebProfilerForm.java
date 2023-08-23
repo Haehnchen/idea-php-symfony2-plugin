@@ -11,6 +11,7 @@ import fr.adrienbrault.idea.symfony2plugin.profiler.dict.MailMessage;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface;
 import fr.adrienbrault.idea.symfony2plugin.profiler.factory.ProfilerFactoryUtil;
 import icons.TwigIcons;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -138,13 +139,13 @@ public class Symfony2WebProfilerForm {
         if(collector != null) {
             Collection<MailMessage> messages = collector.getMessages();
             if(messages.size() > 0) {
-                this.editorPane1.setText(messages.iterator().next().getMessage());
+                this.editorPane1.setText(messages.iterator().next().message());
             }
         }
     }
 
     public void selected(MailMessage mailMessage) {
-        this.editorPane1.setText(mailMessage.getMessage());
+        this.editorPane1.setText(mailMessage.message());
     }
 
     private void start() {
@@ -177,8 +178,8 @@ public class Symfony2WebProfilerForm {
                 renderer.setText(((LocalProfilerRequest) value).getUrl());
             }
 
-            if(value instanceof MailMessage) {
-                renderer.setText(((MailMessage) value).getTitle());
+            if (value instanceof MailMessage) {
+                renderer.setText(StringUtils.abbreviate(((MailMessage) value).title(), 40));
             }
 
             return renderer;
