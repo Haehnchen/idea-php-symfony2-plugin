@@ -29,6 +29,28 @@ public class LocalDefaultDataCollector implements DefaultDataCollectorInterface 
 
     @Nullable
     public String getTemplate() {
+        if (this.contents == null) {
+            return null;
+        }
+
+        // try to find template ordered loading list from "Rendered Templates", to find main template entrypoint
+        Matcher matcher = Pattern.compile("\"template_paths\"[\\w;:{]+\"([^\"]+)\"").matcher(this.contents);
+        while(matcher.find()){
+            int groupStart = matcher.start();
+            int i = this.contents.lastIndexOf(Character.toString('\0'), groupStart);
+            if (i > 0) {
+                String substring = this.contents.substring(i, groupStart);
+
+                // try to find parent scope, to reduce false positive matches
+                if (substring.contains("Twig\\Profiler\\Profile")) {
+                    String group = matcher.group(1);
+                    if (!group.isBlank() && !group.startsWith("@WebProfiler")) {
+                        return group;
+                    }
+                }
+            }
+        }
+
         return this.pregMatch(this.contents, "\"template.twig \\(([^\"]*\\.html\\.\\w{2,4})\\)\"");
     }
 

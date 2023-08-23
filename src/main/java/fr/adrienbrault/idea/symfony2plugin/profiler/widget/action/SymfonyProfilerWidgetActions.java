@@ -28,22 +28,21 @@ import java.util.Collection;
 public class SymfonyProfilerWidgetActions {
 
     public static class TemplateAction extends AnAction {
+        private final String templateName;
+        private final Project project;
 
-        private String templateName;
-        private Project project;
-
-        public TemplateAction(Project project, @Nullable String text) {
-            super(TwigUtil.getFoldingTemplateNameOrCurrent(text), "Open Template", TwigIcons.TwigFileIcon);
-            this.templateName = text;
+        public TemplateAction(Project project, @NotNull String templateName) {
+            super(templateName, "Open Template", TwigIcons.TwigFileIcon);
+            this.templateName = templateName;
             this.project = project;
         }
 
         @Override
-        public void actionPerformed(AnActionEvent e) {
+        public void actionPerformed(@NotNull AnActionEvent e) {
             Collection<PsiFile> psiFiles = TwigUtil.getTemplatePsiElements(project, templateName);
 
             // @TODO: multiple targets?
-            if(psiFiles.size() > 0) {
+            if(!psiFiles.isEmpty()) {
                 IdeHelper.navigateToPsiElement(psiFiles.iterator().next());
             }
         }
