@@ -1,11 +1,13 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.profiler;
 
 import com.intellij.psi.PsiFile;
+import fr.adrienbrault.idea.symfony2plugin.profiler.dict.HttpProfilerRequest;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.LocalProfilerRequest;
 import fr.adrienbrault.idea.symfony2plugin.profiler.utils.ProfilerUtil;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Map;
 
@@ -81,30 +83,30 @@ public class ProfilerUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
      * @see ProfilerUtil#getBaseProfilerUrlFromRequest
      */
     public void testGetBaseProfilerUrlFromRequest() {
-        assertEquals("http://127.0.0.1", ProfilerUtil.getBaseProfilerUrlFromRequest("http://127.0.0.1"));
-        assertEquals("http://127.0.0.1", ProfilerUtil.getBaseProfilerUrlFromRequest("http://127.0.0.1:80"));
-        assertEquals("http://127.0.0.1:8080", ProfilerUtil.getBaseProfilerUrlFromRequest("http://127.0.0.1:8080"));
-        assertEquals("http://127.0.0.1:8080", ProfilerUtil.getBaseProfilerUrlFromRequest("http://127.0.0.1:8080/"));
-        assertEquals("http://127.0.0.1:8080", ProfilerUtil.getBaseProfilerUrlFromRequest("http://127.0.0.1:8080/app_dev.php"));
+        assertEquals("http://127.0.0.1", ProfilerUtil.getBaseProfilerUrlFromRequest(new HttpProfilerRequest(0, "aaa", "http://127.0.0.1", "", "")));
+        assertEquals("http://127.0.0.1", ProfilerUtil.getBaseProfilerUrlFromRequest(new HttpProfilerRequest(0, "aaa", "http://127.0.0.1:80", "", "")));
+        assertEquals("http://127.0.0.1:8080", ProfilerUtil.getBaseProfilerUrlFromRequest(new HttpProfilerRequest(0, "aaa", "http://127.0.0.1:8080", "", "")));
+        assertEquals("http://127.0.0.1:8080", ProfilerUtil.getBaseProfilerUrlFromRequest(new HttpProfilerRequest(0, "aaa", "http://127.0.0.1:8080/", "", "")));
+        assertEquals("http://127.0.0.1:8080", ProfilerUtil.getBaseProfilerUrlFromRequest(new HttpProfilerRequest(0, "aaa", "http://127.0.0.1:8080/app_dev.php", "", "")));
 
         assertEquals(
             "http://127.0.0.1:8080/app_dev.php",
-            ProfilerUtil.getBaseProfilerUrlFromRequest("http://127.0.0.1:8080/app_dev.php/")
+            ProfilerUtil.getBaseProfilerUrlFromRequest(new HttpProfilerRequest(0, "aaa", "http://127.0.0.1:8080/app_dev.php/", "", ""))
         );
 
         assertEquals(
             "http://127.0.0.1:8080/app/app_dev.php",
-            ProfilerUtil.getBaseProfilerUrlFromRequest("http://127.0.0.1:8080/app/app_dev.php/")
+            ProfilerUtil.getBaseProfilerUrlFromRequest(new HttpProfilerRequest(0, "aaa", "http://127.0.0.1:8080/app/app_dev.php/", "", ""))
         );
 
         assertEquals(
             "http://127.0.0.1:8080/app/app_stage.php",
-            ProfilerUtil.getBaseProfilerUrlFromRequest("http://127.0.0.1:8080/app/app_stage.php/")
+            ProfilerUtil.getBaseProfilerUrlFromRequest(new HttpProfilerRequest(0, "aaa", "http://127.0.0.1:8080/app/app_stage.php/", "", ""))
         );
 
         assertEquals(
             "http://127.0.0.1:8080/app/app_test.php",
-            ProfilerUtil.getBaseProfilerUrlFromRequest("http://127.0.0.1:8080/app/app_test.php/")
+            ProfilerUtil.getBaseProfilerUrlFromRequest(new HttpProfilerRequest(0, "aaa", "http://127.0.0.1:8080/app/app_test.php/", "", ""))
         );
     }
 
@@ -131,5 +133,13 @@ public class ProfilerUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
             "(404) asdss127.0.0.1:8000/app_test.php...",
             ProfilerUtil.formatProfilerRow(new LocalProfilerRequest("18e6b8,127.0.0.1,GET,asdss127.0.0.1:8000/app_test.php/foobar/foobar/,1474185112,76c8ab,404".split(",")))
         );
+    }
+
+    public void testGetContentForFile() {
+        String contentFor = ProfilerUtil.getContentForFile(new File(this.getTestDataPath() + "/748f72-gzip-profiler"));
+        assertTrue(contentFor.startsWith("a:9"));
+
+        String contentFor2 = ProfilerUtil.getContentForFile(new File(this.getTestDataPath() + "/748f72-gzip-profiler-raw"));
+        assertTrue(contentFor2.startsWith("a:9"));
     }
 }

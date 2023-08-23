@@ -5,9 +5,7 @@ import org.intellij.lang.annotations.RegExp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,29 +23,47 @@ public class LocalMailCollector implements MailCollectorInterface {
 
     @NotNull
     public Collection<MailMessage> getMessages() {
+        Collection<MailMessage> mails = new ArrayList<>();
+
         String messages = this.findTwice(this.contents, "MessageDataCollector\":(\\d+):");
-        if(messages == null) {
-            return Collections.emptyList();
+        if(messages != null) {
+            Matcher matcher = Pattern.compile("\"\\x00Swift_Mime_SimpleMimeEntity\\x00_body\";s:(\\d+):\"", Pattern.MULTILINE).matcher(messages);
+
+            while(matcher.find()){
+                String domain = matcher.group(1);
+
+                int start = matcher.end();
+                int end = start + Integer.parseInt(domain);
+
+                mails.add(new MailMessage(messages.substring(start, end), "", "", "swiftmailer"));
+            }
         }
 
-        Matcher matcher = Pattern.compile("\"\\x00Swift_Mime_SimpleMimeEntity\\x00_body\";s:(\\d+):\"", Pattern.MULTILINE).matcher(messages);
+        // try to find any serialized object inside the mailer class
+        Matcher matcher = Pattern.compile("AbstractHeader\\x00name\"[\\w;:]+\"Subject\"").matcher(this.contents);
+        Set<String> titles = new HashSet<>();
 
-        Collection<MailMessage> mails = new ArrayList<>();
         while(matcher.find()){
-            String domain = matcher.group(1);
-            //String array_strings = matcher.group(2);
+            int end = matcher.end();
 
-            int start = matcher.end();
-            int end = start + Integer.parseInt(domain);
+            // find ending scope
+            int endingHeaderScope = contents.indexOf("}", end);
+            if (endingHeaderScope > 0) {
+                String subjectHeaderScope = contents.substring(matcher.start(), endingHeaderScope);
 
-            //System.out.println(content.substring(start, end));
-            mails.add(new MailMessage(messages.substring(start, end), "aa", "aa"));
+                // find the email "Subject" header value
+                Matcher matcher2 = Pattern.compile("UnstructuredHeader.*value\"[\\w;:]+\"(.*)\"").matcher(subjectHeaderScope);
+                if (matcher2.find()) {
+                    String subject = matcher2.group(1);
+                    if (!subject.isBlank()) {
+                        titles.add(subject);
+                    }
+                }
+            }
+        }
 
-            //Matcher match_strings = Pattern.compile("'(.*?)'\\s=>\\s'.*?'", Pattern.MULTILINE).matcher(array_strings);
-            //while(match_strings.find()){
-            // string_map.addString(domain, match_strings.group(1));
-            //}
-
+        for (String title : titles) {
+            mails.add(new MailMessage("", title, "", "mailer"));
         }
 
         return mails;

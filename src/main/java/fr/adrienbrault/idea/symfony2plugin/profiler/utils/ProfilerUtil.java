@@ -19,9 +19,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -31,6 +29,7 @@ import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -424,11 +423,18 @@ public class ProfilerUtil {
      * https://127.0.0.1:8000/app_dev.php
      */
     @Nullable
-    public static String getBaseProfilerUrlFromRequest(@NotNull String requestUrl) {
-        URL url;
+    public static String getBaseProfilerUrlFromRequest(@NotNull ProfilerRequestInterface request) {
+        URL url = null;
         try {
-            url = new URL(requestUrl);
+            url = new URL(request.getProfilerUrl());
         } catch (MalformedURLException e) {
+            try {
+                url = new URL(request.getUrl());
+            } catch (MalformedURLException ignored) {
+            }
+        }
+
+        if (url == null) {
             return null;
         }
 
@@ -467,6 +473,74 @@ public class ProfilerUtil {
         }
 
         return String.format("(%s) %s", statusCode == 0 ? "n/a" : statusCode, StringUtils.abbreviate(path, 35));
+    }
+
+    @Nullable
+    public static String getContentForFile(@NotNull File file) {
+        boolean isGzipFile;
+
+        try {
+            byte[] buffer = new byte[3];
+
+            InputStream is = new FileInputStream(file);
+            int __ = is.read(buffer);
+
+            // check gzip header
+            isGzipFile = buffer[0] == 31
+                && buffer[1] == -117
+                && buffer[2] == 8;
+
+            is.close();
+        } catch (IOException e) {
+            return null;
+        }
+
+        if (isGzipFile) {
+            return getProfilerContentGzdecode(file);
+        }
+
+        return getContentForRaw(file);
+    }
+
+    @Nullable
+    private static String getContentForRaw(@NotNull File file) {
+        StringBuilder content = new StringBuilder();
+
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(file));
+            String str;
+            while ((str = in.readLine()) != null) {
+                content.append(str);
+            }
+            in.close();
+        } catch (IOException ignored) {
+            return null;
+        }
+
+        return content.toString();
+    }
+
+    @Nullable
+    private static String getProfilerContentGzdecode(File file) {
+        try {
+            GZIPInputStream gis;
+            try (InputStream in = new FileInputStream(file.getPath())) {
+                gis = new GZIPInputStream(new ByteArrayInputStream(in.readAllBytes()));
+            }
+
+            BufferedReader bf = new BufferedReader(new InputStreamReader(gis));
+            StringBuilder outStr = new StringBuilder();
+
+            String line;
+            while ((line = bf.readLine()) != null) {
+                outStr.append(line);
+            }
+
+            return outStr.toString();
+        } catch (IOException ignored) {
+        }
+
+        return null;
     }
 }
 
