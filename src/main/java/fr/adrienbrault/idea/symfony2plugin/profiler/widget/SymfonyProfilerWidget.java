@@ -42,10 +42,6 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
         return new SymfonyProfilerWidget(getProject());
     }
 
-    private enum ProfilerTarget {
-        TEMPLATE, ROUTE, CONTROLLER
-    }
-
     //constructs the actions for the widget popup
     public DefaultActionGroup getActions(){
         DefaultActionGroup actionGroup = new DefaultActionGroup("Symfony.Profiler", false);
@@ -57,30 +53,43 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
 
         List<ProfilerRequestInterface> requests = index.getRequests();
 
-        Collection<AnAction> templateActions = new ArrayList<>();
-        Map<String, Integer> templateActionsMap = new HashMap<>();
-
-        Collection<AnAction> routeActions = new ArrayList<>();
-        Map<String, Integer> routeActionsMap = new HashMap<>();
-
-        Collection<AnAction> controllerActions = new ArrayList<>();
-        Map<String, Integer> controllerActionsMap = new HashMap<>();
-
         Collection<AnAction> urlActions = new ArrayList<>();
         Collection<AnAction> mailActions = new ArrayList<>();
 
-        for(ProfilerRequestInterface profilerRequest : requests) {
+        Map<String, AnAction> knownFormTypes = new HashMap<>();
+        Map<String, AnAction> knownController = new HashMap<>();
+        Map<String, AnAction> knownRoutes = new HashMap<>();
+        Map<String, AnAction> knownTemplates = new HashMap<>();
+
+        requests.parallelStream().forEach(profilerRequest -> {
             urlActions.add(new SymfonyProfilerWidgetActions.UrlAction(index, profilerRequest));
-
             DefaultDataCollectorInterface collector = profilerRequest.getCollector(DefaultDataCollectorInterface.class);
-            if(collector != null) {
-                attachProfileItem(templateActions, templateActionsMap, collector.getTemplate(), ProfilerTarget.TEMPLATE);
-                attachProfileItem(routeActions, routeActionsMap, collector.getRoute(), ProfilerTarget.ROUTE);
-                attachProfileItem(controllerActions, controllerActionsMap, collector.getController(), ProfilerTarget.CONTROLLER);
-            }
+            if (collector != null) {
+                String route = collector.getRoute();
+                if (route != null && !knownRoutes.containsKey(route)) {
+                    knownRoutes.put(route, new SymfonyProfilerWidgetActions.RouteAction(getProject(), route));
+                }
 
+                String template = collector.getTemplate();
+                if (template != null && !knownTemplates.containsKey(template)) {
+                    knownTemplates.put(template, new SymfonyProfilerWidgetActions.TemplateAction(getProject(), template));
+                }
+
+                String controller = collector.getController();
+                if (controller != null && !knownController.containsKey(controller)) {
+                    knownController.put(controller, new SymfonyProfilerWidgetActions.MethodAction(getProject(), controller));
+                }
+
+                for (String formType : collector.getFormTypes()) {
+                    if (knownFormTypes.containsKey(formType)) {
+                        continue;
+                    }
+
+                    knownFormTypes.put(formType, new SymfonyProfilerWidgetActions.FormTypeAction(getProject(), formType));
+                }
+            }
             MailCollectorInterface collectorMail = profilerRequest.getCollector(MailCollectorInterface.class);
-            if(collectorMail != null) {
+            if (collectorMail != null) {
                 for (MailMessage message : collectorMail.getMessages()) {
                     String title = message.title();
                     if (title.isBlank()) {
@@ -90,7 +99,7 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
                     }
                 }
             }
-        }
+        });
 
         // routes
         if(!urlActions.isEmpty()) {
@@ -104,49 +113,31 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
             actionGroup.addAll(mailActions);
         }
 
+        // form types
+        if(!knownFormTypes.isEmpty()) {
+            actionGroup.addSeparator("Forms");
+            actionGroup.addAll(knownFormTypes.values());
+        }
+
         // routes
-        if(!routeActions.isEmpty()) {
+        if(!knownRoutes.isEmpty()) {
             actionGroup.addSeparator("Routes");
-            actionGroup.addAll(routeActions);
+            actionGroup.addAll(knownRoutes.values());
         }
 
         // controller methods
-        if(!controllerActions.isEmpty()) {
+        if(!knownController.isEmpty()) {
             actionGroup.addSeparator("Controller");
-            actionGroup.addAll(controllerActions);
+            actionGroup.addAll(knownController.values());
         }
 
         // template should be most use case; so keep it in cursor range
-        if(!templateActions.isEmpty()) {
+        if(!knownTemplates.isEmpty()) {
             actionGroup.addSeparator("Template");
-            actionGroup.addAll(templateActions);
+            actionGroup.addAll(knownTemplates.values());
         }
 
         return actionGroup;
-    }
-
-    private void attachProfileItem(Collection<AnAction> controllerActions, Map<String, Integer> controllerActionsMap, @Nullable String collectString, ProfilerTarget profilerTarget) {
-        if(collectString == null) {
-            return;
-        }
-
-        if(controllerActionsMap.containsKey(collectString)) {
-            controllerActionsMap.put(collectString, controllerActionsMap.get(collectString));
-        } else {
-            controllerActionsMap.put(collectString, 0);
-
-            if(profilerTarget == ProfilerTarget.CONTROLLER) {
-                controllerActions.add(new SymfonyProfilerWidgetActions.MethodAction(getProject(), collectString));
-            }
-
-            if(profilerTarget == ProfilerTarget.ROUTE) {
-                controllerActions.add(new SymfonyProfilerWidgetActions.RouteAction(getProject(), collectString));
-            }
-
-            if(profilerTarget == ProfilerTarget.TEMPLATE) {
-                controllerActions.add(new SymfonyProfilerWidgetActions.TemplateAction(getProject(), collectString));
-            }
-        }
     }
 
     public @Nullable JBPopup getPopup() {

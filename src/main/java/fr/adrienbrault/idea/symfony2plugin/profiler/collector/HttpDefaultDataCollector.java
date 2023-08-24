@@ -3,6 +3,8 @@ package fr.adrienbrault.idea.symfony2plugin.profiler.collector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -33,5 +35,10 @@ public class HttpDefaultDataCollector implements DefaultDataCollectorInterface {
     @Override
     public String getTemplate() {
         return requestAttributes.get("_template");
+    }
+
+    @Override
+    public @NotNull Collection<String> getFormTypes() {
+        return Collections.emptyList();
     }
 }
