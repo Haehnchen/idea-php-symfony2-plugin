@@ -60,7 +60,7 @@
                 <properties>
                   <selected value="true"/>
                   <text value="Support Bundle Namespaces"/>
-                  <toolTipText value="Example: Foobar:Bar:Foo.html.twig"/>
+                  <toolTipText value="Example: Foobar:Bar:Foo.html.twig (for older Symfony Versions)"/>
                 </properties>
               </component>
             </children>

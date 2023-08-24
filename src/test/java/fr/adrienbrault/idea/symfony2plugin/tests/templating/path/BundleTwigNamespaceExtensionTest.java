@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.templating.path;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.VfsTestUtil;
 import com.intellij.util.containers.ContainerUtil;
+import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtensionParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.BundleTwigNamespaceExtension;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
@@ -28,6 +29,8 @@ public class BundleTwigNamespaceExtensionTest extends SymfonyLightCodeInsightFix
     }
 
     public void testThatBundleNamespacesAreAdded() {
+        Settings.getInstance(getProject()).twigBundleNamespaceSupport = true;
+
         Collection<TwigPath> namespaces = new BundleTwigNamespaceExtension()
             .getNamespaces(new TwigNamespaceExtensionParameter(getProject()));
 
