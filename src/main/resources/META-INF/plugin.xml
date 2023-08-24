@@ -125,6 +125,9 @@
     <extensions defaultExtensionNs="com.intellij">
         <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Settings"/>
 
+        <postStartupActivity implementation="fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent$PostStartupActivity"/>
+        <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent$ProjectCloseService"/>
+
         <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.SettingsForm"
                              displayName="Symfony"
                              id="Symfony2.SettingsForm"

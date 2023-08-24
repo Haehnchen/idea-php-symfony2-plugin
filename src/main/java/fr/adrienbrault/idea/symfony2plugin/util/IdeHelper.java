@@ -13,7 +13,10 @@ import com.intellij.openapi.application.ex.ApplicationManagerEx;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.fileTypes.FileType;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.*;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ex.WindowManagerEx;
@@ -40,6 +43,8 @@ import java.util.stream.Collectors;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class IdeHelper {
+
+    private static final String DIRECTORY_EXCLUDE_MESSAGE = "Directory 'var' marked as excluded for indexing";
 
     public static void openUrl(String url) {
         if(java.awt.Desktop.isDesktopSupported() ) {
@@ -221,6 +226,45 @@ public class IdeHelper {
             messages.add("Twig: Bundle names disabled");
         }
         */
+
+        // mark "var" as excluded directory to prevent indexing
+        Module moduleForFile = ModuleUtilCore.findModuleForFile(ProjectUtil.getProjectDir(project), project);
+        if (moduleForFile != null) {
+            ModifiableRootModel modifiableRootModel = ModuleRootManager.getInstance(moduleForFile).getModifiableModel();
+            for (ContentEntry contentEntry : modifiableRootModel.getContentEntries()) {
+                VirtualFile projectDir = ProjectUtil.getProjectDir(modifiableRootModel.getProject());
+
+                VirtualFile var = VfsUtil.findRelativeFile(projectDir, "var");
+                if (var == null) {
+                    continue;
+                }
+
+                // second check for valid exclude
+                if (VfsUtil.findRelativeFile(projectDir, "var", "cache") == null && VfsUtil.findRelativeFile(projectDir, "var", "log") == null) {
+                    continue;
+                }
+
+                boolean hasVarDirectoryInExclude = Arrays.stream(contentEntry.getExcludeFolders()).anyMatch(excludeFolder -> {
+                    VirtualFile file = excludeFolder.getFile();
+                    if (file == null) {
+                        return false;
+                    }
+
+                    String path = VfsUtil.getRelativePath(file, projectDir, '/');
+
+                    return "var".equals(path);
+                });
+
+                if (!hasVarDirectoryInExclude) {
+                    contentEntry.addExcludeFolder(var);
+                    ApplicationManager.getApplication().runWriteAction(modifiableRootModel::commit);
+
+                    if (!messages.contains(DIRECTORY_EXCLUDE_MESSAGE)) {
+                        messages.add(DIRECTORY_EXCLUDE_MESSAGE);
+                    }
+                }
+            }
+        }
 
         return messages;
     }
