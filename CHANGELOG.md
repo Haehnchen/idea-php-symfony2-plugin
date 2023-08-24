@@ -20,6 +20,22 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.255
+* Switch off old template Bundle naming convention by default (eg ::base.html.twig) (Daniel Espendiller)
+* Add "var" as an excluded directory on project autoconfigure to prevent indexing cache refreshes (Daniel Espendiller)
+* Add profiler support for form types in Symfony status bar (Daniel Espendiller)
+* Support profiler template rendering list in Symfony statusbar to allow navigation to template entrypoint (Daniel Espendiller)
+* Support Symfony profiler using gzip files and provide mailer collector inside statusbar (Daniel Espendiller)
+
+## 2022.1.254
+* Support Doctrine querybuilder "where" methods to be "variadic" (Daniel Espendiller)
+* Support nested implicit class joins for Doctrine querybuilder (Daniel Espendiller)
+* Fix issue when webpack entrypoint config has a non string value for file (Daniel Espendiller)
+* Fix "Inspection #PhpTranslationKeyInspection has no description [Plugin: fr.adrienbrault.idea.symfony2plugin]" (Daniel Espendiller)
+* Provide cache for form extension resolving (Daniel Espendiller)
+* Add support form field collecting on parent and extending form types (Daniel Espendiller)
+* [#2199](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2199) SymfonyStatusbarWidgetFactory: Specify id matching getId() value in plugin.xml (Daniel Espendiller)
+
 ## 2022.1.253
 * Provide linemarker for ux component class to its Twig template (Daniel Espendiller)
 * Provide ux component linemarker for Twig files (Daniel Espendiller)
