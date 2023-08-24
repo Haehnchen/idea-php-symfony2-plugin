@@ -89,7 +89,7 @@ public class Symfony2ProjectComponent {
             return;
         }
 
-        if(getContainerFiles(project).size() == 0) {
+        if(getContainerFiles(project).isEmpty()) {
             Symfony2ProjectComponent.getLogger().warn("missing at least one container file");
         }
     }
