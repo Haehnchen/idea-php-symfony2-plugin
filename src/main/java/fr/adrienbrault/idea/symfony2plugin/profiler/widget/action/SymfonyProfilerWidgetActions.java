@@ -6,7 +6,9 @@ import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerIndexInterface;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface;
 import fr.adrienbrault.idea.symfony2plugin.profiler.utils.ProfilerUtil;
@@ -44,6 +46,25 @@ public class SymfonyProfilerWidgetActions {
             // @TODO: multiple targets?
             if(!psiFiles.isEmpty()) {
                 IdeHelper.navigateToPsiElement(psiFiles.iterator().next());
+            }
+        }
+    }
+
+    public static class FormTypeAction extends AnAction {
+        private final String formType;
+        private final Project project;
+
+        public FormTypeAction(@NotNull Project project, @NotNull String formType) {
+            super(formType, "Open FormType", Symfony2Icons.FORM_TYPE);
+            this.formType = formType;
+            this.project = project;
+        }
+
+        @Override
+        public void actionPerformed(@NotNull AnActionEvent e) {
+            PhpClass psiFiles = FormUtil.getFormTypeToClass(project, formType);
+            if (psiFiles != null) {
+                IdeHelper.navigateToPsiElement(psiFiles);
             }
         }
     }
