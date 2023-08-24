@@ -61,7 +61,7 @@ public class Settings implements PersistentStateComponent<Settings> {
     public boolean codeFoldingTwigConstant = true;
     public boolean featureTwigIcon = true;
 
-    public boolean twigBundleNamespaceSupport = true;
+    public boolean twigBundleNamespaceSupport = false;
 
     public boolean dismissEnableNotification = false;
 
