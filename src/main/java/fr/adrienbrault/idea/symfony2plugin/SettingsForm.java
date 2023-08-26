@@ -15,6 +15,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.util.IndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import fr.adrienbrault.idea.symfony2plugin.webDeployment.WebDeploymentUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -24,6 +25,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.List;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -57,6 +59,7 @@ public class SettingsForm implements Configurable {
     private JButton buttonReindex;
     private JCheckBox enableSchedulerCheckBox;
     private JCheckBox featureTwigIcon;
+    private JButton buttonAutoConfigure;
 
     public SettingsForm(@NotNull final Project project) {
         this.project = project;
@@ -67,6 +70,7 @@ public class SettingsForm implements Configurable {
                 IdeHelper.openUrl(Symfony2ProjectComponent.HELP_URL);
             }
         });
+
     }
 
     @Nls
@@ -98,6 +102,19 @@ public class SettingsForm implements Configurable {
             public void mouseClicked(MouseEvent e) {
                 IndexUtil.forceReindex();
                 super.mouseClicked(e);
+            }
+        });
+
+        buttonAutoConfigure.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                List<String> list = IdeHelper.enablePluginAndConfigure(project).stream().map(s -> "- " + s).toList();
+
+                getSettings().pluginEnabled = true;
+                updateUIFromSettings();
+
+                JOptionPane.showMessageDialog(panel1, "Plugin activated and configured with:\n" + StringUtils.join(list, "\n"), "Symfony Plugin", JOptionPane.PLAIN_MESSAGE);
             }
         });
 
