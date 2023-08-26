@@ -44,7 +44,7 @@ import java.util.stream.Collectors;
  */
 public class IdeHelper {
 
-    private static final String DIRECTORY_EXCLUDE_MESSAGE = "Directory 'var' marked as excluded for indexing";
+    private static final String DIRECTORY_EXCLUDE_MESSAGE = "Directory '%s' marked as excluded for indexing";
 
     public static void openUrl(String url) {
         if(java.awt.Desktop.isDesktopSupported() ) {
@@ -231,42 +231,63 @@ public class IdeHelper {
         Module moduleForFile = ModuleUtilCore.findModuleForFile(ProjectUtil.getProjectDir(project), project);
         if (moduleForFile != null) {
             ModifiableRootModel modifiableRootModel = ModuleRootManager.getInstance(moduleForFile).getModifiableModel();
+            boolean needsCommit = false;
+
             for (ContentEntry contentEntry : modifiableRootModel.getContentEntries()) {
                 VirtualFile projectDir = ProjectUtil.getProjectDir(modifiableRootModel.getProject());
 
                 VirtualFile var = VfsUtil.findRelativeFile(projectDir, "var");
-                if (var == null) {
-                    continue;
-                }
 
                 // second check for valid exclude
-                if (VfsUtil.findRelativeFile(projectDir, "var", "cache") == null && VfsUtil.findRelativeFile(projectDir, "var", "log") == null) {
-                    continue;
-                }
-
-                boolean hasVarDirectoryInExclude = Arrays.stream(contentEntry.getExcludeFolders()).anyMatch(excludeFolder -> {
-                    VirtualFile file = excludeFolder.getFile();
-                    if (file == null) {
-                        return false;
-                    }
-
-                    String path = VfsUtil.getRelativePath(file, projectDir, '/');
-
-                    return "var".equals(path);
-                });
-
-                if (!hasVarDirectoryInExclude) {
+                if (var != null && (VfsUtil.findRelativeFile(projectDir, "var", "cache") != null || VfsUtil.findRelativeFile(projectDir, "var", "log") != null) && !hasAlreadyAnExclude(contentEntry, projectDir, "var")) {
                     contentEntry.addExcludeFolder(var);
-                    ApplicationManager.getApplication().runWriteAction(modifiableRootModel::commit);
+                    needsCommit = true;
 
-                    if (!messages.contains(DIRECTORY_EXCLUDE_MESSAGE)) {
-                        messages.add(DIRECTORY_EXCLUDE_MESSAGE);
+                    if (!messages.contains(String.format(DIRECTORY_EXCLUDE_MESSAGE, "var"))) {
+                        messages.add(String.format(DIRECTORY_EXCLUDE_MESSAGE, "var"));
                     }
                 }
+
+                // encore build path + "var" are Symfony structure root
+                VirtualFile publicBuild = VfsUtil.findRelativeFile(projectDir, "public", "build");
+                if (publicBuild != null && var != null && !hasAlreadyAnExclude(contentEntry, projectDir, "public/build")) {
+                    contentEntry.addExcludeFolder(publicBuild);
+                    needsCommit = true;
+
+                    if (!messages.contains(String.format(DIRECTORY_EXCLUDE_MESSAGE, "public/build"))) {
+                        messages.add(String.format(DIRECTORY_EXCLUDE_MESSAGE, "public/build"));
+                    }
+                }
+
+                // assetic bundle + "var" are Symfony structure root
+                VirtualFile publicBundles = VfsUtil.findRelativeFile(projectDir, "public", "bundles");
+                if (publicBundles != null && var != null && !hasAlreadyAnExclude(contentEntry, projectDir, "public/bundles")) {
+                    contentEntry.addExcludeFolder(publicBundles);
+                    needsCommit = true;
+
+                    if (!messages.contains(String.format(DIRECTORY_EXCLUDE_MESSAGE, "public/bundles"))) {
+                        messages.add(String.format(DIRECTORY_EXCLUDE_MESSAGE, "public/bundles"));
+                    }
+                }
+            }
+
+            if (needsCommit) {
+                ApplicationManager.getApplication().runWriteAction(modifiableRootModel::commit);
             }
         }
 
         return messages;
+    }
+
+    private static boolean hasAlreadyAnExclude(@NotNull ContentEntry contentEntry, @NotNull VirtualFile projectDir, @NotNull String path) {
+        return Arrays.stream(contentEntry.getExcludeFolders()).anyMatch(excludeFolder -> {
+            VirtualFile file = excludeFolder.getFile();
+            if (file == null) {
+                return false;
+            }
+
+            return path.equals(VfsUtil.getRelativePath(file, projectDir, '/'));
+        });
     }
 
     public static void navigateToPsiElement(@NotNull PsiElement psiElement) {
