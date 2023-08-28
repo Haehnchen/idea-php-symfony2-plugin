@@ -147,18 +147,17 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                     return;
                 }
 
-                PsiElement context = psiElement.getParent();
-                if (context == null) {
+                PsiElement parent = psiElement.getParent();
+                if (!(parent instanceof StringLiteralExpression)) {
                     return;
                 }
 
-                MethodMatcher.MethodMatchParameter methodMatchParameter = MatcherUtil.matchField(context);
+                MethodMatcher.MethodMatchParameter methodMatchParameter = MatcherUtil.matchField(parent);
                 if (methodMatchParameter == null) {
                     return;
                 }
 
-                StringLiteralExpression parent = (StringLiteralExpression) psiElement.getParent();
-                String content = PsiElementUtils.getStringBeforeCursor(parent, completionParameters.getOffset());
+                String content = PsiElementUtils.getStringBeforeCursor((StringLiteralExpression) parent, completionParameters.getOffset());
 
                 QueryBuilderMethodReferenceParser qb = getQueryBuilderParser(methodMatchParameter.getMethodReference());
                 QueryBuilderScopeContext collect = qb.collect();
