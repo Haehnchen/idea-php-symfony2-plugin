@@ -36,9 +36,11 @@ public class PhpTwigTemplateUsageStubIndexTest extends SymfonyLightCodeInsightFi
             "       $foo->render($this->foo);\n" +
             "       $foo->render(\\DateTime::foo);\n" +
             "       $foo->renderView($defaultParameter);\n" +
+            "       $foo1->htmlTemplate('emails/signup.html.twig');\n" +
+            "       $foo1->textTemplate('emails/signup.txt.twig');\n" +
             "   }\n" +
             "}" +
-            "" +
+            "\n" +
             "function foobarFunc()" +
             "{\n" +
             "   $foo->render('foo-render.html.twig')\n" +
@@ -50,7 +52,7 @@ public class PhpTwigTemplateUsageStubIndexTest extends SymfonyLightCodeInsightFi
             "foo-render.html.twig", "foo-renderView.html.twig", "foo-renderResponse.html.twig",
             "@Foo/overwrite.html.twig", "const.html.twig", "var.html.twig", "private.html.twig", "foobar-render.twig",
             "foo-render-ternary.html.twig", "const-ternary.html.twig", "foo-render-coalesce.html.twig", "const-coalesce.html.twig",
-            "foo-var-assignment-expression.html.twig", "default-function-parameter.html.twig"
+            "foo-var-assignment-expression.html.twig", "default-function-parameter.html.twig", "emails/signup.html.twig", "emails/signup.txt.twig"
         );
 
         assertIndexContainsKeyWithValue(PhpTwigTemplateUsageStubIndex.KEY, "foo-render.html.twig", value ->
