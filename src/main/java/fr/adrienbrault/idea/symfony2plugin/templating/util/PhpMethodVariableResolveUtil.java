@@ -30,6 +30,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import static fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore;
 
@@ -310,7 +311,7 @@ public class PhpMethodVariableResolveUtil {
                 return;
             }
 
-            if(!methods.get().contains(methodName) && !methodName.toLowerCase().contains("render")) {
+            if (!methods.get().contains(methodName) && Stream.of("render", "htmltemplate", "texttemplate").noneMatch(s -> methodName.toLowerCase().contains(s))) {
                 return;
             }
 
