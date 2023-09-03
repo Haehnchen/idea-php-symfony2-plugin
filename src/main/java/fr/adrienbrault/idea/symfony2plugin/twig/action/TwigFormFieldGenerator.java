@@ -107,7 +107,7 @@ public class TwigFormFieldGenerator extends CodeInsightAction {
                     StringBuilder s = new StringBuilder();
 
                     for (String string : strings) {
-                        s.append(String.format("{{ form_widget(%s.%s) }}\n", next.key, string));
+                        s.append(String.format("{{ form_row(%s.%s) }}\n", next.key, string));
                     }
 
                     PhpInsertHandlerUtil.insertStringAtCaret(editor, s.toString());
