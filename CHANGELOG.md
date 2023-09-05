@@ -20,6 +20,14 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.256
+* Use "form_row" for form field generate in Twig files (Daniel Espendiller)
+* Whitelist htmlTemplate / textTemplate to be valid Twig entrypoint (Daniel Espendiller)
+* Fix string literal casting on Doctrine querybuilder completion (Daniel Espendiller)
+* Provide auto configure button inside Settings (Daniel Espendiller)
+* Compiled assets folder can be excluded via plugin autoconfigure (Daniel Espendiller)
+* Remove old never activated Symfony profiler panel (Daniel Espendiller)
+
 ## 2022.1.255
 * Switch off old template Bundle naming convention by default (eg ::base.html.twig) (Daniel Espendiller)
 * Add "var" as an excluded directory on project autoconfigure to prevent indexing cache refreshes (Daniel Espendiller)
