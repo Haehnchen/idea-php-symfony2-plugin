@@ -413,6 +413,42 @@ public class TwigUtil {
     }
 
     /**
+     * File Scope:
+     * {% trans_default_domain "foo" %}
+     *
+     * Embed:
+     * {embed 'foo.html.twig'}{% trans_default_domain "foo" %}{% endembed %}
+     */
+    @Nullable
+    public static PsiElement getBlockExtendsScope(@NotNull PsiElement psiElement) {
+        return PsiTreeUtil.findFirstParent(psiElement, psiElement1 -> {
+                if (psiElement1 instanceof PsiFile) {
+                    return true;
+                }
+
+                // {% embed "test.html.twig" %}
+                if (psiElement1 instanceof TwigCompositeElement && psiElement1.getNode().getElementType() == TwigElementTypes.EMBED_STATEMENT) {
+                    return true;
+                }
+
+                // {% component DataTable with
+                if (psiElement1 instanceof TwigStatement && psiElement1.getNode().getElementType() instanceof TwigTag) {
+                    PsiElement firstChild = psiElement1.getFirstChild();
+                    if (firstChild != null && firstChild.getNode().getElementType() == TwigElementTypes.TAG) {
+                        PsiElement firstChild1 = firstChild.getFirstChild();
+                        if (firstChild1 != null) {
+                            PsiElement tagName = PsiElementUtils.getNextSiblingAndSkip(firstChild1, TwigTokenTypes.TAG_NAME);
+                            return tagName != null && "component".equals(tagName.getText());
+                        }
+                    }
+                }
+
+                return false;
+            }
+        );
+    }
+
+    /**
      * need a twig translation print block and search for default domain on parameter or trans_default_domain
      *
      * @param psiElement some print block like that 'a'|trans
@@ -1843,19 +1879,37 @@ public class TwigUtil {
     public static Pair<Collection<PsiFile>, Boolean> findScopedFile(@NotNull PsiElement psiElement) {
 
         // {% embed "template.twig" %}{% block <caret> %}
-        PsiElement firstParent = getTransDefaultDomainScope(psiElement);
+        PsiElement firstParent = getBlockExtendsScope(psiElement);
 
         // {% embed "template.twig" %}
-        if(firstParent != null && firstParent.getNode().getElementType() == TwigElementTypes.EMBED_STATEMENT) {
+        if (firstParent != null && firstParent.getNode().getElementType() == TwigElementTypes.EMBED_STATEMENT) {
             PsiElement embedTag = firstParent.getFirstChild();
-            if(embedTag != null) {
+            if (embedTag != null) {
                 String templateName = getTemplateNameForEmbedTag(embedTag);
-                if(templateName != null) {
+                if (templateName != null) {
                     return Pair.create(getTemplatePsiElements(psiElement.getProject(), templateName), true);
                 }
             }
 
             return Pair.create(Collections.emptyList(), true);
+        } else if (firstParent != null) {
+            // {% component RandomNumber
+            PsiElement firstChild = firstParent.getFirstChild();
+            if (firstChild != null) {
+                PsiElement tagStart = firstChild.getFirstChild();
+                if (tagStart != null) {
+                    PsiElement tagName = PsiElementUtils.getNextSiblingAndSkip(tagStart, TwigTokenTypes.TAG_NAME);
+                    if (tagName != null && "component".equals(tagName.getText())) {
+                        PsiElement filterName = PsiTreeUtil.nextVisibleLeaf(tagName);
+                        if (filterName != null) {
+                            String componentName = PsiElementUtils.trimQuote(filterName.getText());
+                            if (!componentName.isBlank()) {
+                                return Pair.create(UxUtil.getComponentTemplates(psiElement.getProject(), componentName), true);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         return Pair.create(Collections.singletonList(psiElement.getContainingFile()), false);
@@ -2826,7 +2880,7 @@ public class TwigUtil {
                     .withIcon(TwigIcons.TwigFileIcon);
 
                 Collection<String> names = templateNames.getOrDefault(virtualFile, Collections.emptyList());
-                if(names.size() > 0) {
+                if(!names.isEmpty()) {
                     lookupElementBuilder = lookupElementBuilder.withTypeText(names.iterator().next(), true);
                 }
 
