@@ -983,6 +983,47 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertNotNull(lookupElements.stream().filter(lookupElement -> "foobar".equals(lookupElement.getLookupString())).findFirst().orElse(null));
     }
 
+    public void testGetBlockExtendsScopeInsideEmbed() {
+        PsiElement insideEmbed = TwigElementFactory.createPsiElement(getProject(), "" +
+            "{% block body %}\n" +
+            "    {% embed \"test.html.twig\" %}\n" +
+            "        {% block my_foobar %}" +
+            "           {% macro foo %}{% endmacro %}\n" +
+            "        {% endblock %}\n" +
+            "    {% endembed %}\n" +
+            "{% endblock body %}\n", TwigElementTypes.MACRO_TAG);
+
+        TwigCompositeElement blockExtendsScope = (TwigCompositeElement) TwigUtil.getBlockExtendsScope(insideEmbed);
+        assertTrue(blockExtendsScope.getText().startsWith("{% embed"));
+    }
+
+    public void testGetBlockExtendsScopeInsideComponent() {
+        PsiElement insideEmbed = TwigElementFactory.createPsiElement(getProject(), "" +
+            "{% block body %}\n" +
+            "    {% component DataTable with {headers: ['key', 'value'], data: [[1, 2], [3, 4]]} %}\n" +
+            "        {% block my_foobar %}" +
+            "           {% macro foo %}{% endmacro %}\n" +
+            "        {% endblock %}\n" +
+            "    {% endcomponent %}\n" +
+            "{% endblock body %}\n", TwigElementTypes.MACRO_TAG);
+
+        TwigCompositeElement blockExtendsScope = (TwigCompositeElement) TwigUtil.getBlockExtendsScope(insideEmbed);
+        assertTrue(blockExtendsScope.getText().startsWith("{% component"));
+    }
+
+    public void testFindScopedFile() {
+        PsiElement insideEmbed = TwigElementFactory.createPsiElement(getProject(), "" +
+            "{% block body %}\n" +
+            "    {% component DataTable with {headers: ['key', 'value'], data: [[1, 2], [3, 4]]} %}\n" +
+            "        {% block my_foobar %}" +
+            "           {% macro foo %}{% endmacro %}\n" +
+            "        {% endblock %}\n" +
+            "    {% endcomponent %}\n" +
+            "{% endblock body %}\n", TwigElementTypes.MACRO_TAG);
+
+        TwigUtil.findScopedFile(insideEmbed);
+    }
+
     private void assertEqual(Collection<String> c, String... values) {
         if(!StringUtils.join(c, ",").equals(StringUtils.join(Arrays.asList(values), ","))) {
             fail(String.format("Fail that '%s' is equal '%s'", StringUtils.join(c, ","), StringUtils.join(Arrays.asList(values), ",")));

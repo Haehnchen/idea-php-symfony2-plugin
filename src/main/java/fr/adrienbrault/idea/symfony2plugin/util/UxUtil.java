@@ -24,6 +24,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -126,6 +127,22 @@ public class UxUtil {
             },
             false
         );
+    }
+
+    public static Collection<PsiFile> getComponentTemplates(@NotNull Project project, @NotNull String component) {
+        Collection<PsiFile> psiFiles = new HashSet<>();
+
+        for (UxComponent allUxComponent : getAllUxComponents(project).stream().filter(uxComponent -> component.equals(uxComponent.name())).toList()) {
+            String template = allUxComponent.template();
+
+            if (template != null) {
+                psiFiles.addAll(TwigUtil.getTemplatePsiElements(project, template));
+            } else {
+                psiFiles.addAll(TwigUtil.getTemplatePsiElements(project, "components/" + allUxComponent.name() + ".html.twig"));
+            }
+        }
+
+        return psiFiles;
     }
 
     @NotNull
