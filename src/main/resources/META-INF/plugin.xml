@@ -710,6 +710,7 @@
         <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.IncludeVariableCollector"/>
         <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.MarcoScopeVariableCollector"/>
         <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.GlobalTwigConfigVariableCollector"/>
+        <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.ux.variable.collector.UxComponentVariableCollector"/>
     </extensions>
 
     <depends>com.jetbrains.twig</depends>
