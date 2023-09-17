@@ -59,9 +59,8 @@ public class PhpLineMarkerProvider implements LineMarkerProvider {
         if (leaf.getParent() instanceof PhpClass phpClass) {
             Collection<String> templates = new ArrayList<>();
 
-            UxUtil.visitAsTwigComponent(phpClass, t -> {
-                String template = t.getThird();
-                templates.add(Objects.requireNonNullElseGet(template, () -> "components/" + t.getFirst() + ".html.twig"));
+            UxUtil.visitComponents(phpClass, t -> {
+                templates.add(Objects.requireNonNullElseGet(t.template(), () -> "components/" + t.name() + ".html.twig"));
             });
 
             Collection<PsiFile> files = new HashSet<>();
@@ -70,7 +69,7 @@ public class PhpLineMarkerProvider implements LineMarkerProvider {
                 files.addAll(TwigUtil.getTemplatePsiElements(phpClass.getProject(), template));
             }
 
-            if (files.size() > 0) {
+            if (!files.isEmpty()) {
                 NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.TWIG_LINE_MARKER)
                     .setTargets(files)
                     .setTooltipText("Navigate to UX Component template");

@@ -35,6 +35,7 @@ public class UxUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
             "namespace App\\Components;\n" +
             "\n" +
             "use Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n" +
+            "use Symfony\\UX\\LiveComponent\\Attribute\\AsLiveComponent;\n" +
             "\n" +
             "#[AsTwigComponent]\n" +
             "class Alert {}\n" +
@@ -43,15 +44,20 @@ public class UxUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
             "class Alert2 {}\n" +
             "\n" +
             "#[AsTwigComponent(name: 'Alert3Foobar')]\n" +
-            "class Alert3 {}\n"
+            "class Alert3 {}\n" +
+            "\n" +
+            "#[AsLiveComponent]\n" +
+            "class AlertAsLiveComponent {}\n"
         );
 
         Map<String, PhpClass> components = new HashMap<>();
-        UxUtil.visitAsTwigComponent(phpFile, pair -> components.put(pair.getFirst(), pair.getSecond()));
+        UxUtil.visitComponents(phpFile, pair -> components.put(pair.name(), pair.phpClass()));
 
         assertEquals("\\App\\Components\\Alert", components.get("Alert").getFQN());
         assertEquals("\\App\\Components\\Alert2", components.get("Alert2Foobar").getFQN());
         assertEquals("\\App\\Components\\Alert3", components.get("Alert3Foobar").getFQN());
+
+        assertEquals("\\App\\Components\\AlertAsLiveComponent", components.get("AlertAsLiveComponent").getFQN());
     }
 
     public void testGetTwigComponentNames() {
@@ -59,12 +65,32 @@ public class UxUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
             "namespace App\\Components;\n" +
             "\n" +
             "use Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n" +
+            "use Symfony\\UX\\LiveComponent\\Attribute\\AsLiveComponent;\n" +
             "\n" +
             "#[AsTwigComponent]\n" +
-            "class Alert {}\n"
+            "class Alert {}\n" +
+            "#[AsLiveComponent]\n" +
+            "class AlertAsTwigComponent {}\n"
         );
 
         assertContainsElements(UxUtil.getTwigComponentNames(getProject()), "Alert");
+        assertFalse(UxUtil.getTwigComponentNames(getProject()).contains("AlertAsTwigComponent"));
+    }
+
+    public void testGetAllComponentNames() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Components;\n" +
+            "\n" +
+            "use Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n" +
+            "use Symfony\\UX\\LiveComponent\\Attribute\\AsLiveComponent;\n" +
+            "\n" +
+            "#[AsTwigComponent]\n" +
+            "class Alert {}\n" +
+            "#[AsLiveComponent]\n" +
+            "class AlertAsTwigComponent {}\n"
+        );
+
+        assertContainsElements(UxUtil.getAllComponentNames(getProject()), "Alert", "AlertAsTwigComponent");
     }
 
     public void testGetTwigComponentNameTarget() {
