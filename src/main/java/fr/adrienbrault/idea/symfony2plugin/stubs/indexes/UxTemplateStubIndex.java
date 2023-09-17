@@ -33,7 +33,7 @@ public class UxTemplateStubIndex extends FileBasedIndexExtension<String, UxCompo
             Map<String, UxComponent> map = new HashMap<>();
 
             if(inputData.getPsiFile() instanceof PhpFile phpFile) {
-                UxUtil.visitAsTwigComponent(phpFile, t -> map.put(t.getFirst(), new UxComponent(t.getFirst(), t.getSecond().getFQN(), t.getThird())));
+                UxUtil.visitComponents(phpFile, t -> map.put(t.name(), new UxComponent(t.name(), t.phpClass().getFQN(), t.template(), t.type())));
             }
 
             return map;
