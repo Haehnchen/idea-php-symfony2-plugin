@@ -1186,7 +1186,7 @@ public class RouteHelper {
 
         }
 
-        return url.length() == 0 ? null : url;
+        return url.isEmpty() ? null : url;
     }
 
     public static List<LookupElement> getRoutesLookupElements(final @NotNull Project project) {
@@ -1201,12 +1201,12 @@ public class RouteHelper {
             uniqueSet.add(route.getName());
         }
 
-        for(String routeName: SymfonyProcessors.createResult(project, RoutesStubIndex.KEY, uniqueSet)) {
-            if(uniqueSet.contains(routeName)) {
+        for(String routeName: SymfonyProcessors.createResult(project, RoutesStubIndex.KEY)) {
+            if (uniqueSet.contains(routeName)) {
                 continue;
             }
 
-            for(StubIndexedRoute route: FileBasedIndex.getInstance().getValues(RoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project))) {
+            for (StubIndexedRoute route: FileBasedIndex.getInstance().getValues(RoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project))) {
                 lookupElements.add(new RouteLookupElement(new Route(route), true));
                 uniqueSet.add(routeName);
             }
@@ -1270,7 +1270,7 @@ public class RouteHelper {
                 Map<String, Route> routes = new HashMap<>(RouteHelper.getCompiledRoutes(project));
                 Set<String> uniqueKeySet = new HashSet<>(routes.keySet());
 
-                for (String routeName: SymfonyProcessors.createResult(project, RoutesStubIndex.KEY, uniqueKeySet)) {
+                for (String routeName: SymfonyProcessors.createResult(project, RoutesStubIndex.KEY)) {
                     if (uniqueKeySet.contains(routeName)) {
                         continue;
                     }
