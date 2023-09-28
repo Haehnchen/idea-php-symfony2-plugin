@@ -16,6 +16,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.UxComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.UxTemplateStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.util.IndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import kotlin.Pair;
@@ -119,7 +120,7 @@ public class UxUtil {
             () -> {
                 Collection<UxComponent> uxComponents = new ArrayList<>();
 
-                for (String key : FileBasedIndex.getInstance().getAllKeys(UxTemplateStubIndex.KEY, project)) {
+                for (String key : IndexUtil.getAllKeysForProject(UxTemplateStubIndex.KEY, project)) {
                     uxComponents.addAll(FileBasedIndex.getInstance().getValues(UxTemplateStubIndex.KEY, key, GlobalSearchScope.allScope(project)));
                 }
 

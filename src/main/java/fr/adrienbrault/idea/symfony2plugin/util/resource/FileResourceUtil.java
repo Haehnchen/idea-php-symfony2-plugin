@@ -20,6 +20,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.FileResource;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.FileResourceContextTypeEnum;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.FileResourcesIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.util.IndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.FileResourceVisitorUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -94,7 +95,7 @@ public class FileResourceUtil {
      */
     public static void visitFileResources(@NotNull Project project, @NotNull VirtualFile virtualFile, @NotNull Function<Pair<VirtualFile, String>, Boolean> consumer) {
         Set<VirtualFile> files = new HashSet<>();
-        for (String resource : FileBasedIndex.getInstance().getAllKeys(FileResourcesIndex.KEY, project)) {
+        for (String resource : IndexUtil.getAllKeysForProject(FileResourcesIndex.KEY, project)) {
             files.addAll(FileBasedIndex.getInstance().getContainingFiles(FileResourcesIndex.KEY, resource, GlobalSearchScope.allScope(project)));
         }
 

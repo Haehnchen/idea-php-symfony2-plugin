@@ -45,6 +45,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.SymfonyProcessors;
 import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateUsage;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.*;
+import fr.adrienbrault.idea.symfony2plugin.stubs.util.IndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.*;
@@ -2927,7 +2928,7 @@ public class TwigUtil {
 
     public static List<String> getIncludeTemplateUsageAsOrderedList(@NotNull Project project) {
         return CachedValuesManager.getManager(project).getCachedValue(project, SYMFONY_TEMPLATE_INCLUDE_LIST, () -> {
-            Set<String> allKeys = FileBasedIndex.getInstance().getAllKeys(TwigIncludeStubIndex.KEY, project)
+            Set<String> allKeys = IndexUtil.getAllKeysForProject(TwigIncludeStubIndex.KEY, project)
                 .stream()
                 .filter(s -> !s.toLowerCase().contains("@webprofiler") && !s.toLowerCase().contains("/profiler/") && !s.toLowerCase().contains("@twig") && !s.equalsIgnoreCase("form_div_layout.html.twig"))
                 .collect(Collectors.toSet());
@@ -2956,7 +2957,7 @@ public class TwigUtil {
 
     public static List<String> getFormThemeTemplateUsageAsOrderedList(@NotNull Project project) {
         return CachedValuesManager.getManager(project).getCachedValue(project, SYMFONY_TEMPLATE_FORM_THEME_LIST, () -> {
-            Set<String> allKeys = FileBasedIndex.getInstance().getAllKeys(TwigIncludeStubIndex.KEY, project)
+            Set<String> allKeys = IndexUtil.getAllKeysForProject(TwigIncludeStubIndex.KEY, project)
                 .stream()
                 .filter(s -> !s.toLowerCase().contains("@webprofiler") && !s.toLowerCase().contains("/profiler/") && !s.toLowerCase().contains("@twig"))
                 .collect(Collectors.toSet());
@@ -3005,7 +3006,7 @@ public class TwigUtil {
 
     public static List<String> getEmbedTemplateUsageAsOrderedList(@NotNull Project project) {
         return CachedValuesManager.getManager(project).getCachedValue(project, SYMFONY_TEMPLATE_EMBED_LIST, () -> {
-            Set<String> allKeys = FileBasedIndex.getInstance().getAllKeys(TwigIncludeStubIndex.KEY, project)
+            Set<String> allKeys = IndexUtil.getAllKeysForProject(TwigIncludeStubIndex.KEY, project)
                 .stream()
                 .filter(s -> !s.toLowerCase().contains("@webprofiler") && !s.toLowerCase().contains("/profiler/") && !s.toLowerCase().contains("@twig") && !s.equalsIgnoreCase("form_div_layout.html.twig"))
                 .collect(Collectors.toSet());
@@ -3034,7 +3035,7 @@ public class TwigUtil {
 
     public static List<String> getExtendsTemplateUsageAsOrderedList(@NotNull Project project) {
         return CachedValuesManager.getManager(project).getCachedValue(project, SYMFONY_TEMPLATE_EXTENDS_LIST, () -> {
-            Set<String> allKeys = FileBasedIndex.getInstance().getAllKeys(TwigExtendsStubIndex.KEY, project)
+            Set<String> allKeys = IndexUtil.getAllKeysForProject(TwigExtendsStubIndex.KEY, project)
                 .stream()
                 .filter(s -> !s.toLowerCase().contains("@webprofiler") && !s.toLowerCase().contains("/profiler/") && !s.toLowerCase().contains("@twig") && !s.equalsIgnoreCase("form_div_layout.html.twig"))
                 .collect(Collectors.toSet());

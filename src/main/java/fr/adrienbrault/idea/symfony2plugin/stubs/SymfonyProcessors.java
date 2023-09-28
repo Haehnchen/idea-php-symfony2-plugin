@@ -5,6 +5,7 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.Processor;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.intellij.util.indexing.ID;
+import fr.adrienbrault.idea.symfony2plugin.stubs.util.IndexUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -16,6 +17,8 @@ import java.util.stream.Collectors;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class SymfonyProcessors {
+
+    @Deprecated
     public static class CollectProjectUniqueKeys implements Processor<String> {
         @NotNull
         final Project project;
@@ -43,12 +46,13 @@ public class SymfonyProcessors {
         public Set<String> getResult() {
             return stringSet.stream()
                 .filter(
-                    s -> FileBasedIndex.getInstance().getContainingFiles(id, s, GlobalSearchScope.allScope(project)).size() > 0)
+                    s -> !FileBasedIndex.getInstance().getContainingFiles(id, s, GlobalSearchScope.allScope(project)).isEmpty())
                 .collect(Collectors.toSet()
             );
         }
     }
 
+    @Deprecated
     public static class CollectProjectUniqueKeysStrong implements Processor<String> {
         @NotNull
         final Project project;
@@ -82,7 +86,7 @@ public class SymfonyProcessors {
         public Set<String> getResult() {
             return stringSet.stream()
                 .filter(
-                    s -> FileBasedIndex.getInstance().getContainingFiles(id, s, GlobalSearchScope.allScope(project)).size() > 0
+                    s -> !FileBasedIndex.getInstance().getContainingFiles(id, s, GlobalSearchScope.allScope(project)).isEmpty()
                 )
                 .collect(Collectors.toSet()
             );
@@ -91,11 +95,10 @@ public class SymfonyProcessors {
 
     @NotNull
     public static Set<String> createResult(@NotNull Project project, @NotNull ID<String, ?> id) {
-        CollectProjectUniqueKeys collector = new CollectProjectUniqueKeys(project, id);
-        FileBasedIndex.getInstance().processAllKeys(id, collector, project);
-        return collector.getResult();
+        return new HashSet<>(IndexUtil.getAllKeysForProject(id, project));
     }
 
+    @Deprecated
     @NotNull
     public static Set<String> createResult(@NotNull Project project, @NotNull ID<String, ?>  id, @NotNull Collection<String> strongKeys) {
         CollectProjectUniqueKeysStrong collector = new CollectProjectUniqueKeysStrong(project, id, strongKeys);

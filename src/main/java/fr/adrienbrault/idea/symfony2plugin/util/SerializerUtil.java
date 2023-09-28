@@ -9,6 +9,7 @@ import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.SerializerClassUsageStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.util.IndexUtil;
 import kotlin.Pair;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -93,6 +94,6 @@ public class SerializerUtil {
     }
 
     public static boolean hasClassTargetForSerializer(@NotNull Project project, @NotNull String className) {
-        return FileBasedIndex.getInstance().getAllKeys(SerializerClassUsageStubIndex.KEY, project).contains(className.toLowerCase());
+        return IndexUtil.getAllKeysForProject(SerializerClassUsageStubIndex.KEY, project).contains(className.toLowerCase());
     }
 }
