@@ -1,7 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.stubs.util;
 
 import fr.adrienbrault.idea.symfony2plugin.stubs.util.EventDispatcherUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 

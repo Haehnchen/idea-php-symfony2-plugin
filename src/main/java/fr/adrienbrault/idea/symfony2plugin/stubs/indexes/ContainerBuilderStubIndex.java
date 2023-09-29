@@ -22,7 +22,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStre
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import one.util.streamex.StreamEx;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;

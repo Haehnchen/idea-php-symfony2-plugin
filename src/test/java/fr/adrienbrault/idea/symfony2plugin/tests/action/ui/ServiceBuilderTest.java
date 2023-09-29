@@ -9,7 +9,7 @@ import fr.adrienbrault.idea.symfony2plugin.action.ui.MethodParameter;
 import fr.adrienbrault.idea.symfony2plugin.action.ui.ServiceBuilder;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlPsiElementFactory;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;

@@ -11,7 +11,7 @@ import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
 import de.espend.idea.php.annotation.util.AnnotationUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -190,18 +190,18 @@ public class AnnotationBackportUtil {
             return null;
         }
 
-        String[] fqn = org.apache.commons.lang.StringUtils.strip(containingClass.getFQN(), "\\").split("\\\\");
+        String[] fqn = org.apache.commons.lang3.StringUtils.strip(containingClass.getFQN(), "\\").split("\\\\");
 
         // remove empty and controller only namespace
         List<String> filter = ContainerUtil.filter(fqn, s ->
-            org.apache.commons.lang.StringUtils.isNotBlank(s) && !"controller".equalsIgnoreCase(s)
+            org.apache.commons.lang3.StringUtils.isNotBlank(s) && !"controller".equalsIgnoreCase(s)
         );
 
         if(filter.size() == 0) {
             return null;
         }
 
-        return org.apache.commons.lang.StringUtils.join(ContainerUtil.map(filter, s -> {
+        return org.apache.commons.lang3.StringUtils.join(ContainerUtil.map(filter, s -> {
             String content = s.toLowerCase();
             if (content.endsWith("bundle") && !content.equalsIgnoreCase("bundle")) {
                 return content.substring(0, content.length() - "bundle".length());

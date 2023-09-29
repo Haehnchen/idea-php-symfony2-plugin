@@ -26,7 +26,7 @@ import com.jetbrains.php.lang.psi.elements.PhpExpression;
 import fr.adrienbrault.idea.symfony2plugin.completion.IncompletePropertyServiceInjectionContributor;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import icons.SymfonyIcons;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

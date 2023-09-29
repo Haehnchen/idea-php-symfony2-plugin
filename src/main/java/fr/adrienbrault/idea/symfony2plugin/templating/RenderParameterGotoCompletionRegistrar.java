@@ -95,7 +95,7 @@ public class RenderParameterGotoCompletionRegistrar implements GotoCompletionReg
             }
 
             String variable = GotoCompletionUtil.getTextValueForElement(element);
-            if(org.apache.commons.lang.StringUtils.isBlank(variable)) {
+            if(org.apache.commons.lang3.StringUtils.isBlank(variable)) {
                 return Collections.emptyList();
             }
 

@@ -150,7 +150,7 @@ public class RoutingSettingsForm implements Configurable {
                     @Override
                     public void success(@NotNull WebServerConfig server, @NotNull WebServerConfig.RemotePath remotePath) {
                         RoutingSettingsForm.this.tableView.getListTableModel().addRow(
-                            new RoutingFile("remote://" + org.apache.commons.lang.StringUtils.stripStart(remotePath.path, "/"))
+                            new RoutingFile("remote://" + org.apache.commons.lang3.StringUtils.stripStart(remotePath.path, "/"))
                         );
 
                         RoutingSettingsForm.this.changed = true;

@@ -1,6 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.dic.container.dict;
 
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
