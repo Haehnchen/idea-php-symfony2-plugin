@@ -5,8 +5,6 @@ import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.PhpAttribute;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionArgument;
-import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionClassConstantArgument;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -90,12 +88,11 @@ public class DoctrinePhpAttributeMappingDriver implements DoctrineMappingDriverI
                         String substring = fqn.substring(fqn.lastIndexOf("\\") + 1);
                         doctrineModelField.setRelationType(substring);
 
-                        PhpExpectedFunctionArgument argument = PhpElementsUtil.findAttributeArgumentByName("targetEntity", attribute);
-                        if (argument instanceof PhpExpectedFunctionClassConstantArgument) {
-                            String repositoryClassRaw = ((PhpExpectedFunctionClassConstantArgument) argument).getClassFqn();
-                            if (StringUtils.isNotBlank(repositoryClassRaw)) {
-                                doctrineModelField.setRelation(repositoryClassRaw);
-                            }
+                        // not resolving same entity namespace prefix: EntityHelper.resolveDoctrineLikePropertyClass
+                        // possible not a wide range usages for attributes
+                        String targetEntity = PhpElementsUtil.getAttributeArgumentStringByName(attribute, "targetEntity");
+                        if (StringUtils.isNotBlank(targetEntity)) {
+                            doctrineModelField.setRelation("\\" + StringUtils.stripStart(targetEntity, "\\"));
                         }
                     }
                 }

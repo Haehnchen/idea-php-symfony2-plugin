@@ -2035,6 +2035,7 @@ public class PhpElementsUtil {
         return null;
     }
 
+    @Nullable
     public static String getAttributeArgumentStringByName(@NotNull PhpAttribute phpAttribute, @NotNull String attributeName) {
         for (PhpAttribute.PhpAttributeArgument argument : phpAttribute.getArguments()) {
             if (!attributeName.equals(argument.getName())) {
