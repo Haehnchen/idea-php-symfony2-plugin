@@ -44,13 +44,17 @@ public class SymfonyCommandRunConfiguration extends LocatableConfigurationBase<S
         return (executor1, runner) -> {
             VirtualFile projectDir = ProjectUtil.getProjectDir(getProject());
 
-            ProcessHandler processHandler = ScriptRunnerUtil.execute("bin/console", projectDir.getPath(), null, new String[] {this.commandName}, null, (commandLine) -> {
+            // @TODO Get executable path and configuration options from CLI Interpreter configured for project
+            String exePath = "php";
+            String[] parameters = new String[] {"bin/console", this.commandName};
+
+            ProcessHandler processHandler = ScriptRunnerUtil.execute(exePath, projectDir.getPath(), null, parameters, null, (commandLine) -> {
                 KillableProcessHandler handler = new KillableProcessHandler(commandLine);
                 handler.setShouldKillProcessSoftly(false);
                 return handler;
             });
 
-            ConsoleViewImpl console = new ConsoleViewImpl(getProject(), true);
+            ConsoleViewImpl console = new ConsoleViewImpl(getProject(), false);
             console.attachToProcess(processHandler);
             return new DefaultExecutionResult(console, processHandler);
         };
