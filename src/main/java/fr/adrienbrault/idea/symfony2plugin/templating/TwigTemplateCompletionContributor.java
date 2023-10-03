@@ -1299,7 +1299,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            resultSet.restartCompletionOnPrefixChange(StandardPatterns.string().longerThan(2).with(new PatternCondition<>("component startsWith") {
+            resultSet.restartCompletionOnPrefixChange(StandardPatterns.string().longerThan(1).with(new PatternCondition<>("component startsWith") {
                 @Override
                 public boolean accepts(@NotNull String s, ProcessingContext processingContext) {
                     return "component".startsWith(s);
@@ -1311,7 +1311,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             }
 
             for (LookupElement element : UxUtil.getComponentLookupElements(completionParameters.getPosition().getProject())) {
-                resultSet.addElement(LookupElementBuilder.create(LookupElementBuilder.create(String.format("component('%s')", element.getLookupString()))).withIcon(Symfony2Icons.SYMFONY));
+                resultSet.addElement(LookupElementBuilder.create(String.format("component('%s')", element.getLookupString())).withIcon(Symfony2Icons.SYMFONY));
             }
         }
     }
