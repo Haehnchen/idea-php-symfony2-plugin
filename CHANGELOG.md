@@ -20,6 +20,19 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.258
+* [#2077](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2077) support resolving "targetEntity" as string for Doctrine attribute metadata (Daniel Espendiller)
+* Trigger incomplete Twig "component" completion earlier (Daniel Espendiller)
+* Fix: upgrade apache commons (Soner Sayakci)
+* Set php as executable on run command (Radoslaw Kowalewski)
+* "FileBasedIndex.getInstance().getAllKeys" is a non project filtered list; provide post filter (Daniel Espendiller)
+
+## 2022.1.257
+* Remove Symfony project installer because it will be provided by PhpStorm itself (Daniel Espendiller)
+* Provide support for exposed Twig variables from Symfony UX component (Daniel Espendiller)
+* Provide block support inside Symfony UX component tag (Daniel Espendiller)
+* Provide template and component section for Symfony UX "AsLiveComponent" (Daniel Espendiller)
+
 ## 2022.1.256
 * Use "form_row" for form field generate in Twig files (Daniel Espendiller)
 * Whitelist htmlTemplate / textTemplate to be valid Twig entrypoint (Daniel Espendiller)
