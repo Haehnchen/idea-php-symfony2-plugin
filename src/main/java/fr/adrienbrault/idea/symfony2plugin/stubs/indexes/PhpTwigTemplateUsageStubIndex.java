@@ -19,7 +19,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateUsage;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.PhpMethodVariableResolveUtil;
 import kotlin.Triple;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;

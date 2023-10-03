@@ -21,7 +21,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigConfigJson;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.dict.TwigPathJson;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.VfsExUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

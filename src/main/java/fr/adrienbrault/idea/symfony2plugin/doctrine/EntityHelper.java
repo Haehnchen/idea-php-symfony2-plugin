@@ -210,7 +210,7 @@ public class EntityHelper {
                 XmlTag entity = rootTag.findFirstSubTag("entity");
                 if(entity != null) {
                     String name = entity.getAttributeValue("name");
-                    if(org.apache.commons.lang.StringUtils.isBlank(name)) {
+                    if(org.apache.commons.lang3.StringUtils.isBlank(name)) {
                         entityName = name;
                     }
                 }
@@ -445,7 +445,7 @@ public class EntityHelper {
         }}) {
 
             String name = xmlTag.getAttributeValue("name");
-            if(org.apache.commons.lang.StringUtils.isBlank(name)) {
+            if(org.apache.commons.lang3.StringUtils.isBlank(name)) {
                 continue;
             }
 
@@ -454,12 +454,12 @@ public class EntityHelper {
             field.addTarget(xmlTag);
 
             String column = xmlTag.getAttributeValue("column");
-            if(org.apache.commons.lang.StringUtils.isNotBlank(name)) {
+            if(org.apache.commons.lang3.StringUtils.isNotBlank(name)) {
                 field.setColumn(column);
             }
 
             String type = xmlTag.getAttributeValue("type");
-            if(org.apache.commons.lang.StringUtils.isNotBlank(type)) {
+            if(org.apache.commons.lang3.StringUtils.isNotBlank(type)) {
                 field.setTypeName(type);
             }
 
@@ -675,7 +675,7 @@ public class EntityHelper {
                 PhpDocParamTag varTag = docBlock.getVarTag();
                 if(varTag != null) {
                     String type = varTag.getType().toString();
-                    if(org.apache.commons.lang.StringUtils.isNotBlank(type)) {
+                    if(org.apache.commons.lang3.StringUtils.isNotBlank(type)) {
                         doctrineModelField.setRelation(type);
                     }
                 }
@@ -819,7 +819,7 @@ public class EntityHelper {
             }
 
             String targetEntity = targetEntityMatch.group(1);
-            if (org.apache.commons.lang.StringUtils.isBlank(targetEntity)) {
+            if (org.apache.commons.lang3.StringUtils.isBlank(targetEntity)) {
                 continue;
             }
 

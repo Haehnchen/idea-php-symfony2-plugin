@@ -18,7 +18,7 @@ import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringM
 import fr.adrienbrault.idea.symfony2plugin.util.AbsoluteFileModificationTracker;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.TimeSecondModificationTracker;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;

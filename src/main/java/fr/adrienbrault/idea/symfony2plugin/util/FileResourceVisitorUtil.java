@@ -8,7 +8,7 @@ import com.intellij.util.Consumer;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.FileResource;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.FileResourceContextTypeEnum;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.*;
 

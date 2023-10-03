@@ -14,8 +14,8 @@ import com.intellij.psi.xml.XmlTagValue;
 import fr.adrienbrault.idea.symfony2plugin.profiler.collector.HttpDefaultDataCollector;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.HttpProfilerRequest;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

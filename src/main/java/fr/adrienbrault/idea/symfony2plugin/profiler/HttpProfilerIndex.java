@@ -3,7 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.profiler;
 import com.intellij.openapi.project.Project;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface;
 import fr.adrienbrault.idea.symfony2plugin.profiler.utils.ProfilerUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

@@ -34,7 +34,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import icons.ExternalSystemIcons;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

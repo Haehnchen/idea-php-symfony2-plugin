@@ -11,7 +11,7 @@ import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.SerializerClassUsageStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.util.IndexUtil;
 import kotlin.Pair;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

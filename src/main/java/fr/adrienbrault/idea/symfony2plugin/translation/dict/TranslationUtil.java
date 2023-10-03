@@ -32,7 +32,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLScalar;
@@ -491,7 +491,7 @@ public class TranslationUtil {
         for (int i = 0; i < nodeList.getLength(); i++) {
             Element node = (Element) nodeList.item(i);
             String textContent = node.getTextContent();
-            if(org.apache.commons.lang.StringUtils.isNotBlank(textContent)) {
+            if(org.apache.commons.lang3.StringUtils.isNotBlank(textContent)) {
                 consumer.consume(Pair.create(textContent, node));
             }
 

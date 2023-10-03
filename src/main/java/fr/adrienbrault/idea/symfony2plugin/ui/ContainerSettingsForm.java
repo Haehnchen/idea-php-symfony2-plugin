@@ -147,7 +147,7 @@ public class ContainerSettingsForm implements Configurable {
                     @Override
                     public void success(@NotNull WebServerConfig server, @NotNull WebServerConfig.RemotePath remotePath) {
                         ContainerSettingsForm.this.tableView.getListTableModel().addRow(
-                            new ContainerFile("remote://" + org.apache.commons.lang.StringUtils.stripStart(remotePath.path, "/"))
+                            new ContainerFile("remote://" + org.apache.commons.lang3.StringUtils.stripStart(remotePath.path, "/"))
                         );
 
                         ContainerSettingsForm.this.changed = true;

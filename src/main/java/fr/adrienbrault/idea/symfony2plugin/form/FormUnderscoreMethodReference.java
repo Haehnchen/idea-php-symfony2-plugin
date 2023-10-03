@@ -30,7 +30,7 @@ public class FormUnderscoreMethodReference extends PsiPolyVariantReferenceBase<S
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
         String contents = getElement().getContents();
-        if(org.apache.commons.lang.StringUtils.isBlank(contents)) {
+        if(org.apache.commons.lang3.StringUtils.isBlank(contents)) {
             return new ResolveResult[0];
         }
 

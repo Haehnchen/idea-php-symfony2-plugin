@@ -19,7 +19,7 @@ import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHtmlCompletionUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
 import kotlin.Pair;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;

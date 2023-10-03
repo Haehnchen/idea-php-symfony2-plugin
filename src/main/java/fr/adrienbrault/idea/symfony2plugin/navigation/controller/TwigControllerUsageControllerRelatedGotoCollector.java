@@ -15,7 +15,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigControllerStubIndex
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import icons.TwigIcons;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collection;
 import java.util.Collections;

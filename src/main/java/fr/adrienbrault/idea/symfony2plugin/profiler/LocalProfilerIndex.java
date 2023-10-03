@@ -7,7 +7,7 @@ import fr.adrienbrault.idea.symfony2plugin.profiler.dict.LocalProfilerRequest;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface;
 import fr.adrienbrault.idea.symfony2plugin.profiler.reader.ReverseFileLineReader;
 import fr.adrienbrault.idea.symfony2plugin.profiler.utils.ProfilerUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

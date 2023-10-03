@@ -14,7 +14,7 @@ import fr.adrienbrault.idea.symfony2plugin.translation.inspection.TranslationKey
 import fr.adrienbrault.idea.symfony2plugin.translation.inspection.TwigTranslationKeyInspection;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
