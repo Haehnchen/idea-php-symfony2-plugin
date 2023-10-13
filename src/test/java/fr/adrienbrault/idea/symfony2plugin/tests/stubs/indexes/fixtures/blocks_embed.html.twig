@@ -1,0 +1,21 @@
+{% block foo %}
+    {% block foo_inner 'foo' %}
+{% endblock %}
+
+{{ block('foobar_print') }}
+
+{% embed "teasers/skeleton.html.twig" %}
+    {% block left_teaser %}
+        {{ block('foobar_print_embed') }}
+    {% endblock %}
+    {% block right_teaser %}
+    {% endblock %}
+{% endembed %}
+
+{% extends 'extends/foo.html.twig' %}
+{% use 'use/foo.html.twig' %}
+
+{% embed "teasers\skeleton.html.twig" %}
+    {% extends 'embed_extends\foo.html.twig' %}
+    {% use 'embed_use\foo.html.twig' %}
+{% endembed %}

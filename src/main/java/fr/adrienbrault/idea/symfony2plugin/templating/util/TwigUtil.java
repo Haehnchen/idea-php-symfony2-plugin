@@ -1784,6 +1784,33 @@ public class TwigUtil {
         return block;
     }
 
+    @NotNull
+    public static void visitEmbedBlocks(@NotNull TwigFile psiFile, @NotNull Consumer<Pair<String, String>> consumer) {
+        PsiElement[] embedStatements = PsiTreeUtil.collectElements(psiFile, psiElement ->
+            psiElement instanceof TwigCompositeElement && psiElement.getNode().getElementType() == TwigElementTypes.EMBED_STATEMENT
+        );
+
+        for (PsiElement embedStatement : embedStatements) {
+            PsiElement firstChild = embedStatement.getFirstChild();
+            if (firstChild == null) {
+                continue;
+            }
+
+            String templateNameForEmbedTag = TwigUtil.getTemplateNameForEmbedTag(firstChild);
+            if (templateNameForEmbedTag == null) {
+                continue;
+            }
+
+            for (TwigBlockStatement twigBlockStatement : PsiTreeUtil.getChildrenOfAnyType(embedStatement, TwigBlockStatement.class)) {
+                String blockName = twigBlockStatement.getName();
+
+                if (blockName != null && !blockName.isBlank()) {
+                    consumer.consume(Pair.create(templateNameForEmbedTag, blockName));
+                }
+            }
+        }
+    }
+
     /**
      * Find "extends" template in twig TwigExtendsTag
      *
@@ -1922,7 +1949,7 @@ public class TwigUtil {
      * {% embed "teasers_skeleton.html.twig" %}
      */
     @Nullable
-    private static String getTemplateNameForEmbedTag(@NotNull PsiElement embedTag) {
+    public static String getTemplateNameForEmbedTag(@NotNull PsiElement embedTag) {
         if(embedTag.getNode().getElementType() == TwigElementTypes.EMBED_TAG) {
             PsiElement fileReference = ContainerUtil.find(YamlHelper.getChildrenFix(embedTag), psiElement ->
                 TwigPattern.getTemplateFileReferenceTagPattern().accepts(psiElement)
