@@ -3,17 +3,22 @@ package fr.adrienbrault.idea.symfony2plugin.twig.utils;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.twig.TwigFile;
+import com.jetbrains.twig.TwigTokenTypes;
+import com.jetbrains.twig.elements.TwigBlockStatement;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigBlockEmbedIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigBlockIndexExtension;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.twig.loader.FileImplementsLazyLoader;
 import fr.adrienbrault.idea.symfony2plugin.twig.loader.FileOverwritesLazyLoader;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -54,25 +59,41 @@ public class TwigBlockUtil {
      */
     public static boolean hasBlockImplementations(@NotNull PsiElement blockPsiName, @NotNull FileImplementsLazyLoader implementsLazyLoader) {
         String blockName = blockPsiName.getText();
-        if(StringUtils.isBlank(blockName)) {
+        if (StringUtils.isBlank(blockName)) {
             return false;
         }
 
         PsiFile psiFile = blockPsiName.getContainingFile();
-        if(psiFile == null) {
+        if (psiFile == null) {
             return false;
         }
 
         Collection<VirtualFile> twigChild = implementsLazyLoader.getFiles();
-        if(twigChild.size() == 0) {
+
+        Set<VirtualFile> virtualFiles = new HashSet<>(twigChild);
+        VirtualFile virtualFile = psiFile.getVirtualFile();
+        if (virtualFile != null) {
+            virtualFiles.add(virtualFile);
+        }
+
+        Project project = psiFile.getProject();
+
+        for (VirtualFile file : virtualFiles) {
+            if (hasBlockImplementationsForEmbed(project, file, blockName)) {
+                return true;
+            }
+        }
+
+        if (twigChild.isEmpty()) {
             return false;
         }
 
-        return hasBlockNamesForFiles(blockPsiName.getProject(), blockName, twigChild);
+        return hasBlockNamesForFiles(project, blockName, twigChild);
     }
 
     /**
      *  {% extends 'foobar.html.twig' %}
+     *  {% embed 'foobar.html.twig' %}
      *
      *  {{ block('foo<caret>bar') }}
      *  {% block 'foo<caret>bar' %}
@@ -81,29 +102,51 @@ public class TwigBlockUtil {
     @NotNull
     public static Collection<PsiElement> getBlockImplementationTargets(@NotNull PsiElement blockPsiName) {
         String blockName = blockPsiName.getText();
-        if(StringUtils.isBlank(blockName)) {
+        if (StringUtils.isBlank(blockName)) {
             return Collections.emptyList();
         }
 
         PsiFile psiFile = blockPsiName.getContainingFile();
-        if(psiFile == null) {
+        if (psiFile == null) {
             return Collections.emptyList();
         }
 
-        Collection<VirtualFile> twigChild = TwigUtil.getTemplatesExtendingFile(psiFile.getProject(), psiFile.getVirtualFile());
-        if(twigChild.size() == 0) {
-            return Collections.emptyList();
+        Project project = psiFile.getProject();
+        VirtualFile currentVirtualFile = psiFile.getVirtualFile();
+        Collection<VirtualFile> parentTwigExtendingFiles = TwigUtil.getTemplatesExtendingFile(project, currentVirtualFile);
+
+        HashSet<VirtualFile> embedFiles = new HashSet<>(parentTwigExtendingFiles);
+        embedFiles.add(currentVirtualFile);
+
+        Collection<PsiElement> blockTargets = new HashSet<>();
+
+        // embed targets
+        for (VirtualFile vFile : embedFiles) {
+            Set<String> templateNames = TwigUtil.getTemplateNamesForFile(blockPsiName.getProject(), vFile).stream()
+                .map(TwigUtil::normalizeTemplateName)
+                .collect(Collectors.toSet());
+
+            for (String templateName : templateNames) {
+                for (VirtualFile containingFile : FileBasedIndex.getInstance().getContainingFiles(TwigBlockEmbedIndex.KEY, templateName, GlobalSearchScope.allScope(project))) {
+                    if(!(PsiManager.getInstance(project).findFile(containingFile) instanceof TwigFile twigFile)) {
+                        continue;
+                    }
+
+                    TwigUtil.visitEmbedBlocks(twigFile, embedBlock -> {
+                        if (embedBlock.blockName().equals(blockName) && templateName.equals(embedBlock.templateName())) {
+                            blockTargets.add(getBlockNamePsiElementTarget(embedBlock.target()));
+                        }
+                    });
+                }
+            }
         }
 
-        Collection<PsiElement> blockTargets = new ArrayList<>();
-
-        for (VirtualFile virtualFile : twigChild) {
-            PsiFile file = PsiManager.getInstance(blockPsiName.getProject()).findFile(virtualFile);
-            if(!(file instanceof TwigFile)) {
+        for (VirtualFile parentTwigExtendingFile : parentTwigExtendingFiles) {
+            if (!(PsiManager.getInstance(project).findFile(parentTwigExtendingFile) instanceof TwigFile twigFile)) {
                 continue;
             }
 
-            for (TwigBlock twigBlock : TwigUtil.getBlocksInFile((TwigFile) file)) {
+            for (TwigBlock twigBlock : TwigUtil.getBlocksInFile(twigFile)) {
                 if (blockName.equals(twigBlock.getName())) {
                     blockTargets.add(twigBlock.getTarget());
                 }
@@ -111,6 +154,22 @@ public class TwigBlockUtil {
         }
 
         return blockTargets;
+    }
+
+    /**
+     * Extracted named block element for ui presentable
+     */
+    private static PsiElement getBlockNamePsiElementTarget(@NotNull TwigBlockStatement twigBlockStatement) {
+        PsiElement blockTag = twigBlockStatement.getFirstChild();
+
+        if (blockTag != null) {
+            PsiElement childrenOfType = PsiElementUtils.getChildrenOfType(blockTag, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER));
+            if (childrenOfType != null) {
+                return childrenOfType;
+            }
+        }
+
+        return twigBlockStatement;
     }
 
     /**
@@ -140,7 +199,7 @@ public class TwigBlockUtil {
     public static boolean hasBlockOverwrites(@NotNull PsiElement psiElement, @NotNull FileOverwritesLazyLoader fileOverwritesLazyLoader) {
         String blockName = psiElement.getText();
 
-        if(StringUtils.isBlank(blockName)) {
+        if (StringUtils.isBlank(blockName)) {
             return false;
         }
 
@@ -152,6 +211,21 @@ public class TwigBlockUtil {
         );
 
         return hasBlockNamesForFiles(psiElement.getProject(), blockName, virtualFiles);
+    }
+
+    private static boolean hasBlockImplementationsForEmbed(@NotNull Project project, @NotNull VirtualFile virtualFile, @NotNull String blockName) {
+        for (String templateName : TwigUtil.getTemplateNamesForFile(project, virtualFile)) {
+            Set<String> blockNames = FileBasedIndex.getInstance().getValues(TwigBlockEmbedIndex.KEY, templateName, GlobalSearchScope.allScope(project))
+                .stream()
+                .flatMap(Set::stream)
+                .collect(Collectors.toSet());
+
+            if (blockNames.contains(blockName)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

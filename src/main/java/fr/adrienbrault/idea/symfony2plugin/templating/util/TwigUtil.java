@@ -27,7 +27,10 @@ import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
-import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.lang.psi.elements.Function;
+import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.php.phpunit.PhpUnitUtil;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
@@ -1784,8 +1787,7 @@ public class TwigUtil {
         return block;
     }
 
-    @NotNull
-    public static void visitEmbedBlocks(@NotNull TwigFile psiFile, @NotNull Consumer<Pair<String, String>> consumer) {
+    public static void visitEmbedBlocks(@NotNull TwigFile psiFile, @NotNull Consumer<TwigBlockEmbed> consumer) {
         PsiElement[] embedStatements = PsiTreeUtil.collectElements(psiFile, psiElement ->
             psiElement instanceof TwigCompositeElement && psiElement.getNode().getElementType() == TwigElementTypes.EMBED_STATEMENT
         );
@@ -1805,7 +1807,7 @@ public class TwigUtil {
                 String blockName = twigBlockStatement.getName();
 
                 if (blockName != null && !blockName.isBlank()) {
-                    consumer.consume(Pair.create(templateNameForEmbedTag, blockName));
+                    consumer.consume(new TwigBlockEmbed(templateNameForEmbedTag, blockName, twigBlockStatement));
                 }
             }
         }
