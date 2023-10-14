@@ -34,11 +34,11 @@ public class TwigBlockEmbedIndex extends FileBasedIndexExtension<String, Set<Str
 
             PsiFile psiFile = fileContent.getPsiFile();
             if (psiFile instanceof TwigFile twigFile) {
-                TwigUtil.visitEmbedBlocks(twigFile, pair -> {
-                    String templateName = pair.getFirst();
+                TwigUtil.visitEmbedBlocks(twigFile, embedBlock -> {
+                    String templateName = embedBlock.templateName();
 
                     blocks.putIfAbsent(templateName, new HashSet<>());
-                    blocks.get(templateName).add(pair.getSecond());
+                    blocks.get(templateName).add(embedBlock.blockName());
                 });
             }
 
