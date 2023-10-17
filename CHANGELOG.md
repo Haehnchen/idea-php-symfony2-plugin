@@ -20,6 +20,10 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.259
+* Add implements Twig block target for embed blocks (Daniel Espendiller)
+* Add Twig block embed index (Daniel Espendiller)
+
 ## 2022.1.258
 * [#2077](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2077) support resolving "targetEntity" as string for Doctrine attribute metadata (Daniel Espendiller)
 * Trigger incomplete Twig "component" completion earlier (Daniel Espendiller)
