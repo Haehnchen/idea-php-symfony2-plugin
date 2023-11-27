@@ -311,7 +311,7 @@ public class PhpMethodVariableResolveUtil {
                 return;
             }
 
-            if (!methods.get().contains(methodName) && Stream.of("render", "htmltemplate", "texttemplate").noneMatch(s -> methodName.toLowerCase().contains(s))) {
+            if (!methods.get().contains(methodName) && Stream.of("render", "htmltemplate", "texttemplate", "renderblock", "renderblockview").noneMatch(s -> methodName.toLowerCase().contains(s))) {
                 return;
             }
 
