@@ -101,6 +101,10 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
 
         new MethodMatcher.CallToSignature("\\Symfony\\Bridge\\Twig\\Mime\\TemplatedEmail", "htmlTemplate"),
         new MethodMatcher.CallToSignature("\\Symfony\\Bridge\\Twig\\Mime\\TemplatedEmail", "textTemplate"),
+
+        // Symfony 6.4
+        new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "renderBlock"),
+        new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "renderBlockView"),
     };
 
     @Override
