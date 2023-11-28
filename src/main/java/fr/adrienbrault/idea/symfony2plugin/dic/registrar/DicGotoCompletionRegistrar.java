@@ -108,22 +108,7 @@ public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
                 // #[Autoconfigure(['app.some_tag'])]
                 // #[Autoconfigure(tags: ['app.some_tag'])]
                 PhpElementsUtil.getFirstAttributeArrayStringPattern(ServiceContainerUtil.AUTOCONFIGURE_ATTRIBUTE_CLASS),
-                PhpElementsUtil.getAttributeNamedArgumentArrayStringPattern(ServiceContainerUtil.AUTOCONFIGURE_ATTRIBUTE_CLASS, "tags"),
-
-                // #[AutowireLocator(['app.some_tag', 'app.some_tag'])]
-                // #[AutowireLocator(services: ['app.some_tag'])]
-                PhpElementsUtil.getFirstAttributeArrayStringPattern(ServiceContainerUtil.AUTOWIRE_LOCATOR_ATTRIBUTE_CLASS),
-                PhpElementsUtil.getAttributeNamedArgumentArrayStringPattern(ServiceContainerUtil.AUTOWIRE_LOCATOR_ATTRIBUTE_CLASS, "services"),
-
-                // #[AutowireLocator('app.some_tag'])]
-                // #[AutowireLocator(services: 'app.some_tag')]
-                PhpElementsUtil.getFirstAttributeStringPattern(ServiceContainerUtil.AUTOWIRE_LOCATOR_ATTRIBUTE_CLASS),
-                PhpElementsUtil.getAttributeNamedArgumentStringPattern(ServiceContainerUtil.AUTOWIRE_LOCATOR_ATTRIBUTE_CLASS, "services"),
-
-                // #[AutowireLocator(exclude: ['app.some_tag'])]
-                // #[AutowireLocator(exclude: 'app.some_tag')]
-                PhpElementsUtil.getAttributeNamedArgumentArrayStringPattern(ServiceContainerUtil.AUTOWIRE_LOCATOR_ATTRIBUTE_CLASS, "exclude"),
-                PhpElementsUtil.getAttributeNamedArgumentStringPattern(ServiceContainerUtil.AUTOWIRE_LOCATOR_ATTRIBUTE_CLASS, "exclude")
+                PhpElementsUtil.getAttributeNamedArgumentArrayStringPattern(ServiceContainerUtil.AUTOCONFIGURE_ATTRIBUTE_CLASS, "tags")
             ), psiElement -> {
                 PsiElement context = psiElement.getContext();
                 if (!(context instanceof StringLiteralExpression)) {
@@ -145,7 +130,22 @@ public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
             PlatformPatterns.or(
                 PhpElementsUtil.getAttributeNamedArgumentStringPattern(ServiceContainerUtil.AUTOWIRE_ATTRIBUTE_CLASS, "service"),
                 PhpElementsUtil.getAttributeNamedArgumentStringPattern(ServiceContainerUtil.DECORATOR_ATTRIBUTE_CLASS, "decorates"),
-                PhpElementsUtil.getFirstAttributeStringPattern(ServiceContainerUtil.DECORATOR_ATTRIBUTE_CLASS)
+                PhpElementsUtil.getFirstAttributeStringPattern(ServiceContainerUtil.DECORATOR_ATTRIBUTE_CLASS),
+
+                // #[AutowireLocator(['app.some_tag', 'app.some_tag'])]
+                // #[AutowireLocator(services: ['app.some_tag'])]
+                PhpElementsUtil.getFirstAttributeArrayStringPattern(ServiceContainerUtil.AUTOWIRE_LOCATOR_ATTRIBUTE_CLASS),
+                PhpElementsUtil.getAttributeNamedArgumentArrayStringPattern(ServiceContainerUtil.AUTOWIRE_LOCATOR_ATTRIBUTE_CLASS, "services"),
+
+                // #[AutowireLocator('app.some_tag'])]
+                // #[AutowireLocator(services: 'app.some_tag')]
+                PhpElementsUtil.getFirstAttributeStringPattern(ServiceContainerUtil.AUTOWIRE_LOCATOR_ATTRIBUTE_CLASS),
+                PhpElementsUtil.getAttributeNamedArgumentStringPattern(ServiceContainerUtil.AUTOWIRE_LOCATOR_ATTRIBUTE_CLASS, "services"),
+
+                // #[AutowireLocator(exclude: ['app.some_tag'])]
+                // #[AutowireLocator(exclude: 'app.some_tag')]
+                PhpElementsUtil.getAttributeNamedArgumentArrayStringPattern(ServiceContainerUtil.AUTOWIRE_LOCATOR_ATTRIBUTE_CLASS, "exclude"),
+                PhpElementsUtil.getAttributeNamedArgumentStringPattern(ServiceContainerUtil.AUTOWIRE_LOCATOR_ATTRIBUTE_CLASS, "exclude")
             ),
             psiElement -> {
                 PsiElement context = psiElement.getContext();
