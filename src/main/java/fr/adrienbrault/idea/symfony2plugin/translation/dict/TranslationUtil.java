@@ -190,6 +190,8 @@ public class TranslationUtil {
         return Arrays.stream(getTranslationProviders())
             .map(translationProvider -> translationProvider.getTranslationTargets(project, translationKey, domain))
             .flatMap(Collection::stream)
+            .collect(Collectors.toSet())
+            .stream()
             .map(element -> new TranslationKeyTargetFakePsiNavigationItem(ProjectUtil.getProjectDir(project), element))
             .sorted(Comparator.comparingInt(TranslationKeyTargetFakePsiNavigationItem::getWeight))
             .toArray(PsiElement[]::new);
