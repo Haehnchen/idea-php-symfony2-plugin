@@ -711,6 +711,10 @@
         <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.ux.variable.collector.UxComponentVariableCollector"/>
     </extensions>
 
+    <extensions defaultExtensionNs="JavaScript">
+        <moduleReferenceContributor implementation="fr.adrienbrault.idea.symfony2plugin.assetMapper.references.AssetMapperModuleReferenceContributor"/>
+    </extensions>
+
     <depends>com.jetbrains.twig</depends>
     <depends>com.jetbrains.php</depends>
     <depends>JavaScript</depends>
