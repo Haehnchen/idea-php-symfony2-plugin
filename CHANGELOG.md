@@ -20,6 +20,13 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.260
+* AutowireLocator should complete services not tags (Daniel Espendiller)
+* [#2248](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2248) translation targets from different provider must be unique (Daniel Espendiller)
+* Provide service references for "AutowireLocator" (Daniel Espendiller)
+* Support block render template parameter from "Render Blocks from Controllers" (Daniel Espendiller)
+* Support block references for "Render Blocks from Controllers" (Daniel Espendiller)
+
 ## 2022.1.259
 * Add implements Twig block target for embed blocks (Daniel Espendiller)
 * Add Twig block embed index (Daniel Espendiller)
