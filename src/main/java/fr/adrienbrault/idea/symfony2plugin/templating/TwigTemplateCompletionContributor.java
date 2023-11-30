@@ -29,6 +29,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.asset.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.asset.provider.AssetCompletionProvider;
+import fr.adrienbrault.idea.symfony2plugin.assetMapper.AssetMapperUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.MethodReferenceBag;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
@@ -297,6 +298,9 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         // {{ controller('<caret>') }}
         // {% render(controller('<caret>')) %}
         extend(CompletionType.BASIC, TwigPattern.getPrintBlockOrTagFunctionPattern("controller"), new ControllerCompletionProvider());
+
+        // {{ importmap('<caret>') }}
+        extend(CompletionType.BASIC, TwigPattern.getPrintBlockOrTagFunctionPattern("importmap"), new ImportmapCompletionProvider());
 
         // {% foo() %}
         // {% foo.bar() %}
@@ -639,6 +643,17 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             resultSet.addAllElements(
                 ContainerUtil.map(translationDomainLookupElements, QuotedInsertionLookupElement::new)
             );
+        }
+    }
+
+    private static class ImportmapCompletionProvider extends CompletionProvider<CompletionParameters> {
+        public void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet resultSet) {
+            PsiElement position = parameters.getPosition();
+            if(!Symfony2ProjectComponent.isEnabled(position)) {
+                return;
+            }
+
+            resultSet.addAllElements(AssetMapperUtil.getEntrypointLookupElements(position.getProject()));
         }
     }
 

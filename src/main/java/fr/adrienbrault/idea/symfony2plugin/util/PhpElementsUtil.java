@@ -311,6 +311,25 @@ public class PhpElementsUtil {
         return null;
     }
 
+    @Nullable
+    static public Boolean getArrayValueBool(@NotNull ArrayCreationExpression arrayCreationExpression, @NotNull String name) {
+        PhpPsiElement phpPsiElement = getArrayValue(arrayCreationExpression, name);
+        if(phpPsiElement == null) {
+            return null;
+        }
+
+        if (phpPsiElement instanceof ConstantReference) {
+            String lowerCase = phpPsiElement.getText().toLowerCase();
+            if (lowerCase.equals("true")) {
+                return true;
+            } else if (lowerCase.equals("false")) {
+                return false;
+            }
+        }
+
+        return null;
+    }
+
     static public PhpNamedElement[] getPsiElementsBySignature(@NotNull Project project, @Nullable String signature) {
 
         if(signature == null) {

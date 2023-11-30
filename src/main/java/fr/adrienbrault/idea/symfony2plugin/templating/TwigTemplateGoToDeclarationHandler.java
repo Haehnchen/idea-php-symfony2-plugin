@@ -6,10 +6,7 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
-import com.intellij.psi.PsiDirectory;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiManager;
-import com.intellij.psi.PsiWhiteSpace;
+import com.intellij.psi.*;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.PhpIndex;
@@ -22,6 +19,7 @@ import com.jetbrains.twig.elements.TwigElementTypes;
 import com.jetbrains.twig.elements.TwigPsiReference;
 import com.jetbrains.twig.elements.TwigVariableReference;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.assetMapper.AssetMapperUtil;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
@@ -106,6 +104,10 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
 
         if (TwigPattern.getPrintBlockOrTagFunctionPattern("controller").accepts(psiElement) || TwigPattern.getStringAfterTagNamePattern("render").accepts(psiElement)) {
             targets.addAll(getControllerGoTo(psiElement));
+        }
+
+        if (TwigPattern.getPrintBlockOrTagFunctionPattern("importmap").accepts(psiElement)) {
+            targets.addAll(getImportmapGoTo(psiElement));
         }
 
         if (TwigPattern.getTransDefaultDomainPattern().accepts(psiElement)) {
@@ -249,6 +251,18 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
     private Collection<PsiElement> getControllerGoTo(@NotNull  PsiElement psiElement) {
         String text = PsiElementUtils.trimQuote(psiElement.getText());
         return Arrays.asList(RouteHelper.getMethodsOnControllerShortcut(psiElement.getProject(), text));
+    }
+
+    private Collection<PsiFile> getImportmapGoTo(@NotNull PsiElement psiElement) {
+        String text = PsiElementUtils.trimQuote(psiElement.getText());
+        if (text.isBlank()) {
+            return Collections.emptyList();
+        }
+
+        return PsiElementUtils.convertVirtualFilesToPsiFiles(
+            psiElement.getProject(),
+            AssetMapperUtil.getEntrypointModuleReferences(psiElement.getProject(), text)
+        );
     }
 
     @NotNull
