@@ -6,14 +6,14 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.routing.PhpRouteReferenceContributor;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
-import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
+import fr.adrienbrault.idea.symfony2plugin.routing.RouteReference;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 /**
@@ -43,16 +43,12 @@ public class PhpRouteMissingInspection extends LocalInspectionTool {
     }
 
     private void invoke(@NotNull String routeName, @NotNull final PsiElement element, @NotNull ProblemsHolder holder) {
-        MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(element, 0)
-            .withSignature(PhpRouteReferenceContributor.GENERATOR_SIGNATURES)
-            .match();
-
-        if(methodMatchParameter == null) {
+        if(Arrays.stream(element.getReferences()).noneMatch(ref -> ref instanceof RouteReference)) {
             return;
         }
 
         Collection<Route> route = RouteHelper.getRoute(element.getProject(), routeName);
-        if(route.size() == 0) {
+        if(route.isEmpty()) {
             holder.registerProblem(element, "Symfony: Missing Route", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, new RouteGuessTypoQuickFix(routeName));
         }
     }
