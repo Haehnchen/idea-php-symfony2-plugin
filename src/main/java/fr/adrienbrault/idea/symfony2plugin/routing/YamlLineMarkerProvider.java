@@ -69,7 +69,8 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        if (!"annotation".equals(YamlHelper.getYamlKeyValueAsString((YAMLKeyValue) yamlKeyValue, "type"))) {
+        String type = YamlHelper.getYamlKeyValueAsString((YAMLKeyValue) yamlKeyValue, "type");
+        if (!"annotation".equals(type) && !"attribute".equals(type)) {
             return;
         }
 

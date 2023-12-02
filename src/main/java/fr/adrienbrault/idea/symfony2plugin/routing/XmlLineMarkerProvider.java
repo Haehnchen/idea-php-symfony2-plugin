@@ -79,7 +79,8 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        if (!"annotation".equals(((XmlTag) xmlTag).getAttributeValue("type"))) {
+        String type = ((XmlTag) xmlTag).getAttributeValue("type");
+        if (!"annotation".equals(type) && !"attribute".equals(type)) {
             return;
         }
 
