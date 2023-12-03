@@ -3,16 +3,21 @@ package fr.adrienbrault.idea.symfony2plugin.util;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.util.CachedValue;
+import com.intellij.psi.util.CachedValueProvider;
+import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateInclude;
+import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
+import fr.adrienbrault.idea.symfony2plugin.stubs.dict.ConfigIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.UxComponent;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigIncludeStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ConfigStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.UxTemplateStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.util.IndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
@@ -40,11 +45,36 @@ public class UxUtil {
 
     private static final String ATTRIBUTE_EXPOSE_IN_TEMPLATE = "\\Symfony\\UX\\TwigComponent\\Attribute\\ExposeInTemplate";
 
+    private static final Key<CachedValue<Collection<TwigComponentNamespace>>> TWIG_COMPONENTS_NAMESPACES = new Key<>("SYMFONY_TWIG_COMPONENTS_NAMESPACES");
+
     public static Collection<TwigComponentNamespace> getNamespaces(@NotNull Project project) {
+        return CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            TWIG_COMPONENTS_NAMESPACES,
+            () -> CachedValueProvider.Result.create(getNamespacesInner(project), FileIndexCaches.getModificationTrackerForIndexId(project, ConfigStubIndex.KEY)),
+            false
+        );
+    }
+    private static Collection<TwigComponentNamespace> getNamespacesInner(@NotNull Project project) {
         Collection<TwigComponentNamespace> namespaces = new ArrayList<>();
 
-        // @TODO: config parsing
-        namespaces.add(new TwigComponentNamespace("App\\Twig\\Components\\", "components/", null));
+        for (String key : IndexUtil.getAllKeysForProject(ConfigStubIndex.KEY, project)) {
+            for (ConfigIndex value : FileBasedIndex.getInstance().getValues(ConfigStubIndex.KEY, key, GlobalSearchScope.allScope(project))) {
+                for (Map.Entry<String, TreeMap<String, String>> entry : value.getConfigs().entrySet()) {
+                    String templateDirectory = entry.getValue().get("template_directory");
+                    if (templateDirectory == null) {
+                        continue;
+                    }
+
+                    namespaces.add(new TwigComponentNamespace(entry.getKey(), templateDirectory, entry.getValue().get("name_prefix")));
+                }
+            }
+        }
+
+        // add default if not presented
+        if (namespaces.stream().noneMatch(n -> "App\\Twig\\Components".equals(StringUtils.strip(n.namespace(), "\\")))) {
+            namespaces.add(new TwigComponentNamespace("App\\Twig\\Components\\", "components/", null));
+        }
 
         return namespaces;
     }
