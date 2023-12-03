@@ -57,15 +57,8 @@ public class PhpLineMarkerProvider implements LineMarkerProvider {
         }
 
         if (leaf.getParent() instanceof PhpClass phpClass) {
-            Collection<String> templates = new ArrayList<>();
-
-            UxUtil.visitComponents(phpClass, t -> {
-                templates.add(Objects.requireNonNullElseGet(t.template(), () -> "components/" + t.name() + ".html.twig"));
-            });
-
             Collection<PsiFile> files = new HashSet<>();
-
-            for (String template : templates) {
+            for (String template : UxUtil.getComponentTemplatesForPhpClass(phpClass)) {
                 files.addAll(TwigUtil.getTemplatePsiElements(phpClass.getProject(), template));
             }
 

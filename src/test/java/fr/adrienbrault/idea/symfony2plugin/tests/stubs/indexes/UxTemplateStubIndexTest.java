@@ -9,7 +9,7 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
  * @see fr.adrienbrault.idea.symfony2plugin.stubs.indexes.UxTemplateStubIndex
  */
 public class UxTemplateStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase {
-    public void testThatMacrosAreInIndex() {
+    public void testThatComponentIsIndexed() {
         myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
             "namespace {\n" +
             "   use Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n" +
@@ -30,24 +30,24 @@ public class UxTemplateStubIndexTest extends SymfonyLightCodeInsightFixtureTestC
             "   class TemplateAlias {}\n"
         );
 
-        assertIndexContainsKeyWithValue(UxTemplateStubIndex.KEY, "alert", value ->
+        assertIndexContainsKeyWithValue(UxTemplateStubIndex.KEY, "\\Alert", value ->
             "alert".equals(value.name()) && "\\Alert".equals(value.phpClass())
         );
 
-        assertIndexContainsKeyWithValue(UxTemplateStubIndex.KEY, "my_alert_foo", value ->
+        assertIndexContainsKeyWithValue(UxTemplateStubIndex.KEY, "\\MyAlert", value ->
             "my_alert_foo".equals(value.name()) && "\\MyAlert".equals(value.phpClass())
         );
 
-        assertIndexContainsKeyWithValue(UxTemplateStubIndex.KEY, "Foobar", value ->
-            "Foobar".equals(value.name()) && "\\Foobar".equals(value.phpClass())
+        assertIndexContainsKeyWithValue(UxTemplateStubIndex.KEY, "\\Foobar", value ->
+            value.name() == null && "\\Foobar".equals(value.phpClass())
         );
 
-        assertIndexContainsKeyWithValue(UxTemplateStubIndex.KEY, "Template", value ->
-            "Template".equals(value.name()) && "\\Template".equals(value.phpClass()) && "foobar/foo.html.twig".equals(value.template())
+        assertIndexContainsKeyWithValue(UxTemplateStubIndex.KEY, "\\Template", value ->
+            value.name() == null && "\\Template".equals(value.phpClass()) && "foobar/foo.html.twig".equals(value.template())
         );
 
-        assertIndexContainsKeyWithValue(UxTemplateStubIndex.KEY, "TemplateAlias", value ->
-            "TemplateAlias".equals(value.name()) && "\\TemplateAlias".equals(value.phpClass()) && "components/form/input/foo.html.twig".equals(value.template())
+        assertIndexContainsKeyWithValue(UxTemplateStubIndex.KEY, "\\TemplateAlias", value ->
+            value.name() == null && "\\TemplateAlias".equals(value.phpClass()) && "form/input/foo.html.twig".equals(value.template())
         );
     }
 }

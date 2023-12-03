@@ -33,7 +33,7 @@ public class UxTemplateStubIndex extends FileBasedIndexExtension<String, UxCompo
             Map<String, UxComponent> map = new HashMap<>();
 
             if(inputData.getPsiFile() instanceof PhpFile phpFile) {
-                UxUtil.visitComponents(phpFile, t -> map.put(t.name(), new UxComponent(t.name(), t.phpClass().getFQN(), t.template(), t.type())));
+                UxUtil.visitComponentsForIndex(phpFile, t -> map.put(t.phpClass().getFQN(), new UxComponent(t.name(), t.phpClass().getFQN(), t.template(), t.type())));
             }
 
             return map;
@@ -52,7 +52,7 @@ public class UxTemplateStubIndex extends FileBasedIndexExtension<String, UxCompo
 
     @Override
     public int getVersion() {
-        return 2;
+        return 3;
     }
 
     public FileBasedIndex.@NotNull InputFilter getInputFilter() {
