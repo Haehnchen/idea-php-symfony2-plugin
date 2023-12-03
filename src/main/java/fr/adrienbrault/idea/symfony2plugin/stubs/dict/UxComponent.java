@@ -10,7 +10,7 @@ import java.util.Objects;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public record UxComponent(@NotNull String name, @NotNull String phpClass, @Nullable String template, fr.adrienbrault.idea.symfony2plugin.util.UxUtil.TwigComponentType type) implements Serializable {
+public record UxComponent(@Nullable String name, @NotNull String phpClass, @Nullable String template, @NotNull fr.adrienbrault.idea.symfony2plugin.util.UxUtil.TwigComponentType type) implements Serializable {
     @Override
     public int hashCode() {
         return new HashCodeBuilder()

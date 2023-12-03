@@ -1,7 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.templating;
 
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
-import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
@@ -10,20 +9,16 @@ import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlElementType;
 import com.intellij.psi.xml.XmlToken;
 import com.intellij.psi.xml.XmlTokenType;
-import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHtmlCompletionUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
-import kotlin.Pair;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.function.Consumer;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -72,7 +67,8 @@ public class HtmlTemplateGoToDeclarationHandler implements GotoDeclarationHandle
 
                     String componentName = StringUtils.stripStart(text, "twig:");
                     if (!componentName.isBlank()) {
-                        targets.addAll(UxUtil.getTwigComponentNameTargets(project, componentName));
+                        targets.addAll(UxUtil.getTwigComponentPhpClasses(project, componentName));
+                        targets.addAll(UxUtil.getComponentTemplates(project, componentName));
                     }
                 }
             } else {
@@ -89,7 +85,7 @@ public class HtmlTemplateGoToDeclarationHandler implements GotoDeclarationHandle
                     String text = psiElement.getText();
                     Project project = psiElement.getProject();
 
-                    for (PhpClass phpClass : UxUtil.getTwigComponentNameTargets(project, htmlTag.getName().substring(5))) {
+                    for (PhpClass phpClass : UxUtil.getTwigComponentPhpClasses(project, htmlTag.getName().substring(5))) {
                         UxUtil.visitComponentVariables(phpClass, pair -> {
                             if (pair.getFirst().equals(StringUtils.stripStart(text, ":"))) {
                                 targets.add(pair.getSecond());

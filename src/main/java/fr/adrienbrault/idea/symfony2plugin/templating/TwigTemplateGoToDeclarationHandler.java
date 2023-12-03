@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.templating;
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
@@ -313,12 +314,15 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
 
     private Collection<? extends PsiElement> getComponentGoTo(@NotNull PsiElement psiElement) {
         String text = PsiElementUtils.getText(psiElement);
-
-        if(StringUtils.isBlank(text)) {
+        if (StringUtils.isBlank(text)) {
             return Collections.emptyList();
         }
 
-        return UxUtil.getTwigComponentNameTargets(psiElement.getProject(), text);
+        Project project = psiElement.getProject();
+        return new ArrayList<>() {{
+            addAll(UxUtil.getComponentTemplates(project, text));
+            addAll(UxUtil.getTwigComponentPhpClasses(project, text));
+        }};
     }
 
     @NotNull
