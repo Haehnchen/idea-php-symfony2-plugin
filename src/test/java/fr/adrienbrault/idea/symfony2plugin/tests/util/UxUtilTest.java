@@ -12,12 +12,12 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.TwigComponentNamespace;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -32,6 +32,18 @@ public class UxUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
     public String getTestDataPath() {
         return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/util/fixtures";
+    }
+    public void testUxUtil() {
+        myFixture.copyFileToProject("twig_component.yaml");
+
+        Collection<TwigComponentNamespace> namespaces = UxUtil.getNamespaces(getProject());
+        assertEquals("components/", namespaces.stream().filter(n -> "App\\Twig\\Components\\".equals(n.namespace())).findFirst().get().templateDirectory());
+        assertEquals("components", namespaces.stream().filter(n -> "App\\Twig\\Foobar\\".equals(n.namespace())).findFirst().get().templateDirectory());
+        assertEquals("foobar/", namespaces.stream().filter(n -> "App\\Twig\\WhenSwitch\\".equals(n.namespace())).findFirst().get().templateDirectory());
+
+        TwigComponentNamespace n1 = namespaces.stream().filter(n -> "App\\Twig\\Components2\\".equals(n.namespace())).findFirst().get();
+        assertEquals("components", n1.templateDirectory());
+        assertEquals("AppBar", n1.namePrefix());
     }
 
     public void testVisitAsTwigComponent() {
