@@ -20,6 +20,12 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.261
+* Support Twig component template and namespace mapping (Daniel Espendiller)
+* Provide additional block information on multiple navigation targets popover (Daniel Espendiller)
+* Whitelist "attribute" type to be valid file references linemarker for support related controllers (Daniel Espendiller)
+* Add support for AssetMapper and importmap (Daniel Espendiller)
+
 ## 2022.1.260
 * AutowireLocator should complete services not tags (Daniel Espendiller)
 * [#2248](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2248) translation targets from different provider must be unique (Daniel Espendiller)
