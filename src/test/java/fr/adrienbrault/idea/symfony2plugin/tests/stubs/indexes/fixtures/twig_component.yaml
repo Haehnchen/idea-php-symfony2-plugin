@@ -1,0 +1,21 @@
+twig_component:
+  anonymous_template_directory: 'components/'
+  defaults:
+    # Namespace & directory for components
+    App\Twig\Components\: 'components/'
+    App\Twig\Foobar\: components
+
+
+    # long form
+    App\Twig\Components2\:
+      template_directory: components
+      # component names will have an extra "AppBar:" prefix
+      #    App\Twig\Components2\Alert => AppBar:Alert
+      #    App\Twig\Components2\Button\Primary => AppBar:Button:Primary
+      name_prefix: AppBar
+
+when@test:
+  twig_component:
+    defaults:
+      # Namespace & directory for components
+      App\Twig\WhenSwitch\: 'foobar/'
