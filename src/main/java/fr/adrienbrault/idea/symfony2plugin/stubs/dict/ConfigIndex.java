@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -18,9 +19,13 @@ public class ConfigIndex implements Serializable {
     @NotNull
     private final TreeMap<String, TreeMap<String, String>> configs;
 
-    public ConfigIndex(@NotNull String name, @NotNull TreeMap<String, TreeMap<String, String>> configs) {
+    @NotNull
+    private final Set<String> values;
+
+    public ConfigIndex(@NotNull String name, @NotNull TreeMap<String, TreeMap<String, String>> configs, @NotNull Set<String> values) {
         this.name = name;
         this.configs = configs;
+        this.values = values;
     }
 
     @NotNull
@@ -31,6 +36,11 @@ public class ConfigIndex implements Serializable {
     @NotNull
     public Map<String, TreeMap<String, String>> getConfigs() {
         return configs;
+    }
+
+    @NotNull
+    public Set<String> getValues() {
+        return values;
     }
 
     public int hashCode() {
