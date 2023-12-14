@@ -36,4 +36,10 @@ return [
     '_profiler_router' => [['token'], ['_controller' => 'web_profiler.controller.router::panelAction'], [], [['text', '/router'], ['variable', '/', '[^/]++', 'token', true], ['text', '/_profiler']], [], []],
     '_profiler_exception' => [['token'], ['_controller' => 'web_profiler.controller.exception_panel::body'], [], [['text', '/exception'], ['variable', '/', '[^/]++', 'token', true], ['text', '/_profiler']], [], []],
     '_profiler_exception_css' => [['token'], ['_controller' => 'web_profiler.controller.exception_panel::stylesheet'], [], [['text', '/exception.css'], ['variable', '/', '[^/]++', 'token', true], ['text', '/_profiler']], [], []],
+
+    // canonical routes
+    'app.homepage.0' => [[], ['_controller' => 'Company\\Controller\\App\\HomepageController::index', '_locale' => 0, '_canonical_route' => 'app.homepage'], [], [['text', '/']], [['text', 'app.domain.com']], [], []],
+    'app.homepage.1' => [[], ['_controller' => 'Company\\Controller\\App\\HomepageController::index', '_locale' => 1, '_canonical_route' => 'app.homepage'], [], [['text', '/']], [['text', 'staging.app.domain.com']], [], []],
+    'app.homepage.2' => [[], ['_controller' => 'Company\\Controller\\App\\HomepageController::index', '_locale' => 2, '_canonical_route' => 'app.homepage'], [], [['text', '/']], [['text', 'tests.app.domain.local']], [], []],
+    'app.homepage.3' => [[], ['_controller' => 'Company\\Controller\\App\\HomepageController::index', '_locale' => 3, '_canonical_route' => 'app.homepage'], [], [['text', '/']], [['text', 'app.localhost']], [], []],
 ];

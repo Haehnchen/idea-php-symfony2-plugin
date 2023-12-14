@@ -514,14 +514,13 @@ public class RouteHelper {
                 routes.put(routeArray.getKey(), route);
 
                 for (ArrayCreationExpression expression : routeArrayOptions) {
-                    for (ArrayHashElement e : expression.getHashElements()) {
-                        PhpPsiElement key = e.getKey();
-                        if (key != null && "'_canonical_route'".equals(key.getText())) {
-                            PhpPsiElement value = e.getValue();
-                            if (value != null) {
-                                String canonical = value.getText().replace("'", "");
-                                if (!routes.containsKey(canonical)) {
-                                    routes.put(canonical, route);
+                    for (ArrayHashElement arrayHashElement : expression.getHashElements()) {
+                        if (arrayHashElement.getKey() instanceof StringLiteralExpression stringLiteralExpression && "_canonical_route".equals(stringLiteralExpression.getContents())) {
+                            if (arrayHashElement.getValue() instanceof StringLiteralExpression literalExpression) {
+                                String canonical = literalExpression.getContents();
+                                if (!canonical.isBlank() && !routes.containsKey(canonical)) {
+                                    Route routeCanonical = convertRouteConfigForReturnArray(canonical, routeArrayOptions);
+                                    routes.put(canonical, routeCanonical);
                                 }
                             }
                             break;
@@ -621,7 +620,7 @@ public class RouteHelper {
     @NotNull
     private static Route convertRouteConfigForReturnArray(@NotNull String routeName, @NotNull List<ArrayCreationExpression> hashElementCollection) {
         Set<String> variables = new HashSet<>();
-        if(hashElementCollection.size() >= 1 && hashElementCollection.get(0) != null) {
+        if(!hashElementCollection.isEmpty() && hashElementCollection.get(0) != null) {
             ArrayCreationExpression value = hashElementCollection.get(0);
             if(value != null) {
                 variables.addAll(PhpElementsUtil.getArrayValuesAsString(value));
@@ -664,9 +663,9 @@ public class RouteHelper {
 
                         List<String> collect = foo.stream()
                             .map(psiElement -> psiElement.getFirstChild() instanceof StringLiteralExpression ? ((StringLiteralExpression) psiElement.getFirstChild()).getContents() : null)
-                            .collect(Collectors.toList());
+                            .toList();
 
-                        if (collect.size() > 0) {
+                        if (!collect.isEmpty()) {
                             path.append(collect.get(1));
                         }
 
@@ -683,7 +682,7 @@ public class RouteHelper {
         }
 
         // hostTokens = 4 need them?
-        return new Route(routeName, variables, defaults, requirements, tokens, (path.length() == 0) ? null : path.toString());
+        return new Route(routeName, variables, defaults, requirements, tokens, (path.isEmpty()) ? null : path.toString());
     }
 
     /**
@@ -695,7 +694,7 @@ public class RouteHelper {
         hashValue.getHashElements().forEach(hashElementCollection::add);
 
         Set<String> variables = new HashSet<>();
-        if(hashElementCollection.size() >= 1 && hashElementCollection.get(0).getValue() instanceof ArrayCreationExpression value) {
+        if(!hashElementCollection.isEmpty() && hashElementCollection.get(0).getValue() instanceof ArrayCreationExpression value) {
             if(value != null) {
                 variables.addAll(PhpElementsUtil.getArrayKeyValueMap(value).values());
             }
