@@ -183,6 +183,11 @@ public class UxUtil {
             }
         }
 
+        // provide default, is there was noting found
+        if (list.isEmpty()) {
+            list.add("components/");
+        }
+
         return list;
     }
 
@@ -255,12 +260,17 @@ public class UxUtil {
                             return super.visitFile(file);
                         }
 
+                        if (!"twig".equals(file.getExtension())) {
+                            return super.visitFile(file);
+                        }
+
                         String relativePath = VfsUtil.getRelativePath(file, finalRelativeFile, '/');
                         if (relativePath == null) {
                             return super.visitFile(file);
                         }
 
-                        String replace = StringUtils.stripEnd(relativePath.replace("/", ":"), ".html.twig");
+                        // replace ".html.twig" maybe also other formats
+                        String replace = relativePath.replace("/", ":").replaceAll("((\\.html|\\.json)*\\.twig)$", "");
                         if (!names.containsKey(replace)) {
                             names.put(replace, new TwigComponent(replace, null, null));
                         }
