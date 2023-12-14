@@ -524,6 +524,7 @@ public class RouteHelper {
                                     routes.put(canonical, route);
                                 }
                             }
+                            break;
                         }
                     }
                 }
