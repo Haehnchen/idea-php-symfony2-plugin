@@ -286,6 +286,14 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         Route exceptionCss = routes.get("_profiler_exception_css");
         assertEquals("/_profiler/{token}/exception.css", exceptionCss.getPath());
+
+        Route appHomepage = routes.get("app.homepage");
+        assertEquals("Company\\Controller\\App\\HomepageController::index", appHomepage.getController());
+        assertEquals("app.homepage", appHomepage.getName());
+
+        Route appHomepage2 = routes.get("app.homepage.2");
+        assertEquals("Company\\Controller\\App\\HomepageController::index", appHomepage2.getController());
+        assertEquals("app.homepage.2", appHomepage2.getName());
     }
 
     /**
