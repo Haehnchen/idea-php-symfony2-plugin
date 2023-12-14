@@ -510,7 +510,24 @@ public class RouteHelper {
                     routeArrayOptions.add(PsiTreeUtil.getChildOfType(routeOption, ArrayCreationExpression.class));
                 }
 
-                routes.put(routeArray.getKey(), convertRouteConfigForReturnArray(routeArray.getKey(), routeArrayOptions));
+                Route route = convertRouteConfigForReturnArray(routeArray.getKey(), routeArrayOptions);
+                routes.put(routeArray.getKey(), route);
+
+                for (ArrayCreationExpression expression : routeArrayOptions) {
+                    for (ArrayHashElement e : expression.getHashElements()) {
+                        PhpPsiElement key = e.getKey();
+                        if (key != null && "'_canonical_route'".equals(key.getText())) {
+                            PhpPsiElement value = e.getValue();
+                            if (value != null) {
+                                String canonical = value.getText().replace("'", "");
+                                if (!routes.containsKey(canonical)) {
+                                    routes.put(canonical, route);
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
             }
         }
 
