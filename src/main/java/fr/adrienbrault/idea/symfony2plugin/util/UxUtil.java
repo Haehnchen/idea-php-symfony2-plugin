@@ -4,7 +4,9 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.CachedValue;
@@ -20,6 +22,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.dict.UxComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ConfigStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.UxTemplateStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.util.IndexUtil;
+import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.TwigComponentNamespace;
@@ -60,13 +63,15 @@ public class UxUtil {
 
         for (String key : IndexUtil.getAllKeysForProject(ConfigStubIndex.KEY, project)) {
             for (ConfigIndex value : FileBasedIndex.getInstance().getValues(ConfigStubIndex.KEY, key, GlobalSearchScope.allScope(project))) {
-                for (Map.Entry<String, TreeMap<String, String>> entry : value.getConfigs().entrySet()) {
-                    String templateDirectory = entry.getValue().get("template_directory");
-                    if (templateDirectory == null) {
-                        continue;
-                    }
+                if ("twig_component_defaults".equals(value.getName())) {
+                    for (Map.Entry<String, TreeMap<String, String>> entry : value.getConfigs().entrySet()) {
+                        String templateDirectory = entry.getValue().get("template_directory");
+                        if (templateDirectory == null) {
+                            continue;
+                        }
 
-                    namespaces.add(new TwigComponentNamespace(entry.getKey(), templateDirectory, entry.getValue().get("name_prefix")));
+                        namespaces.add(new TwigComponentNamespace(entry.getKey(), templateDirectory, entry.getValue().get("name_prefix")));
+                    }
                 }
             }
         }
@@ -166,8 +171,23 @@ public class UxUtil {
         return getAllComponentNames(project).stream().map(TwigComponent::name).collect(Collectors.toSet());
     }
 
+    @NotNull
+    private static Set<String> getAnonymousTemplateDirectories(@NotNull Project project) {
+        Set<String> list = new HashSet<>();
+
+        for (String key : IndexUtil.getAllKeysForProject(ConfigStubIndex.KEY, project)) {
+            for (ConfigIndex value : FileBasedIndex.getInstance().getValues(ConfigStubIndex.KEY, key, GlobalSearchScope.allScope(project))) {
+                if ("anonymous_template_directory".equals(value.getName())) {
+                    list.addAll(value.getValues());
+                }
+            }
+        }
+
+        return list;
+    }
+
     public static Collection<TwigComponent> getAllComponentNames(@NotNull Project project) {
-        Collection<TwigComponent> names = new ArrayList<>();
+        Map<String, TwigComponent> names = new HashMap<>();
 
         for (String key : IndexUtil.getAllKeysForProject(UxTemplateStubIndex.KEY, project)) {
             for (UxComponent value : FileBasedIndex.getInstance().getValues(UxTemplateStubIndex.KEY, key, GlobalSearchScope.allScope(project))) {
@@ -188,14 +208,70 @@ public class UxUtil {
                                 name = namespace.namePrefix() + ":" + name;
                             }
 
-                            names.add(new TwigComponent(name.replace("\\", ":"), value.phpClass(), namespace));
+                            String uxName = name.replace("\\", ":");
+                            names.put(uxName, new TwigComponent(uxName, value.phpClass(), namespace));
                         }
                     }
                 }
             }
         }
 
-        return names;
+        for (String valueValue : getAnonymousTemplateDirectories(project)) {
+            String namespace = null;
+            if (valueValue.startsWith("@")) {
+                namespace = StringUtils.stripEnd(valueValue.replace("\\", "/"), "/");
+                int i = namespace.indexOf("/");
+                if (i > 0) {
+                    namespace = namespace.substring(0, i);
+                }
+
+                // strip "@"
+                namespace = namespace.substring(1);
+            }
+
+            for (TwigPath twigPath : TwigUtil.getTwigNamespaces(project)) {
+                VirtualFile relativeFile = null;
+
+                if (namespace == null && twigPath.isGlobalNamespace() && twigPath.getNamespaceType() == TwigUtil.NamespaceType.ADD_PATH) {
+                    VirtualFile directory = twigPath.getDirectory(project);
+                    relativeFile = VfsUtil.findRelativeFile(directory, StringUtils.strip(valueValue.replace("\\", "/"), "/").split("/"));
+                } else if (namespace != null && twigPath.getNamespaceType() == TwigUtil.NamespaceType.ADD_PATH && namespace.equals(twigPath.getNamespace())) {
+                    // @namespace resolve
+                    VirtualFile directory = twigPath.getDirectory(project);
+                    String[] split2 = StringUtils.strip(valueValue.replace("\\", "/"), "/").split("/");
+                    String[] split = Arrays.copyOfRange(split2, 1, split2.length);
+                    relativeFile = VfsUtil.findRelativeFile(directory, split);
+                }
+
+                if (relativeFile == null) {
+                    continue;
+                }
+
+                VirtualFile finalRelativeFile = relativeFile;
+                VfsUtil.visitChildrenRecursively(relativeFile, new VirtualFileVisitor<>() {
+                    @Override
+                    public boolean visitFile(@NotNull VirtualFile file) {
+                        if (file.isDirectory()) {
+                            return super.visitFile(file);
+                        }
+
+                        String relativePath = VfsUtil.getRelativePath(file, finalRelativeFile, '/');
+                        if (relativePath == null) {
+                            return super.visitFile(file);
+                        }
+
+                        String replace = StringUtils.stripEnd(relativePath.replace("/", ":"), ".html.twig");
+                        if (!names.containsKey(replace)) {
+                            names.put(replace, new TwigComponent(replace, null, null));
+                        }
+
+                        return super.visitFile(file);
+                    }
+                });
+            }
+        }
+
+        return names.values();
     }
 
     @NotNull
@@ -203,7 +279,7 @@ public class UxUtil {
         Set<PhpClass> phpClasses = new HashSet<>();
 
         for (TwigComponent entry : getAllComponentNames(project)) {
-            if (!entry.name().equals(component)) {
+            if (!entry.name().equals(component) || entry.phpClass() == null) {
                 continue;
             }
 
@@ -224,13 +300,18 @@ public class UxUtil {
                 continue;
             }
 
-            if (entry.twigComponentNamespace.namePrefix() != null && !component.startsWith(entry.twigComponentNamespace.namePrefix() + ":")) {
-                continue;
+            if (entry.twigComponentNamespace != null) {
+                if ((entry.twigComponentNamespace.namePrefix() == null || component.startsWith(entry.twigComponentNamespace.namePrefix() + ":"))) {
+                    String strip = StringUtils.strip(entry.twigComponentNamespace.templateDirectory(), "/");
+                    String template = strip + "/" + component.replace(":", "/") + ".html.twig";
+                    virtualFiles.addAll(TwigUtil.getTemplateFiles(project, template));
+                }
+            } else {
+                for (String directory : getAnonymousTemplateDirectories(project)) {
+                    String templateName = StringUtils.strip(directory, "/") + "/" + component.replace(":", "/") + ".html.twig";
+                    virtualFiles.addAll(TwigUtil.getTemplateFiles(project, templateName));
+                }
             }
-
-            String strip = StringUtils.strip(entry.twigComponentNamespace.templateDirectory(), "/");
-            String template = strip + "/" + component.replace(":", "/") + ".html.twig";
-            virtualFiles.addAll(TwigUtil.getTemplateFiles(project, template));
         }
 
         return PsiElementUtils.convertVirtualFilesToPsiFiles(project, virtualFiles);
@@ -290,6 +371,10 @@ public class UxUtil {
         Set<PhpClass> phpClasses = new HashSet<>();
 
         for (TwigComponent entry : getAllComponentNames(project)) {
+            if (entry.phpClass() == null) {
+                continue;
+            }
+
             PhpClass classInterface = PhpElementsUtil.getClassInterface(project, entry.phpClass());
             if (classInterface != null) {
                 phpClasses.add(classInterface);
@@ -312,7 +397,7 @@ public class UxUtil {
             .map(entry ->
                 LookupElementBuilder.create(entry.getKey())
                     .withIcon(Symfony2Icons.SYMFONY)
-                    .withTypeText(StringUtils.stripStart(entry.getValue(), "\\"))
+                    .withTypeText(entry.getValue() != null ? StringUtils.stripStart(entry.getValue(), "\\") : "anonymous")
             )
             .collect(Collectors.toList());
     }
@@ -346,7 +431,7 @@ public class UxUtil {
         Collection<String> names = new HashSet<>();
 
         // public state
-        Collection<@NotNull PhpAttribute> attributes = phpAttributesOwner.getAttributes(ATTRIBUTE_EXPOSE_IN_TEMPLATE);
+        Collection<PhpAttribute> attributes = phpAttributesOwner.getAttributes(ATTRIBUTE_EXPOSE_IN_TEMPLATE);
         if (attributes.isEmpty()) {
             String name = phpAttributesOwner.getName();
 
@@ -392,5 +477,5 @@ public class UxUtil {
 
     public record TwigComponentIndex(@Nullable String name, @NotNull PhpClass phpClass, @Nullable String template, @NotNull TwigComponentType type) {}
 
-    public record TwigComponent(@NotNull String name, @NotNull String phpClass, @NotNull TwigComponentNamespace twigComponentNamespace) {}
+    public record TwigComponent(@NotNull String name, @Nullable String phpClass, @Nullable TwigComponentNamespace twigComponentNamespace) {}
 }
