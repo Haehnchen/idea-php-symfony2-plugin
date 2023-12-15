@@ -19,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.*;
+import org.jetbrains.yaml.psi.impl.YAMLPlainTextImpl;
 
 import java.util.Collection;
 import java.util.List;
@@ -30,7 +31,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
 
     @Override
     public void collectSlowLineMarkers(@NotNull List<? extends PsiElement> psiElements, @NotNull Collection<? super LineMarkerInfo<?>> lineMarkerInfos) {
-        if(psiElements.size() == 0 || !Symfony2ProjectComponent.isEnabled(psiElements.get(0))) {
+        if(psiElements.isEmpty() || !Symfony2ProjectComponent.isEnabled(psiElements.get(0))) {
             return;
         }
 
@@ -53,6 +54,11 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
      * controllers:
      *    resource: '../../src/Controller/'
      *    type: annotation
+     *
+     * controllers:
+     *     resource:
+     *         path: ../src/Controller/
+     *         namespace: App\Controller
      */
     private void attachRoutingForResources(@NotNull Collection<? super LineMarkerInfo<?>> result, @NotNull PsiElement leafTarget) {
         if (leafTarget.getNode().getElementType() != YAMLTokenTypes.SCALAR_KEY) {
@@ -64,8 +70,8 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        String resource = YamlHelper.getYamlKeyValueAsString((YAMLKeyValue) yamlKeyValue, "resource");
-        if (resource == null) {
+        String resourcePath = FileResourceUtil.getResourcePath((YAMLKeyValue) yamlKeyValue);
+        if (resourcePath == null) {
             return;
         }
 
@@ -78,7 +84,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
             FileResourceUtil.getNavigationGutterForRouteAnnotationResources(
                 leafTarget.getProject(),
                 leafTarget.getContainingFile().getVirtualFile(),
-                resource
+                resourcePath
             ).createLineMarkerInfo(leafTarget)
         );
     }
