@@ -15,7 +15,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 public class RouteUrlAnnotationCompletionProvider implements PhpAnnotationCompletionProvider {
     @Override
     public void getPropertyValueCompletions(AnnotationPropertyParameter annotationPropertyParameter, AnnotationCompletionProviderParameter annotationCompletionProviderParameter) {
-        if (!Symfony2ProjectComponent.isEnabled(annotationPropertyParameter.getProject()) || !PhpElementsUtil.isInstanceOf(annotationPropertyParameter.getPhpClass(), "\\Symfony\\Component\\Routing\\Annotation\\Route")) {
+        if (!Symfony2ProjectComponent.isEnabled(annotationPropertyParameter.getProject()) || !PhpElementsUtil.isInstanceOf(annotationPropertyParameter.getPhpClass(), "\\Symfony\\Component\\Routing\\Annotation\\Route", "\\Symfony\\Component\\Routing\\Annotation\\Route")) {
             return;
         }
 

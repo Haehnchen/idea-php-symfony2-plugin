@@ -23,12 +23,13 @@ import fr.adrienbrault.idea.symfony2plugin.config.xml.inspection.XmlDuplicateSer
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLLanguage;
 import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.YAMLMapping;
+
+import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -95,14 +96,17 @@ public class DuplicateLocalRouteInspection extends LocalInspectionTool {
         }
 
         private void visitPhp(@NotNull StringLiteralExpression element) {
-            if (PhpElementsUtil.isAttributeNamedArgumentString(element, "\\Symfony\\Component\\Routing\\Annotation\\Route", "name")) {
+            if (PhpElementsUtil.isAttributeNamedArgumentString(element, "\\Symfony\\Component\\Routing\\Annotation\\Route", "name") || PhpElementsUtil.isAttributeNamedArgumentString(element, "\\Symfony\\Component\\Routing\\Attribute\\Route", "name")) {
                 PhpAttribute parentOfType = PsiTreeUtil.getParentOfType(element, PhpAttribute.class);
                 if (parentOfType.getOwner() instanceof Method method && method.getAccess().isPublic() && method.getContainingClass() != null) {
                     int found = 0;
                     String contents = element.getContents();
 
                     for (Method ownMethod : method.getContainingClass().getOwnMethods()) {
-                        for (PhpAttribute attribute : ownMethod.getAttributes("\\Symfony\\Component\\Routing\\Annotation\\Route")) {
+                        Collection<PhpAttribute> attributes = ownMethod.getAttributes("\\Symfony\\Component\\Routing\\Annotation\\Route");
+                        attributes.addAll(ownMethod.getAttributes("\\Symfony\\Component\\Routing\\Attribute\\Route"));
+
+                        for (PhpAttribute attribute : attributes) {
                             String name = PhpElementsUtil.getAttributeArgumentStringByName(attribute, "name");
                             if (contents.equals(name)) {
                                 found++;
@@ -121,7 +125,7 @@ public class DuplicateLocalRouteInspection extends LocalInspectionTool {
                 PhpDocTag phpDocTag = PsiTreeUtil.getParentOfType(element, PhpDocTag.class);
                 if (phpDocTag != null) {
                     PhpClass phpClass = AnnotationUtil.getAnnotationReference(phpDocTag);
-                    if (phpClass != null && RouteHelper.ROUTE_CLASSES.contains(StringUtils.stripStart(phpClass.getFQN(), "\\"))) {
+                    if (phpClass != null && RouteHelper.isRouteClassAnnotation(phpClass.getFQN())) {
                         PhpDocComment phpDocComment = PsiTreeUtil.getParentOfType(element, PhpDocComment.class);
                         if (phpDocComment.getNextPsiSibling() instanceof Method method && method.getAccess().isPublic() && method.getContainingClass() != null) {
                             int found = 0;
@@ -130,7 +134,7 @@ public class DuplicateLocalRouteInspection extends LocalInspectionTool {
                             for (Method ownMethod : method.getContainingClass().getOwnMethods()) {
                                 PhpDocCommentAnnotation phpClassContainer = AnnotationUtil.getPhpDocCommentAnnotationContainer(ownMethod.getDocComment());
                                 if(phpClassContainer != null) {
-                                    PhpDocTagAnnotation firstPhpDocBlock = phpClassContainer.getFirstPhpDocBlock(RouteHelper.ROUTE_CLASSES.toArray(String[]::new));
+                                    PhpDocTagAnnotation firstPhpDocBlock = phpClassContainer.getFirstPhpDocBlock(RouteHelper.ROUTE_ANNOTATIONS);
                                     if(firstPhpDocBlock != null) {
                                         String name = firstPhpDocBlock.getPropertyValue("name");
                                         if (contents.equals(name)) {

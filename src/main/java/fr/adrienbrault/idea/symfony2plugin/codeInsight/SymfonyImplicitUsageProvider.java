@@ -26,11 +26,6 @@ import java.util.stream.Collectors;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class SymfonyImplicitUsageProvider implements ImplicitUsageProvider {
-    private static final String[] ROUTE_ANNOTATIONS = new String[] {
-        "\\Symfony\\Component\\Routing\\Annotation\\Route",
-        "\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Route"
-    };
-
     @Override
     public boolean isImplicitUsage(@NotNull PsiElement element) {
         if (element instanceof Method method && method.getAccess() == PhpModifier.Access.PUBLIC) {
@@ -128,11 +123,11 @@ public class SymfonyImplicitUsageProvider implements ImplicitUsageProvider {
 
     private boolean isMethodARoute(@NotNull Method method) {
         PhpDocCommentAnnotation phpDocCommentAnnotationContainer = AnnotationUtil.getPhpDocCommentAnnotationContainer(method.getDocComment());
-        if (phpDocCommentAnnotationContainer != null && phpDocCommentAnnotationContainer.getFirstPhpDocBlock(ROUTE_ANNOTATIONS) != null) {
+        if (phpDocCommentAnnotationContainer != null && phpDocCommentAnnotationContainer.getFirstPhpDocBlock(RouteHelper.ROUTE_ANNOTATIONS) != null) {
             return true;
         }
 
-        for (String route : ROUTE_ANNOTATIONS) {
+        for (String route : RouteHelper.ROUTE_ANNOTATIONS) {
             Collection<@NotNull PhpAttribute> attributes = method.getAttributes(route);
             if (!attributes.isEmpty()) {
                 return true;

@@ -812,6 +812,10 @@ public class PhpElementsUtil {
         return false;
     }
 
+    public static boolean isInstanceOf(@NotNull PhpClass subjectClass, @NotNull String ...expectedClassAsString) {
+        return Arrays.stream(expectedClassAsString).anyMatch(clazz -> isInstanceOf(subjectClass, clazz));
+    }
+
     /**
      * @param subjectClassAsString eg DateTime
      * @param expectedClass eg DateTimeInterface

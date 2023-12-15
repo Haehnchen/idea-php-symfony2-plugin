@@ -64,6 +64,11 @@ import java.util.stream.StreamSupport;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class RouteHelper {
+    public static final String[] ROUTE_ANNOTATIONS = new String[] {
+        "\\Symfony\\Component\\Routing\\Annotation\\Route",
+        "\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Route",
+        "\\Symfony\\Component\\Routing\\Attribute\\Route"
+    };
 
     private static final Key<CachedValue<Map<String, Route>>> ROUTE_CACHE = new Key<>("SYMFONY:ROUTE_CACHE");
     private static final Key<CachedValue<Set<String>>> ROUTE_CONTROLLER_RESOLVED_CACHE = new Key<>("ROUTE_CONTROLLER_RESOLVED_CACHE");
@@ -71,11 +76,6 @@ public class RouteHelper {
     private static final Key<CachedValue<Map<String, Route>>> SYMFONY_COMPILED_CACHE_ROUTES = new Key<>("SYMFONY_COMPILED_CACHE_ROUTES");
     private static final Key<CachedValue<Collection<String>>> SYMFONY_COMPILED_CACHE_ROUTES_FILES = new Key<>("SYMFONY_COMPILED_CACHE_ROUTES_FILES");
     private static final Key<CachedValue<Collection<String>>> SYMFONY_COMPILED_GUESTED_FILES = new Key<>("SYMFONY_COMPILED_GUESTED_FILES");
-
-    public static Set<String> ROUTE_CLASSES = new HashSet<>(Arrays.asList(
-        "Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Route",
-        "Symfony\\Component\\Routing\\Annotation\\Route"
-    ));
 
     private static final ExtensionPointName<RoutingLoader> ROUTING_LOADER = new ExtensionPointName<>(
         "fr.adrienbrault.idea.symfony2plugin.extension.RoutingLoader"
@@ -1162,7 +1162,7 @@ public class RouteHelper {
     private static String getRouteNamePrefix(@NotNull  PhpClass phpClass) {
         PhpDocCommentAnnotation phpClassContainer = AnnotationUtil.getPhpDocCommentAnnotationContainer(phpClass.getDocComment());
         if(phpClassContainer != null) {
-            PhpDocTagAnnotation firstPhpDocBlock = phpClassContainer.getFirstPhpDocBlock(ROUTE_CLASSES.toArray(new String[0]));
+            PhpDocTagAnnotation firstPhpDocBlock = phpClassContainer.getFirstPhpDocBlock(ROUTE_ANNOTATIONS);
             if(firstPhpDocBlock != null) {
                 String name = firstPhpDocBlock.getPropertyValue("name");
                 if(name != null && StringUtils.isNotBlank(name)) {
@@ -1342,8 +1342,8 @@ public class RouteHelper {
      * Support "use Symfony\Component\Routing\Annotation\Route as BaseRoute;"
      */
     public static boolean isRouteClassAnnotation(@NotNull String clazz) {
-        String myClazz = StringUtils.stripStart(clazz, "\\");
-        return ROUTE_CLASSES.stream().anyMatch(s -> s.equalsIgnoreCase(myClazz));
+        String myClazz = "\\" + StringUtils.stripStart(clazz, "\\");
+        return Arrays.stream(ROUTE_ANNOTATIONS).anyMatch(s -> s.equalsIgnoreCase(myClazz));
     }
 
     private static class CompiledRoutePathFilesModificationTracker extends SimpleModificationTracker {
