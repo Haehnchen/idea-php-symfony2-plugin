@@ -26,9 +26,14 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.YAMLMapping;
+import org.jetbrains.yaml.psi.YAMLScalar;
+import org.jetbrains.yaml.psi.YAMLValue;
 
 import java.io.File;
 import java.io.IOException;
@@ -394,6 +399,37 @@ public class FileResourceUtil {
         }
 
         return new Pair<>(join, null);
+    }
+
+    /**
+     * controllers:
+     *    resource: '../../src/Controller/'
+     *
+     * controllers:
+     *     resource:
+     *         path: ../src/Controller/
+     */
+    @Nullable
+    public static String getResourcePath(@NotNull YAMLKeyValue yamlKeyValue) {
+        YAMLKeyValue resourceYamlKeyValue = YamlHelper.getYamlKeyValue(yamlKeyValue, "resource");
+        if (resourceYamlKeyValue == null) {
+            return null;
+        }
+
+        YAMLValue value = resourceYamlKeyValue.getValue();
+
+        String resource = null;
+        if (value instanceof YAMLScalar) {
+            resource = ((YAMLScalar) value).getTextValue();
+        } else if (value instanceof YAMLMapping) {
+            resource = YamlHelper.getYamlKeyValueAsString((YAMLMapping) value, "path");
+        }
+
+        if (resource == null || resource.isBlank()) {
+            return null;
+        }
+
+        return resource;
     }
 
     public static @NotNull NavigationGutterIconBuilder<PsiElement> getNavigationGutterForRouteAnnotationResources(@NotNull Project project, @NotNull VirtualFile virtualFile, @NotNull String resource) {

@@ -7,6 +7,7 @@ import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.Consumer;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.FileResource;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.FileResourceContextTypeEnum;
+import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -68,13 +69,16 @@ public class FileResourceVisitorUtil {
     private static void visitKeyValue(@NotNull YAMLKeyValue yamlKeyValue, @NotNull Consumer<FileResourceConsumer> consumer) {
         // app1:
         //   resource: "@AcmeOtherBundle/Resources/config/routing1.yml"
-        YAMLKeyValue resourceKey = YamlHelper.getYamlKeyValue(yamlKeyValue, "resource", true);
-        if(resourceKey == null) {
+        //   resource:
+        //      path: foo
+
+        YAMLKeyValue resourceYamlKeyValue = YamlHelper.getYamlKeyValue(yamlKeyValue, "resource");
+        if (resourceYamlKeyValue == null) {
             return;
         }
 
-        String resource = PsiElementUtils.trimQuote(resourceKey.getValueText());
-        if(StringUtils.isBlank(resource)) {
+        String resource = FileResourceUtil.getResourcePath(yamlKeyValue);
+        if (resource == null) {
             return;
         }
 
@@ -91,13 +95,14 @@ public class FileResourceVisitorUtil {
         boolean isRouteContext = map.containsKey("type")
             || map.containsKey("prefix")
             || map.containsKey("name_prefix")
-            || YamlHelper.getYamlKeyValue(yamlKeyValue, "requirements", true) != null;
+            || YamlHelper.getYamlKeyValue(yamlKeyValue, "requirements", true) != null
+            || YamlHelper.getYamlKeyValue(resourceYamlKeyValue, "namespace", true) != null;
 
         if (isRouteContext) {
             fileResourceContextType = FileResourceContextTypeEnum.ROUTE;
         }
 
-        consumer.consume(new FileResourceConsumer(resourceKey, normalize(resource), fileResourceContextType, map));
+        consumer.consume(new FileResourceConsumer(resourceYamlKeyValue, normalize(resource), fileResourceContextType, map));
     }
 
     /**

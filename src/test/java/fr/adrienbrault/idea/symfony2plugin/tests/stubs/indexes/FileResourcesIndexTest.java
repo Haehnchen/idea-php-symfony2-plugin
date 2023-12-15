@@ -44,7 +44,15 @@ public class FileResourcesIndexTest extends SymfonyLightCodeInsightFixtureTestCa
                 "when@dev:\n" +
                 "    web_profiler_wdt_2:\n" +
                 "        resource: '@WebProfilerBundle/Resources/config/routing/wdt_2.xml'\n" +
-                "        prefix: /_wdt\n"
+                "        prefix: /_wdt\n" +
+                "controllers_array:\n" +
+                "    resource:\n" +
+                "       path: ../src/Controller/\n" +
+                "       namespace: foo\n" +
+                "controllers_array_2:\n" +
+                "    resource:\n" +
+                "       path: '../src/Controller2/'\n" +
+                "       namespace: foo\n"
         );
 
         myFixture.configureByText("test1.xml", "" +
@@ -77,6 +85,9 @@ public class FileResourcesIndexTest extends SymfonyLightCodeInsightFixtureTestCa
 
         assertIndexContains(FileResourcesIndex.KEY, "@WebProfilerBundle/Resources/config/routing/wdt_1.xml");
         assertIndexContains(FileResourcesIndex.KEY, "@WebProfilerBundle/Resources/config/routing/wdt_2.xml");
+
+        assertIndexContains(FileResourcesIndex.KEY, "../src/Controller");
+        assertIndexContains(FileResourcesIndex.KEY, "../src/Controller2");
     }
 
     public void testXmlResourcesImport() {
@@ -100,5 +111,8 @@ public class FileResourcesIndexTest extends SymfonyLightCodeInsightFixtureTestCa
         assertEquals("/foo", item.getPrefix());
         assertEquals(FileResourceContextTypeEnum.ROUTE, item.getContextType());
         assertEquals(treeMap, item.getContextValues());
+
+        item = ContainerUtil.getFirstItem(FileBasedIndex.getInstance().getValues(FileResourcesIndex.KEY, "../src/Controller", GlobalSearchScope.allScope(getProject())));
+        assertEquals(FileResourceContextTypeEnum.ROUTE, item.getContextType());
     }
 }
