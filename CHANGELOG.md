@@ -20,6 +20,19 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.262
+* AssetMapper javascript module should only trigger if plugin is activated (Daniel Espendiller)
+* [paid] Add inspection to hint usages for new "Symfony\Component\Routing\Attribute\Route" (Daniel Espendiller)
+* Support new routing class "\Symfony\Component\Routing\Attribute\Route" (Daniel Espendiller)
+* Support routing resource registering via path (Daniel Espendiller)
+* [#2177](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2177) [#2266](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2266) Add canonical routes to index: test and optimize (Daniel Espendiller)
+* Add Twig component twig filter and provide default for anonymous as fallback (Daniel Espendiller)
+* Support anonymous Twig components path config (Daniel Espendiller)
+* Stop searching after canonical route is found (Benoit Duffez)
+* Add canonical routes to index (Benoit Duffez)
+* Provide Symfony ux "anonymous_template_directory" index (Daniel Espendiller)
+* Use PsiReference list to determine if route, service, or template "missing" inspections apply (Adrian Günter)
+
 ## 2022.1.261
 * Support Twig component template and namespace mapping (Daniel Espendiller)
 * Provide additional block information on multiple navigation targets popover (Daniel Espendiller)
