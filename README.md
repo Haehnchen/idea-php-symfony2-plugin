@@ -23,11 +23,11 @@ Install
 Freemium
 ---------------------
 
-Since PhpStorm 2022.1 is plugin is marked a "Freemium".
+Since PhpStorm 2022.1 this plugin is marked a "Freemium".
 
 * All features which are inside [GitHub](https://github.com/Haehnchen/idea-php-symfony2-plugin) are free to use, unless there is reason (e.g. Supporting old Symfony Version, ...) 
 * Non-free features are flagged with _[paid]_ inside [Documentation](https://espend.de/phpstorm/plugin/symfony) and inside the [CHANGELOG](https://github.com/Haehnchen/idea-php-symfony2-plugin/blob/master/CHANGELOG.md)  
-* There is ~15min grace period after project open where all features are available
+* There is ~15min grace period after project opening where all features are available
 * A license must be activated via PhpStorm / Intellij: use menu "Help -> Register" or use "Search Everywhere" by searching for "Manage License..." action 
 
 _A license can be bought at [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/7219-symfony-support/pricing)_
@@ -66,7 +66,7 @@ Building, debugging and other
 
 If you are having difficulties, consult the documentation: http://confluence.jetbrains.com/display/PhpStorm/Setting-up+environment+for+PhpStorm+plugin+development
 
-* Want to sponsor my development? Nice! You can sponsor me via [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=5ZTGW6H4Y7MT8) or via [Github](https://github.com/sponsors/Haehnchen). Github matches your donation so the total donation will be doubled. 
+* Want to sponsor my development? Nice! You can sponsor me via [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=5ZTGW6H4Y7MT8) or [Github](https://github.com/sponsors/Haehnchen). Github matches your donation so the total donation will be doubled. 
 
 What? Something still does not work? Damn! :cry:
 ------------------------------------------------
@@ -76,8 +76,8 @@ You can browse the existing issues at https://github.com/Haehnchen/idea-php-symf
 If your issue already exists, don't hesitate to add a comment to help contributors resolve the issue more easily.
 If your issue does not exist, open a new issue :smiley:.
 
-Make sure to provide the maximum amount of informations, such as:
-* What version of PhpStorm are you using ?
-* What version of the plugin are you using ?
+Make sure to provide the maximum amount of information, such as:
+* What version of PhpStorm are you using?
+* What version of the plugin are you using?
 * The stack trace if an error occurred
 * Check if you are in PhpStorm eap channel
