@@ -136,7 +136,14 @@ public class AssetMapperUtil {
                                 break;
                             }
                         } else if (mappingFile.key().contains("/")) {
-                            String[] split = StringUtils.split("assets/vendor/" + mappingFile.key() + ".js", "/");
+                            String path;
+                            if (mappingFile.key().startsWith("@") && mappingFile.key().split("/").length == 2) {
+                                path = mappingFile.key() + "/" +  mappingFile.key().split("/")[1] + ".index.js";
+                            } else {
+                                path = mappingFile.key() + ".js";
+                            }
+
+                            String[] split = StringUtils.split("assets/vendor/" + path, "/");
                             VirtualFile relativeFile = VfsUtil.findRelativeFile(parent, split);
                             if (relativeFile != null) {
                                 files.add(relativeFile);
@@ -163,7 +170,14 @@ public class AssetMapperUtil {
                             break;
                         }
                     } else if (mappingFile.key().contains("/")) {
-                        String[] split = StringUtils.split(mappingFile.key() + ".js", "/");
+                        String path;
+                        if (mappingFile.key().startsWith("@") && mappingFile.key().split("/").length == 2) {
+                            path = mappingFile.key() + "/" +  mappingFile.key().split("/")[1] + ".index.js";
+                        } else {
+                            path = mappingFile.key() + ".js";
+                        }
+
+                        String[] split = StringUtils.split(path, "/");
                         VirtualFile relativeFile = VfsUtil.findRelativeFile(parent, split);
                         if (relativeFile != null) {
                             files.add(relativeFile);
