@@ -10,6 +10,7 @@ import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.ParameterList;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.config.SymfonyPhpReferenceContributor;
 import fr.adrienbrault.idea.symfony2plugin.templating.inspection.TemplateCreateByNameLocalQuickFix;
 import fr.adrienbrault.idea.symfony2plugin.templating.inspection.TemplateGuessTypoQuickFix;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
@@ -19,8 +20,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Arrays;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -82,7 +81,7 @@ public class PhpTemplateMissingInspection extends LocalInspectionTool {
             return null;
         }
 
-        if(Arrays.stream(psiElement.getReferences()).noneMatch(ref -> ref instanceof TemplateReference)) {
+        if (!PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) methodReference, SymfonyPhpReferenceContributor.TEMPLATE_SIGNATURES)) {
             return null;
         }
 
