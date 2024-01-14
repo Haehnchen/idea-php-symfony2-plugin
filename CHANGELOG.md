@@ -20,6 +20,12 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.263
+* Revert "Use PsiReference list to determine if route, service, or template "missing" inspections apply" (Daniel Espendiller)
+* Allow AssetMapper to resolve scope npm packages (e.g. @hotwired/turbo) (Alogou Raphael)
+* [paid] Add Doctrine inspection for 'JoinColumn' deprecation on one-to-one associations (Daniel Espendiller)
+* [paid] Add CommandStaticDeprecationInspection to favor AsCommand registering (Daniel Espendiller)
+
 ## 2022.1.262
 * AssetMapper javascript module should only trigger if plugin is activated (Daniel Espendiller)
 * [paid] Add inspection to hint usages for new "Symfony\Component\Routing\Attribute\Route" (Daniel Espendiller)
