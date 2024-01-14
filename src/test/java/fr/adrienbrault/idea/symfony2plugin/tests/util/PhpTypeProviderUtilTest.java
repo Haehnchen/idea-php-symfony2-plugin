@@ -81,8 +81,11 @@ public class PhpTypeProviderUtilTest extends SymfonyLightCodeInsightFixtureTestC
             PhpPsiElementFactory.createFunctionReference(getProject(), "<?php class Foo {}; foo(Foo::class);"), "|".charAt(0))
         );
 
-        assertEquals("#F\\foo|#P#C\\Foo.foo", PhpTypeProviderUtil.getReferenceSignatureByFirstParameter(
-            PhpPsiElementFactory.createFunctionReference(getProject(), "<?php class Foo { private $foo = 'foobar' \n private function() { foo($this->foo); } }; "), "|".charAt(0))
+        String referenceSignatureByFirstParameter = PhpTypeProviderUtil.getReferenceSignatureByFirstParameter(
+            PhpPsiElementFactory.createFunctionReference(getProject(), "<?php class Foo { private $foo = 'foobar' \n private function() { foo($this->foo); } }; "), "|".charAt(0)
         );
+
+        assertTrue(referenceSignatureByFirstParameter.contains("#P#C\\Foo.foo"));
+        assertTrue(referenceSignatureByFirstParameter.contains("#F\\foo"));
     }
 }

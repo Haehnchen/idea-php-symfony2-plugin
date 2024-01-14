@@ -487,40 +487,6 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
         fail(String.format("Fail matches '%s' with one of %s", contains, matches));
     }
 
-    public void assertAnnotationContains(String filename, String content, String contains) {
-        List<String> matches = new ArrayList<>();
-        for (Annotation annotation : getAnnotationsAtCaret(filename, content)) {
-            matches.add(annotation.toString());
-            if(annotation.getMessage().contains(contains)) {
-                return;
-            }
-        }
-
-        fail(String.format("Fail matches '%s' with one of %s", contains, matches));
-    }
-
-    @NotNull
-    private AnnotationHolderImpl getAnnotationsAtCaret(String filename, String content) {
-        PsiFile psiFile = myFixture.configureByText(filename, content);
-        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
-
-        AnnotationHolderImpl annotations = new AnnotationHolderImpl(new AnnotationSession(psiFile));
-
-        for (Annotator annotator : LanguageAnnotators.INSTANCE.allForLanguage(psiFile.getLanguage())) {
-            annotator.annotate(psiElement, annotations);
-        }
-
-        return annotations;
-    }
-
-    public void assertAnnotationNotContains(String filename, String content, String contains) {
-        for (Annotation annotation : getAnnotationsAtCaret(filename, content)) {
-            if(annotation.getMessage().contains(contains)) {
-                fail(String.format("Fail not matching '%s' with '%s'", contains, annotation));
-            }
-        }
-    }
-
     public void assertIntentionIsAvailable(LanguageFileType languageFileType, String configureByText, String intentionText) {
         myFixture.configureByText(languageFileType, configureByText);
         PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
