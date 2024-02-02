@@ -28,7 +28,7 @@ public class ConstraintMessageAnnotationReferences implements PhpAnnotationRefer
         }
 
         String propertyName = parameter.getPropertyName();
-        if (propertyName == null || !propertyName.startsWith("message")) {
+        if (propertyName == null || (!propertyName.startsWith("message") && !propertyName.endsWith("Message"))) {
             return new PsiReference[0];
         }
 
@@ -47,7 +47,7 @@ public class ConstraintMessageAnnotationReferences implements PhpAnnotationRefer
         }
 
         String propertyName = parameter.getPropertyName();
-        if (propertyName == null || !propertyName.startsWith("message")) {
+        if (propertyName == null || (!propertyName.startsWith("message") && !propertyName.endsWith("Message"))) {
             return;
         }
 

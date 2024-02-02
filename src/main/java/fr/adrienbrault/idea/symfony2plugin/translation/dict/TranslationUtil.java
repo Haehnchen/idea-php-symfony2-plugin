@@ -462,6 +462,7 @@ public class TranslationUtil {
      * class FooConstraint extends \Symfony\Component\Validator\Constraint
      * public $message = 'This value should not be blank.';
      * public $messageFoo = 'This value should not be blank.';
+     * public $fooMessage = 'This value should not be blank.';
      */
     public static boolean isConstraintPropertyField(@NotNull StringLiteralExpression psiElement) {
         PsiElement field = psiElement.getParent();
@@ -469,7 +470,7 @@ public class TranslationUtil {
             PhpClass containingClass = ((Field) field).getContainingClass();
             if (containingClass != null && PhpElementsUtil.isInstanceOf(containingClass, "\\Symfony\\Component\\Validator\\Constraint")) {
                 String name = ((Field) field).getName();
-                return name.startsWith("message");
+                return name.startsWith("message") || name.endsWith("Message");
             }
         }
 
