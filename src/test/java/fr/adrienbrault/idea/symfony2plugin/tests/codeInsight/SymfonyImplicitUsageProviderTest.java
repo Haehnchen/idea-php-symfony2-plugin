@@ -285,6 +285,48 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
         assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("__invoke")));
     }
 
+    public void testEventSubscriberGetAsEventListenerOnClassWithoutMethod() {
+        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+                "namespace App\\EventListener;\n" +
+                "\n" +
+                "use Symfony\\Component\\EventDispatcher\\Attribute\\AsEventListener;\n" +
+                "\n" +
+                "#[AsEventListener(event: 'bar')]\n" +
+                "final class MyMultiListener\n" +
+                "{\n" +
+                "    public function onBar(): void\n" +
+                "    {\n" +
+                "    }\n" +
+                "\n" +
+                "}"
+        );
+
+        PhpClass phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
+
+        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("onBar")));
+    }
+
+    public void testEventSubscriberGetAsEventListenerOnClassWithoutMethodCleanUp() {
+        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+                "namespace App\\EventListener;\n" +
+                "\n" +
+                "use Symfony\\Component\\EventDispatcher\\Attribute\\AsEventListener;\n" +
+                "\n" +
+                "#[AsEventListener(event: 'foo-bar')]\n" +
+                "final class MyMultiListener\n" +
+                "{\n" +
+                "    public function onFooBar(): void\n" +
+                "    {\n" +
+                "    }\n" +
+                "\n" +
+                "}"
+        );
+
+        PhpClass phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
+
+        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("onFooBar")));
+    }
+
     public void testTwigExtensionRegisteredAsServiceWithFunctionMethodImplementedIsMarkedUsed() {
         PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
             "\n" +

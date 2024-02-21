@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -209,6 +210,16 @@ public class SymfonyImplicitUsageProvider implements ImplicitUsageProvider {
 
             if (eventAttr == null && methodAttr == null) {
                 methodAttr = "__invoke";
+            }
+
+            if (methodAttr == null) {
+                String snakeCased = Pattern.compile("(?<=\\b|_)[a-z]", Pattern.CASE_INSENSITIVE)
+                        .matcher(eventAttr)
+                        .replaceAll(matchResult -> matchResult.group().toUpperCase());
+
+                methodAttr = "on" + Pattern.compile("[^a-z0-9]", Pattern.CASE_INSENSITIVE)
+                        .matcher(snakeCased)
+                        .replaceAll("");
             }
 
             if (method.getName().equals(methodAttr)) {
