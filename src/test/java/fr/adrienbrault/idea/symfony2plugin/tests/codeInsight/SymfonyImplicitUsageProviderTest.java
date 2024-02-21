@@ -264,6 +264,27 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
         assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("onFoo")));
     }
 
+    public void testEventSubscriberGetAsEventListenerOnClassInvokeWithoutMethod() {
+        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+                "namespace App\\EventListener;\n" +
+                "\n" +
+                "use Symfony\\Component\\EventDispatcher\\Attribute\\AsEventListener;\n" +
+                "\n" +
+                "#[AsEventListener()]\n" +
+                "final class MyMultiListener\n" +
+                "{\n" +
+                "    public function __invoke(): void\n" +
+                "    {\n" +
+                "    }\n" +
+                "\n" +
+                "}"
+        );
+
+        PhpClass phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
+
+        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("__invoke")));
+    }
+
     public void testTwigExtensionRegisteredAsServiceWithFunctionMethodImplementedIsMarkedUsed() {
         PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
             "\n" +

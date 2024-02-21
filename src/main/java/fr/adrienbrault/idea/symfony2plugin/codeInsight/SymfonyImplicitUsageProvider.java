@@ -189,14 +189,30 @@ public class SymfonyImplicitUsageProvider implements ImplicitUsageProvider {
         }
 
         for (PhpAttribute attribute : containingClass.getAttributes("\\Symfony\\Component\\EventDispatcher\\Attribute\\AsEventListener")) {
+            String methodAttr = null;
+            String eventAttr = null;
             for (PhpAttribute.PhpAttributeArgument argument : attribute.getArguments()) {
-                if ("method".equals(argument.getName()) && argument.getArgument() instanceof PhpExpectedFunctionScalarArgument scalarArgument) {
-                    String value = PsiElementUtils.trimQuote(scalarArgument.getNormalizedValue());
+                if ("method".equals(argument.getName())) {
+                    if (argument.getArgument() instanceof PhpExpectedFunctionScalarArgument scalarArgument) {
+                        methodAttr = PsiElementUtils.trimQuote(scalarArgument.getNormalizedValue());
 
-                    if (method.getName().equals(value)) {
-                        return true;
+                        if (method.getName().equals(methodAttr)) {
+                            return true;
+                        }
+                    }
+                } else if ("event".equals(argument.getName())) {
+                    if (argument.getArgument() instanceof PhpExpectedFunctionScalarArgument scalarArgument) {
+                        eventAttr = PsiElementUtils.trimQuote(scalarArgument.getNormalizedValue());
                     }
                 }
+            }
+
+            if (eventAttr == null && methodAttr == null) {
+                methodAttr = "__invoke";
+            }
+
+            if (method.getName().equals(methodAttr)) {
+                return true;
             }
         }
 
