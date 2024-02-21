@@ -327,6 +327,46 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
         assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("onFooBar")));
     }
 
+    public void testEventSubscriberGetAsEventListenerCombinedTest() {
+        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+                "namespace App\\EventListener;\n" +
+                "\n" +
+                "use Symfony\\Component\\EventDispatcher\\Attribute\\AsEventListener;\n" +
+                "\n" +
+                "#[AsEventListener(method: 'onMethodAttr')]\n" +
+                "#[AsEventListener(event: 'event-name')]\n" +
+                "#[AsEventListener]\n" +
+                "final class MyMultiListener\n" +
+                "{\n" +
+                "    public function onMethodAttr(): void\n" +
+                "    {\n" +
+                "    }\n" +
+                "    public function onEventName(): void\n" +
+                "    {\n" +
+                "    }\n" +
+                "    public function __invoke(): void\n" +
+                "    {\n" +
+                "    }\n" +
+                "    #[AsEventListener]\n" +
+                "    public function onMethod(): void\n" +
+                "    {\n" +
+                "    }\n" +
+                "    public function onUnregistered(): void\n" +
+                "    {\n" +
+                "    }\n" +
+                "\n" +
+                "}"
+        );
+
+        PhpClass phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
+
+        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("onMethodAttr")));
+        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("onEventName")));
+        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("__invoke")));
+        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("onMethod")));
+        assertFalse(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("onUnregistered")));
+    }
+
     public void testTwigExtensionRegisteredAsServiceWithFunctionMethodImplementedIsMarkedUsed() {
         PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
             "\n" +
