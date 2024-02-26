@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -179,20 +180,50 @@ public class SymfonyImplicitUsageProvider implements ImplicitUsageProvider {
     }
 
     private boolean isAsEventListenerMethodPhpAttribute(@NotNull Method method) {
+        if (!method.getAttributes("\\Symfony\\Component\\EventDispatcher\\Attribute\\AsEventListener").isEmpty()) {
+            return true;
+        }
+
         PhpClass containingClass = method.getContainingClass();
         if (containingClass == null) {
             return false;
         }
 
         for (PhpAttribute attribute : containingClass.getAttributes("\\Symfony\\Component\\EventDispatcher\\Attribute\\AsEventListener")) {
+            String methodAttr = null;
+            String eventAttr = null;
             for (PhpAttribute.PhpAttributeArgument argument : attribute.getArguments()) {
-                if ("method".equals(argument.getName()) && argument.getArgument() instanceof PhpExpectedFunctionScalarArgument scalarArgument) {
-                    String value = PsiElementUtils.trimQuote(scalarArgument.getNormalizedValue());
+                if ("method".equals(argument.getName())) {
+                    if (argument.getArgument() instanceof PhpExpectedFunctionScalarArgument scalarArgument) {
+                        methodAttr = PsiElementUtils.trimQuote(scalarArgument.getNormalizedValue());
 
-                    if (method.getName().equals(value)) {
-                        return true;
+                        if (method.getName().equals(methodAttr)) {
+                            return true;
+                        }
+                    }
+                } else if ("event".equals(argument.getName())) {
+                    if (argument.getArgument() instanceof PhpExpectedFunctionScalarArgument scalarArgument) {
+                        eventAttr = PsiElementUtils.trimQuote(scalarArgument.getNormalizedValue());
                     }
                 }
+            }
+
+            if (eventAttr == null && methodAttr == null) {
+                methodAttr = "__invoke";
+            }
+
+            if (methodAttr == null) {
+                String snakeCased = Pattern.compile("(?<=\\b|_)[a-z]", Pattern.CASE_INSENSITIVE)
+                        .matcher(eventAttr)
+                        .replaceAll(matchResult -> matchResult.group().toUpperCase());
+
+                methodAttr = "on" + Pattern.compile("[^a-z0-9]", Pattern.CASE_INSENSITIVE)
+                        .matcher(snakeCased)
+                        .replaceAll("");
+            }
+
+            if (method.getName().equals(methodAttr)) {
+                return true;
             }
         }
 
