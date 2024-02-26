@@ -20,6 +20,16 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2022.1.264
+* Remove noisy error feedback for report (Daniel Espendiller)
+* Fix "Threading Model Changes": Thread context was already set: com.intellij.openapi.actionSystem.ex.ActionContextElement (Daniel Espendiller)
+* Fix api changes for "must override `getActionUpdateThread` and chose EDT or BGT. See ActionUpdateThread javadoc" (Daniel Espendiller)
+* Add additional test for ImplicitUsage with AsEventListener, including "false" result (Robert Meijers)
+* Apply ImplicitUsage to AsEventListener without method but with event (Robert Meijers)
+* Apply ImplicitUsage to __invoke when class level AsEventListener has no event and method (Robert Meijers)
+* Apply ImplicitUsage to methods with AsEventListener attribute (Robert Meijers)
+* Add support for suffix message (Vincent Langlet)
+
 ## 2022.1.263
 * Revert "Use PsiReference list to determine if route, service, or template "missing" inspections apply" (Daniel Espendiller)
 * Allow AssetMapper to resolve scope npm packages (e.g. @hotwired/turbo) (Alogou Raphael)
