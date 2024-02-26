@@ -39,7 +39,10 @@ public class ConstraintMessageGotoCompletionRegistrar implements GotoCompletionR
             PhpTokenTypes.STRING_LITERAL
         )).withParent(PlatformPatterns.psiElement(StringLiteralExpression.class)
             .withParent(PlatformPatterns.psiElement(Field.class)
-                .withName(PlatformPatterns.string().startsWith("message"))
+                .withName(PlatformPatterns.or(
+                    PlatformPatterns.string().startsWith("message"),
+                    PlatformPatterns.string().endsWith("Message")
+                ))
             ));
     }
 
