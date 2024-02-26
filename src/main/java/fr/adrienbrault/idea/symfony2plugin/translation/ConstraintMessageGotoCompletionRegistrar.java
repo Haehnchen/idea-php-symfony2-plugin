@@ -42,7 +42,7 @@ public class ConstraintMessageGotoCompletionRegistrar implements GotoCompletionR
                 .withName(PlatformPatterns.or(
                     PlatformPatterns.string().startsWith("message"),
                     PlatformPatterns.string().endsWith("Message")
-                )
+                ))
             ));
     }
 
