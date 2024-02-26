@@ -109,11 +109,9 @@ public class SymfonyPluginErrorReporterSubmitter extends ErrorReportSubmitter {
                     }
 
                     if (!success) {
-                        Messages.showErrorDialog(parentComponent, "Failed submitting your report!", "Error Report");
                         return;
                     }
 
-                    Messages.showInfoMessage(parentComponent, "Thank you for submitting your report!", "Error Report");
                     consumer.consume(new SubmittedReportInfo(SubmittedReportInfo.SubmissionStatus.NEW_ISSUE));
                 });
             }
