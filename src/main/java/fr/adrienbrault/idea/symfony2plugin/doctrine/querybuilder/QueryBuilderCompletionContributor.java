@@ -220,10 +220,14 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                     return;
                 }
 
+                PsiElement parent1 = psiElement.getParent();
+                if (!(parent1 instanceof StringLiteralExpression parent)) {
+                    return;
+                }
+
                 QueryBuilderMethodReferenceParser qb = getQueryBuilderParser(methodMatchParameter.getMethodReference());
                 QueryBuilderScopeContext collect = qb.collect();
 
-                StringLiteralExpression parent = (StringLiteralExpression) psiElement.getParent();
                 String content = PsiElementUtils.getStringBeforeCursor(parent, completionParameters.getOffset());
                 if (content == null || content.isBlank() || content.matches("^[\\w+.]+$")) {
                     buildLookupElements(completionResultSet, collect);
