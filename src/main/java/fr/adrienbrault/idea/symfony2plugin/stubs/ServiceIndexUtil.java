@@ -39,6 +39,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
@@ -171,7 +172,7 @@ public class ServiceIndexUtil {
      *
      */
     public static boolean matchesResourcesGlob(@NotNull VirtualFile serviceFileAsBase, @NotNull VirtualFile phpClassFile, @NotNull Collection<String> resources, @NotNull Collection<String> excludes) {
-        for (String resource : resources) {
+        for (String resource : resources.stream().filter(StringUtils::isNoneBlank).toList()) {
             String replace = resource.replace("\\\\", "/");
 
             VirtualFile serviceFile = serviceFileAsBase.getParent();
