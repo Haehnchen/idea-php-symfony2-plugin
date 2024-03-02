@@ -90,9 +90,7 @@ public class TwigFormFieldGenerator extends CodeInsightAction {
 
             JBPopupFactory.getInstance().createPopupChooserBuilder(new ArrayList<>(phpClasses))
                 .setTitle("Symfony: Select FormType")
-                .setItemChosenCallback(strings -> WriteCommandAction.runWriteCommandAction(project, "", null, () -> {
-                    extracted(project, editor, strings);
-                }))
+                .setItemChosenCallback(strings -> WriteCommandAction.runWriteCommandAction(project, "", null, () -> extracted(project, editor, strings)))
                 .createPopup()
                 .showInBestPositionFor(editor);
         }

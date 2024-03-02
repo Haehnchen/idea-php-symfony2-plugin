@@ -31,7 +31,7 @@ public class PhpBundleCompilerPassGenerateAction extends CodeInsightAction {
         return new MyCodeInsightActionHandler();
     }
 
-    private class MyCodeInsightActionHandler implements CodeInsightActionHandler {
+    private static class MyCodeInsightActionHandler implements CodeInsightActionHandler {
         @Override
         public void invoke(@NotNull Project project, @NotNull Editor editor, @NotNull PsiFile psiFile) {
             PhpClass phpClass = PhpBundleFileFactory.getPhpClassForCreateCompilerScope(editor, PsiUtilBase.getPsiFileInEditor(editor, project));

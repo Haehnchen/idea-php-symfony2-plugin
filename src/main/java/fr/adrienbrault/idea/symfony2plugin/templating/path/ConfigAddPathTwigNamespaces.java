@@ -70,7 +70,7 @@ public class ConfigAddPathTwigNamespaces implements TwigNamespaceExtension {
             for (Pair<String, String> stringStringPair : TwigUtil.getTwigPathFromYamlConfigResolved((YAMLFile) psiFile)) {
                 // default path
                 String first = stringStringPair.getFirst();
-                if(first == null || first.equals("")) {
+                if(first == null || first.isEmpty()) {
                     first = TwigUtil.MAIN;
                 }
 

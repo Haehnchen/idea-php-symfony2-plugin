@@ -146,7 +146,7 @@ public class DocHashTagReferenceContributor extends PsiReferenceContributor {
         );
     }
 
-    public class DocTagHashing {
+    public static class DocTagHashing {
 
         private PsiElement psiElement;
         private ArrayList<PhpDocParamTag> phpDocParamTags;

@@ -158,7 +158,7 @@ public class TranslatorKeyExtractorDialog extends JDialog {
         dispose();
     }
 
-    private class FileNameColumn extends ColumnInfo<TranslationFileModel, String> {
+    private static class FileNameColumn extends ColumnInfo<TranslationFileModel, String> {
 
         public FileNameColumn() {
             super("Name");
@@ -176,7 +176,7 @@ public class TranslatorKeyExtractorDialog extends JDialog {
 
     }
 
-    private class PathNameColumn extends ColumnInfo<TranslationFileModel, String> {
+    private static class PathNameColumn extends ColumnInfo<TranslationFileModel, String> {
 
         public PathNameColumn() {
             super("Path");
@@ -231,7 +231,7 @@ public class TranslatorKeyExtractorDialog extends JDialog {
         }
     }
 
-    private class IconColumn extends ColumnInfo<TranslationFileModel, Icon> {
+    private static class IconColumn extends ColumnInfo<TranslationFileModel, Icon> {
 
         public IconColumn() {
             super("");

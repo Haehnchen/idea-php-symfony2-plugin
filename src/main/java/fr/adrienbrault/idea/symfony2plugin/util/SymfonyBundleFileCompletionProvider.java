@@ -70,7 +70,7 @@ public class SymfonyBundleFileCompletionProvider extends CompletionProvider<Comp
 
     }
 
-    private class BundleContentIterator implements ContentIterator{
+    private static class BundleContentIterator implements ContentIterator{
 
         private SymfonyBundle symfonyBundle;
         private List<BundleFile> bundleFiles;

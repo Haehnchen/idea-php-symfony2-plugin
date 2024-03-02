@@ -94,7 +94,7 @@ public class DoctrineAnnotationReferencedColumnReferences implements PhpAnnotati
         return new PsiReference[0];
     }
 
-    public class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
+    public static class EntityReference extends PsiPolyVariantReferenceBase<PsiElement> {
 
         final private Collection<DoctrineModelField> doctrineModelField;
         final private String content;

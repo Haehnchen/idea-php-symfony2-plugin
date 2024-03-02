@@ -148,7 +148,7 @@ public class ServiceArgumentSelectionDialog extends JDialog {
     }
 
 
-    private class NamespaceColumn extends ColumnInfo<ServiceParameter, String> {
+    private static class NamespaceColumn extends ColumnInfo<ServiceParameter, String> {
 
         public NamespaceColumn() {
             super("Class");

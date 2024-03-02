@@ -70,9 +70,7 @@ public class FormBuilderFieldGeneratorAction extends CodeInsightAction {
 
             JBPopupFactory.getInstance().createPopupChooserBuilder(jbFormFieldItems)
                 .setTitle("Symfony: Select Fields")
-                .setItemsChosenCallback(strings -> WriteCommandAction.runWriteCommandAction(project, "", null, () -> {
-                    insertSelectedNamedElements(project, method, editor, strings);
-                }))
+                .setItemsChosenCallback(strings -> WriteCommandAction.runWriteCommandAction(project, "", null, () -> insertSelectedNamedElements(project, method, editor, strings)))
                 .createPopup()
                 .showInBestPositionFor(editor);
 
@@ -91,7 +89,7 @@ public class FormBuilderFieldGeneratorAction extends CodeInsightAction {
                 return;
             }
 
-            String content = "";
+            StringBuilder content = new StringBuilder();
 
             PhpIndex instance = PhpIndex.getInstance(project);
 
@@ -100,16 +98,16 @@ public class FormBuilderFieldGeneratorAction extends CodeInsightAction {
                 String typeClass = guessedFormFieldParameters.getFirst();
                 Map<String, String> options = guessedFormFieldParameters.getSecond();
 
-                content += "$%s->add('%s'".formatted(formBuilderVariable, string.key);
+                content.append("$%s->add('%s'".formatted(formBuilderVariable, string.key));
 
                 if (typeClass != null) {
                     typeClass = PhpElementsUtil.insertUseIfNecessary(method, typeClass);
-                    content += ", " + typeClass + "::class";
+                    content.append(", ").append(typeClass).append("::class");
                 }
 
                 Set<Map.Entry<String, String>> entries = options.entrySet();
-                if (entries.size() > 0) {
-                    content += ", [";
+                if (!entries.isEmpty()) {
+                    content.append(", [");
 
                     List<String> opts = new ArrayList<>();
                     for (Map.Entry<String, String> entry : entries) {
@@ -121,19 +119,19 @@ public class FormBuilderFieldGeneratorAction extends CodeInsightAction {
                         }
                     }
 
-                    content += StringUtils.join(opts, ", ");
+                    content.append(StringUtils.join(opts, ", "));
 
-                    content += "]";
+                    content.append("]");
                 }
 
-                content += ");\n";
+                content.append(");\n");
             }
 
             int caretModel = editor.getCaretModel().getOffset();
 
             PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(editor.getDocument());
 
-            PhpInsertHandlerUtil.insertStringAtCaret(editor, content);
+            PhpInsertHandlerUtil.insertStringAtCaret(editor, content.toString());
 
             CodeStyleManager.getInstance(project).reformatText(method.getContainingFile(), caretModel, caretModel + content.length());
             PsiDocumentManager.getInstance(project).commitDocument(editor.getDocument());
