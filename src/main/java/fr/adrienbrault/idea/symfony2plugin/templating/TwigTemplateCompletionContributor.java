@@ -1335,7 +1335,8 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         @Override
         protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
             PsiElement prevSibling = PsiElementUtils.getPrevSiblingOfType(parameters.getPosition(), PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER));
-            if (prevSibling == null) {
+            // "asset" are already known
+            if (prevSibling == null || "asset".equals(prevSibling.getText())) {
                 return;
             }
 
