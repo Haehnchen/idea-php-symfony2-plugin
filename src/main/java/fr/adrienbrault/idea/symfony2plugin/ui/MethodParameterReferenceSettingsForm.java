@@ -148,7 +148,7 @@ public class MethodParameterReferenceSettingsForm  implements Configurable {
 
     }
 
-    private class CallToColumn extends ColumnInfo<MethodParameterSetting, String> {
+    private static class CallToColumn extends ColumnInfo<MethodParameterSetting, String> {
 
         public CallToColumn() {
             super("CallTo");
@@ -161,7 +161,7 @@ public class MethodParameterReferenceSettingsForm  implements Configurable {
         }
     }
 
-    private class MethodColumn extends ColumnInfo<MethodParameterSetting, String> {
+    private static class MethodColumn extends ColumnInfo<MethodParameterSetting, String> {
 
         public MethodColumn() {
             super("Method");
@@ -174,7 +174,7 @@ public class MethodParameterReferenceSettingsForm  implements Configurable {
         }
     }
 
-    private class IndexColumn extends ColumnInfo<MethodParameterSetting, Integer> {
+    private static class IndexColumn extends ColumnInfo<MethodParameterSetting, Integer> {
 
         public IndexColumn() {
             super("Index");
@@ -187,7 +187,7 @@ public class MethodParameterReferenceSettingsForm  implements Configurable {
         }
     }
 
-    private class ProviderColumn extends ColumnInfo<MethodParameterSetting, String> {
+    private static class ProviderColumn extends ColumnInfo<MethodParameterSetting, String> {
 
         public ProviderColumn() {
             super("Provider");
@@ -200,7 +200,7 @@ public class MethodParameterReferenceSettingsForm  implements Configurable {
         }
     }
 
-    private class ContributorColumn extends ColumnInfo<MethodParameterSetting, String> {
+    private static class ContributorColumn extends ColumnInfo<MethodParameterSetting, String> {
 
         public ContributorColumn() {
             super("Contributor");
@@ -213,7 +213,7 @@ public class MethodParameterReferenceSettingsForm  implements Configurable {
         }
     }
 
-    private class ContributorDataColumn extends ColumnInfo<MethodParameterSetting, String> {
+    private static class ContributorDataColumn extends ColumnInfo<MethodParameterSetting, String> {
 
         public ContributorDataColumn() {
             super("ContributorData");

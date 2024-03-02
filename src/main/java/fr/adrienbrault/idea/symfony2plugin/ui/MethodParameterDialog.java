@@ -34,7 +34,7 @@ public class MethodParameterDialog extends JDialog {
 
     private Project project;
 
-    class ComboBoxRenderer extends ColoredListCellRenderer {
+    static class ComboBoxRenderer extends ColoredListCellRenderer {
         @Override
         protected void customizeCellRenderer(JList list, Object value, int index, boolean selected, boolean hasFocus) {
             append((String) value);

@@ -799,11 +799,11 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         ));
 
         assertNotNull(ContainerUtil.find(map, pair ->
-            pair.getFirst().equals("") && pair.getSecond().equals("%kernel.root_dir%/../src/views4")
+            pair.getFirst().isEmpty() && pair.getSecond().equals("%kernel.root_dir%/../src/views4")
         ));
 
         assertNotNull(ContainerUtil.find(map, pair ->
-            pair.getFirst().equals("") && pair.getSecond().equals("%kernel.root_dir%/../src/views5")
+            pair.getFirst().isEmpty() && pair.getSecond().equals("%kernel.root_dir%/../src/views5")
         ));
 
         assertNotNull(ContainerUtil.find(map, pair ->

@@ -46,7 +46,7 @@ public class FormTypeConstantMigrationAction extends CodeInsightAction {
         return new MyCodeInsightActionHandler();
     }
 
-    private class MyCodeInsightActionHandler implements CodeInsightActionHandler {
+    private static class MyCodeInsightActionHandler implements CodeInsightActionHandler {
         @Override
         public void invoke(@NotNull Project project, @NotNull Editor editor, @NotNull PsiFile psiFile) {
             PhpClass phpClass = PhpCodeEditUtil.findClassAtCaret(editor, psiFile);
@@ -77,7 +77,7 @@ public class FormTypeConstantMigrationAction extends CodeInsightAction {
             return true;
         }
 
-        private class FormTypeStringElementVisitor extends PsiRecursiveElementVisitor {
+        private static class FormTypeStringElementVisitor extends PsiRecursiveElementVisitor {
             @NotNull
             private final Collection<StringLiteralExpression> formTypes;
 

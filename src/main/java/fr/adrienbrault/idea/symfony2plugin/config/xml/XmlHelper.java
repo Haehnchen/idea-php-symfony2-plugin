@@ -696,7 +696,7 @@ public class XmlHelper {
         String indexAttr = argumentTag.getAttributeValue("index");
         if(indexAttr != null) {
             try {
-                return Integer.valueOf(indexAttr);
+                return Integer.parseInt(indexAttr);
             } catch (NumberFormatException e) {
                 return -1;
             }
@@ -761,7 +761,7 @@ public class XmlHelper {
         String indexAttr = argumentTag.getAttributeValue("index");
         if(indexAttr != null) {
             try {
-                return Integer.valueOf(indexAttr);
+                return Integer.parseInt(indexAttr);
             } catch (NumberFormatException e) {
                 return -1;
             }

@@ -18,10 +18,10 @@ public class Symfony2Icons {
     public static final Icon SYMFONY_LINE_MARKER;
 
     static {
-        if(Calendar.getInstance().get(Calendar.MONTH) == 11 && Calendar.getInstance().get(Calendar.DAY_OF_MONTH) > 7) {
+        if(Calendar.getInstance().get(Calendar.MONTH) == Calendar.DECEMBER && Calendar.getInstance().get(Calendar.DAY_OF_MONTH) > 7) {
             SYMFONY = IconLoader.getIcon("/icons/symfony_dec.png", Symfony2Icons.class);
             SYMFONY_LINE_MARKER = IconLoader.getIcon("/icons/symfony_line_marker_dec.png", Symfony2Icons.class);
-        } else if(Calendar.getInstance().get(Calendar.MONTH) == 3 && Calendar.getInstance().get(Calendar.DAY_OF_MONTH) == 7) {
+        } else if(Calendar.getInstance().get(Calendar.MONTH) == Calendar.APRIL && Calendar.getInstance().get(Calendar.DAY_OF_MONTH) == 7) {
             SYMFONY = IconLoader.getIcon("/icons/symfony_birth.png", Symfony2Icons.class);
             SYMFONY_LINE_MARKER = IconLoader.getIcon("/icons/symfony_line_marker_birth.png", Symfony2Icons.class);
         } else {

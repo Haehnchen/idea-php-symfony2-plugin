@@ -162,7 +162,7 @@ public class MethodSignatureTypeSettingsForm  implements Configurable {
 
     }
 
-    private class CallToColumn extends ColumnInfo<MethodSignatureSetting, String> {
+    private static class CallToColumn extends ColumnInfo<MethodSignatureSetting, String> {
 
         public CallToColumn() {
             super("CallTo");
@@ -175,7 +175,7 @@ public class MethodSignatureTypeSettingsForm  implements Configurable {
         }
     }
 
-    private class MethodColumn extends ColumnInfo<MethodSignatureSetting, String> {
+    private static class MethodColumn extends ColumnInfo<MethodSignatureSetting, String> {
 
         public MethodColumn() {
             super("Method");
@@ -188,7 +188,7 @@ public class MethodSignatureTypeSettingsForm  implements Configurable {
         }
     }
 
-    private class IndexColumn extends ColumnInfo<MethodSignatureSetting, Integer> {
+    private static class IndexColumn extends ColumnInfo<MethodSignatureSetting, Integer> {
 
         public IndexColumn() {
             super("Index");
@@ -201,7 +201,7 @@ public class MethodSignatureTypeSettingsForm  implements Configurable {
         }
     }
 
-    private class ProviderColumn extends ColumnInfo<MethodSignatureSetting, String> {
+    private static class ProviderColumn extends ColumnInfo<MethodSignatureSetting, String> {
 
         public ProviderColumn() {
             super("Provider");

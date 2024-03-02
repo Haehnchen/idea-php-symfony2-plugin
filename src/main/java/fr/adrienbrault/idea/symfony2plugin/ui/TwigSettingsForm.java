@@ -203,7 +203,7 @@ public class TwigSettingsForm implements Configurable {
         this.resetList();
     }
 
-    private class NamespaceColumn extends ColumnInfo<TwigPath, String> {
+    private static class NamespaceColumn extends ColumnInfo<TwigPath, String> {
 
         public NamespaceColumn() {
             super("Namespace");
@@ -216,7 +216,7 @@ public class TwigSettingsForm implements Configurable {
         }
     }
 
-    private class PathColumn extends ColumnInfo<TwigPath, String> {
+    private static class PathColumn extends ColumnInfo<TwigPath, String> {
 
         private Project project;
 
@@ -232,7 +232,7 @@ public class TwigSettingsForm implements Configurable {
         }
     }
 
-    private class CustomColumn extends ColumnInfo<TwigPath, String> {
+    private static class CustomColumn extends ColumnInfo<TwigPath, String> {
 
         public CustomColumn() {
             super("Parser");
@@ -245,7 +245,7 @@ public class TwigSettingsForm implements Configurable {
         }
     }
 
-    private class TypeColumn extends ColumnInfo<TwigPath, String> {
+    private static class TypeColumn extends ColumnInfo<TwigPath, String> {
 
         public TypeColumn() {
             super("Type");
@@ -258,7 +258,7 @@ public class TwigSettingsForm implements Configurable {
         }
     }
 
-    private abstract class BooleanColumn extends ColumnInfo<TwigPath, Boolean>
+    private abstract static class BooleanColumn extends ColumnInfo<TwigPath, Boolean>
     {
         public BooleanColumn(String name) {
             super(name);

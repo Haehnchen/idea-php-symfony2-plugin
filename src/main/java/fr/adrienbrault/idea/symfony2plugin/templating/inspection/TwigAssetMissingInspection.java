@@ -25,7 +25,7 @@ public class TwigAssetMissingInspection extends LocalInspectionTool {
         return new MyPsiElementVisitor(holder);
     }
 
-    private class MyPsiElementVisitor extends PsiElementVisitor {
+    private static class MyPsiElementVisitor extends PsiElementVisitor {
 
         private final ProblemsHolder holder;
 

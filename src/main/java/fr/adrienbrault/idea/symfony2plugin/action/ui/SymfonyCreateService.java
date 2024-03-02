@@ -470,7 +470,7 @@ public class SymfonyCreateService extends JDialog {
         }
     }
 
-    private class NamespaceColumn extends ColumnInfo<MethodParameter.MethodModelParameter, String> {
+    private static class NamespaceColumn extends ColumnInfo<MethodParameter.MethodModelParameter, String> {
 
         public NamespaceColumn() {
             super("Method");
@@ -483,7 +483,7 @@ public class SymfonyCreateService extends JDialog {
         }
     }
 
-    private class IconColumn extends ColumnInfo<MethodParameter.MethodModelParameter, Icon> {
+    private static class IconColumn extends ColumnInfo<MethodParameter.MethodModelParameter, Icon> {
         public IconColumn() {
             super("");
         }
@@ -505,7 +505,7 @@ public class SymfonyCreateService extends JDialog {
 
     }
 
-    private class ParameterIndexColumn extends ColumnInfo<MethodParameter.MethodModelParameter, String> {
+    private static class ParameterIndexColumn extends ColumnInfo<MethodParameter.MethodModelParameter, String> {
 
         public ParameterIndexColumn() {
             super("Parameter");
