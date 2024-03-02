@@ -19,11 +19,9 @@ import com.intellij.util.SlowOperations;
 import com.intellij.util.ThrowableRunnable;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.findUsages.PhpGotoTargetRendererProvider;
-import com.jetbrains.php.lang.psi.elements.FieldReference;
-import com.jetbrains.php.lang.psi.elements.MethodReference;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.PhpExpression;
+import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.completion.IncompletePropertyServiceInjectionContributor;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import icons.SymfonyIcons;
 import org.apache.commons.lang3.StringUtils;
@@ -31,6 +29,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -108,23 +107,40 @@ public class PhpPropertyArgumentIntention extends IntentionAndQuickFixAction imp
         List<String> injectionService = IncompletePropertyServiceInjectionContributor.getInjectionService(project, name, methodName)
             .stream()
             .map(s -> StringUtils.stripStart(s, "\\"))
-            .collect(Collectors.toList());
+            .toList();
 
         if (injectionService.size() == 1) {
             buildProperty(project, fieldReference, injectionService.get(0));
             return;
         }
 
-        List<PhpClass> phpClasses = injectionService.stream().map(s -> PhpIndex.getInstance(project).getAnyByFQN(s).iterator().next())
+        List<String> phpClasses = injectionService.stream()
+            .map(s -> PhpIndex.getInstance(project).getAnyByFQN(s).iterator().next())
             .distinct()
+            .map(PhpNamedElement::getFQN)
             .collect(Collectors.toList());
 
         JBPopupFactory.getInstance().createPopupChooserBuilder(phpClasses)
             .setTitle("Symfony: Property Service Suggestions")
-            .setItemChosenCallback(s -> buildProperty(project, fieldReference, s.getFQN()))
-            .setRenderer(new PhpGotoTargetRendererProvider.PhpNamedElementPsiElementListCellRenderer(false))
+            .setItemChosenCallback(s -> buildProperty(project, fieldReference, s))
+            .setRenderer(new DelegatedNamedElementCellRenderer<>(project))
             .createPopup()
             .showInBestPositionFor(editor);
+    }
+
+    private static class DelegatedNamedElementCellRenderer<String> implements ListCellRenderer<String> {
+
+        private final Project project;
+        private final PhpGotoTargetRendererProvider.PhpNamedElementPsiElementListCellRenderer delegatedRenderer;
+
+        public DelegatedNamedElementCellRenderer(@NotNull Project project) {
+            this.project = project;
+            this.delegatedRenderer = new PhpGotoTargetRendererProvider.PhpNamedElementPsiElementListCellRenderer(false);
+        }
+
+        public Component getListCellRendererComponent(JList<? extends String> jList, String s, int i, boolean b, boolean b1) {
+            return this.delegatedRenderer.getListCellRendererComponent(jList, PhpElementsUtil.getClassInterface(project, java.lang.String.valueOf(s)), i, b, b1);
+        }
     }
 
     private static void buildProperty(@NotNull Project project, @NotNull FieldReference fieldReference, @NotNull String classFqn) {
