@@ -1032,7 +1032,12 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                     continue;
                 }
 
-                FormFieldResolver.visitFormReferencesFields(entry.getValue().getElement(), twigTypeContainers -> {
+                PsiElement element1 = entry.getValue().getElement();
+                if (element1 == null) {
+                    continue;
+                }
+
+                FormFieldResolver.visitFormReferencesFields(element1, twigTypeContainers -> {
                     String typeText = null;
 
                     if (twigTypeContainers.getDataHolder() instanceof FormDataHolder formDataHolder) {
