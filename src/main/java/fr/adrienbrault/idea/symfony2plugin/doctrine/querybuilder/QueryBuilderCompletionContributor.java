@@ -1,11 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder;
 
 import com.intellij.codeInsight.completion.*;
+import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
-import com.intellij.patterns.PatternCondition;
+import com.intellij.openapi.util.TextRange;
 import com.intellij.patterns.PlatformPatterns;
-import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
@@ -534,6 +535,8 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                 lookup = lookup.withBoldness(true);
             }
 
+            lookup = lookup.withInsertHandler(new DottedClearWorkoutInsertHandler());
+
             completionResultSet.addElement(lookup);
         }
     }
@@ -547,5 +550,36 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
             addAll(processor.getQueryBuilderFactoryMethods());
             addAll(processor.getQueryBuilderMethodReferences());
         }});
+    }
+
+    /**
+     * Workaround to fix duplicated elements after a dot sign
+     *
+     * "https://blog.jetbrains.com/phpstorm/2023/09/phpstorm-public-roadmap-whats-coming-in-2023-3/#doctrine-query-language-support-inside-querybuilder"
+     *
+     * Some methods provide language injection from PhpStorm itself, and therefore have supported for dotted prefix ".":
+     * - $qb->select('fooBar.id', 'fooBar.');
+     * - $qb->select('fooBar.fooBar.id', 'fooBar.id');
+     */
+    private static class DottedClearWorkoutInsertHandler implements InsertHandler<LookupElement> {
+        @Override
+        public void handleInsert(@NotNull InsertionContext context, @NotNull LookupElement item) {
+            Editor editor = context.getEditor();
+            String insertedText = editor.getDocument().getText(new TextRange(context.getStartOffset(), context.getTailOffset()));
+            String lookupString = item.getLookupString();
+
+            int substring = lookupString.indexOf(".");
+            if (substring > 0) {
+                String beforeDot = lookupString.substring(0, substring);
+                TextRange rangeBeforeInserted = new TextRange(context.getStartOffset() - beforeDot.length() - 1, context.getStartOffset());
+                String textBeforeDot = editor.getDocument().getText(rangeBeforeInserted);
+
+                // if final inserted lookup string result in duplication remove it
+                if (insertedText.startsWith(textBeforeDot)) {
+                    context.getDocument().deleteString(rangeBeforeInserted.getStartOffset(), rangeBeforeInserted.getEndOffset());
+                    context.commitDocument();
+                }
+            }
+        }
     }
 }
