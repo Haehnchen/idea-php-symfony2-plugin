@@ -143,7 +143,7 @@ public class TranslatorKeyExtractorDialog extends JDialog {
                 }
             }
 
-            if(psiFiles.size() > 0) {
+            if(!psiFiles.isEmpty()) {
                 okCallback.onClick(psiFiles, text, (String) comboBox1.getSelectedItem(), checkNavigateTo.isSelected());
                 dispose();
                 return;

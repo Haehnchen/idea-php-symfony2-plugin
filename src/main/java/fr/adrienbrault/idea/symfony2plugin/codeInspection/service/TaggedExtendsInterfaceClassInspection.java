@@ -104,7 +104,7 @@ public class TaggedExtendsInterfaceClassInspection extends LocalInspectionTool {
                     PsiElement serviceKeyValue = yamlCompoundValue.getParent();
                     if (serviceKeyValue instanceof YAMLKeyValue) {
                         Set<String> tags = YamlHelper.collectServiceTags((YAMLKeyValue) serviceKeyValue);
-                        if (tags.size() > 0) {
+                        if (!tags.isEmpty()) {
                             registerTaggedProblems(psiElement, tags, text, holder, lazyServiceCollector);
                         }
                     }
@@ -117,7 +117,7 @@ public class TaggedExtendsInterfaceClassInspection extends LocalInspectionTool {
                 PsiElement yamlKeyValue = psiElement.getParent();
                 if (yamlKeyValue instanceof YAMLKeyValue && YamlHelper.getYamlKeyValue((YAMLKeyValue) yamlKeyValue, "resource") == null && YamlHelper.getYamlKeyValue((YAMLKeyValue) yamlKeyValue, "exclude") == null) {
                     Set<String> tags = YamlHelper.collectServiceTags((YAMLKeyValue) yamlKeyValue);
-                    if (tags.size() > 0) {
+                    if (!tags.isEmpty()) {
                         registerTaggedProblems(psiElement, tags, text, holder, lazyServiceCollector);
                     }
                 }
@@ -126,7 +126,7 @@ public class TaggedExtendsInterfaceClassInspection extends LocalInspectionTool {
     }
 
     private void registerTaggedProblems(@NotNull PsiElement source, @NotNull Set<String> tags, @NotNull String serviceClass, @NotNull ProblemsHolder holder, @NotNull NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> lazyServiceCollector) {
-        if (tags.size() == 0) {
+        if (tags.isEmpty()) {
             return;
         }
 

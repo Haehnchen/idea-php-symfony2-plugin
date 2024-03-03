@@ -212,7 +212,6 @@ public class QueryBuilderChainProcessor {
             last = element;
         }
 
-        //noinspection unchecked
         return null;
     }
 

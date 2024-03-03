@@ -53,14 +53,14 @@ public class FormUtil {
     final public static String ABSTRACT_FORM_INTERFACE = "\\Symfony\\Component\\Form\\FormTypeInterface";
     final public static String FORM_EXTENSION_INTERFACE = "\\Symfony\\Component\\Form\\FormTypeExtensionInterface";
 
-    public static MethodMatcher.CallToSignature[] PHP_FORM_BUILDER_SIGNATURES = new MethodMatcher.CallToSignature[] {
+    public static final MethodMatcher.CallToSignature[] PHP_FORM_BUILDER_SIGNATURES = new MethodMatcher.CallToSignature[] {
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormBuilderInterface", "add"),
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormBuilderInterface", "create"),
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormInterface", "add"),
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormInterface", "create")
     };
 
-    public static MethodMatcher.CallToSignature[] FORM_FACTORY_SIGNATURES = new MethodMatcher.CallToSignature[] {
+    public static final MethodMatcher.CallToSignature[] FORM_FACTORY_SIGNATURES = new MethodMatcher.CallToSignature[] {
         new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "createForm"),
         // Symfony 3.3 / 3.4
         new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "createForm"),
@@ -70,7 +70,7 @@ public class FormUtil {
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormFactory", "createBuilder"),
     };
 
-    public static MethodMatcher.CallToSignature[] PHP_FORM_NAMED_BUILDER_SIGNATURES = new MethodMatcher.CallToSignature[] {
+    public static final MethodMatcher.CallToSignature[] PHP_FORM_NAMED_BUILDER_SIGNATURES = new MethodMatcher.CallToSignature[] {
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamedBuilder"),
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createNamed"),
     };
@@ -318,7 +318,7 @@ public class FormUtil {
          * </services>
          */
 
-        XmlTag xmlTags[] = PsiTreeUtil.getChildrenOfType(psiFile.getFirstChild(), XmlTag.class);
+        XmlTag[] xmlTags = PsiTreeUtil.getChildrenOfType(psiFile.getFirstChild(), XmlTag.class);
         if(xmlTags == null) {
             return map;
         }

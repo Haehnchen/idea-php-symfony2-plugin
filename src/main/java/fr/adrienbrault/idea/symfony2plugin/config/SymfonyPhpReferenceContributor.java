@@ -23,7 +23,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
 
-    private static MethodMatcher.CallToSignature[] CONTAINER_SIGNATURES = new MethodMatcher.CallToSignature[] {
+    private static final MethodMatcher.CallToSignature[] CONTAINER_SIGNATURES = new MethodMatcher.CallToSignature[] {
         new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "get"),
         new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "has"),
 
@@ -44,7 +44,7 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
         new MethodMatcher.CallToSignature("Symfony\\Component\\DependencyInjection\\ParameterBag\\ContainerBagInterface", "has"),
     };
 
-    public static MethodMatcher.CallToSignature[] REPOSITORY_SIGNATURES = new MethodMatcher.CallToSignature[] {
+    public static final MethodMatcher.CallToSignature[] REPOSITORY_SIGNATURES = new MethodMatcher.CallToSignature[] {
         new MethodMatcher.CallToSignature("\\Doctrine\\Common\\Persistence\\ManagerRegistry", "getRepository"),
         new MethodMatcher.CallToSignature("\\Doctrine\\Common\\Persistence\\ObjectManager", "getRepository"),
         new MethodMatcher.CallToSignature("\\Doctrine\\Persistence\\ManagerRegistry", "getRepository"),
@@ -66,7 +66,7 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Cache", "evictCollectionRegion"),
     };
 
-    public static MethodMatcher.CallToSignature[] TEMPLATE_SIGNATURES = new MethodMatcher.CallToSignature[] {
+    public static final MethodMatcher.CallToSignature[] TEMPLATE_SIGNATURES = new MethodMatcher.CallToSignature[] {
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Templating\\EngineInterface", "render"),
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Templating\\StreamingEngineInterface", "stream"),
         new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Templating\\EngineInterface", "renderResponse"),

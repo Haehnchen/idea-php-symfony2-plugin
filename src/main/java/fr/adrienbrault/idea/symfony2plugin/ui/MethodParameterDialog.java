@@ -30,9 +30,9 @@ public class MethodParameterDialog extends JDialog {
     private JTextField textIndex;
     private JTextField textContributorData;
     private MethodParameterSetting methodParameterSetting;
-    private TableView<MethodParameterSetting> tableView;
+    private final TableView<MethodParameterSetting> tableView;
 
-    private Project project;
+    private final Project project;
 
     static class ComboBoxRenderer extends ColoredListCellRenderer {
         @Override
@@ -80,7 +80,7 @@ public class MethodParameterDialog extends JDialog {
         // allow only number values to indexes
         // simple?
         this.textIndex.addKeyListener(new KeyAdapter() {
-            private String allowedRegex = "[^0-9]";
+            private final String allowedRegex = "[^0-9]";
 
             @Override
             public void keyReleased(KeyEvent e) {
@@ -159,9 +159,9 @@ public class MethodParameterDialog extends JDialog {
 
     private void setOkState() {
         this.buttonOK.setEnabled(
-            this.textCallTo.getText().length() > 0 &&
-            this.textMethodName.getText().length() > 0 &&
-            this.textIndex.getText().length() > 0
+            !this.textCallTo.getText().isEmpty() &&
+                !this.textMethodName.getText().isEmpty() &&
+                !this.textIndex.getText().isEmpty()
         );
     }
 

@@ -198,10 +198,10 @@ public class SymfonyWebpackUtil {
     }
 
     public static class WebpackAsset {
-        private VirtualFile virtualFile;
-        private String entry;
-        private String entryTarget;
-        private PsiElement psiElement;
+        private final VirtualFile virtualFile;
+        private final String entry;
+        private final String entryTarget;
+        private final PsiElement psiElement;
 
         public WebpackAsset(@NotNull VirtualFile virtualFile, @NotNull String entry, @Nullable String entryTarget, @Nullable PsiElement psiElement) {
             this.virtualFile = virtualFile;

@@ -54,7 +54,7 @@ public class TwigUtilTempTest extends SymfonyTempCodeInsightFixtureTestCase {
         for (String file : strings) {
             Collection<PsiFile> templatePsiElements = TwigUtil.getTemplatePsiElements(getProject(), file);
 
-            assertTrue(templatePsiElements.size() > 0);
+            assertTrue(!templatePsiElements.isEmpty());
             assertEquals("foo.html.twig", templatePsiElements.iterator().next().getName());
         }
     }
@@ -112,7 +112,7 @@ public class TwigUtilTempTest extends SymfonyTempCodeInsightFixtureTestCase {
 
         assertTrue(TwigUtil.getTemplateNavigationOnOffset(getProject(), "foobar/foo.html.twig", 10).stream().anyMatch(psiElement -> psiElement instanceof PsiFile && "foo.html.twig".equals(((PsiFile) psiElement).getName())));
 
-        assertTrue(TwigUtil.getTemplateTargetOnOffset(getProject(), "foo.html.twig", 40).size() == 0);
+        assertTrue(TwigUtil.getTemplateTargetOnOffset(getProject(), "foo.html.twig", 40).isEmpty());
     }
 
     /**
@@ -144,8 +144,8 @@ public class TwigUtilTempTest extends SymfonyTempCodeInsightFixtureTestCase {
         assertIsDirectoryAtOffset(":foobar\\apple:foo.php", 10, "apple");
         assertIsDirectoryAtOffset(":foobar\\apple\\foo.php", 10, "apple");
 
-        assertTrue(TwigUtil.getTemplateTargetOnOffset(getProject(), "@Foo/foobar/foo.html.twig", 15).size() == 0);
-        assertTrue(TwigUtil.getTemplateTargetOnOffset(getProject(), "foo.html.twig", 40).size() == 0);
+        assertTrue(TwigUtil.getTemplateTargetOnOffset(getProject(), "@Foo/foobar/foo.html.twig", 15).isEmpty());
+        assertTrue(TwigUtil.getTemplateTargetOnOffset(getProject(), "foo.html.twig", 40).isEmpty());
     }
 
     /**

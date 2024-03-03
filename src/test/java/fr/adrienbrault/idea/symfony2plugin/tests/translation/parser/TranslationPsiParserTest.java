@@ -25,14 +25,14 @@ public class TranslationPsiParserTest extends SymfonyLightCodeInsightFixtureTest
         TranslationStringMap translationStringMap = TranslationStringMap.create(getProject(), Collections.emptyList());
         translationStringMap.parse(getProject(), virtualFile);
 
-        assertTrue(translationStringMap.getDomainMap("security").size() > 0);
+        assertTrue(!translationStringMap.getDomainMap("security").isEmpty());
 
         assertTrue(translationStringMap.getDomainMap("validators").contains("This value should be false."));
         assertTrue(translationStringMap.getDomainMap("validators").contains("This value should be false. (1)"));
 
         assertNull(translationStringMap.getDomainMap("my_intl_icu_domain+intl-icu"));
 
-        assertTrue(translationStringMap.getDomainMap("my_intl_icu_domain").size() > 0);
+        assertTrue(!translationStringMap.getDomainMap("my_intl_icu_domain").isEmpty());
         assertTrue(translationStringMap.getDomainMap("my_intl_icu_domain").contains("messages_intl_icu_key"));
     }
 }

@@ -11,7 +11,7 @@ import java.time.Instant;
  */
 public class TimeSecondModificationTracker implements ModificationTracker {
 
-    public static ModificationTracker TIMED_MODIFICATION_TRACKER_60 = new TimeSecondModificationTracker(60);
+    public static final ModificationTracker TIMED_MODIFICATION_TRACKER_60 = new TimeSecondModificationTracker(60);
 
     private final int expiresAfter;
 

@@ -75,13 +75,13 @@ public class SymfonyCreateService extends JDialog {
     private Map<String, ContainerService> serviceClass;
     private Set<String> serviceSetComplete;
 
-    private Project project;
+    private final Project project;
 
     @Nullable
-    private PsiFile psiFile;
+    private final PsiFile psiFile;
 
     @Nullable
-    private Editor editor;
+    private final Editor editor;
 
     @Nullable
     private String classInit;
@@ -348,7 +348,7 @@ public class SymfonyCreateService extends JDialog {
             className = className.substring(1);
         }
 
-        if(className.length() == 0) {
+        if(className.isEmpty()) {
             return;
         }
 
@@ -368,7 +368,7 @@ public class SymfonyCreateService extends JDialog {
                 Parameter[] parameters = method.getParameters();
                 for (int i = 0; i < parameters.length; i++) {
                     Set<String> possibleServices = getPossibleServices(parameters[i]);
-                    if(possibleServices.size() > 0) {
+                    if(!possibleServices.isEmpty()) {
                         modelParameters.add(new MethodParameter.MethodModelParameter(method, parameters[i], i, possibleServices, getServiceName(possibleServices)));
                     } else {
                         modelParameters.add(new MethodParameter.MethodModelParameter(method, parameters[i], i, serviceSetComplete));
@@ -396,7 +396,7 @@ public class SymfonyCreateService extends JDialog {
 
     @Nullable
     private String getServiceName(Set<String> services) {
-        if(services.size() == 0) {
+        if(services.isEmpty()) {
             return null;
         }
 

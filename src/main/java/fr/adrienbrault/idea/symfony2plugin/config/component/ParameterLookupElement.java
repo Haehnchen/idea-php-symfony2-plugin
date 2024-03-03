@@ -17,7 +17,7 @@ public class ParameterLookupElement extends LookupElement {
 
     protected Object psiElement;
     protected InsertHandler<LookupElement> insertHandler = null;
-    protected ContainerParameter containerParameter;
+    protected final ContainerParameter containerParameter;
 
     public ParameterLookupElement(@NotNull ContainerParameter containerParameter) {
         this.containerParameter = containerParameter;

@@ -22,8 +22,8 @@ import java.util.regex.Pattern;
  */
 public class ControllerDocVariableCollector implements TwigFileVariableCollector {
 
-    public static String DOC_PATTERN  = "\\{#[\\s]+@[C|c]ontroller[\\s]+([\\w\\\\\\[\\]:]+)[\\s]+#}";
-    public static String DOC_PATTERN_COMPLETION  = "\\{#[\\s]+@[C|c]ontroller[\\s]+.*#}";
+    public static final String DOC_PATTERN  = "\\{#[\\s]+@[C|c]ontroller[\\s]+([\\w\\\\\\[\\]:]+)[\\s]+#}";
+    public static final String DOC_PATTERN_COMPLETION  = "\\{#[\\s]+@[C|c]ontroller[\\s]+.*#}";
 
     @Override
     public void collectPsiVariables(@NotNull TwigFileVariableCollectorParameter parameter, @NotNull Map<String, PsiVariable> variables) {
@@ -34,7 +34,7 @@ public class ControllerDocVariableCollector implements TwigFileVariableCollector
         }
 
         ArrayList<String> controllerNames = findFileControllerDocBlocks((TwigFile) psiFile);
-        if(controllerNames.size() == 0) {
+        if(controllerNames.isEmpty()) {
             return;
         }
 

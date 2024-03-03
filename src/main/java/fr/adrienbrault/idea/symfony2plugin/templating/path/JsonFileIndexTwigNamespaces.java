@@ -23,7 +23,6 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.VfsExUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -91,7 +90,7 @@ public class JsonFileIndexTwigNamespaces implements TwigNamespaceExtension {
 
                 // current directory check and subfolder
                 VirtualFile twigRoot;
-                if (path.length() > 0) {
+                if (!path.isEmpty()) {
                     twigRoot = VfsUtil.findRelativeFile(parent.getVirtualFile(), path.split("/"));
                 } else {
                     twigRoot = psiFile.getParent().getVirtualFile();

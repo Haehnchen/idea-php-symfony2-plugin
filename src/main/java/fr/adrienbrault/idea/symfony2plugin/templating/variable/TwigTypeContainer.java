@@ -44,7 +44,7 @@ public class TwigTypeContainer {
 
         for(PsiVariable phpNamedElement :psiVariables) {
             Collection<PhpClass> phpClass = PhpElementsUtil.getClassFromPhpTypeSet(project, phpNamedElement.getTypes());
-            if(phpClass.size() > 0) {
+            if(!phpClass.isEmpty()) {
                 twigTypeContainerList.add(new TwigTypeContainer(phpClass.iterator().next()));
             }
         }

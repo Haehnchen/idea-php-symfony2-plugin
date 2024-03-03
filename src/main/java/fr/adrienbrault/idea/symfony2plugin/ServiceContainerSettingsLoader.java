@@ -13,7 +13,7 @@ import java.util.List;
  */
 public class ServiceContainerSettingsLoader implements ServiceContainerLoader {
 
-    private static Condition<ContainerFile> CONDITION = new ContainerFileCondition();
+    private static final Condition<ContainerFile> CONDITION = new ContainerFileCondition();
 
     @Override
     public void attachContainerFile(ServiceContainerLoaderParameter parameter) {

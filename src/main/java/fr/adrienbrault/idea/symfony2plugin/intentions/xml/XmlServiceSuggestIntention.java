@@ -58,7 +58,7 @@ public class XmlServiceSuggestIntention extends PsiElementBaseIntentionAction {
         int argumentIndex = XmlHelper.getArgumentIndex(argumentTag);
 
         Set<String> suggestions = ServiceUtil.getServiceSuggestionsForServiceConstructorIndex(project, aClass, argumentIndex);
-        if(suggestions.size() == 0) {
+        if(suggestions.isEmpty()) {
             IdeHelper.showErrorHintIfAvailable(editor, "No suggestion found");
             return;
         }

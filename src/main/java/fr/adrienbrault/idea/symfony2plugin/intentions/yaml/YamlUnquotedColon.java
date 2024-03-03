@@ -20,7 +20,7 @@ import static fr.adrienbrault.idea.symfony2plugin.util.VersionUtil.productVersio
  */
 public class YamlUnquotedColon extends LocalInspectionTool {
 
-    public static String MESSAGE = "Using a colon in the unquoted mapping value is deprecated since Symfony 2.8 and will throw a ParseException in 3.0";
+    public static final String MESSAGE = "Using a colon in the unquoted mapping value is deprecated since Symfony 2.8 and will throw a ParseException in 3.0";
 
     @NotNull
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {

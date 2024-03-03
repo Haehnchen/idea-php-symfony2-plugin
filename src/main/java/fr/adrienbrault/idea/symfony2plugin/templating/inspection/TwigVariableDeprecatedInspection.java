@@ -49,12 +49,12 @@ public class TwigVariableDeprecatedInspection extends LocalInspectionTool {
 
         private void visit(@NotNull PsiElement element) {
             Collection<String> beforeLeaf = TwigTypeResolveUtil.formatPsiTypeName(element);
-            if(beforeLeaf.size() == 0) {
+            if(beforeLeaf.isEmpty()) {
                 return;
             }
 
             Collection<TwigTypeContainer> types = TwigTypeResolveUtil.resolveTwigMethodName(element, beforeLeaf);
-            if(types.size() == 0) {
+            if(types.isEmpty()) {
                 return;
             }
 

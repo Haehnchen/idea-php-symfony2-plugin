@@ -52,12 +52,12 @@ public class YamlSuggestIntentionAction extends LocalQuickFixAndIntentionActionO
         }
 
         Collection<PhpClass> anyByFQN = PhpIndex.getInstance(project).getAnyByFQN(this.expectedClass);
-        if(anyByFQN.size() == 0) {
+        if(anyByFQN.isEmpty()) {
             return;
         }
 
         Collection<ContainerService> suggestions = ServiceUtil.getServiceSuggestionForPhpClass(anyByFQN.iterator().next(), ContainerCollectionResolver.getServices(project));
-        if(suggestions.size() == 0) {
+        if(suggestions.isEmpty()) {
             IdeHelper.showErrorHintIfAvailable(editor, "No suggestion found");
             return;
         }

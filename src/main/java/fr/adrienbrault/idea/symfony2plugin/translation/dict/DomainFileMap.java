@@ -14,10 +14,10 @@ import java.io.File;
  */
 public class DomainFileMap {
 
-    private String loader;
-    private String Path;
-    private String languageKey;
-    private String domain;
+    private final String loader;
+    private final String Path;
+    private final String languageKey;
+    private final String domain;
 
     public DomainFileMap(String loader, String Path, String languageKey, String domain) {
         this.loader = loader;

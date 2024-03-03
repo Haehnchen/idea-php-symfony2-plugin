@@ -148,10 +148,10 @@ public class DocHashTagReferenceContributor extends PsiReferenceContributor {
 
     public static class DocTagHashing {
 
-        private PsiElement psiElement;
+        private final PsiElement psiElement;
         private ArrayList<PhpDocParamTag> phpDocParamTags;
 
-        private ArrayList<Parameter[]> parameters = new ArrayList<>();
+        private final ArrayList<Parameter[]> parameters = new ArrayList<>();
         private ParameterList parameterList;
 
         public DocTagHashing(PsiElement psiElement) {

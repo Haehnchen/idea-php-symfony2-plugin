@@ -62,6 +62,6 @@ public class TwigAssetsTagMissingInspection extends LocalInspectionTool {
             }
         }
 
-        return TwigUtil.resolveAssetsFiles(element.getProject(), templateName, fileTypes).size() > 0;
+        return !TwigUtil.resolveAssetsFiles(element.getProject(), templateName, fileTypes).isEmpty();
     }
 }

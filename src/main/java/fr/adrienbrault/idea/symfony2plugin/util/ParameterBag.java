@@ -7,8 +7,8 @@ import com.intellij.psi.PsiElement;
  */
 public class ParameterBag {
 
-    private int index;
-    private PsiElement psiElement;
+    private final int index;
+    private final PsiElement psiElement;
 
     public ParameterBag(int index, PsiElement psiElement) {
         this.index = index;

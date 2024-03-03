@@ -5,7 +5,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
@@ -677,7 +676,7 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
 
     private static class ListYamlTagVisitor implements YamlTagVisitor {
 
-        private List<YamlServiceTag> items = new ArrayList<>();
+        private final List<YamlServiceTag> items = new ArrayList<>();
 
         @Override
         public void visit(@NotNull YamlServiceTag args) {

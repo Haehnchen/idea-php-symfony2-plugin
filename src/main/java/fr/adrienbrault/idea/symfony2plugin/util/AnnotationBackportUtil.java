@@ -24,7 +24,7 @@ import java.util.*;
  */
 public class AnnotationBackportUtil {
 
-    public static Set<String> NON_ANNOTATION_TAGS = new HashSet<>() {{
+    public static final Set<String> NON_ANNOTATION_TAGS = new HashSet<>() {{
         addAll(Arrays.asList(PhpDocUtil.ALL_TAGS));
         add("@Annotation");
         add("@inheritDoc");

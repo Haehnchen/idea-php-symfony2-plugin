@@ -10,8 +10,8 @@ import java.util.Collection;
  */
 public class ServiceContainerLoaderParameter {
 
-    private Collection<ContainerFile> containerFiles;
-    private Project project;
+    private final Collection<ContainerFile> containerFiles;
+    private final Project project;
 
     public ServiceContainerLoaderParameter(Project project, Collection<ContainerFile> containerFiles) {
         this.containerFiles = containerFiles;

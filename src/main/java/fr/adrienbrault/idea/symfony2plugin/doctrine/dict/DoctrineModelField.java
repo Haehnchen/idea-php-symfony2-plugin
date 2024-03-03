@@ -16,7 +16,7 @@ public class DoctrineModelField {
     private String relationType;
     private final String name;
     private String typeName;
-    private Collection<PsiElement> targets = new ArrayList<>();
+    private final Collection<PsiElement> targets = new ArrayList<>();
     private String column;
 
     public DoctrineModelField setTypeName(String typeName) {

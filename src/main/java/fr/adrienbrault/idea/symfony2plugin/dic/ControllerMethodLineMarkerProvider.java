@@ -48,7 +48,7 @@ public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
 
         List<GotoRelatedItem> gotoRelatedItems = getGotoRelatedItems((Method) method);
 
-        if(gotoRelatedItems.size() == 0) {
+        if(gotoRelatedItems.isEmpty()) {
             return null;
         }
 

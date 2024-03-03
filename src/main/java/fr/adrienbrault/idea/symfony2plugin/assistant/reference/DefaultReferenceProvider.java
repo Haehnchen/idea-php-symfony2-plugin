@@ -18,7 +18,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
  */
 public class DefaultReferenceProvider {
 
-    public static AssistantReferenceProvider[] DEFAULT_PROVIDERS = new AssistantReferenceProvider[] {
+    public static final AssistantReferenceProvider[] DEFAULT_PROVIDERS = new AssistantReferenceProvider[] {
         new RouteReferenceProvider(),
         new RepositoryReferenceProvider(),
         new TemplateProvider(),

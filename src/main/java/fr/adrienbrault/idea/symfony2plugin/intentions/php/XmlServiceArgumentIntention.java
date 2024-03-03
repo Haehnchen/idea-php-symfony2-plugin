@@ -30,7 +30,7 @@ public class XmlServiceArgumentIntention extends PsiElementBaseIntentionAction {
         }
 
         final List<String> args = ServiceActionUtil.getXmlMissingArgumentTypes(xmlTag, true, new ContainerCollectionResolver.LazyServiceCollector(project));
-        if (args.size() == 0) {
+        if (args.isEmpty()) {
             return;
         }
 
@@ -54,7 +54,7 @@ public class XmlServiceArgumentIntention extends PsiElementBaseIntentionAction {
             return false;
         }
 
-        return ServiceActionUtil.getXmlMissingArgumentTypes(serviceTagValid, true, new ContainerCollectionResolver.LazyServiceCollector(project)).size() > 0;
+        return !ServiceActionUtil.getXmlMissingArgumentTypes(serviceTagValid, true, new ContainerCollectionResolver.LazyServiceCollector(project)).isEmpty();
     }
 
     @Nullable

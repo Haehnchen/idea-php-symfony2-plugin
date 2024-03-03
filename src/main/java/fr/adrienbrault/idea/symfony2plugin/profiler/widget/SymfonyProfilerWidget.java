@@ -31,7 +31,7 @@ import java.util.*;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBarWidget.MultipleTextValuesPresentation,  StatusBarWidget.Multiframe {
-    public static String ID = "symfony2.profiler";
+    public static final String ID = "symfony2.profiler";
 
     public SymfonyProfilerWidget(@NotNull Project project) {
         super(project);

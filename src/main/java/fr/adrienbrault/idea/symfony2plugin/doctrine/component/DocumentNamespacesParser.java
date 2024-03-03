@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DocumentNamespacesParser extends AbstractServiceParser {
 
-    protected Map<String, String> entityNameMap = new ConcurrentHashMap<>();
+    protected final Map<String, String> entityNameMap = new ConcurrentHashMap<>();
 
     @Override
     public String getXPathFilter() {

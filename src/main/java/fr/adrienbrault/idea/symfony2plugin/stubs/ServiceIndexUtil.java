@@ -39,7 +39,6 @@ import java.nio.file.FileSystems;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
@@ -140,7 +139,7 @@ public class ServiceIndexUtil {
         String phpClassName = phpClass.getPresentableFQN();
         Set<String> serviceNames = ContainerCollectionResolver.ServiceCollector.create(phpClass.getProject()).convertClassNameToServices(phpClassName);
 
-        if(serviceNames.size() == 0) {
+        if(serviceNames.isEmpty()) {
             return new PsiElement[0];
         }
 
@@ -160,7 +159,7 @@ public class ServiceIndexUtil {
 
         String phpClassName = phpClass.getPresentableFQN();
         Set<String> serviceNames = ContainerCollectionResolver.ServiceCollector.create(phpClass.getProject()).convertClassNameToServices(phpClassName);
-        if(serviceNames.size() == 0) {
+        if(serviceNames.isEmpty()) {
             return null;
         }
 
@@ -242,7 +241,7 @@ public class ServiceIndexUtil {
 
         // "Foo\\"
         Set<String> serviceNames = namespaces.stream()
-            .filter(namespace -> serviceCollector.convertClassNameToServices(namespace).size() > 0)
+            .filter(namespace -> !serviceCollector.convertClassNameToServices(namespace).isEmpty())
             .collect(Collectors.toSet());
 
         Collection<ContainerService> namespaceServices = new HashSet<>();

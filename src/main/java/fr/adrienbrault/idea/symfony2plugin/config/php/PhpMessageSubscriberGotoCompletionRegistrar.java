@@ -34,7 +34,7 @@ import java.util.Collections;
  * @author Stefano Arlandini <sarlandini@alice.it>
  */
 public class PhpMessageSubscriberGotoCompletionRegistrar implements GotoCompletionRegistrar {
-    private static PsiElementPattern.Capture<PsiElement> REGISTRAR_PATTERN = PlatformPatterns.psiElement()
+    private static final PsiElementPattern.Capture<PsiElement> REGISTRAR_PATTERN = PlatformPatterns.psiElement()
         .withLanguage(PhpLanguage.INSTANCE)
         .withParent(
             PlatformPatterns.psiElement(StringLiteralExpression.class).withParent(

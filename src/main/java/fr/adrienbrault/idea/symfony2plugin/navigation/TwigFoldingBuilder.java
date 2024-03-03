@@ -99,7 +99,7 @@ public class TwigFoldingBuilder extends FoldingBuilderEx {
             }
 
             String contents = PsiElementUtils.trimQuote(psiElement1.getText());
-            if(contents.length() > 0 && routes.containsKey(contents)) {
+            if(!contents.isEmpty() && routes.containsKey(contents)) {
                 final Route route = routes.get(contents);
 
                 final String url = RouteHelper.getRouteUrl(route);

@@ -18,7 +18,7 @@ import java.util.Collections;
  */
 public class PhpTypeSignatureTypes {
 
-    public static PhpTypeSignatureInterface[] DEFAULT_PROVIDER = new PhpTypeSignatureInterface[] {
+    public static final PhpTypeSignatureInterface[] DEFAULT_PROVIDER = new PhpTypeSignatureInterface[] {
         new ServiceType(),
         new ClassType(),
         new FormTypesType(),

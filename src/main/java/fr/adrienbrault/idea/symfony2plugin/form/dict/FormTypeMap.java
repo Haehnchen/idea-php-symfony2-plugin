@@ -12,7 +12,7 @@ import java.util.Map;
  */
 public class FormTypeMap {
 
-    private Map<String, String> map;
+    private final Map<String, String> map;
 
     public FormTypeMap(Map<String, String> map) {
         this.map = Collections.unmodifiableMap(map);

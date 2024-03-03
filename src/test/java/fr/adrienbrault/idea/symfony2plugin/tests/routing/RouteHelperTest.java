@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.routing;
 
-import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.util.Condition;
 import com.intellij.psi.PsiElement;

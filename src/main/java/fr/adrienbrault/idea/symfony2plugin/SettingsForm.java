@@ -32,7 +32,7 @@ import java.util.List;
  */
 public class SettingsForm implements Configurable {
 
-    private Project project;
+    private final Project project;
 
     private JPanel panel1;
 

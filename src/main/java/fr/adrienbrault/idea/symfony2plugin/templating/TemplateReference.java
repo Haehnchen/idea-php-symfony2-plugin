@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class TemplateReference extends PsiPolyVariantReferenceBase<PsiElement> {
     @NotNull
-    private String templateName;
+    private final String templateName;
 
     public TemplateReference(@NotNull StringLiteralExpression element) {
         super(element);

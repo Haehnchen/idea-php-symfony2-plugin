@@ -8,11 +8,8 @@ import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormClass;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormClassEnum;
-import fr.adrienbrault.idea.symfony2plugin.form.dict.FormOptionEnum;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil;
-import fr.adrienbrault.idea.symfony2plugin.form.visitor.FormOptionVisitor;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -106,7 +103,7 @@ public class FormOptionsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
     public void testGetFormExtensionsKeysTargets() {
         StringLiteralExpression contents = PhpPsiElementFactory.createFromText(getProject(), StringLiteralExpression.class, "<?php 'BarType';");
         Collection<PsiElement> formExtensionsKeysTargets = FormOptionsUtil.getFormExtensionsKeysTargets(contents, "Options\\Bar\\Foobar");
-        assertTrue(formExtensionsKeysTargets.size() > 0);
+        assertTrue(!formExtensionsKeysTargets.isEmpty());
     }
 
 

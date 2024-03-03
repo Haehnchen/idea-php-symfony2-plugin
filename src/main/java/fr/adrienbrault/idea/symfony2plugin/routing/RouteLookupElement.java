@@ -55,16 +55,16 @@ public class RouteLookupElement extends LookupElement {
         List<String> tails = new ArrayList<>();
 
         Collection<String> methods = route.getMethods();
-        if(methods.size() > 0) {
+        if(!methods.isEmpty()) {
             tails.add(StringUtils.join(ContainerUtil.map(methods, String::toUpperCase), "|"));
         }
 
         Set<String> variables = this.route.getVariables();
-        if(variables.size() > 0) {
+        if(!variables.isEmpty()) {
             tails.addAll(variables);
         }
 
-        if(tails.size() > 0) {
+        if(!tails.isEmpty()) {
             presentation.setTailText("(" + StringUtils.join(tails, ", ") + ")", true);
         }
     }

@@ -45,7 +45,7 @@ public class TwigAssetMissingInspection extends LocalInspectionTool {
         private void invoke(@NotNull PsiElement element, @NotNull ProblemsHolder holder) {
             String asset = element.getText();
 
-            if(StringUtils.isBlank(asset) || TwigUtil.resolveAssetsFiles(element.getProject(), asset).size() > 0) {
+            if(StringUtils.isBlank(asset) || !TwigUtil.resolveAssetsFiles(element.getProject(), asset).isEmpty()) {
                 return;
             }
 

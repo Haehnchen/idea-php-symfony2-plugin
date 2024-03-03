@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public class ServiceFileDefaults {
 
-    public static ServiceFileDefaults EMPTY = new ServiceFileDefaults();
+    public static final ServiceFileDefaults EMPTY = new ServiceFileDefaults();
 
     @Nullable
     final private Boolean isPublic;

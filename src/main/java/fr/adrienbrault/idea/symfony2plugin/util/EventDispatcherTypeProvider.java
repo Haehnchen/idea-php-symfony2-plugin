@@ -19,7 +19,7 @@ import java.util.Set;
  */
 public class EventDispatcherTypeProvider implements PhpTypeProvider4 {
 
-    private static char TRIM_KEY = '\u0197';
+    private static final char TRIM_KEY = '\u0197';
 
     @Override
     public char getKey() {

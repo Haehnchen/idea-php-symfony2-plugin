@@ -103,7 +103,7 @@ public class ControllerIndex {
             }
 
             presentableFQN = presentableFQN.substring(0, presentableFQN.length() - "Controller".length());
-            if(presentableFQN.length() == 0) {
+            if(presentableFQN.isEmpty()) {
                 continue;
             }
 
@@ -135,7 +135,7 @@ public class ControllerIndex {
     @NotNull
     private Collection<ControllerAction> getServiceActionMethods(@NotNull Project project) {
         Map<String,Route> routes = RouteHelper.getAllRoutes(project);
-        if(routes.size() == 0) {
+        if(routes.isEmpty()) {
             return Collections.emptyList();
         }
 

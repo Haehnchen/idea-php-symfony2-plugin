@@ -263,7 +263,7 @@ public class FileResourceUtil {
 
         String bundleName = content.substring(1, content.indexOf("\\"));
 
-        if(new SymfonyBundleUtil(project).getBundle(bundleName).size() == 0) {
+        if(new SymfonyBundleUtil(project).getBundle(bundleName).isEmpty()) {
             return Collections.emptyList();
         }
 

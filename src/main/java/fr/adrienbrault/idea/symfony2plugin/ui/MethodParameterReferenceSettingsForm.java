@@ -30,10 +30,10 @@ public class MethodParameterReferenceSettingsForm  implements Configurable {
     private JPanel panelConfigTableView;
     private JButton buttonHelp;
 
-    private TableView<MethodParameterSetting> tableView;
-    private Project project;
+    private final TableView<MethodParameterSetting> tableView;
+    private final Project project;
     private boolean changed = false;
-    private ListTableModel<MethodParameterSetting> modelList;
+    private final ListTableModel<MethodParameterSetting> modelList;
 
     public MethodParameterReferenceSettingsForm(Project project) {
         this.project = project;

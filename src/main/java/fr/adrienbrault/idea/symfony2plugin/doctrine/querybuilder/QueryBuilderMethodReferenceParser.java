@@ -33,14 +33,14 @@ import java.util.regex.Pattern;
  */
 public class QueryBuilderMethodReferenceParser {
 
-    private boolean collectParameter = true;
-    private boolean collectJoins = true;
-    private boolean collectProperties = true;
+    private final boolean collectParameter = true;
+    private final boolean collectJoins = true;
+    private final boolean collectProperties = true;
 
     final private Project project;
     final private Collection<MethodReference> methodReferences;
     
-    private static QueryBuilderRepositoryDetector[] repositoryDetectors = new QueryBuilderRepositoryDetector[] {
+    private static final QueryBuilderRepositoryDetector[] repositoryDetectors = new QueryBuilderRepositoryDetector[] {
         new FormQueryBuilderRepositoryDetector(),
     };
 

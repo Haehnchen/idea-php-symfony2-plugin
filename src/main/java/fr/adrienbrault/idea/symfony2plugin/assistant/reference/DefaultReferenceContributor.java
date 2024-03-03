@@ -12,7 +12,7 @@ import fr.adrienbrault.idea.symfony2plugin.assistant.AssistantReferenceContribut
 public class DefaultReferenceContributor {
 
     // @TODO: dynamic adding
-    public static AssistantReferenceContributor[] DEFAULT_CONTRIBUTORS = new AssistantReferenceContributor[] {
+    public static final AssistantReferenceContributor[] DEFAULT_CONTRIBUTORS = new AssistantReferenceContributor[] {
         new ParameterAssistantReferenceProvider(),
         new AssistantReferenceProviderConfigArray(),
         new AssistantReferenceProviderArrayKey()

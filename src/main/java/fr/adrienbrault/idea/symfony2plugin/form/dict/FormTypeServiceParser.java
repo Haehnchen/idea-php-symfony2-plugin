@@ -11,7 +11,7 @@ import java.io.InputStream;
  */
 public class FormTypeServiceParser extends AbstractServiceParser {
 
-    protected FormTypeMap formTypeMap = new FormTypeMap();
+    protected final FormTypeMap formTypeMap = new FormTypeMap();
 
     @Override
     public String getXPathFilter() {

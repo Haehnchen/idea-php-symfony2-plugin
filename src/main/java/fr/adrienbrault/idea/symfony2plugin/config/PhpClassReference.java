@@ -23,7 +23,7 @@ import java.util.List;
  */
 public class PhpClassReference extends PsiPolyVariantReferenceBase<PsiElement> {
 
-    private String classFQN;
+    private final String classFQN;
     private boolean provideVariants = false;
 
     private boolean useClasses = true;

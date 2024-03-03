@@ -58,7 +58,7 @@ public class FormTypeConstantMigrationAction extends CodeInsightAction {
             final Collection<StringLiteralExpression> formTypes = new ArrayList<>();
             phpClass.acceptChildren(new FormTypeStringElementVisitor(formTypes));
 
-            if(formTypes.size() == 0) {
+            if(formTypes.isEmpty()) {
                 IdeHelper.showErrorHintIfAvailable(editor, "Nothing to do for me");
                 return;
             }

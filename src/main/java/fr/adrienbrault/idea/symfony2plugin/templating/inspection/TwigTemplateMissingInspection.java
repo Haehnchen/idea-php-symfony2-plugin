@@ -50,7 +50,7 @@ public class TwigTemplateMissingInspection extends LocalInspectionTool {
         }
 
         Collection<VirtualFile> psiElements = TwigUtil.getTemplateFiles(element.getProject(), templateName);
-        if(psiElements.size() > 0)  {
+        if(!psiElements.isEmpty())  {
             return;
         }
 

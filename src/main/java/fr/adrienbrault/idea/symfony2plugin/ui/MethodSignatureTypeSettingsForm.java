@@ -30,10 +30,10 @@ public class MethodSignatureTypeSettingsForm  implements Configurable {
     private JCheckBox enableCustomSignatureTypesCheckBox;
     private JButton buttonHelp;
 
-    private TableView<MethodSignatureSetting> tableView;
-    private Project project;
+    private final TableView<MethodSignatureSetting> tableView;
+    private final Project project;
     private boolean changed = false;
-    private ListTableModel<MethodSignatureSetting> modelList;
+    private final ListTableModel<MethodSignatureSetting> modelList;
 
     public MethodSignatureTypeSettingsForm(Project project) {
         this.project = project;

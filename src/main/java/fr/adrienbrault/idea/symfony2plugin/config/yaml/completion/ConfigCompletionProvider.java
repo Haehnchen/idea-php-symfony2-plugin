@@ -72,7 +72,7 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
 
         // get all parent yaml keys
         List<String> items = YamlHelper.getParentArrayKeys(element);
-        if(items.size() == 0) {
+        if(items.isEmpty()) {
             return;
         }
 
@@ -245,7 +245,7 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
     @Nullable
     private Node getMatchingConfigNode(Document document, List<String> items) {
 
-        if(items.size() == 0) {
+        if(items.isEmpty()) {
             return null;
         }
 

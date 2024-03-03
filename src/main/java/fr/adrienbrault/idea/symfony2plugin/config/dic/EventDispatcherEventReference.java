@@ -16,7 +16,7 @@ import java.util.List;
  */
 public class EventDispatcherEventReference extends PsiPolyVariantReferenceBase<PsiElement> {
 
-    private String eventName;
+    private final String eventName;
 
     public EventDispatcherEventReference(@NotNull PsiElement element, String eventName) {
         super(element);

@@ -409,7 +409,7 @@ public class PhpMethodVariableResolveUtil {
 
             // init scope imports
             Map<String, String> fileImports = AnnotationBackportUtil.getUseImportMap(phpDocTag);
-            if(fileImports.size() == 0) {
+            if(fileImports.isEmpty()) {
                 return;
             }
 

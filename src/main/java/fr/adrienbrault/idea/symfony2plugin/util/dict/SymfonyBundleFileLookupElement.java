@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class SymfonyBundleFileLookupElement extends LookupElement {
 
-    private BundleFile bundleFile;
+    private final BundleFile bundleFile;
     private InsertHandler<LookupElement> insertHandler = null;
 
     public SymfonyBundleFileLookupElement(BundleFile bundleFile) {

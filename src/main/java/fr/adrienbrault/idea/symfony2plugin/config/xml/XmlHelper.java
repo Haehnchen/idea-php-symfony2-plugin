@@ -417,7 +417,7 @@ public class XmlHelper {
             return null;
         }
 
-        XmlTag xmlTags[] = PsiTreeUtil.getChildrenOfType(psiFile.getFirstChild(), XmlTag.class);
+        XmlTag[] xmlTags = PsiTreeUtil.getChildrenOfType(psiFile.getFirstChild(), XmlTag.class);
         if(xmlTags == null) {
             return null;
         }
@@ -452,7 +452,7 @@ public class XmlHelper {
             return null;
         }
 
-        XmlTag xmlTags[] = PsiTreeUtil.getChildrenOfType(psiFile.getFirstChild(), XmlTag.class);
+        XmlTag[] xmlTags = PsiTreeUtil.getChildrenOfType(psiFile.getFirstChild(), XmlTag.class);
         if(xmlTags == null) {
             return null;
         }
@@ -486,7 +486,7 @@ public class XmlHelper {
             return services;
         }
 
-        XmlTag xmlTags[] = PsiTreeUtil.getChildrenOfType(psiFile.getFirstChild(), XmlTag.class);
+        XmlTag[] xmlTags = PsiTreeUtil.getChildrenOfType(psiFile.getFirstChild(), XmlTag.class);
         if(xmlTags == null) {
             return services;
         }

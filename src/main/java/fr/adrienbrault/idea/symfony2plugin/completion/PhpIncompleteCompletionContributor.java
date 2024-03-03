@@ -104,7 +104,7 @@ public class PhpIncompleteCompletionContributor extends CompletionContributor {
             }
 
             Set<Map.Entry<String, String>> entries = options.entrySet();
-            if (entries.size() > 0) {
+            if (!entries.isEmpty()) {
                 content += ", [";
 
                 List<String> opts = new ArrayList<>();

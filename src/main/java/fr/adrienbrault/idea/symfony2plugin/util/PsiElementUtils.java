@@ -319,7 +319,6 @@ public class PsiElementUtils {
         while (element != null) {
 
             if (aClass.isInstance(element)) {
-                //noinspection unchecked
                 return lastElement;
             }
 
@@ -343,7 +342,6 @@ public class PsiElementUtils {
 
             IElementType elementType = element.getNode().getElementType();
             if (elementType == iElementType) {
-                //noinspection unchecked
                 return element;
             }
 

@@ -1,8 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.profiler.collector;
 
 import fr.adrienbrault.idea.symfony2plugin.profiler.collector.LocalDefaultDataCollector;
-import fr.adrienbrault.idea.symfony2plugin.profiler.collector.LocalMailCollector;
-import fr.adrienbrault.idea.symfony2plugin.profiler.dict.MailMessage;
 import fr.adrienbrault.idea.symfony2plugin.profiler.utils.ProfilerUtil;
 import junit.framework.TestCase;
 import org.jetbrains.annotations.NotNull;

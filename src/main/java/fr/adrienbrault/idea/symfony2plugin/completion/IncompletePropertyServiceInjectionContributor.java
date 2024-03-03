@@ -155,7 +155,7 @@ public class IncompletePropertyServiceInjectionContributor extends CompletionCon
                         }
 
                         Collection<PhpClass> anyByFQN = PhpIndex.getInstance(originalPosition.getProject()).getAnyByFQN(fqn);
-                        if (anyByFQN.size() == 0) {
+                        if (anyByFQN.isEmpty()) {
                             continue;
                         }
 
@@ -185,7 +185,7 @@ public class IncompletePropertyServiceInjectionContributor extends CompletionCon
                         String fqn = injection.getSecond();
 
                         Collection<PhpClass> anyByFQN = PhpIndex.getInstance(originalPosition.getProject()).getAnyByFQN(fqn);
-                        if (anyByFQN.size() == 0) {
+                        if (anyByFQN.isEmpty()) {
                             continue;
                         }
 
@@ -281,7 +281,7 @@ public class IncompletePropertyServiceInjectionContributor extends CompletionCon
         for (String property : propertyNameFind) {
             if (alias.containsKey(property.toLowerCase())) {
                 String key = property.toLowerCase();
-                if (PhpIndex.getInstance(project).getAnyByFQN(alias.get(key)).size() > 0) {
+                if (!PhpIndex.getInstance(project).getAnyByFQN(alias.get(key)).isEmpty()) {
                     String fqn = alias.get(key);
                     servicesMatch.put(fqn, new Match(fqn, 4));
                 }
@@ -353,7 +353,7 @@ public class IncompletePropertyServiceInjectionContributor extends CompletionCon
             }
 
             Collection<PhpClass> anyByFQN = PhpIndex.getInstance(project).getAnyByFQN(fqn);
-            if (anyByFQN.size() == 0) {
+            if (anyByFQN.isEmpty()) {
                 continue;
             }
 
@@ -429,14 +429,14 @@ public class IncompletePropertyServiceInjectionContributor extends CompletionCon
         PsiElement originalPosition = completionParameters.getOriginalPosition();
         if (originalPosition != null) {
             String text = originalPosition.getText();
-            if (text.length() > 0) {
+            if (!text.isEmpty()) {
                 return text;
             }
         }
 
         PsiElement position = completionParameters.getPosition();
         String text = position.getText().toLowerCase().replace("intellijidearulezzz", "");
-        if (text.length() > 0) {
+        if (!text.isEmpty()) {
             return text;
         }
 

@@ -90,7 +90,7 @@ public class PhpFoldingBuilder extends FoldingBuilderEx {
                 }
 
                 String contents = stringLiteralExpression.getContents();
-                if(contents.length() > 0 && routes.containsKey(contents)) {
+                if(!contents.isEmpty() && routes.containsKey(contents)) {
                     final Route route = routes.get(contents);
 
                     final String url = RouteHelper.getRouteUrl(route);
@@ -121,7 +121,7 @@ public class PhpFoldingBuilder extends FoldingBuilderEx {
         for(String lastChar: new String[] {":", "\\"}) {
             if(content.contains(lastChar)) {
                 final String replace = content.substring(content.lastIndexOf(lastChar) + 1);
-                if(replace.length() > 0) {
+                if(!replace.isEmpty()) {
                     descriptors.add(new FoldingDescriptor(stringLiteralExpression.getNode(),
                         new TextRange(stringLiteralExpression.getTextRange().getStartOffset() + 1, stringLiteralExpression.getTextRange().getEndOffset() - 1)) {
                         @Nullable

@@ -49,7 +49,7 @@ public class XmlServiceTagIntention extends PsiElementBaseIntentionAction {
         }
 
         Set<String> phpServiceTags = ServiceUtil.getPhpClassServiceTags(phpClassFromXmlTag);
-        if(phpServiceTags.size() == 0) {
+        if(phpServiceTags.isEmpty()) {
             IdeHelper.showErrorHintIfAvailable(editor, "Ops, no possible Tag found");
             return;
         }

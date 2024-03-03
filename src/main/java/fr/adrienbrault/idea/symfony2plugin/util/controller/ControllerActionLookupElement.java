@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class ControllerActionLookupElement extends LookupElement {
 
-    private ControllerAction controllerAction;
+    private final ControllerAction controllerAction;
 
     public ControllerActionLookupElement(ControllerAction controllerAction) {
         this.controllerAction = controllerAction;

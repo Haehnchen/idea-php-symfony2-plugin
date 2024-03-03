@@ -243,7 +243,7 @@ public class MethodMatcher {
                 return null;
             }
 
-            PsiElement methodParameters[] = ((ParameterList) parameterList).getParameters();
+            PsiElement[] methodParameters = ((ParameterList) parameterList).getParameters();
             if (methodParameters.length < this.parameterIndex) {
                 return null;
             }

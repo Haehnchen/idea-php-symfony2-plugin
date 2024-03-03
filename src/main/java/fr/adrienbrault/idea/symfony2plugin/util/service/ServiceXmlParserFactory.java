@@ -18,14 +18,14 @@ import java.util.*;
  */
 public class ServiceXmlParserFactory {
 
-    protected static Map<Project, Map<Class, ServiceXmlParserFactory>> instance = new HashMap<>();
+    protected static final Map<Project, Map<Class, ServiceXmlParserFactory>> instance = new HashMap<>();
 
-    private Project project;
+    private final Project project;
     private ServiceParserInterface serviceParserInstance;
 
     private HashMap<String, Long> serviceFiles = new HashMap<>();
 
-    private Collection<CompiledServiceBuilderFactory.Builder> extensions = new ArrayList<>();
+    private final Collection<CompiledServiceBuilderFactory.Builder> extensions = new ArrayList<>();
     private static final ExtensionPointName<CompiledServiceBuilderFactory> EXTENSIONS = new ExtensionPointName<>(
         "fr.adrienbrault.idea.symfony2plugin.extension.CompiledServiceBuilderFactory"
     );
@@ -52,7 +52,7 @@ public class ServiceXmlParserFactory {
             }
         }
 
-        if(this.extensions.size() > 0) {
+        if(!this.extensions.isEmpty()) {
             for (CompiledServiceBuilderFactory.Builder builder : this.extensions) {
                 if(builder.isModified(project)) {
                     return true;
@@ -80,7 +80,7 @@ public class ServiceXmlParserFactory {
         if (this.serviceParserInstance != null) {
 
             // extensions
-            if(this.extensions.size() > 0) {
+            if(!this.extensions.isEmpty()) {
                 CompiledServiceBuilderArguments args = new CompiledServiceBuilderArguments(project);
                 for (CompiledServiceBuilderFactory.Builder builder : this.extensions) {
                     builder.build(args);

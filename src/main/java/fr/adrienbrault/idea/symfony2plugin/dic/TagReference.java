@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class TagReference extends PsiPolyVariantReferenceBase<PsiElement> {
 
-    private String tagName;
+    private final String tagName;
 
     public TagReference(PsiElement psiElement, String tagName) {
         super(psiElement);

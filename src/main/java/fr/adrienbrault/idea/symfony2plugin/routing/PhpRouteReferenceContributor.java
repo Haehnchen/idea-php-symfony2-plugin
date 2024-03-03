@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class PhpRouteReferenceContributor extends PsiReferenceContributor {
 
-    public static MethodMatcher.CallToSignature[] GENERATOR_SIGNATURES = new MethodMatcher.CallToSignature[] {
+    public static final MethodMatcher.CallToSignature[] GENERATOR_SIGNATURES = new MethodMatcher.CallToSignature[] {
         new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "generateUrl"),
         new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "redirectToRoute"),
 
@@ -33,7 +33,7 @@ public class PhpRouteReferenceContributor extends PsiReferenceContributor {
 
     };
 
-    private static MethodMatcher.CallToSignature[] FORWARD_SIGNATURES = new MethodMatcher.CallToSignature[] {
+    private static final MethodMatcher.CallToSignature[] FORWARD_SIGNATURES = new MethodMatcher.CallToSignature[] {
         new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "forward"),
 
         // Symfony 3.3 / 3.4

@@ -8,10 +8,10 @@ import org.jetbrains.annotations.Nullable;
  */
 public class TwigMacro {
     @NotNull
-    private String name;
+    private final String name;
 
     @NotNull
-    private String template;
+    private final String template;
 
     @Nullable
     private String originalName;

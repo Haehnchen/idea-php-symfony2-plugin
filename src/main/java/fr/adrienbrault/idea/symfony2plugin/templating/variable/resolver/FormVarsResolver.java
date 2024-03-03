@@ -5,7 +5,6 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;

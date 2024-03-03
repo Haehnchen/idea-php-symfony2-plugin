@@ -72,7 +72,7 @@ public class DoctrineAnnotationReferencedColumnReferences implements PhpAnnotati
                                     PhpClass phpClass = de.espend.idea.php.annotation.util.PhpElementsUtil.getClassInsideAnnotation(((StringLiteralExpression) phpPsiElement));
                                     if(phpClass != null) {
                                         Collection<DoctrineModelField> lists = EntityHelper.getModelFields(phpClass);
-                                        if(lists.size() > 0) {
+                                        if(!lists.isEmpty()) {
                                             return new PsiReference[] {
                                                 new EntityReference((StringLiteralExpression) element, lists)
                                             };

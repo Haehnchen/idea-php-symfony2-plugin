@@ -18,10 +18,10 @@ import javax.swing.*;
  */
 public class NavigationItemEx implements NavigationItem, ItemPresentation {
 
-    private PsiElement psiElement;
-    private String name;
-    private Icon icon;
-    private String locationString;
+    private final PsiElement psiElement;
+    private final String name;
+    private final Icon icon;
+    private final String locationString;
     private boolean appendBundleLocation = true;
 
     public NavigationItemEx(PsiElement psiElement, final String name, final Icon icon, final String locationString) {

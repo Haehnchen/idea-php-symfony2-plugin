@@ -36,21 +36,21 @@ import java.util.regex.Pattern;
  */
 public class QueryBuilderCompletionContributor extends CompletionContributor {
 
-    private static MethodMatcher.CallToSignature[] JOINS = new MethodMatcher.CallToSignature[] {
+    private static final MethodMatcher.CallToSignature[] JOINS = new MethodMatcher.CallToSignature[] {
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "join"),
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "leftJoin"),
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "rightJoin"),
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "innerJoin"),
     };
 
-    private static MethodMatcher.CallToSignature[] WHERES = new MethodMatcher.CallToSignature[] {
+    private static final MethodMatcher.CallToSignature[] WHERES = new MethodMatcher.CallToSignature[] {
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "where"),
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "andWhere"),
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\QueryBuilder", "orWhere"),
     };
 
     // mmh... really that good; not added all because of performance? :)
-    public static MethodMatcher.CallToSignature[] EXPR = new MethodMatcher.CallToSignature[] {
+    public static final MethodMatcher.CallToSignature[] EXPR = new MethodMatcher.CallToSignature[] {
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "andX"),
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "orX"),
         new MethodMatcher.CallToSignature("\\Doctrine\\ORM\\Query\\Expr", "eq"),

@@ -14,7 +14,6 @@ import com.intellij.openapi.extensions.PluginDescriptor;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.Messages;
 import com.intellij.util.Consumer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;

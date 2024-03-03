@@ -66,7 +66,7 @@ public class TranslationUtil {
         new IndexTranslatorProvider(),
     };
 
-    public static MethodMatcher.CallToSignature[] PHP_TRANSLATION_SIGNATURES = new MethodMatcher.CallToSignature[] {
+    public static final MethodMatcher.CallToSignature[] PHP_TRANSLATION_SIGNATURES = new MethodMatcher.CallToSignature[] {
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Translation\\TranslatorInterface", "trans"),
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Translation\\TranslatorInterface", "transChoice"),
         new MethodMatcher.CallToSignature("\\Symfony\\Contracts\\Translation\\TranslatorInterface", "trans"),

@@ -78,7 +78,7 @@ public class AnnotationRouteElementVisitor {
             this.fileImports = AnnotationBackportUtil.getUseImportMap(phpDocTag);
         }
 
-        if(this.fileImports.size() == 0) {
+        if(this.fileImports.isEmpty()) {
             return;
         }
 
@@ -121,7 +121,7 @@ public class AnnotationRouteElementVisitor {
                 }
             }
 
-            if (path.length() > 0) {
+            if (!path.isEmpty()) {
                 route.setPath(path);
             }
 
@@ -272,7 +272,7 @@ public class AnnotationRouteElementVisitor {
             methods.add(matcher.group(1).toLowerCase());
         }
 
-        if(methods.size() > 0) {
+        if(!methods.isEmpty()) {
             route.setMethods(methods);
         }
     }

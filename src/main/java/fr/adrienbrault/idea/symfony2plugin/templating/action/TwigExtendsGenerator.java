@@ -50,7 +50,7 @@ public class TwigExtendsGenerator extends CodeInsightAction {
 
             List<String> prioritizedKeys = TwigUtil.getExtendsTemplateUsageAsOrderedList(project);
 
-            if (prioritizedKeys.size() == 0) {
+            if (prioritizedKeys.isEmpty()) {
                 IdeHelper.showErrorHintIfAvailable(editor, "No extends found");
                 return;
             }

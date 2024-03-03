@@ -9,8 +9,8 @@ import java.util.ArrayList;
  */
 public class AnnotationConfig {
 
-    private String name;
-    private String use;
+    private final String name;
+    private final String use;
     private ArrayList<AnnotationValue> values = new ArrayList<>();
 
     public AnnotationConfig(String name, String use) {

@@ -34,7 +34,7 @@ public class DoctrineModelProviderParameter {
     public static class DoctrineModel {
 
         final private PhpClass phpClass;
-        private String name;
+        private final String name;
 
         public DoctrineModel(PhpClass phpClass) {
             this.name = phpClass.getPresentableFQN();

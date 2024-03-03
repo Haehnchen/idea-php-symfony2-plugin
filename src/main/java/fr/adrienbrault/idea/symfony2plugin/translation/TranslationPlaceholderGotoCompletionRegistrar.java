@@ -96,9 +96,9 @@ public class TranslationPlaceholderGotoCompletionRegistrar implements GotoComple
 
     private static class MyPhpTranslationCompletionContributor implements GotoCompletionContributor {
         @NotNull
-        private String method;
-        private int placeHolderParameter;
-        private int domainParameter;
+        private final String method;
+        private final int placeHolderParameter;
+        private final int domainParameter;
 
         private MyPhpTranslationCompletionContributor(@NotNull String method, int placeHolderParameter, int domainParameter) {
             this.method = method;

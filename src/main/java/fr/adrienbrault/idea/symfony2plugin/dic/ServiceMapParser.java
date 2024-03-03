@@ -23,7 +23,7 @@ import java.util.Map;
  */
 public class ServiceMapParser {
 
-    private DocumentBuilder documentBuilder;
+    private final DocumentBuilder documentBuilder;
 
     public ServiceMapParser() throws ParserConfigurationException {
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();

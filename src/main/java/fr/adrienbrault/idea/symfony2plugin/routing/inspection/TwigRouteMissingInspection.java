@@ -39,7 +39,7 @@ public class TwigRouteMissingInspection extends LocalInspectionTool {
             return;
         }
 
-        if(RouteHelper.getRoute(element.getProject(), text).size() == 0) {
+        if(RouteHelper.getRoute(element.getProject(), text).isEmpty()) {
             holder.registerProblem(element, "Symfony: Missing Route", new RouteGuessTypoQuickFix(text));
         }
     }

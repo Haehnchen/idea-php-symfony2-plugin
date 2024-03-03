@@ -5,8 +5,8 @@ package fr.adrienbrault.idea.symfony2plugin.util.annotation;
  */
 public class AnnotationValue {
 
-    private String name;
-    private Type type;
+    private final String name;
+    private final Type type;
 
     public AnnotationValue(String name, Type type) {
         this.name = name;

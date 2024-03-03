@@ -9,9 +9,9 @@ import org.jetbrains.annotations.Nullable;
  */
 public class BundleFile {
 
-    private SymfonyBundle symfonyBundle;
-    private VirtualFile virtualFile;
-    private Project project;
+    private final SymfonyBundle symfonyBundle;
+    private final VirtualFile virtualFile;
+    private final Project project;
 
     public BundleFile(SymfonyBundle symfonyBundle, VirtualFile virtualFile, Project project) {
         this.symfonyBundle = symfonyBundle;

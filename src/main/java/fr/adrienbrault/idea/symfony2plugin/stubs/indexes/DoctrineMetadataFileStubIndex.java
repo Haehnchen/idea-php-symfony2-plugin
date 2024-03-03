@@ -42,13 +42,13 @@ public class DoctrineMetadataFileStubIndex extends FileBasedIndexExtension<Strin
             }
 
             Collection<Pair<String, String>> classRepositoryPair = DoctrineUtil.getClassRepositoryPair(psiFile);
-            if(classRepositoryPair == null || classRepositoryPair.size() == 0) {
+            if(classRepositoryPair == null || classRepositoryPair.isEmpty()) {
                 return map;
             }
 
             for (Pair<String, String> pair : classRepositoryPair) {
                 String first = pair.getFirst();
-                if(first == null || first.length() == 0) {
+                if(first == null || first.isEmpty()) {
                     continue;
                 }
 

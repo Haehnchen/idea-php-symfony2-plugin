@@ -79,7 +79,7 @@ public class ArrayValueWithKeyAndNewExpressionMatcher {
             expressionCall.getIndex() == parameterIndex
         );
 
-        if(filter.size() == 0) {
+        if(filter.isEmpty()) {
             return null;
         }
 

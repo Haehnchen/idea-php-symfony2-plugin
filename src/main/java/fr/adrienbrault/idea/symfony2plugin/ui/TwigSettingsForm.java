@@ -35,7 +35,7 @@ public class TwigSettingsForm implements Configurable {
     private JButton buttonJsonExample;
     private JCheckBox chkTwigBundleNamespaceSupport;
     private TableView<TwigPath> tableView;
-    private Project project;
+    private final Project project;
     private boolean changed = false;
     private ListTableModel<TwigPath> modelList;
 
@@ -218,7 +218,7 @@ public class TwigSettingsForm implements Configurable {
 
     private static class PathColumn extends ColumnInfo<TwigPath, String> {
 
-        private Project project;
+        private final Project project;
 
         public PathColumn(Project project) {
             super("Path");

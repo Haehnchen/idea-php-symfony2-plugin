@@ -24,7 +24,7 @@ import java.util.List;
  */
 public class SymfonyBundleFileCompletionProvider extends CompletionProvider<CompletionParameters> {
 
-    private String[] paths;
+    private final String[] paths;
 
     public SymfonyBundleFileCompletionProvider(String... paths) {
         this.paths = paths;
@@ -72,9 +72,9 @@ public class SymfonyBundleFileCompletionProvider extends CompletionProvider<Comp
 
     private static class BundleContentIterator implements ContentIterator{
 
-        private SymfonyBundle symfonyBundle;
-        private List<BundleFile> bundleFiles;
-        private Project project;
+        private final SymfonyBundle symfonyBundle;
+        private final List<BundleFile> bundleFiles;
+        private final Project project;
 
         public BundleContentIterator(SymfonyBundle symfonyBundle, List<BundleFile> bundleFiles, Project project) {
             this.symfonyBundle = symfonyBundle;

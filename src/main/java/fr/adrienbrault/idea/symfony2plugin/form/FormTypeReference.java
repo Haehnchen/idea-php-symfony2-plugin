@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public class FormTypeReference extends PsiReferenceBase<PsiElement> implements PsiReference {
 
-    private StringLiteralExpression element;
+    private final StringLiteralExpression element;
 
     public FormTypeReference(@NotNull StringLiteralExpression element) {
         super(element);

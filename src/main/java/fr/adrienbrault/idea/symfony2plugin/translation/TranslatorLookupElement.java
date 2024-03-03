@@ -13,10 +13,10 @@ import org.jetbrains.annotations.Nullable;
  */
 public class TranslatorLookupElement extends LookupElement {
     @NotNull
-    private String translationString;
+    private final String translationString;
 
     @NotNull
-    private String domain;
+    private final String domain;
 
     @Nullable
     private InsertHandler<TranslatorLookupElement> insertHandler;

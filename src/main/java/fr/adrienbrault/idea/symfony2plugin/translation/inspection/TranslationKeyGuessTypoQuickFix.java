@@ -80,7 +80,7 @@ public class TranslationKeyGuessTypoQuickFix extends IntentionAndQuickFixAction 
             .collect(Collectors.toSet());
 
         List<String> similarItems = SimilarSuggestionUtil.findSimilarString(this.missingTranslationKey, translationKeys);
-        if (similarItems.size() == 0) {
+        if (similarItems.isEmpty()) {
             IdeHelper.showErrorHintIfAvailable(editor, "No similar item found");
             return;
         }
@@ -99,7 +99,7 @@ public class TranslationKeyGuessTypoQuickFix extends IntentionAndQuickFixAction 
             suggestionSelected = selectedValue -> WriteCommandAction.runWriteCommandAction(project, "Translation Key Suggestion", null, () -> {
                 String contents = parent.getText();
                 String wrap = "'";
-                if (contents.length() > 0) {
+                if (!contents.isEmpty()) {
                     String wrap2 = contents.substring(0, 1);
                     if (wrap2.equals("\"") || wrap2.equals("'")) {
                         wrap = wrap2;

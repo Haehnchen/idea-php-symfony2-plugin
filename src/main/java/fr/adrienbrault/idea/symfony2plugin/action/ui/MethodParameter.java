@@ -13,10 +13,10 @@ import java.util.Set;
 public class MethodParameter implements Serializable {
     public static class MethodModelParameter {
 
-        private Method method;
-        private Parameter parameter;
-        private int index;
-        private Set<String> possibleServices;
+        private final Method method;
+        private final Parameter parameter;
+        private final int index;
+        private final Set<String> possibleServices;
         private boolean isPossibleService = false;
         private String currentService;
 

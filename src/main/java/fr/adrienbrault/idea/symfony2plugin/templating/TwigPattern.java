@@ -56,7 +56,6 @@ public class TwigPattern {
      * {% transchoice count with {'%name%': 'Fabien'} from "app" %}
      */
     public static ElementPattern<PsiElement> getTranslationTokenTagFromPattern() {
-        //noinspection unchecked
 
         // we need to use withText check, because twig tags dont have childrenAllowToVisit to search for tag name
         return PlatformPatterns.or(
@@ -98,7 +97,6 @@ public class TwigPattern {
      * {% include ['', ~ '', ''] %}
      */
     public static ElementPattern<PsiElement> getIncludeTagArrayPattern() {
-        //noinspection unchecked
         return PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
             .withParent(
                 PlatformPatterns.psiElement(TwigElementTypes.INCLUDE_TAG)
@@ -126,7 +124,6 @@ public class TwigPattern {
      * {% extends foo ? '' : '' %}
      */
     public static ElementPattern<PsiElement> getTagTernaryPattern(@NotNull IElementType type) {
-        //noinspection unchecked
         return PlatformPatterns.or(
             PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
                 .withParent(
@@ -155,7 +152,6 @@ public class TwigPattern {
      * @param functionName twig function name
      */
     public static ElementPattern<PsiElement> getPrintBlockOrTagFunctionPattern(String... functionName) {
-        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
             .withParent(
@@ -224,7 +220,6 @@ public class TwigPattern {
      * {{ foo({'fo<caret>obar'}) }}
      */
     public static ElementPattern<PsiElement> getFunctionWithFirstParameterAsLiteralPattern(@NotNull String... functionName) {
-        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT).afterLeafSkipping(
                 PlatformPatterns.or(
@@ -299,7 +294,6 @@ public class TwigPattern {
      * {{ foo(12, {'foobar': 'foo', 'foo<caret>bar': 'foo'}}) }}
      */
     public static ElementPattern<PsiElement> getFunctionWithSecondParameterAsKeyLiteralPattern(@NotNull String... functionName) {
-        //noinspection unchecked
         PsiElementPattern.Capture<PsiElement> parameterPattern = PlatformPatterns.psiElement(TwigElementTypes.LITERAL).afterLeafSkipping(
             PlatformPatterns.or(
                 PlatformPatterns.psiElement(PsiWhiteSpace.class),
@@ -352,7 +346,6 @@ public class TwigPattern {
      * {{ foo(['fo<caret>obar']) }}
      */
     public static ElementPattern<PsiElement> getFunctionWithFirstParameterAsArrayPattern(@NotNull String... functionName) {
-        //noinspection unchecked
 
         // "foo(<caret>"
         PsiElementPattern.Capture<PsiElement> functionPattern = PlatformPatterns
@@ -411,7 +404,6 @@ public class TwigPattern {
      * @param tagName twig tag name
      */
     public static ElementPattern<PsiElement> getStringAfterTagNamePattern(@NotNull String tagName) {
-        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
             .afterLeafSkipping(
@@ -472,7 +464,6 @@ public class TwigPattern {
      * Check for {% if foo is "foo" %}
      */
     public static ElementPattern<PsiElement> getAfterIsTokenPattern() {
-        //noinspection unchecked
         return PlatformPatterns
             .psiElement()
             .afterLeafSkipping(
@@ -492,7 +483,6 @@ public class TwigPattern {
      * Check for {% if foo is "foo foo" %}
      */
     public static ElementPattern<PsiElement> getAfterIsTokenWithOneIdentifierLeafPattern() {
-        //noinspection unchecked
         return PlatformPatterns
             .psiElement()
             .withParent(PlatformPatterns
@@ -514,7 +504,6 @@ public class TwigPattern {
      * Extract text {% if foo is "foo foo" %}
      */
     public static ElementPattern<PsiElement> getAfterIsTokenTextPattern() {
-        //noinspection unchecked
         return PlatformPatterns.or(
             PlatformPatterns.psiElement(TwigTokenTypes.IS),
             PlatformPatterns.psiElement(TwigTokenTypes.NOT)
@@ -542,7 +531,6 @@ public class TwigPattern {
      * {% <caret> %}
      */
     public static ElementPattern<PsiElement> getTagTokenParserPattern() {
-        //noinspection unchecked
         return PlatformPatterns
             .psiElement()
             .afterLeafSkipping(
@@ -581,7 +569,6 @@ public class TwigPattern {
      * {% FOOBAR "WANTED.html.twig" %}
      */
     public static ElementPattern<PsiElement> getTagNameParameterPattern(@NotNull IElementType elementType, @NotNull String tagName) {
-        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
             .withParent(
@@ -705,7 +692,6 @@ public class TwigPattern {
      * {% block foo %}
      */
     public static ElementPattern<PsiElement> getBlockTagPattern() {
-        //noinspection unchecked
         return PlatformPatterns.or(
 
             // {% block "foo" %}
@@ -746,7 +732,6 @@ public class TwigPattern {
      * {% filter foo %}
      */
     public static ElementPattern<PsiElement> getFilterTagPattern() {
-        //noinspection unchecked
         return
             PlatformPatterns
                 .psiElement(TwigTokenTypes.IDENTIFIER)
@@ -780,7 +765,6 @@ public class TwigPattern {
      * transchoice(2, null, 'bar')
      */
     public static ElementPattern<PsiElement> getTransDomainPattern() {
-        //noinspection unchecked
         ElementPattern[] whitespace = {
             PlatformPatterns.psiElement(PsiWhiteSpace.class),
             PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
@@ -795,7 +779,6 @@ public class TwigPattern {
             PlatformPatterns.psiElement(TwigTokenTypes.RBRACE_SQ)
         };
 
-        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
             .afterLeafSkipping(
@@ -992,7 +975,6 @@ public class TwigPattern {
      *  {{ absolute_url("<caret>") }}
      */
     public static ElementPattern<PsiElement> getAutocompletableAssetPattern() {
-        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
             .afterLeafSkipping(
@@ -1036,7 +1018,6 @@ public class TwigPattern {
      */
     @NotNull
     public static ElementPattern<PsiElement> getTranslationKeyPattern(@NotNull String... type) {
-        //noinspection unchecked
         return
             PlatformPatterns
                 .psiElement(TwigTokenTypes.STRING_TEXT)
@@ -1067,7 +1048,6 @@ public class TwigPattern {
         //
         // {% stylesheets filter='cssrewrite'
         //  'assets/css/foo.css'
-        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
                 .afterLeafSkipping(
@@ -1087,7 +1067,6 @@ public class TwigPattern {
 
         // {% include '<xxx>' with {'foo' : bar, 'bar' : 'foo'} %}
 
-        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
             .afterLeafSkipping(
@@ -1132,7 +1111,6 @@ public class TwigPattern {
     public static ElementPattern<PsiElement> getForTagVariablePattern() {
         // {% for "user"  %}
 
-        //noinspection unchecked
         return captureVariableOrField().beforeLeafSkipping(
                 PlatformPatterns.or(
                     PlatformPatterns.psiElement(PsiWhiteSpace.class),
@@ -1147,7 +1125,6 @@ public class TwigPattern {
      * {{ 'test'|<caret> }}
      */
     public static ElementPattern<PsiElement> getFilterPattern() {
-        //noinspection unchecked
         return PlatformPatterns.psiElement()
             .afterLeafSkipping(
                 PlatformPatterns.or(
@@ -1217,7 +1194,6 @@ public class TwigPattern {
 
         // {% if "var" %}
 
-        //noinspection unchecked
         return captureVariableOrField().afterLeafSkipping(
                 PlatformPatterns.or(
                     PlatformPatterns.psiElement(PsiWhiteSpace.class),
@@ -1239,7 +1215,6 @@ public class TwigPattern {
         // {% if var == "var1" %}
         // and so on
 
-        //noinspection unchecked
         return captureVariableOrField().afterLeafSkipping(
                 PlatformPatterns.or(
                     PlatformPatterns.psiElement(PsiWhiteSpace.class),
@@ -1264,7 +1239,6 @@ public class TwigPattern {
 
         // {% use '<foo>' %}
 
-        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.STRING_TEXT)
             .withParent(PlatformPatterns.psiElement(
@@ -1286,7 +1260,6 @@ public class TwigPattern {
 
         // {% macro <foo>(user) %}
 
-        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER).withText(macroName)
             .withParent(PlatformPatterns.psiElement(
@@ -1306,7 +1279,6 @@ public class TwigPattern {
 
         // {% set count1 = "var" %}
 
-        //noinspection unchecked
         return captureVariableOrField().afterLeafSkipping(
                 PlatformPatterns.or(
                     PlatformPatterns.psiElement(PsiWhiteSpace.class),
@@ -1327,7 +1299,6 @@ public class TwigPattern {
 
         // {% set count1 = "var" %}
 
-        //noinspection unchecked
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER).withText("only")
             .beforeLeafSkipping(
@@ -1375,7 +1346,6 @@ public class TwigPattern {
     }
 
     public static ElementPattern<PsiElement> getVariableTypePattern() {
-        //noinspection unchecked
         return PlatformPatterns.or(
             getForTagInVariablePattern(),
             getForTagInVariableReferencePattern(),

@@ -369,7 +369,7 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
         }
 
         List<String> lookupElements = myFixture.getLookupElementStrings();
-        if(lookupElements == null || lookupElements.size() == 0) {
+        if(lookupElements == null || lookupElements.isEmpty()) {
             fail(String.format("failed that empty completion contains %s", Arrays.toString(lookupStrings)));
         }
 

@@ -72,7 +72,7 @@ public class TemplateGuessTypoQuickFix extends IntentionAndQuickFixAction {
         }
 
         List<String> similarTemplateNames = findSimilarTemplateNames(project, this.missingTemplateName);
-        if (similarTemplateNames.size() == 0) {
+        if (similarTemplateNames.isEmpty()) {
             IdeHelper.showErrorHintIfAvailable(editor, "No similar item found");
             return;
         }
@@ -91,7 +91,7 @@ public class TemplateGuessTypoQuickFix extends IntentionAndQuickFixAction {
             templateSuggestion = selectedValue -> WriteCommandAction.runWriteCommandAction(project, "Template Suggestion", null, () -> {
                 String contents = parent.getText();
                 String wrap = "'";
-                if (contents.length() > 0) {
+                if (!contents.isEmpty()) {
                     String wrap2 = contents.substring(0, 1);
                     if (wrap2.equals("\"") || wrap2.equals("'")) {
                         wrap = wrap2;

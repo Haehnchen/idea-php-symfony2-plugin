@@ -52,7 +52,7 @@ public class PhpRouteMissingInspection extends LocalInspectionTool {
         }
 
         Collection<Route> route = RouteHelper.getRoute(element.getProject(), routeName);
-        if(route.size() == 0) {
+        if(route.isEmpty()) {
             holder.registerProblem(element, "Symfony: Missing Route", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, new RouteGuessTypoQuickFix(routeName));
         }
     }

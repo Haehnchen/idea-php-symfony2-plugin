@@ -117,7 +117,7 @@ public class ServiceArgumentSelectionDialog extends JDialog {
             this.classFqn = classFqn;
             this.possibleServices = possibleServices;
 
-            if(possibleServices.size() > 0) {
+            if(!possibleServices.isEmpty()) {
                 currentService = possibleServices.iterator().next();
             }
 

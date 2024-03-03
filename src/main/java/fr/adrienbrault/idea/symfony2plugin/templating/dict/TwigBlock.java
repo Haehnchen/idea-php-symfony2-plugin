@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class TwigBlock {
     @NotNull
-    private String name;
+    private final String name;
 
     @NotNull
     private final PsiElement target;

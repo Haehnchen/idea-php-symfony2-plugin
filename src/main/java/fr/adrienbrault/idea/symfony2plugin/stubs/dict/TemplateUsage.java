@@ -13,7 +13,7 @@ import java.util.Objects;
   */
 public class TemplateUsage implements Serializable {
     @NotNull
-    private String template;
+    private final String template;
 
     @NotNull
     private Collection<String> scopes = new HashSet<>();
