@@ -37,10 +37,10 @@ public class RoutingSettingsForm implements Configurable {
     private JPanel listviewPanel;
     private JButton buttonReset;
     private JTextPane ifYouApplicationDoesTextPane;
-    private TableView<RoutingFile> tableView;
-    private Project project;
+    private final TableView<RoutingFile> tableView;
+    private final Project project;
     private boolean changed = false;
-    private ListTableModel<RoutingFile> modelList;
+    private final ListTableModel<RoutingFile> modelList;
 
     public RoutingSettingsForm(@NotNull Project project) {
 
@@ -76,7 +76,7 @@ public class RoutingSettingsForm implements Configurable {
 
     private void initList() {
         List<RoutingFile> containerFiles = getSettings().routingFiles;
-        if(containerFiles != null && containerFiles.size() > 0) {
+        if(containerFiles != null && !containerFiles.isEmpty()) {
             this.modelList.addRows(containerFiles);
         }
     }

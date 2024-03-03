@@ -52,7 +52,7 @@ import java.util.stream.Stream;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class ServiceContainerUtil {
-    public static MethodMatcher.CallToSignature[] SERVICE_GET_SIGNATURES = new MethodMatcher.CallToSignature[] {
+    public static final MethodMatcher.CallToSignature[] SERVICE_GET_SIGNATURES = new MethodMatcher.CallToSignature[] {
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "get"),
         new MethodMatcher.CallToSignature("\\Psr\\Container\\ContainerInterface", "get"),
         new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "get"),
@@ -69,7 +69,7 @@ public class ServiceContainerUtil {
     private static final Key<CachedValue<Collection<String>>> SYMFONY_COMPILED_TIMED_SERVICE_WATCHER = new Key<>("SYMFONY_COMPILED_TIMED_SERVICE_WATCHER");
     private static final Key<CachedValue<Collection<String>>> SYMFONY_COMPILED_SERVICE_WATCHER = new Key<>("SYMFONY_COMPILED_SERVICE_WATCHER");
 
-    private static String[] LOWER_PRIORITY = new String[] {
+    private static final String[] LOWER_PRIORITY = new String[] {
         "debug", "default", "abstract", "inner", "chain", "decorate", "delegat"
     };
 
@@ -927,7 +927,7 @@ public class ServiceContainerUtil {
 
     @NotNull
     public static List<String> getSortedServiceId(@NotNull Project project, @NotNull Collection<String> ids) {
-        if(ids.size() == 0) {
+        if(ids.isEmpty()) {
             return new ArrayList<>(ids);
         }
 

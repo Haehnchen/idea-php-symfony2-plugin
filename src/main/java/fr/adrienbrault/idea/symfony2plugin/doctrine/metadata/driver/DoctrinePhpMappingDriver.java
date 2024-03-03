@@ -86,7 +86,7 @@ public class DoctrinePhpMappingDriver implements DoctrineMappingDriverInterface 
             }
         }
 
-        if(fields.size() == 0) {
+        if(fields.isEmpty()) {
             return null;
         }
 

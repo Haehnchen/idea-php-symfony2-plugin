@@ -55,7 +55,7 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
         // only string values like "foo", foo
         if (elementType == YAMLTokenTypes.TEXT || elementType == YAMLTokenTypes.SCALAR_DSTRING || elementType == YAMLTokenTypes.SCALAR_STRING) {
             String psiText = PsiElementUtils.getText(psiElement);
-            if (psiText.length() > 0) {
+            if (!psiText.isEmpty()) {
                 if (psiText.startsWith("@") && psiText.length() > 1) {
                     targets.addAll(serviceGoToDeclaration(psiElement, psiText.substring(1)));
                 }
@@ -278,7 +278,7 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
 
         if (serviceClass != null) {
             Collection<PhpClass> phpClasses = PhpIndex.getInstance(psiElement.getProject()).getAnyByFQN(serviceClass);
-            if(phpClasses.size() > 0) {
+            if(!phpClasses.isEmpty()) {
                 return new ArrayList<>(phpClasses);
             }
         }

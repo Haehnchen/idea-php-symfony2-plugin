@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.doctrine;
 
-import com.intellij.openapi.util.Condition;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.containers.ContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;

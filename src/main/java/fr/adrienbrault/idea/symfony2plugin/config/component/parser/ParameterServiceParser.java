@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ParameterServiceParser extends AbstractServiceParser {
 
-    protected Map<String, String> parameterMap = new ConcurrentHashMap<>();
+    protected final Map<String, String> parameterMap = new ConcurrentHashMap<>();
 
     @Override
     public String getXPathFilter() {

@@ -165,7 +165,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                     }
 
                     Collection<PsiFile> twigFilesByName = TwigUtil.getTemplatePsiElements(position.getProject(), templateName);
-                    if (twigFilesByName.size() == 0) {
+                    if (twigFilesByName.isEmpty()) {
                         return;
                     }
 
@@ -696,7 +696,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             Project project = parameters.getPosition().getProject();
             List<String> prioritizedKeys = TwigUtil.getFormThemeTemplateUsageAsOrderedList(project);
 
-            if (prioritizedKeys.size() > 0) {
+            if (!prioritizedKeys.isEmpty()) {
                 CompletionSorter completionSorter = CompletionService.getCompletionService()
                     .defaultSorter(parameters, resultSet.getPrefixMatcher())
                     .weighBefore("priority", new ServiceCompletionProvider.MyLookupElementWeigher(prioritizedKeys));
@@ -796,7 +796,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 prioritizedKeys.addAll(TwigUtil.getIncludeTemplateUsageAsOrderedList(project));
             }
 
-            if (prioritizedKeys.size() > 0) {
+            if (!prioritizedKeys.isEmpty()) {
                 CompletionSorter completionSorter = CompletionService.getCompletionService()
                     .defaultSorter(parameters, resultSet.getPrefixMatcher())
                     .weighBefore("priority", new ServiceCompletionProvider.MyLookupElementWeigher(prioritizedKeys));
@@ -1089,7 +1089,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
                 String typeText = null;
                 Collection<PhpClass> formTypeFromFormFactory = FormFieldResolver.getFormTypeFromFormFactory(element);
-                if (formTypeFromFormFactory.size() > 0) {
+                if (!formTypeFromFormFactory.isEmpty()) {
                     typeText = StringUtils.stripStart(formTypeFromFormFactory.iterator().next().getFQN(), "\\");
                 }
 
@@ -1143,7 +1143,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
                 String typeText = null;
                 Collection<PhpClass> formTypeFromFormFactory = FormFieldResolver.getFormTypeFromFormFactory(element);
-                if (formTypeFromFormFactory.size() > 0) {
+                if (!formTypeFromFormFactory.isEmpty()) {
                     typeText = StringUtils.stripStart(formTypeFromFormFactory.iterator().next().getFQN(), "\\");
                 }
 

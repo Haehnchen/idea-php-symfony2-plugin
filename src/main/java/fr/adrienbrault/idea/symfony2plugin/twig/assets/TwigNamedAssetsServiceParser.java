@@ -17,7 +17,7 @@ import java.util.Set;
  */
 public class TwigNamedAssetsServiceParser extends AbstractServiceParser {
     @NotNull
-    private Map<String, String[]> namedAssets = new HashMap<>();
+    private final Map<String, String[]> namedAssets = new HashMap<>();
 
     @Override
     public String getXPathFilter() {

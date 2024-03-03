@@ -17,10 +17,10 @@ public interface AssistantReferenceProvider {
 
     class AssistantReferenceProviderParameter {
 
-        private StringLiteralExpression psiElement;
-        private MethodParameterSetting methodParameterSetting;
-        private List<MethodParameterSetting> configsMethodScope;
-        private MethodReference methodReference;
+        private final StringLiteralExpression psiElement;
+        private final MethodParameterSetting methodParameterSetting;
+        private final List<MethodParameterSetting> configsMethodScope;
+        private final MethodReference methodReference;
 
         public AssistantReferenceProviderParameter(StringLiteralExpression psiElement, MethodParameterSetting methodParameterSetting, List<MethodParameterSetting> configsMethodScope, MethodReference methodReference) {
             this.psiElement = psiElement;

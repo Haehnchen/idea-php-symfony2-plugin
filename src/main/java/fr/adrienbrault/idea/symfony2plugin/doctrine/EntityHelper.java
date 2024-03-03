@@ -255,7 +255,7 @@ public class EntityHelper {
         DoctrineMetadataModel modelFields = DoctrineMetadataUtil.getModelFields(phpClass.getProject(), phpClass.getPresentableFQN());
         if(modelFields != null) {
             for (DoctrineModelField field : modelFields.getFields()) {
-                if(field.getName().equals(fieldName) && field.getTargets().size() > 0) {
+                if(field.getName().equals(fieldName) && !field.getTargets().isEmpty()) {
                     return field.getTargets().toArray(new PsiElement[psiElements.size()]);
                 }
             }
@@ -269,7 +269,7 @@ public class EntityHelper {
             YAMLValue topLevelValue = ((YAMLFile) psiFile).getDocuments().get(0).getTopLevelValue();
             if(topLevelValue instanceof YAMLMapping) {
                 Collection<YAMLKeyValue> keyValues = ((YAMLMapping) topLevelValue).getKeyValues();
-                if(keyValues.size() > 0) {
+                if(!keyValues.isEmpty()) {
                     for(YAMLKeyValue yamlKeyValue: EntityHelper.getYamlModelFieldKeyValues(keyValues.iterator().next()).values()) {
                         ContainerUtil.addIfNotNull(psiElements, YamlHelper.getYamlKeyValue(yamlKeyValue, "name"));
                     }
@@ -333,7 +333,7 @@ public class EntityHelper {
         // new code
         String presentableFQN = phpClass.getPresentableFQN();
         Collection<VirtualFile> metadataFiles = DoctrineMetadataUtil.findMetadataFiles(phpClass.getProject(), presentableFQN);
-        if(metadataFiles.size() > 0) {
+        if(!metadataFiles.isEmpty()) {
             PsiFile file = PsiManager.getInstance(phpClass.getProject()).findFile(metadataFiles.iterator().next());
             if(file != null) {
                 return file;
@@ -706,7 +706,7 @@ public class EntityHelper {
         for (SymfonyBundle symfonyBundle : new SymfonyBundleUtil(project).getBundles()) {
             for(String s : new String[] {"Entity", "Document", "CouchDocument"}) {
                 String namespace = symfonyBundle.getNamespaceName() + s;
-                if(symfonyBundle.getRelative(s) != null || PhpIndex.getInstance(project).getNamespacesByName(namespace).size() > 0) {
+                if(symfonyBundle.getRelative(s) != null || !PhpIndex.getInstance(project).getNamespacesByName(namespace).isEmpty()) {
                     shortcutNames.put(symfonyBundle.getName(), namespace);
                 }
             }
@@ -790,7 +790,7 @@ public class EntityHelper {
 
             // find namepsace on file or class index
             String namespace = symfonyBundle.getNamespaceName() + subFolder;
-            if(symfonyBundle.getRelative(subFolder) != null || PhpIndex.getInstance(project).getNamespacesByName(namespace).size() > 0) {
+            if(symfonyBundle.getRelative(subFolder) != null || !PhpIndex.getInstance(project).getNamespacesByName(namespace).isEmpty()) {
                 missingMap.put(bundleName, namespace);
             }
         }

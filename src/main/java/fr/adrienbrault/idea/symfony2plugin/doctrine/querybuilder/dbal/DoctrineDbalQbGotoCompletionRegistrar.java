@@ -134,7 +134,7 @@ public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegi
             String underscore = fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(value);
             aliasSet.add(underscore);
 
-            if(value.length() > 0) {
+            if(!value.isEmpty()) {
                 aliasSet.add(value.substring(0, 1));
             }
 

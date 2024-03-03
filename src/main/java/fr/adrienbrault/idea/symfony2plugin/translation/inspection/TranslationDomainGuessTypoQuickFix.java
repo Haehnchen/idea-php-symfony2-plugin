@@ -78,7 +78,7 @@ public class TranslationDomainGuessTypoQuickFix extends IntentionAndQuickFixActi
             .collect(Collectors.toSet());
 
         List<String> similarItems = SimilarSuggestionUtil.findSimilarString(this.missingTranslationDomain, domains);
-        if (similarItems.size() == 0) {
+        if (similarItems.isEmpty()) {
             IdeHelper.showErrorHintIfAvailable(editor, "No similar item found");
             return;
         }
@@ -97,7 +97,7 @@ public class TranslationDomainGuessTypoQuickFix extends IntentionAndQuickFixActi
             suggestionSelected = selectedValue -> WriteCommandAction.runWriteCommandAction(project, "Translation Domain Suggestion", null, () -> {
                 String contents = parent.getText();
                 String wrap = "'";
-                if (contents.length() > 0) {
+                if (!contents.isEmpty()) {
                     String wrap2 = contents.substring(0, 1);
                     if (wrap2.equals("\"") || wrap2.equals("'")) {
                         wrap = wrap2;

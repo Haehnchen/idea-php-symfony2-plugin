@@ -66,7 +66,7 @@ public class TwigBlockOverwriteGenerator extends CodeInsightAction {
                 .distinct()
                 .collect(Collectors.toList());
 
-            if (items.size() == 0) {
+            if (items.isEmpty()) {
                 IdeHelper.showErrorHintIfAvailable(editor, "No block found");
                 return;
             }

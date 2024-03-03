@@ -40,7 +40,7 @@ public class ClassServiceDefinitionTargetLazyValue implements Supplier<Collectio
         Collection<PsiElement> psiElements = new ArrayList<>();
         for (String fqnClass : fqnClasses) {
             Set<String> serviceNames = serviceCollector.convertClassNameToServices(fqnClass);
-            if (serviceNames.size() == 0) {
+            if (serviceNames.isEmpty()) {
                 continue;
             }
 

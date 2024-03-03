@@ -133,7 +133,7 @@ public class AnnotationExpressionGotoCompletionRegistrar implements GotoCompleti
                 }
             }
 
-            if(roles.size() == 0) {
+            if(roles.isEmpty()) {
                 return Collections.emptyList();
             }
 

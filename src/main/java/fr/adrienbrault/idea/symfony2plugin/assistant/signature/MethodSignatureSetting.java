@@ -16,7 +16,7 @@ public class MethodSignatureSetting {
     private String ReferenceProviderName;
     private int indexParameter;
 
-    private AssistantPsiReferenceContributor assistantPsiReferenceContributor = null;
+    private final AssistantPsiReferenceContributor assistantPsiReferenceContributor = null;
 
     public MethodSignatureSetting() {
     }

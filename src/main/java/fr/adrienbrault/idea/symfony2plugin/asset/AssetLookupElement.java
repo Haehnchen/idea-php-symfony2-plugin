@@ -13,8 +13,8 @@ import org.jetbrains.annotations.NotNull;
  * @author Adrien Brault <adrien.brault@gmail.com>
  */
 public class AssetLookupElement extends LookupElement {
-    protected AssetFile assetFile;
-    protected Project project;
+    protected final AssetFile assetFile;
+    protected final Project project;
     protected InsertHandler<AssetLookupElement> insertHandler;
 
     public AssetLookupElement(AssetFile assetfile, Project project) {

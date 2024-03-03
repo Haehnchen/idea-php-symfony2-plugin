@@ -59,7 +59,7 @@ public class XmlServiceSuggestIntentionAction extends LocalQuickFixAndIntentionA
         }
 
         Collection<ContainerService> suggestions = ServiceUtil.getServiceSuggestionForPhpClass(phpClass, ContainerCollectionResolver.getServices(project));
-        if(suggestions.size() == 0) {
+        if(suggestions.isEmpty()) {
             IdeHelper.showErrorHintIfAvailable(editor, "No suggestion found");
             return;
         }

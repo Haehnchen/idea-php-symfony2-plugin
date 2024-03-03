@@ -17,7 +17,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class DomainMappings extends AbstractServiceParser {
 
-    protected List<DomainFileMap> domainFileMaps = new CopyOnWriteArrayList<>();
+    protected final List<DomainFileMap> domainFileMaps = new CopyOnWriteArrayList<>();
 
     @Override
     public String getXPathFilter() {

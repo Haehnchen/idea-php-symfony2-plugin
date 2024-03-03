@@ -18,7 +18,7 @@ import java.util.List;
  */
 public class DoctrineStaticTypeLookupBuilder {
 
-    private InsertHandler insertHandler = InsertHandler.Yaml;
+    private final InsertHandler insertHandler = InsertHandler.Yaml;
 
     public static void fillOrmLookupElementsWithStatic(@NotNull Collection<LookupElement> lookupElements) {
 

@@ -63,7 +63,7 @@ public class TagNameCompletionProvider extends CompletionProvider<CompletionPara
         // findTaggedServiceIds("foo") for ContainerBuilder
         for (ContainerBuilderCall call : FileBasedIndex.getInstance().getValues(ContainerBuilderStubIndex.KEY, "findTaggedServiceIds", GlobalSearchScope.allScope(project))) {
             Collection<String> parameter = call.getParameter();
-            if(parameter == null || parameter.size() == 0) {
+            if(parameter == null || parameter.isEmpty()) {
                 continue;
             }
 

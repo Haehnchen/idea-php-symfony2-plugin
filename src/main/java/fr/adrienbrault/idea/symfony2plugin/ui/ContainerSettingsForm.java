@@ -37,10 +37,10 @@ public class ContainerSettingsForm implements Configurable {
     private JPanel panel1;
     private JPanel listviewPanel;
     private JButton buttonReset;
-    private TableView<ContainerFile> tableView;
-    private Project project;
+    private final TableView<ContainerFile> tableView;
+    private final Project project;
     private boolean changed = false;
-    private ListTableModel<ContainerFile> modelList;
+    private final ListTableModel<ContainerFile> modelList;
 
 
     public ContainerSettingsForm(@NotNull Project project) {
@@ -79,7 +79,7 @@ public class ContainerSettingsForm implements Configurable {
 
     private void fillContainerList() {
         List<ContainerFile> containerFiles = getSettings().containerFiles;
-        if(containerFiles != null && containerFiles.size() > 0) {
+        if(containerFiles != null && !containerFiles.isEmpty()) {
             this.modelList.addRows(containerFiles);
         }
     }

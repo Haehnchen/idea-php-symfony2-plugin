@@ -38,9 +38,9 @@ public class TranslationUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
     }
 
     public void testGetDomainFilePsiElements() {
-        assertTrue(TranslationUtil.getDomainPsiFiles(getProject(), "apple").size() > 0);
-        assertTrue(TranslationUtil.getDomainPsiFiles(getProject(), "car").size() > 0);
-        assertTrue(TranslationUtil.getDomainPsiFiles(getProject(), "my_foobar").size() > 0);
+        assertTrue(!TranslationUtil.getDomainPsiFiles(getProject(), "apple").isEmpty());
+        assertTrue(!TranslationUtil.getDomainPsiFiles(getProject(), "car").isEmpty());
+        assertTrue(!TranslationUtil.getDomainPsiFiles(getProject(), "my_foobar").isEmpty());
     }
 
     public void testGetTranslationPsiElements() {

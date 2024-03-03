@@ -55,7 +55,7 @@ public class RenderParameterGotoCompletionRegistrar implements GotoCompletionReg
         @Override
         public Collection<LookupElement> getLookupElements() {
             Collection<String> templateNames = getTemplatesForScope(getElement());
-            if(templateNames.size() == 0) {
+            if(templateNames.isEmpty()) {
                 return Collections.emptyList();
             }
 
@@ -90,7 +90,7 @@ public class RenderParameterGotoCompletionRegistrar implements GotoCompletionReg
         @Override
         public Collection<PsiElement> getPsiTargets(PsiElement element) {
             Collection<String> templateNames = getTemplatesForScope(element);
-            if(templateNames.size() == 0) {
+            if(templateNames.isEmpty()) {
                 return Collections.emptyList();
             }
 

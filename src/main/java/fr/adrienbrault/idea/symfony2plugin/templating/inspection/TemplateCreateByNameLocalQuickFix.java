@@ -74,7 +74,7 @@ public class TemplateCreateByNameLocalQuickFix extends IntentionAndQuickFixActio
             templatePaths.addAll(TwigUtil.getCreateAbleTemplatePaths(project, templateName));
         }
 
-        if(templatePaths.size() == 0) {
+        if(templatePaths.isEmpty()) {
             Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
 
             // notify error if editor is focused

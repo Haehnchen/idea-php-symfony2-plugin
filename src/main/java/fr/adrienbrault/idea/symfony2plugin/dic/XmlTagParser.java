@@ -17,8 +17,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class XmlTagParser extends AbstractServiceParser {
 
-    protected Set<String> list = new HashSet<>();
-    protected Map<String, ArrayList<String>> taggedClasses = new ConcurrentHashMap<>();
+    protected final Set<String> list = new HashSet<>();
+    protected final Map<String, ArrayList<String>> taggedClasses = new ConcurrentHashMap<>();
 
     @Override
     public String getXPathFilter() {

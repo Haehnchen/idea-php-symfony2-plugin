@@ -109,7 +109,7 @@ public class DoctrineUtil {
             pairs.add(Pair.create(value, repositoryClass));
         }
 
-        if(pairs.size() == 0) {
+        if(pairs.isEmpty()) {
             return null;
         }
 
@@ -334,7 +334,7 @@ public class DoctrineUtil {
             pairs.add(Pair.create(keyText, repositoryClass));
         }
 
-        if(pairs.size() == 0) {
+        if(pairs.isEmpty()) {
             return null;
         }
 

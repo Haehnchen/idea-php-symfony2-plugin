@@ -22,7 +22,7 @@ import java.util.*;
  */
 public class ConsoleHelperGotoCompletionRegistrar implements GotoCompletionRegistrar {
 
-    private static MethodMatcher.CallToSignature[] CONSOLE_HELP_SET = new MethodMatcher.CallToSignature[] {
+    private static final MethodMatcher.CallToSignature[] CONSOLE_HELP_SET = new MethodMatcher.CallToSignature[] {
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Console\\Helper\\HelperSet", "get"),
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Console\\Helper\\HelperSet", "has"),
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Console\\Command\\Command", "getHelper"),

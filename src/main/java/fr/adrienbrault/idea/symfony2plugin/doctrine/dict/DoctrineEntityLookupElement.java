@@ -15,8 +15,8 @@ import javax.swing.*;
  */
 public class DoctrineEntityLookupElement extends LookupElement {
 
-    private String entityName;
-    private PhpClass className;
+    private final String entityName;
+    private final PhpClass className;
     private boolean useClassNameAsLookupString = false;
     private DoctrineTypes.Manager manager;
     private boolean isWeak = false;

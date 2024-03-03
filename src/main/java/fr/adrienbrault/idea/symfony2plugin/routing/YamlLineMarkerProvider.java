@@ -19,7 +19,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.*;
-import org.jetbrains.yaml.psi.impl.YAMLPlainTextImpl;
 
 import java.util.Collection;
 import java.util.List;
@@ -112,7 +111,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
                 String keyText = ((YAMLKeyValue) yamlKeyValue).getKeyText();
                 if(StringUtils.isNotBlank(keyText)) {
                     Collection<PhpClass> phpClasses = PhpElementsUtil.getClassesInterface(psiElement.getProject(), keyText);
-                    if(phpClasses.size() > 0) {
+                    if(!phpClasses.isEmpty()) {
                         NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.DOCTRINE_LINE_MARKER).
                             setTargets(phpClasses).
                             setTooltipText("Navigate to class");
@@ -187,7 +186,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
         }
 
         Collection<PhpClass> classesInterface = DoctrineMetadataUtil.getClassInsideScope(yamlKeyValue, valueText);
-        if(classesInterface.size() == 0) {
+        if(classesInterface.isEmpty()) {
             return;
         }
 

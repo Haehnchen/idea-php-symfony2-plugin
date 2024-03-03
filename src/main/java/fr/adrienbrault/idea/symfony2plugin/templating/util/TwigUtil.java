@@ -119,13 +119,13 @@ public class TwigUtil {
     private static final Key<CachedValue<Set<String>>> SYMFONY_NAMED_TOKEN_TAGS = new Key<>("SYMFONY_NAMED_TOKEN_TAGS");
     private static final Key<CachedValue<Map<String, String>>> SYMFONY_DEPRECATED_NAMED_TOKEN_TAGS = new Key<>("SYMFONY_DEPRECATED_NAMED_TOKEN_TAGS");
 
-    public static String[] CSS_FILES_EXTENSIONS = new String[] { "css", "less", "sass", "scss" };
+    public static final String[] CSS_FILES_EXTENSIONS = new String[] { "css", "less", "sass", "scss" };
 
-    public static String[] JS_FILES_EXTENSIONS = new String[] { "js", "dart", "coffee" };
+    public static final String[] JS_FILES_EXTENSIONS = new String[] { "js", "dart", "coffee" };
 
-    public static String[] IMG_FILES_EXTENSIONS = new String[] { "png", "jpg", "jpeg", "gif", "svg"};
+    public static final String[] IMG_FILES_EXTENSIONS = new String[] { "png", "jpg", "jpeg", "gif", "svg"};
 
-    public static String TEMPLATE_ANNOTATION_CLASS = "\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template";
+    public static final String TEMPLATE_ANNOTATION_CLASS = "\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template";
 
     public static class TwigPathNamespaceComparator implements Comparator<TwigPath> {
         @Override
@@ -753,7 +753,7 @@ public class TwigUtil {
                 macroFiles.addAll(getTemplatePsiElements(psiFile.getProject(), template));
             }
 
-            if(macroFiles.size() > 0) {
+            if(!macroFiles.isEmpty()) {
                 for (PsiFile macroFile : macroFiles) {
                     TwigUtil.visitMacros(macroFile, tagPair -> consumer.consume(Pair.create(
                         new TwigMacro(asName + '.' + tagPair.getFirst().name(), template).withParameter(tagPair.getFirst().parameters()),
@@ -855,7 +855,7 @@ public class TwigUtil {
         }
 
         // found not valid template name pattern
-        if(className == null || methodNames.size() == 0) {
+        if(className == null || methodNames.isEmpty()) {
             return Collections.emptyList();
         }
 
@@ -899,7 +899,7 @@ public class TwigUtil {
      */
     @NotNull
     public static Set<Function> getTwigFileMethodUsageOnIndex(@NotNull Project project, @NotNull Collection<String> keys) {
-        if(keys.size() == 0) {
+        if(keys.isEmpty()) {
             return Collections.emptySet();
         }
 
@@ -944,7 +944,7 @@ public class TwigUtil {
 
     @Nullable
     public static String getFoldingTemplateName(@Nullable String content) {
-        if(content == null || content.length() == 0) return null;
+        if(content == null || content.isEmpty()) return null;
 
         String templateShortcutName = null;
         if(content.endsWith(".html.twig") && content.length() > 10) {
@@ -953,7 +953,7 @@ public class TwigUtil {
             templateShortcutName = content.substring(0, content.length() - 9);
         }
 
-        if(templateShortcutName == null || templateShortcutName.length() == 0) {
+        if(templateShortcutName == null || templateShortcutName.isEmpty()) {
             return null;
         }
 
@@ -978,7 +978,7 @@ public class TwigUtil {
             getTemplateNamesForFile(psiElement.getProject(), currentFile)
         );
 
-        if(templateNames.size() > 0) {
+        if(!templateNames.isEmpty()) {
 
             // bundle names wins
             if(templateNames.size() > 1) {
@@ -1048,7 +1048,7 @@ public class TwigUtil {
     @NotNull
     private static Map<String, Set<VirtualFile>> getTemplateMapProxy(@NotNull Project project, boolean usePhp) {
         List<TwigPath> twigPaths = new ArrayList<>(getTwigNamespaces(project));
-        if(twigPaths.size() == 0) {
+        if(twigPaths.isEmpty()) {
             return Collections.emptyMap();
         }
 
@@ -1236,7 +1236,7 @@ public class TwigUtil {
         }
 
         // full filepath fallback: "foo/foo<caret>.html.twig"
-        if(files.size() == 0) {
+        if(files.isEmpty()) {
             files.addAll(getTemplatePsiElements(project, templateName));
         }
 
@@ -1513,7 +1513,6 @@ public class TwigUtil {
         for (PsiElement child = transPsiElement.getNextSibling(); child != null; child = child.getNextSibling()) {
             currentText.append(child.getText());
             if (pattern.accepts(child)) {
-                //noinspection unchecked
                 return currentText.toString();
             }
         }
@@ -1627,7 +1626,7 @@ public class TwigUtil {
         VirtualFile baseDir = ProjectUtil.getProjectDir(project);
         return getTemplateMap(project).entrySet()
             .stream()
-            .filter(entry -> entry.getValue().size() > 0)
+            .filter(entry -> !entry.getValue().isEmpty())
             .map((java.util.function.Function<Map.Entry<String, Set<VirtualFile>>, LookupElement>) entry -> new TemplateLookupElement(
                 entry.getKey(),
                 entry.getValue().iterator().next(),
@@ -1646,7 +1645,7 @@ public class TwigUtil {
 
         return getTemplateMap(project, true).entrySet()
             .stream()
-            .filter(entry -> entry.getValue().size() > 0)
+            .filter(entry -> !entry.getValue().isEmpty())
             .map((java.util.function.Function<Map.Entry<String, Set<VirtualFile>>, LookupElement>) entry ->
                 new TemplateLookupElement(entry.getKey(), entry.getValue().iterator().next(), baseDir)
             )
@@ -2648,7 +2647,7 @@ public class TwigUtil {
 
         // we want to have mostly used domain preselected
         String domain = defaultDomain;
-        if(sortedMap.size() > 0) {
+        if(!sortedMap.isEmpty()) {
             domain = sortedMap.firstKey();
         }
 
@@ -3185,14 +3184,14 @@ public class TwigUtil {
         private final Project project;
 
         @NotNull
-        private Map<String, VirtualFile> results = new HashMap<>();
+        private final Map<String, VirtualFile> results = new HashMap<>();
 
         final private boolean withPhp;
 
         private int childrenAllowToVisit;
 
         @NotNull
-        private Set<String> workedOn = new HashSet<>();
+        private final Set<String> workedOn = new HashSet<>();
 
         private MyLimitedVirtualFileVisitor(@NotNull Project project, @NotNull TwigPath twigPath, boolean withPhp, int maxDepth, int maxDirs) {
             super(VirtualFileVisitor.limit(maxDepth));

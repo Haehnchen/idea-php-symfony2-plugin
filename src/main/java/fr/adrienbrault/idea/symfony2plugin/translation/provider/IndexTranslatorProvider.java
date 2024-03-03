@@ -37,11 +37,11 @@ public class IndexTranslatorProvider implements TranslatorProvider {
 
     @Override
     public boolean hasDomain(@NotNull Project project, @NotNull String domainName) {
-        return FileBasedIndex.getInstance().getValues(
+        return !FileBasedIndex.getInstance().getValues(
             TranslationStubIndex.KEY,
             domainName,
             GlobalSearchScope.allScope(project)
-        ).size() > 0;
+        ).isEmpty();
     }
 
     @NotNull

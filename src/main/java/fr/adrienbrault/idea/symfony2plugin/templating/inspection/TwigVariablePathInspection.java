@@ -49,12 +49,12 @@ public class TwigVariablePathInspection extends LocalInspectionTool {
 
         private void visit(@NotNull PsiElement element) {
             Collection<String> beforeLeaf = TwigTypeResolveUtil.formatPsiTypeName(element);
-            if(beforeLeaf.size() == 0) {
+            if(beforeLeaf.isEmpty()) {
                 return;
             }
 
             Collection<TwigTypeContainer> types = TwigTypeResolveUtil.resolveTwigMethodName(element, beforeLeaf);
-            if(types.size() == 0) {
+            if(types.isEmpty()) {
                 return;
             }
 
@@ -69,7 +69,7 @@ public class TwigVariablePathInspection extends LocalInspectionTool {
                 }
 
                 String text = element.getText();
-                if(TwigTypeResolveUtil.getTwigPhpNameTargets(phpNamedElement, text).size() > 0) {
+                if(!TwigTypeResolveUtil.getTwigPhpNameTargets(phpNamedElement, text).isEmpty()) {
                     return;
                 }
             }

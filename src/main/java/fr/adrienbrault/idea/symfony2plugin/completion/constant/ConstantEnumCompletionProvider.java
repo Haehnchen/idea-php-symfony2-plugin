@@ -7,9 +7,9 @@ import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
  */
 public class ConstantEnumCompletionProvider {
 
-    private MethodMatcher.CallToSignature callToSignature;
-    private EnumConstantFilter enumConstantFilter;
-    private EnumType enumType;
+    private final MethodMatcher.CallToSignature callToSignature;
+    private final EnumConstantFilter enumConstantFilter;
+    private final EnumType enumType;
 
     public ConstantEnumCompletionProvider(MethodMatcher.CallToSignature callToSignature, EnumConstantFilter enumConstantFilter, EnumType enumType) {
         this.callToSignature = callToSignature;

@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class RemoteWebServerUtil {
 
-    public static Map<Project, RemoteFileStorageInterface[]> STORAGE_INSTANCES = new ConcurrentHashMap<>();
+    public static final Map<Project, RemoteFileStorageInterface[]> STORAGE_INSTANCES = new ConcurrentHashMap<>();
 
     @NotNull
     public synchronized static RemoteFileStorageInterface[] getExtension(@NotNull Project project) {
@@ -120,7 +120,7 @@ public class RemoteWebServerUtil {
 
     public static boolean hasConfiguredRemoteFile(@NotNull Project project) {
         for (RemoteFileStorageInterface remoteFileStorage : getExtension(project)) {
-            if(remoteFileStorage.files(project).size() > 0) {
+            if(!remoteFileStorage.files(project).isEmpty()) {
                 return true;
             }
         }

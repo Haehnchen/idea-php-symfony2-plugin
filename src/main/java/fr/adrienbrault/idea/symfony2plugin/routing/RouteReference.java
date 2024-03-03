@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class RouteReference extends PsiPolyVariantReferenceBase<PsiElement> {
 
-    private String routeName;
+    private final String routeName;
 
     public RouteReference(@NotNull StringLiteralExpression element) {
         super(element);

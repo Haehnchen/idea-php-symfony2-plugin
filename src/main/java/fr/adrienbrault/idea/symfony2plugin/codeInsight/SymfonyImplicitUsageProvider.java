@@ -63,12 +63,12 @@ public class SymfonyImplicitUsageProvider implements ImplicitUsageProvider {
         // class in same namespace
         // @TODO: validateBy alias
         String className = phpClass.getFQN() + "Validator";
-        return PhpElementsUtil.getClassesInterface(phpClass.getProject(), className).size() > 0;
+        return !PhpElementsUtil.getClassesInterface(phpClass.getProject(), className).isEmpty();
     }
 
     private boolean isEntityRepository(@NotNull PhpClass phpClass) {
         return PhpElementsUtil.isInstanceOf(phpClass, "\\Doctrine\\ORM\\EntityRepository")
-            && DoctrineMetadataUtil.findMetadataForRepositoryClass(phpClass).size() > 0;
+            && !DoctrineMetadataUtil.findMetadataForRepositoryClass(phpClass).isEmpty();
     }
 
     private boolean isTwigExtension(PhpClass phpClass) {

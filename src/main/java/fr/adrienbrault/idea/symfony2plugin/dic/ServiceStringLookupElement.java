@@ -16,7 +16,7 @@ import java.util.Objects;
 public class ServiceStringLookupElement extends LookupElement {
 
     @NotNull
-    private ContainerService containerService;
+    private final ContainerService containerService;
 
     private boolean boldText = false;
 

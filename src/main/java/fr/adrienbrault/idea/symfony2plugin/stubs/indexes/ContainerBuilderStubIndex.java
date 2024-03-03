@@ -41,7 +41,7 @@ public class ContainerBuilderStubIndex extends FileBasedIndexExtension<String, C
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
     private final static ObjectStreamDataExternalizer<ContainerBuilderCall> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
 
-    private static int MAX_FILE_BYTE_SIZE = 2621440;
+    private static final int MAX_FILE_BYTE_SIZE = 2621440;
 
     private static final Set<String> SET = new HashSet<>() {{
         add("Symfony\\Component\\DependencyInjection\\Container");

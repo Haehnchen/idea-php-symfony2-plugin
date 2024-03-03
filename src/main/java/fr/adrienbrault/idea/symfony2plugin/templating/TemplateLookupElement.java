@@ -26,7 +26,7 @@ public class TemplateLookupElement extends LookupElement {
     private boolean bold = false;
 
     @Nullable
-    private InsertHandler<LookupElement> insertHandler = null;
+    private final InsertHandler<LookupElement> insertHandler = null;
 
     public TemplateLookupElement(@NotNull String templateName, @NotNull VirtualFile virtualFile, @NotNull VirtualFile projectBaseDir) {
         this.templateName = templateName;

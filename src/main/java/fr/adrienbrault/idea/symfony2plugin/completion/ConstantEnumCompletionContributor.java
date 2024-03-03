@@ -19,7 +19,7 @@ import org.jetbrains.annotations.NotNull;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class ConstantEnumCompletionContributor extends CompletionContributor {
-    public static ConstantEnumCompletionProvider[] CONSTANTS_ENUMS = new ConstantEnumCompletionProvider[] {
+    public static final ConstantEnumCompletionProvider[] CONSTANTS_ENUMS = new ConstantEnumCompletionProvider[] {
         new ConstantEnumCompletionProvider(
             new MethodMatcher.CallToSignature("\\Symfony\\Component\\HttpFoundation\\Response", "setStatusCode"),
             new EnumConstantFilter("\\Symfony\\Component\\HttpFoundation\\Response", "HTTP_"),

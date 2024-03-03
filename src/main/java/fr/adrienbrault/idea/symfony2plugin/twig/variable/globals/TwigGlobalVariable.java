@@ -7,13 +7,13 @@ import org.jetbrains.annotations.NotNull;
  */
 public class TwigGlobalVariable {
     @NotNull
-    private String name;
+    private final String name;
 
     @NotNull
-    private String value;
+    private final String value;
 
     @NotNull
-    private TwigGlobalEnum twigGlobalEnum;
+    private final TwigGlobalEnum twigGlobalEnum;
 
 
     TwigGlobalVariable(@NotNull String name, @NotNull String value, @NotNull TwigGlobalEnum twigGlobalEnum) {

@@ -19,7 +19,7 @@ public class RelatedPopupGotoLineMarker {
 
     public static class NavigationHandler implements GutterIconNavigationHandler<PsiElement> {
 
-        private List<GotoRelatedItem> items;
+        private final List<GotoRelatedItem> items;
 
         public NavigationHandler(List<GotoRelatedItem> items){
             this.items = items;

@@ -233,7 +233,7 @@ public class ServiceUtil {
 
             // get service where we found our tags
             List<Set<String>> values = FileBasedIndex.getInstance().getValues(ServicesTagStubIndex.KEY, serviceName, ServiceIndexUtil.getRestrictedFileTypesScope(project));
-            if(values.size() == 0) {
+            if(values.isEmpty()) {
                 continue;
             }
 
@@ -324,7 +324,7 @@ public class ServiceUtil {
         List<PhpClass> phpClasses = new ArrayList<>();
 
         Set<String> taggedServices = getTaggedServices(project, tagName);
-        if(taggedServices.size() == 0) {
+        if(taggedServices.isEmpty()) {
             return phpClasses;
         }
 
@@ -389,7 +389,7 @@ public class ServiceUtil {
 
         serviceName = YamlHelper.trimSpecialSyntaxServiceName(serviceName);
 
-        if(serviceName.length() == 0) {
+        if(serviceName.isEmpty()) {
             return null;
         }
 
@@ -413,7 +413,7 @@ public class ServiceUtil {
     public static PhpClass getServiceClass(@NotNull Project project, @NotNull String serviceName, @NotNull ContainerCollectionResolver.ServiceCollector collector) {
 
         serviceName = YamlHelper.trimSpecialSyntaxServiceName(serviceName);
-        if(serviceName.length() == 0) {
+        if(serviceName.isEmpty()) {
             return null;
         }
 
@@ -441,7 +441,7 @@ public class ServiceUtil {
         }
 
         // strong tags wins
-        if(tags.size() > 0) {
+        if(!tags.isEmpty()) {
             return tags;
         }
 
@@ -458,7 +458,7 @@ public class ServiceUtil {
         // form alias
         if(service.getTagName().equals("form.type") && PhpElementsUtil.isInstanceOf(service.getPhpClass(), FormUtil.ABSTRACT_FORM_INTERFACE)) {
             Collection<String> aliases = FormUtil.getFormAliases(service.getPhpClass());
-            if(aliases.size() > 0) {
+            if(!aliases.isEmpty()) {
                 service.addAttribute("alias", aliases.iterator().next());
             }
         }
@@ -532,7 +532,7 @@ public class ServiceUtil {
     public static void insertTagWithPopupDecision(final @NotNull Editor editor, final @NotNull Set<String> phpServiceTags, final @NotNull Consumer<String> consumer) {
         final List<String> list = new ArrayList<>(phpServiceTags);
 
-        if(phpServiceTags.size() == 0) {
+        if(phpServiceTags.isEmpty()) {
             IdeHelper.showErrorHintIfAvailable(editor, "Ops, no tag found");
             return;
         }
@@ -667,7 +667,7 @@ public class ServiceUtil {
 
     public static boolean isPhpClassAService(@NotNull PhpClass phpClass) {
         Set<String> serviceNames = ContainerCollectionResolver.ServiceCollector.create(phpClass.getProject()).convertClassNameToServices(phpClass.getFQN());
-        if (serviceNames.size() > 0) {
+        if (!serviceNames.isEmpty()) {
             return true;
         }
 

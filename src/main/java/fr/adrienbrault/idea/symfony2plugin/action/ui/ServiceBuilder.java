@@ -39,8 +39,8 @@ public class ServiceBuilder {
         Yaml, XML,
     }
 
-    private List<MethodParameter.MethodModelParameter>  methodModelParameter;
-    private Project project;
+    private final List<MethodParameter.MethodModelParameter>  methodModelParameter;
+    private final Project project;
 
     /**
      * Symfony 3.3 class name can be id attribute for services
@@ -117,7 +117,7 @@ public class ServiceBuilder {
 
         }
 
-        if(!hasCall || methodCalls.size() == 0) {
+        if(!hasCall || methodCalls.isEmpty()) {
             return null;
         }
 
@@ -257,7 +257,7 @@ public class ServiceBuilder {
             }
         }
 
-        if(calls.size() > 0) {
+        if(!calls.isEmpty()) {
             lines.add(indent + "calls:");
             lines.addAll(calls);
         }
@@ -290,7 +290,7 @@ public class ServiceBuilder {
             serviceTags.add(serviceTag);
         }
 
-        if(serviceTags.size() == 0) {
+        if(serviceTags.isEmpty()) {
             return;
         }
 

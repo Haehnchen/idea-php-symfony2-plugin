@@ -18,7 +18,7 @@ import java.util.Map;
  */
 public class ParameterReference  extends PsiPolyVariantReferenceBase<PsiElement> {
 
-    private String parameterName;
+    private final String parameterName;
 
     public ParameterReference(@NotNull StringLiteralExpression element) {
         super(element);

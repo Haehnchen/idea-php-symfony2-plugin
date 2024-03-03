@@ -12,7 +12,7 @@ import java.io.InputStream;
  */
 public class TwigPathServiceParser extends AbstractServiceParser {
     @NotNull
-    private TwigPathIndex twigPathIndex = new TwigPathIndex();
+    private final TwigPathIndex twigPathIndex = new TwigPathIndex();
 
     @Override
     public String getXPathFilter() {

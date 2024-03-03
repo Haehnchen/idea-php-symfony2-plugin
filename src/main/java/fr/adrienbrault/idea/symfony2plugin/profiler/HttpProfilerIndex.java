@@ -18,7 +18,7 @@ public class HttpProfilerIndex implements ProfilerIndexInterface {
     /**
      * http://127.0.0.1:8080/_profiler
      */
-    private static String PROFILER_PATH = "_profiler";
+    private static final String PROFILER_PATH = "_profiler";
 
     @NotNull
     private final Project project;

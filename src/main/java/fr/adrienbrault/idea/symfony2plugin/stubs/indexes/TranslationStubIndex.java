@@ -70,7 +70,7 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
                     Set<String> translationKeySet = new HashSet<>();
                     TranslationArrayReturnVisitor.visitPhpReturn((PhpFile) psiFile, pair -> translationKeySet.add(pair.getFirst()));
 
-                    if (translationKeySet.size() == 0) {
+                    if (translationKeySet.isEmpty()) {
                         return Collections.emptyMap();
                     }
                     
@@ -85,7 +85,7 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
                         return true;
                     });
 
-                    if (translationKeySet.size() == 0) {
+                    if (translationKeySet.isEmpty()) {
                         return Collections.emptyMap();
                     }
 
@@ -156,7 +156,7 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
                 }
 
                 Set<String> set = TranslationUtil.getXliffTranslations(inputStream);
-                if (set.size() == 0) {
+                if (set.isEmpty()) {
                     return Collections.emptyMap();
                 }
 
@@ -171,7 +171,7 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
     @Nullable
     private static String getDomainName(@NotNull String fileName) {
         String[] split = fileName.split("\\.");
-        if (split.length < 2 || Arrays.stream(split).anyMatch(s -> s.length() == 0)) {
+        if (split.length < 2 || Arrays.stream(split).anyMatch(s -> s.isEmpty())) {
             return null;
         }
 

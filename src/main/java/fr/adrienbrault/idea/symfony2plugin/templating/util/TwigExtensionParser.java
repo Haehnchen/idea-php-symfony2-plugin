@@ -240,7 +240,7 @@ public class TwigExtensionParser  {
                     psiElement -> psiElement.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE
                 );
 
-                if (arrayValues.size() > 0) {
+                if (!arrayValues.isEmpty()) {
                     for (PsiElement psiElement : arrayValues) {
 
                         // double check for non-crazy syntax
@@ -303,7 +303,7 @@ public class TwigExtensionParser  {
         }
 
         Collection<? extends PhpNamedElement> elements = PhpIndex.getInstance(project).getBySignature(signature);
-        if (elements.size() == 0) {
+        if (elements.isEmpty()) {
             return null;
         }
 

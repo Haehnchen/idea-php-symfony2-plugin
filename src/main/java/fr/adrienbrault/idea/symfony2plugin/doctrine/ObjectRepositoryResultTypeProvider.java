@@ -39,7 +39,7 @@ public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider4 {
         new MethodMatcher.CallToSignature("\\Doctrine\\Persistence\\ObjectRepository", "findBy"),
     };
 
-    private static Set<String> MANAGED_FIND_METHOD = new HashSet<>() {{
+    private static final Set<String> MANAGED_FIND_METHOD = new HashSet<>() {{
         add("find");
         add("findOneBy");
         add("findAll");

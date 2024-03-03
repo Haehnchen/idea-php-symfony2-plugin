@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.util;
 
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;

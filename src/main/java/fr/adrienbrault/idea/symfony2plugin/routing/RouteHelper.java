@@ -244,7 +244,7 @@ public class RouteHelper {
             String[] split = controllerName.split(":");
             if(split.length == 3) {
                 Collection<Method> controllerMethod = ControllerIndex.getControllerMethod(project, controllerName);
-                if(controllerMethod.size() > 0) {
+                if(!controllerMethod.isEmpty()) {
                     return controllerMethod.toArray(new PsiElement[0]);
                 }
             }
@@ -741,7 +741,7 @@ public class RouteHelper {
         }
 
         // hostTokens = 4 need them?
-        return new Route(routeName, variables, defaults, requirements, tokens, (path.length() == 0) ? null : path.toString());
+        return new Route(routeName, variables, defaults, requirements, tokens, (path.isEmpty()) ? null : path.toString());
     }
 
     private static boolean isProductionRouteName(String routeName) {
@@ -1106,7 +1106,7 @@ public class RouteHelper {
         List<Route> routes = new ArrayList<>();
 
         // resolve indexed routes
-        if(routeNames.size() > 0) {
+        if(!routeNames.isEmpty()) {
             routes.addAll(allRoutes.values().stream()
                 .filter(route -> route.getController() != null && routeNames.contains(route.getController()))
                 .collect(Collectors.toList())

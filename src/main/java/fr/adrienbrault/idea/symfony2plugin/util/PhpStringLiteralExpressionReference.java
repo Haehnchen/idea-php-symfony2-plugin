@@ -19,8 +19,8 @@ import java.util.ArrayList;
  */
 public class PhpStringLiteralExpressionReference extends PsiReferenceProvider {
 
-    private ArrayList<Call> oneOfCall = new ArrayList<>();
-    private Class referenceClass;
+    private final ArrayList<Call> oneOfCall = new ArrayList<>();
+    private final Class referenceClass;
 
     public PhpStringLiteralExpressionReference(Class referenceClass) {
         this.referenceClass = referenceClass;

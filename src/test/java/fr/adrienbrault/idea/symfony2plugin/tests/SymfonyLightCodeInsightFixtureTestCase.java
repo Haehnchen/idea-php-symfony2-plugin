@@ -7,7 +7,6 @@ import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.daemon.LineMarkerProviders;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
-import com.intellij.codeInsight.daemon.impl.AnnotationHolderImpl;
 import com.intellij.codeInsight.intention.IntentionAction;
 import com.intellij.codeInsight.intention.IntentionManager;
 import com.intellij.codeInsight.lookup.Lookup;
@@ -15,10 +14,6 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.codeInspection.*;
-import com.intellij.lang.LanguageAnnotators;
-import com.intellij.lang.annotation.Annotation;
-import com.intellij.lang.annotation.AnnotationSession;
-import com.intellij.lang.annotation.Annotator;
 import com.intellij.lang.javascript.inspections.JSInspection;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.openapi.command.CommandProcessor;
@@ -26,7 +21,6 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.LanguageFileType;
-import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -38,7 +32,6 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
-import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.intellij.util.indexing.ID;
@@ -153,7 +146,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
         }
 
         List<String> lookupElements = myFixture.getLookupElementStrings();
-        if(lookupElements == null || lookupElements.size() == 0) {
+        if(lookupElements == null || lookupElements.isEmpty()) {
             fail(String.format("failed that empty completion contains %s", Arrays.toString(lookupStrings)));
         }
 
@@ -448,9 +441,9 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
                 return true;
             }, GlobalSearchScope.allScope(getProject()));
 
-            if(notCondition && virtualFiles.size() > 0) {
+            if(notCondition && !virtualFiles.isEmpty()) {
                 fail(String.format("Fail that ID '%s' not contains '%s'", id.toString(), key));
-            } else if(!notCondition && virtualFiles.size() == 0) {
+            } else if(!notCondition && virtualFiles.isEmpty()) {
                 fail(String.format("Fail that ID '%s' contains '%s'", id.toString(), key));
             }
         }
@@ -578,7 +571,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
             Collection<LineMarkerInfo> lineMarkerInfos = new ArrayList<>();
             lineMarkerProvider.collectSlowLineMarkers(elements, lineMarkerInfos);
 
-            if(lineMarkerInfos.size() == 0) {
+            if(lineMarkerInfos.isEmpty()) {
                 continue;
             }
 
@@ -600,7 +593,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
             Collection<LineMarkerInfo> lineMarkerInfos = new ArrayList<>();
             lineMarkerProvider.collectSlowLineMarkers(elements, lineMarkerInfos);
 
-            if(lineMarkerInfos.size() > 0) {
+            if(!lineMarkerInfos.isEmpty()) {
                 fail(String.format("Fail that line marker is empty because it matches '%s'", lineMarkerProvider.getClass()));
             }
         }

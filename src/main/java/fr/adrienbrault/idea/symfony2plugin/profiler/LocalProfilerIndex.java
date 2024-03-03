@@ -23,7 +23,7 @@ import java.util.concurrent.Callable;
  */
 public class LocalProfilerIndex implements ProfilerIndexInterface {
     @NotNull
-    private File file;
+    private final File file;
 
     @Nullable
     private String baseUrl;

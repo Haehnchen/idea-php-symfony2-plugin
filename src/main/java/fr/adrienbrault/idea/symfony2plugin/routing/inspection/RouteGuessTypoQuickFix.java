@@ -70,7 +70,7 @@ public class RouteGuessTypoQuickFix extends IntentionAndQuickFixAction {
         }
 
         List<String> similarItems = SimilarSuggestionUtil.findSimilarString(this.missingRoute, RouteHelper.getAllRoutes(project).keySet());
-        if (similarItems.size() == 0) {
+        if (similarItems.isEmpty()) {
             IdeHelper.showErrorHintIfAvailable(editor, "No similar item found");
             return;
         }
@@ -89,7 +89,7 @@ public class RouteGuessTypoQuickFix extends IntentionAndQuickFixAction {
             suggestionSelected = selectedValue -> WriteCommandAction.runWriteCommandAction(project, "Route Suggestion", null, () -> {
                 String contents = parent.getText();
                 String wrap = "'";
-                if (contents.length() > 0) {
+                if (!contents.isEmpty()) {
                     String wrap2 = contents.substring(0, 1);
                     if (wrap2.equals("\"") || wrap2.equals("'")) {
                         wrap = wrap2;

@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  */
 public class ServiceCompletionProvider extends CompletionProvider<CompletionParameters> {
 
-    private static ServiceSuggestionCollector[] COLLECTORS = new ServiceSuggestionCollector[] {
+    private static final ServiceSuggestionCollector[] COLLECTORS = new ServiceSuggestionCollector[] {
         new XmlConstructServiceSuggestionCollector(),
         new YamlConstructServiceSuggestionCollector(),
         new XmlCallServiceSuggestionCollector(),
@@ -46,7 +46,7 @@ public class ServiceCompletionProvider extends CompletionProvider<CompletionPara
 
     public static void addPrioritizedServiceLookupElements(@NotNull CompletionParameters parameters, @NotNull CompletionResultSet resultSet, @NotNull PrioritizedLookupResult result) {
         // move known elements to top
-        if(result.getTopStrings().size() > 0) {
+        if(!result.getTopStrings().isEmpty()) {
             CompletionSorter completionSorter = CompletionService.getCompletionService()
                 .defaultSorter(parameters, resultSet.getPrefixMatcher())
                 .weighBefore("priority", new MyLookupElementWeigher(result.getTopStrings()));

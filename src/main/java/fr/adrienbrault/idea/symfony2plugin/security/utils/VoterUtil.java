@@ -217,7 +217,7 @@ public class VoterUtil {
     }
 
     public static class StringPairConsumer implements Consumer<Pair<String, PsiElement>> {
-        private Set<String> values = new HashSet<>();
+        private final Set<String> values = new HashSet<>();
 
         @Override
         public void accept(Pair<String, PsiElement> pair) {
@@ -235,7 +235,7 @@ public class VoterUtil {
         private final String filterValue;
 
         @NotNull
-        private Set<PsiElement> values = new HashSet<>();
+        private final Set<PsiElement> values = new HashSet<>();
 
         public TargetPairConsumer(@NotNull String filterValue) {
             this.filterValue = filterValue;

@@ -118,12 +118,12 @@ public class TemplateExistsAnnotationPhpAttributeLocalInspection extends LocalIn
     }
 
     private void attachProblemForMissingTemplatesWithSuggestions(@NotNull PsiElement target, @NotNull ProblemsHolder holder, @NotNull LinkedHashSet<String> templateNames, boolean isEmptyTemplateAndGuess) {
-        if(templateNames.size() == 0) {
+        if(templateNames.isEmpty()) {
             return;
         }
 
         for (String templateName : templateNames) {
-            if (TwigUtil.getTemplateFiles(holder.getProject(), templateName).size() > 0) {
+            if (!TwigUtil.getTemplateFiles(holder.getProject(), templateName).isEmpty()) {
                 return;
             }
         }

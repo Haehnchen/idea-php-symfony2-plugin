@@ -19,10 +19,10 @@ import org.jetbrains.annotations.NotNull;
  */
 public class TranslationKeyIntentionAction extends BaseIntentionAction {
     @NotNull
-    private PsiFile psiFile;
+    private final PsiFile psiFile;
 
     @NotNull
-    private String keyName;
+    private final String keyName;
 
     /**
      * @param psiFile Translation file as yaml

@@ -8,8 +8,8 @@ import org.jetbrains.annotations.Nullable;
  */
 public class EventDispatcherSubscribedEvent {
 
-    private String stringValue;
-    private String fqnClassName;
+    private final String stringValue;
+    private final String fqnClassName;
 
     @Nullable
     private final String methodName;

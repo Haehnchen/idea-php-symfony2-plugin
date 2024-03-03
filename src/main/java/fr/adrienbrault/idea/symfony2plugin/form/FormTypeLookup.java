@@ -11,8 +11,8 @@ import org.jetbrains.annotations.Nullable;
  */
 public class FormTypeLookup extends LookupElement {
 
-    private String key;
-    private String name;
+    private final String key;
+    private final String name;
     private boolean isWeak;
 
     public FormTypeLookup(@Nullable String key, String name) {

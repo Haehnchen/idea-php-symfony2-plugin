@@ -169,7 +169,7 @@ public class YamlHelper {
                 PsiElement value = yamlParameterArray.getValue();
                 if(value instanceof YAMLScalar) {
                     String myTextValue = ((YAMLScalar) value).getTextValue();
-                    if(myTextValue.length() > 0 && myTextValue.length() < 150) {
+                    if(!myTextValue.isEmpty() && myTextValue.length() < 150) {
                         textValue = myTextValue;
                     }
                 }
@@ -202,7 +202,7 @@ public class YamlHelper {
                 }
             });
 
-            if(psiElements.size() == 0) {
+            if(psiElements.isEmpty()) {
                 return null;
             }
 

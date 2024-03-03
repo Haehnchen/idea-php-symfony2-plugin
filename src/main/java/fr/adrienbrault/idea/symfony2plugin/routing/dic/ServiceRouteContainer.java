@@ -20,7 +20,7 @@ public class ServiceRouteContainer  {
     private final Collection<Route> routes;
     private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
 
-    private Map<String, PhpClass> serviceCache = new HashMap<>();
+    private final Map<String, PhpClass> serviceCache = new HashMap<>();
 
     private ServiceRouteContainer(@NotNull Collection<Route> routes) {
         this.routes = routes;

@@ -193,7 +193,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             );
 
             // stop on first target, we load them lazily afterwards
-            if(containingFiles.size() > 0) {
+            if(!containingFiles.isEmpty()) {
                 found = true;
                 break;
             }
@@ -223,7 +223,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             }
         }
 
-        if(targets.size() == 0) {
+        if(targets.isEmpty()) {
             return null;
         }
 
@@ -410,7 +410,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
                 );
 
                 // navigate to include pattern; else fallback to file scope
-                if (fileTargets.size() > 0) {
+                if (!fileTargets.isEmpty()) {
                     targets.addAll(fileTargets);
                 } else {
                     targets.add(myTwigFile);

@@ -10,7 +10,7 @@ import java.util.List;
  */
 public class TwigPathIndex {
     @NotNull
-    private List<TwigPath> twigPaths = new ArrayList<>();
+    private final List<TwigPath> twigPaths = new ArrayList<>();
 
     void addPath(@NotNull TwigPath twigPath) {
       twigPaths.add(twigPath);

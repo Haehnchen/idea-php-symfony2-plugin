@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class FormExtensionServiceParser extends AbstractServiceParser {
 
-    protected Map<String, String> formExtensions = new ConcurrentHashMap<>();
+    protected final Map<String, String> formExtensions = new ConcurrentHashMap<>();
 
     @Override
     public String getXPathFilter() {

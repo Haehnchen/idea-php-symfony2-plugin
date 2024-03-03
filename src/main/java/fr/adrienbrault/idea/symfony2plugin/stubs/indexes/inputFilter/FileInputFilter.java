@@ -16,8 +16,8 @@ import org.jetbrains.yaml.YAMLFileType;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class FileInputFilter {
-    public static FileBasedIndex.InputFilter XML_YAML_PHP = new XmlYamlAndPhpFileInputFilter();
-    public static FileBasedIndex.InputFilter XML_YAML = new XmlAndYamlFileInputFilter();
+    public static final FileBasedIndex.InputFilter XML_YAML_PHP = new XmlYamlAndPhpFileInputFilter();
+    public static final FileBasedIndex.InputFilter XML_YAML = new XmlAndYamlFileInputFilter();
 
     private static class XmlAndYamlFileInputFilter implements FileBasedIndex.InputFilter {
         @Override

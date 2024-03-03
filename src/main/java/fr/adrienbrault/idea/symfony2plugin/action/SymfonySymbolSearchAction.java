@@ -217,7 +217,7 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
                 }
             }
 
-            if(controllers.size() > 0) {
+            if(!controllers.isEmpty()) {
                 for (String controller : controllers) {
                     for(PsiElement psiElement: RouteHelper.getMethodsOnControllerShortcut(this.project, controller)) {
                         processor.process(new NavigationItemEx(psiElement, name, Symfony2Icons.ROUTE, "Route"));

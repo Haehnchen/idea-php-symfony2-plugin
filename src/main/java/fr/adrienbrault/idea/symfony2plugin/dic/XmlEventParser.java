@@ -16,8 +16,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class XmlEventParser extends AbstractServiceParser {
 
-    protected Map<String, String> list = new ConcurrentHashMap<>();
-    protected List<EventDispatcherSubscribedEvent> events = new ArrayList<>();
+    protected final Map<String, String> list = new ConcurrentHashMap<>();
+    protected final List<EventDispatcherSubscribedEvent> events = new ArrayList<>();
 
     @Override
     public String getXPathFilter() {

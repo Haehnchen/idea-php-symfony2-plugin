@@ -39,12 +39,12 @@ public class ProfilerUtil {
     /**
      * Cache for url content
      */
-    private static Cache<String, String> REQUEST_CACHE = CacheBuilder.newBuilder()
+    private static final Cache<String, String> REQUEST_CACHE = CacheBuilder.newBuilder()
         .maximumSize(50)
         .expireAfterWrite(5, TimeUnit.MINUTES)
         .build();
 
-    private static Cache<String, ProfilerRequestInterface> PROFILER_REQUEST_CACHE = CacheBuilder.newBuilder()
+    private static final Cache<String, ProfilerRequestInterface> PROFILER_REQUEST_CACHE = CacheBuilder.newBuilder()
         .maximumSize(15)
         .expireAfterWrite(5, TimeUnit.MINUTES)
         .build();

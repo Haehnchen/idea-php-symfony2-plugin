@@ -77,13 +77,13 @@ public class TwigTypeResolveUtil {
         DOC_TYPE_PATTERN_CLASS_FIRST
     };
 
-    private static String[] PROPERTY_SHORTCUTS = new String[] {"get", "is", "has"};
+    private static final String[] PROPERTY_SHORTCUTS = new String[] {"get", "is", "has"};
 
     private static final ExtensionPointName<TwigFileVariableCollector> TWIG_FILE_VARIABLE_COLLECTORS = new ExtensionPointName<>(
         "fr.adrienbrault.idea.symfony2plugin.extension.TwigVariableCollector"
     );
 
-    private static TwigTypeResolver[] TWIG_TYPE_RESOLVERS = new TwigTypeResolver[] {
+    private static final TwigTypeResolver[] TWIG_TYPE_RESOLVERS = new TwigTypeResolver[] {
         new FormVarsResolver(),
         new FormFieldResolver(),
     };
@@ -107,7 +107,7 @@ public class TwigTypeResolveUtil {
             PlatformPatterns.psiElement(PsiWhiteSpace.class
         )));
 
-        if(typeNames.trim().length() == 0) {
+        if(typeNames.trim().isEmpty()) {
             return Collections.emptyList();
         }
 
@@ -133,7 +133,7 @@ public class TwigTypeResolveUtil {
      */
     @NotNull
     public static Collection<TwigTypeContainer> resolveTwigMethodName(@NotNull PsiElement psiElement, @NotNull Collection<String> types) {
-        if(types.size() == 0) {
+        if(types.isEmpty()) {
             return Collections.emptyList();
         }
 
@@ -158,7 +158,7 @@ public class TwigTypeResolveUtil {
             previousElements.add(new ArrayList<>(type));
 
             // we can stop on empty list
-            if(type.size() == 0) {
+            if(type.isEmpty()) {
                 return Collections.emptyList();
             }
         }
@@ -347,7 +347,7 @@ public class TwigTypeResolveUtil {
             previousElements = resolveTwigMethodName(project, previousElements, strings[i]);
 
             // we can stop on empty list
-            if(previousElements.size() == 0) {
+            if(previousElements.isEmpty()) {
                 return Collections.emptyList();
             }
         }
@@ -541,7 +541,7 @@ public class TwigTypeResolveUtil {
     public static String getTypeDisplayName(Project project, Set<String> types) {
 
         Collection<PhpClass> classFromPhpTypeSet = PhpElementsUtil.getClassFromPhpTypeSet(project, types);
-        if(classFromPhpTypeSet.size() > 0) {
+        if(!classFromPhpTypeSet.isEmpty()) {
             return classFromPhpTypeSet.iterator().next().getPresentableFQN();
         }
 
@@ -551,11 +551,11 @@ public class TwigTypeResolveUtil {
         }
         PhpType phpTypeFormatted = PhpIndex.getInstance(project).completeType(project, phpType, new HashSet<>());
 
-        if(phpTypeFormatted.getTypes().size() > 0) {
+        if(!phpTypeFormatted.getTypes().isEmpty()) {
             return StringUtils.join(phpTypeFormatted.getTypes(), "|");
         }
 
-        if(types.size() > 0) {
+        if(!types.isEmpty()) {
             return types.iterator().next();
         }
 

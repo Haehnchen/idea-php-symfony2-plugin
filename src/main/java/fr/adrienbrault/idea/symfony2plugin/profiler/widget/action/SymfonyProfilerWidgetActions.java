@@ -71,8 +71,8 @@ public class SymfonyProfilerWidgetActions {
 
     public static class RouteAction extends AnAction {
 
-        private String routeName;
-        private Project project;
+        private final String routeName;
+        private final Project project;
 
         public RouteAction(Project project, @Nullable String text) {
             super(text, "Open Route", Symfony2Icons.ROUTE);
@@ -92,8 +92,8 @@ public class SymfonyProfilerWidgetActions {
 
     public static class MethodAction extends AnAction {
 
-        private String methodShortcut;
-        private Project project;
+        private final String methodShortcut;
+        private final Project project;
 
         public MethodAction(Project project, @Nullable String text) {
             super(text, "Open Method", com.jetbrains.php.PhpIcons.METHOD);

@@ -25,7 +25,7 @@ public class TwigPathFunctionInsertHandler implements InsertHandler<RouteLookupE
         stringBuilder.append("'");
 
         Set<String> vars = lookupElement.getRoute().getVariables();
-        if(vars.size() > 0) {
+        if(!vars.isEmpty()) {
             List<String> items = new ArrayList<>();
             for(String var: vars) {
                 items.add(String.format("'%s': '%s'", var, "x"));

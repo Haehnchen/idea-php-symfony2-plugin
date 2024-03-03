@@ -82,7 +82,7 @@ public class ObjectManagerFindTypeProvider implements PhpTypeProvider4 {
         // search for called method
         PhpIndex phpIndex = PhpIndex.getInstance(project);
         Collection<? extends PhpNamedElement> phpNamedElementCollections = PhpTypeProviderUtil.getTypeSignature(phpIndex, originalSignature);
-        if(phpNamedElementCollections.size() == 0) {
+        if(phpNamedElementCollections.isEmpty()) {
             return Collections.emptySet();
         }
 

@@ -23,7 +23,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class FormTypeAsClassConstantInspection extends LocalInspectionTool {
 
-    public static String MESSAGE = "Use fully-qualified class name (FQCN)";
+    public static final String MESSAGE = "Use fully-qualified class name (FQCN)";
 
     @NotNull
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {

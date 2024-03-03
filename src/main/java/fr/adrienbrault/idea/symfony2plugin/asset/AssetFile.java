@@ -9,10 +9,10 @@ import org.jetbrains.annotations.NotNull;
  */
 public class AssetFile {
     @NotNull
-    private VirtualFile assetFile;
+    private final VirtualFile assetFile;
 
     @NotNull
-    private AssetEnum.Position assetPosition;
+    private final AssetEnum.Position assetPosition;
 
     @NotNull
     private VirtualFile relativeFolder;

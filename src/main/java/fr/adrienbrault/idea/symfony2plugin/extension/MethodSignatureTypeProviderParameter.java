@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class MethodSignatureTypeProviderParameter {
 
-    private PsiElement psiElement;
+    private final PsiElement psiElement;
 
     public MethodSignatureTypeProviderParameter(@NotNull PsiElement psiElement) {
         this.psiElement = psiElement;

@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class DoctrineTypeLookup extends LookupElement {
 
-    private String name;
+    private final String name;
     private InsertHandler<LookupElement> insertHandler = null;
 
     public DoctrineTypeLookup(String typeName) {

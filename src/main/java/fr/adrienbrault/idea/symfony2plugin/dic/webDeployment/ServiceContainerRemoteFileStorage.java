@@ -6,7 +6,6 @@ import fr.adrienbrault.idea.symfony2plugin.dic.webDeployment.dict.ServiceParamet
 import fr.adrienbrault.idea.symfony2plugin.webDeployment.storage.RemoteFileStorageInterface;
 import fr.adrienbrault.idea.symfony2plugin.webDeployment.utils.RemoteWebServerUtil;
 import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileSystemException;
 import org.apache.sanselan.util.IOUtils;
 import org.jetbrains.annotations.NotNull;
 

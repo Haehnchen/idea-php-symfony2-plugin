@@ -46,7 +46,7 @@ public class Symfony2ProjectComponent {
         }
     }
 
-    public static String HELP_URL = "https://espend.de/phpstorm/plugin/symfony";
+    public static final String HELP_URL = "https://espend.de/phpstorm/plugin/symfony";
     final private static Logger LOG = Logger.getInstance("Symfony-Plugin");
     private static final ExtensionPointName<ServiceContainerLoader> SERVICE_CONTAINER_POINT_NAME = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoader");
     public static final ExtensionPointName<PluginConfigurationExtension> PLUGIN_CONFIGURATION_EXTENSION = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtension");
@@ -63,7 +63,7 @@ public class Symfony2ProjectComponent {
             loaderExtension.attachContainerFile(containerLoaderExtensionParameter);
         }
 
-        if(containerFiles.size() == 0) {
+        if(containerFiles.isEmpty()) {
             for (String s : ServiceContainerUtil.getContainerFiles(project)) {
                 containerFiles.add(new ContainerFile(s));
             }

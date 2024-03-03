@@ -23,7 +23,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class CreateMethodQuickFix implements LocalQuickFix {
     @NotNull
-    private SmartPsiElementPointer<PhpClass> smartPhpClass;
+    private final SmartPsiElementPointer<PhpClass> smartPhpClass;
 
     @NotNull
     private final String functionName;

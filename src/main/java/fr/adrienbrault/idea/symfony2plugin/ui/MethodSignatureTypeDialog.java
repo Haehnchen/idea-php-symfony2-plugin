@@ -28,9 +28,9 @@ public class MethodSignatureTypeDialog extends JDialog {
     private JTextField textMethodName;
     private JTextField textIndex;
     private MethodSignatureSetting methodParameterSetting;
-    private TableView<MethodSignatureSetting> tableView;
+    private final TableView<MethodSignatureSetting> tableView;
 
-    private Project project;
+    private final Project project;
 
     static class ComboBoxRenderer extends ColoredListCellRenderer {
         @Override
@@ -69,7 +69,7 @@ public class MethodSignatureTypeDialog extends JDialog {
         // allow only number values to indexes
         // simple?
         this.textIndex.addKeyListener(new KeyAdapter() {
-            private String allowedRegex = "[^0-9]";
+            private final String allowedRegex = "[^0-9]";
 
             @Override
             public void keyReleased(KeyEvent e) {
@@ -132,9 +132,9 @@ public class MethodSignatureTypeDialog extends JDialog {
 
     private void setOkState() {
         this.buttonOK.setEnabled(
-            this.textCallTo.getText().length() > 0 &&
-            this.textMethodName.getText().length() > 0 &&
-            this.textIndex.getText().length() > 0
+            !this.textCallTo.getText().isEmpty() &&
+                !this.textMethodName.getText().isEmpty() &&
+                !this.textIndex.getText().isEmpty()
         );
     }
 

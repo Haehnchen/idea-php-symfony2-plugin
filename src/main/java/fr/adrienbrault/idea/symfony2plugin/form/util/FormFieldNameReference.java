@@ -21,8 +21,8 @@ import java.util.List;
  */
 public class FormFieldNameReference extends PsiReferenceBase<PsiElement> implements PsiReference {
 
-    private StringLiteralExpression element;
-    private Method method;
+    private final StringLiteralExpression element;
+    private final Method method;
 
     public FormFieldNameReference(@NotNull StringLiteralExpression element, Method method) {
         super(element);

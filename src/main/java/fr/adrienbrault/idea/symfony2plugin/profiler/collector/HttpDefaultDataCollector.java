@@ -13,7 +13,7 @@ import java.util.Map;
 public class HttpDefaultDataCollector implements DefaultDataCollectorInterface {
 
     @NotNull
-    private Map<String, String> requestAttributes;
+    private final Map<String, String> requestAttributes;
 
     public HttpDefaultDataCollector(@NotNull Map<String, String> requestAttributes) {
         this.requestAttributes = requestAttributes;

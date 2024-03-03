@@ -30,8 +30,8 @@ public class TwigNamespaceDialog extends JDialog {
     private TextFieldWithBrowseButton namespacePath;
     private JCheckBox chkboxEnabled;
     private JTextField name;
-    private TableView<TwigPath> tableView;
-    private Project project;
+    private final TableView<TwigPath> tableView;
+    private final Project project;
     private TwigPath twigPath;
 
     public TwigNamespaceDialog(Project project, TableView<TwigPath> tableView, TwigPath twigPath) {
@@ -74,7 +74,7 @@ public class TwigNamespaceDialog extends JDialog {
 
     private void setOkState() {
         TwigNamespaceDialog.this.buttonOK.setEnabled(
-            TwigNamespaceDialog.this.namespacePath.getText().length() > 0
+            !TwigNamespaceDialog.this.namespacePath.getText().isEmpty()
         );
     }
 
@@ -88,7 +88,7 @@ public class TwigNamespaceDialog extends JDialog {
         String namespacePath = this.namespacePath.getText();
 
         TwigPath twigPath = new TwigPath(namespacePath, namespace, TwigUtil.NamespaceType.valueOf((String) this.namespaceType.getSelectedItem()), true);
-        if(namespacePath.length() == 0) {
+        if(namespacePath.isEmpty()) {
             dispose();
             return;
         }

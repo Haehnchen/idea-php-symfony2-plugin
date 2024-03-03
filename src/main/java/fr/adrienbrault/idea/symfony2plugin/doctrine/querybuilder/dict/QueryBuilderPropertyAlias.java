@@ -14,7 +14,7 @@ public class QueryBuilderPropertyAlias {
 
     final private String alias;
     final private String fieldName;
-    private DoctrineModelField field;
+    private final DoctrineModelField field;
 
     public QueryBuilderPropertyAlias(String alias, String fieldName, DoctrineModelField field) {
         this.alias = alias;

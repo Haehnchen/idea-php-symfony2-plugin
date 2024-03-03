@@ -90,7 +90,7 @@ public class PhpTemplateMissingInspection extends LocalInspectionTool {
             return null;
         }
 
-        if(TwigUtil.getTemplateFiles(psiElement.getProject(), templateName).size() > 0) {
+        if(!TwigUtil.getTemplateFiles(psiElement.getProject(), templateName).isEmpty()) {
             return null;
         }
 
