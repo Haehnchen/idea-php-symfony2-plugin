@@ -21,6 +21,15 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2023.1.265
+* Workaround to remove duplicate element for querybuilder after dot, for parameters which provide injected languages on some parameters from PhpStorm itself (Daniel Espendiller)
+* Limit supported version to 2023.x / 233 api level (Daniel Espendiller)
+* Force "require-restart" to be true: "3rd-party paid plugins cannot be installed, updated or uninstalled without restarting the IDE." (Daniel Espendiller)
+* Prevent twig template asset to be handled twice (Daniel Espendiller)
+* Fix "Do not use PsiElement for popup model. See PsiTargetNavigator" changes in service property promotion generator (Daniel Espendiller)
+* Fix casting and querybuilder parameter if not a string (Daniel Espendiller)
+* Ignore blank resource iteration (Daniel Espendiller)
+
 ## 2022.1.264
 * Remove noisy error feedback for report (Daniel Espendiller)
 * Fix "Threading Model Changes": Thread context was already set: com.intellij.openapi.actionSystem.ex.ActionContextElement (Daniel Espendiller)
