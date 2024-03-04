@@ -1130,7 +1130,12 @@ public class RouteHelper {
             PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
 
             if(psiFile instanceof YAMLFile) {
-                return Collections.singletonList(YAMLUtil.getQualifiedKeyInFile((YAMLFile) psiFile, routeName));
+                YAMLKeyValue qualifiedKeyInFile = YAMLUtil.getQualifiedKeyInFile((YAMLFile) psiFile, routeName);
+                if (qualifiedKeyInFile != null) {
+                    return Collections.singletonList(qualifiedKeyInFile);
+                }
+
+                return Collections.emptyList();
             } else if(psiFile instanceof XmlFile) {
                 PsiElement target = RouteHelper.getXmlRouteNameTarget((XmlFile) psiFile, routeName);
                 if(target != null) {
