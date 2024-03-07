@@ -320,6 +320,22 @@ public class IncompletePropertyServiceInjectionContributorTest extends SymfonyLi
 
         String text2 = fromText2.getText();
         assertTrue(text2.contains("public function __construct(UrlGeneratorInterface $router)"));
+
+
+        PhpClass fromText3 = PhpPsiElementFactory.createFromText(getProject(), PhpClass.class, "<?php\n" +
+            "\n" +
+            "readonly class Foobar\n" +
+            "{\n" +
+            "    public function __construct(private readonly \\DateTime $d)\n" +
+            "    {\n" +
+            "    }\n" +
+            "}"
+        );
+
+        IncompletePropertyServiceInjectionContributor.appendPropertyInjection(fromText3, "router", "\\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface");
+
+        String text3 = fromText3.getText();
+        assertTrue(text3.contains("public function __construct(private readonly \\DateTime $d,private UrlGeneratorInterface $router)"));
     }
 
     public void testInjectionService() {

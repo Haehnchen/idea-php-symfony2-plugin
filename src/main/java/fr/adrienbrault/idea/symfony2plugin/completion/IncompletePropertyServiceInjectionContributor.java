@@ -484,18 +484,20 @@ public class IncompletePropertyServiceInjectionContributor extends CompletionCon
         }
     }
 
-    public static void appendPropertyInjection(@NotNull PhpClass parentOfType, @NotNull String propertyName, @NotNull String typePhpClass) {
-        Method constructor = PhpIntroduceFieldHandler.getOrCreateConstructor(parentOfType);
+    public static void appendPropertyInjection(@NotNull PhpClass phpClass, @NotNull String propertyName, @NotNull String typePhpClass) {
+        Method constructor = PhpIntroduceFieldHandler.getOrCreateConstructor(phpClass);
         if (constructor == null) {
             return;
         }
 
         // use + constructor(Foo $foo)
-        String importedClass = PhpElementsUtil.insertUseIfNecessary(parentOfType, typePhpClass);
+        String importedClass = PhpElementsUtil.insertUseIfNecessary(phpClass, typePhpClass);
 
         // "private readonly Foo $foo"
         if (shouldUsePropertyPromotion(constructor)) {
-            Parameter parameter = PhpPsiElementFactory.createComplexParameter(parentOfType.getProject(), String.format("private readonly %s $%s", importedClass, propertyName));
+            String readonlyProperty = !phpClass.isReadonly() ? "readonly " : "";
+
+            Parameter parameter = PhpPsiElementFactory.createComplexParameter(phpClass.getProject(), String.format("private %s%s $%s", readonlyProperty, importedClass, propertyName));
             Parameter parameterToInsertAfter = PhpChangeSignatureProcessor.findParameterToInsertAfter(constructor);
             if (parameterToInsertAfter != null) {
                 addParameterAfter(constructor, parameter, parameterToInsertAfter);
@@ -510,7 +512,7 @@ public class IncompletePropertyServiceInjectionContributor extends CompletionCon
         phpParameterInfo.setType(new PhpType().add(typePhpClass), importedClass);
 
         // find added parameter; should mostly the last
-        PhpChangeSignatureProcessor.addParameterToFunctionSignature(parentOfType.getProject(), constructor, List.of(phpParameterInfo));
+        PhpChangeSignatureProcessor.addParameterToFunctionSignature(phpClass.getProject(), constructor, List.of(phpParameterInfo));
 
         Parameter parameter = Arrays.stream(constructor.getParameters())
             .filter(parameter1 -> propertyName.equalsIgnoreCase(parameter1.getName()))
@@ -519,7 +521,7 @@ public class IncompletePropertyServiceInjectionContributor extends CompletionCon
 
         // add $this->foo
         if (parameter != null) {
-            PhpRefactoringUtil.initializeFieldsByParameters(parentOfType, List.of(parameter), PhpModifier.Access.PRIVATE);
+            PhpRefactoringUtil.initializeFieldsByParameters(phpClass, List.of(parameter), PhpModifier.Access.PRIVATE);
         }
     }
 
