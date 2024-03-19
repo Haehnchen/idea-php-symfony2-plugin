@@ -6,7 +6,6 @@ import fr.adrienbrault.idea.symfony2plugin.dic.webDeployment.dict.ServiceParamet
 import fr.adrienbrault.idea.symfony2plugin.webDeployment.storage.RemoteFileStorageInterface;
 import fr.adrienbrault.idea.symfony2plugin.webDeployment.utils.RemoteWebServerUtil;
 import org.apache.commons.vfs2.FileObject;
-import org.apache.sanselan.util.IOUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayInputStream;
@@ -41,7 +40,7 @@ public class ServiceContainerRemoteFileStorage implements RemoteFileStorageInter
             try {
                 // copy stream
                 inputStream = new ResetOnCloseInputStream(new ByteArrayInputStream(
-                    IOUtils.getInputStreamBytes(fileObject.getContent().getInputStream()))
+                    fileObject.getContent().getInputStream().readAllBytes())
                 );
             } catch (IOException ignored) {
                 continue;
