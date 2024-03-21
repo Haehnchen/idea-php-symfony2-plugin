@@ -1,7 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin;
 
 import com.intellij.openapi.components.PersistentStateComponent;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.project.Project;
@@ -98,7 +97,7 @@ public class Settings implements PersistentStateComponent<Settings> {
     public List<MethodSignatureSetting> methodSignatureSettings = new ArrayList<>();
 
     public static Settings getInstance(Project project) {
-        return ServiceManager.getService(project, Settings.class);
+        return project.getService(Settings.class);
     }
 
     @Nullable

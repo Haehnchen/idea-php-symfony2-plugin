@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.action;
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.editor.Editor;
@@ -29,6 +30,10 @@ public class SymfonyContainerServiceBuilder extends DumbAwareAction {
 
     public SymfonyContainerServiceBuilder() {
         super("Create Service", "Generate a new Service definition from class name", Symfony2Icons.SYMFONY);
+    }
+
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.BGT;
     }
 
     public void update(AnActionEvent event) {

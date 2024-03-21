@@ -123,7 +123,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         // via resource include
         Pair<ClassServiceDefinitionTargetLazyValue, Collection<ContainerService>> serviceDefinitionsOfResource = ServiceIndexUtil.findServiceDefinitionsOfResourceLazy((PhpClass) phpClassContext);
         if (serviceDefinitionsOfResource != null) {
-            LayeredIcon serviceLineMarkerLayer = new LayeredIcon(serviceLineMarker, AllIcons.Modules.SourceRootFileLayer);
+            LayeredIcon serviceLineMarkerLayer = LayeredIcon.layeredIcon(new Icon[]{serviceLineMarker, AllIcons.Modules.SourceRootFileLayer});
             serviceLineMarkerLayer.setIcon(AllIcons.Modules.SourceRootFileLayer, 1, SwingConstants.CENTER);
 
             serviceLineMarker = serviceLineMarkerLayer;
@@ -143,7 +143,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         }
 
         if (!tags.isEmpty()) {
-            LayeredIcon serviceLineMarkerLayer = new LayeredIcon(serviceLineMarker, AllIcons.Nodes.TabPin);
+            LayeredIcon serviceLineMarkerLayer = LayeredIcon.layeredIcon(new Icon[] {serviceLineMarker, AllIcons.Nodes.TabPin});
             serviceLineMarkerLayer.setIcon(AllIcons.Nodes.TabPin, 1, SwingConstants.CENTER);
 
             serviceLineMarker = serviceLineMarkerLayer;

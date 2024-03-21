@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.ui;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.highlighter.XmlFileType;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
@@ -153,6 +154,10 @@ public class ContainerSettingsForm implements Configurable {
                         ContainerSettingsForm.this.changed = true;
                     }
                 });
+            }
+
+            public @NotNull ActionUpdateThread getActionUpdateThread() {
+                return ActionUpdateThread.BGT;
             }
         });
     }

@@ -1,7 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin;
 
 import com.intellij.openapi.util.IconLoader;
-import com.intellij.util.ui.UIUtil;
+import com.intellij.util.ui.ImageUtil;
 
 import javax.swing.*;
 import java.awt.*;
@@ -84,7 +84,7 @@ public class Symfony2Icons {
 
         int width = icon.getIconWidth();
         int height = icon.getIconHeight();
-        BufferedImage image = UIUtil.createImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage image = ImageUtil.createImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = (Graphics2D) image.getGraphics();
         icon.paintIcon(null, g2, 0, 0);
         return image;

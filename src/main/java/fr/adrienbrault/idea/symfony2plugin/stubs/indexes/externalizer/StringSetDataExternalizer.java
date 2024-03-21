@@ -2,12 +2,12 @@ package fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer;
 
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
-import gnu.trove.THashSet;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -29,7 +29,7 @@ public class StringSetDataExternalizer implements DataExternalizer<Set<String>> 
     }
 
     public synchronized Set<String> read(@NotNull DataInput in) throws IOException {
-        Set<String> set = new THashSet<>();
+        Set<String> set = new HashSet<>();
 
         for(int r = in.readInt(); r > 0; --r) {
             set.add(EnumeratorStringDescriptor.INSTANCE.read(in));

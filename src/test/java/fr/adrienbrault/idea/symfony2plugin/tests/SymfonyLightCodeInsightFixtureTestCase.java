@@ -171,9 +171,9 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
 
         Set<String> classTargets = new HashSet<>();
 
-        for (GotoDeclarationHandler gotoDeclarationHandler : Extensions.getExtensions(GotoDeclarationHandler.EP_NAME)) {
+        for (GotoDeclarationHandler gotoDeclarationHandler : GotoDeclarationHandler.EP_NAME.getExtensionList()) {
             PsiElement[] gotoDeclarationTargets = gotoDeclarationHandler.getGotoDeclarationTargets(psiElement, 0, myFixture.getEditor());
-            if(gotoDeclarationTargets != null && gotoDeclarationTargets.length > 0) {
+            if(gotoDeclarationTargets != null) {
 
                 for (PsiElement gotoDeclarationTarget : gotoDeclarationTargets) {
                     if(gotoDeclarationTarget instanceof Method) {
@@ -236,7 +236,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
 
     private void assertNavigationIsEmpty() {
         PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
-        for (GotoDeclarationHandler gotoDeclarationHandler : Extensions.getExtensions(GotoDeclarationHandler.EP_NAME)) {
+        for (GotoDeclarationHandler gotoDeclarationHandler : GotoDeclarationHandler.EP_NAME.getExtensionList()) {
             PsiElement[] gotoDeclarationTargets = gotoDeclarationHandler.getGotoDeclarationTargets(psiElement, 0, myFixture.getEditor());
             if(gotoDeclarationTargets != null && gotoDeclarationTargets.length > 0) {
                 fail(String.format("failed that PsiElement (%s) navigate is empty; found target in '%s'", psiElement.toString(), gotoDeclarationHandler.getClass()));
@@ -250,10 +250,10 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
 
         Set<String> targetStrings = new HashSet<>();
 
-        for (GotoDeclarationHandler gotoDeclarationHandler : Extensions.getExtensions(GotoDeclarationHandler.EP_NAME)) {
+        for (GotoDeclarationHandler gotoDeclarationHandler : GotoDeclarationHandler.EP_NAME.getExtensionList()) {
 
             PsiElement[] gotoDeclarationTargets = gotoDeclarationHandler.getGotoDeclarationTargets(psiElement, myFixture.getCaretOffset(), myFixture.getEditor());
-            if(gotoDeclarationTargets == null || gotoDeclarationTargets.length == 0) {
+            if(gotoDeclarationTargets == null) {
                 continue;
             }
 
@@ -265,7 +265,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
             }
         }
 
-        fail(String.format("failed that PsiElement (%s) navigate matches one of %s", psiElement.toString(), targetStrings.toString()));
+        fail(String.format("failed that PsiElement (%s) navigate matches one of %s", psiElement.toString(), targetStrings));
     }
 
     public void assertNavigationContainsFile(LanguageFileType languageFileType, String configureByText, String targetShortcut) {
@@ -274,7 +274,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
 
         Set<String> targets = new HashSet<>();
 
-        for (GotoDeclarationHandler gotoDeclarationHandler : Extensions.getExtensions(GotoDeclarationHandler.EP_NAME)) {
+        for (GotoDeclarationHandler gotoDeclarationHandler : GotoDeclarationHandler.EP_NAME.getExtensionList()) {
             PsiElement[] gotoDeclarationTargets = gotoDeclarationHandler.getGotoDeclarationTargets(psiElement, 0, myFixture.getEditor());
             if (gotoDeclarationTargets != null && gotoDeclarationTargets.length > 0) {
                 for (PsiElement gotoDeclarationTarget : gotoDeclarationTargets) {
