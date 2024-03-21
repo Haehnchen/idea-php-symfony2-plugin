@@ -130,4 +130,30 @@ public class PhpTranslationKeyInspectionTest extends SymfonyLightCodeInsightFixt
             PhpTranslationKeyInspection.MESSAGE
         );
     }
+
+    public void testThatPhpTranslationKeyInspectionsForTranslatableMessageViaTFunctionAreProvided() {
+        assertLocalInspectionContains("test.php", "<?php\n" +
+                "use function Symfony\\Component\\Translation\\t;\n" +
+                "t('symfon<caret>y.great');",
+            PhpTranslationKeyInspection.MESSAGE
+        );
+
+        assertLocalInspectionNotContains("test.php", "<?php\n" +
+                "use function Symfony\\Component\\Translation\\t;\n" +
+                "t('symfon<caret>y.great', domain: 'symfony');",
+            PhpTranslationKeyInspection.MESSAGE
+        );
+
+        assertLocalInspectionNotContains("test.php", "<?php\n" +
+                "use function Symfony\\Component\\Translation\\t;\n" +
+                "t('symfon<caret>y.great', [], 'symfony');",
+            PhpTranslationKeyInspection.MESSAGE
+        );
+
+        assertLocalInspectionNotContains("test.php", "<?php\n" +
+                "use function Symfony\\Component\\Translation\\t;\n" +
+                "t('symfon<caret>y.great', 1, [], $x);",
+            PhpTranslationKeyInspection.MESSAGE
+        );
+    }
 }

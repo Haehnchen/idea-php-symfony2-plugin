@@ -35,7 +35,7 @@ public class PhpTranslationDomainInspection extends LocalInspectionTool {
 
         return new PsiElementVisitor() {
             @Override
-            public void visitElement(PsiElement element) {
+            public void visitElement(@NotNull PsiElement element) {
                 invoke(holder, element);
                 super.visitElement(element);
             }
@@ -53,7 +53,7 @@ public class PhpTranslationDomainInspection extends LocalInspectionTool {
         }
 
         PsiElement methodReferenceOrNewExpression = parameterList.getContext();
-        if (!(methodReferenceOrNewExpression instanceof MethodReference) && !(methodReferenceOrNewExpression instanceof NewExpression)) {
+        if (!(methodReferenceOrNewExpression instanceof FunctionReference) && !(methodReferenceOrNewExpression instanceof NewExpression)) {
             return;
         }
 
@@ -63,10 +63,8 @@ public class PhpTranslationDomainInspection extends LocalInspectionTool {
             ASTNode previousNonWhitespaceSibling1 = FormatterUtil.getPreviousNonWhitespaceSibling(previousNonWhitespaceSibling);
             if (previousNonWhitespaceSibling1 != null && previousNonWhitespaceSibling1.getElementType() == PhpTokenTypes.IDENTIFIER) {
                 String text = previousNonWhitespaceSibling1.getText();
-                boolean isSupportedAttributeInsideContext = "domain".equals(text) && (
-                    (methodReferenceOrNewExpression instanceof MethodReference && PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) methodReferenceOrNewExpression, TranslationUtil.PHP_TRANSLATION_SIGNATURES))
-                        ||  (methodReferenceOrNewExpression instanceof NewExpression && PhpElementsUtil.isNewExpressionPhpClassWithInstance((NewExpression) methodReferenceOrNewExpression, TranslationUtil.PHP_TRANSLATION_TRANSLATABLE_MESSAGE))
-                );
+                boolean isSupportedAttributeInsideContext = "domain".equals(text)
+                    && TranslationUtil.isTranslationReference((ParameterListOwner) methodReferenceOrNewExpression);
 
                 if (isSupportedAttributeInsideContext) {
                     annotateTranslationDomain((StringLiteralExpression) psiElement, holder);
@@ -87,15 +85,17 @@ public class PhpTranslationDomainInspection extends LocalInspectionTool {
     }
 
     public static int getDomainParameter(@NotNull PsiElement methodReferenceOrNewExpression) {
-        if (methodReferenceOrNewExpression instanceof MethodReference && PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) methodReferenceOrNewExpression, TranslationUtil.PHP_TRANSLATION_SIGNATURES)) {
+        if (methodReferenceOrNewExpression instanceof MethodReference methodReference && PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, TranslationUtil.PHP_TRANSLATION_SIGNATURES)) {
             int domainParameter = 2;
 
-            if("transChoice".equals(((MethodReference) methodReferenceOrNewExpression).getName())) {
+            if("transChoice".equals(methodReference.getName())) {
                 domainParameter = 3;
             }
 
             return domainParameter;
-        } else if(methodReferenceOrNewExpression instanceof NewExpression && PhpElementsUtil.isNewExpressionPhpClassWithInstance((NewExpression) methodReferenceOrNewExpression, TranslationUtil.PHP_TRANSLATION_TRANSLATABLE_MESSAGE)) {
+        } else if(methodReferenceOrNewExpression instanceof NewExpression newExpression && PhpElementsUtil.isNewExpressionPhpClassWithInstance(newExpression, TranslationUtil.PHP_TRANSLATION_TRANSLATABLE_MESSAGE)) {
+            return 2;
+        } else if(methodReferenceOrNewExpression instanceof FunctionReference functionReference && TranslationUtil.isFunctionReferenceTranslationTFunction(functionReference)) {
             return 2;
         }
 

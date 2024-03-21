@@ -4,10 +4,7 @@ import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
-import com.jetbrains.php.lang.psi.elements.MethodReference;
-import com.jetbrains.php.lang.psi.elements.NewExpression;
-import com.jetbrains.php.lang.psi.elements.ParameterList;
-import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.inspection.TranslationKeyGuessTypoQuickFix;
@@ -51,7 +48,7 @@ public class PhpTranslationKeyInspection extends LocalInspectionTool {
         }
 
         PsiElement methodReferenceOrNewExpression = parameterList.getContext();
-        if (!(methodReferenceOrNewExpression instanceof MethodReference) && !(methodReferenceOrNewExpression instanceof NewExpression)) {
+        if (!(methodReferenceOrNewExpression instanceof NewExpression) && !(methodReferenceOrNewExpression instanceof FunctionReference)) {
             return;
         }
 
@@ -59,10 +56,7 @@ public class PhpTranslationKeyInspection extends LocalInspectionTool {
             return;
         }
 
-        if (!(
-            (methodReferenceOrNewExpression instanceof MethodReference && PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) methodReferenceOrNewExpression, TranslationUtil.PHP_TRANSLATION_SIGNATURES)) ||
-                (methodReferenceOrNewExpression instanceof NewExpression && PhpElementsUtil.isNewExpressionPhpClassWithInstance((NewExpression) methodReferenceOrNewExpression, TranslationUtil.PHP_TRANSLATION_TRANSLATABLE_MESSAGE)))
-        ) {
+        if (!TranslationUtil.isTranslationReference((ParameterListOwner) methodReferenceOrNewExpression)) {
             return;
         }
 

@@ -168,4 +168,20 @@ public class TranslationPlaceholderGotoCompletionRegistrarTest extends SymfonyLi
             PlatformPatterns.psiElement()
         );
     }
+
+    public void testNavigationForPhpTranslatableMessageTFunctionPlaceholder() {
+        assertNavigationMatch(
+            PhpFileType.INSTANCE,"<?php\n" +
+                "use function Symfony\\Component\\Translation\\t;\n" +
+                "t('symfony.great', ['%fo<caret>obar%'], 'symfony');",
+            PlatformPatterns.psiElement()
+        );
+
+        assertNavigationMatch(
+            PhpFileType.INSTANCE,"<?php\n" +
+                "use function Symfony\\Component\\Translation\\t;\n" +
+                "t('symfony.great', ['%fo<caret>obar%', null], 'symfony');",
+            PlatformPatterns.psiElement()
+        );
+    }
 }
