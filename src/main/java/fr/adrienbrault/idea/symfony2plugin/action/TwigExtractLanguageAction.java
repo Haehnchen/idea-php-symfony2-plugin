@@ -197,7 +197,7 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
                 );
             }
 
-            if (navigateTo && targets.size() > 0) {
+            if (navigateTo && !targets.isEmpty()) {
                 PsiDocumentManager.getInstance(project).commitAndRunReadAction(() ->
                     IdeHelper.navigateToPsiElement(targets.iterator().next())
                 );

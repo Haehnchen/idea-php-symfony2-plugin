@@ -360,7 +360,7 @@ public class ProfilerUtil {
             if(twigContent != null) {
                 ApplicationManager.getApplication().runReadAction(() -> {
                     Map<String, Integer> templates = getRenderedElementTwigTemplates(project, twigContent);
-                    if(templates.size() > 0) {
+                    if(!templates.isEmpty()) {
                         requestAttributes.put("_template", templates.keySet().iterator().next());
                     }
                 });

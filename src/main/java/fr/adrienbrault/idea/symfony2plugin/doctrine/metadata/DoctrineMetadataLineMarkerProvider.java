@@ -34,7 +34,7 @@ public class DoctrineMetadataLineMarkerProvider implements LineMarkerProvider {
     @Override
     public void collectSlowLineMarkers(@NotNull List<? extends PsiElement> psiElements, @NotNull Collection<? super LineMarkerInfo<?>> results) {
         // we need project element; so get it from first item
-        if(psiElements.size() == 0) {
+        if(psiElements.isEmpty()) {
             return;
         }
 
@@ -67,7 +67,7 @@ public class DoctrineMetadataLineMarkerProvider implements LineMarkerProvider {
         }
 
         Collection<PhpClass> classesInterface = DoctrineMetadataUtil.getClassInsideScope(psiElement, value);
-        if(classesInterface.size() == 0) {
+        if(classesInterface.isEmpty()) {
             return;
         }
 

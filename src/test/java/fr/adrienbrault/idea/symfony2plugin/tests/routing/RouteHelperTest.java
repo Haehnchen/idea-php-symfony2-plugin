@@ -525,7 +525,7 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
      * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#getRoute
      */
     public void testGetRoute() {
-        assertTrue(RouteHelper.getRoute(getProject(), "my_car_foo_stuff").size() > 0);
+        assertTrue(!RouteHelper.getRoute(getProject(), "my_car_foo_stuff").isEmpty());
     }
 
     @NotNull

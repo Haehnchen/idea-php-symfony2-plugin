@@ -214,7 +214,7 @@ public class ContainerCollectionResolver {
                 collectorEx.collectServices(parameter);
             }
 
-            if(exps.size() > 0) {
+            if(!exps.isEmpty()) {
                 exps.forEach(service -> services.put(service.getId(), new ContainerService(service, null)));
             }
 
@@ -226,7 +226,7 @@ public class ContainerCollectionResolver {
 
                 // fake empty service, case which is not allowed by catch it
                 List<ServiceSerializable> servicesValues = entry.getValue();
-                if(services.size() == 0) {
+                if(services.isEmpty()) {
                     services.put(serviceName, new ContainerService(serviceName, null, true));
                     continue;
                 }
@@ -279,11 +279,11 @@ public class ContainerCollectionResolver {
             }
 
             // replace alias with main service
-            if(aliases.size() > 0) {
+            if(!aliases.isEmpty()) {
                 services.putAll(collectAliases(aliases, services));
             }
 
-            if(decorated.size() > 0) {
+            if(!decorated.isEmpty()) {
                 services.putAll(collectDecorated(decorated, services));
             }
 
@@ -483,7 +483,7 @@ public class ContainerCollectionResolver {
             // setParameter("foo") for ContainerBuilder
             for (ContainerBuilderCall call : FileBasedIndex.getInstance().getValues(ContainerBuilderStubIndex.KEY, "setParameter", GlobalSearchScope.allScope(project))) {
                 Collection<String> parameters = call.getParameter();
-                if(parameters == null || parameters.size() == 0) {
+                if(parameters == null || parameters.isEmpty()) {
                     continue;
                 }
 

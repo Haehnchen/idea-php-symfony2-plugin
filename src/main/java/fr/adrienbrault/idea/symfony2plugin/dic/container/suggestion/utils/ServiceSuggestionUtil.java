@@ -23,7 +23,7 @@ public class ServiceSuggestionUtil {
             serviceMap
         );
 
-        if(suggestions.size() == 0) {
+        if(suggestions.isEmpty()) {
             return Collections.emptyList();
         }
 

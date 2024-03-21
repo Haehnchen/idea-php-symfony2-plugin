@@ -230,7 +230,7 @@ public class DocHashTagReferenceContributor extends PsiReferenceContributor {
                 }
             }
 
-            return phpDocParamTags.size() > 0;
+            return !phpDocParamTags.isEmpty();
         }
 
     }

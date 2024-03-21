@@ -34,7 +34,7 @@ public class TwigCreateContainer {
     @Nullable
     public String getExtend() {
         Map<String, Integer> extendsMap = getExtends();
-        return extendsMap.size() > 0 ? extendsMap.keySet().iterator().next() : null;
+        return !extendsMap.isEmpty() ? extendsMap.keySet().iterator().next() : null;
     }
 
     @NotNull

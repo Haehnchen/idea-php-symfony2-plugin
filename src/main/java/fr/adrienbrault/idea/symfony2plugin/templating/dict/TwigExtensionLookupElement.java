@@ -74,7 +74,7 @@ public class TwigExtensionLookupElement extends LookupElement {
         }
 
         Collection<? extends PhpNamedElement> phpNamedElements = PhpIndex.getInstance(this.project).getBySignature(signature);
-        if(phpNamedElements.size() == 0) {
+        if(phpNamedElements.isEmpty()) {
             return;
         }
 
@@ -82,11 +82,11 @@ public class TwigExtensionLookupElement extends LookupElement {
         if(function instanceof Function) {
             List<Parameter> parameters = new LinkedList<>(Arrays.asList(((Function) function).getParameters()));
 
-            if(this.twigExtension.getOption("needs_context") != null && parameters.size() > 0) {
+            if(this.twigExtension.getOption("needs_context") != null && !parameters.isEmpty()) {
                 parameters.remove(0);
             }
 
-            if(this.twigExtension.getOption("needs_environment") != null && parameters.size() > 0) {
+            if(this.twigExtension.getOption("needs_environment") != null && !parameters.isEmpty()) {
                 parameters.remove(0);
             }
 

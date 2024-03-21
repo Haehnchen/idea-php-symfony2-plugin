@@ -58,7 +58,7 @@ public class YamlServiceTagIntention extends PsiElementBaseIntentionAction {
         }
 
         Set<String> phpClassServiceTags = invoke.getSecond();
-        if(phpClassServiceTags.size() == 0) {
+        if(phpClassServiceTags.isEmpty()) {
             IdeHelper.showErrorHintIfAvailable(editor, "Ops, no possible Tag found");
             return;
         }
@@ -170,7 +170,7 @@ public class YamlServiceTagIntention extends PsiElementBaseIntentionAction {
         Set<String> phpClassServiceTags = ServiceUtil.getPhpClassServiceTags(resolvedClassDefinition);
 
         Set<String> strings = YamlHelper.collectServiceTags(serviceKeyValue);
-        if(strings.size() > 0) {
+        if(!strings.isEmpty()) {
             for (String s : strings) {
                 if(phpClassServiceTags.contains(s)) {
                     phpClassServiceTags.remove(s);

@@ -146,7 +146,7 @@ public class ServiceActionUtil {
     @NotNull
     public static Set<String> getPossibleServices(@NotNull PhpClass phpClass, @NotNull Map<String, ContainerService> serviceClasses) {
         List<ContainerService> matchedContainer = new ArrayList<>(ServiceUtil.getServiceSuggestionForPhpClass(phpClass, serviceClasses));
-        if(matchedContainer.size() == 0) {
+        if(matchedContainer.isEmpty()) {
             return Collections.emptySet();
         }
 
@@ -413,7 +413,7 @@ public class ServiceActionUtil {
             new ContainerCollectionResolver.LazyServiceCollector(yamlKeyValue.getProject())
         );
 
-        if(yamlMissingArgumentTypes.size() == 0) {
+        if(yamlMissingArgumentTypes.isEmpty()) {
             return;
         }
 
@@ -447,7 +447,7 @@ public class ServiceActionUtil {
             List<String> items = new ArrayList<>();
             for (Map.Entry<String, Set<String>> stringSetEntry : resolved.entrySet()) {
                 Set<String> value = stringSetEntry.getValue();
-                if(value.size() > 0 ) {
+                if(!value.isEmpty()) {
                     items.add(value.iterator().next());
                 } else {
                     items.add("?");

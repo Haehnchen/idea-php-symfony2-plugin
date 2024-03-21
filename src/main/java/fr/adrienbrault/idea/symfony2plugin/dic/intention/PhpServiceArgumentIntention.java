@@ -73,7 +73,7 @@ public class PhpServiceArgumentIntention extends PsiElementBaseIntentionAction {
         if (psiElement instanceof XmlTag) {
             List<String> args = ServiceActionUtil.getXmlMissingArgumentTypes((XmlTag) psiElement, true, new ContainerCollectionResolver.LazyServiceCollector(psiElement.getProject()));
 
-            success = args.size() > 0;
+            success = !args.isEmpty();
             if (success) {
                 ServiceActionUtil.fixServiceArgument(args, (XmlTag) psiElement);
             }
@@ -85,7 +85,7 @@ public class PhpServiceArgumentIntention extends PsiElementBaseIntentionAction {
                 new ContainerCollectionResolver.LazyServiceCollector(psiElement.getProject())
             );
 
-            success = args.size() > 0;
+            success = !args.isEmpty();
             if (success) {
                 ServiceActionUtil.fixServiceArgument((YAMLKeyValue) psiElement);
             }
@@ -107,7 +107,7 @@ public class PhpServiceArgumentIntention extends PsiElementBaseIntentionAction {
 
     @Override
     public boolean isAvailable(@NotNull Project project, Editor editor, @NotNull PsiElement psiElement) {
-        return psiElement.getLanguage().equals(PhpLanguage.INSTANCE) && getServicesInScope(project, psiElement).size() > 0;
+        return psiElement.getLanguage().equals(PhpLanguage.INSTANCE) && !getServicesInScope(project, psiElement).isEmpty();
     }
 
     @Nls

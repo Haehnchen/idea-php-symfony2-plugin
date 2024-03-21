@@ -101,7 +101,7 @@ public class EventDispatcherSubscriberUtil {
             // get method name
             // @TODO: support multiple method names, currently we only use method name if type hint, so first item helps for now
             Collection<PsiElement> subscriberMethods = getSubscriberMethods(arrayHashElement);
-            if(subscriberMethods.size() > 0) {
+            if(!subscriberMethods.isEmpty()) {
                 value = subscriberMethods.iterator().next();
             }
 

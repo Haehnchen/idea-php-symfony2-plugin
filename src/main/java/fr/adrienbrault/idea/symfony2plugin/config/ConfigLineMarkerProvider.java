@@ -36,7 +36,7 @@ public class ConfigLineMarkerProvider implements LineMarkerProvider {
 
     @Override
     public void collectSlowLineMarkers(@NotNull List<? extends PsiElement> psiElements, @NotNull Collection<? super LineMarkerInfo<?>> result) {
-        if(psiElements.size() == 0) {
+        if(psiElements.isEmpty()) {
             return;
         }
 

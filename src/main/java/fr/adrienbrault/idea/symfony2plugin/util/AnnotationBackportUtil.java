@@ -197,7 +197,7 @@ public class AnnotationBackportUtil {
             org.apache.commons.lang3.StringUtils.isNotBlank(s) && !"controller".equalsIgnoreCase(s)
         );
 
-        if(filter.size() == 0) {
+        if(filter.isEmpty()) {
             return null;
         }
 
@@ -231,7 +231,7 @@ public class AnnotationBackportUtil {
     @Nullable
     public static String getClassNameReference(PhpDocTag phpDocTag, Map<String, String> useImports) {
 
-        if(useImports.size() == 0) {
+        if(useImports.isEmpty()) {
             return null;
         }
 

@@ -153,7 +153,7 @@ public class PhpCommandGotoCompletionRegistrar implements GotoCompletionRegistra
             }
 
             Collection<PsiElement> psiElements = PhpElementsUtil.collectMethodElementsWithParents(configure, new CommandDefPsiElementFilter(methodName));
-            if(psiElements.size() == 0) {
+            if(psiElements.isEmpty()) {
                 return Collections.emptyMap();
             }
 

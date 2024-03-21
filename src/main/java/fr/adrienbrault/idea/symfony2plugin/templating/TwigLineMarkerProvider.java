@@ -56,7 +56,7 @@ import java.util.function.Supplier;
 public class TwigLineMarkerProvider implements LineMarkerProvider {
     @Override
     public void collectSlowLineMarkers(@NotNull List<? extends PsiElement> psiElements, @NotNull Collection<? super LineMarkerInfo<?>> results) {
-        if(psiElements.size() == 0 || !Symfony2ProjectComponent.isEnabled(psiElements.get(0))) {
+        if(psiElements.isEmpty() || !Symfony2ProjectComponent.isEnabled(psiElements.get(0))) {
             return;
         }
 
@@ -126,7 +126,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         methods.addAll(TwigUtil.findTwigFileController(twigFile));
         methods.addAll(TwigUtil.getTwigFileMethodUsageOnIndex(twigFile));
 
-        if(methods.size() == 0) {
+        if(methods.isEmpty()) {
             return;
         }
 
@@ -140,7 +140,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
     private void attachUxComponent(@NotNull TwigFile twigFile, @NotNull Collection<? super RelatedItemLineMarkerInfo<?>> result) {
         Collection<PhpClass> uxComponentsClasses = UxUtil.getComponentClassesForTemplateFile(twigFile.getProject(), twigFile);
 
-        if (uxComponentsClasses.size() > 0) {
+        if (!uxComponentsClasses.isEmpty()) {
             NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.SYMFONY)
                 .setTargets(uxComponentsClasses)
                 .setTooltipText("Navigate to UX Component");
@@ -162,7 +162,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             );
 
             // stop on first target, we load them lazily afterwards
-            if(containingFiles.size() > 0) {
+            if(!containingFiles.isEmpty()) {
                 found = true;
                 break;
             }

@@ -49,7 +49,7 @@ public class TranslationIndex {
                 Collection<File> translationDirectories = getTranslationRoot(project);
 
                 TranslationStringMap translationStringMap;
-                if (translationDirectories.size() > 0) {
+                if (!translationDirectories.isEmpty()) {
                     translationStringMap = TranslationStringMap.create(project, translationDirectories);
                 } else {
                     translationStringMap = TranslationStringMap.createEmpty();
