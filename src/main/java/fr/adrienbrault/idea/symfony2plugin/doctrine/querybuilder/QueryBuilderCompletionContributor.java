@@ -314,6 +314,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
             }
         });
 
+        // $qb->join(FooBar::class, 'foo');
         // $qb->join('test.foo', 'foo');
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
             @Override
@@ -333,16 +334,30 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                     if (methodReference != null) {
                         String joinTable = PhpElementsUtil.getStringValue(PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 0));
                         if (StringUtils.isNotBlank(joinTable)) {
-                            int pos = joinTable.lastIndexOf(".");
-                            if (pos > 0) {
+                            int pos;
+
+                            if (joinTable.contains("\\")) {
+                                // "App\Entity\Foobar::class" joins
+                                pos = joinTable.lastIndexOf("\\");
+                            } else {
+                                // "foo.car" join
+                                pos = joinTable.lastIndexOf(".");
+                            }
+
+                            if (pos >= 0) {
                                 final String aliasName = joinTable.substring(pos + 1);
                                 if (StringUtils.isNotBlank(aliasName)) {
-
                                     Set<String> strings = new HashSet<>() {{
                                         add(aliasName);
                                         add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.camelize(aliasName, true));
                                         add(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(aliasName));
                                     }};
+
+                                    // FooBar => fb
+                                    String lowerCase = aliasName.replaceAll("[^A-Z]", "").toLowerCase();
+                                    if (!lowerCase.isBlank()) {
+                                        strings.add(lowerCase);
+                                    }
 
                                     for (String string : strings) {
                                         completionResultSet.addElement(LookupElementBuilder.create(string).withIcon(Symfony2Icons.DOCTRINE));
