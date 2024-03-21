@@ -43,7 +43,6 @@ public class ObjectRepositoryTypeProviderTest extends SymfonyLightCodeInsightFix
                 "$em->getRepository(\\Foo\\Bar::class)->b<caret>ar();",
             PlatformPatterns.psiElement(Method.class).withName("bar")
         );
-
     }
 
     /**
@@ -56,6 +55,55 @@ public class ObjectRepositoryTypeProviderTest extends SymfonyLightCodeInsightFix
                 "/** @var \\Doctrine\\Common\\Persistence\\ObjectManager $em */\n" +
                 "$em->getRepository(\\Foo\\Bar::class)->b<caret>ar();",
             result
+        );
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryTypeProvider
+     */
+    public void testGetRepositoryResolveByReturnTypeMethod() {
+        assertPhpReferenceResolveTo(PhpFileType.INSTANCE,
+                "<?php" +
+                        "/** @var \\Foo\\BarController $cont */\n" +
+                        "$cont->getRepo('\\Foo\\Bar')->b<caret>ar();",
+                PlatformPatterns.psiElement(Method.class).withName("bar")
+        );
+
+        assertPhpReferenceSignatureContains(PhpFileType.INSTANCE,
+                "<?php" +
+                        "/** @var \\Foo\\BarController $cont */\n" +
+                        "$cont->getRepo('\\Foo\\Bar')->b<caret>ar();",
+                "#M#" + '\u0151' + "#M#C\\Foo\\BarController.getRepo" + '\u0185' + "\\Foo\\Bar.bar"
+        );
+
+        assertPhpReferenceResolveTo(PhpFileType.INSTANCE,
+                "<?php" +
+                        "/** @var \\Foo\\BarController $cont */\n" +
+                        "$cont->getRepo(\\Foo\\Bar::class)->b<caret>ar();",
+                PlatformPatterns.psiElement(Method.class).withName("bar")
+        );
+
+    }
+
+    public void testGetRepositoryNotResolveByWrongMethod() {
+        assertPhpReferenceNotResolveTo(PhpFileType.INSTANCE,
+                "<?php" +
+                        "/** @var \\Foo\\BarController $cont */\n" +
+                        "$cont->getBoo(\\Foo\\Bar::class)->b<caret>ar();",
+                PlatformPatterns.psiElement(Method.class).withName("bar")
+        );
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryTypeProvider
+     */
+    public void testGetRepositoryResolveByReturnTypeMethodApiClassConstantCompatibility() {
+        String result = "#M#" + '\u0151' + "#M#C\\Foo\\BarController.getRepo" + '\u0185' + "#K#C\\Foo\\Bar.class.bar";
+
+        assertPhpReferenceSignatureContains(PhpFileType.INSTANCE, "<?php" +
+                        "/** @var \\Foo\\BarController $cont */\n" +
+                        "$cont->getRepo(\\Foo\\Bar::class)->b<caret>ar();",
+                result
         );
     }
 

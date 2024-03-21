@@ -4,10 +4,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.lang.psi.elements.Method;
-import com.jetbrains.php.lang.psi.elements.MethodReference;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
+import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import com.jetbrains.php.lang.psi.resolve.types.PhpTypeProvider4;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
@@ -31,6 +28,8 @@ public class ObjectRepositoryTypeProvider implements PhpTypeProvider4 {
         new MethodMatcher.CallToSignature("\\Doctrine\\Persistence\\ObjectManager", "getRepository"),
     };
 
+    private static String repositoryClass = "\\Doctrine\\Common\\Persistence\\ObjectRepository";
+
     final public static char TRIM_KEY = '\u0185';
 
     @Override
@@ -45,10 +44,9 @@ public class ObjectRepositoryTypeProvider implements PhpTypeProvider4 {
             return null;
         }
 
-        if(!(e instanceof MethodReference) || !PhpElementsUtil.isMethodWithFirstStringOrFieldReference(e, "getRepository")) {
+        if(!(e instanceof MethodReference)) {
             return null;
         }
-
 
         String refSignature = ((MethodReference)e).getSignature();
         if(StringUtil.isEmpty(refSignature)) {
@@ -88,7 +86,13 @@ public class ObjectRepositoryTypeProvider implements PhpTypeProvider4 {
             return phpNamedElementCollections;
         }
 
-        if (!PhpElementsUtil.isMethodInstanceOf((Method) phpNamedElement, GET_REPOSITORIES_SIGNATURES)) {
+        PhpReturnType returnType = ((Method) phpNamedElement).getReturnType();
+        String returnTypeName = returnType == null ? null : returnType.getType().toString();
+
+        boolean isMethod = PhpElementsUtil.isMethodInstanceOf((Method) phpNamedElement, GET_REPOSITORIES_SIGNATURES);
+        boolean isReturnType = returnType != null && PhpElementsUtil.isInstanceOf(project, returnTypeName, repositoryClass);
+
+        if (!isMethod && !isReturnType) {
             return phpNamedElementCollections;
         }
 
