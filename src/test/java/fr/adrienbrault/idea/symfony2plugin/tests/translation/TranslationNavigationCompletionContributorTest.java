@@ -167,4 +167,44 @@ public class TranslationNavigationCompletionContributorTest extends SymfonyLight
             PlatformPatterns.psiElement()
         );
     }
+
+    public void testThatPhpTranslatableMessageViaTFunctionKeyProvidesCompletion() {
+        assertCompletionContains("test.php", "<?php\n" +
+                "use function Symfony\\Component\\Translation\\t;\n" +
+                "new \\Symfony\\Component\\Translation\\TranslatableMessage('<caret>', [], 'symfony');",
+            "symfony.great"
+        );
+
+        assertCompletionContains("test.php", "<?php\n" +
+                "use function Symfony\\Component\\Translation\\t;\n" +
+                "t('<caret>', domain: 'symfony');",
+            "symfony.great"
+        );
+
+        assertCompletionContains("test.php", "<?php\n" +
+                "use function Symfony\\Component\\Translation\\t;\n" +
+                "t('<caret>');",
+            "symfony_message"
+        );
+    }
+
+    public void testThatPhpTranslatableMessageViaTFunctionKeyProvidesNavigation() {
+        assertNavigationMatch("test.php", "<?php\n" +
+                "use function Symfony\\Component\\Translation\\t;\n" +
+                "t('symfony.gr<caret>eat', [], 'symfony');",
+            PlatformPatterns.psiElement()
+        );
+
+        assertNavigationMatch("test.php", "<?php\n" +
+                "use function Symfony\\Component\\Translation\\t;\n" +
+                "t('symfony.gr<caret>eat', domain: 'symfony');",
+            PlatformPatterns.psiElement()
+        );
+
+        assertNavigationMatch("test.php", "<?php\n" +
+                "use function Symfony\\Component\\Translation\\t;\n" +
+                "t('symfony<caret>_message');",
+            PlatformPatterns.psiElement()
+        );
+    }
 }

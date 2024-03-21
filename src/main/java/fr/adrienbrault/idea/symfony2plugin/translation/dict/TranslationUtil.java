@@ -13,9 +13,7 @@ import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.Consumer;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.lang.psi.PhpFile;
-import com.jetbrains.php.lang.psi.elements.Field;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProvider;
 import fr.adrienbrault.idea.symfony2plugin.extension.TranslatorProviderDict;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TranslationStubIndex;
@@ -409,6 +407,17 @@ public class TranslationUtil {
 
         return placeholder;
     }
+
+    public static boolean isFunctionReferenceTranslationTFunction(@NotNull FunctionReference functionReference) {
+        return "\\Symfony\\Component\\Translation\\t".equals(functionReference.getFQN());
+    }
+
+    public static boolean isTranslationReference(@NotNull ParameterListOwner psiElement) {
+        return (psiElement instanceof MethodReference methodReference && PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, TranslationUtil.PHP_TRANSLATION_SIGNATURES))
+            || (psiElement instanceof NewExpression newExpression && PhpElementsUtil.isNewExpressionPhpClassWithInstance(newExpression, TranslationUtil.PHP_TRANSLATION_TRANSLATABLE_MESSAGE))
+            || (psiElement instanceof FunctionReference functionReference && TranslationUtil.isFunctionReferenceTranslationTFunction(functionReference));
+    }
+
 
     @NotNull
     private static TranslatorProvider[] getTranslationProviders() {

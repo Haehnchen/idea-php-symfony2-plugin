@@ -657,6 +657,21 @@ public class PhpElementsUtil {
             .withLanguage(PhpLanguage.INSTANCE);
     }
 
+    static public PsiElementPattern.Capture<PsiElement> getParameterInsideFunctionReferencePattern() {
+        return PlatformPatterns
+            .psiElement()
+            .withParent(
+                PlatformPatterns.psiElement(StringLiteralExpression.class)
+                    .withParent(
+                        PlatformPatterns.psiElement(ParameterList.class)
+                            .withParent(
+                                PlatformPatterns.psiElement(FunctionReference.class)
+                            )
+                    )
+            )
+            .withLanguage(PhpLanguage.INSTANCE);
+    }
+
     /**
      * class "Foo" extends
      */

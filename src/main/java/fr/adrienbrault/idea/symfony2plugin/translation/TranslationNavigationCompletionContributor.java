@@ -7,10 +7,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
-import com.jetbrains.php.lang.psi.elements.MethodReference;
-import com.jetbrains.php.lang.psi.elements.NewExpression;
-import com.jetbrains.php.lang.psi.elements.ParameterList;
-import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -27,12 +24,17 @@ public class TranslationNavigationCompletionContributor {
     public static class Completion extends CompletionContributor {
         public Completion() {
             // $this->translator->trans('<caret>', [], '<caret>');
-            extend(CompletionType.BASIC, PlatformPatterns.or(PhpElementsUtil.getParameterInsideMethodReferencePattern(), PhpElementsUtil.getParameterInsideNewExpressionPattern()), new CompletionProvider<>() {
+            // new TranslatableMessage('<caret>', [], '<caret>');
+            // t('<caret>', [], '<caret>');
+            extend(CompletionType.BASIC, PlatformPatterns.or(
+                PhpElementsUtil.getParameterInsideMethodReferencePattern(),
+                PhpElementsUtil.getParameterInsideNewExpressionPattern(),
+                PhpElementsUtil.getParameterInsideFunctionReferencePattern()
+            ), new CompletionProvider<>() {
                 @Override
                 protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
                     PsiElement psiElement = parameters.getOriginalPosition();
-
-                    if (!(psiElement.getParent() instanceof StringLiteralExpression stringLiteralExpression)) {
+                    if (psiElement == null || !(psiElement.getParent() instanceof StringLiteralExpression stringLiteralExpression)) {
                         return;
                     }
 
@@ -51,7 +53,11 @@ public class TranslationNavigationCompletionContributor {
     public static class GotoDeclaration implements GotoDeclarationHandler {
         @Override
         public PsiElement @Nullable [] getGotoDeclarationTargets(@Nullable PsiElement sourceElement, int offset, Editor editor) {
-            if (sourceElement != null && sourceElement.getParent() instanceof StringLiteralExpression stringLiteralExpression && (PhpElementsUtil.getParameterInsideMethodReferencePattern().accepts(sourceElement) || PhpElementsUtil.getParameterInsideNewExpressionPattern().accepts(sourceElement))) {
+            if (sourceElement != null && sourceElement.getParent() instanceof StringLiteralExpression stringLiteralExpression && (
+                PhpElementsUtil.getParameterInsideMethodReferencePattern().accepts(sourceElement)
+                    || PhpElementsUtil.getParameterInsideNewExpressionPattern().accepts(sourceElement)
+                    || PhpElementsUtil.getParameterInsideFunctionReferencePattern().accepts(sourceElement)
+            )) {
                 Collection<PsiElement> psiElements = new ArrayList<>();
 
                 Project project = sourceElement.getProject();
@@ -74,16 +80,15 @@ public class TranslationNavigationCompletionContributor {
             return;
         }
 
-        PsiElement methodReferenceOrNewExpression = parameterList.getContext();
+        if (!(parameterList.getContext() instanceof ParameterListOwner parameterListOwner)) {
+            return;
+        };
 
-        if (!(
-            (methodReferenceOrNewExpression instanceof MethodReference && PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) methodReferenceOrNewExpression, TranslationUtil.PHP_TRANSLATION_SIGNATURES)) ||
-                (methodReferenceOrNewExpression instanceof NewExpression && PhpElementsUtil.isNewExpressionPhpClassWithInstance((NewExpression) methodReferenceOrNewExpression, TranslationUtil.PHP_TRANSLATION_TRANSLATABLE_MESSAGE)))
-        ) {
+        if (!TranslationUtil.isTranslationReference(parameterListOwner)) {
             return;
         }
 
-        int domainParameter = PhpTranslationDomainInspection.getDomainParameter(methodReferenceOrNewExpression);
+        int domainParameter = PhpTranslationDomainInspection.getDomainParameter(parameterListOwner);
 
         if (PsiElementUtils.isCurrentParameter(psiElement, "domain", domainParameter)) {
             domain.accept(psiElement);
