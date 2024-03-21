@@ -21,6 +21,16 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2023.1.266
+* [#2301](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2301) Support translation for "Symfony\Component\Translation\t" (Daniel Espendiller)
+* Replace deprecated usages (Daniel Espendiller)
+* Support querybuilder alias completion for Doctrine joins out of class constant (Daniel Espendiller)
+* [paid] Add Doctrine inspection for "OneToMany mapping requires the 'mappedBy' attribute" (Daniel Espendiller)
+* Support readonly class scope on property service intention (Daniel Espendiller)
+* Fix property service selecting upvote for known method (Daniel Espendiller)
+* Fix nullable to unknown route targets of yaml files: "Argument for @NotNull parameter 'element' of RelatedPopupGotoLineMarker$PopupGotoRelatedItem" (Daniel Espendiller)
+* Fix "Argument for @NotNull parameter 'formReference'" (Daniel Espendiller)
+
 ## 2023.1.265
 * Workaround to remove duplicate element for querybuilder after dot, for parameters which provide injected languages on some parameters from PhpStorm itself (Daniel Espendiller)
 * Limit supported version to 2023.x / 233 api level (Daniel Espendiller)
