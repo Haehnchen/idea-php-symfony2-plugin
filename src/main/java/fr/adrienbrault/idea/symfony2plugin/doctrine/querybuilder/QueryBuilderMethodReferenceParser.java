@@ -54,7 +54,7 @@ public class QueryBuilderMethodReferenceParser {
 
         // doctrine needs valid root with an alias, try to find one in method references or scope
         Map<String, String> map = this.findRootDefinition(methodReferences);
-        if(map.size() > 0) {
+        if(!map.isEmpty()) {
             Map.Entry<String, String> entry = map.entrySet().iterator().next();
             qb.addTable(entry.getKey(), entry.getValue());
         }
@@ -70,7 +70,7 @@ public class QueryBuilderMethodReferenceParser {
         }
 
         // first tableMap entry is root, we add several initial data
-        if(qb.getTableMap().size() > 0) {
+        if(!qb.getTableMap().isEmpty()) {
             Map.Entry<String, String> entry = qb.getTableMap().entrySet().iterator().next();
             String className = entry.getKey();
             PhpClass phpClass = PhpElementsUtil.getClassInterface(project, className);
@@ -219,7 +219,7 @@ public class QueryBuilderMethodReferenceParser {
      */
     @NotNull
     private Map<String, String> findRootDefinition(@NotNull Collection<MethodReference> methodReferences) {
-        if(methodReferences.size() == 0) {
+        if(methodReferences.isEmpty()) {
             return Collections.emptyMap();
         }
 

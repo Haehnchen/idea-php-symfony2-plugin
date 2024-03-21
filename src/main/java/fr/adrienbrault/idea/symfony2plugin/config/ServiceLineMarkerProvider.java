@@ -57,7 +57,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
     @Override
     public void collectSlowLineMarkers(@NotNull List<? extends PsiElement> psiElements, @NotNull Collection<? super LineMarkerInfo<?>> results) {
         // we need project element; so get it from first item
-        if(psiElements.size() == 0) {
+        if(psiElements.isEmpty()) {
             return;
         }
 
@@ -181,7 +181,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
             psiFiles.add(psiFile);
         }
 
-        if(psiFiles.size() == 0) {
+        if(psiFiles.isEmpty()) {
             return;
         }
 
@@ -209,7 +209,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
             psiFiles.add(file);
         }
 
-        if(psiFiles.size() == 0) {
+        if(psiFiles.isEmpty()) {
             return;
         }
 
@@ -267,7 +267,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
 
         // @TODO: validateBy alias
 
-        if(phpClasses.size() == 0) {
+        if(phpClasses.isEmpty()) {
             return;
         }
 
@@ -296,7 +296,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
             PhpElementsUtil.getClassesInterface(project, fqn.substring(0, fqn.length() - "Validator".length()))
         );
 
-        if(phpClasses.size() == 0) {
+        if(phpClasses.isEmpty()) {
             return;
         }
 

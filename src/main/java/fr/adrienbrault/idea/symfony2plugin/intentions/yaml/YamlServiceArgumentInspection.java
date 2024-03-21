@@ -60,7 +60,7 @@ public class YamlServiceArgumentInspection extends LocalInspectionTool {
                             getLazyServiceCollector(problemsHolder.getProject())
                         );
 
-                        if (yamlMissingArgumentTypes.size() > 0) {
+                        if (!yamlMissingArgumentTypes.isEmpty()) {
                             problemsHolder.registerProblem(yamlKeyValue.getFirstChild(), "Missing argument", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, new YamlArgumentQuickfix());
                         }
                     }

@@ -96,7 +96,7 @@ public class TranslationKeyIntentionAndQuickFixAction extends IntentionAndQuickF
             }
         }
 
-        if(files.size() == 0) {
+        if(files.isEmpty()) {
             IdeHelper.showErrorHintIfAvailable(editor, "Ops, no domain file found");
             return;
         }

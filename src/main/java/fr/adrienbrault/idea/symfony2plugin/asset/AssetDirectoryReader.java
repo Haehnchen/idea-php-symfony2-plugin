@@ -190,7 +190,7 @@ public class AssetDirectoryReader {
         Collection<VirtualFile> files = new HashSet<>();
 
         String pathName = matcher.group(1);
-        String fileExtension = matcher.group(2).length() > 0 ? matcher.group(2) : null;
+        String fileExtension = !matcher.group(2).isEmpty() ? matcher.group(2) : null;
 
         pathName = StringUtils.stripEnd(pathName, "/");
 
@@ -218,7 +218,7 @@ public class AssetDirectoryReader {
             return false;
         }
 
-        if(filterExtension.size() == 0) {
+        if(filterExtension.isEmpty()) {
             return true;
         }
 

@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class FormVarsResolver implements TwigTypeResolver {
     public void resolve(Collection<TwigTypeContainer> targets, Collection<TwigTypeContainer> previousElement, String typeName, Collection<List<TwigTypeContainer>> previousElements, @Nullable Collection<PsiVariable> psiVariables) {
-        if(!"vars".equals(typeName) || previousElements.size() == 0) {
+        if(!"vars".equals(typeName) || previousElements.isEmpty()) {
             return;
         }
 

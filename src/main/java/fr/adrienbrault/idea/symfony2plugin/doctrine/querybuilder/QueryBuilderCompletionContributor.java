@@ -501,7 +501,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
             // foo_bar => fb
             List<String> starting = new ArrayList<>();
             for (String s : underscore.split("_")) {
-                if(s.length() > 0) {
+                if(!s.isEmpty()) {
                     starting.add(s.substring(0, 1));
                 }
             }

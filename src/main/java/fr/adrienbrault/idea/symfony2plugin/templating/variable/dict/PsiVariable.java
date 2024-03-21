@@ -41,7 +41,7 @@ public class PsiVariable {
 
     @Nullable
     public PsiElement getElement() {
-        if (psiElements.size() > 0) {
+        if (!psiElements.isEmpty()) {
             return psiElements.iterator().next();
         }
 

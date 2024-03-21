@@ -47,7 +47,7 @@ public class YamlQuotedEscapedInspection extends LocalInspectionTool {
                         text = element.getText();
                     }
 
-                    if (text.length() > 1 || (parentIsErrorAndHasPreviousElement(element) && text.length() >= 1)) {
+                    if (text.length() > 1 || (parentIsErrorAndHasPreviousElement(element) && !text.isEmpty())) {
                         String startChar = text.substring(0, 1);
                         if (startChar.equals("@") || startChar.equals("`") || startChar.equals("|") || startChar.equals(">")) {
                             holder.registerProblem(element, String.format("Deprecated usage of '%s' at the beginning of unquoted string", startChar), ProblemHighlightType.WEAK_WARNING);

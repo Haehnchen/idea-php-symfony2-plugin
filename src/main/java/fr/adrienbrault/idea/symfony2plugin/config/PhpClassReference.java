@@ -99,7 +99,7 @@ public class PhpClassReference extends PsiPolyVariantReferenceBase<PsiElement> {
         if(this.useInterfaces) {
             for (String name : phpIndex.getAllInterfaceNames()) {
 
-                if(this.classFQN.length() > 0 && !name.toLowerCase().contains(this.classFQN.toLowerCase())) {
+                if(!this.classFQN.isEmpty() && !name.toLowerCase().contains(this.classFQN.toLowerCase())) {
                     continue;
                 }
 

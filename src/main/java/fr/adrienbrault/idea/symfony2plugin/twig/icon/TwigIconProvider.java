@@ -68,7 +68,7 @@ public class TwigIconProvider extends IconProvider {
     }
 
     private boolean hasController(@NotNull TwigFile twigFile) {
-        return TwigUtil.findTwigFileController(twigFile).size() > 0
-            || TwigUtil.getTwigFileMethodUsageOnIndex(twigFile).size() > 0;
+        return !TwigUtil.findTwigFileController(twigFile).isEmpty()
+            || !TwigUtil.getTwigFileMethodUsageOnIndex(twigFile).isEmpty();
     }
 }

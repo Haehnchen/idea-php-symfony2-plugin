@@ -706,7 +706,7 @@ public class PhpElementsUtil {
     @Nullable
     static public String getMethodReturnAsString(@NotNull PhpClass phpClass, @NotNull String methodName) {
         final Collection<String> values = getMethodReturnAsStrings(phpClass, methodName);
-        if(values.size() == 0) {
+        if(values.isEmpty()) {
             return null;
         }
 
@@ -765,7 +765,7 @@ public class PhpElementsUtil {
     @Nullable
     static public PhpClass getClassInterface(Project project, @NotNull String className) {
         Collection<PhpClass> phpClasses = PhpIndex.getInstance(project).getAnyByFQN(className);
-        return phpClasses.size() == 0 ? null : phpClasses.iterator().next();
+        return phpClasses.isEmpty() ? null : phpClasses.iterator().next();
     }
 
     /**
@@ -1326,7 +1326,7 @@ public class PhpElementsUtil {
     @Deprecated
     public static PhpClass getNewExpressionPhpClass(@NotNull NewExpression newExpression) {
         Collection<PhpClass> newExpressionPhpClasses = getNewExpressionPhpClasses(newExpression);
-        if (newExpressionPhpClasses.size() > 0) {
+        if (!newExpressionPhpClasses.isEmpty()) {
             return newExpressionPhpClasses.iterator().next();
         }
 

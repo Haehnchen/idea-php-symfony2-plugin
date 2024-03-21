@@ -118,7 +118,7 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
             }
 
             // fallback to form
-            if(formTypeNames.size() == 0) {
+            if(formTypeNames.isEmpty()) {
                 formTypeNames.add("form"); // old Symfony systems
                 formTypeNames.add("Symfony\\Component\\Form\\Extension\\Core\\Type\\FormType");
             }

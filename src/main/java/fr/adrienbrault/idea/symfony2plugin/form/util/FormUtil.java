@@ -294,7 +294,7 @@ public class FormUtil {
         for(YAMLKeyValue yamlServiceKeyValue : YamlHelper.getQualifiedKeyValuesInFile(yamlFile, "services")) {
             String serviceName = yamlServiceKeyValue.getName();
             Set<String> serviceTagMap = YamlHelper.collectServiceTags(yamlServiceKeyValue);
-            if(serviceTagMap.size() > 0) {
+            if(!serviceTagMap.isEmpty()) {
                 map.put(serviceName, serviceTagMap);
             }
         }
@@ -336,7 +336,7 @@ public class FormUtil {
                                 if(serviceNameId != null) {
 
                                     Set<String> serviceTags = getTags(serviceTag);
-                                    if(serviceTags.size() > 0) {
+                                    if(!serviceTags.isEmpty()) {
                                         map.put(serviceNameId, serviceTags);
                                     }
                                 }
@@ -774,7 +774,7 @@ public class FormUtil {
         } else if (phpClass != null && phpClass.isEnum()) {
             typeClass = "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\EnumType";
             options.put("class", phpClass.getFQN());
-        } else if (phpClass != null && DoctrineMetadataUtil.findMetadataFiles(project, StringUtils.stripStart(phpClass.getFQN(), "\\")).size() > 0) {
+        } else if (phpClass != null && !DoctrineMetadataUtil.findMetadataFiles(project, StringUtils.stripStart(phpClass.getFQN(), "\\")).isEmpty()) {
             typeClass = "\\Symfony\\Bridge\\Doctrine\\Form\\Type\\EntityType";
             options.put("class", phpClass.getFQN());
         } else if (phpType.isConvertibleFrom(project, PhpType.from(PhpType.INT))) {

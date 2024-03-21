@@ -37,7 +37,7 @@ public class FormClassConstantsLookupElement extends ClassConstantLookupElementA
             tailsText.add(getParent);
         }
 
-        if(tailsText.size() > 0) {
+        if(!tailsText.isEmpty()) {
             presentation.setTailText("(" + StringUtils.join(tailsText, ",") + ")", true);
         }
 

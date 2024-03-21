@@ -97,7 +97,7 @@ public class PhpTypeProviderUtil {
 
             // get psi element from signature
             Collection<? extends PhpNamedElement> signTypes = phpIndex.getBySignature(parameter, null, 0);
-            if(signTypes.size() == 0) {
+            if(signTypes.isEmpty()) {
                 return null;
             }
 

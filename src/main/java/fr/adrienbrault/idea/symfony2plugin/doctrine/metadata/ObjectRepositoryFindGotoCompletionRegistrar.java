@@ -58,7 +58,7 @@ public class ObjectRepositoryFindGotoCompletionRegistrar implements GotoCompleti
 
                 // resolve every direct repository instance $this->findBy()
                 // or direct repository instance $repository->findBy()
-                if(phpClasses.size() == 0) {
+                if(phpClasses.isEmpty()) {
                     PhpExpression classReference = methodReference.getClassReference();
                     if(classReference != null) {
                         PhpType type = classReference.getType();
@@ -75,7 +75,7 @@ public class ObjectRepositoryFindGotoCompletionRegistrar implements GotoCompleti
                     }
                 }
 
-                if(phpClasses.size() == 0) {
+                if(phpClasses.isEmpty()) {
                     return null;
                 }
 

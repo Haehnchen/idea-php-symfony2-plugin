@@ -45,12 +45,12 @@ public class MethodSignatureTypeProvider implements PhpTypeProvider4 {
         }
 
         Collection<MethodSignatureSetting> signatures = getSignatureSettings(e);
-        if(signatures.size() == 0) {
+        if(signatures.isEmpty()) {
             return null;
         }
 
         Collection<MethodSignatureSetting> matchedSignatures = getSignatureSetting(methodReference.getName(), signatures);
-        if(matchedSignatures.size() == 0) {
+        if(matchedSignatures.isEmpty()) {
             return null;
         }
 
@@ -138,7 +138,7 @@ public class MethodSignatureTypeProvider implements PhpTypeProvider4 {
 
         PhpIndex phpIndex = PhpIndex.getInstance(project);
         Collection<? extends PhpNamedElement> phpNamedElementCollections = PhpTypeProviderUtil.getTypeSignature(phpIndex, originalSignature);
-        if(phpNamedElementCollections.size() == 0) {
+        if(phpNamedElementCollections.isEmpty()) {
             return null;
         }
 
@@ -149,7 +149,7 @@ public class MethodSignatureTypeProvider implements PhpTypeProvider4 {
         }
 
         Collection<MethodSignatureSetting> signatures = getSignatureSettings(phpNamedElement);
-        if(signatures.size() == 0) {
+        if(signatures.isEmpty()) {
             return null;
         }
 

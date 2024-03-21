@@ -44,7 +44,7 @@ public class IncludeVariableCollector implements TwigFileVariableCollector {
         }
 
         Collection<VirtualFile> files = getImplements((TwigFile) psiFile);
-        if(files.size() == 0) {
+        if(files.isEmpty()) {
             return;
         }
 
@@ -112,7 +112,7 @@ public class IncludeVariableCollector implements TwigFileVariableCollector {
         }
 
         // we dont need to collect foreign file variables
-        if(!addContextVar && varAliasMap.size() == 0) {
+        if(!addContextVar && varAliasMap.isEmpty()) {
            return;
         }
 
@@ -124,7 +124,7 @@ public class IncludeVariableCollector implements TwigFileVariableCollector {
         }
 
         // add alias vars
-        if(varAliasMap.size() > 0) {
+        if(!varAliasMap.isEmpty()) {
             for(Map.Entry<String, String> entry: varAliasMap.entrySet()) {
                 if(stringPsiVariableHashMap.containsKey(entry.getValue())) {
                     variables.put(entry.getKey(), stringPsiVariableHashMap.get(entry.getValue()));

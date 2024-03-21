@@ -57,6 +57,6 @@ public class PhpIndexUtil {
             namespaceName = "\\" + namespaceName;
         }
 
-        return PhpIndex.getInstance(project).getChildNamespacesByParentName(namespaceName + "\\").size() > 0;
+        return !PhpIndex.getInstance(project).getChildNamespacesByParentName(namespaceName + "\\").isEmpty();
     }
 }

@@ -32,7 +32,7 @@ public class StringUtils {
     }
 
     public static String ucfirst(String chaine){
-        if(chaine.length() < 1) {
+        if(chaine.isEmpty()) {
             return chaine;
         }
         return chaine.substring(0, 1).toUpperCase() + chaine.substring(1);
@@ -40,7 +40,7 @@ public class StringUtils {
 
     @NotNull
     public static String lcfirst(@NotNull String input){
-        if(input.length() < 1) {
+        if(input.isEmpty()) {
             return input;
         }
         
