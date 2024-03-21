@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.action;
 
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
@@ -23,6 +24,7 @@ import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.form.TranslatorKeyExtractorDialog;
 import fr.adrienbrault.idea.symfony2plugin.translation.util.TranslationInsertUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
+import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.util.*;
@@ -36,6 +38,11 @@ public class TwigExtractLanguageAction extends DumbAwareAction {
 
     public TwigExtractLanguageAction() {
         super("Extract Translation", "Extract Translation Key", Symfony2Icons.SYMFONY);
+    }
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.BGT;
     }
 
     public void update(AnActionEvent event) {

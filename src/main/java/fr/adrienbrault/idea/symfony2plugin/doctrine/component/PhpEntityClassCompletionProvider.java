@@ -15,11 +15,11 @@ import com.jetbrains.php.util.PhpContractUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpClassReferenceInsertHandler;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
-import gnu.trove.THashSet;
 import one.util.streamex.StreamEx;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 
 /**
@@ -58,6 +58,6 @@ public class PhpEntityClassCompletionProvider extends CompletionProvider<Complet
      */
     public static Collection<PhpClass> filterByNamespace(@NotNull Collection<PhpClass> classes, @NotNull String namespaceFQN) {
         PhpContractUtil.assertFqn(namespaceFQN);
-        return StreamEx.of(classes).filter((aClass) -> PhpLangUtil.equalsClassNames(namespaceFQN, StringUtil.trimEnd(aClass.getNamespaceName(), "\\"))).toCollection(THashSet::new);
+        return StreamEx.of(classes).filter((aClass) -> PhpLangUtil.equalsClassNames(namespaceFQN, StringUtil.trimEnd(aClass.getNamespaceName(), "\\"))).toCollection(HashSet::new);
     }
 }

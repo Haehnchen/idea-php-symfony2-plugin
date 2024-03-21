@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.webDeployment.actions;
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -21,6 +22,10 @@ public class SymfonyWebDeploymentDownloadAction extends DumbAwareAction {
 
     public SymfonyWebDeploymentDownloadAction() {
         super("Download dev files", "Download Symfony files from dev folder", Symfony2Icons.SYMFONY);
+    }
+
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.BGT;
     }
 
     public void update(AnActionEvent e) {

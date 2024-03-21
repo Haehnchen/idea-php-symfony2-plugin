@@ -262,13 +262,13 @@ public class SymfonySymbolSearchAction extends GotoActionBase {
 
         @NotNull
         @Override
-        public String[] getNames(Project project, boolean includeNonProjectItems) {
+        public String @NotNull [] getNames(Project project, boolean includeNonProjectItems) {
             return new String[0];
         }
 
         @NotNull
         @Override
-        public NavigationItem[] getItemsByName(String name, String pattern, Project project, boolean includeNonProjectItems) {
+        public NavigationItem @NotNull [] getItemsByName(String name, String pattern, Project project, boolean includeNonProjectItems) {
             return new NavigationItem[0];
         }
     }
