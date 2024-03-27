@@ -599,8 +599,13 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             if (((prevElement instanceof PsiWhiteSpace))) prevElement = prevElement.getPrevSibling();
 
             if ((prevElement != null) && (prevElement.getNode().getElementType() == TwigTokenTypes.FILTER)) {
-                for(Map.Entry<String, TwigExtension> entry : TwigExtensionParser.getFilters(parameters.getPosition().getProject()).entrySet()) {
-                    resultSet.addElement(new TwigExtensionLookupElement(currElement.getProject(), entry.getKey(), entry.getValue()));
+                Project project = parameters.getPosition().getProject();
+
+                for(Map.Entry<String, TwigExtension> entry : TwigExtensionParser.getFilters(project).entrySet()) {
+                    TwigExtension twigExtension = entry.getValue();
+                    resultSet.addElement(new TwigExtensionLookupElement(currElement.getProject(), entry.getKey(), twigExtension));
+
+                    resultSet.addAllElements(getTypesFilters(project, entry.getKey(), entry.getValue()));
                 }
             }
         }
@@ -1587,6 +1592,22 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         }
 
         return items;
+    }
+
+    public static Collection<TwigExtensionLookupElement> getTypesFilters(@NotNull Project project, @NotNull String key, @NotNull TwigExtension twigExtension) {
+        Collection<TwigExtensionLookupElement> lookupElements = new ArrayList<>();
+
+        // add typed filters
+        for (String type : twigExtension.getTypes()) {
+            PhpClass phpClass = PhpElementsUtil.getClassInterface(project, type);
+            if (phpClass != null) {
+                for (Method method : phpClass.getMethods().stream().filter(m -> m.getAccess().isPublic() && !m.getName().startsWith("__")).toList()) {
+                    lookupElements.add(new TwigExtensionLookupElement(project, key + "." + method.getName(), twigExtension));
+                }
+            }
+        }
+
+        return lookupElements;
     }
 }
 

@@ -143,3 +143,8 @@ namespace Twig
         }
     }
 }
+
+namespace Twig\Extension {
+    interface ExtensionInterface {}
+    class AbstractExtension implements ExtensionInterface {}
+}

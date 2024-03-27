@@ -1,7 +1,10 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.util;
 
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+
+import java.util.Map;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -128,6 +131,23 @@ public class TwigExtensionParserTest extends SymfonyLightCodeInsightFixtureTestC
         assertEquals(
             "#Ffoo_test",
             TwigExtensionParser.getSimpleTest(getProject()).get("iterable_3").getSignature()
+        );
+    }
+
+    public void testExtensionAreCollectedForStringExtension() {
+        myFixture.copyFileToProject("StringExtension.php");
+
+        Map<String, TwigExtension> filters = TwigExtensionParser.getFilters(getProject());
+        TwigExtension twigExtension = filters.get("u");
+
+        assertEquals(
+            "#M#C\\Twig\\Extra\\String\\StringExtension.createUnicodeString",
+            twigExtension.getSignature()
+        );
+
+        assertContainsElements(
+            twigExtension.getTypes(),
+            "\\Symfony\\Component\\String\\UnicodeString"
         );
     }
 }

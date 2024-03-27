@@ -4,8 +4,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -20,6 +19,9 @@ public class TwigExtension {
     @NotNull
     final private Map<String, String> options = new HashMap<>();
 
+    @NotNull
+    private Collection<String> types = Collections.emptyList();
+
     public TwigExtension(@NotNull TwigExtensionParser.TwigExtensionType twigExtensionType) {
         this(twigExtensionType, null);
     }
@@ -32,6 +34,12 @@ public class TwigExtension {
     public TwigExtension(@NotNull TwigExtensionParser.TwigExtensionType twigExtensionType, @Nullable String signature, @NotNull Map<String, String> options) {
         this(twigExtensionType, signature);
         this.options.putAll(options);
+    }
+
+    public TwigExtension(@NotNull TwigExtensionParser.TwigExtensionType twigExtensionType, @Nullable String signature, @NotNull Map<String, String> options, @NotNull Collection<String> types) {
+        this(twigExtensionType, signature);
+        this.options.putAll(options);
+        this.types = new HashSet<>(types);
     }
 
     @NotNull
@@ -52,5 +60,10 @@ public class TwigExtension {
     @Nullable
     String getOption(String key) {
         return options.getOrDefault(key, null);
+    }
+
+    @NotNull
+    public Collection<String> getTypes() {
+        return types;
     }
 }
