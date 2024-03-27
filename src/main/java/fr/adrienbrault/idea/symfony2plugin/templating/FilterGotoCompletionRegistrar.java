@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.templating;
 
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.containers.ContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -46,8 +47,11 @@ public class FilterGotoCompletionRegistrar implements GotoCompletionRegistrar {
         public Collection<LookupElement> getLookupElements() {
             Collection<LookupElement> lookupElements = new ArrayList<>();
 
-            for (Map.Entry<String, TwigExtension> extension : TwigExtensionParser.getFilters(getProject()).entrySet()) {
-                lookupElements.add(new TwigExtensionLookupElement(getProject(), extension.getKey(), extension.getValue()));
+            Project project = getProject();
+            for (Map.Entry<String, TwigExtension> entry : TwigExtensionParser.getFilters(project).entrySet()) {
+                lookupElements.add(new TwigExtensionLookupElement(project, entry.getKey(), entry.getValue()));
+
+                lookupElements.addAll(TwigTemplateCompletionContributor.getTypesFilters(project, entry.getKey(), entry.getValue()));
             }
 
             return lookupElements;

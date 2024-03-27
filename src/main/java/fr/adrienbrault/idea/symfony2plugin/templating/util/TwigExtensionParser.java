@@ -332,7 +332,15 @@ public class TwigExtensionParser  {
                             options = new HashMap<>();
                         }
 
-                        filters.put(funcName, new TwigExtension(TwigExtensionType.FILTER, signature, options));
+                        Collection<String> typed = new HashSet<>();
+                        Project project = method.getProject();
+                        for (PhpNamedElement phpNamedElement : PhpElementsUtil.getPsiElementsBySignature(project, signature)) {
+                            if (phpNamedElement instanceof Function) {
+                                typed.addAll(PhpElementsUtil.getClassFromPhpTypeSet(project, phpNamedElement.getType().getTypes()).stream().map(PhpNamedElement::getFQN).toList());
+                            }
+                        }
+
+                        filters.put(funcName, new TwigExtension(TwigExtensionType.FILTER, signature, options, typed));
                     }
                 }
 
