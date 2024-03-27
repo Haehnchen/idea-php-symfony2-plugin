@@ -60,10 +60,11 @@ public class EventAnnotationStubIndex extends FileBasedIndexExtension<String, Di
                     for (Field ownField : clazz.getOwnFields()) {
                         PhpDocComment docComment = ownField.getDocComment();
                         if (docComment != null) {
-                            PhpDocUtil.processTagElementsByName(docComment, null, docTag -> {
-                                visitPhpDocTag(docTag, map);
-                                return true;
-                            });
+                            PhpDocUtil.processTagElementsByPredicate(
+                                docComment,
+                                phpDocTag -> visitPhpDocTag(phpDocTag, map),
+                                phpDocTag -> true
+                            );
                         }
                     }
                 }

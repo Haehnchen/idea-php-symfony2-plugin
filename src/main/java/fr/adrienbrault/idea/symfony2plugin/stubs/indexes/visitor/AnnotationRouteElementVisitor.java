@@ -54,10 +54,7 @@ public class AnnotationRouteElementVisitor {
         for (Method method : phpClass.getOwnMethods()) {
             PhpDocComment docComment = method.getDocComment();
             if (docComment != null) {
-                PhpDocUtil.processTagElementsByName(docComment, null, docTag -> {
-                    visitPhpDocTag(docTag);
-                    return true;
-                });
+                PhpDocUtil.processTagElementsByPredicate(docComment, this::visitPhpDocTag, phpDocTag -> true);
             }
 
             PhpAttributesList childOfType = PsiTreeUtil.getChildOfType(method, PhpAttributesList.class);
