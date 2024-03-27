@@ -11,6 +11,7 @@ import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
 import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpCallInstruction;
 import com.jetbrains.php.lang.documentation.phpdoc.PhpDocUtil;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
+import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.stubs.indexes.PhpConstantNameIndex;
@@ -24,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -76,10 +78,11 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
                         PhpMethodVariableResolveUtil.TemplateRenderVisitor.processMethodAttributes(method, consumer);
                         PhpDocComment docComment = method.getDocComment();
                         if (docComment != null) {
-                            PhpDocUtil.processTagElementsByName(docComment, null, docTag -> {
-                                PhpMethodVariableResolveUtil.TemplateRenderVisitor.processDocTag(docTag, consumer);
-                                return true;
-                            });
+                            PhpDocUtil.processTagElementsByPredicate(
+                                docComment,
+                                docTag -> PhpMethodVariableResolveUtil.TemplateRenderVisitor.processDocTag(docTag, consumer),
+                                phpDocTag -> true
+                            );
                         }
                         processMethodReferences(consumer, methods, method);
                     }

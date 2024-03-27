@@ -145,22 +145,26 @@ public class DoctrineUtil {
 
     public static Collection<Pair<String, String>> extractAnnotations(@NotNull PhpClass phpClass, @NotNull PhpDocComment docComment) {
         Collection<Pair<String, String>> result = new ArrayList<>();
-        PhpDocUtil.processTagElementsByName(docComment, null, phpDocTag -> {
-            if (AnnotationBackportUtil.NON_ANNOTATION_TAGS.contains(phpDocTag.getName())) {
-                return true;
-            }
+        PhpDocUtil.processTagElementsByPredicate(
+            docComment,
+            phpDocTag -> {
+                if (AnnotationBackportUtil.NON_ANNOTATION_TAGS.contains(phpDocTag.getName())) {
+                    return;
+                }
 
-            Map<String, String> fileImports = AnnotationBackportUtil.getUseImportMap(phpDocTag);
-            if (fileImports.isEmpty()) {
-                return true;
-            }
+                Map<String, String> fileImports = AnnotationBackportUtil.getUseImportMap(phpDocTag);
+                if (fileImports.isEmpty()) {
+                    return;
+                }
 
-            String annotationFqnName = AnnotationBackportUtil.getClassNameReference(phpDocTag, fileImports);
-            if (ContainerUtil.exists(MODEL_CLASS_ANNOTATION, c -> c.equals(annotationFqnName))) {
-                result.add(Pair.create(phpClass.getPresentableFQN(), getAnnotationRepositoryClass(phpDocTag, phpClass)));
-            }
-            return true;
-        });
+                String annotationFqnName = AnnotationBackportUtil.getClassNameReference(phpDocTag, fileImports);
+                if (ContainerUtil.exists(MODEL_CLASS_ANNOTATION, c -> c.equals(annotationFqnName))) {
+                    result.add(Pair.create(phpClass.getPresentableFQN(), getAnnotationRepositoryClass(phpDocTag, phpClass)));
+                }
+            },
+            phpDocTag -> true
+        );
+
         return result;
     }
 
