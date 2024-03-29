@@ -1,56 +1,47 @@
 package fr.adrienbrault.idea.symfony2plugin.navigation;
 
-import com.intellij.navigation.ChooseByNameContributor;
+import com.intellij.navigation.ChooseByNameContributorEx;
 import com.intellij.navigation.NavigationItem;
 import com.intellij.openapi.project.Project;
-import com.intellij.util.ArrayUtil;
+import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.util.Processor;
+import com.intellij.util.indexing.FindSymbolParameters;
+import com.intellij.util.indexing.IdFilter;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyCommandUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyCommand;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class SymfonyCommandSymbolContributor implements ChooseByNameContributor {
+public class SymfonyCommandSymbolContributor implements ChooseByNameContributorEx {
 
-    @NotNull
     @Override
-    public String[] getNames(Project project, boolean b) {
-        if(!Symfony2ProjectComponent.isEnabled(project)) {
-            return new String[0];
+    public void processNames(@NotNull Processor<? super String> processor, @NotNull GlobalSearchScope scope, @Nullable IdFilter filter) {
+        Project project = scope.getProject();
+        if (!Symfony2ProjectComponent.isEnabled(project)) {
+            return;
         }
 
-        Set<String> routeNames = new HashSet<>();
         for (SymfonyCommand symfonyCommand : SymfonyCommandUtil.getCommands(project)) {
-            routeNames.add(symfonyCommand.getName());
+            processor.process(symfonyCommand.getName());
         }
-
-        return ArrayUtil.toStringArray(routeNames);
     }
 
-    @NotNull
     @Override
-    public NavigationItem[] getItemsByName(String name, String s2, Project project, boolean b) {
-        if(!Symfony2ProjectComponent.isEnabled(project)) {
-            return new NavigationItem[0];
+    public void processElementsWithName(@NotNull String name, @NotNull Processor<? super NavigationItem> processor, @NotNull FindSymbolParameters parameters) {
+        Project project = parameters.getProject();
+        if (!Symfony2ProjectComponent.isEnabled(project)) {
+            return;
         }
-
-        List<NavigationItem> navigationItems = new ArrayList<>();
 
         for (SymfonyCommand symfonyCommand : SymfonyCommandUtil.getCommands(project)) {
             if(symfonyCommand.getName().equals(name)) {
-                navigationItems.add(new NavigationItemEx(symfonyCommand.getPhpClass(), name, Symfony2Icons.SYMFONY, "Command"));
+                processor.process(NavigationItemExStateless.create(symfonyCommand.getPhpClass(), name, Symfony2Icons.SYMFONY, "Command", true));
             }
         }
-
-        return navigationItems.toArray(new NavigationItem[0]);
     }
-
 }
