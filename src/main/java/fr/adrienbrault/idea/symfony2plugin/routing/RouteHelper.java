@@ -149,13 +149,15 @@ public class RouteHelper {
     }
 
     /**
-     * "/foo/bar" => "/foo/{edit}"
+     * Reverse routing matching, find any "incomplete" string inside the route pattern
+     *
+     * - "foo/bar" => "/foo/bar"
+     * - "foo/12" => "/foo/{edit}"
+     * - "ar/12/foo" => "/car/{edit}/foobar"
      */
     @NotNull
-    public static PsiElement[] getMethodsForPathWithPlaceholderMatch(@NotNull Project project, @NotNull String path) {
+    public static PsiElement[] getMethodsForPathWithPlaceholderMatch(@NotNull Project project, @NotNull String searchPath) {
         Set<PsiElement> targets = new HashSet<>();
-
-        Pattern placeholderMatcher = null;
 
         for (Route route : RouteHelper.getAllRoutes(project).values()) {
             String routePath = route.getPath();
@@ -163,32 +165,44 @@ public class RouteHelper {
                 continue;
             }
 
-            if (path.equalsIgnoreCase(routePath)) {
+            if (routePath.contains(searchPath)) {
                 targets.addAll(Arrays.asList(getMethodsOnControllerShortcut(project, route.getController())));
+                continue;
             }
 
-            if (placeholderMatcher == null) {
-                placeholderMatcher = Pattern.compile("\\{[\\w-]+}");
+            // String string = "|"; visibility debug
+            String string = Character.toString((char) 156);
+
+            String routePathPlaceholderNeutral = routePath.replaceAll("\\{([^}]*)}", string);
+            String match = null;
+            int startIndex = -1;
+
+            // find first common non pattern string, string on at 2 for no fetching all; right to left
+            for (int i = 2; i < searchPath.length(); i++) {
+                String text = searchPath.substring(0, searchPath.length() - i);
+
+                int i1 = routePathPlaceholderNeutral.indexOf(text);
+                if (i1 >= 0) {
+                    match = routePathPlaceholderNeutral.substring(i1);
+                    startIndex = text.length();
+                    break;
+                }
             }
 
-            Matcher matcher = placeholderMatcher.matcher(routePath);
-
-            // /foo/{foo} => // \Q/foo/\E{foo}
-            StringBuilder quoteWrapped = new StringBuilder();
-            int lastRegMatch = 0;
-            while (matcher.find()) {
-                int start = matcher.start();
-                quoteWrapped.append(Pattern.quote(routePath.substring(lastRegMatch, start))).append("[\\w-]+");
-                lastRegMatch = matcher.end();
+            if (match == null) {
+                continue;
             }
 
-            String substring = routePath.substring(lastRegMatch);
-            if (!substring.isEmpty()) {
-                quoteWrapped.append(Pattern.quote(substring));
-            }
+            // find a pattern match: left to right
+            int endIndex = match.length();
+            for (int i = startIndex + 1; i <= endIndex; i++) {
+                String substring = match.substring(0, i);
 
-            if (Pattern.matches(quoteWrapped.toString(), path)) {
-                targets.addAll(Arrays.asList(getMethodsOnControllerShortcut(project, route.getController())));
+                String regex = substring.replace(string, "[\\w-]+");
+                Matcher matcher = Pattern.compile(regex).matcher(searchPath);
+                if (matcher.matches()) {
+                    targets.addAll(Arrays.asList(getMethodsOnControllerShortcut(project, route.getController())));
+                }
             }
         }
 

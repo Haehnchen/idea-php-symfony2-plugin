@@ -64,6 +64,13 @@ namespace MyFooBarBundle\Controller
         public function fooAction()
         {
         }
+
+        /**
+         * @Route("/resolve/me/{id<\d>}/foobar/item", name="my_foo_resolve_me")
+         */
+        public function resolveMe()
+        {
+        }
     }
 
     class InvokeController

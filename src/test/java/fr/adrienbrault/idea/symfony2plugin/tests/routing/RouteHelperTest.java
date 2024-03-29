@@ -519,6 +519,14 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         PsiElement[] targets2 = RouteHelper.getMethodsForPathWithPlaceholderMatch(getProject(), "/foo_bar/foobar/edit/foo/foo/foo");
         assertTrue(Arrays.stream(targets2).anyMatch(psiElement -> psiElement instanceof Method && "indexFooBarEditAction".equals(((Method) psiElement).getName())));
+
+        // /foobar/edit/{id}/foo/{foo}
+        PsiElement[] targets3 = RouteHelper.getMethodsForPathWithPlaceholderMatch(getProject(), "esolve/me/12/foo");
+        assertTrue(Arrays.stream(targets3).anyMatch(psiElement -> psiElement instanceof Method && "resolveMe".equals(((Method) psiElement).getName())));
+
+        PsiElement[] targets4 = RouteHelper.getMethodsForPathWithPlaceholderMatch(getProject(), "/edit/");
+        assertTrue(Arrays.stream(targets4).anyMatch(psiElement -> psiElement instanceof Method && "fooAction".equals(((Method) psiElement).getName())));
+        assertTrue(Arrays.stream(targets4).anyMatch(psiElement -> psiElement instanceof Method && "indexFooBarEditAction".equals(((Method) psiElement).getName())));
     }
 
     /**
