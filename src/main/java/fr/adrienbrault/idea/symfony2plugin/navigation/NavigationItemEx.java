@@ -80,13 +80,11 @@ public class NavigationItemEx implements NavigationItem, ItemPresentation {
     @Nullable
     @Override
     public String getLocationString() {
-
         if(!this.appendBundleLocation) {
             return this.locationString;
         }
 
         PsiFile psiFile = psiElement.getContainingFile();
-
         if(psiFile == null) {
             return this.locationString;
         }
