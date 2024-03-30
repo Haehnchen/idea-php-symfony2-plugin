@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.navigation;
 import com.intellij.ide.util.PsiNavigationSupport;
 import com.intellij.navigation.ItemPresentation;
 import com.intellij.navigation.NavigationItem;
+import com.intellij.openapi.util.NlsSafe;
 import com.intellij.pom.Navigatable;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -14,22 +15,24 @@ import javax.swing.*;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class NavigationItemExStateless implements NavigationItem, ItemPresentation {
+public class NavigationItemPresentableOverwrite implements NavigationItem, ItemPresentation {
 
     @NotNull
     private final PsiElement psiElement;
 
     @NotNull
-    private final String name;
+    private final String presentableText;
 
     @NotNull
     private final Icon icon;
 
     @NotNull
     private final String locationString;
+    private final String name;
 
-    private NavigationItemExStateless(@NotNull PsiElement psiElement, @NotNull String name, @NotNull Icon icon, @NotNull String locationString) {
+    private NavigationItemPresentableOverwrite(@NotNull PsiElement psiElement, @NotNull String presentableText, @NotNull Icon icon, @NotNull String locationString, @NotNull String name) {
         this.psiElement = psiElement;
+        this.presentableText = presentableText;
         this.name = name;
         this.icon = icon;
         this.locationString = locationString;
@@ -43,7 +46,22 @@ public class NavigationItemExStateless implements NavigationItem, ItemPresentati
     @Nullable
     @Override
     public ItemPresentation getPresentation() {
-        return this;
+        return new ItemPresentation() {
+            @Override
+            public @NlsSafe @NotNull String getPresentableText() {
+                return NavigationItemPresentableOverwrite.this.presentableText;
+            }
+
+            @Override
+            public @NlsSafe @NotNull String getLocationString() {
+                return NavigationItemPresentableOverwrite.this.locationString;
+            }
+
+            @Override
+            public @Nullable Icon getIcon(boolean unused) {
+                return NavigationItemPresentableOverwrite.this.getIcon(unused);
+            }
+        };
     }
 
     @Override
@@ -66,13 +84,12 @@ public class NavigationItemExStateless implements NavigationItem, ItemPresentati
 
     @Override
     public String toString() {
-        return this.name;
+        return this.presentableText;
     }
 
-    @Nullable
     @Override
-    public String getPresentableText() {
-        return name;
+    public @NotNull String getPresentableText() {
+        return presentableText;
     }
 
     @Override
@@ -86,30 +103,31 @@ public class NavigationItemExStateless implements NavigationItem, ItemPresentati
         return icon;
     }
 
-    public static NavigationItemExStateless create(@NotNull PsiElement psiElement, @NotNull String name, @NotNull Icon icon, @NotNull String locationString, boolean appendBundleLocation) {
+    public static NavigationItemPresentableOverwrite create(@NotNull PsiElement psiElement, @NotNull String presentableText, @NotNull Icon icon, @NotNull String locationString, boolean appendBundleLocation, @NotNull String name) {
         String locationPathString = locationString;
 
-        if (appendBundleLocation) {
+        if(appendBundleLocation) {
             PsiFile psiFile = psiElement.getContainingFile();
-            if (psiFile != null) {
+            if(psiFile != null) {
                 locationPathString = locationString + " " + psiFile.getName();
 
                 String bundleName = psiFile.getVirtualFile().getPath();
 
-                if (bundleName.contains("Bundle")) {
+                if(bundleName.contains("Bundle")) {
                     bundleName = bundleName.substring(0, bundleName.lastIndexOf("Bundle"));
-                    if (bundleName.length() > 1 && bundleName.contains("/")) {
+                    if(bundleName.length() > 1 && bundleName.contains("/")) {
                         locationPathString = locationPathString + " " + bundleName.substring(bundleName.lastIndexOf("/") + 1) + "::" + psiFile.getName();
                     }
                 }
             }
         }
 
-        return new NavigationItemExStateless(
+        return new NavigationItemPresentableOverwrite(
             psiElement,
-            name,
+            presentableText,
             icon,
-            locationPathString
+            locationPathString,
+            name
         );
     } 
 }
