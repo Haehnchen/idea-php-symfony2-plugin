@@ -56,7 +56,7 @@ public class RouteUrlMatcherSymbolContributor implements ChooseByNameContributor
 
             processor.process((NavigationItemPresentableOverwrite.create(
                 entry.getSecond(),
-                path,
+                route.getPathPresentable(),
                 Symfony2Icons.ROUTE,
                 "Symfony Route",
                 true,

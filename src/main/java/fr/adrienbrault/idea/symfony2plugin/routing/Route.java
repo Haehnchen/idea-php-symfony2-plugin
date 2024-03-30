@@ -118,6 +118,15 @@ public class Route implements RouteInterface {
         return path;
     }
 
+    /**
+     * Replace all special placeholder metadata to have just the variable
+     *
+     * - /{page3<\d+>!}/ => /{page3}/
+     */
+    public String getPathPresentable() {
+        return this.path.replaceAll("\\{!?(\\w+)[<[^}].*>]*}", "{$1}");
+    }
+
     @NotNull
     @Override
     public Collection<String> getMethods() {
