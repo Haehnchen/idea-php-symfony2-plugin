@@ -212,6 +212,11 @@ namespace AppBundle\My\Controller
         {
         }
 
+        #[Route('/blog/{page<\d+>?1}/{page1<\d+>?}/{page2<\d+>?}/{parameter_name?default_value}', name: "blog_home_the_special_placeholder_one")]
+        public function theSpecialPlaceholderOne()
+        {
+        }
+
         #[Route([
             'cs' => '/foobar/baz/{id}',
             'sk' => '/foobarbaz/bat/{id}',

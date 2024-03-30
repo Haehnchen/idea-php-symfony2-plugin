@@ -74,13 +74,36 @@ public class RouteTest extends Assert {
     }
 
     @Test
+    public void testPathVariablesForDefault2() {
+        StubIndexedRoute route = new StubIndexedRoute("foobar");
+        route.setPath("/foo/{!foo<.*>}/aaa{foobar<.*>}aaa/{page<\\d+>!1}/{page2<\\d+}>}/aaaa/{page3<\\{}d+}>}/");
+
+        Set<String> variables = new Route(route).getVariables();
+        assertEquals(5, variables.size());
+        assertTrue(variables.containsAll(Arrays.asList("foo", "foobar", "page", "page2", "page3")));
+    }
+
+    @Test
     public void testPathVariablesForWildcardInlineRequirements() {
         StubIndexedRoute route = new StubIndexedRoute("foobar");
-        route.setPath("/foo/{!foo<.*>}/aaa{foobar<.*>}aaa/{page<\\d+>}/{page2<\\d+}>}/aaaa/{page3<\\{}d+}>}/");
+        route.setPath("/foo/{!foo<.*>}/aaa{foobar<.*>}aaa/{page<\\d+>}/{page2<\\d+>}}/aaaa/{page3<\\d+>}/");
 
         Set<String> variables = new Route(route).getVariables();
         assertEquals(5, variables.size());
 
         assertTrue(variables.containsAll(Arrays.asList("foo", "foobar", "page", "page2", "page3")));
+    }
+
+    @Test
+    public void testPathPresentable() {
+        StubIndexedRoute route = new StubIndexedRoute("foobar");
+        route.setPath("/foo/{!foo<.*>}/aaa{foobar<.*>}aaa/{page<\\d+>}/{page2<\\d+>}}/aaaa/{page3<\\d+>}/");
+        Route route1 = new Route(route);
+        assertEquals("/foo/{foo}/aaa{foobar}aaa/{page}/{page2}}/aaaa/{page3}/", route1.getPathPresentable());
+
+        route = new StubIndexedRoute("foobar");
+        route.setPath("/blog/{page<\\d+>?1}/{page1<\\d+>?!car}/{page2<\\d+>?!1}/{parameter_name?default_value}");
+        Route route2 = new Route(route);
+        assertEquals("/blog/{page}/{page1}/{page2}/{parameter_name}", route2.getPathPresentable());
     }
 }
