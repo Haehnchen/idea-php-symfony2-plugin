@@ -50,8 +50,10 @@ public class ControllerIndex {
         String methodName;
         if(RouteHelper.isServiceController(shortcutName)) {
             // only "foo_bar:Method" is valid
-            serviceId = shortcutName.substring(0, shortcutName.lastIndexOf(":"));
-            methodName = shortcutName.substring(shortcutName.lastIndexOf(":") + 1);
+            String replace = shortcutName.replace("::", ":");
+
+            serviceId = replace.substring(0, replace.lastIndexOf(":"));
+            methodName = replace.substring(replace.lastIndexOf(":") + 1);
         } else if(RouteHelper.isServiceControllerInvoke(shortcutName)) {
             // only "foo_bar" is valid
             serviceId = shortcutName;
@@ -144,7 +146,7 @@ public class ControllerIndex {
         ContainerCollectionResolver.LazyServiceCollector collector = new ContainerCollectionResolver.LazyServiceCollector(project);
 
         Collection<ControllerAction> actions = new ArrayList<>();
-        for (String serviceName : ServiceRouteContainer.build(routes).getServiceNames()) {
+        for (String serviceName : ServiceRouteContainer.build(project, routes).getServiceNames()) {
             PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(project, serviceName, collector);
             if(phpClass == null) {
                 continue;
@@ -154,6 +156,7 @@ public class ControllerIndex {
             for(Method method : phpClass.getMethods()) {
                 if(method.getAccess().isPublic() && !method.getName().startsWith("__") && !method.getName().startsWith("set")) {
                     actions.add(new ControllerAction(serviceName + ":" + method.getName(), method));
+                    actions.add(new ControllerAction(serviceName + "::" + method.getName(), method));
                 }
             }
         }

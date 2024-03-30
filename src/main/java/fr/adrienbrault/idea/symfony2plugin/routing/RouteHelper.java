@@ -294,7 +294,6 @@ public class RouteHelper {
         controllerName = controllerName.replace("\\\\", "\\");
 
         if(controllerName.contains("::")) {
-
             // FooBundle\Controller\BarController::fooBarAction
             String className = controllerName.substring(0, controllerName.lastIndexOf("::"));
             String methodName = controllerName.substring(controllerName.lastIndexOf("::") + 2);
@@ -313,8 +312,14 @@ public class RouteHelper {
                 }
             }
 
-            return methods.toArray(new PsiElement[0]);
+            // web_profiler.controller.profiler::homeAction
+            // foo_service_bar::fooBar
+            ControllerAction controllerServiceAction = new ControllerIndex(project).getControllerActionOnService(controllerName);
+            if(controllerServiceAction != null) {
+                methods.add(controllerServiceAction.getMethod());
+            }
 
+            return methods.toArray(new PsiElement[0]);
         } else if(controllerName.contains(":")) {
             // AcmeDemoBundle:Demo:hello
             String[] split = controllerName.split(":");
@@ -330,7 +335,6 @@ public class RouteHelper {
             if(controllerServiceAction != null) {
                 return new PsiElement[] {controllerServiceAction.getMethod()};
             }
-
         } else if(PhpNameUtil.isValidNamespaceFullName(controllerName, true)) {
             // FooBundle\Controller\BarController (__invoke)
             Method invoke = PhpElementsUtil.getClassMethod(project, controllerName, "__invoke");
@@ -1164,11 +1168,11 @@ public class RouteHelper {
     }
 
     public static boolean isServiceController(@NotNull String shortcutName) {
-        return !shortcutName.contains("::") && shortcutName.contains(":") && shortcutName.split(":").length == 2;
+        return shortcutName.contains(":") && shortcutName.replace("::", ":").split(":").length == 2;
     }
 
     public static boolean isServiceControllerInvoke(@NotNull String shortcutName) {
-        return !shortcutName.contains("::") && !shortcutName.contains(":");
+        return !shortcutName.contains(":");
     }
 
     @NotNull
@@ -1178,21 +1182,20 @@ public class RouteHelper {
         ContainerUtil.addIfNotNull(routeNames, RouteHelper.convertMethodToRouteControllerName(method));
         ContainerUtil.addIfNotNull(routeNames, RouteHelper.convertMethodToRouteShortcutControllerName(method));
 
-        Map<String, Route> allRoutes = getAllRoutes(method.getProject());
+        Project project = method.getProject();
+        Map<String, Route> allRoutes = getAllRoutes(project);
         List<Route> routes = new ArrayList<>();
 
         // resolve indexed routes
         if(!routeNames.isEmpty()) {
             routes.addAll(allRoutes.values().stream()
                 .filter(route -> route.getController() != null && routeNames.contains(route.getController()))
-                .collect(Collectors.toList())
+                .toList()
             );
         }
 
         // search for services
-        routes.addAll(
-            ServiceRouteContainer.build(allRoutes).getMethodMatches(method)
-        );
+        routes.addAll(ServiceRouteContainer.build(project, allRoutes).getMethodMatches(method));
 
         return routes;
     }
