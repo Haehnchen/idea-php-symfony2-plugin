@@ -449,10 +449,25 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void testIsServiceController() {
         assertTrue(RouteHelper.isServiceController("Foo:foo"));
         assertTrue(RouteHelper.isServiceController("Foo\\Bar:foo"));
+        assertTrue(RouteHelper.isServiceController("Foo\\Bar::foo"));
+        assertTrue(RouteHelper.isServiceController("Foo::bar"));
+        assertTrue(RouteHelper.isServiceController("web_profiler.controller.profiler::homeAction"));
 
-        assertFalse(RouteHelper.isServiceController("Foo::bar"));
         assertFalse(RouteHelper.isServiceController("Foo"));
         assertFalse(RouteHelper.isServiceController("Foo:bar:foo"));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#isServiceControllerInvoke
+     */
+    public void testIsServiceControllerInvoke() {
+        assertTrue(RouteHelper.isServiceControllerInvoke("Foo"));
+        assertTrue(RouteHelper.isServiceControllerInvoke("Foo\\Bar"));
+        assertTrue(RouteHelper.isServiceControllerInvoke("Foo.bar"));
+
+        assertFalse(RouteHelper.isServiceControllerInvoke("Foo:foo"));
+        assertFalse(RouteHelper.isServiceControllerInvoke("Foo::foo"));
+        assertFalse(RouteHelper.isServiceControllerInvoke("Foo:bar:foo"));
     }
 
     /**
@@ -503,6 +518,9 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void testGetMethodsOnControllerShortcutForControllerAsService() {
         PsiElement[] targets = RouteHelper.getMethodsOnControllerShortcut(getProject(), "foobar_controller:indexAction");
         assertEquals("CarController", ((Method) targets[0]).getContainingClass().getName());
+
+        PsiElement[] targets2 = RouteHelper.getMethodsOnControllerShortcut(getProject(), "foobar_controller::indexAction");
+        assertEquals("CarController", ((Method) targets2[0]).getContainingClass().getName());
     }
 
     /**
