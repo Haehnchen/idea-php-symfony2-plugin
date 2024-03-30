@@ -47,6 +47,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
+import kotlin.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -156,57 +157,118 @@ public class RouteHelper {
      * - "ar/12/foo" => "/car/{edit}/foobar"
      */
     @NotNull
+    public static Collection<Pair<Route, PsiElement>> getMethodsForPathWithPlaceholderMatchRoutes(@NotNull Project project, @NotNull String searchPath) {
+        Collection<Pair<Route, PsiElement>> targets = new ArrayList<>();
+
+        getRoutesForPathWithPlaceholderMatch(project, searchPath)
+            .forEach(route -> targets.addAll(
+                    Arrays.stream(getMethodsOnControllerShortcut(project, route.getController()))
+                        .map(psiElement -> new Pair<>(route, psiElement))
+                        .toList()
+                )
+            );
+
+        return targets;
+    }
+
+    /**
+     * Reverse routing matching, find any "incomplete" string inside the route pattern
+     *
+     * - "foo/bar" => "/foo/bar"
+     * - "foo/12" => "/foo/{edit}"
+     * - "ar/12/foo" => "/car/{edit}/foobar"
+     */
+    @NotNull
     public static PsiElement[] getMethodsForPathWithPlaceholderMatch(@NotNull Project project, @NotNull String searchPath) {
-        Set<PsiElement> targets = new HashSet<>();
+        Collection<PsiElement> psiElements = new HashSet<>();
+        for (Pair<Route, PsiElement> entry : RouteHelper.getMethodsForPathWithPlaceholderMatchRoutes(project, searchPath)) {
+            psiElements.add(entry.getSecond());
+        }
 
-        for (Route route : RouteHelper.getAllRoutes(project).values()) {
-            String routePath = route.getPath();
-            if (routePath == null) {
-                continue;
-            }
+        return psiElements.toArray(new PsiElement[0]);
+    }
 
-            if (routePath.contains(searchPath)) {
-                targets.addAll(Arrays.asList(getMethodsOnControllerShortcut(project, route.getController())));
-                continue;
-            }
+    /**
+     * Reverse routing matching, find any "incomplete" string inside the route pattern
+     *
+     * - "foo/bar" => "/foo/bar"
+     * - "foo/12" => "/foo/{edit}"
+     * - "ar/12/foo" => "/car/{edit}/foobar"
+     */
+    @NotNull
+    public static Collection<Route> getRoutesForPathWithPlaceholderMatch(@NotNull Project project, @NotNull String searchPath) {
+        Collection<Route> targets = new ArrayList<>();
 
-            // String string = "|"; visibility debug
-            String string = Character.toString((char) 156);
-
-            String routePathPlaceholderNeutral = routePath.replaceAll("\\{([^}]*)}", string);
-            String match = null;
-            int startIndex = -1;
-
-            // find first common non pattern string, string on at 2 for no fetching all; right to left
-            for (int i = 2; i < searchPath.length(); i++) {
-                String text = searchPath.substring(0, searchPath.length() - i);
-
-                int i1 = routePathPlaceholderNeutral.indexOf(text);
-                if (i1 >= 0) {
-                    match = routePathPlaceholderNeutral.substring(i1);
-                    startIndex = text.length();
-                    break;
+        RouteHelper.getAllRoutes(project).values()
+            .parallelStream()
+            .forEach(route -> {
+                if (isReverseRoutePatternMatch(route, searchPath)) {
+                    targets.add(route);
                 }
-            }
+            });
 
-            if (match == null) {
-                continue;
-            }
+        return targets;
+    }
 
-            // find a pattern match: left to right
-            int endIndex = match.length();
-            for (int i = startIndex + 1; i <= endIndex; i++) {
-                String substring = match.substring(0, i);
+    /**
+     * Reverse routing matching, find any "incomplete" string inside the route pattern
+     *
+     * - "foo/bar" => "/foo/bar"
+     * - "foo/12" => "/foo/{edit}"
+     * - "ar/12/foo" => "/car/{edit}/foobar"
+     */
+    public static boolean hasRoutesForPathWithPlaceholderMatch(@NotNull Project project, @NotNull String searchPath) {
+        return RouteHelper.getAllRoutes(project).values()
+            .parallelStream()
+            .anyMatch(route -> isReverseRoutePatternMatch(route, searchPath));
+    }
 
-                String regex = substring.replace(string, "[\\w-]+");
-                Matcher matcher = Pattern.compile(regex).matcher(searchPath);
-                if (matcher.matches()) {
-                    targets.addAll(Arrays.asList(getMethodsOnControllerShortcut(project, route.getController())));
-                }
+    private static boolean isReverseRoutePatternMatch(@NotNull Route route, @NotNull String searchPath) {
+        String routePath = route.getPath();
+        if (routePath == null) {
+            return false;
+        }
+
+        if (routePath.contains(searchPath)) {
+            return true;
+        }
+
+        // String string = "|"; visibility debug
+        String string = Character.toString((char) 156);
+
+        String routePathPlaceholderNeutral = routePath.replaceAll("\\{([^}]*)}", string);
+        String match = null;
+        int startIndex = -1;
+
+        // find first common non pattern string, string on at 2 for no fetching all; right to left
+        for (int i = 2; i < searchPath.length(); i++) {
+            String text = searchPath.substring(0, searchPath.length() - i);
+
+            int i1 = routePathPlaceholderNeutral.indexOf(text);
+            if (i1 >= 0) {
+                match = routePathPlaceholderNeutral.substring(i1);
+                startIndex = text.length();
+                break;
             }
         }
 
-        return targets.toArray(new PsiElement[0]);
+        if (match == null) {
+            return false;
+        }
+
+        // find a pattern match: left to right
+        int endIndex = match.length();
+        for (int i = startIndex + 1; i <= endIndex; i++) {
+            String substring = match.substring(0, i);
+
+            String regex = substring.replace(string, "[\\w-]+");
+            Matcher matcher = Pattern.compile(regex).matcher(searchPath);
+            if (matcher.matches()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

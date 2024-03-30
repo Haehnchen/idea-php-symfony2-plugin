@@ -13,7 +13,6 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.patterns.InitialPatternCondition;
 import com.intellij.patterns.PlatformPatterns;
-import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
@@ -82,14 +81,6 @@ public class JavascriptCompletionNavigationContributor {
 
             return new PsiElement[0];
         }
-    }
-
-    private static PsiElementPattern.@NotNull Capture<JSLiteralExpression> getPlace() {
-        return PlatformPatterns.psiElement(JSLiteralExpression.class).withParent(
-            PlatformPatterns.psiElement(JSArgumentList.class).withParent(
-                PlatformPatterns.psiElement(JSCallExpression.class)
-            )
-        );
     }
 
     /**
