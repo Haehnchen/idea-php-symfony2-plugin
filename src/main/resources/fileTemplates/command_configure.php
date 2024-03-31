@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace {{ namespace }};
 
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class {{ class }} extends ContainerAwareCommand
+class {{ class }} extends Command
 {
     /**
      * {@inheritdoc}
@@ -18,11 +20,8 @@ class {{ class }} extends ContainerAwareCommand
             ->setDescription('Hello PhpStorm');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-
+        return Command::SUCCESS;
     }
 }
