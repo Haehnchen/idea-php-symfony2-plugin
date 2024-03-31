@@ -776,18 +776,23 @@
             <add-to-group group-id="GenerateGroup" anchor="last" />
         </action>
 
-        <group id="Symfony2Group" text="Symfony" popup="false">
-            <group id="Symfony2GroupService" class="com.intellij.ide.actions.NonTrivialActionGroup" text="Service" popup="true" icon="SymfonyIcons.Symfony">
+        <group id="SymfonyGroup" text="Symfony" popup="false">
+            <group id="SymfonyNewFile" class="com.intellij.ide.actions.NonTrivialActionGroup" text="Symfony" popup="true" icon="SymfonyIcons.Symfony">
+                <action id="SymfonyNewCommandAction" class="fr.adrienbrault.idea.symfony2plugin.action.NewCommandAction"/>
+                <separator/>
                 <action id="Symfony2NewXmlService" class="fr.adrienbrault.idea.symfony2plugin.action.NewXmlServiceAction"/>
                 <action id="Symfony2NewYamlService" class="fr.adrienbrault.idea.symfony2plugin.action.NewYamlServiceAction"/>
             </group>
-            <separator/>
             <action id="Symfony2NewControllerService" class="fr.adrienbrault.idea.symfony2plugin.action.bundle.NewBundleControllerAction"/>
             <action id="SymfonyBundleCompilerPass" class="fr.adrienbrault.idea.symfony2plugin.action.bundle.NewBundleCompilerPass"/>
             <action id="SymfonyBundleFormAction" class="fr.adrienbrault.idea.symfony2plugin.action.bundle.NewBundleFormAction"/>
             <action id="SymfonyBundleTwigExtensionAction" class="fr.adrienbrault.idea.symfony2plugin.action.bundle.NewBundleTwigExtensionAction"/>
-            <action id="SymfonyBundleCommandAction" class="fr.adrienbrault.idea.symfony2plugin.action.bundle.NewBundleCommandAction"/>
-            <add-to-group group-id="NewGroup" anchor="last"/>
+            <add-to-group group-id="NewGroup" anchor="after" relative-to-action="PhpNewGroup"/>
+        </group>
+
+        <group id="SymfonyGroupShortcut" text="Symfony" popup="false">
+            <action id="SymfonyNewCommandActionShortcut" class="fr.adrienbrault.idea.symfony2plugin.action.NewCommandAction$Shortcut"/>
+            <add-to-group group-id="NewGroup" anchor="before" relative-to-action="SymfonyGroup" />
         </group>
 
         <action id="SymfonyWebTestCaseGenerator" class="fr.adrienbrault.idea.symfony2plugin.action.bundle.WebTestCaseGeneratorAction">

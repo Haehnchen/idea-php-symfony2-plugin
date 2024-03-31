@@ -97,6 +97,22 @@ public class PhpBundleFileFactory {
         return PsiDirectoryFactory.getInstance(project).createDirectory(compilerDirectory).add(fileFromText);
     }
 
+    public static PsiElement createFile(@NotNull Project project, @NotNull VirtualFile parentDirectory, @NotNull String template, @NotNull String filename, @NotNull Map<String, String> vars) {
+        String COMPILER_TEMPLATE = "/fileTemplates/" + template + ".php";
+        String fileTemplateContent = getFileTemplateContent(COMPILER_TEMPLATE);
+        if(fileTemplateContent == null) {
+            throw new RuntimeException("Template content error");
+        }
+
+        for (Map.Entry<String, String> entry : vars.entrySet()) {
+            fileTemplateContent = fileTemplateContent.replace("{{ " + entry.getKey() + " }}", entry.getValue());
+        }
+
+        PsiFile fileFromText = PsiFileFactory.getInstance(project).createFileFromText(filename + ".php", PhpFileType.INSTANCE, fileTemplateContent);
+        CodeStyleManager.getInstance(project).reformat(fileFromText);
+        return PsiDirectoryFactory.getInstance(project).createDirectory(parentDirectory).add(fileFromText);
+    }
+
     @NotNull
     public static PsiElement createCompilerPass(@NotNull PhpClass bundleClass, @NotNull String className) throws Exception {
 
