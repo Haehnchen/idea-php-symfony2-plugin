@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.action;
 
+import com.intellij.ide.projectView.impl.ProjectRootsUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
@@ -84,5 +85,19 @@ public class NewKernelTestCaseAction extends AbstractProjectDumbAwareAction {
 
             new OpenFileDescriptor(project, commandAttributes.getContainingFile().getVirtualFile(), 0).navigate(true);
         });
+    }
+
+    public static class Shortcut extends NewKernelTestCaseAction {
+        @Override
+        public void update(AnActionEvent event) {
+            this.setStatus(event, false);
+            Project project = getEventProject(event);
+            if (!Symfony2ProjectComponent.isEnabled(project)) {
+                return;
+            }
+
+            PsiDirectory directory = NewFileActionUtil.getSelectedDirectoryFromAction(event);
+            this.setStatus(event, directory != null && ProjectRootsUtil.isInTestSource(directory.getVirtualFile(), project));
+        }
     }
 }

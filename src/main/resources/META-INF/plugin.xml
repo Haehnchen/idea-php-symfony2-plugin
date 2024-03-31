@@ -800,6 +800,8 @@
             <action id="SymfonyNewFormTypeShortcut" class="fr.adrienbrault.idea.symfony2plugin.action.NewFormTypeAction$Shortcut"/>
             <action id="SymfonyNewTwigExtensionShortcut" class="fr.adrienbrault.idea.symfony2plugin.action.NewTwigExtensionAction$Shortcut"/>
             <action id="SymfonyNewCompilerPassShortcut" class="fr.adrienbrault.idea.symfony2plugin.action.NewCompilerPassAction$Shortcut"/>
+            <action id="SymfonyNewKernelTestCaseShortcut" class="fr.adrienbrault.idea.symfony2plugin.action.NewKernelTestCaseAction$Shortcut"/>
+            <action id="SymfonyNewWebTestCaseShortcut" class="fr.adrienbrault.idea.symfony2plugin.action.NewWebTestCaseAction$Shortcut"/>
             <add-to-group group-id="NewGroup" anchor="before" relative-to-action="SymfonyGroup" />
         </group>
 
