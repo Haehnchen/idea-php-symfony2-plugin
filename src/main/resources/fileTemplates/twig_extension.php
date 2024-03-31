@@ -1,14 +1,31 @@
 <?php
 
-namespace {{ ns }};
+declare(strict_types=1);
 
-class {{ class }} extends \Twig_Extension
+namespace {{ namespace }};
+
+use Twig\Extension\AbstractExtension;
+use Twig\TwigFunction;
+use Twig\TwigFilter;
+
+class {{ class }} extends AbstractExtension
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function getName()
+    public function getFunctions(): array
     {
-        return '{{ name }}';
+        return [
+            new TwigFunction('my_function', $this->myFunction(...)),
+        ];
+    }
+
+    public function getFilters(): array
+    {
+        return [
+            new TwigFilter('my_filter', $this->myFunction(...)),
+        ];
+    }
+
+    public function myFunction(): string
+    {
+        return 'Hello PhpStorm';
     }
 }
