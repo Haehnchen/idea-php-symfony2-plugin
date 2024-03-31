@@ -34,6 +34,30 @@ public class NewFileActionUtil {
 
     }
 
+    public static boolean isInGivenDirectoryScope(@NotNull AnActionEvent event, @NotNull String directoryName) {
+        DataContext dataContext = event.getDataContext();
+        IdeView view = LangDataKeys.IDE_VIEW.getData(dataContext);
+        if (view == null) {
+            return false;
+        }
+
+        PsiDirectory @NotNull [] directories = view.getDirectories();
+        if (directories.length == 0) {
+            return false;
+        }
+
+        if (directoryName.equals(directories[0].getName())) {
+            return true;
+        }
+
+        PsiDirectory parent = directories[0].getParent();
+        if (parent != null && directoryName.equals(parent.getName())) {
+            return true;
+        }
+
+        return false;
+    }
+
     public static String guessCommandTemplateType(@NotNull Project project) {
         if (PhpElementsUtil.getClassInterface(project, "\\Symfony\\Component\\Console\\Attribute\\AsCommand") != null) {
             return "command_attributes";
@@ -48,6 +72,14 @@ public class NewFileActionUtil {
         }
 
         return "command_configure";
+    }
+
+    public static String guessControllerTemplateType(@NotNull Project project) {
+        if (PhpElementsUtil.getClassInterface(project, "\\Symfony\\Component\\Routing\\Attribute\\Route") != null) {
+            return "controller_attributes";
+        }
+
+        return "controller_annotations";
     }
 
     public static String getCommandPrefix(@NotNull PsiDirectory psiDirectory) {

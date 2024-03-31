@@ -22,9 +22,9 @@ import java.util.List;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class NewCommandAction extends AbstractProjectDumbAwareAction {
-    public NewCommandAction() {
-        super("Command", "Create Command Class", Symfony2Icons.SYMFONY);
+public class NewControllerAction extends AbstractProjectDumbAwareAction {
+    public NewControllerAction() {
+        super("Controller", "Create Controller Class", Symfony2Icons.SYMFONY);
     }
 
     public void update(AnActionEvent event) {
@@ -52,8 +52,8 @@ public class NewCommandAction extends AbstractProjectDumbAwareAction {
             return;
         }
 
-        if (!className.toLowerCase().endsWith("command")) {
-            className += "Command";
+        if (!className.toLowerCase().endsWith("controller")) {
+            className += "Controller";
         }
 
         if (!PhpNameUtil.isValidClassName(className)) {
@@ -71,21 +71,20 @@ public class NewCommandAction extends AbstractProjectDumbAwareAction {
         ApplicationManager.getApplication().runWriteAction(() -> {
             HashMap<String, String> hashMap = new HashMap<>() {{
                 String clazz = finalClassName;
-                if (finalClassName.endsWith("Command")) {
-                    clazz = finalClassName.substring(0, finalClassName.length() - "Command".length());
+                if (finalClassName.toLowerCase().endsWith("controller")) {
+                    clazz = finalClassName.substring(0, finalClassName.length() - "controller".length());
                 }
-
-                String prefix = NewFileActionUtil.getCommandPrefix(directory);
 
                 put("class", finalClassName);
                 put("namespace", strings.get(0));
-                put("command_name", prefix + ":" + fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(clazz));
+                put("path", "/" + fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(clazz).replace("_", "-"));
+                put("template_path", fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(clazz));
             }};
 
             PsiElement commandAttributes = PhpBundleFileFactory.createFile(
                 project,
                 directory.getVirtualFile(),
-                NewFileActionUtil.guessCommandTemplateType(project),
+                NewFileActionUtil.guessControllerTemplateType(project),
                 finalClassName,
                 hashMap
             );
@@ -94,7 +93,7 @@ public class NewCommandAction extends AbstractProjectDumbAwareAction {
         });
     }
 
-    public static class Shortcut extends NewCommandAction {
+    public static class Shortcut extends NewControllerAction {
         @Override
         public void update(AnActionEvent event) {
             Project project = getEventProject(event);
@@ -102,7 +101,7 @@ public class NewCommandAction extends AbstractProjectDumbAwareAction {
                 return;
             }
 
-            this.setStatus(event, NewFileActionUtil.isInGivenDirectoryScope(event, "Command"));
+            this.setStatus(event, NewFileActionUtil.isInGivenDirectoryScope(event, "Controller"));
         }
     }
 }
