@@ -780,12 +780,12 @@
             <group id="SymfonyNewFile" class="com.intellij.ide.actions.NonTrivialActionGroup" text="Symfony" popup="true" icon="SymfonyIcons.Symfony">
                 <action id="SymfonyNewCommandAction" class="fr.adrienbrault.idea.symfony2plugin.action.NewCommandAction"/>
                 <action id="SymfonyNewControllerAction" class="fr.adrienbrault.idea.symfony2plugin.action.NewControllerAction"/>
+                <action id="SymfonyNewFormTypeAction" class="fr.adrienbrault.idea.symfony2plugin.action.NewFormTypeAction"/>
                 <separator/>
                 <action id="Symfony2NewXmlService" class="fr.adrienbrault.idea.symfony2plugin.action.NewXmlServiceAction"/>
                 <action id="Symfony2NewYamlService" class="fr.adrienbrault.idea.symfony2plugin.action.NewYamlServiceAction"/>
             </group>
             <action id="SymfonyBundleCompilerPass" class="fr.adrienbrault.idea.symfony2plugin.action.bundle.NewBundleCompilerPass"/>
-            <action id="SymfonyBundleFormAction" class="fr.adrienbrault.idea.symfony2plugin.action.bundle.NewBundleFormAction"/>
             <action id="SymfonyBundleTwigExtensionAction" class="fr.adrienbrault.idea.symfony2plugin.action.bundle.NewBundleTwigExtensionAction"/>
             <add-to-group group-id="NewGroup" anchor="after" relative-to-action="PhpNewGroup"/>
         </group>
@@ -793,6 +793,7 @@
         <group id="SymfonyGroupShortcut" text="Symfony" popup="false">
             <action id="SymfonyNewCommandActionShortcut" class="fr.adrienbrault.idea.symfony2plugin.action.NewCommandAction$Shortcut"/>
             <action id="SymfonyNewControllerActionShortcut" class="fr.adrienbrault.idea.symfony2plugin.action.NewControllerAction$Shortcut"/>
+            <action id="SymfonyFormTypeActionShortcut" class="fr.adrienbrault.idea.symfony2plugin.action.NewFormTypeAction$Shortcut"/>
             <add-to-group group-id="NewGroup" anchor="before" relative-to-action="SymfonyGroup" />
         </group>
 

@@ -34,7 +34,7 @@ public class NewFileActionUtil {
 
     }
 
-    public static boolean isInGivenDirectoryScope(@NotNull AnActionEvent event, @NotNull String directoryName) {
+    public static boolean isInGivenDirectoryScope(@NotNull AnActionEvent event, @NotNull String... directoryName) {
         DataContext dataContext = event.getDataContext();
         IdeView view = LangDataKeys.IDE_VIEW.getData(dataContext);
         if (view == null) {
@@ -46,12 +46,14 @@ public class NewFileActionUtil {
             return false;
         }
 
-        if (directoryName.equals(directories[0].getName())) {
+        List<@NotNull String> list = Arrays.asList(directoryName);
+
+        if (list.contains(directories[0].getName())) {
             return true;
         }
 
         PsiDirectory parent = directories[0].getParent();
-        if (parent != null && directoryName.equals(parent.getName())) {
+        if (parent != null && list.contains(parent.getName())) {
             return true;
         }
 
