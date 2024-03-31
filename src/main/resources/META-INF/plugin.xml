@@ -778,12 +778,15 @@
 
         <group id="SymfonyGroup" text="Symfony" popup="false">
             <group id="SymfonyNewFile" class="com.intellij.ide.actions.NonTrivialActionGroup" text="Symfony" popup="true" icon="SymfonyIcons.Symfony">
-                <action id="SymfonyNewCommandAction" class="fr.adrienbrault.idea.symfony2plugin.action.NewCommandAction"/>
-                <action id="SymfonyNewControllerAction" class="fr.adrienbrault.idea.symfony2plugin.action.NewControllerAction"/>
+                <action id="SymfonyNewCommand" class="fr.adrienbrault.idea.symfony2plugin.action.NewCommandAction"/>
+                <action id="SymfonyNewController" class="fr.adrienbrault.idea.symfony2plugin.action.NewControllerAction"/>
                 <separator/>
-                <action id="SymfonyNewFormTypeAction" class="fr.adrienbrault.idea.symfony2plugin.action.NewFormTypeAction"/>
-                <action id="SymfonyNewTwigExtensionAction" class="fr.adrienbrault.idea.symfony2plugin.action.NewTwigExtensionAction"/>
-                <action id="SymfonyNewCompilerPassAction" class="fr.adrienbrault.idea.symfony2plugin.action.NewCompilerPassAction"/>
+                <action id="SymfonyNewFormType" class="fr.adrienbrault.idea.symfony2plugin.action.NewFormTypeAction"/>
+                <action id="SymfonyNewTwigExtension" class="fr.adrienbrault.idea.symfony2plugin.action.NewTwigExtensionAction"/>
+                <action id="SymfonyNewCompilerPass" class="fr.adrienbrault.idea.symfony2plugin.action.NewCompilerPassAction"/>
+                <separator/>
+                <action id="SymfonyNewKernelTestCase" class="fr.adrienbrault.idea.symfony2plugin.action.NewKernelTestCaseAction"/>
+                <action id="SymfonyNewTestCase" class="fr.adrienbrault.idea.symfony2plugin.action.NewWebTestCaseAction"/>
                 <separator/>
                 <action id="Symfony2NewXmlService" class="fr.adrienbrault.idea.symfony2plugin.action.NewXmlServiceAction"/>
                 <action id="Symfony2NewYamlService" class="fr.adrienbrault.idea.symfony2plugin.action.NewYamlServiceAction"/>
@@ -792,18 +795,13 @@
         </group>
 
         <group id="SymfonyGroupShortcut" text="Symfony" popup="false">
-            <action id="SymfonyNewCommandActionShortcut" class="fr.adrienbrault.idea.symfony2plugin.action.NewCommandAction$Shortcut"/>
-            <action id="SymfonyNewControllerActionShortcut" class="fr.adrienbrault.idea.symfony2plugin.action.NewControllerAction$Shortcut"/>
-            <action id="SymfonyNewFormTypeActionShortcut" class="fr.adrienbrault.idea.symfony2plugin.action.NewFormTypeAction$Shortcut"/>
-            <action id="SymfonyNewTwigExtensionActionShortcut" class="fr.adrienbrault.idea.symfony2plugin.action.NewTwigExtensionAction$Shortcut"/>
-            <action id="SymfonyNewCompilerPassActionShortcut" class="fr.adrienbrault.idea.symfony2plugin.action.NewCompilerPassAction$Shortcut"/>
+            <action id="SymfonyNewCommandShortcut" class="fr.adrienbrault.idea.symfony2plugin.action.NewCommandAction$Shortcut"/>
+            <action id="SymfonyNewControllerShortcut" class="fr.adrienbrault.idea.symfony2plugin.action.NewControllerAction$Shortcut"/>
+            <action id="SymfonyNewFormTypeShortcut" class="fr.adrienbrault.idea.symfony2plugin.action.NewFormTypeAction$Shortcut"/>
+            <action id="SymfonyNewTwigExtensionShortcut" class="fr.adrienbrault.idea.symfony2plugin.action.NewTwigExtensionAction$Shortcut"/>
+            <action id="SymfonyNewCompilerPassShortcut" class="fr.adrienbrault.idea.symfony2plugin.action.NewCompilerPassAction$Shortcut"/>
             <add-to-group group-id="NewGroup" anchor="before" relative-to-action="SymfonyGroup" />
         </group>
-
-        <action id="SymfonyWebTestCaseGenerator" class="fr.adrienbrault.idea.symfony2plugin.action.bundle.WebTestCaseGeneratorAction">
-            <!-- <add-to-group group-id="PhpUnitNewGroup" anchor="last"/> DROP in Phpstorm 2017.3 -->
-            <add-to-group group-id="NewGroup" anchor="last"/>
-        </action>
 
         <action icon="SymfonyIcons.TwigBlockOverwrite"
                 id="SymfonyTwigBlockOverwrite"
