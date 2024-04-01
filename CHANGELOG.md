@@ -21,6 +21,22 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2023.1.267
+* Migrate and update all Symfony "New File" template (Daniel Espendiller)
+* Replace deprecated "FilenameIndex.getFilesByName" (Daniel Espendiller)
+* Replace deprecated "PhpIndex::getAllSubclasses" (Daniel Espendiller)
+* Migrate project startup service (Daniel Espendiller)
+* Replace "SymfonySymbolSearchAction" in favor of existing "Search Everywhere" (Daniel Espendiller)
+* Double colon are also valid for "route as services" (Daniel Espendiller)
+* Add "Twig Macro", "Twig Filter", "Twig Function", "Doctrine Entity" and "Doctrine Tables" to "Search Everywhere" (Daniel Espendiller)
+* Add Twig components to "Search Everywhere" (Daniel Espendiller)
+* Provide a full partial route matcher search for "Search Everywhere" urls (Daniel Espendiller)
+* [#2307](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2307) Update Symfony meta php files (Daniel Espendiller)
+* Implement a reverse router match to find targets for partial urls targets (Daniel Espendiller)
+* Replace deprecated "processTagElementsByName" PhpStorm usages (Daniel Espendiller)
+* Provide completion for chaining Twig filter like "u.truncate" (Daniel Espendiller)
+* [paid] [#2222](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2222) fix "kernel.project_dir" injection should not be trigger on itself (Daniel Espendiller)
+
 ## 2023.1.266
 * [#2301](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2301) Support translation for "Symfony\Component\Translation\t" (Daniel Espendiller)
 * Replace deprecated usages (Daniel Espendiller)
