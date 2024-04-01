@@ -20,6 +20,7 @@ import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtensionParam
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigConfigJson;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.dict.TwigPathJson;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.VfsExUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -50,7 +51,8 @@ public class JsonFileIndexTwigNamespaces implements TwigNamespaceExtension {
     private static Collection<TwigPath> getNamespacesInner(@NotNull Project project) {
         Collection<TwigPath> twigPaths = new ArrayList<>();
 
-        for (final PsiFile psiFile : FilenameIndex.getFilesByName(project, "ide-twig.json", GlobalSearchScope.allScope(project))) {
+        @NotNull Collection<VirtualFile> filesByName = FilenameIndex.getVirtualFilesByName("ide-twig.json", GlobalSearchScope.allScope(project));
+        for (final PsiFile psiFile : PsiElementUtils.convertVirtualFilesToPsiFiles(project, filesByName)) {
             Collection<TwigPath> cachedValue = CachedValuesManager.getCachedValue(psiFile, new MyJsonCachedValueProvider(psiFile));
             if(cachedValue != null) {
                 twigPaths.addAll(cachedValue);

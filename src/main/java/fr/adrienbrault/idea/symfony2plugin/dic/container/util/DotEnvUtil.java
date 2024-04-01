@@ -12,6 +12,7 @@ import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.*;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -133,7 +134,8 @@ public class DotEnvUtil {
             }
         }
 
-        for (PsiFile psiFile : FilenameIndex.getFilesByName(project, "docker-compose.yml", GlobalSearchScope.allScope(project))) {
+        Collection<VirtualFile> virtualFilesByName = FilenameIndex.getVirtualFilesByName("docker-compose.yml", GlobalSearchScope.allScope(project));
+        for (PsiFile psiFile : PsiElementUtils.convertVirtualFilesToPsiFiles(project, virtualFilesByName)) {
             if(!(psiFile instanceof YAMLFile)) {
                 continue;
             }
@@ -153,7 +155,8 @@ public class DotEnvUtil {
         }
 
         for (String file : DOCKER_FILES) {
-            for (PsiFile psiFile : FilenameIndex.getFilesByName(project, file, GlobalSearchScope.allScope(project))) {
+            Collection<VirtualFile> virtualFilesByName1 = FilenameIndex.getVirtualFilesByName(file, GlobalSearchScope.allScope(project));
+            for (PsiFile psiFile : PsiElementUtils.convertVirtualFilesToPsiFiles(project, virtualFilesByName1)) {
                 // ENV DOCKERFILE_FOO /bar
                 Matcher matcher = Pattern.compile("ENV\\s+([^\\s]*)\\s+").matcher(psiFile.getText());
                 while(matcher.find()){
