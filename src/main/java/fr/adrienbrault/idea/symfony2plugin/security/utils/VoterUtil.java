@@ -5,6 +5,7 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiReference;
@@ -92,8 +93,9 @@ public class VoterUtil {
             }
         }
 
-        for (String files : new String[]{"security.yml", "security.yaml"}) {
-            for (PsiFile psiFile : FilenameIndex.getFilesByName(project, files, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), YAMLFileType.YML))) {
+        for (String fileName : new String[]{"security.yml", "security.yaml"}) {
+            Collection<VirtualFile> virtualFilesByName = FilenameIndex.getVirtualFilesByName(fileName, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), YAMLFileType.YML));
+            for (PsiFile psiFile : PsiElementUtils.convertVirtualFilesToPsiFiles(project, virtualFilesByName)) {
                 if(!(psiFile instanceof YAMLFile)) {
                     continue;
                 }
