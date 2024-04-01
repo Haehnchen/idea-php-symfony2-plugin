@@ -19,5 +19,4 @@ public class NewYamlServiceAction extends AbstractProjectDumbAwareAction {
         final Project project = event.getData(PlatformDataKeys.PROJECT);
         ServiceActionUtil.buildFile(event, project, "/fileTemplates/container.yml");
     }
-
 }

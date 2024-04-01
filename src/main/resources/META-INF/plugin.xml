@@ -788,8 +788,9 @@
                 <action id="SymfonyNewKernelTestCase" class="fr.adrienbrault.idea.symfony2plugin.action.NewKernelTestCaseAction"/>
                 <action id="SymfonyNewTestCase" class="fr.adrienbrault.idea.symfony2plugin.action.NewWebTestCaseAction"/>
                 <separator/>
-                <action id="Symfony2NewXmlService" class="fr.adrienbrault.idea.symfony2plugin.action.NewXmlServiceAction"/>
-                <action id="Symfony2NewYamlService" class="fr.adrienbrault.idea.symfony2plugin.action.NewYamlServiceAction"/>
+                <action id="SymfonyNewYamlService" class="fr.adrienbrault.idea.symfony2plugin.action.NewYamlServiceAction"/>
+                <action id="SymfonyNewXmlService" class="fr.adrienbrault.idea.symfony2plugin.action.NewXmlServiceAction"/>
+                <action id="SymfonyNewPhpService" class="fr.adrienbrault.idea.symfony2plugin.action.NewPhpServiceAction"/>
             </group>
             <add-to-group group-id="NewGroup" anchor="after" relative-to-action="PhpNewGroup"/>
         </group>

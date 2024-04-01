@@ -24,10 +24,12 @@ abstract public class AbstractProjectDumbAwareAction extends DumbAwareAction {
         super(text, description, phpFile);
     }
 
-    public void update(AnActionEvent event) {
+    public void update(@NotNull AnActionEvent event) {
+        setStatus(event, false);
+
         Project project = event.getData(PlatformDataKeys.PROJECT);
-        if (project == null || !Symfony2ProjectComponent.isEnabled(project)) {
-            setStatus(event, false);
+        if (Symfony2ProjectComponent.isEnabled(project)) {
+            setStatus(event, true);
         }
     }
 
@@ -35,6 +37,4 @@ abstract public class AbstractProjectDumbAwareAction extends DumbAwareAction {
         event.getPresentation().setVisible(status);
         event.getPresentation().setEnabled(status);
     }
-
-
 }

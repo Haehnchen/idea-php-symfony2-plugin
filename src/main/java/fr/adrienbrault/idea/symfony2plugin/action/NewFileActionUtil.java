@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.io.StreamUtil;
 import com.intellij.psi.PsiDirectory;
 import com.jetbrains.php.roots.PhpNamespaceCompositeProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -13,8 +14,11 @@ import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyCommandUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyCommand;
+import fr.adrienbrault.idea.symfony2plugin.util.psi.PhpBundleFileFactory;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -132,5 +136,16 @@ public class NewFileActionUtil {
         }
 
         return "app";
+    }
+
+
+    @Nullable
+    public static String getFileTemplateContent(@NotNull String filename) {
+        try {
+            // replace on windows, just for secure reasons
+            return StreamUtil.readText(PhpBundleFileFactory.class.getResourceAsStream(filename), "UTF-8").replace("\r\n", "\n");
+        } catch (IOException e) {
+            return null;
+        }
     }
 }

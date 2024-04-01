@@ -27,7 +27,7 @@ public class NewTwigExtensionAction extends AbstractProjectDumbAwareAction {
         super("TwigExtension", "Create TwigExtension Class", Symfony2Icons.SYMFONY);
     }
 
-    public void update(AnActionEvent event) {
+    public void update(@NotNull AnActionEvent event) {
         this.setStatus(event, false);
         Project project = getEventProject(event);
         if (!Symfony2ProjectComponent.isEnabled(project)) {
@@ -83,7 +83,7 @@ public class NewTwigExtensionAction extends AbstractProjectDumbAwareAction {
 
     public static class Shortcut extends NewTwigExtensionAction {
         @Override
-        public void update(AnActionEvent event) {
+        public void update(@NotNull AnActionEvent event) {
             Project project = getEventProject(event);
             if (!Symfony2ProjectComponent.isEnabled(project)) {
                 return;
