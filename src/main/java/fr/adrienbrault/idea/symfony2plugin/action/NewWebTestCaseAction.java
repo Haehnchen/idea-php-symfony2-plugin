@@ -28,7 +28,7 @@ public class NewWebTestCaseAction extends AbstractProjectDumbAwareAction {
         super("WebTestCase", "Create WebTestCase Class", Symfony2Icons.SYMFONY);
     }
 
-    public void update(AnActionEvent event) {
+    public void update(@NotNull AnActionEvent event) {
         this.setStatus(event, false);
         Project project = getEventProject(event);
         if (!Symfony2ProjectComponent.isEnabled(project)) {
@@ -89,7 +89,7 @@ public class NewWebTestCaseAction extends AbstractProjectDumbAwareAction {
 
     public static class Shortcut extends NewWebTestCaseAction {
         @Override
-        public void update(AnActionEvent event) {
+        public void update(@NotNull AnActionEvent event) {
             this.setStatus(event, false);
             Project project = getEventProject(event);
             if (!Symfony2ProjectComponent.isEnabled(project)) {

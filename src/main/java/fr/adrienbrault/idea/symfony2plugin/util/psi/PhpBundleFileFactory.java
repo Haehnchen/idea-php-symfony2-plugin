@@ -21,6 +21,7 @@ import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.refactoring.PhpAliasImporter;
 import com.jetbrains.php.refactoring.PhpNameUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfony2plugin.action.NewFileActionUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -70,7 +71,7 @@ public class PhpBundleFileFactory {
         }
 
         String COMPILER_TEMPLATE = "/fileTemplates/" + template + ".php";
-        String fileTemplateContent = getFileTemplateContent(COMPILER_TEMPLATE);
+        String fileTemplateContent = NewFileActionUtil.getFileTemplateContent(COMPILER_TEMPLATE);
         if(fileTemplateContent == null) {
             throw new Exception("Template content error");
         }
@@ -99,7 +100,7 @@ public class PhpBundleFileFactory {
 
     public static PsiElement createFile(@NotNull Project project, @NotNull VirtualFile parentDirectory, @NotNull String template, @NotNull String filename, @NotNull Map<String, String> vars) {
         String COMPILER_TEMPLATE = "/fileTemplates/" + template + ".php";
-        String fileTemplateContent = getFileTemplateContent(COMPILER_TEMPLATE);
+        String fileTemplateContent = NewFileActionUtil.getFileTemplateContent(COMPILER_TEMPLATE);
         if(fileTemplateContent == null) {
             throw new RuntimeException("Template content error");
         }
@@ -171,7 +172,7 @@ public class PhpBundleFileFactory {
         }
 
         String COMPILER_TEMPLATE = "/fileTemplates/compiler_pass.php";
-        String fileTemplateContent = getFileTemplateContent(COMPILER_TEMPLATE);
+        String fileTemplateContent = NewFileActionUtil.getFileTemplateContent(COMPILER_TEMPLATE);
         if(fileTemplateContent == null) {
             throw new Exception("Template content error");
         }
@@ -262,16 +263,6 @@ public class PhpBundleFileFactory {
         }
 
         return null;
-    }
-
-    @Nullable
-    private static String getFileTemplateContent(@NotNull String filename) {
-        try {
-            // replace on windows, just for secure reasons
-            return StreamUtil.readText(PhpBundleFileFactory.class.getResourceAsStream(filename), "UTF-8").replace("\r\n", "\n");
-        } catch (IOException e) {
-            return null;
-        }
     }
 
 }

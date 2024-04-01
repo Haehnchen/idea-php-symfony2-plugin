@@ -1,20 +1,17 @@
 package fr.adrienbrault.idea.symfony2plugin.action;
 
 
-import com.intellij.ide.IdeView;
-import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.fileTypes.FileType;
+import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.util.io.StreamUtil;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
+import com.intellij.psi.impl.file.PsiDirectoryFactory;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
+import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
@@ -28,17 +25,14 @@ import fr.adrienbrault.idea.symfony2plugin.intentions.yaml.dict.YamlCreateServic
 import fr.adrienbrault.idea.symfony2plugin.intentions.yaml.dict.YamlUpdateArgumentServicesCallback;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
+import fr.adrienbrault.idea.symfony2plugin.util.psi.PhpBundleFileFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.*;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -58,79 +52,44 @@ public class ServiceActionUtil {
             .toArray(String[]::new);
     }
 
-    public static void buildFile(AnActionEvent event, final Project project, String templatePath) {
-        String extension = (templatePath.endsWith(".yml") || templatePath.endsWith(".yaml")) ? "yml" : "xml" ;
+    public static void buildFile(@NotNull AnActionEvent event, @NotNull Project project, @NotNull String templatePath) {
+        String extension;
+
+        if ((templatePath.endsWith(".yml") || templatePath.endsWith(".yaml"))) {
+            extension = "yaml";
+        } else if (templatePath.endsWith(".xml")) {
+            extension = "xml";
+        } else if (templatePath.endsWith(".php")) {
+            extension = "php";
+        } else {
+            throw new RuntimeException("no valid extension for: " + templatePath);
+        }
 
         String fileName = Messages.showInputDialog(project, "File name (without extension)", String.format("Create %s Service", extension), Symfony2Icons.SYMFONY);
         if(fileName == null || StringUtils.isBlank(fileName)) {
             return;
         }
 
-        FileType fileType = (templatePath.endsWith(".yml") || templatePath.endsWith(".yaml")) ? YAMLFileType.YML : XmlFileType.INSTANCE ;
-
-        if(!fileName.endsWith("." + extension)) {
-            fileName = fileName.concat("." + extension);
-        }
-
-        DataContext dataContext = event.getDataContext();
-        IdeView view = LangDataKeys.IDE_VIEW.getData(dataContext);
-        if (view == null) {
+        final PsiDirectory parentDirectory = NewFileActionUtil.getSelectedDirectoryFromAction(event);
+        if (parentDirectory == null) {
             return;
         }
 
-        PsiDirectory[] directories = view.getDirectories();
-        if(directories.length == 0) {
-            return;
-        }
-
-        final PsiDirectory initialBaseDir = directories[0];
-        if (initialBaseDir == null) {
-            return;
-        }
-
-        if(initialBaseDir.findFile(fileName) != null) {
+        if(parentDirectory.findFile(fileName) != null) {
             Messages.showInfoMessage("File exists", "Error");
             return;
         }
 
-        String content;
-        try {
-            content = StreamUtil.readText(ServiceActionUtil.class.getResourceAsStream(templatePath), "UTF-8").replace("\r\n", "\n");
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
-        }
-
-        final PsiFileFactory factory = PsiFileFactory.getInstance(project);
-
-        String bundleName = "Acme\\DemoBundle";
-
-        SymfonyBundleUtil symfonyBundleUtil = new SymfonyBundleUtil(project);
-        SymfonyBundle symfonyBundle = symfonyBundleUtil.getContainingBundle(initialBaseDir);
-
-        if(symfonyBundle != null) {
-            bundleName = StringUtils.strip(symfonyBundle.getNamespaceName(), "\\");
-        }
-
-        String underscoreBundle = bundleName.replace("\\", ".").toLowerCase();
-        if(underscoreBundle.endsWith("bundle")) {
-            underscoreBundle = underscoreBundle.substring(0, underscoreBundle.length() - 6);
-        }
-
-        content = content.replace("{{ BundleName }}", bundleName).replace("{{ BundleNameUnderscore }}", underscoreBundle);
-
-        final PsiFile file = factory.createFileFromText(fileName, fileType, content);
-
         ApplicationManager.getApplication().runWriteAction(() -> {
-            CodeStyleManager.getInstance(project).reformat(file);
-            initialBaseDir.add(file);
+            PsiFile fileFromText = PsiFileFactory.getInstance(project).createFileFromText("services." + extension, PhpFileType.INSTANCE, NewFileActionUtil.getFileTemplateContent(templatePath));
+
+            if (extension.equals("php")) {
+                CodeStyleManager.getInstance(project).reformat(fileFromText);
+            }
+
+            PsiElement newFile = PsiDirectoryFactory.getInstance(project).createDirectory(parentDirectory.getVirtualFile()).add(fileFromText);
+            new OpenFileDescriptor(project, newFile.getContainingFile().getVirtualFile(), 0).navigate(true);
         });
-
-        PsiFile psiFile = initialBaseDir.findFile(fileName);
-        if(psiFile != null) {
-            view.selectElement(psiFile);
-        }
-
     }
 
     @NotNull
