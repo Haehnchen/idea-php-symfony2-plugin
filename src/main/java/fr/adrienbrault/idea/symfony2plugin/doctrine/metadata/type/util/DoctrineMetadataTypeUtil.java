@@ -4,11 +4,11 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.Processor;
-import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineManagerEnum;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -60,7 +60,7 @@ public class DoctrineMetadataTypeUtil {
 
     public static void visitType(@NotNull Project project, @NotNull Collection<String> typeInterfaces, @NotNull Processor<Pair<PhpClass, String>> processor) {
         for (String typeInterface : typeInterfaces) {
-            for (PhpClass phpClass : PhpIndex.getInstance(project).getAllSubclasses(typeInterface)) {
+            for (PhpClass phpClass : PhpIndexUtil.getAllSubclasses(project, typeInterface)) {
                 String name = PhpElementsUtil.getMethodReturnAsString(phpClass, "getName");
 
                 // non string value;

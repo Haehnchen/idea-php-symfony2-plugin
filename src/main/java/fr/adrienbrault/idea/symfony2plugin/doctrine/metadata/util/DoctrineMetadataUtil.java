@@ -16,7 +16,6 @@ import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.indexing.FileBasedIndex;
-import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelInterface;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineManagerEnum;
@@ -26,6 +25,7 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.lookup.DoctrineRepo
 import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.DoctrineMetadataFileStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -51,9 +51,10 @@ public class DoctrineMetadataUtil {
 
     @NotNull
     public static Collection<LookupElement> getObjectRepositoryLookupElements(@NotNull Project project) {
-        PhpIndex index = PhpIndex.getInstance(project);
-        Collection<PhpClass> collection = index.getAllSubclasses("\\Doctrine\\Common\\Persistence\\ObjectRepository");
-        collection.addAll(index.getAllSubclasses("\\Doctrine\\Persistence\\ObjectRepository"));
+        Collection<PhpClass> collection = new ArrayList<>();
+
+        collection.addAll(PhpIndexUtil.getAllSubclasses(project, "\\Doctrine\\Common\\Persistence\\ObjectRepository"));
+        collection.addAll(PhpIndexUtil.getAllSubclasses(project, "\\Doctrine\\Persistence\\ObjectRepository"));
 
         return new ArrayList<>(DoctrineRepositoryLookupElement.create(collection));
     }

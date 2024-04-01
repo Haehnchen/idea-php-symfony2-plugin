@@ -30,6 +30,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormFiel
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormVarsResolver;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.TwigTypeResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang3.StringUtils;
@@ -482,8 +483,8 @@ public class TwigTypeResolveUtil {
      */
     @NotNull
     private static Collection<TwigTypeContainer> getApplicationUserImplementations(@NotNull Project project) {
-        return PhpIndex.getInstance(project)
-            .getAllSubclasses("\\Symfony\\Component\\Security\\Core\\User\\UserInterface")
+        return PhpIndexUtil
+            .getAllSubclasses(project, "\\Symfony\\Component\\Security\\Core\\User\\UserInterface")
             .stream()
             .filter(phpClass -> !phpClass.isInterface()) // filter out implementation like AdvancedUserInterface
             .map(TwigTypeContainer::new)

@@ -5,12 +5,12 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
-import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.ConstantReference;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -41,7 +41,7 @@ public class FormCompletionContributor extends CompletionContributor {
                     return;
                 }
 
-                for (PhpClass phpClass : PhpIndex.getInstance(psiElement.getProject()).getAllSubclasses("\\Symfony\\Component\\Form\\FormTypeInterface")) {
+                for (PhpClass phpClass : PhpIndexUtil.getAllSubclasses(psiElement.getProject(), "\\Symfony\\Component\\Form\\FormTypeInterface")) {
                     if (phpClass.isAbstract() || phpClass.isInterface()) {
                         continue;
                     }

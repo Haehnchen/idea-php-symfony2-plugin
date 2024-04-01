@@ -2,12 +2,14 @@ package fr.adrienbrault.idea.symfony2plugin.util;
 
 import com.intellij.codeInsight.completion.PrefixMatcher;
 import com.intellij.openapi.project.Project;
+import com.intellij.util.Processor;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.util.PhpContractUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -29,6 +31,18 @@ public class PhpIndexUtil {
     public static Collection<PhpClass> getPhpClassInsideNamespace(@NotNull Project project, @NotNull String namespaceName) {
         return getPhpClassInsideNamespace(PhpIndex.getInstance(project), namespaceName, 10);
     }
+
+    public static Collection<PhpClass> getAllSubclasses(@NotNull Project project, @NotNull String clazz) {
+        Collection<PhpClass> phpClasses = new ArrayList<>();
+
+        PhpIndex.getInstance(project).processAllSubclasses(clazz, phpClass -> {
+            phpClasses.add(phpClass);
+            return true;
+        });
+
+        return phpClasses;
+    }
+
 
     @NotNull
     private static Collection<PhpClass> getPhpClassInsideNamespace(@NotNull PhpIndex phpIndex, @NotNull String namespaceName, int maxDeep) {

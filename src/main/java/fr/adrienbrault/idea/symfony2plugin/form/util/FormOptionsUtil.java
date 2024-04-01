@@ -14,6 +14,7 @@ import fr.adrienbrault.idea.symfony2plugin.form.dict.*;
 import fr.adrienbrault.idea.symfony2plugin.form.visitor.FormOptionLookupVisitor;
 import fr.adrienbrault.idea.symfony2plugin.form.visitor.FormOptionVisitor;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.apache.commons.lang3.StringUtils;
@@ -81,7 +82,7 @@ public class FormOptionsUtil {
             );
         }
 
-        for(PhpClass phpClass: PhpIndex.getInstance(project).getAllSubclasses(FormUtil.FORM_EXTENSION_INTERFACE)) {
+        for(PhpClass phpClass: PhpIndexUtil.getAllSubclasses(project, FormUtil.FORM_EXTENSION_INTERFACE)) {
             if(!FormUtil.isValidFormPhpClass(phpClass)) {
                 continue;
             }
