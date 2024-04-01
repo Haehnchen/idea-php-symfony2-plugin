@@ -1600,8 +1600,8 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         // add typed filters
         for (String type : twigExtension.getTypes()) {
             PhpClass phpClass = PhpElementsUtil.getClassInterface(project, type);
-            if (phpClass != null) {
-                for (Method method : phpClass.getMethods().stream().filter(m -> m.getAccess().isPublic() && !m.getName().startsWith("__")).toList()) {
+            if (phpClass != null && !PhpElementsUtil.isInstanceOf(phpClass, "\\DateTimeInterface")) {
+                for (Method method : phpClass.getMethods().stream().filter(m -> m.getAccess().isPublic() && !m.isAbstract() && !m.isStatic() && !m.getName().startsWith("__")).toList()) {
                     lookupElements.add(new TwigExtensionLookupElement(project, key + "." + method.getName(), twigExtension));
                 }
             }
