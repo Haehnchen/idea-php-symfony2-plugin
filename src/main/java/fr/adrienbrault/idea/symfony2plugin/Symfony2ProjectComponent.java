@@ -1,9 +1,11 @@
 package fr.adrienbrault.idea.symfony2plugin;
 
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.startup.ProjectActivity;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
@@ -14,6 +16,8 @@ import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoaderParam
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import kotlin.Unit;
+import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,11 +29,15 @@ import java.util.Collection;
  * @author Adrien Brault <adrien.brault@gmail.com>
  */
 public class Symfony2ProjectComponent {
-    public static class PostStartupActivity implements com.intellij.openapi.startup.StartupActivity {
+    public static class PostStartupActivity implements ProjectActivity {
+        @Nullable
         @Override
-        public void runActivity(@NotNull Project project) {
-            checkProject(project);
+        public Object execute(@NotNull Project project, @NotNull Continuation<? super Unit> continuation) {
+            if (!ApplicationManager.getApplication().isUnitTestMode() && !ApplicationManager.getApplication().isHeadlessEnvironment()) {
+                checkProject(project);
+            }
 
+            return Unit.INSTANCE;
         }
     }
 
