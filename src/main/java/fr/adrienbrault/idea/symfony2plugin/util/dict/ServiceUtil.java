@@ -39,6 +39,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerParameterStubI
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesTagStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang3.StringUtils;
@@ -617,7 +618,7 @@ public class ServiceUtil {
 
         Collection<PhpClass> phpClasses = new HashSet<>() {{
             addAll(PhpIndex.getInstance(project).getAnyByFQN("Symfony\\Component\\HttpKernel\\Kernel"));
-            addAll(PhpIndex.getInstance(project).getAllSubclasses("Symfony\\Component\\HttpKernel\\Kernel"));
+            addAll(PhpIndexUtil.getAllSubclasses(project, "Symfony\\Component\\HttpKernel\\Kernel"));
         }};
 
         for (PhpClass phpClass : phpClasses) {

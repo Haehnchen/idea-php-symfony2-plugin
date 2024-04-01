@@ -14,7 +14,6 @@ import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
-import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
@@ -27,6 +26,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.dict.DispatcherEvent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.EventAnnotationStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.EventSubscriberUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
@@ -59,23 +59,18 @@ public class EventDispatcherSubscriberUtil {
 
     @NotNull
     private static Collection<EventDispatcherSubscribedEvent> getSubscribedEventsProxy(@NotNull Project project) {
-
         Collection<EventDispatcherSubscribedEvent> events = new ArrayList<>();
 
         // http://symfony.com/doc/current/components/event_dispatcher/introduction.html
-        PhpIndex phpIndex = PhpIndex.getInstance(project);
-        Collection<PhpClass> phpClasses = phpIndex.getAllSubclasses("\\Symfony\\Component\\EventDispatcher\\EventSubscriberInterface");
-
-        for(PhpClass phpClass: phpClasses) {
-
-            if(PhpElementsUtil.isTestClass(phpClass)) {
+        for (PhpClass phpClass: PhpIndexUtil.getAllSubclasses(project, "\\Symfony\\Component\\EventDispatcher\\EventSubscriberInterface")) {
+            if (PhpElementsUtil.isTestClass(phpClass)) {
                 continue;
             }
 
             Method method = phpClass.findMethodByName("getSubscribedEvents");
-            if(method != null) {
+            if (method != null) {
                 PhpReturn phpReturn = PsiTreeUtil.findChildOfType(method, PhpReturn.class);
-                if(phpReturn != null) {
+                if (phpReturn != null) {
                     attachSubscriberEventNames(events, phpClass, phpReturn);
                 }
             }

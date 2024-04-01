@@ -30,6 +30,7 @@ import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeClass;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.psi.PsiElementAssertUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
@@ -381,7 +382,7 @@ public class FormUtil {
                 public @NotNull Result<Collection<String[]>> compute() {
                     Collection<String[]> items = new ArrayList<>();
 
-                    for (PhpClass phpClass : PhpIndex.getInstance(project).getAllSubclasses(ABSTRACT_FORM_INTERFACE)) {
+                    for (PhpClass phpClass : PhpIndexUtil.getAllSubclasses(project, ABSTRACT_FORM_INTERFACE)) {
                         if (!isValidFormPhpClass(phpClass)) {
                             continue;
                         }

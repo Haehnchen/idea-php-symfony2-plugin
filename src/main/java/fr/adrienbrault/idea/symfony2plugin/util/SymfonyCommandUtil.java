@@ -12,7 +12,10 @@ import fr.adrienbrault.idea.symfony2plugin.dic.command.SymfonyCommandTestRunLine
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyCommand;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -28,7 +31,7 @@ public class SymfonyCommandUtil {
             () -> {
                 Map<String, String> symfonyCommands = new HashMap<>();
 
-                for (PhpClass phpClass : PhpIndex.getInstance(project).getAllSubclasses("\\Symfony\\Component\\Console\\Command\\Command")) {
+                for (PhpClass phpClass : PhpIndexUtil.getAllSubclasses(project, "\\Symfony\\Component\\Console\\Command\\Command")) {
                     if (PhpElementsUtil.isTestClass(phpClass)) {
                         continue;
                     }

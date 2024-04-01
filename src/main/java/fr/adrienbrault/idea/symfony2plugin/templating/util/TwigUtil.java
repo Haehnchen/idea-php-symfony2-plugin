@@ -2562,10 +2562,10 @@ public class TwigUtil {
         Collection<PhpClass> allSubclasses = new HashSet<>();
 
         // Twig 1
-        allSubclasses.addAll(PhpIndex.getInstance(project).getAllSubclasses("\\Twig_ExtensionInterface"));
+        allSubclasses.addAll(PhpIndexUtil.getAllSubclasses(project, "\\Twig_ExtensionInterface"));
 
         // Twig 2+
-        allSubclasses.addAll(PhpIndex.getInstance(project).getAllSubclasses("\\Twig\\Extension\\ExtensionInterface"));
+        allSubclasses.addAll(PhpIndexUtil.getAllSubclasses(project, "\\Twig\\Extension\\ExtensionInterface"));
 
         // Filter units tests and use HashSet as interfaces are nested for BC
         return allSubclasses.stream()
@@ -2661,10 +2661,8 @@ public class TwigUtil {
     public static void visitTokenParsers(@NotNull Project project, @NotNull Consumer<Triple<String, PsiElement, Method>> consumer) {
         Set<PhpClass> allSubclasses = new HashSet<>();
 
-        PhpIndex phpIndex = PhpIndex.getInstance(project);
-
-        allSubclasses.addAll(phpIndex.getAllSubclasses("\\Twig_TokenParserInterface"));
-        allSubclasses.addAll(phpIndex.getAllSubclasses("\\Twig\\TokenParser\\TokenParserInterface"));
+        allSubclasses.addAll(PhpIndexUtil.getAllSubclasses(project, "\\Twig_TokenParserInterface"));
+        allSubclasses.addAll(PhpIndexUtil.getAllSubclasses(project, "\\Twig\\TokenParser\\TokenParserInterface"));
 
         for (PhpClass allSubclass : allSubclasses) {
 

@@ -16,7 +16,7 @@ public class CommandUtil {
     public static Map<String, String> getCommandHelper(@NotNull Project project) {
 
         Map<String, String> map = new HashMap<>();
-        for(PhpClass phpClass: PhpIndex.getInstance(project).getAllSubclasses("\\Symfony\\Component\\Console\\Helper\\HelperInterface")) {
+        for(PhpClass phpClass: PhpIndexUtil.getAllSubclasses(project, "\\Symfony\\Component\\Console\\Helper\\HelperInterface")) {
             String helperName = PhpElementsUtil.getMethodReturnAsString(phpClass, "getName");
             if(helperName != null) {
                 map.put(helperName, phpClass.getPresentableFQN());

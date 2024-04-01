@@ -7,10 +7,10 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.*;
 import com.intellij.util.containers.ContainerUtil;
-import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.util.FilesystemUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -83,7 +83,7 @@ public class ConfigUtil {
     private static Map<String, Collection<String>> visitTreeSignatures(@NotNull Project project) {
         Map<String, Collection<String>> signatures = new HashMap<>();
 
-        visitTreeSignatures(PhpIndex.getInstance(project).getAllSubclasses("Symfony\\Component\\Config\\Definition\\ConfigurationInterface"), treeVisitor -> {
+        visitTreeSignatures(PhpIndexUtil.getAllSubclasses(project, "Symfony\\Component\\Config\\Definition\\ConfigurationInterface"), treeVisitor -> {
             if(!signatures.containsKey(treeVisitor.contents)) {
                 signatures.put(treeVisitor.contents, new HashSet<>());
             }

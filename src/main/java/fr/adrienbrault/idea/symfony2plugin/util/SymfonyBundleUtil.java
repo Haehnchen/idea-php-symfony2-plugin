@@ -38,9 +38,7 @@ public class SymfonyBundleUtil {
 
         symfonyBundles = new ArrayList<>();
 
-        Collection<PhpClass> phpClasses = PhpIndex.getInstance(project).getAllSubclasses("\\Symfony\\Component\\HttpKernel\\Bundle\\Bundle");
-
-        for (PhpClass phpClass : phpClasses) {
+        for (PhpClass phpClass : PhpIndexUtil.getAllSubclasses(project, "\\Symfony\\Component\\HttpKernel\\Bundle\\Bundle")) {
             symfonyBundles.add(new SymfonyBundle(phpClass));
         }
 

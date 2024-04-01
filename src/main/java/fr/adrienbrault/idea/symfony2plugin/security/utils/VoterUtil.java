@@ -12,12 +12,12 @@ import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.*;
-import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang3.StringUtils;
@@ -73,7 +73,7 @@ public class VoterUtil {
     }
 
     public static void visitAttribute(@NotNull Project project, @NotNull Consumer<Pair<String, PsiElement>> consumer) {
-        for (PhpClass phpClass : PhpIndex.getInstance(project).getAllSubclasses("Symfony\\Component\\Security\\Core\\Authorization\\Voter\\Voter")) {
+        for (PhpClass phpClass : PhpIndexUtil.getAllSubclasses(project, "Symfony\\Component\\Security\\Core\\Authorization\\Voter\\Voter")) {
             Method supports = phpClass.findMethodByName("supports");
             if(supports != null) {
                 visitAttribute(supports, consumer);
@@ -85,7 +85,7 @@ public class VoterUtil {
             }
         }
 
-        for (PhpClass phpClass : PhpIndex.getInstance(project).getAllSubclasses("Symfony\\Component\\Security\\Core\\Authorization\\Voter\\VoterInterface")) {
+        for (PhpClass phpClass : PhpIndexUtil.getAllSubclasses(project, "Symfony\\Component\\Security\\Core\\Authorization\\Voter\\VoterInterface")) {
             Method vote = phpClass.findMethodByName("vote");
             if(vote != null) {
                 visitAttributeForeach(vote, consumer);
