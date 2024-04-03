@@ -36,22 +36,21 @@ public class SymfonyContainerServiceBuilder extends DumbAwareAction {
         return ActionUpdateThread.BGT;
     }
 
-    public void update(AnActionEvent event) {
+    public void update(@NotNull AnActionEvent event) {
+        this.setStatus(event, false);
         Project project = event.getData(PlatformDataKeys.PROJECT);
-
-        if (project == null || !Symfony2ProjectComponent.isEnabled(project)) {
-            this.setStatus(event, false);
+        if (!Symfony2ProjectComponent.isEnabled(project)) {
             return;
         }
 
         Pair<PsiFile, PhpClass> pair = findPhpClass(event);
-        if(pair == null) {
+        if (pair == null) {
             return;
         }
 
         PsiFile psiFile = pair.getFirst();
-        if(!(psiFile instanceof YAMLFile) && !(psiFile instanceof XmlFile) && !(psiFile instanceof PhpFile)) {
-            this.setStatus(event, false);
+        if (psiFile instanceof YAMLFile || psiFile instanceof XmlFile || psiFile instanceof PhpFile) {
+            this.setStatus(event, true);
         }
     }
 
