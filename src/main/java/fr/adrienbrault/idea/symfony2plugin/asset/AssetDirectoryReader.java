@@ -54,6 +54,25 @@ public class AssetDirectoryReader {
         paths.add("public"); // latest Symfony structure
         paths.add("web"); // old Symfony structure
 
+        // find asset mapper files
+        for (VirtualFile file : FilenameIndex.getVirtualFilesByName("installed.php", GlobalSearchScope.allScope(project))) {
+            // composer
+            VirtualFile parent = file.getParent();
+            if (parent == null || !"vendor".equals(parent.getName())) {
+                continue;
+            }
+
+            VirtualFile assetFolder = parent.getParent();
+            if (assetFolder == null) {
+                continue;
+            }
+
+            String relativePath = VfsUtil.getRelativePath(assetFolder, ProjectUtil.getProjectDir(project), '/');
+            if (relativePath != null) {
+                paths.add(relativePath);
+            }
+        }
+
         return paths.stream()
             .map(path -> VfsUtil.findRelativeFile(ProjectUtil.getProjectDir(project), path.split("/")))
             .filter(Objects::nonNull)
