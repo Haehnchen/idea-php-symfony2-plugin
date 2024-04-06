@@ -48,10 +48,7 @@ import fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.ControllerDoc
 import fr.adrienbrault.idea.symfony2plugin.twig.variable.globals.TwigGlobalEnum;
 import fr.adrienbrault.idea.symfony2plugin.twig.variable.globals.TwigGlobalVariable;
 import fr.adrienbrault.idea.symfony2plugin.twig.variable.globals.TwigGlobalsServiceParser;
-import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.*;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.FunctionInsertHandler;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpClassCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerCompletionProvider;
@@ -396,7 +393,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         extend(
             CompletionType.BASIC,
             TwigPattern.getTwigTypeDocBlockPattern(),
-            new PhpClassCompletionProvider(true).withTrimLeadBackslash(true)
+            new TypeDocClassCompletionParametersCompletionProvider()
         );
 
         // {# @Container Foo:Bar #}
@@ -1527,6 +1524,53 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             }
 
             return targets;
+        }
+    }
+
+    /**
+     * "{# @var foo <caret> #}
+     */
+    private static class TypeDocClassCompletionParametersCompletionProvider extends CompletionProvider<CompletionParameters> {
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
+            PrefixMatcher prefixMatcher = result.getPrefixMatcher();
+            String prefix = prefixMatcher.getPrefix();
+
+            int i = prefix.lastIndexOf(" ");
+            if (i <= 0) {
+                return;
+            }
+
+            String substring = prefix.substring(i + 1);
+
+            if (substring.contains("\\")) {
+                // Foo\Fo<caret>
+                int lastSlash = substring.lastIndexOf("\\");
+                String namespace = "\\" + StringUtils.stripStart(substring.substring(0, lastSlash + 1), "\\");
+
+                // dont for: "\" only
+                if (namespace.length() > 1) {
+                    String afterLastSlash = substring.substring(lastSlash + 1);
+
+                    CompletionResultSet completionResultSet = result.withPrefixMatcher(afterLastSlash);
+                    Project project = parameters.getOriginalFile().getProject();
+
+                    Collection<PhpClass> phpClassInsideNamespace = PhpIndexUtil.getPhpClassInsideNamespace(project, namespace);
+                    for (PhpClass phpClass : phpClassInsideNamespace) {
+                        String fqn = phpClass.getFQN();
+                        String withoutNamespace = fqn.substring(namespace.length());
+                        completionResultSet.addElement(
+                            LookupElementBuilder.create(withoutNamespace)
+                                .withIcon(phpClass.getIcon())
+                                .withTailText( " [" + StringUtils.stripStart(fqn, "\\") + "]", true)
+                        );
+                    }
+                }
+            } else {
+                CompletionResultSet completionResultSet = result.withPrefixMatcher(substring);
+                PhpClassCompletionProvider phpClassCompletionProvider = new PhpClassCompletionProvider();
+                phpClassCompletionProvider.addCompletions(parameters, context, completionResultSet);
+            }
         }
     }
 
