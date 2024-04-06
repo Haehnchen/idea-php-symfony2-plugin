@@ -434,6 +434,14 @@ public class TwigPatternTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertTrue(
             fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ ''|transchoice(test ~ 'test', [], 'f<caret>o') }}"))
         );
+
+        assertTrue(
+            fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ ''|trans(test ~ 'test', [], domain = 'f<caret>o') }}"))
+        );
+
+        assertTrue(
+            fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ ''|transchoice(domain = 'f<caret>o') }}"))
+        );
     }
 
     /**
