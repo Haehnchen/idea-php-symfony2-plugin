@@ -78,7 +78,7 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, StubIndexed
                     }
                 }
             } else if(psiFile instanceof PhpFile) {
-                // annotations: @Route()
+                // @Route(), #[Route]
                 if(!isValidForIndex(inputData, psiFile)) {
                     return map;
                 }

@@ -59,10 +59,19 @@ public class AnnotationRouteElementVisitor {
 
             PhpAttributesList childOfType = PsiTreeUtil.getChildOfType(method, PhpAttributesList.class);
             if (childOfType != null) {
-                visitPhpAttributesList(childOfType);
+                visitPhpAttributesList(childOfType, method, phpClass, false);
+            }
+        }
+
+        Method invoke = phpClass.findOwnMethodByName("__invoke");
+        if (invoke != null) {
+            PhpAttributesList childOfType = PsiTreeUtil.getChildOfType(phpClass, PhpAttributesList.class);
+            if (childOfType != null) {
+                visitPhpAttributesList(childOfType, invoke, phpClass, true);
             }
         }
     }
+
     private void visitPhpDocTag(@NotNull PhpDocTag phpDocTag) {
 
         // "@var" and user non-related tags don't need an action
@@ -132,32 +141,33 @@ public class AnnotationRouteElementVisitor {
         }
     }
 
-    private void visitPhpAttributesList(@NotNull PhpAttributesList phpAttributesList) {
+    private void visitPhpAttributesList(@NotNull PhpAttributesList phpAttributesList, @NotNull Method method, @NotNull PhpClass phpClass, boolean classLevel) {
         PsiElement parent = phpAttributesList.getParent();
 
         // prefix on class scope
         String routeNamePrefix = "";
         String routePathPrefix = "";
-        if (parent instanceof Method) {
-            PhpClass containingClass = ((Method) parent).getContainingClass();
-            if (containingClass != null) {
-                for (PhpAttribute attribute : containingClass.getAttributes()) {
-                    String fqn = attribute.getFQN();
-                    if(fqn == null || !RouteHelper.isRouteClassAnnotation(fqn)) {
-                        continue;
-                    }
 
-                    String nameAttribute = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, 1, "name");
-                    if (nameAttribute != null) {
-                        routeNamePrefix = nameAttribute;
-                    }
-
-                    String pathAttribute = PhpPsiAttributesUtil.getAttributeValueByNameAsStringWithDefaultParameterFallback(attribute, "path");;
-                    if (pathAttribute != null) {
-                        routePathPrefix = pathAttribute;
-                    }
-                }
+        for (PhpAttribute attribute : phpClass.getAttributes()) {
+            String fqn = attribute.getFQN();
+            if(fqn == null || !RouteHelper.isRouteClassAnnotation(fqn)) {
+                continue;
             }
+
+            String nameAttribute = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, 1, "name");
+            if (nameAttribute != null) {
+                routeNamePrefix = nameAttribute;
+            }
+
+            String pathAttribute = PhpPsiAttributesUtil.getAttributeValueByNameAsStringWithDefaultParameterFallback(attribute, "path");;
+            if (pathAttribute != null) {
+                routePathPrefix = pathAttribute;
+            }
+        }
+
+        if (classLevel) {
+            routePathPrefix = "";
+            routeNamePrefix = "";
         }
 
         for (PhpAttribute attribute : phpAttributesList.getAttributes()) {
@@ -168,13 +178,11 @@ public class AnnotationRouteElementVisitor {
 
             String nameAttribute = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, 1, "name");
 
-            String routeName = null;
+            String routeName;
             if (nameAttribute != null) {
                 routeName = nameAttribute;
             } else {
-                if (parent instanceof Method) {
-                    routeName = AnnotationBackportUtil.getRouteByMethod((Method) parent);
-                }
+                routeName = AnnotationBackportUtil.getRouteByMethod(method);
             }
 
             if (routeName == null) {
@@ -183,8 +191,10 @@ public class AnnotationRouteElementVisitor {
 
             StubIndexedRoute route = new StubIndexedRoute(routeNamePrefix + routeName);
 
-            if (parent instanceof Method) {
-                route.setController(getController((Method) parent));
+            if (classLevel) {
+                route.setController(getController(phpClass));
+            } else {
+                route.setController(getController(method));
             }
 
             // find path "#[Route('/attributesWithoutName')]" or "#[Route(path: '/attributesWithoutName')]"
@@ -301,6 +311,18 @@ public class AnnotationRouteElementVisitor {
             "%s::%s",
             StringUtils.stripStart(containingClass.getFQN(), "\\"),
             method.getName()
+        );
+    }
+
+    private String getController(@NotNull PhpClass phpClass) {
+        if(phpClass.findOwnMethodByName("__invoke") == null) {
+            return null;
+        }
+
+        return String.format(
+            "%s::%s",
+            StringUtils.stripStart(phpClass.getFQN(), "\\"),
+            "__invoke"
         );
     }
 

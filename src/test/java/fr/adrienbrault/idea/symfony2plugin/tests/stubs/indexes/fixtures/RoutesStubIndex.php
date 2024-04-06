@@ -265,6 +265,28 @@ namespace MyAttributesPrefix
     }
 }
 
+
+namespace AttributeInvoke
+{
+    use Symfony\Component\Routing\Annotation\Route;
+
+    #[Route(path: '/foo-attributes', name: 'invoke_route_attribute')]
+    class MyController
+    {
+        public function __invoke()
+        {
+        }
+    }
+
+    #[Route(path: '/foo-attributes/no-name')]
+    class NoNameController
+    {
+        public function __invoke()
+        {
+        }
+    }
+}
+
 namespace Symfony\Component\Routing\Annotation
 {
     class Route
