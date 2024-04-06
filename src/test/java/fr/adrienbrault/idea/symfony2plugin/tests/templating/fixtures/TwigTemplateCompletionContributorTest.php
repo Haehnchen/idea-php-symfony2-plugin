@@ -114,3 +114,14 @@ namespace App\Twig\Components
     }
 }
 
+namespace MyFoo\Car\Bike
+{
+    class Foobar
+    {
+    }
+
+    class Foobar2
+    {
+    }
+}
+
