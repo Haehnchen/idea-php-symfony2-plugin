@@ -35,9 +35,6 @@ public class InspectionUtil {
 
         int lastPos = controllerName.lastIndexOf(":") + 1;
         String actionName = controllerName.substring(lastPos);
-        if(!shortcutReturn.isService()) {
-            actionName += "Action";
-        }
 
         final Project project = shortcutReturn.getPhpClass().getProject();
         final String finalActionName = actionName;
