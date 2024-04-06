@@ -197,11 +197,6 @@ public class AssetMapperUtil {
     }
 
     @NotNull
-    public static Collection<VirtualFile> getModuleReferences(@NotNull Project project, @NotNull String module) {
-        return getModuleReferences(module, AssetMapperUtil.getMappingFiles(project));
-    }
-
-    @NotNull
     public static Collection<VirtualFile> getEntrypointModuleReferences(@NotNull Project project, @NotNull String module) {
         List<AssetMapperModule> collect = getEntrypointMappings(project).stream().filter(module1 -> module1.key().equals(module)).collect(Collectors.toList());
 
