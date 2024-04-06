@@ -20,7 +20,7 @@ import com.intellij.util.ThrowableRunnable;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.findUsages.PhpGotoTargetRendererProvider;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.completion.IncompletePropertyServiceInjectionContributor;
+import fr.adrienbrault.idea.symfony2plugin.completion.ServicePropertyInsertUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import icons.SymfonyIcons;
@@ -104,7 +104,7 @@ public class PhpPropertyArgumentIntention extends IntentionAndQuickFixAction imp
             }
         }
 
-        List<String> injectionService = IncompletePropertyServiceInjectionContributor.getInjectionService(project, name, methodName)
+        List<String> injectionService = ServicePropertyInsertUtil.getInjectionService(project, name, methodName)
             .stream()
             .map(s -> StringUtils.stripStart(s, "\\"))
             .toList();
@@ -153,7 +153,7 @@ public class PhpPropertyArgumentIntention extends IntentionAndQuickFixAction imp
 
                 WriteCommandAction.writeCommandAction(project)
                     .withName("Symfony: Add Property Service")
-                    .run((ThrowableRunnable<Throwable>) () -> IncompletePropertyServiceInjectionContributor.appendPropertyInjection(phpClassScope, fieldReference.getName(), classFqn));
+                    .run((ThrowableRunnable<Throwable>) () -> ServicePropertyInsertUtil.appendPropertyInjection(phpClassScope, fieldReference.getName(), classFqn));
             });
         } catch (Throwable ignored) {
         }
