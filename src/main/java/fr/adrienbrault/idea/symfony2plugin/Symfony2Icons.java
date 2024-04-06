@@ -76,6 +76,9 @@ public class Symfony2Icons {
 
     public static final Icon TWIG_BLOCK_OVERWRITE = IconLoader.getIcon("/icons/twig_block_overwrite.png", Symfony2Icons.class);
 
+    public static final Icon SYMFONY_AI = IconLoader.getIcon("/icons/symfony_ai.png", Symfony2Icons.class);
+    public static final Icon SYMFONY_AI_OPACITY = IconLoader.getIcon("/icons/symfony_ai_opacity.png", Symfony2Icons.class);
+
     public static Image getImage(Icon icon) {
 
         if (icon instanceof ImageIcon) {
