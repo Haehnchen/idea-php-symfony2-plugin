@@ -52,6 +52,39 @@ public class TwigPattern {
     public static final String DOC_SEE_REGEX  = "@see[\\s]+([-@\\./\\:\\w\\\\\\[\\]]+)[\\s]*";
 
     /**
+     * Some workaround: "FUNCTION_CALL" got broken in PhpStorm 2024.x
+     */
+    private static final PatternCondition<PsiElement> PARENTHESIZED_FUNCTION_NAME_WORKAROUND = new PatternCondition<>("PARENTHESIZED_EXPRESSION workaround") {
+        @Override
+        public boolean accepts(@NotNull PsiElement psiElement, ProcessingContext context) {
+            PsiElement psiElement1 = null;
+
+            String parent = psiElement.getNode().toString();
+            if (parent.contains("PARENTHESIZED_EXPRESSION")) {
+                // its "PARENTHESIZED_EXPRESSION" on PhpStorm 2024.x
+                // function name is outside
+                PsiElement firstChild = psiElement.getPrevSibling();
+                if (firstChild != null && firstChild.getNode().getElementType() == TwigTokenTypes.IDENTIFIER) {
+                    psiElement1 = firstChild;
+                }
+            } else if (parent.contains("FUNCTION_CALL")) {
+                // rightly nested; function is included
+                PsiElement firstChild = psiElement.getFirstChild();
+                if (firstChild != null && firstChild.getNode().getElementType() == TwigTokenTypes.IDENTIFIER) {
+                    psiElement1 = firstChild;
+                }
+            }
+
+            if (psiElement1 == null) {
+                return false;
+            }
+
+            String text = psiElement1.getText();
+            return ("trans".equals(text) || "transchoice".equals(text));
+        }
+    };
+
+    /**
      * {% trans with {'%name%': 'Fabien'} from "app" %}
      * {% transchoice count with {'%name%': 'Fabien'} from "app" %}
      */
@@ -837,6 +870,17 @@ public class TwigPattern {
                                 PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("transchoice"))
                             )
                         )
+                    ),
+                    // transchoice(2, null, domain='bar')
+                    // trans(2, domain='bar')
+                    PlatformPatterns.psiElement(TwigTokenTypes.EQ).afterLeafSkipping(
+                        PlatformPatterns.or(
+                            PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                        ),
+                        PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("domain"))
+                            .withParent(PlatformPatterns.psiElement(TwigVariableReference.class)
+                                .withParent(PlatformPatterns.psiElement().with(PARENTHESIZED_FUNCTION_NAME_WORKAROUND)))
                     )
                 )
             )
