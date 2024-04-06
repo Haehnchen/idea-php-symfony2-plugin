@@ -503,6 +503,10 @@ public class TwigUtil {
                     }
                 }
             }
+
+            if (brace != null) {
+                return extractDomainFromNamedParameter(brace);
+            }
         } else if ("transchoice".equalsIgnoreCase(filterNameText)) {
             PsiElement brace = PsiTreeUtil.nextVisibleLeaf(filterName);
             if (PsiElementAssertUtil.isNotNullAndIsElementType(brace, TwigTokenTypes.LBRACE)) {
@@ -525,6 +529,10 @@ public class TwigUtil {
                     }
                 }
             }
+
+            if (brace != null) {
+                return extractDomainFromNamedParameter(brace);
+            }
         }
 
         return null;
@@ -542,6 +550,35 @@ public class TwigUtil {
                 if (text != null && TwigPattern.getParameterAsStringPattern().accepts(text)) {
                     return text.getText();
                 }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * ('aaa', name: "foobar", )
+     */
+    @Nullable
+    private static String extractDomainFromNamedParameter(@NotNull PsiElement psiElement) {
+        for (TwigVariableReference variableReference : PsiElementUtils.getNextSiblingOfTypes(psiElement, TwigVariableReference.class)) {
+            if (!"domain".equals(variableReference.getName())) {
+                continue;
+            }
+
+            PsiElement parameterValue = PsiElementUtils.getNextSiblingAndSkip(
+                variableReference,
+                TwigTokenTypes.STRING_TEXT,
+                TwigTokenTypes.EQ, TwigTokenTypes.WHITE_SPACE, TwigTokenTypes.SINGLE_QUOTE, TwigTokenTypes.DOUBLE_QUOTE
+            );
+
+            if (parameterValue == null) {
+                continue;
+            }
+
+            String text = parameterValue.getText();
+            if (!text.isBlank()) {
+                return text;
             }
         }
 

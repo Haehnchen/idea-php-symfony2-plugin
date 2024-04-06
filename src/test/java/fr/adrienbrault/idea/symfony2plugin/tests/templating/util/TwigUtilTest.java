@@ -80,6 +80,14 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
             "{{ '<caret>' | transchoice(foo.bar - bar, {'%var%': value}, 'foo') }}",
             "{{ '<caret>'|trans({'%some%': \"button.reserve\"|trans,}, 'foo') }}",
             "{{ 'bar'|trans({'%some%': \"<caret>\"|trans({}, 'foo'),}) }}",
+            "{{ '<caret>'|trans(domain = 'foo') }}",
+            "{{ '<caret>'|trans('', {}, '', domain = \"foo\") }}",
+            "{{ '<caret>'|trans(foo:'', {}, '', domain='foo') }}",
+            "{{ '<caret>'|trans(foo:'', {}, domain='foo', '', ) }}",
+            "{{ '<caret>'|transchoice(domain = 'foo') }}",
+            "{{ '<caret>'|transchoice('', {}, '', domain = \"foo\") }}",
+            "{{ '<caret>'|transchoice(foo: '', {}, '', domain='foo') }}",
+            "{{ '<caret>'|transchoice(foo:'', {}, domain='foo', '', ) }}",
         };
 
         for (String s : blocks) {
