@@ -198,6 +198,16 @@ public class RoutesStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase 
         assertEquals("/foo-attributes/edit-not-named/{id}", route9.getPath());
     }
 
+    public void testThatPhp8AttributesViaClassInvokeMethodsAreInIndex() {
+        RouteInterface route = getFirstValue("invoke_route_attribute");
+        assertEquals("/foo-attributes", route.getPath());
+        assertEquals("AttributeInvoke\\MyController::__invoke", route.getController());
+
+        RouteInterface route2 = getFirstValue("attributeinvoke_noname__invoke");
+        assertEquals("/foo-attributes/no-name", route2.getPath());
+        assertEquals("AttributeInvoke\\NoNameController::__invoke", route2.getController());
+    }
+
     @NotNull
     private RouteInterface getFirstValue(@NotNull String key) {
         return FileBasedIndex.getInstance().getValues(RoutesStubIndex.KEY, key, GlobalSearchScope.allScope(getProject())).get(0);
