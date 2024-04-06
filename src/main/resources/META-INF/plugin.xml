@@ -249,11 +249,6 @@
 
         <completion.contributor language="PHP" order="last" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.PhpIncompleteCompletionContributor"/>
 
-
-        <!---
-        <completion.contributor language="PHP" order="last" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.IncompletePropertyServiceInjectionContributor"/>
-        -->
-
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex"/>
