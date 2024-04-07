@@ -30,6 +30,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.asset.AssetDirectoryReader;
 import fr.adrienbrault.idea.symfony2plugin.asset.provider.AssetCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.assetMapper.AssetMapperUtil;
+import fr.adrienbrault.idea.symfony2plugin.completion.insertHandler.TwigEscapedSlashInsertHandler;
 import fr.adrienbrault.idea.symfony2plugin.dic.MethodReferenceBag;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
@@ -434,32 +435,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         extend(
             CompletionType.BASIC,
             TwigPattern.getPrintBlockOrTagFunctionPattern("constant"),
-            new CompletionProvider<>() {
-                public void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet resultSet) {
-                    PsiElement position = parameters.getPosition();
-                    if (!Symfony2ProjectComponent.isEnabled(position)) {
-                        return;
-                    }
-
-                    PhpIndex instance = PhpIndex.getInstance(position.getProject());
-                    for (String constant : instance.getAllConstantNames(PrefixMatcher.ALWAYS_TRUE)) {
-                        resultSet.addElement(LookupElementBuilder.create(constant).withIcon(PhpIcons.CONSTANT));
-                    }
-
-                    int foo = parameters.getOffset() - position.getTextRange().getStartOffset();
-                    String before = position.getText().substring(0, foo);
-                    String[] parts = before.split("::");
-
-                    if (parts.length >= 1) {
-                        PhpClass phpClass = PhpElementsUtil.getClassInterface(position.getProject(), parts[0].replace("\\\\", "\\"));
-                        if (phpClass != null) {
-                            phpClass.getFields().stream().filter(Field::isConstant).forEach(field ->
-                                resultSet.addElement(LookupElementBuilder.create(phpClass.getPresentableFQN().replace("\\", "\\\\") + "::" + field.getName()).withIcon(PhpIcons.CONSTANT))
-                            );
-                        }
-                    }
-                }
-            }
+            new ConstantCompletionParametersCompletionProvider()
         );
 
         // {% e => {% extends '...'
@@ -1571,6 +1547,98 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 PhpClassCompletionProvider phpClassCompletionProvider = new PhpClassCompletionProvider();
                 phpClassCompletionProvider.addCompletions(parameters, context, completionResultSet);
             }
+        }
+    }
+
+    /**
+     * {% constant('<caret>') %}
+     * {% constant('Foo\\<caret>') %}
+     * {% constant('FOO::<caret>') %}
+     */
+    private static class ConstantCompletionParametersCompletionProvider extends CompletionProvider<CompletionParameters> {
+        public void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet resultSet) {
+            PsiElement position = parameters.getPosition();
+            if (!Symfony2ProjectComponent.isEnabled(position)) {
+                return;
+            }
+
+            Project project = position.getProject();
+            PhpIndex instance = PhpIndex.getInstance(project);
+
+            PrefixMatcher prefixMatcher = resultSet.getPrefixMatcher();
+            String prefix = prefixMatcher.getPrefix();
+            if (prefix.contains(":")) {
+                // 'FOO::foo<caret>'
+                String[] parts = prefix.replace("::", ":").split(":");
+                String substring = prefix.substring(prefix.lastIndexOf(":") + 1);
+                CompletionResultSet completionResultSet = resultSet.withPrefixMatcher(substring);
+
+                PhpClass phpClass = PhpElementsUtil.getClassInterface(project, parts[0].replace("\\\\", "\\"));
+                if (phpClass != null) {
+                    String fqnNoLeadingSlash = StringUtils.stripStart(phpClass.getFQN(), "\\");
+
+                    for (PhpNamedElement item : getFieldsAndEnums(phpClass)) {
+                        LookupElementBuilder element = LookupElementBuilder
+                            .createWithSmartPointer(item.getName(), item)
+                            .withTypeText(fqnNoLeadingSlash, true)
+                            .withIcon(item.getIcon());
+
+                        completionResultSet.addElement(element);
+                    }
+                }
+            } else if (prefix.contains("\\")) {
+                // 'FOO\\Foo<caret>'
+                int i = prefix.lastIndexOf("\\");
+                String substring = "\\" + StringUtils.stripStart(prefix.substring(0, i).replace("\\\\", "\\"), "\\");
+                String pre = prefix.substring(prefix.lastIndexOf("\\") + 1);
+                CompletionResultSet completionResultSet = resultSet.withPrefixMatcher(pre);
+
+                for (PhpClass phpClass: PhpIndexUtil.getPhpClassInsideNamespace(project, substring)) {
+                    String fqn = phpClass.getFQN().substring(substring.length());
+                    String fqnNoLeadingSlash = StringUtils.stripStart(phpClass.getFQN(), "\\");
+
+                    for (PhpNamedElement item : getFieldsAndEnums(phpClass)) {
+                        LookupElementBuilder element = LookupElementBuilder
+                            .create(fqn.replace("\\", "\\\\") + "::" + item.getName())
+                            .withTypeText(fqnNoLeadingSlash, true)
+                            .withIcon(item.getIcon());
+
+                        completionResultSet.addElement(element);
+                    }
+                }
+            } else {
+                // '<caret>'
+                for (String constant : instance.getAllConstantNames(prefixMatcher)) {
+                    resultSet.addElement(LookupElementBuilder.create(constant).withIcon(PhpIcons.CONSTANT));
+                }
+
+                Collection<PhpClass> phpClasses = new ArrayList<>();
+                for (String className : instance.getAllClassNames(resultSet.getPrefixMatcher())) {
+                    phpClasses.addAll(instance.getClassesByName(className));
+                }
+
+                for (PhpClass phpClass : phpClasses) {
+                    String fqnNoLeadingSlash = StringUtils.stripStart(phpClass.getFQN(), "\\");
+                    for (PhpNamedElement field : getFieldsAndEnums(phpClass)) {
+                        LookupElementBuilder element = LookupElementBuilder
+                            .createWithSmartPointer(phpClass.getName() + "::" + field.getName(), field)
+                            .withInsertHandler(TwigEscapedSlashInsertHandler.getInstance())
+                            .withTypeText(fqnNoLeadingSlash, true)
+                            .withIcon(field.getIcon());
+
+                        resultSet.addElement(element);
+                    }
+                }
+            }
+        }
+
+        private static @NotNull Collection<PhpNamedElement> getFieldsAndEnums(@NotNull PhpClass phpClass) {
+            Collection<PhpNamedElement> items = new ArrayList<>();
+
+            items.addAll(Arrays.stream(phpClass.getOwnFields()).filter(field -> field.isConstant() && field.getModifier().isPublic()).toList());
+            items.addAll(phpClass.getEnumCases());
+
+            return items;
         }
     }
 

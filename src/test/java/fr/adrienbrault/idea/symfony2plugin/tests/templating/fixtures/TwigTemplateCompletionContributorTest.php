@@ -125,3 +125,23 @@ namespace MyFoo\Car\Bike
     }
 }
 
+namespace App\Bike
+{
+    enum FooEnum
+    {
+        case FOOBAR;
+        case FOOBAR1;
+        case FOOBAR2;
+        case FOOBAR3;
+    }
+
+    class FooConst
+    {
+        public const CAR = '';
+        public const CAR1 = '';
+        public const CAR2 = '';
+        public const CAR3 = '';
+    }
+}
+
+

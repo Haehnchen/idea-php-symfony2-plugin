@@ -78,8 +78,24 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         assertCompletionContains(TwigFileType.INSTANCE, "{# bar F<caret> #}", "Foobar");
     }
 
-    public void testThatConstantProvidesCompletionForClassAndDefine() {
+    public void testThatConstantProvidesCompletionForClassConstant() {
         assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('<caret>') }}", "CONST_FOO");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('<caret>') }}", "FooConst::CAR", "FooEnum::FOOBAR");
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('App\\<caret>') }}", "\\\\Bike\\\\FooConst::CAR", "\\\\Bike\\\\FooEnum::FOOBAR");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('App\\\\Bike\\\\<caret>') }}", "FooConst::CAR", "FooEnum::FOOBAR");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('App\\\\Bike\\\\Foo<caret>') }}", "FooEnum::FOOBAR");
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('\\\\App\\\\Bike\\\\Foo<caret>') }}", "FooEnum::FOOBAR");
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('App\\\\Bike\\\\FooConst::C<caret>') }}", "CAR");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('App\\\\Bike\\\\FooEnum::F<caret>') }}", "FOOBAR");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('\\\\App\\\\Bike\\\\FooEnum::F<caret>') }}", "FOOBAR");
+
+        assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ constant('<caret>') }}", "{{ constant('App\\\\Bike\\\\FooEnum::FOOBAR') }}", l -> "FooEnum::FOOBAR".equals(l.getLookupString()));
+        assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ constant('App\\<caret>') }}", "{{ constant('App\\\\\\Bike\\\\FooEnum::FOOBAR') }}", l -> "\\\\Bike\\\\FooEnum::FOOBAR".equals(l.getLookupString()));
+        assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ constant('App\\\\Bike\\\\Foo<caret>') }}", "{{ constant('App\\\\Bike\\\\FooEnum::FOOBAR') }}", l -> "FooEnum::FOOBAR".equals(l.getLookupString()));
+        assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ constant('App\\\\Bike\\\\FooEnum::F<caret>') }}", "{{ constant('App\\\\Bike\\\\FooEnum::FOOBAR') }}", l -> "FOOBAR".equals(l.getLookupString()));
     }
 
     public void testCompletionForRoutingParameter() {

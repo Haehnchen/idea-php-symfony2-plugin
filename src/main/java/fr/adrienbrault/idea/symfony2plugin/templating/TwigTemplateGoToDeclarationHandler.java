@@ -13,6 +13,7 @@ import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.PhpEnumCase;
 import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigBlockTag;
@@ -39,6 +40,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -346,34 +348,34 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
 
     @NotNull
     private Collection<PsiElement> getConstantGoto(@NotNull PsiElement psiElement) {
-        Collection<PsiElement> targetPsiElements = new ArrayList<>();
-
         String contents = psiElement.getText();
         if(StringUtils.isBlank(contents)) {
-            return targetPsiElements;
+            return Collections.emptyList();
         }
 
         // global constant
         if(!contents.contains(":")) {
-            targetPsiElements.addAll(PhpIndex.getInstance(psiElement.getProject()).getConstantsByName(contents));
-            return targetPsiElements;
+            return new ArrayList<>(PhpIndex.getInstance(psiElement.getProject()).getConstantsByName(contents));
         }
 
         // resolve class constants
         String[] parts = contents.split("::");
         if(parts.length != 2) {
-            return targetPsiElements;
+            return Collections.emptyList();
         }
 
         PhpClass phpClass = PhpElementsUtil.getClassInterface(psiElement.getProject(), parts[0].replace("\\\\", "\\"));
-        if(phpClass == null) {
-            return targetPsiElements;
+        if (phpClass == null) {
+            return Collections.emptyList();
         }
 
+        Collection<PsiElement> targetPsiElements = new ArrayList<>();
         Field field = phpClass.findFieldByName(parts[1], true);
         if(field != null) {
             targetPsiElements.add(field);
         }
+
+        targetPsiElements.addAll(phpClass.getEnumCases().stream().filter(e -> parts[1].equals(e.getName())).toList());
 
         return targetPsiElements;
     }
