@@ -49,3 +49,15 @@ namespace App\Twig\Components
     {
     }
 }
+
+namespace App
+{
+    enum FooEnum
+    {
+        case FOO;
+        case FOO1;
+
+        case BAR;
+        case BAR1;
+    }
+}

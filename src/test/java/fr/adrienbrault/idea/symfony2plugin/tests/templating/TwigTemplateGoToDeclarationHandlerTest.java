@@ -159,14 +159,14 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
         }
     }
 
-    public void testThatConstantProvidesNavigation() {
+    public void testThatConstantAndEnumProvidesNavigation() {
         assertNavigationMatch(TwigFileType.INSTANCE, "{{ constant('\\Foo\\ConstantBar\\Foo::F<caret>OO') }}", PlatformPatterns.psiElement(Field.class).withName("FOO"));
         assertNavigationMatch(TwigFileType.INSTANCE, "{{ constant('\\\\Foo\\\\ConstantBar\\\\Foo::F<caret>OO') }}", PlatformPatterns.psiElement(Field.class).withName("FOO"));
 
         assertNavigationMatch(TwigFileType.INSTANCE, "{% if foo == constant('\\Foo\\ConstantBar\\Foo::F<caret>OO') %}", PlatformPatterns.psiElement(Field.class).withName("FOO"));
         assertNavigationMatch(TwigFileType.INSTANCE, "{% set foo == constant('\\Foo\\ConstantBar\\Foo::F<caret>OO') %}", PlatformPatterns.psiElement(Field.class).withName("FOO"));
 
-        assertNavigationMatch(TwigFileType.INSTANCE, "{{ constant('CONST<caret>_FOO') }}", PlatformPatterns.psiElement());
+        assertNavigationMatch(TwigFileType.INSTANCE, "{{ constant('\\\\App\\\\FooEnum::F<caret>OO') }}", PlatformPatterns.psiElement());
     }
 
     public void testTestControllerActionsProvidesReferences() {
