@@ -1,9 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.util;
 
 import fr.adrienbrault.idea.symfony2plugin.doctrine.ObjectRepositoryTypeProvider;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderCompletionContribution;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderCompletionContributionType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.regex.Matcher;
@@ -65,5 +68,65 @@ public class QueryBuilderUtil {
         }
 
         return field;
+    }
+
+    public static Collection<QueryBuilderCompletionContribution> guestCompletionContribution(@Nullable String content) {
+        Collection<QueryBuilderCompletionContribution> contributions = new ArrayList<>();
+
+        if (content == null || content.isBlank()) {
+            contributions.add(new QueryBuilderCompletionContribution(QueryBuilderCompletionContributionType.PROPERTY, ""));
+            contributions.add(new QueryBuilderCompletionContribution(QueryBuilderCompletionContributionType.FUNCTION, ""));
+        }
+
+        if (content != null) {
+            if (content.matches("^[\\w+_.]+$")) {
+                contributions.add(new QueryBuilderCompletionContribution(QueryBuilderCompletionContributionType.PROPERTY, content));
+            }
+
+            Matcher matcher = Pattern.compile("([\\w_]+)\\.([\\w_]+)$").matcher(content);
+            if (matcher.find())  {
+                String table = matcher.group(1);
+                String field = matcher.group(2);
+
+                contributions.add(new QueryBuilderCompletionContribution(QueryBuilderCompletionContributionType.PROPERTY, table + "." + field));
+            }
+
+            // "foo, test.test"
+            // "(test.test"
+            Matcher matcher3 = Pattern.compile("[(|,]\\s*([\\w_]+)$").matcher(content);
+            if (matcher3.find())  {
+                contributions.add(new QueryBuilderCompletionContribution(QueryBuilderCompletionContributionType.PROPERTY, matcher3.group(1)));
+            }
+
+            // "test"
+            // ", test"
+            Matcher matcher2 = Pattern.compile("[(|,]\\s*([\\w_]+)$").matcher(content);
+            if (matcher2.find())  {
+                contributions.add(new QueryBuilderCompletionContribution(QueryBuilderCompletionContributionType.FUNCTION, matcher2.group(1)));
+            } else {
+                Matcher matcherX = Pattern.compile("^([\\w_]+)$").matcher(content);
+                if (matcherX.find())  {
+                    contributions.add(new QueryBuilderCompletionContribution(QueryBuilderCompletionContributionType.FUNCTION, matcherX.group(1)));
+                }
+            }
+
+            // "(test
+            // "( test
+            Matcher matcherU = Pattern.compile("\\(\\s*([\\w_]+)$").matcher(content);
+            if (matcherU.find())  {
+                contributions.add(new QueryBuilderCompletionContribution(QueryBuilderCompletionContributionType.PROPERTY, matcherU.group(1)));
+            }
+
+            // "AND test"
+            // "AND test."
+            // "> test"
+            // "> test."
+            Matcher matcherY = Pattern.compile("(AND|OR|WHERE|NOT|=|>|<)\\s+([\\w_]+[.]*)$").matcher(content);
+            if (matcherY.find())  {
+                contributions.add(new QueryBuilderCompletionContribution(QueryBuilderCompletionContributionType.PROPERTY, matcherY.group(2)));
+            }
+        }
+
+        return new HashSet<>(contributions);
     }
 }

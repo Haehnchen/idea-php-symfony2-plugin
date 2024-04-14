@@ -1,6 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.querybuilder.util;
 
 import com.intellij.openapi.util.Pair;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderCompletionContribution;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderCompletionContributionType;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.util.QueryBuilderUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
@@ -52,5 +54,52 @@ public class QueryBuilderUtilTest extends SymfonyLightCodeInsightFixtureTestCase
             String string = QueryBuilderUtil.getFieldString(content.replace("<caret>", ""), content.indexOf("<caret>"));
             assertEquals(item.getSecond(), string);
         }
+    }
+
+    public void testGuestCompletionContribution() {
+        Collection<QueryBuilderCompletionContribution> t1 = QueryBuilderUtil.guestCompletionContribution("test_foo.te");
+        assertEquals(1, t1.size());
+        assertTrue(t1.stream().anyMatch(c -> c.type() == QueryBuilderCompletionContributionType.PROPERTY && "test_foo.te".equals(c.prefix())));
+
+        Collection<QueryBuilderCompletionContribution> t2 = QueryBuilderUtil.guestCompletionContribution("");
+        assertEquals(2, t2.size());
+        assertTrue(t2.stream().anyMatch(c -> c.type() == QueryBuilderCompletionContributionType.PROPERTY && c.prefix().isEmpty()));
+        assertTrue(t2.stream().anyMatch(c -> c.type() == QueryBuilderCompletionContributionType.FUNCTION && c.prefix().isEmpty()));
+
+        Collection<QueryBuilderCompletionContribution> t3 = QueryBuilderUtil.guestCompletionContribution("test_foo.");
+        assertEquals(1, t3.size());
+        assertTrue(t3.stream().anyMatch(c -> c.type() == QueryBuilderCompletionContributionType.PROPERTY && "test_foo.".equals(c.prefix())));
+
+        Collection<QueryBuilderCompletionContribution> t4 = QueryBuilderUtil.guestCompletionContribution("foo, test_foo.test_foo");
+        assertEquals(1, t4.size());
+        assertTrue(t4.stream().anyMatch(c -> c.type() == QueryBuilderCompletionContributionType.PROPERTY && "test_foo.test_foo".equals(c.prefix())));
+
+        Collection<QueryBuilderCompletionContribution> t5 = QueryBuilderUtil.guestCompletionContribution("(test_foo.test_foo");
+        assertEquals(1, t5.size());
+        assertTrue(t5.stream().anyMatch(c -> c.type() == QueryBuilderCompletionContributionType.PROPERTY && "test_foo.test_foo".equals(c.prefix())));
+
+        Collection<QueryBuilderCompletionContribution> t6 = QueryBuilderUtil.guestCompletionContribution("test_foo");
+        assertEquals(2, t6.size());
+        assertTrue(t6.stream().anyMatch(c -> c.type() == QueryBuilderCompletionContributionType.FUNCTION && "test_foo".equals(c.prefix())));
+
+        Collection<QueryBuilderCompletionContribution> t7 = QueryBuilderUtil.guestCompletionContribution("= test_foo.a");
+        assertEquals(1, t7.size());
+        assertTrue(t7.stream().anyMatch(c -> c.type() == QueryBuilderCompletionContributionType.PROPERTY && "test_foo.a".equals(c.prefix())));
+
+        Collection<QueryBuilderCompletionContribution> t8 = QueryBuilderUtil.guestCompletionContribution("= test_foo");
+        assertEquals(1, t8.size());
+        assertTrue(t8.stream().anyMatch(c -> c.type() == QueryBuilderCompletionContributionType.PROPERTY && "test_foo".equals(c.prefix())));
+
+        Collection<QueryBuilderCompletionContribution> t9 = QueryBuilderUtil.guestCompletionContribution("AND test_foo.");
+        assertEquals(1, t9.size());
+        assertTrue(t9.stream().anyMatch(c -> c.type() == QueryBuilderCompletionContributionType.PROPERTY && "test_foo.".equals(c.prefix())));
+
+        Collection<QueryBuilderCompletionContribution> t10 = QueryBuilderUtil.guestCompletionContribution("FOO(test_foo.fo");
+        assertEquals(1, t10.size());
+        assertTrue(t10.stream().anyMatch(c -> c.type() == QueryBuilderCompletionContributionType.PROPERTY && "test_foo.fo".equals(c.prefix())));
+
+        Collection<QueryBuilderCompletionContribution> t11 = QueryBuilderUtil.guestCompletionContribution("FOO(test_foo.fo");
+        assertEquals(1, t11.size());
+        assertTrue(t11.stream().anyMatch(c -> c.type() == QueryBuilderCompletionContributionType.PROPERTY && "test_foo.fo".equals(c.prefix())));
     }
 }

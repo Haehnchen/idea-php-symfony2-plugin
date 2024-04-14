@@ -17,15 +17,19 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineUtil;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderCompletionContribution;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderCompletionContributionType;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderPropertyAlias;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderRelation;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.processor.QueryBuilderChainProcessor;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.util.MatcherUtil;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.util.QueryBuilderUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -108,7 +112,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
             @Override
             protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
                 PsiElement psiElement = completionParameters.getOriginalPosition();
-                if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof StringLiteralExpression)) {
+                if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof StringLiteralExpression parent)) {
                     return;
                 }
 
@@ -122,6 +126,14 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
 
                 QueryBuilderMethodReferenceParser qb = getQueryBuilderParser(methodMatchParameter.getMethodReference());
                 QueryBuilderScopeContext collect = qb.collect();
+
+                String content = PsiElementUtils.getStringBeforeCursor(parent, completionParameters.getOffset());
+
+                // "test.test"
+                if (content != null && content.matches("^[\\w_.]+$")) {
+                    completionResultSet = completionResultSet.withPrefixMatcher(content);
+                }
+
                 for (Map.Entry<String, List<QueryBuilderRelation>> parameter : collect.getRelationMap().entrySet()) {
                     for (QueryBuilderRelation relation : parameter.getValue()) {
                         LookupElementBuilder element = LookupElementBuilder
@@ -162,45 +174,19 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
 
                 QueryBuilderMethodReferenceParser qb = getQueryBuilderParser(methodMatchParameter.getMethodReference());
                 QueryBuilderScopeContext collect = qb.collect();
-                buildLookupElements(completionResultSet, collect);
 
+                for (QueryBuilderCompletionContribution contribution : QueryBuilderUtil.guestCompletionContribution(content)) {
+                    if (contribution.type() == QueryBuilderCompletionContributionType.FUNCTION) {
+                        for (Map.Entry<String, String> entry : DoctrineUtil.getDoctrineOrmFunctions(project).entrySet()) {
+                            LookupElementBuilder lookup = LookupElementBuilder.create(entry.getKey().toUpperCase())
+                                .withTypeText("FunctionNode")
+                                .withIcon(Symfony2Icons.DOCTRINE_WEAK);
 
-                // "test.test"
-                if (content == null || content.isBlank() || content.matches("^[\\w+.]+$")) {
-                    buildLookupElements(completionResultSet, collect);
-                    return;
-                }
-
-                // "foo test.test"
-                Matcher matcher = Pattern.compile("(\\w+)\\.(\\w+)$").matcher(content);
-                if (matcher.find())  {
-                    String table = matcher.group(1);
-                    String field = matcher.group(2);
-
-                    buildLookupElements(completionResultSet.withPrefixMatcher(table + "." + field), collect);
-                }
-
-                // "foo test."
-                Matcher matcher2 = Pattern.compile("(\\w+)\\.$").matcher(content);
-                if (matcher2.find())  {
-                    String prefix = matcher2.group(1) + ".";
-                    buildLookupElements(completionResultSet.withPrefixMatcher(prefix), collect);
-                }
-
-                // "foo, test.test"
-                // "(test.test"
-                Matcher matcher3 = Pattern.compile("[(|,]\\s*(\\w+)$").matcher(content);
-                if (matcher3.find())  {
-                    String prefix = matcher3.group(1);
-                    buildLookupElements(completionResultSet.withPrefixMatcher(prefix), collect);
-                }
-
-                for (Map.Entry<String, String> entry : DoctrineUtil.getDoctrineOrmFunctions(project).entrySet()) {
-                    LookupElementBuilder lookup = LookupElementBuilder.create(entry.getKey().toUpperCase())
-                        .withTypeText("FunctionNode")
-                        .withIcon(Symfony2Icons.DOCTRINE_WEAK);
-
-                    completionResultSet.addElement(lookup);
+                            completionResultSet.addElement(lookup);
+                        }
+                    } else if (contribution.type() == QueryBuilderCompletionContributionType.PROPERTY) {
+                        buildLookupElements(completionResultSet.withPrefixMatcher(contribution.prefix()), collect);
+                    }
                 }
             }
         });
@@ -230,44 +216,28 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
                 QueryBuilderScopeContext collect = qb.collect();
 
                 String content = PsiElementUtils.getStringBeforeCursor(parent, completionParameters.getOffset());
-                if (content == null || content.isBlank() || content.matches("^[\\w+.]+$")) {
-                    buildLookupElements(completionResultSet, collect);
-                    return;
+
+                for (QueryBuilderCompletionContribution contribution : QueryBuilderUtil.guestCompletionContribution(content)) {
+                    if (contribution.type() == QueryBuilderCompletionContributionType.PROPERTY) {
+                        buildLookupElements(completionResultSet.withPrefixMatcher(contribution.prefix()), collect);
+                    }
                 }
 
-                Matcher matcher = Pattern.compile("(\\w+)\\.(\\w+)$").matcher(content);
-                if (matcher.find())  {
-                    String table = matcher.group(1);
-                    String field = matcher.group(2);
-
-                    buildLookupElements(completionResultSet.withPrefixMatcher(table + "." + field), collect);
+                if (content != null) {
+                    // $qb->andWhere('foo.id = ":foo_id"')
+                    addParameterNameCompletion(completionResultSet.withPrefixMatcher(""), content);
                 }
-
-                Matcher matcher2 = Pattern.compile("(\\w+)\\.$").matcher(content);
-                if (matcher2.find())  {
-                    String prefix = matcher2.group(1) + ".";
-                    buildLookupElements(completionResultSet.withPrefixMatcher(prefix), collect);
-                }
-
-                Matcher matcher3 = Pattern.compile("(AND|OR|WHERE|NOT|[!=><]+)\\s+(\\w+)$").matcher(content);
-                if (matcher3.find())  {
-                    String prefix = matcher3.group(2);
-                    buildLookupElements(completionResultSet.withPrefixMatcher(prefix), collect);
-                }
-
-                // $qb->andWhere('foo.id = ":foo_id"')
-                addParameterNameCompletion(completionResultSet.withPrefixMatcher(""), content);
             }
 
-            private void addParameterNameCompletion(CompletionResultSet completionResultSet, String content) {
+            private void addParameterNameCompletion(@NotNull CompletionResultSet completionResultSet, @NotNull String content) {
                 // test.test = :
                 // test.test =
-                Matcher matcher = Pattern.compile("(\\w+)\\.(\\w+)[\\s+]*[!=><]+[\\s+]*(?<colon>:*)$").matcher(content);
+                Matcher matcher = Pattern.compile("([\\w_]+)\\.([\\w_]+)[\\s+]*[!=><]+[\\s+]*(?<colon>:*)$").matcher(content);
                 boolean hasMatch = matcher.find();
 
                 if (!hasMatch) {
                     // test.test = :a
-                    matcher = Pattern.compile("(\\w+)\\.(\\w+)[\\s+]*[!=><]+[\\s+]*(?<colon>:)(?<ident>\\w+)$").matcher(content);
+                    matcher = Pattern.compile("([\\w_]+)\\.(\\w+)[\\s+]*[!=><]+[\\s+]*(?<colon>:)(?<ident>\\w+)$").matcher(content);
                     hasMatch = matcher.find();
                     if (hasMatch) {
                         completionResultSet = completionResultSet.withPrefixMatcher(":" + matcher.group("ident"));
