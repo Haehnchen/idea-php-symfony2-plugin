@@ -125,7 +125,10 @@ public class TwigUtil {
 
     public static final String[] IMG_FILES_EXTENSIONS = new String[] { "png", "jpg", "jpeg", "gif", "svg"};
 
-    public static final String TEMPLATE_ANNOTATION_CLASS = "\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template";
+    public static final String[] TEMPLATE_ANNOTATION_CLASS = new String[] {
+        "\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template",
+        "\\Symfony\\Bridge\\Twig\\Attribute\\Template",
+    };
 
     public static class TwigPathNamespaceComparator implements Comparator<TwigPath> {
         @Override
