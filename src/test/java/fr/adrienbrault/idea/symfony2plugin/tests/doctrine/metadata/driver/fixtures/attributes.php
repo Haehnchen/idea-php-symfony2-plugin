@@ -57,5 +57,8 @@ namespace ORM\Attributes {
 
         #[ORM\ManyToMany(targetEntity: 'ORM\Foobar\Egg')]
         public $eggClassStringBackslashless;
+
+        #[ORM\ManyToMany]
+        public null|Egg $eggTargetEntity;
     };
 }

@@ -2,9 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.driver;
 
 import com.intellij.psi.PsiFile;
 import com.jetbrains.php.lang.psi.PhpFile;
-import com.jetbrains.php.lang.psi.elements.Field;
-import com.jetbrains.php.lang.psi.elements.PhpAttribute;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -93,6 +91,22 @@ public class DoctrinePhpAttributeMappingDriver implements DoctrineMappingDriverI
                         String targetEntity = PhpElementsUtil.getAttributeArgumentStringByName(attribute, "targetEntity");
                         if (StringUtils.isNotBlank(targetEntity)) {
                             doctrineModelField.setRelation("\\" + StringUtils.stripStart(targetEntity, "\\"));
+                        } else {
+                            // #[ORM\ManyToOne]
+                            // private ?MyBike $myBike;
+                            PhpTypeDeclaration typeDeclaration = field.getTypeDeclaration();
+                            if (typeDeclaration != null) {
+                                Collection<ClassReference> classReferences = typeDeclaration.getClassReferences().stream()
+                                    .filter(classReference -> !"null".equals(classReference.getCanonicalText()))
+                                    .toList();
+
+                                if (!classReferences.isEmpty()) {
+                                    String fqnClass = classReferences.iterator().next().getFQN();
+                                    if (fqnClass != null) {
+                                        doctrineModelField.setRelation(fqnClass);
+                                    }
+                                }
+                            }
                         }
                     }
                 }
