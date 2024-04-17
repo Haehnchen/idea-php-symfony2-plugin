@@ -38,7 +38,7 @@ public class TemplateExistsAnnotationPhpAttributeLocalInspection extends LocalIn
 
                 if (element instanceof PhpAttribute) {
                     String fqn = ((PhpAttribute) element).getFQN();
-                    if (fqn != null && PhpElementsUtil.isInstanceOf(element.getProject(), fqn, TwigUtil.TEMPLATE_ANNOTATION_CLASS)) {
+                    if (fqn != null && Arrays.stream(TwigUtil.TEMPLATE_ANNOTATION_CLASS).anyMatch(s -> PhpElementsUtil.isInstanceOf(element.getProject(), fqn, s))) {
                         annotate((PhpAttribute) element, holder);
                     }
                 }

@@ -269,17 +269,19 @@ public class PhpMethodVariableResolveUtil {
 
     public static class TemplateRenderVisitor {
         public static void processMethodAttributes(@NotNull Method method, Consumer<Triple<String, PhpNamedElement, FunctionReference>> consumer) {
-            Collection<@NotNull PhpAttribute> attributes = method.getAttributes(TwigUtil.TEMPLATE_ANNOTATION_CLASS);
-            for (PhpAttribute attribute : attributes) {
-                if (attribute.getArguments().isEmpty()) {
-                    // #[@Template()]
-                    visitMethodForGuessing(method, consumer);
-                } else {
-                    // [@Template("foobar.html.twig")]
-                    // #[@Template(template: "foobar.html.twig")]
-                    String template = PhpPsiAttributesUtil.getAttributeValueByNameAsStringWithDefaultParameterFallback(attribute, "template");
-                    if (StringUtils.isNotBlank(template)) {
-                        addTemplateWithScope(template, method, null, consumer);
+            for (String templateAnnotationClass : TwigUtil.TEMPLATE_ANNOTATION_CLASS) {
+                Collection<@NotNull PhpAttribute> attributes = method.getAttributes(templateAnnotationClass);
+                for (PhpAttribute attribute : attributes) {
+                    if (attribute.getArguments().isEmpty()) {
+                        // #[@Template()]
+                        visitMethodForGuessing(method, consumer);
+                    } else {
+                        // [@Template("foobar.html.twig")]
+                        // #[@Template(template: "foobar.html.twig")]
+                        String template = PhpPsiAttributesUtil.getAttributeValueByNameAsStringWithDefaultParameterFallback(attribute, "template");
+                        if (StringUtils.isNotBlank(template)) {
+                            addTemplateWithScope(template, method, null, consumer);
+                        }
                     }
                 }
             }
@@ -414,7 +416,7 @@ public class PhpMethodVariableResolveUtil {
             }
 
             String annotationFqnName = AnnotationBackportUtil.getClassNameReference(phpDocTag, fileImports);
-            if(!StringUtils.stripStart(TwigUtil.TEMPLATE_ANNOTATION_CLASS, "\\").equals(StringUtils.stripStart(annotationFqnName, "\\"))) {
+            if (Arrays.stream(TwigUtil.TEMPLATE_ANNOTATION_CLASS).noneMatch(s -> s.equals(annotationFqnName))) {
                 return;
             }
 
