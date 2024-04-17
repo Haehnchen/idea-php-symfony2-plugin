@@ -53,6 +53,9 @@ public class DoctrinePhpAttributeMappingDriverTest extends SymfonyLightCodeInsig
 
         assertEquals("\\ORM\\Foobar\\Egg", metadata.getField("eggClassStringBackslashless").getRelation());
         assertEquals("ManyToMany", metadata.getField("eggClassStringBackslashless").getRelationType());
+
+        assertEquals("\\ORM\\Foobar\\Egg", metadata.getField("eggTargetEntity").getRelation());
+        assertEquals("ManyToMany", metadata.getField("eggTargetEntity").getRelationType());
     }
 
     private DoctrineMetadataModel createOrmMetadata() {
