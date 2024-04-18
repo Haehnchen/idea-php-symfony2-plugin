@@ -21,6 +21,30 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2023.1.269
+* [paid] Add Doctrine entities to wrongly class injection inspection list (Daniel Espendiller)
+* [paid] Add deprecated inspection for calling EntityManager::clear with a parameter (Daniel Espendiller)
+* [#2260](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2260) Support "targetEntity" extraction from property type for Doctrine relations (Daniel Espendiller)
+* [#2261](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2261) whitelist "Symfony\Bridge\Twig\Attribute\Template" for template usages to fix render detection (Daniel Espendiller)
+* [paid] Add full-line autocompletion for Doctrine QueryBuilder "setParameter" method (Daniel Espendiller)
+* [paid] Add full-line autocompletion for all Doctrine QueryBuilder "join" methods (Daniel Espendiller)
+* [#2334](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2334) Optimize prefix matcher for Doctrine querybuilder parameter, to reduce conflicting PhpStorm implementation (Daniel Espendiller)
+* [paid] Consider file history to collect injectable service property (Daniel Espendiller)
+
+## 2023.1.268
+*  [paid] Add property completion with auto-inject service classes (Daniel Espendiller)
+*  Add support for assets of AssetMapper (Daniel Espendiller)
+*  [#2249](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2249) [#2049](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2049) rebuild Twig constant completion and navigation and supporting enums (Daniel Espendiller)
+*  [#1553](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1553) reimplement Twig "@var" type doc class completion with custom prefix matching (Daniel Espendiller)
+*  [#2283](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2283) navigation / goto for Twig named argument translations (Daniel Espendiller)
+*  [#2283](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2283) allowing resolving named "domain" argument for "trans" and "transchoice" (Daniel Espendiller)
+*  [#2242](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2242) remove suffix "Action" on route create method action (Daniel Espendiller)
+*  [#2176](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2176) support route names on class level with __invoke method (Daniel Espendiller)
+*  [#2333](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2333) Drop javascript support for AssetMapper; core feature (Daniel Espendiller)
+*  Add support for assets of AssetMapper (Daniel Espendiller)
+*  [paid] Add FirstClassCallable inspection (Daniel Espendiller)
+*  Fix default change for actions: change "Create Service" to be only visible when possible (Daniel Espendiller)
+
 ## 2023.1.267
 * Migrate and update all Symfony "New File" template (Daniel Espendiller)
 * Replace deprecated "FilenameIndex.getFilesByName" (Daniel Espendiller)
