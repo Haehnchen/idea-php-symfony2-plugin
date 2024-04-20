@@ -262,9 +262,14 @@ public class RouteHelper {
             String substring = match.substring(0, i);
 
             String regex = substring.replace(string, "[\\w-]+");
-            Matcher matcher = Pattern.compile(regex).matcher(searchPath);
-            if (matcher.matches()) {
-                return true;
+
+            // user input
+            try {
+                Matcher matcher = Pattern.compile(regex).matcher(searchPath);
+                if (matcher.matches()) {
+                    return true;
+                }
+            } catch (Exception ignored) {
             }
         }
 
