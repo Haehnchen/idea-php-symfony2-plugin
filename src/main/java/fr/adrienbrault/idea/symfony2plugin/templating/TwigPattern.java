@@ -1167,8 +1167,19 @@ public class TwigPattern {
 
     /**
      * {{ 'test'|<caret> }}
+     * {% for user in users|de<caret> %}
      */
     public static ElementPattern<PsiElement> getFilterPattern() {
+        return PlatformPatterns.or(
+            getFilterAsIdentifierPattern(),
+            getFilterAsVariableReferencePattern()
+        );
+    }
+
+    /**
+     * {{ 'test'|<caret> }}
+     */
+    private static ElementPattern<PsiElement> getFilterAsIdentifierPattern() {
         return PlatformPatterns.psiElement()
             .afterLeafSkipping(
                 PlatformPatterns.or(
@@ -1177,6 +1188,23 @@ public class TwigPattern {
                 ),
                 PlatformPatterns.psiElement().withElementType(TwigTokenTypes.FILTER)
             )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    /**
+     * Since PhpStorm 2024.1 value can be nested inside TwigVariableReference element
+     *
+     * {% for user in users|de<caret> %}
+     */
+    private static ElementPattern<PsiElement> getFilterAsVariableReferencePattern() {
+        return PlatformPatterns.psiElement()
+            .withParent(PlatformPatterns.psiElement(TwigVariableReference.class).afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                ),
+                PlatformPatterns.psiElement().withElementType(TwigTokenTypes.FILTER)
+            ))
             .withLanguage(TwigLanguage.INSTANCE);
     }
 
