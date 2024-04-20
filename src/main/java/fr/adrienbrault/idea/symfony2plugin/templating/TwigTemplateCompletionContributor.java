@@ -13,7 +13,6 @@ import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiReference;
-import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.PlatformIcons;
 import com.intellij.util.ProcessingContext;
@@ -562,24 +561,15 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
     private static class FilterCompletionProvider extends CompletionProvider<CompletionParameters> {
         public void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet resultSet) {
-            if(!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
+            if (!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
                 return;
             }
 
-            // move this stuff to pattern fixed event stopping by phpstorm
-            PsiElement currElement = parameters.getPosition().getOriginalElement();
-            PsiElement prevElement = currElement.getPrevSibling();
-            if (((prevElement instanceof PsiWhiteSpace))) prevElement = prevElement.getPrevSibling();
-
-            if ((prevElement != null) && (prevElement.getNode().getElementType() == TwigTokenTypes.FILTER)) {
-                Project project = parameters.getPosition().getProject();
-
-                for(Map.Entry<String, TwigExtension> entry : TwigExtensionParser.getFilters(project).entrySet()) {
-                    TwigExtension twigExtension = entry.getValue();
-                    resultSet.addElement(new TwigExtensionLookupElement(currElement.getProject(), entry.getKey(), twigExtension));
-
-                    resultSet.addAllElements(getTypesFilters(project, entry.getKey(), entry.getValue()));
-                }
+            Project project = parameters.getPosition().getProject();
+            for (Map.Entry<String, TwigExtension> entry : TwigExtensionParser.getFilters(project).entrySet()) {
+                TwigExtension twigExtension = entry.getValue();
+                resultSet.addElement(new TwigExtensionLookupElement(project, entry.getKey(), twigExtension));
+                resultSet.addAllElements(getTypesFilters(project, entry.getKey(), entry.getValue()));
             }
         }
     }

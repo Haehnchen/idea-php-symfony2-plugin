@@ -465,4 +465,12 @@ public class TwigPatternTest extends SymfonyLightCodeInsightFixtureTestCase {
         PsiElement elementAt4 = findElementAt(TwigFileType.INSTANCE, "{% for key, user in <caret>|test('test') %}");
         assertTrue(TwigPattern.getForTagInVariablePattern().accepts(elementAt4));
     }
+
+    public void testGetFilterPattern() {
+        PsiElement elementAt = findElementAt(TwigFileType.INSTANCE, "{{ 'f<caret>oo'|tr<caret>ans }}");
+        assertTrue(TwigPattern.getFilterPattern().accepts(elementAt));
+
+        PsiElement elementAt2 = findElementAt(TwigFileType.INSTANCE, "{% for user in foo|tr<caret>a %}").getParent();
+        assertTrue(TwigPattern.getFilterPattern().accepts(elementAt2));
+    }
 }
