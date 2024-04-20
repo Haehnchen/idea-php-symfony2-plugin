@@ -197,17 +197,17 @@ public class RouteHelper {
      */
     @NotNull
     public static Collection<Route> getRoutesForPathWithPlaceholderMatch(@NotNull Project project, @NotNull String searchPath) {
-        Collection<Route> targets = new ArrayList<>();
-
-        RouteHelper.getAllRoutes(project).values()
+        return new ArrayList<>(RouteHelper.getAllRoutes(project).values())
             .parallelStream()
-            .forEach(route -> {
-                if (route != null && isReverseRoutePatternMatch(route, searchPath)) {
-                    targets.add(route);
+            .filter(Objects::nonNull)
+            .map(route -> {
+                if (isReverseRoutePatternMatch(route, searchPath)) {
+                    return route;
                 }
-            });
-
-        return targets;
+                return null;
+            })
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
     }
 
     /**
