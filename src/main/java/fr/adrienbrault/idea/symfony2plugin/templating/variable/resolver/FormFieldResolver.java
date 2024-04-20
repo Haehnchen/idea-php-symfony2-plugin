@@ -34,7 +34,10 @@ public class FormFieldResolver implements TwigTypeResolver {
 
         TwigTypeContainer twigTypeContainer = targets.iterator().next();
         if (twigTypeContainer.getPhpNamedElement() instanceof PhpClass phpClass && isFormView(phpClass)) {
-            visitFormReferencesFields(psiVariables.iterator().next().getElement(), targets::add);
+            PsiElement element = psiVariables.iterator().next().getElement();
+            if (element != null) {
+                visitFormReferencesFields(element, targets::add);
+            }
         }
     }
 
@@ -51,6 +54,7 @@ public class FormFieldResolver implements TwigTypeResolver {
             );
     }
 
+    @NotNull
     public static Collection<PhpClass> getFormTypeFromFormFactory(@NotNull PsiElement formReference) {
         Collection<PhpClass> phpClasses = new ArrayList<>();
 
