@@ -160,13 +160,13 @@ public class RouteHelper {
     public static Collection<Pair<Route, PsiElement>> getMethodsForPathWithPlaceholderMatchRoutes(@NotNull Project project, @NotNull String searchPath) {
         Collection<Pair<Route, PsiElement>> targets = new ArrayList<>();
 
-        getRoutesForPathWithPlaceholderMatch(project, searchPath)
-            .forEach(route -> targets.addAll(
-                    Arrays.stream(getMethodsOnControllerShortcut(project, route.getController()))
-                        .map(psiElement -> new Pair<>(route, psiElement))
-                        .toList()
-                )
-            );
+        for (Route route : getRoutesForPathWithPlaceholderMatch(project, searchPath)) {
+            List<Pair<Route, PsiElement>> list = Arrays.stream(getMethodsOnControllerShortcut(project, route.getController()))
+                .map(psiElement -> new Pair<>(route, psiElement))
+                .toList();
+
+            targets.addAll(list);
+        }
 
         return targets;
     }
@@ -202,7 +202,7 @@ public class RouteHelper {
         RouteHelper.getAllRoutes(project).values()
             .parallelStream()
             .forEach(route -> {
-                if (isReverseRoutePatternMatch(route, searchPath)) {
+                if (route != null && isReverseRoutePatternMatch(route, searchPath)) {
                     targets.add(route);
                 }
             });
