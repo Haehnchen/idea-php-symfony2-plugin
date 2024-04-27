@@ -434,10 +434,19 @@
                          language="PHP"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.codeInspection.form.FormTypeAsClassConstantInspection"/>
 
-        <localInspection groupPath="Symfony" shortName="ContainerConstant" displayName="Constant not found"
+        <localInspection groupPath="Symfony" shortName="ContainerConstantXml" displayName="Constant not found in XML definition"
                          groupName="Service"
-                         enabledByDefault="true" level="WARNING"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.ContainerConstantInspection"/>
+                         enabledByDefault="true"
+                         level="WARNING"
+                         language="XML"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.ContainerConstantInspection$MyXmlLocalInspectionTool"/>
+
+        <localInspection groupPath="Symfony" shortName="ContainerConstantYaml" displayName="Constant not found in yaml definition"
+                         groupName="Service"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         language="yaml"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.ContainerConstantInspection$MyYamlLocalInspectionTool"/>
 
         <localInspection groupPath="Symfony" shortName="TwigTranslationDomain" displayName="Twig: Missing translation domain"
                          groupName="Translation"
