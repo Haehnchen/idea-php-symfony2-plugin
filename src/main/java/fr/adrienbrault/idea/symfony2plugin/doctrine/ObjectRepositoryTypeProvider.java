@@ -41,16 +41,20 @@ public class ObjectRepositoryTypeProvider implements PhpTypeProvider4 {
     @Nullable
     @Override
     public PhpType getType(PsiElement e) {
-        if (!Settings.getInstance(e.getProject()).pluginEnabled) {
+        if(!(e instanceof MethodReference methodReference)) {
             return null;
         }
 
-        if(!(e instanceof MethodReference) || !PhpElementsUtil.isMethodWithFirstStringOrFieldReference(e, "getRepository")) {
+        Project project = e.getProject();
+        if (!Settings.getInstance(project).pluginEnabled || !Settings.getInstance(project).featureTwigIcon) {
             return null;
         }
 
+        if(!PhpElementsUtil.isMethodWithFirstStringOrFieldReference(e, "getRepository")) {
+            return null;
+        }
 
-        String refSignature = ((MethodReference)e).getSignature();
+        String refSignature = methodReference.getSignature();
         if(StringUtil.isEmpty(refSignature)) {
             return null;
         }

@@ -38,7 +38,12 @@ public class ObjectManagerFindContextTypeProvider implements PhpTypeProvider4 {
     @Nullable
     @Override
     public PhpType getType(PsiElement e) {
-        if (!(e instanceof MethodReference methodRef) || !Settings.getInstance(e.getProject()).pluginEnabled) {
+        if (!(e instanceof MethodReference methodRef)) {
+            return null;
+        }
+
+        Project project = e.getProject();
+        if (!Settings.getInstance(project).pluginEnabled || !Settings.getInstance(project).featureTwigIcon) {
             return null;
         }
 
