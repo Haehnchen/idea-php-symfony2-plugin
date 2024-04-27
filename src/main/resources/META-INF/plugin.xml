@@ -472,11 +472,19 @@
                          language="PHP"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateMissingInspection"/>
 
-        <localInspection groupPath="Symfony" shortName="MissingService" displayName="Missing Service"
+        <localInspection groupPath="Symfony" shortName="MissingServiceXml" displayName="Missing Service in XML definition"
                          groupName="Service"
                          enabledByDefault="true"
                          level="WARNING"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.MissingServiceInspection"/>
+                         language="PHP"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.MissingServiceInspection$PhpLocalInspectionTool"/>
+
+        <localInspection groupPath="Symfony" shortName="MissingServiceYaml" displayName="Missing Service in yaml definition"
+                         groupName="Service"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         language="yaml"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.MissingServiceInspection$YamlLocalInspectionTool"/>
 
         <localInspection groupPath="Symfony" shortName="XmlServiceInstanceInspection" displayName="XML: Wrong Service Instance"
                          groupName="Service"
@@ -549,7 +557,7 @@
                          language="PHP"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.inspection.TemplateExistsAnnotationPhpAttributeLocalInspection"/>
 
-        <localInspection groupPath="Symfony" shortName="RouteControllerDeprecatedInspectionXml" displayName="Deprecated Action in XML Definition"
+        <localInspection groupPath="Symfony" shortName="RouteControllerDeprecatedInspectionXml" displayName="Deprecated Action in XML definition"
                          groupName="Route"
                          enabledByDefault="true"
                          level="WARNING"
