@@ -94,11 +94,6 @@ public class Symfony2ProjectComponent {
             ) {
 
             IdeHelper.notifyEnableMessage(project);
-            return;
-        }
-
-        if(getContainerFiles(project).isEmpty()) {
-            Symfony2ProjectComponent.getLogger().warn("missing at least one container file");
         }
     }
 
