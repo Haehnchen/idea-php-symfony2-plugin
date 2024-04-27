@@ -173,7 +173,7 @@ public class VoterUtil {
             return;
         }
 
-        for (Variable variable : PhpElementsUtil.getVariablesInScope(method, parameters[2])) {
+        for (Variable variable : PhpElementsUtil.getVariablesInScopeByName(method, parameters[2].getName())) {
             // foreach ($attributes as $attribute)
             PsiElement psiElement = PsiTreeUtil.nextVisibleLeaf(variable);
             if (psiElement != null && psiElement.getNode().getElementType() == PhpTokenTypes.kwAS) {
@@ -182,9 +182,8 @@ public class VoterUtil {
                     continue;
                 }
 
-                PhpPsiElement variableDecl = variable.getNextPsiSibling();
-                if (variableDecl instanceof Variable) {
-                    for (Variable variable1 : PhpElementsUtil.getVariablesInScope(parent, (Variable) variableDecl)) {
+                if (variable.getNextPsiSibling() instanceof Variable variableDecl) {
+                    for (Variable variable1 : PhpElementsUtil.getVariablesInScope(parent, variableDecl)) {
                         visitVariable(variable1, consumer);
                     }
                 }
@@ -213,7 +212,7 @@ public class VoterUtil {
             return;
         }
 
-        for (Variable variable : PhpElementsUtil.getVariablesInScope(method, parameters[0])) {
+        for (Variable variable : PhpElementsUtil.getVariablesInScopeByName(method, parameters[0].getName())) {
             visitVariable(variable, consumer);
         }
     }
