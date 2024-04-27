@@ -168,7 +168,7 @@ public class PhpMethodVariableResolveUtil {
     private static Map<String, PsiVariable> collectOnVariableReferences(@NotNull Function function, @NotNull Variable variable) {
         Map<String, PsiVariable> collectedTypes = new HashMap<>();
 
-        for (Variable scopeVar : PhpElementsUtil.getVariablesInScope(function, variable)) {
+        for (Variable scopeVar : PhpElementsUtil.getVariablesInScopeByName(function, variable.getName())) {
             PsiElement parent = scopeVar.getParent();
             if (parent instanceof ArrayAccessExpression) {
                 // $template['variable'] = $foo

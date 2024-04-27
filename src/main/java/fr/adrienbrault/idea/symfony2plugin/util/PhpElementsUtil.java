@@ -1261,7 +1261,7 @@ public class PhpElementsUtil {
 
         final List<Variable> variables = new ArrayList<>();
 
-        for (Variable variableRef : PhpElementsUtil.getVariablesInScope(function, variableDecl)) {
+        for (Variable variableRef : PhpElementsUtil.getVariablesInScopeByName(function, variableDecl.getName())) {
             if (!variableRef.equals(variable)) {
                 variables.add(variableRef);
             }
@@ -1506,7 +1506,7 @@ public class PhpElementsUtil {
             @Override
             public boolean processAccessVariableInstruction(PhpAccessVariableInstruction instruction) {
                 PhpPsiElement element = instruction.getAnchor();
-                if(element instanceof Variable variableVisit && name.equals(variableVisit.getName())) {
+                if (name.contentEquals(instruction.getVariableName()) && element instanceof Variable) {
                     PsiElement assignmentExpression = element.getParent();
                     if(assignmentExpression instanceof AssignmentExpression) {
                         PhpPsiElement value = ((AssignmentExpression) assignmentExpression).getValue();
@@ -1784,6 +1784,23 @@ public class PhpElementsUtil {
     @NotNull
     public static Set<Variable> getVariablesInScope(@NotNull PsiElement psiElement, @NotNull PhpNamedElement variable) {
         return MyVariableRecursiveElementVisitor.visit(psiElement, variable.getName());
+    }
+
+    public static Set<Variable> getVariablesInScopeByName(@NotNull PhpScopeHolder phpScopeHolder, @NotNull String name) {
+        Set<Variable> variables = new HashSet<>();
+
+        PhpControlFlowUtil.processFlow(phpScopeHolder.getControlFlow(), new PhpInstructionProcessor() {
+            @Override
+            public boolean processAccessVariableInstruction(PhpAccessVariableInstruction instruction) {
+                if (name.contentEquals(instruction.getVariableName()) && instruction.getAnchor() instanceof Variable variable) {
+                    variables.add(variable);
+                }
+
+                return super.processAccessVariableInstruction(instruction);
+            }
+        });
+
+        return variables;
     }
 
     /**
