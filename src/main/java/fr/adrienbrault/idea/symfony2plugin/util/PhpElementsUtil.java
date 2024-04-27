@@ -1493,23 +1493,20 @@ public class PhpElementsUtil {
      */
     @Nullable
     public static String getFirstVariableTypeInScope(@NotNull Variable variable) {
-
         // parent search scope, eg Method else fallback to a grouped statement
-        PsiElement searchScope = PsiTreeUtil.getParentOfType(variable, Function.class);
-        if(searchScope == null) {
-            searchScope = PsiTreeUtil.getParentOfType(variable, GroupStatement.class);
-        }
-
+        PhpScopeHolder searchScope = PsiTreeUtil.getParentOfType(variable, PhpScopeHolder.class);
         if(searchScope == null) {
             return null;
         }
 
         final String name = variable.getName();
         final String[] result = {null};
-        searchScope.acceptChildren(new PsiRecursiveElementVisitor() {
+
+        PhpControlFlowUtil.processFlow(searchScope.getControlFlow(), new PhpInstructionProcessor() {
             @Override
-            public void visitElement(PsiElement element) {
-                if(element instanceof Variable && name.equals(((Variable) element).getName())) {
+            public boolean processAccessVariableInstruction(PhpAccessVariableInstruction instruction) {
+                PhpPsiElement element = instruction.getAnchor();
+                if(element instanceof Variable variableVisit && name.equals(variableVisit.getName())) {
                     PsiElement assignmentExpression = element.getParent();
                     if(assignmentExpression instanceof AssignmentExpression) {
                         PhpPsiElement value = ((AssignmentExpression) assignmentExpression).getValue();
@@ -1525,51 +1522,7 @@ public class PhpElementsUtil {
                     }
                 }
 
-                super.visitElement(element);
-            }
-        });
-
-        return result[0];
-    }
-
-    /**
-     * Find first variable declaration in parent scope of a given variable:
-     *
-     * function() {
-     *   $event = new FooEvent();
-     *   dispatch('foo', $event);
-     * }
-     */
-    @Nullable
-    public static PhpPsiElement getFirstVariableAssignmentInScope(@NotNull Variable variable) {
-
-        // parent search scope, eg Method else fallback to a grouped statement
-        PsiElement searchScope = PsiTreeUtil.getParentOfType(variable, Function.class);
-        if(searchScope == null) {
-            searchScope = PsiTreeUtil.getParentOfType(variable, GroupStatement.class);
-        }
-
-        if(searchScope == null) {
-            return null;
-        }
-
-        final String name = variable.getName();
-        final PhpPsiElement[] result = {null};
-
-        searchScope.acceptChildren(new PsiRecursiveElementVisitor() {
-            @Override
-            public void visitElement(@NotNull PsiElement element) {
-                if(element instanceof Variable && name.equals(((Variable) element).getName())) {
-                    PsiElement assignmentExpression = element.getParent();
-                    if(assignmentExpression instanceof AssignmentExpression) {
-                        PhpPsiElement value = ((AssignmentExpression) assignmentExpression).getValue();
-                        if(value != null) {
-                            result[0] = value;
-                        }
-                    }
-                }
-
-                super.visitElement(element);
+                return super.processAccessVariableInstruction(instruction);
             }
         });
 

@@ -27,15 +27,15 @@ public class TwigVariablePathInspection extends LocalInspectionTool {
             return super.buildVisitor(holder, isOnTheFly);
         }
 
-        return new MyPsiRecursiveElementVisitor(holder);
+        return new MyPsiElementVisitor(holder);
     }
 
-    private static class MyPsiRecursiveElementVisitor extends PsiElementVisitor {
+    private static class MyPsiElementVisitor extends PsiElementVisitor {
 
         @NotNull
         private final ProblemsHolder holder;
 
-        MyPsiRecursiveElementVisitor(@NotNull ProblemsHolder holder) {
+        MyPsiElementVisitor(@NotNull ProblemsHolder holder) {
             this.holder = holder;
         }
 
