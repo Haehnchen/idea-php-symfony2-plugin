@@ -40,7 +40,12 @@ public class MethodSignatureTypeProvider implements PhpTypeProvider4 {
     @Nullable
     @Override
     public PhpType getType(PsiElement e) {
-        if (!Settings.getInstance(e.getProject()).pluginEnabled || !(e instanceof MethodReference methodReference)) {
+        if (!(e instanceof MethodReference methodReference)) {
+            return null;
+        }
+
+        Project project = e.getProject();
+        if (!Settings.getInstance(project).pluginEnabled || !Settings.getInstance(project).featureTwigIcon) {
             return null;
         }
 

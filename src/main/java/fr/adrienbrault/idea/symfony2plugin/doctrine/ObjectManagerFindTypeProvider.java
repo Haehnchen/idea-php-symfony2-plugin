@@ -36,22 +36,27 @@ public class ObjectManagerFindTypeProvider implements PhpTypeProvider4 {
     @Nullable
     @Override
     public PhpType getType(PsiElement e) {
-        if (!Settings.getInstance(e.getProject()).pluginEnabled) {
+        if(!(e instanceof MethodReference methodReference)) {
             return null;
         }
 
-        if(!(e instanceof MethodReference) || !PhpElementsUtil.isMethodWithFirstStringOrFieldReference(e, "find")) {
+        Project project = e.getProject();
+        if (!Settings.getInstance(project).pluginEnabled || !Settings.getInstance(project).featureTwigIcon) {
             return null;
         }
 
-        String refSignature = ((MethodReference)e).getSignature();
+        if(!PhpElementsUtil.isMethodWithFirstStringOrFieldReference(e, "find")) {
+            return null;
+        }
+
+        String refSignature = methodReference.getSignature();
         if(StringUtil.isEmpty(refSignature)) {
             return null;
         }
 
         // we need the param key on getBySignature(), since we are already in the resolved method there attach it to signature
         // param can have dotted values split with \
-        PsiElement[] parameters = ((MethodReference)e).getParameters();
+        PsiElement[] parameters = methodReference.getParameters();
         if (parameters.length >= 2) {
             String signature = PhpTypeProviderUtil.getReferenceSignatureByFirstParameter((MethodReference) e, TRIM_KEY);
             if(signature != null) {

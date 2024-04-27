@@ -29,21 +29,26 @@ public class EventDispatcherTypeProvider implements PhpTypeProvider4 {
     @Nullable
     @Override
     public PhpType getType(PsiElement e) {
-        if (!Settings.getInstance(e.getProject()).pluginEnabled) {
+        if(!(e instanceof MethodReference methodReference)) {
+            return null;
+        }
+
+        Project project = e.getProject();
+        if (!Settings.getInstance(project).pluginEnabled || !Settings.getInstance(project).featureTwigIcon) {
             return null;
         }
 
         // container calls are only on "get" methods
-        if(!(e instanceof MethodReference) || !"dispatch".equals(((MethodReference) e).getName())) {
+        if(!"dispatch".equals(methodReference.getName())) {
             return null;
         }
 
-        PsiElement[] parameters = ((MethodReference) e).getParameters();
+        PsiElement[] parameters = methodReference.getParameters();
         if(parameters.length < 2) {
             return null;
         }
 
-        String refSignature = ((MethodReference) e).getSignature();
+        String refSignature = methodReference.getSignature();
         if(StringUtils.isBlank(refSignature)) {
             return null;
         }

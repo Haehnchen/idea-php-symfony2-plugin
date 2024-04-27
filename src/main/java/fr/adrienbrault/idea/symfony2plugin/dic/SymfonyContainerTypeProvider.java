@@ -35,16 +35,22 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider4 {
     @Nullable
     @Override
     public PhpType getType(PsiElement e) {
-        if (!Settings.getInstance(e.getProject()).pluginEnabled) {
+        // container calls are only on "get" methods
+        if(!(e instanceof MethodReference methodReference)) {
+            return null;
+        }
+
+        Project project = e.getProject();
+        if (!Settings.getInstance(project).pluginEnabled || !Settings.getInstance(project).featureTwigIcon) {
             return null;
         }
 
         // container calls are only on "get" methods
-        if(!(e instanceof MethodReference) || !PhpElementsUtil.isMethodWithFirstStringOrFieldReference(e, "get")) {
+        if(!PhpElementsUtil.isMethodWithFirstStringOrFieldReference(e, "get")) {
             return null;
         }
 
-        String signature = PhpTypeProviderUtil.getReferenceSignatureByFirstParameter((MethodReference) e, TRIM_KEY);
+        String signature = PhpTypeProviderUtil.getReferenceSignatureByFirstParameter(methodReference, TRIM_KEY);
         return signature == null ? null : new PhpType().add("#" + this.getKey() + signature);
     }
 

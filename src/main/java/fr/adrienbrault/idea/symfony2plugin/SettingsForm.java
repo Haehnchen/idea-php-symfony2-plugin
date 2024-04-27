@@ -60,6 +60,7 @@ public class SettingsForm implements Configurable {
     private JCheckBox enableSchedulerCheckBox;
     private JCheckBox featureTwigIcon;
     private JButton buttonAutoConfigure;
+    private JCheckBox featureTypeProvider;
 
     public SettingsForm(@NotNull final Project project) {
         this.project = project;
@@ -135,6 +136,7 @@ public class SettingsForm implements Configurable {
             || !codeFoldingTwigTemplate.isSelected() == getSettings().codeFoldingTwigTemplate
             || !codeFoldingTwigConstant.isSelected() == getSettings().codeFoldingTwigConstant
             || !featureTwigIcon.isSelected() == getSettings().featureTwigIcon
+            || !featureTypeProvider.isSelected() == getSettings().featureTypeProvider
 
             || !directoryToApp.getText().equals(getSettings().directoryToApp)
             || !directoryToWeb.getText().equals(getSettings().directoryToWeb)
@@ -156,6 +158,7 @@ public class SettingsForm implements Configurable {
         getSettings().codeFoldingTwigTemplate = codeFoldingTwigTemplate.isSelected();
         getSettings().codeFoldingTwigConstant = codeFoldingTwigConstant.isSelected();
         getSettings().featureTwigIcon = featureTwigIcon.isSelected();
+        getSettings().featureTypeProvider = featureTypeProvider.isSelected();
 
         getSettings().directoryToApp = directoryToApp.getText();
         getSettings().directoryToWeb = directoryToWeb.getText();
@@ -188,6 +191,7 @@ public class SettingsForm implements Configurable {
         codeFoldingTwigTemplate.setSelected(getSettings().codeFoldingTwigTemplate);
         codeFoldingTwigConstant.setSelected(getSettings().codeFoldingTwigConstant);
         featureTwigIcon.setSelected(getSettings().featureTwigIcon);
+        featureTypeProvider.setSelected(getSettings().featureTypeProvider);
 
         directoryToApp.setText(getSettings().directoryToApp);
         directoryToWeb.setText(getSettings().directoryToWeb);
