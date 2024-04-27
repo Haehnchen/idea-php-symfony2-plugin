@@ -3,45 +3,63 @@ package fr.adrienbrault.idea.symfony2plugin.dic.inspection;
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
-import com.intellij.lang.Language;
-import com.intellij.lang.xml.XMLLanguage;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.xml.XmlText;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.yaml.YAMLLanguage;
 import org.jetbrains.yaml.psi.YAMLScalar;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class ContainerConstantInspection extends LocalInspectionTool {
-
     public static final String MESSAGE = "Symfony: constant not found";
 
-    @NotNull
-    public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
-        return new PsiElementVisitor() {
-            @Override
-            public void visitElement(@NotNull PsiElement element) {
-                Language language = element.getLanguage();
+    public static class MyYamlLocalInspectionTool extends LocalInspectionTool {
+        @Override
+        public @NotNull PsiElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
+            Project project = holder.getProject();
+            if (!Symfony2ProjectComponent.isEnabled(project)) {
+                return super.buildVisitor(holder, isOnTheFly);
+            }
 
-                if (language == YAMLLanguage.INSTANCE) {
+            return new PsiElementVisitor() {
+                @Override
+                public void visitElement(@NotNull PsiElement element) {
                     if (element instanceof YAMLScalar yamlScalar) {
                         visitYamlElement(yamlScalar, holder);
                     }
-                } else if(language == XMLLanguage.INSTANCE) {
-                    visitXmlElement(element, holder);
-                }
 
-                super.visitElement(element);
-            }
-        };
+                    super.visitElement(element);
+                }
+            };
+        }
     }
-    private void visitYamlElement(@NotNull YAMLScalar psiElement, @NotNull ProblemsHolder holder) {
+
+    public static class MyXmlLocalInspectionTool extends LocalInspectionTool {
+        @Override
+        public @NotNull PsiElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
+            Project project = holder.getProject();
+            if (!Symfony2ProjectComponent.isEnabled(project)) {
+                return super.buildVisitor(holder, isOnTheFly);
+            }
+
+            return new PsiElementVisitor() {
+                @Override
+                public void visitElement(@NotNull PsiElement element) {
+                    visitXmlElement(element, holder);
+                    super.visitElement(element);
+                }
+            };
+        }
+    }
+
+    private static void visitYamlElement(@NotNull YAMLScalar psiElement, @NotNull ProblemsHolder holder) {
         String textValue = psiElement.getTextValue();
         if(textValue.startsWith("!php/const:")) {
             String constantName = textValue.substring(11);
@@ -51,7 +69,7 @@ public class ContainerConstantInspection extends LocalInspectionTool {
         }
     }
 
-    private void visitXmlElement(@NotNull PsiElement psiElement, @NotNull ProblemsHolder holder) {
+    private static void visitXmlElement(@NotNull PsiElement psiElement, @NotNull ProblemsHolder holder) {
         if(!XmlHelper.getArgumentValueWithTypePattern("constant").accepts(psiElement)) {
             return;
         }
