@@ -20,39 +20,59 @@ import org.jetbrains.annotations.NotNull;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class RouteControllerDeprecatedInspection extends LocalInspectionTool {
+public class RouteControllerDeprecatedInspection {
+    public static class MyXmlLocalInspectionTool extends LocalInspectionTool {
+        @Override
+        public @NotNull PsiElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
+            Project project = holder.getProject();
+            if (!Symfony2ProjectComponent.isEnabled(project)) {
+                return super.buildVisitor(holder, isOnTheFly);
+            }
 
-    @NotNull
-    public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
-        Project project = holder.getProject();
-        if (!Symfony2ProjectComponent.isEnabled(project)) {
-            return super.buildVisitor(holder, isOnTheFly);
+            return new PsiElementVisitor() {
+                @Override
+                public void visitElement(@NotNull PsiElement element) {
+                    if (XmlHelper.getRouteControllerPattern().accepts(element)) {
+                        PsiElement parent = element.getParent();
+                        if (parent != null) {
+                            String text = RouteXmlReferenceContributor.getControllerText(parent);
+                            if(text != null) {
+                                extracted(project, element, text, holder);
+                            }
+                        }
+                    }
+
+                    super.visitElement(element);
+                }
+            };
         }
+    }
 
-        return new PsiElementVisitor() {
-            @Override
-            public void visitElement(@NotNull PsiElement element) {
-                if (XmlHelper.getRouteControllerPattern().accepts(element)) {
-                    PsiElement parent = element.getParent();
-                    if (parent != null) {
-                        String text = RouteXmlReferenceContributor.getControllerText(parent);
-                        if(text != null) {
+    public static class MyYamlLocalInspectionTool extends LocalInspectionTool {
+        @Override
+        public @NotNull PsiElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
+            Project project = holder.getProject();
+            if (!Symfony2ProjectComponent.isEnabled(project)) {
+                return super.buildVisitor(holder, isOnTheFly);
+            }
+
+            return new PsiElementVisitor() {
+                @Override
+                public void visitElement(@NotNull PsiElement element) {
+                    if(YamlElementPatternHelper.getSingleLineScalarKey("_controller", "controller").accepts(element)) {
+                        String text = PsiElementUtils.trimQuote(element.getText());
+                        if (StringUtils.isNotBlank(text)) {
                             extracted(project, element, text, holder);
                         }
                     }
-                } else if(YamlElementPatternHelper.getSingleLineScalarKey("_controller", "controller").accepts(element)) {
-                    String text = PsiElementUtils.trimQuote(element.getText());
-                    if (StringUtils.isNotBlank(text)) {
-                        extracted(project, element, text, holder);
-                    }
-                }
 
-                super.visitElement(element);
-            }
-        };
+                    super.visitElement(element);
+                }
+            };
+        }
     }
 
-    private void extracted(@NotNull Project project, @NotNull PsiElement element, String text, @NotNull ProblemsHolder holder) {
+    private static void extracted(@NotNull Project project, @NotNull PsiElement element, String text, @NotNull ProblemsHolder holder) {
         for (PsiElement psiElement : RouteHelper.getMethodsOnControllerShortcut(project, text)) {
             if (!(psiElement instanceof PhpNamedElement)) {
                 continue;

@@ -549,11 +549,19 @@
                          language="PHP"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.inspection.TemplateExistsAnnotationPhpAttributeLocalInspection"/>
 
-        <localInspection groupPath="Symfony" shortName="RouteControllerDeprecatedInspection" displayName="Deprecated Action"
+        <localInspection groupPath="Symfony" shortName="RouteControllerDeprecatedInspectionXml" displayName="Deprecated Action in XML Definition"
                          groupName="Route"
                          enabledByDefault="true"
                          level="WARNING"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.RouteControllerDeprecatedInspection"/>
+                         language="XML"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.RouteControllerDeprecatedInspection$MyXmlLocalInspectionTool"/>
+
+        <localInspection groupPath="Symfony" shortName="RouteControllerDeprecatedInspectionYaml" displayName="Deprecated Action in yaml definition"
+                         groupName="Route"
+                         enabledByDefault="true"
+                         language="yaml"
+                         level="WARNING"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.RouteControllerDeprecatedInspection$MyYamlLocalInspectionTool"/>
 
         <localInspection groupPath="Symfony" shortName="ServiceNamedArgumentExistsInspection" displayName="Symfony: Argument does not exists"
                          groupName="Service"
