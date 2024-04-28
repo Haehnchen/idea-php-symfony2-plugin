@@ -21,6 +21,27 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2023.1.271
+* Fix false-positive usages for FirstClassCallable on lazy Twig runtime extension (Daniel Espendiller)
+* Provide checkbox to allow disable cost intensive parameter type provider resolving (Daniel Espendiller)
+* Remove container files init on project open (Daniel Espendiller)
+* Performance: Reduce calling ControllerMethodLineMarkerProvider collect usages (Daniel Espendiller)
+* Performance: Provide inspection language attributes for tag implementations, container / route deprecated (Daniel Espendiller)
+* Performance: Provide inspection language attributes for deprecated class and controller method inspections (Daniel Espendiller)
+* Performance: Use indexed model classes to resolve Entity targets on linemarker to reduce wall time (Daniel Espendiller)
+* Performance: Cache resolved container classes to reduce wall time impact (Daniel Espendiller)
+* Performance: Optimize class namespace loading cache Doctrine models, to reduce wall time calling (Daniel Espendiller)
+* Performance: Split ContainerConstantInspection into language implementations to reduce wall time calls (Daniel Espendiller)
+* Performance: Split MissingServiceInspection into language implentations to reduce wall time calls (Daniel Espendiller)
+* Performance: Split RouteControllerDeprecatedInspection into language implentations to reduce wall time calls (Daniel Espendiller)
+* Performance: Replace recursive visiting in getFirstVariableTypeInScope with controlflow (Daniel Espendiller)
+
+## 2023.1.270
+* Fix Twig filter pattern to support wrapped TwigVariableReference since PhpStorm 2024.1 (Daniel Espendiller)
+* Use idiomatic streaming for getRoutesForPathWithPlaceholderMatch (Daniel Espendiller)
+* Fix "FormFieldResolver.visitFormReferencesFields must not be null" (Daniel Espendiller)
+* Catch user input for reverse routing searching (Daniel Espendiller)
+
 ## 2023.1.269
 * [paid] Add Doctrine entities to wrongly class injection inspection list (Daniel Espendiller)
 * [paid] Add deprecated inspection for calling EntityManager::clear with a parameter (Daniel Espendiller)
