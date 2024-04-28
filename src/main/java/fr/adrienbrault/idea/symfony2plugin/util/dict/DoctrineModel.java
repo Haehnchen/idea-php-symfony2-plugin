@@ -27,6 +27,11 @@ public class DoctrineModel {
         this.doctrineNamespace = doctrineNamespace;
     }
 
+    @Nullable
+    public String getDoctrineShortcut() {
+        return doctrineShortcut;
+    }
+
     @NotNull
     public PhpClass getPhpClass() {
         return phpClass;
