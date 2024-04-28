@@ -156,6 +156,7 @@ public class ContainerCollectionResolver {
 
         @Nullable
         private Set<String> serviceNamesCache;
+        private Map<String, Set<String>> serviceClassNameCache;
 
         private ServiceCollector(@NotNull Project project) {
             this.project = project;
@@ -333,23 +334,25 @@ public class ContainerCollectionResolver {
         }
 
         public Set<String> convertClassNameToServices(@NotNull String fqnClassName) {
+            if (this.serviceClassNameCache == null) {
+                Map<String, Set<String>> result = new HashMap<>();
+                for (Map.Entry<String, ContainerService> entry: this.getServices().entrySet()) {
+                    for (String className : entry.getValue().getClassNames()) {
+                        String indexedClassName = this.getParameterCollector().resolve(className);
+                        if (indexedClassName != null) {
+                            indexedClassName = "\\" + StringUtils.stripStart(indexedClassName, "\\");
 
-            Set<String> serviceNames = new HashSet<>();
-
-            fqnClassName = StringUtils.stripStart(fqnClassName, "\\");
-
-            for(Map.Entry<String, ContainerService> entry: this.getServices().entrySet()) {
-                for (String className : entry.getValue().getClassNames()) {
-                    String indexedClassName = this.getParameterCollector().resolve(className);
-                    if(indexedClassName != null) {
-                        if(StringUtils.stripStart(indexedClassName, "\\").equalsIgnoreCase(fqnClassName)) {
-                            serviceNames.add(entry.getKey());
+                            result.putIfAbsent(indexedClassName, new HashSet<>());
+                            result.get(indexedClassName).add(entry.getKey());
                         }
                     }
                 }
+
+                this.serviceClassNameCache = result;
             }
 
-            return serviceNames;
+            fqnClassName = "\\" + StringUtils.stripStart(fqnClassName, "\\");
+            return this.serviceClassNameCache.getOrDefault(fqnClassName, Collections.emptySet());
         }
 
         private Set<String> getNames() {
