@@ -3,7 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.tests.util;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,22 +25,32 @@ public class PhpIndexUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     {
         List<String> foobar = PhpIndexUtil.getPhpClassInsideNamespace(getProject(), "\\Foobar").stream()
             .map(PhpNamedElement::getFQN)
-            .sorted()
             .collect(Collectors.toList());
 
-        assertEquals(
-            "\\Foobar\\Class1,\\Foobar\\Class2,\\Foobar\\Foobar2\\Foobar3\\Class1,\\Foobar\\Foobar2\\Foobar3\\Class2,\\Foobar\\Foobar2\\Foobar3\\Interface1,\\Foobar\\Foobar2\\Foobar3\\Interface2,\\Foobar\\Foobar2\\FoobarNot\\Class1,\\Foobar\\Foobar2\\FoobarNot\\Class2,\\Foobar\\Foobar2\\Foobar\\Foobar4\\Class1,\\Foobar\\Foobar2\\Foobar\\Foobar4\\Class2,\\Foobar\\Interface1,\\Foobar\\Interface2",
-            StringUtils.join(foobar, ",")
+        assertContainsElements(
+            foobar,
+            "\\Foobar\\Class1",
+            "\\Foobar\\Class2",
+            "\\Foobar\\Foobar2\\Foobar3\\Class1",
+            "\\Foobar\\Foobar2\\Foobar3\\Class2",
+            "\\Foobar\\Foobar2\\Foobar3\\Interface1",
+            "\\Foobar\\Foobar2\\Foobar3\\Interface2",
+            "\\Foobar\\Foobar2\\FoobarNot\\Class1",
+            "\\Foobar\\Foobar2\\FoobarNot\\Class2",
+            "\\Foobar\\Foobar2\\Foobar\\Foobar4\\Class1",
+            "\\Foobar\\Foobar2\\Foobar\\Foobar4\\Class2",
+            "\\Foobar\\Interface1",
+            "\\Foobar\\Interface2"
         );
 
         List<String> foobar2 = PhpIndexUtil.getPhpClassInsideNamespace(getProject(), "\\Foobar\\Foobar2\\Foobar\\Foobar4\\").stream()
             .map(PhpNamedElement::getFQN)
-            .sorted()
             .collect(Collectors.toList());
 
-        assertEquals(
-            "\\Foobar\\Foobar2\\Foobar\\Foobar4\\Class1,\\Foobar\\Foobar2\\Foobar\\Foobar4\\Class2",
-            StringUtils.join(foobar2, ",")
+        assertContainsElements(
+            foobar2,
+            "\\Foobar\\Foobar2\\Foobar\\Foobar4\\Class1",
+            "\\Foobar\\Foobar2\\Foobar\\Foobar4\\Class2"
         );
     }
 

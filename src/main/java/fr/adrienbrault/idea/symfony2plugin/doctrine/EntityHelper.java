@@ -2,12 +2,13 @@ package fr.adrienbrault.idea.symfony2plugin.doctrine;
 
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
-import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.util.*;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.Function;
@@ -44,6 +45,8 @@ import java.util.regex.Pattern;
 public class EntityHelper {
 
     public static final ExtensionPointName<DoctrineModelProvider> MODEL_POINT_NAME = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.DoctrineModelProvider");
+
+    private static final Key<CachedValue<Collection<DoctrineModelCached>>> SYMFONY_DOCTRINE_MODEL_CACHE = new Key<>("SYMFONY_DOCTRINE_MODEL_CACHE");
 
     final public static String[] ANNOTATION_FIELDS = new String[] {
         "\\Doctrine\\ORM\\Mapping\\Column",
@@ -693,11 +696,10 @@ public class EntityHelper {
 
     }
 
-    /**
-     * One PhpClass can have multiple targets and names @TODO: refactor
-     */
-    public static Collection<DoctrineModel> getModelClasses(final Project project) {
+    private record DoctrineModelCached(@NotNull String phpClass, @Nullable String doctrineShortcut, @Nullable String doctrineNamespace) {
+    }
 
+    private static Collection<DoctrineModelCached> getModelClassesInner(final Project project) {
         HashMap<String, String> shortcutNames = new HashMap<>() {{
             putAll(ServiceXmlParserFactory.getInstance(project, EntityNamesServiceParser.class).getEntityNameMap());
             putAll(ServiceXmlParserFactory.getInstance(project, DocumentNamespacesParser.class).getNamespaceMap());
@@ -715,7 +717,7 @@ public class EntityHelper {
         // class fqn fallback
         Collection<DoctrineModel> doctrineModels = getModelClasses(project, shortcutNames);
         for (PhpClass phpClass : DoctrineMetadataUtil.getModels(project)) {
-            if(containsDoctrineModelClass(doctrineModels, phpClass)) {
+            if (containsDoctrineModelClass(doctrineModels, phpClass)) {
                 continue;
             }
 
@@ -725,6 +727,40 @@ public class EntityHelper {
         DoctrineModelProviderParameter containerLoaderExtensionParameter = new DoctrineModelProviderParameter(project, new ArrayList<>());
         for(DoctrineModelProvider provider : EntityHelper.MODEL_POINT_NAME.getExtensions()) {
             for(DoctrineModelProviderParameter.DoctrineModel doctrineModel: provider.collectModels(containerLoaderExtensionParameter)) {
+                doctrineModels.add(new DoctrineModel(doctrineModel.getPhpClass(), doctrineModel.getName()));
+            }
+        }
+
+        return doctrineModels.stream().map(
+            doctrineModel -> new DoctrineModelCached(doctrineModel.getPhpClass().getFQN(), doctrineModel.getDoctrineShortcut(), doctrineModel.getDoctrineNamespace())
+        ).toList();
+    }
+
+    /**
+     * One PhpClass can have multiple targets and names @TODO: refactor
+     */
+    public static Collection<DoctrineModel> getModelClasses(@NotNull final Project project) {
+        Collection<DoctrineModelCached> modelClasses = CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            SYMFONY_DOCTRINE_MODEL_CACHE,
+            () -> CachedValueProvider.Result.create(getModelClassesInner(project), PsiModificationTracker.MODIFICATION_COUNT),
+            false
+        );
+
+        PhpIndex phpIndex = PhpIndex.getInstance(project);
+        Collection<DoctrineModel> doctrineModels = new ArrayList<>();
+        for (DoctrineModelCached doctrineModelCached : modelClasses) {
+            Collection<PhpClass> classesByFQN = phpIndex.getClassesByFQN(doctrineModelCached.phpClass);
+            if (classesByFQN.isEmpty()) {
+                continue;
+            }
+
+            doctrineModels.add(new DoctrineModel(classesByFQN.iterator().next(), doctrineModelCached.doctrineShortcut, doctrineModelCached.doctrineNamespace));
+        }
+
+        DoctrineModelProviderParameter containerLoaderExtensionParameter = new DoctrineModelProviderParameter(project, new ArrayList<>());
+        for (DoctrineModelProvider provider : EntityHelper.MODEL_POINT_NAME.getExtensions()) {
+            for (DoctrineModelProviderParameter.DoctrineModel doctrineModel: provider.collectModels(containerLoaderExtensionParameter)) {
                 doctrineModels.add(new DoctrineModel(doctrineModel.getPhpClass(), doctrineModel.getName()));
             }
         }
@@ -742,18 +778,17 @@ public class EntityHelper {
         return false;
     }
 
-    public static Collection<DoctrineModel> getModelClasses(Project project, Map<String, String> shortcutNames) {
-
+    public static Collection<DoctrineModel> getModelClasses(@NotNull Project project, @NotNull Map<String, String> shortcutNames) {
         PhpClass repositoryInterface = PhpElementsUtil.getInterface(PhpIndex.getInstance(project), DoctrineTypes.REPOSITORY_INTERFACE);
 
-        if(repositoryInterface == null) {
+        if (repositoryInterface == null) {
             repositoryInterface = PhpElementsUtil.getInterface(PhpIndex.getInstance(project), "\\Doctrine\\Persistence\\ObjectRepository");
         }
 
         Collection<DoctrineModel> models = new ArrayList<>();
         for (Map.Entry<String, String> entry : shortcutNames.entrySet()) {
-            for(PhpClass phpClass: PhpIndexUtil.getPhpClassInsideNamespace(project, entry.getValue())) {
-                if(repositoryInterface != null && !isEntity(phpClass, repositoryInterface)) {
+            for (PhpClass phpClass: PhpIndexUtil.getPhpClassInsideNamespace(project, entry.getValue(), true)) {
+                if (repositoryInterface != null && !isEntity(phpClass, repositoryInterface)) {
                     continue;
                 }
 
