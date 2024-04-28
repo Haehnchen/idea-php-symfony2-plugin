@@ -355,19 +355,47 @@
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.inspection.XmlDuplicateParameterKeyInspection"/>
 
 
-        <localInspection groupPath="Symfony" shortName="YamlControllerMethod" displayName="Missing Controller Action"
+        <localInspection groupPath="Symfony" shortName="ControllerMethodYaml" displayName="Missing Controller Action in Yaml"
                          groupName="Route"
-                         enabledByDefault="true" level="WARNING"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.ControllerMethodInspection"/>
+                         enabledByDefault="true"
+                         level="WARNING"
+                         language="yaml"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.ControllerMethodInspection$ControllerMethodInspectionYaml"/>
 
-        <localInspection groupPath="Symfony" shortName="YamlDeprecatedClasses" displayName="Deprecated Class"
+        <localInspection groupPath="Symfony" shortName="ControllerMethodXml" displayName="Missing Controller Action in XML"
+                         groupName="Route"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         language="XML"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.ControllerMethodInspection$ControllerMethodInspectionXml"/>
+
+
+        <localInspection groupPath="Symfony" shortName="DeprecatedClassesYaml" displayName="Deprecated Class in Yaml"
                          groupName="Service"
-                         enabledByDefault="true" level="WARNING"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.codeInspection.service.ServiceDeprecatedClassesInspection"/>
+                         enabledByDefault="true"
+                         level="WARNING"
+                         language="yaml"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.codeInspection.service.ServiceDeprecatedClassesInspection$ServiceDeprecatedClassesInspectionYaml"/>
+
+        <localInspection groupPath="Symfony" shortName="DeprecatedClassesXml" displayName="Deprecated Class in XML"
+                         groupName="Service"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         language="XML"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.codeInspection.service.ServiceDeprecatedClassesInspection$ServiceDeprecatedClassesInspectionXml"/>
+
+        <localInspection groupPath="Symfony" shortName="DeprecatedClassesPhp" displayName="Deprecated Class in PHP"
+                         groupName="Service"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         language="PHP"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.codeInspection.service.ServiceDeprecatedClassesInspection$ServiceDeprecatedClassesInspectionPhp"/>
+
 
         <localInspection groupPath="Symfony" shortName="TaggedExtendsInterfaceClass" displayName="Missing Tag extends/interface statement"
                          groupName="Service"
-                         enabledByDefault="true" level="WARNING"
+                         enabledByDefault="true"
+                         level="WARNING"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.codeInspection.service.TaggedExtendsInterfaceClassInspection"/>
 
         <localInspection groupPath="Symfony" shortName="EventMethodCall" displayName="Create Method"
