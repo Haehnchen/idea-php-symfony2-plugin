@@ -392,11 +392,20 @@
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.codeInspection.service.ServiceDeprecatedClassesInspection$ServiceDeprecatedClassesInspectionPhp"/>
 
 
-        <localInspection groupPath="Symfony" shortName="TaggedExtendsInterfaceClass" displayName="Missing Tag extends/interface statement"
+        <localInspection groupPath="Symfony" shortName="TaggedExtendsInterfaceClassYaml" displayName="Missing Tag extends/interface statement in Yaml"
                          groupName="Service"
                          enabledByDefault="true"
                          level="WARNING"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.codeInspection.service.TaggedExtendsInterfaceClassInspection"/>
+                         language="yaml"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.codeInspection.service.TaggedExtendsInterfaceClassInspection$TaggedExtendsInterfaceClassInspectionYaml"/>
+
+        <localInspection groupPath="Symfony" shortName="TaggedExtendsInterfaceClassXml" displayName="Missing Tag extends/interface statement in XML"
+                         groupName="Service"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         language="XML"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.codeInspection.service.TaggedExtendsInterfaceClassInspection$TaggedExtendsInterfaceClassInspectionXml"/>
+
 
         <localInspection groupPath="Symfony" shortName="EventMethodCall" displayName="Create Method"
                          groupName="Service"
@@ -416,15 +425,34 @@
                          language="yaml"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.intentions.yaml.YamlServiceArgumentInspection"/>
 
-        <localInspection groupPath="Symfony" shortName="RouteSettingDeprecatedInspection" displayName="Symfony: Route settings deprecated"
-                         groupName="Route"
-                         enabledByDefault="true" level="WARNING"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.RouteSettingDeprecatedInspection"/>
 
-        <localInspection groupPath="Symfony" shortName="ContainerSettingDeprecatedInspection" displayName="Symfony: Container settings deprecated"
+        <localInspection groupPath="Symfony" shortName="RouteSettingDeprecatedInspectionYaml" displayName="Symfony: Route settings deprecated in Yaml"
+                         groupName="Route"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         language="yaml"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.RouteSettingDeprecatedInspection$RouteSettingDeprecatedInspectionYaml"/>
+
+        <localInspection groupPath="Symfony" shortName="RouteSettingDeprecatedInspectionXml" displayName="Symfony: Route settings deprecated in XML"
+                         groupName="Route"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         language="XML"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.RouteSettingDeprecatedInspection$RouteSettingDeprecatedInspectionXml"/>
+
+        <localInspection groupPath="Symfony" shortName="ContainerSettingDeprecatedInspectionYaml" displayName="Symfony: Container settings deprecated in Yaml"
                          groupName="Service"
-                         enabledByDefault="true" level="WARNING"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.ContainerSettingDeprecatedInspection"/>
+                         enabledByDefault="true"
+                         level="WARNING"
+                         language="yaml"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.ContainerSettingDeprecatedInspection$ContainerSettingDeprecatedInspectionYaml"/>
+
+        <localInspection groupPath="Symfony" shortName="ContainerSettingDeprecatedInspectionXml" displayName="Symfony: Container settings deprecated in XML"
+                         groupName="Service"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         language="XML"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.ContainerSettingDeprecatedInspection$ContainerSettingDeprecatedInspectionXml"/>
 
         <localInspection groupPath="Symfony" shortName="TwigVariablePathInspection" displayName="Field or method not found"
                          groupName="Twig"
