@@ -32,8 +32,8 @@ Changelog
 * Performance: Cache resolved container classes to reduce wall time impact (Daniel Espendiller)
 * Performance: Optimize class namespace loading cache Doctrine models, to reduce wall time calling (Daniel Espendiller)
 * Performance: Split ContainerConstantInspection into language implementations to reduce wall time calls (Daniel Espendiller)
-* Performance: Split MissingServiceInspection into language implentations to reduce wall time calls (Daniel Espendiller)
-* Performance: Split RouteControllerDeprecatedInspection into language implentations to reduce wall time calls (Daniel Espendiller)
+* Performance: Split MissingServiceInspection into language implementations to reduce wall time calls (Daniel Espendiller)
+* Performance: Split RouteControllerDeprecatedInspection into language implementations to reduce wall time calls (Daniel Espendiller)
 * Performance: Replace recursive visiting in getFirstVariableTypeInScope with controlflow (Daniel Espendiller)
 
 ## 2023.1.270
