@@ -23,7 +23,6 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.ClassServiceDefinitionTargetLazyValue;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
-import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
@@ -31,7 +30,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.ConstraintMessageGotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import icons.ExternalSystemIcons;
 import org.apache.commons.lang3.StringUtils;
@@ -157,31 +156,22 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
     }
 
     private void entityClassMarker(@NotNull Project project, PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo<?>> result) {
-
         PsiElement phpClassContext = psiElement.getContext();
-        if(!(phpClassContext instanceof PhpClass)) {
+        if (!(phpClassContext instanceof PhpClass phpClass)) {
             return;
         }
 
         Collection<PsiFile> psiFiles = new ArrayList<>();
-        // @TODO: use DoctrineMetadataUtil, for single resolve; we have collecting overhead here
-        for(DoctrineModel doctrineModel: EntityHelper.getModelClasses(project)) {
-            PhpClass phpClass = doctrineModel.getPhpClass();
-            if(!PhpElementsUtil.isEqualClassName(phpClass, (PhpClass) phpClassContext)) {
-                continue;
-            }
-
-            PsiFile psiFile = EntityHelper.getModelConfigFile(phpClass);
-
+        for (PsiFile metadataFile : PsiElementUtils.convertVirtualFilesToPsiFiles(project, DoctrineMetadataUtil.findMetadataFiles(project, phpClass.getFQN()))) {
             // prevent self navigation for line marker
-            if(psiFile == null || psiFile instanceof PhpFile) {
+            if (metadataFile instanceof PhpFile) {
                 continue;
             }
 
-            psiFiles.add(psiFile);
+            psiFiles.add(metadataFile);
         }
 
-        if(psiFiles.isEmpty()) {
+        if (psiFiles.isEmpty()) {
             return;
         }
 

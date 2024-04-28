@@ -90,7 +90,7 @@ public class DoctrineMetadataUtil {
 
     @NotNull
     public static Collection<VirtualFile> findMetadataFiles(@NotNull Project project, @NotNull String className) {
-
+        className = StringUtils.stripStart(className, "\\");
         final Collection<VirtualFile> virtualFiles = new ArrayList<>();
 
         FileBasedIndex.getInstance().getFilesWithKey(DoctrineMetadataFileStubIndex.KEY, new HashSet<>(Collections.singletonList(className)), virtualFile -> {
