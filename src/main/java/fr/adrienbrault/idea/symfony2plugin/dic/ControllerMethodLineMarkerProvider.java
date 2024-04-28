@@ -35,35 +35,46 @@ public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
         return null;
     }
 
+    @Override
+    public void collectSlowLineMarkers(@NotNull List<? extends PsiElement> psiElements, @NotNull Collection<? super LineMarkerInfo<?>> results) {
+        if (psiElements.isEmpty() || !Symfony2ProjectComponent.isEnabled(psiElements.get(0))) {
+            return;
+        }
+
+        for (PsiElement psiElement: psiElements) {
+            if (psiElement.getNode().getElementType() != PhpTokenTypes.IDENTIFIER || !(psiElement.getParent() instanceof Method method)) {
+                continue;
+            }
+
+            LineMarkerInfo<?> lineMarkerInfo = collect(psiElement, method);
+            if (lineMarkerInfo != null) {
+                results.add(lineMarkerInfo);
+            }
+        }
+    }
+
     @Nullable
-    public LineMarkerInfo<?> collect(PsiElement psiElement) {
-        if(!Symfony2ProjectComponent.isEnabled(psiElement) || psiElement.getNode().getElementType() != PhpTokenTypes.IDENTIFIER) {
+    public LineMarkerInfo<?> collect(@NotNull PsiElement psiElement, Method method) {
+        if (!method.getAccess().isPublic()) {
             return null;
         }
 
-        PsiElement method = psiElement.getParent();
-        if(!(method instanceof Method) || !((Method) method).getAccess().isPublic()) {
+        List<GotoRelatedItem> gotoRelatedItems = getGotoRelatedItems(method);
+        if (gotoRelatedItems.isEmpty()) {
             return null;
         }
 
-        List<GotoRelatedItem> gotoRelatedItems = getGotoRelatedItems((Method) method);
-
-        if(gotoRelatedItems.isEmpty()) {
-            return null;
-        }
-
-        // only one item dont need popover
-        if(gotoRelatedItems.size() == 1) {
-
+        // only one item don't need popover
+        if (gotoRelatedItems.size() == 1) {
             GotoRelatedItem gotoRelatedItem = gotoRelatedItems.get(0);
 
             // hell: find any possible small icon
             Icon icon = null;
-            if(gotoRelatedItem instanceof RelatedPopupGotoLineMarker.PopupGotoRelatedItem) {
+            if (gotoRelatedItem instanceof RelatedPopupGotoLineMarker.PopupGotoRelatedItem) {
                 icon = ((RelatedPopupGotoLineMarker.PopupGotoRelatedItem) gotoRelatedItem).getSmallIcon();
             }
 
-            if(icon == null) {
+            if (icon == null) {
                icon = Symfony2Icons.SYMFONY_LINE_MARKER;
             }
 
@@ -71,7 +82,7 @@ public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
                 setTargets(gotoRelatedItems.get(0).getElement());
 
             String customName = gotoRelatedItems.get(0).getCustomName();
-            if(customName != null) {
+            if (customName != null) {
                 builder.setTooltipText(customName);
             }
 
@@ -90,27 +101,12 @@ public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
     }
 
     public static List<GotoRelatedItem> getGotoRelatedItems(Method method) {
-
         List<GotoRelatedItem> gotoRelatedItems = new ArrayList<>();
-
         ControllerActionGotoRelatedCollectorParameter parameter = new ControllerActionGotoRelatedCollectorParameter(method, gotoRelatedItems);
-        for(ControllerActionGotoRelatedCollector extension : EP_NAME.getExtensions()) {
+        for (ControllerActionGotoRelatedCollector extension : EP_NAME.getExtensions()) {
             extension.collectGotoRelatedItems(parameter);
         }
 
         return gotoRelatedItems;
     }
-
-    @Override
-    public void collectSlowLineMarkers(@NotNull List<? extends PsiElement> psiElements, @NotNull Collection<? super LineMarkerInfo<?>> results) {
-
-        for(PsiElement psiElement: psiElements) {
-            LineMarkerInfo<?> lineMarkerInfo = collect(psiElement);
-            if(lineMarkerInfo != null) {
-                results.add(lineMarkerInfo);
-            }
-        }
-
-    }
-
 }
