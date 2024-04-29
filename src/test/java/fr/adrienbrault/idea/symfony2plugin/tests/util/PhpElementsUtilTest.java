@@ -118,25 +118,29 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
         Collection<String[]> providers = new ArrayList<>() {{
             add(new String[]{"\\Instance\\Of\\Foo", "\\Instance\\Of\\Bar"});
             add(new String[]{"\\Instance\\Of\\Foo", "\\Instance\\Of\\Cool"});
+            add(new String[]{"\\Instance\\Of\\Foo", "\\Instance\\Of\\Apple"});
             add(new String[]{"\\Instance\\Of\\Car", "\\Instance\\Of\\Bar"});
             add(new String[]{"\\Instance\\Of\\Car", "\\Instance\\Of\\Foo"});
             add(new String[]{"\\Instance\\Of\\Car", "\\Instance\\Of\\Cool"});
+            add(new String[]{"\\Instance\\Of\\Car", "\\Instance\\Of\\Car"});
 
             // backslash
             add(new String[]{"Instance\\Of\\Car", "Instance\\Of\\Cool"});
             add(new String[]{"Instance\\Of\\Car", "\\Instance\\Of\\Cool"});
             add(new String[]{"\\Instance\\Of\\Car", "Instance\\Of\\Cool"});
 
-            // dups
             add(new String[]{"\\Instance\\Of\\Car", "Instance\\Of\\Apple"});
             add(new String[]{"\\Instance\\Of\\Foo", "Instance\\Of\\Apple"});
+            add(new String[]{"\\Instance\\Of\\Apple", "Instance\\Of\\Apple"});
         }};
 
         for (String[] provider : providers) {
-            assertTrue(PhpElementsUtil.isInstanceOf(getProject(), provider[0], provider[1]));
-            assertTrue(PhpElementsUtil.isInstanceOf(PhpElementsUtil.getClassInterface(getProject(), provider[0]), provider[1]));
+            String errorMessage = "'%s' not instance of '%s'".formatted(provider[0], provider[1]);
 
-            assertTrue(PhpElementsUtil.isInstanceOf(
+            assertTrue(errorMessage, PhpElementsUtil.isInstanceOf(getProject(), provider[0], provider[1]));
+            assertTrue(errorMessage, PhpElementsUtil.isInstanceOf(PhpElementsUtil.getClassInterface(getProject(), provider[0]), provider[1]));
+
+            assertTrue(errorMessage, PhpElementsUtil.isInstanceOf(
                 PhpElementsUtil.getClassInterface(getProject(), provider[0]),
                 PhpElementsUtil.getClassInterface(getProject(), provider[1])
             ));

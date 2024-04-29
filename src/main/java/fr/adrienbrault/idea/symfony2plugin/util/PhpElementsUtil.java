@@ -4,7 +4,6 @@ import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.lang.ASTNode;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Ref;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PatternCondition;
 import com.intellij.patterns.PlatformPatterns;
@@ -48,8 +47,8 @@ import com.jetbrains.php.refactoring.PhpAliasImporter;
 import fr.adrienbrault.idea.symfony2plugin.dic.MethodReferenceBag;
 import fr.adrienbrault.idea.symfony2plugin.util.psi.PsiElementAssertUtil;
 import kotlin.Pair;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -788,24 +787,17 @@ public class PhpElementsUtil {
      * @param expectedClass eg DateTimeInterface
      */
     public static boolean isInstanceOf(@NotNull PhpClass subjectClass, @NotNull PhpClass expectedClass) {
-        Ref<Boolean> result = new Ref<>(false);
-
-        PhpClassHierarchyUtils.processSupers(subjectClass, true, true, superClass -> {
-            boolean b = StringUtil.equalsIgnoreCase(superClass.getFQN(), expectedClass.getFQN())
-                || StringUtil.equalsIgnoreCase(StringUtils.stripStart(superClass.getFQN(), "\\"), StringUtils.stripStart(expectedClass.getFQN(), "\\"));
-
-            if (b) {
-                result.set(true);
-            }
-
-            return !(Boolean)result.get();
-        });
-
-        if (result.get()) {
+        if (PhpLangUtil.equalsClassNames(subjectClass.getFQN(), expectedClass.getFQN())) {
             return true;
         }
 
-        return new PhpType().add(expectedClass).isConvertibleFrom(new PhpType().add(subjectClass), PhpIndex.getInstance(subjectClass.getProject()));
+        Ref<Boolean> ref = new Ref<>(false);
+        PhpClassHierarchyUtils.processSupers(subjectClass, false, true, curClass -> {
+            ref.set(PhpLangUtil.equalsClassNames(curClass.getFQN(), expectedClass.getFQN()));
+            return !(Boolean) ref.get();
+        });
+
+        return ref.get();
     }
 
     /**
