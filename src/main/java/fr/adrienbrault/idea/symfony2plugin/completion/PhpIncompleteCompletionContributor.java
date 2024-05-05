@@ -20,6 +20,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.form.FormUnderscoreMethodReference;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormFieldResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import kotlin.Pair;
 import org.apache.commons.lang3.StringUtils;
@@ -60,9 +61,24 @@ public class PhpIncompleteCompletionContributor extends CompletionContributor {
                                 return;
                             }
 
+                            Set<String> alreadyKnownFields = new HashSet<>();
+                            String formTypeClassFromScope = FormUtil.getFormTypeClassFromScope(parent);
+                            if (formTypeClassFromScope != null) {
+                                PhpClass clazz = PhpElementsUtil.getClassInterface(project, formTypeClassFromScope);
+                                if (clazz != null) {
+                                    FormFieldResolver.visitFormReferencesFields(clazz, twigTypeContainer -> alreadyKnownFields.add(twigTypeContainer.getStringElement()));
+                                }
+                            }
+
                             FormUnderscoreMethodReference.visitPropertyPath(
                                 phpClass,
-                                pair -> completionResultSet.addElement(new MyLookupElement(pair.getFirst(), "add", pair.getSecond(), phpClass.getName()))
+                                pair -> completionResultSet.addElement(new MyLookupElement(
+                                    pair.getFirst(),
+                                    "add",
+                                    pair.getSecond(),
+                                    phpClass.getName(),
+                                    alreadyKnownFields.contains(pair.getFirst())
+                                ))
                             );
                         }
                     }
@@ -140,19 +156,28 @@ public class PhpIncompleteCompletionContributor extends CompletionContributor {
 
         private final PhpNamedElement phpNamedElement;
         private final String typeText;
+        private final @NotNull boolean exists;
 
-        public MyLookupElement(@NotNull String key, @NotNull String lookupElement, @NotNull PhpNamedElement phpNamedElement, @NotNull String typeText) {
+        public MyLookupElement(@NotNull String key, @NotNull String lookupElement, @NotNull PhpNamedElement phpNamedElement, @NotNull String typeText, boolean exists) {
             this.key = key;
             this.lookupElement = lookupElement;
             this.phpNamedElement = phpNamedElement;
             this.typeText = typeText;
+            this.exists = exists;
         }
 
         @Override
         public void renderElement(@NotNull LookupElementPresentation presentation) {
             super.renderElement(presentation);
+
+            if (this.exists) {
+                presentation.setTypeText(typeText, Symfony2Icons.SYMFONY_AI_OPACITY);
+                presentation.setTypeGrayed(true);
+            } else {
+                presentation.setTypeText(typeText, Symfony2Icons.SYMFONY_AI);
+            }
+
             presentation.setIcon(phpNamedElement.getIcon());
-            presentation.setTypeText(typeText, Symfony2Icons.SYMFONY);
             presentation.setTypeIconRightAligned(true);
         }
 

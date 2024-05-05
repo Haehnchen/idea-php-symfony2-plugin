@@ -760,7 +760,21 @@ public class FormUtil {
     }
 
     public static Pair<String, Map<String, String>> getGuessedFormFieldParameters(@NotNull PhpIndex phpIndex, @NotNull Project project, @NotNull String key, @NotNull PhpNamedElement phpNamedElement) {
-        PhpType phpType = phpIndex.completeType(project, phpNamedElement.getType(), new HashSet<>());
+        // method / function
+        PhpType phpType = null;
+        if (phpNamedElement instanceof Function function) {
+            PsiElement parameter = function.getParameter(0);
+            if (parameter instanceof PhpTypedElement phpTypedElement) {
+                phpType = phpIndex.completeType(project, phpTypedElement.getType(), new HashSet<>());
+            }
+        } else {
+            // properties
+            phpType = phpIndex.completeType(project, phpNamedElement.getType(), new HashSet<>());
+        }
+
+        if (phpType == null) {
+            return new Pair<>("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\TextType", null);
+        }
 
         String typeClass = null;
         Map<String, String> options = new HashMap<>();
