@@ -188,7 +188,7 @@ public class FormFieldResolver implements TwigTypeResolver {
     }
 
     /**
-     * Field all form fields in given PhpClass which should already be just a form type
+     * Visit all form fields in given PhpClass which are already a form type
      */
     public static void visitFormReferencesFields(@NotNull PhpClass phpClass, @NotNull Consumer<TwigTypeContainer> consumer) {
         visitFormReferencesFields(phpClass.getProject(), Collections.singleton(phpClass), consumer);
