@@ -21,7 +21,7 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
-## 2023.1.272
+## 2024.1.272
 * Fix substring error if "twig:" is not fully given (Daniel Espendiller)
 * Form builder field completion, should support function+property types and grey-out already existing fields (Daniel Espendiller)
 * Replace "isConvertibleFrom" instance of check with PhpClassHierarchyUtils.processSupers (Daniel Espendiller)
