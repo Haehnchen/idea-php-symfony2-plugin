@@ -183,7 +183,12 @@ public class TwigHtmlCompletionContributor extends CompletionContributor {
                         return;
                     }
 
-                    for (PhpClass phpClass : UxUtil.getTwigComponentPhpClasses(position.getProject(), parentOfType.getName().substring(5))) {
+                    String name = parentOfType.getName();
+                    if (name.length() <= 5) {
+                        return;
+                    }
+
+                    for (PhpClass phpClass : UxUtil.getTwigComponentPhpClasses(position.getProject(), name.substring(5))) {
                         UxUtil.visitComponentVariables(phpClass, pair -> {
                             PhpNamedElement field = pair.getSecond();
 
