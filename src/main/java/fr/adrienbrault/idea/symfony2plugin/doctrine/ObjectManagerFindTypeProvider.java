@@ -41,7 +41,7 @@ public class ObjectManagerFindTypeProvider implements PhpTypeProvider4 {
         }
 
         Project project = e.getProject();
-        if (!Settings.getInstance(project).pluginEnabled || !Settings.getInstance(project).featureTwigIcon) {
+        if (!Settings.getInstance(project).pluginEnabled || !Settings.getInstance(project).featureTypeProvider) {
             return null;
         }
 
