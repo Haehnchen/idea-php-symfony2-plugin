@@ -31,7 +31,7 @@ public class TwigIconProvider extends IconProvider {
         // attach controller icon overlay
         LayeredIcon icon = null;
         if (hasController((TwigFile) element)) {
-            icon = new LayeredIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_CONTROLLER_FILE);
+            icon = LayeredIcon.layeredIcon(new Icon[]{TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_CONTROLLER_FILE});
             icon.setIcon(Symfony2Icons.TWIG_CONTROLLER_FILE, 1, SwingConstants.NORTH_WEST);
         }
 
@@ -39,11 +39,11 @@ public class TwigIconProvider extends IconProvider {
         if (hasFileExtendsTag(element)) {
             if (icon == null) {
                 // we are alone so just place the icon
-                icon = new LayeredIcon(TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_EXTENDS_FILE);
+                icon = LayeredIcon.layeredIcon(new Icon[]{TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_EXTENDS_FILE});
                 icon.setIcon(Symfony2Icons.TWIG_EXTENDS_FILE, 1, SwingConstants.NORTH_WEST);
             } else {
                 // icon should be below first one
-                icon = new LayeredIcon(icon, Symfony2Icons.TWIG_IMPLEMENTS_FILE);
+                LayeredIcon.layeredIcon(new Icon[]{Symfony2Icons.TWIG_IMPLEMENTS_FILE});
                 icon.setIcon(Symfony2Icons.TWIG_EXTENDS_FILE, 1, 0, Symfony2Icons.TWIG_CONTROLLER_FILE.getIconHeight() + 1);
             }
         }

@@ -97,7 +97,7 @@ public class TranslationKeyTargetFakePsiNavigationItem extends GoToSymbolProvide
 
         if (rootDir != null && isSymfonyTranslationDirectory()) {
             SizedIcon sizedIcon = new SizedIcon(Symfony2Icons.SYMFONY_LINE_MARKER, fileIcon.getIconWidth() / 2, fileIcon.getIconHeight() / 2);
-            LayeredIcon icon = new LayeredIcon(fileIcon, sizedIcon);
+            LayeredIcon icon = LayeredIcon.layeredIcon(new Icon[]{fileIcon, sizedIcon});
             icon.setIcon(sizedIcon, 1, SwingConstants.SOUTH_EAST);
             return icon;
         }
