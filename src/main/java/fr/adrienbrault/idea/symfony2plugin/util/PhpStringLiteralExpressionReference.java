@@ -60,7 +60,7 @@ public class PhpStringLiteralExpressionReference extends PsiReferenceProvider {
     private PsiReference[] getPsiReferenceBase(PsiElement psiElement) {
 
         try {
-            PsiReferenceBase referenceClassInstance = (PsiReferenceBase) this.referenceClass.getDeclaredConstructor(StringLiteralExpression.class).newInstance((StringLiteralExpression) psiElement);
+            PsiReferenceBase referenceClassInstance = (PsiReferenceBase) this.referenceClass.getDeclaredConstructor(StringLiteralExpression.class).newInstance(psiElement);
             return new PsiReference[]{  referenceClassInstance };
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException ignored) {
         }

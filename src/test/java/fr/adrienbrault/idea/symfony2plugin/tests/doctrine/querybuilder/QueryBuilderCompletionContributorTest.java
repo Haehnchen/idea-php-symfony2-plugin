@@ -1,7 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.querybuilder;
 
-import com.intellij.codeInsight.lookup.LookupElementPresentation;
-import com.jetbrains.php.lang.PhpFileType;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.QueryBuilderCompletionContributor;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;

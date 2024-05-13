@@ -83,11 +83,11 @@ public class TwigGotoRelatedProvider extends GotoRelatedProvider {
 
                         gotoRelatedItems.addAll(TwigBlockUtil.getBlockOverwriteTargets(childrenOfType).stream().map((Function<PsiElement, GotoRelatedItem>) psiElement1 ->
                             new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(psiElement1, blockName).withIcon(Symfony2Icons.TWIG_BLOCK_OVERWRITE, Symfony2Icons.TWIG_BLOCK_OVERWRITE)
-                        ).collect(Collectors.toList()));
+                        ).toList());
 
                         gotoRelatedItems.addAll(TwigBlockUtil.getBlockImplementationTargets(childrenOfType).stream().map((Function<PsiElement, GotoRelatedItem>) psiElement1 ->
                             new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(psiElement1, blockName).withIcon(Symfony2Icons.TWIG_BLOCK_OVERWRITE, Symfony2Icons.TWIG_BLOCK_OVERWRITE)
-                        ).collect(Collectors.toList()));
+                        ).toList());
                     }
                 }
             }

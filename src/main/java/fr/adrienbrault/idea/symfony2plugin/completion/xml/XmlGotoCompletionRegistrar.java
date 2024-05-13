@@ -248,7 +248,7 @@ public class XmlGotoCompletionRegistrar implements GotoCompletionRegistrar  {
             for (PhpClass phpClass : phpClasses) {
                 lookupElements.addAll(PhpElementsUtil.getClassPublicMethod(phpClass).stream()
                     .map(PhpLookupElement::new)
-                    .collect(Collectors.toList())
+                    .toList()
                 );
             }
 

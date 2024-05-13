@@ -172,7 +172,7 @@ public class ArrayValueWithKeyAndNewExpressionMatcher {
         @NotNull
         private final String clazz;
 
-        private int index = 0;
+        private int index;
 
         public NewExpressionCall(@NotNull String clazz) {
             this(clazz, 0);

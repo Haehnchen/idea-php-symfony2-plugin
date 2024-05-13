@@ -97,7 +97,7 @@ public class FormDataClassStubIndex extends FileBasedIndexExtension<String, Set<
         } else if ("setDefaults".equals(name) && element.getType().getTypes().stream().anyMatch(s -> s.toLowerCase().contains("optionsresolver"))) {
             // $resolver->setDefaults(['data_class' => XXX]);
 
-            ParameterList parameterList = ((MethodReference) element).getParameterList();
+            ParameterList parameterList = element.getParameterList();
             if (parameterList != null) {
                 PsiElement parameter = parameterList.getParameter(0);
                 if (parameter instanceof ArrayCreationExpression) {

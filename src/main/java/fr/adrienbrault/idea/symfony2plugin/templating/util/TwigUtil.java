@@ -1419,7 +1419,7 @@ public class TwigUtil {
         List<TwigPath> collect = getTwigNamespaces(project, true)
             .stream()
             .filter(TwigPath::isEnabled)
-            .collect(Collectors.toList());
+            .toList();
 
         return collect.stream()
             .map(twigPath -> getTemplateNameForTwigPath(project, twigPath, virtualFile))

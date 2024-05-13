@@ -172,9 +172,7 @@ public class YamlServiceTagIntention extends PsiElementBaseIntentionAction {
         Set<String> strings = YamlHelper.collectServiceTags(serviceKeyValue);
         if(!strings.isEmpty()) {
             for (String s : strings) {
-                if(phpClassServiceTags.contains(s)) {
-                    phpClassServiceTags.remove(s);
-                }
+                phpClassServiceTags.remove(s);
             }
         }
 

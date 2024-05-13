@@ -102,7 +102,7 @@ public class PhpConstGotoCompletionProvider extends GotoCompletionProvider {
     private void addAllClassConstants(Collection<LookupElement> elements, Collection<PhpClass> classes) {
         for (PhpClass phpClass : classes) {
             // All class constants
-            List<Field> fields = Arrays.stream(phpClass.getOwnFields()).filter(f -> f.isConstant() && f.getModifier().isPublic()).collect(Collectors.toList());
+            List<Field> fields = Arrays.stream(phpClass.getOwnFields()).filter(f -> f.isConstant() && f.getModifier().isPublic()).toList();
             for (PhpNamedElement field : fields) {
                 // Foo::BAR
                 String lookupString = phpClass.getName() + SCOPE_OPERATOR + field.getName();

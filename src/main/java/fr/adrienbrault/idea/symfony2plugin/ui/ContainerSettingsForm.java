@@ -196,8 +196,4 @@ public class ContainerSettingsForm implements Configurable {
             this.modelList.removeRow(0);
         }
     }
-
-    @Override
-    public void disposeUIResources() {
-    }
 }

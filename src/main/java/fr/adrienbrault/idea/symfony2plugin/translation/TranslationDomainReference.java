@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public class TranslationDomainReference extends PsiReferenceBase<PsiElement> implements PsiPolyVariantReference {
 
-    private String domainName = null;
+    private String domainName;
 
     public TranslationDomainReference(@NotNull StringLiteralExpression element) {
         super(element);

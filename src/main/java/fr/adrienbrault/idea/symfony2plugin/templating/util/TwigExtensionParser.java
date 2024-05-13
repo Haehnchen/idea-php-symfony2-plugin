@@ -411,7 +411,7 @@ public class TwigExtensionParser  {
             PhpPsiElement phpPsiElement = PhpElementsUtil.getArrayValue(arrayCreationExpression, optionTrue);
             if (phpPsiElement instanceof ConstantReference) {
                 String value = phpPsiElement.getName();
-                if (value != null && value.toLowerCase().equals("true")) {
+                if (value != null && value.equalsIgnoreCase("true")) {
                     options.put(optionTrue, "true");
                 }
             }
@@ -436,7 +436,7 @@ public class TwigExtensionParser  {
                         }
 
                         // creation options like: needs_environment
-                        Map<String, String> options = new HashMap<>();
+                        Map<String, String> options;
                         if (psiElement.length > 2 && psiElement[2] instanceof ArrayCreationExpression) {
                             options = getOptions((ArrayCreationExpression) psiElement[2]);
                         } else {

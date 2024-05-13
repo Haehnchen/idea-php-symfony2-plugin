@@ -238,7 +238,7 @@ public class DoctrineMetadataUtil {
                     }
 
                     String table = metadata.getTable();
-                    if(table != null && tableName.equals(table)) {
+                    if(tableName.equals(table)) {
                         return metadata;
                     }
                 }

@@ -337,9 +337,7 @@ public class PsiElementUtils {
     public static PsiElement getParentOfType(@Nullable PsiElement element, @NotNull IElementType iElementType) {
         if (element == null) return null;
 
-        PsiElement lastElement = null;
         while (element != null) {
-
             IElementType elementType = element.getNode().getElementType();
             if (elementType == iElementType) {
                 return element;
@@ -349,7 +347,6 @@ public class PsiElementUtils {
                 return null;
             }
 
-            lastElement = element;
             element = element.getParent();
         }
 

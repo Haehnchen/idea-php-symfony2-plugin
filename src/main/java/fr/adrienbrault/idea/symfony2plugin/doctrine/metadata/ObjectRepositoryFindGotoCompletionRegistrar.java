@@ -103,7 +103,7 @@ public class ObjectRepositoryFindGotoCompletionRegistrar implements GotoCompleti
             phpClasses.forEach(phpClass ->
                 results.addAll(EntityHelper.getModelFields(phpClass).stream()
                     .map((Function<DoctrineModelField, LookupElement>) DoctrineModelFieldLookupElement::new)
-                    .collect(Collectors.toList())
+                    .toList()
                 )
             );
 

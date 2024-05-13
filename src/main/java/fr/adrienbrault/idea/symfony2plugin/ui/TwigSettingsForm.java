@@ -44,13 +44,6 @@ public class TwigSettingsForm implements Configurable {
     }
 
     private void attachItems() {
-
-        // @TODO: remove this check, moved init stuff out of constructor
-        // dont load on project less context
-        if(this.project == null) {
-            return;
-        }
-
         if (DumbService.getInstance(project).isDumb()) {
             this.tableView.getEmptyText().setText("Not available while indexing. Please re-open this screen when ready.");
 

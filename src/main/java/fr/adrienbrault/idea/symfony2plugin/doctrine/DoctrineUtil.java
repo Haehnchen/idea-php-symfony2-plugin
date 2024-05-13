@@ -84,7 +84,7 @@ public class DoctrineUtil {
 
         Collection<Pair<String, String>> pairs = new ArrayList<>();
 
-        for (XmlTag xmlTag : (XmlTag[]) ArrayUtils.addAll(rootTag.findSubTags("document"), rootTag.findSubTags("entity"))) {
+        for (XmlTag xmlTag : ArrayUtils.addAll(rootTag.findSubTags("document"), rootTag.findSubTags("entity"))) {
 
             XmlAttribute attr = xmlTag.getAttribute("name");
             if(attr == null) {

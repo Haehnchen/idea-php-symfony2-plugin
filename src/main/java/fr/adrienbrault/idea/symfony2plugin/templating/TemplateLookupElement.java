@@ -1,13 +1,10 @@
 package fr.adrienbrault.idea.symfony2plugin.templating;
 
-import com.intellij.codeInsight.completion.InsertHandler;
-import com.intellij.codeInsight.completion.InsertionContext;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
@@ -25,9 +22,6 @@ public class TemplateLookupElement extends LookupElement {
 
     private boolean bold = false;
 
-    @Nullable
-    private final InsertHandler<LookupElement> insertHandler = null;
-
     public TemplateLookupElement(@NotNull String templateName, @NotNull VirtualFile virtualFile, @NotNull VirtualFile projectBaseDir) {
         this.templateName = templateName;
         this.virtualFile = virtualFile;
@@ -43,12 +37,6 @@ public class TemplateLookupElement extends LookupElement {
     @Override
     public String getLookupString() {
         return templateName;
-    }
-
-    public void handleInsert(InsertionContext context) {
-        if (this.insertHandler != null) {
-            this.insertHandler.handleInsert(context, this);
-        }
     }
 
     public void renderElement(LookupElementPresentation presentation) {

@@ -117,7 +117,7 @@ public class ServiceBuilder {
 
         }
 
-        if(!hasCall || methodCalls.isEmpty()) {
+        if(!hasCall) {
             return null;
         }
 

@@ -303,9 +303,6 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
         if(node == null) return comments;
 
         Node previousSibling = node.getPreviousSibling();
-        if(previousSibling == comments) {
-            return comments;
-        }
 
         // get variable decl: "foo: test"
         Pattern compile = Pattern.compile("^\\s*([\\w_-]+)\\s*:\\s*(.*?)$");

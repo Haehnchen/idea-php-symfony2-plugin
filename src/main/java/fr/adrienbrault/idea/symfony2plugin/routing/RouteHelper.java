@@ -779,50 +779,41 @@ public class RouteHelper {
         hashValue.getHashElements().forEach(hashElementCollection::add);
 
         Set<String> variables = new HashSet<>();
-        if(!hashElementCollection.isEmpty() && hashElementCollection.get(0).getValue() instanceof ArrayCreationExpression value) {
-            if(value != null) {
-                variables.addAll(PhpElementsUtil.getArrayKeyValueMap(value).values());
-            }
+        if (!hashElementCollection.isEmpty() && hashElementCollection.get(0).getValue() instanceof ArrayCreationExpression value) {
+            variables.addAll(PhpElementsUtil.getArrayKeyValueMap(value).values());
         }
 
         Map<String, String> defaults = new HashMap<>();
-        if(hashElementCollection.size() >= 2 && hashElementCollection.get(1).getValue() instanceof ArrayCreationExpression value) {
-            if(value != null) {
-                defaults = PhpElementsUtil.getArrayKeyValueMap(value);
-            }
+        if (hashElementCollection.size() >= 2 && hashElementCollection.get(1).getValue() instanceof ArrayCreationExpression value) {
+            defaults = PhpElementsUtil.getArrayKeyValueMap(value);
         }
 
         Map<String, String>requirements = new HashMap<>();
-        if(hashElementCollection.size() >= 3 && hashElementCollection.get(2).getValue() instanceof ArrayCreationExpression value) {
-            if(value != null) {
-                requirements = PhpElementsUtil.getArrayKeyValueMap(value);
-            }
+        if (hashElementCollection.size() >= 3 && hashElementCollection.get(2).getValue() instanceof ArrayCreationExpression value) {
+            requirements = PhpElementsUtil.getArrayKeyValueMap(value);
         }
 
         StringBuilder path = new StringBuilder();
         List<Collection<String>> tokens = new ArrayList<>();
-        if(hashElementCollection.size() >= 4 && hashElementCollection.get(3).getValue() instanceof ArrayCreationExpression tokenArray) {
-            if(tokenArray != null) {
-                List<ArrayHashElement> result = StreamSupport.stream(tokenArray.getHashElements().spliterator(), false)
-                        .collect(Collectors.toList());
+        if (hashElementCollection.size() >= 4 && hashElementCollection.get(3).getValue() instanceof ArrayCreationExpression tokenArray) {
+            List<ArrayHashElement> result = StreamSupport.stream(tokenArray.getHashElements().spliterator(), false)
+                .collect(Collectors.toList());
 
-                Collections.reverse(result);
+            Collections.reverse(result);
 
-                for(ArrayHashElement tokenArrayConfig: result) {
-                    if(tokenArrayConfig.getValue() instanceof ArrayCreationExpression) {
-                        Map<String, String> arrayKeyValueMap = PhpElementsUtil.getArrayKeyValueMap((ArrayCreationExpression) tokenArrayConfig.getValue());
-                        path.append(arrayKeyValueMap.getOrDefault("1", null));
+            for (ArrayHashElement tokenArrayConfig: result) {
+                if (tokenArrayConfig.getValue() instanceof ArrayCreationExpression) {
+                    Map<String, String> arrayKeyValueMap = PhpElementsUtil.getArrayKeyValueMap((ArrayCreationExpression) tokenArrayConfig.getValue());
+                    path.append(arrayKeyValueMap.getOrDefault("1", null));
 
-                        String var = arrayKeyValueMap.getOrDefault("3", null);
-                        if (var != null) {
-                            path.append("{").append(var).append("}");
-                        }
-
-                        tokens.add(arrayKeyValueMap.values());
+                    String var = arrayKeyValueMap.getOrDefault("3", null);
+                    if (var != null) {
+                        path.append("{").append(var).append("}");
                     }
+
+                    tokens.add(arrayKeyValueMap.values());
                 }
             }
-
         }
 
         // hostTokens = 4 need them?
@@ -1049,9 +1040,9 @@ public class RouteHelper {
     @Nullable
     public static String getXmlController(@NotNull XmlTag serviceTag) {
         for(XmlTag subTag :serviceTag.getSubTags()) {
-            if("default".equalsIgnoreCase(subTag.getName())) {
+            if ("default".equalsIgnoreCase(subTag.getName())) {
                 String keyValue = subTag.getAttributeValue("key");
-                if(keyValue != null && "_controller".equals(keyValue)) {
+                if ("_controller".equals(keyValue)) {
                     String actionName = subTag.getValue().getTrimmedText();
                     if(StringUtils.isNotBlank(actionName)) {
                         return actionName;
@@ -1061,7 +1052,7 @@ public class RouteHelper {
         }
 
         String controller = serviceTag.getAttributeValue("controller");
-        if(controller != null && StringUtils.isNotBlank(controller)) {
+        if (StringUtils.isNotBlank(controller)) {
             return controller;
         }
 

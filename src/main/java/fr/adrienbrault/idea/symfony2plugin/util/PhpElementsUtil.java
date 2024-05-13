@@ -884,12 +884,7 @@ public class PhpElementsUtil {
             return null;
         }
 
-        if(valueString == null) {
-            return null;
-        }
-
         return valueString.getContents();
-
     }
 
     static public boolean isEqualMethodReferenceName(MethodReference methodReference, String methodName) {
@@ -1562,7 +1557,7 @@ public class PhpElementsUtil {
             .stream()
             .flatMap((fqn) -> instance.getAnyByFQN(fqn).stream())
             .distinct()
-            .collect(Collectors.toList());
+            .toList();
 
         for (PhpClass phpClass : instanceClasses) {
             Method method = phpClass.findMethodByName(methodReference.getName());
@@ -1647,7 +1642,7 @@ public class PhpElementsUtil {
             throw new Exception("Class fqn error");
         }
 
-        if(!PhpCodeInsightUtil.getAliasesInScope(scopeForUseOperator).values().contains(fqn)) {
+        if(!PhpCodeInsightUtil.getAliasesInScope(scopeForUseOperator).containsValue(fqn)) {
             PhpAliasImporter.insertUseStatement(fqn, scopeForUseOperator);
         }
 
@@ -1731,7 +1726,7 @@ public class PhpElementsUtil {
             return null;
         }
 
-        if(!PhpCodeInsightUtil.getAliasesInScope(scopeForUseOperator).values().contains(fqnClasName)) {
+        if(!PhpCodeInsightUtil.getAliasesInScope(scopeForUseOperator).containsValue(fqnClasName)) {
             PhpAliasImporter.insertUseStatement(fqnClasName, scopeForUseOperator);
         }
 
@@ -1896,7 +1891,7 @@ public class PhpElementsUtil {
             .stream()
             .flatMap((fqn) -> instance.getAnyByFQN(fqn).stream())
             .distinct()
-            .collect(Collectors.toList());
+            .toList();
 
         Set<Method> methods = new HashSet<>();
         for (PhpClass phpClass : instanceClasses) {
@@ -2148,7 +2143,7 @@ public class PhpElementsUtil {
 
         @Nullable
         private static String resolvePhpReference(@NotNull PhpReference parameter) {
-            for (PhpNamedElement phpNamedElement : ((PhpReference) parameter).resolveLocal()) {
+            for (PhpNamedElement phpNamedElement : parameter.resolveLocal()) {
                 // foo(self::foo)
                 // foo($this->foo)
                 if (phpNamedElement instanceof Field) {

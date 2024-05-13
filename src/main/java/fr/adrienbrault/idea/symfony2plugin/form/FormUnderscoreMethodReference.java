@@ -49,7 +49,7 @@ public class FormUnderscoreMethodReference extends PsiPolyVariantReferenceBase<S
         // property path
         psiElements.addAll(this.phpClass.getFields().stream()
             .filter(field -> !field.isConstant() && field.getModifier().isPublic() && methods.contains(field.getName()))
-            .collect(Collectors.toList())
+            .toList()
         );
 
         return PsiElementResolveResult.createResults(psiElements);
