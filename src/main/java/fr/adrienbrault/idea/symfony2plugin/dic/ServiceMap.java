@@ -16,7 +16,7 @@ public class ServiceMap {
     private Collection<String> ids;
 
     ServiceMap() {
-        this.services = Collections.unmodifiableCollection(Collections.emptyList());
+        this.services = Collections.emptyList();
     }
 
     ServiceMap(@NotNull Collection<ServiceInterface> services) {

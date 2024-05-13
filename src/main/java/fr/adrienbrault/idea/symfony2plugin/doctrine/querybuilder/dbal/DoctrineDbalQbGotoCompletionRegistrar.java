@@ -141,7 +141,7 @@ public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegi
             if(underscore.contains("_")) {
                 String[] split = underscore.split("_");
                 if(split.length > 1) {
-                    aliasSet.add(split[0].substring(0, 1) + split[1].substring(0, 1));
+                    aliasSet.add(split[0].charAt(0) + split[1].substring(0, 1));
                 }
 
                 List<String> i = new ArrayList<>();

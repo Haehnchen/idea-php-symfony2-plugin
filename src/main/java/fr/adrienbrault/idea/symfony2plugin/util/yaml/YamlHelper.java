@@ -246,7 +246,7 @@ public class YamlHelper {
 
         // optional syntax
         if(serviceName.startsWith("?")) {
-            serviceName = serviceName.substring(1, serviceName.length());
+            serviceName = serviceName.substring(1);
         }
 
         return serviceName;
@@ -894,12 +894,12 @@ public class YamlHelper {
 
             // split content of array value object;
             // drop first item as getValueText() removes our key indent
-            String[] remove = (String[]) ArrayUtils.remove(text.split("\\r?\\n"), 0);
+            String[] remove = ArrayUtils.remove(text.split("\\r?\\n"), 0);
 
             List<String> map = ContainerUtil.map(remove, s -> previousIndent + s);
 
             return "\n" + StringUtils.strip(StringUtils.join(map, "\n"), "\n");
-        }, (String[]) ArrayUtils.add(keys, keyText));
+        }, ArrayUtils.add(keys, keyText));
     }
 
     public static PsiElement insertKeyIntoFile(final @NotNull YAMLFile yamlFile, final @Nullable String value, @NotNull String... keys) {

@@ -30,7 +30,7 @@ public class ResourceFileInsertHandler implements InsertHandler<LookupElement> {
             return false;
         }
 
-        return fileText.substring(context.getStartOffset() - string.length(), context.getStartOffset()).equals(string);
+        return fileText.startsWith(string, context.getStartOffset() - string.length());
     }
 
 

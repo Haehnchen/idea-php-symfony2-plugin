@@ -5,6 +5,7 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -56,13 +57,6 @@ public class DomainFileMap {
     @Nullable
     public PsiFile getPsiFile(Project project) {
         VirtualFile virtualFile = this.getFile();
-        if(virtualFile == null) {
-            return null;
-        }
-
-        return PsiManager.getInstance(project).findFile(virtualFile);
-
+        return PsiElementUtils.virtualFileToPsiFile(project, virtualFile);
     }
-
-
 }

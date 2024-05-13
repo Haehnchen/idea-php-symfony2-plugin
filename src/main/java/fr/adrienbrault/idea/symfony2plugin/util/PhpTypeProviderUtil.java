@@ -66,7 +66,7 @@ public class PhpTypeProviderUtil {
 
         // whitelist here; we can also provide some more but think of performance
         // Service::NAME, $this->name and Entity::CLASS;
-        if (parameter instanceof PhpReference && (parameter instanceof ClassConstantReference || parameter instanceof FieldReference)) {
+        if ((parameter instanceof ClassConstantReference || parameter instanceof FieldReference)) {
             String signature = ((PhpReference) parameter).getSignature();
             if (StringUtil.isNotEmpty(signature)) {
                 return refSignature + trimKey + signature;

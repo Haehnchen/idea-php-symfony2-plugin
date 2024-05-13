@@ -86,9 +86,6 @@ public class QueryBuilderGotoDeclarationHandler implements GotoDeclarationHandle
         }
 
         QueryBuilderMethodReferenceParser qb = QueryBuilderCompletionContributor.getQueryBuilderParser(methodMatchParameter.getMethodReference());
-        if(qb == null) {
-            return;
-        }
 
         String[] joinSplit = StringUtils.split(psiElement.getContents(), ".");
         if(joinSplit.length != 2) {
@@ -151,9 +148,6 @@ public class QueryBuilderGotoDeclarationHandler implements GotoDeclarationHandle
         }
 
         QueryBuilderMethodReferenceParser qb = QueryBuilderCompletionContributor.getQueryBuilderParser(methodMatchParameter.getMethodReference());
-        if(qb == null) {
-            return;
-        }
 
         QueryBuilderScopeContext collect = qb.collect();
         String propertyContent = psiElement.getContents();

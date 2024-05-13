@@ -53,7 +53,7 @@ public class EventDispatcherTypeProvider implements PhpTypeProvider4 {
             return null;
         }
 
-        String signature = null;
+        String signature;
         if(parameters[1] instanceof NewExpression) {
             // dispatch('foo', new FooEvent());
             ClassReference classReference = ((NewExpression) parameters[1]).getClassReference();

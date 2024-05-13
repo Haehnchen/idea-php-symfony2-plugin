@@ -259,7 +259,7 @@ public class EntityHelper {
         if(modelFields != null) {
             for (DoctrineModelField field : modelFields.getFields()) {
                 if(field.getName().equals(fieldName) && !field.getTargets().isEmpty()) {
-                    return field.getTargets().toArray(new PsiElement[psiElements.size()]);
+                    return field.getTargets().toArray(new PsiElement[0]);
                 }
             }
         }
@@ -377,11 +377,11 @@ public class EntityHelper {
 
         // @TODO: old deprecated code
         PsiFile psiFile = getModelConfigFile(phpClass);
-        if(psiFile == null) {
-            Collections.emptyList();
+        if (psiFile == null) {
+            return Collections.emptyList();
         }
 
-        if(psiFile instanceof YAMLFile) {
+        if (psiFile instanceof YAMLFile) {
             List<DoctrineModelField> modelFields = new ArrayList<>();
 
             PsiElement yamlDocument = psiFile.getFirstChild();

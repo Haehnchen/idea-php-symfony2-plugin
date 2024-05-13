@@ -101,7 +101,7 @@ public class AssetPackageGotoCompletionRegistrar implements GotoCompletionRegist
 
             Collection<PsiElement> psiElements = new HashSet<>();
 
-            for (VirtualFile virtualFile : TwigUtil.resolveAssetsFiles(element.getProject() ,contents, (String[]) ArrayUtils.addAll(TwigUtil.CSS_FILES_EXTENSIONS, TwigUtil.JS_FILES_EXTENSIONS))) {
+            for (VirtualFile virtualFile : TwigUtil.resolveAssetsFiles(element.getProject() ,contents, ArrayUtils.addAll(TwigUtil.CSS_FILES_EXTENSIONS, TwigUtil.JS_FILES_EXTENSIONS))) {
                 PsiElement target;
                 if(virtualFile.isDirectory()) {
                     target = PsiManager.getInstance(element.getProject()).findDirectory(virtualFile);

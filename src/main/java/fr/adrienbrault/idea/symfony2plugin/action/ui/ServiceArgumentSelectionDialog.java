@@ -170,7 +170,7 @@ public class ServiceArgumentSelectionDialog extends JDialog {
             int i = classFqn.lastIndexOf("\\");
             if(i > 0) {
                 String ns = classFqn.substring(0, i);
-                String clazz = classFqn.substring(i + 1, classFqn.length());
+                String clazz = classFqn.substring(i + 1);
                 classFqn = String.format("%s [%s]", clazz, ns);
             }
 

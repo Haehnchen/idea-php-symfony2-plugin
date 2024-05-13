@@ -16,7 +16,7 @@ import java.util.List;
  */
 public class TranslationReference extends PsiPolyVariantReferenceBase<PsiElement> {
 
-    private String domainName = null;
+    private String domainName;
     private final StringLiteralExpression element;
 
     public TranslationReference(@NotNull StringLiteralExpression element, String domain) {

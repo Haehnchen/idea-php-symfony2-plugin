@@ -29,7 +29,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -526,6 +525,7 @@ public class QueryBuilderCompletionContributor extends CompletionContributor {
         }
     }
 
+    @NotNull
     public static QueryBuilderMethodReferenceParser getQueryBuilderParser(MethodReference methodReference) {
         final QueryBuilderChainProcessor processor = new QueryBuilderChainProcessor(methodReference);
         processor.collectMethods();

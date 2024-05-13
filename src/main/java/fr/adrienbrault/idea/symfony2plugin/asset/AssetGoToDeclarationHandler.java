@@ -59,7 +59,7 @@ public class AssetGoToDeclarationHandler implements GotoDeclarationHandler {
 
         // asset / absolute_url dont have pre filter
         if(TwigPattern.getPrintBlockOrTagFunctionPattern("asset", "absolute_url").accepts(psiElement)) {
-            return (String[]) ArrayUtils.addAll(TwigUtil.CSS_FILES_EXTENSIONS, TwigUtil.JS_FILES_EXTENSIONS);
+            return ArrayUtils.addAll(TwigUtil.CSS_FILES_EXTENSIONS, TwigUtil.JS_FILES_EXTENSIONS);
         }
 
         return null;

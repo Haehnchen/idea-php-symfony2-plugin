@@ -96,7 +96,7 @@ public class NavigationItemEx implements NavigationItem, ItemPresentation {
         if(bundleName.contains("Bundle")) {
             bundleName = bundleName.substring(0, bundleName.lastIndexOf("Bundle"));
             if(bundleName.length() > 1 && bundleName.contains("/")) {
-                return locationPathString + " " + bundleName.substring(bundleName.lastIndexOf("/") + 1, bundleName.length()) + "::" + psiFile.getName();
+                return locationPathString + " " + bundleName.substring(bundleName.lastIndexOf("/") + 1) + "::" + psiFile.getName();
             }
         }
 

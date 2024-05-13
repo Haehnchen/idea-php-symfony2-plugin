@@ -125,15 +125,11 @@ public class TwigFoldingBuilder extends FoldingBuilderEx {
             TwigPattern.getPrintBlockOrTagFunctionPattern("constant").accepts(psiElement1)
         );
 
-        if(constantReferences.length == 0) {
-            return;
-        }
-
-        for(PsiElement fileReference: constantReferences) {
+        for (PsiElement fileReference: constantReferences) {
             String contents = fileReference.getText();
-            if(StringUtils.isNotBlank(contents) && contents.contains(":")) {
+            if (StringUtils.isNotBlank(contents) && contents.contains(":")) {
                 final String[] parts = contents.split("::");
-                if(parts.length == 2) {
+                if (parts.length == 2) {
                     descriptors.add(new FoldingDescriptor(fileReference.getNode(),
                         new TextRange(fileReference.getTextRange().getStartOffset(), fileReference.getTextRange().getEndOffset())) {
                         @Nullable
@@ -143,11 +139,8 @@ public class TwigFoldingBuilder extends FoldingBuilderEx {
                         }
                     });
                 }
-
             }
-
         }
-
     }
 
     @Nullable

@@ -66,10 +66,7 @@ public class XmlServiceTagIntention extends PsiElementBaseIntentionAction {
             }
 
             String value = name.getValue();
-            if(phpServiceTags.contains(value)) {
-                phpServiceTags.remove(value);
-            }
-
+            phpServiceTags.remove(value);
         }
 
         ServiceUtil.insertTagWithPopupDecision(editor, phpServiceTags, tag -> {

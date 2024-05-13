@@ -11,7 +11,6 @@ import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
 import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpCallInstruction;
 import com.jetbrains.php.lang.documentation.phpdoc.PhpDocUtil;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
-import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.stubs.indexes.PhpConstantNameIndex;
@@ -25,7 +24,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>

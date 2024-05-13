@@ -3,7 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.util.psi;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.util.io.StreamUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
@@ -200,8 +199,7 @@ public class PhpBundleFileFactory {
 
     @Nullable
     public static PhpClass getPhpClassForCreateCompilerScope(@NotNull Editor editor, @Nullable PsiFile file) {
-
-        if(file == null || !(file instanceof PhpFile)) {
+        if(!(file instanceof PhpFile)) {
             return null;
         }
 
@@ -209,7 +207,7 @@ public class PhpBundleFileFactory {
     }
 
     private static void insertUseIfNecessary(PhpPsiElement scopeForUseOperator, String nsClass) {
-        if(!PhpCodeInsightUtil.getAliasesInScope(scopeForUseOperator).values().contains(nsClass)) {
+        if(!PhpCodeInsightUtil.getAliasesInScope(scopeForUseOperator).containsValue(nsClass)) {
             PhpAliasImporter.insertUseStatement(nsClass, scopeForUseOperator);
         }
     }

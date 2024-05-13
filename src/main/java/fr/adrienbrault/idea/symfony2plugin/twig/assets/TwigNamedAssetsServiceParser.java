@@ -33,17 +33,17 @@ public class TwigNamedAssetsServiceParser extends AbstractServiceParser {
         for (int i = 0; i < nodeList.getLength(); i++) {
             Element node = (Element) nodeList.item(i);
             String key = node.getAttribute("key");
-            if(key != null && StringUtils.isNotBlank(key)) {
+            if (StringUtils.isNotBlank(key)) {
                 Set<String> files = new HashSet<>();
                 NodeList argument1 = node.getElementsByTagName("argument");
-                if(argument1.getLength() > 1) {
+                if (argument1.getLength() > 1) {
 
                     Element argument = (Element) argument1.item(0);
 
                     NodeList firstChild = argument.getElementsByTagName("argument");
                     for (int x = 0; x < firstChild.getLength(); x++) {
                         String textContent = firstChild.item(x).getTextContent();
-                        if(StringUtils.isNotBlank(textContent)) {
+                        if (StringUtils.isNotBlank(textContent)) {
                             files.add(textContent);
                         }
                     }

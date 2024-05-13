@@ -1,7 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.util;
 
 import com.intellij.openapi.project.Project;
-import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import org.jetbrains.annotations.NotNull;
 

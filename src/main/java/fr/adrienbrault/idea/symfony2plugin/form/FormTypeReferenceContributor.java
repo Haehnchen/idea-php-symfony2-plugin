@@ -72,10 +72,6 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                             return new PsiReference[0];
                         }
 
-                        if(key == null) {
-                            return new PsiReference[0];
-                        }
-
                         String keyString = key.getContents();
 
                         // @TODO: how to handle custom bundle fields like help_block

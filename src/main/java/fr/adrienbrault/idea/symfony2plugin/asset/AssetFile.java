@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.asset;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -14,7 +15,7 @@ public class AssetFile {
     @NotNull
     private final AssetEnum.Position assetPosition;
 
-    @NotNull
+    @Nullable
     private VirtualFile relativeFolder;
 
     private String prefix = "";
@@ -58,6 +59,6 @@ public class AssetFile {
     public String toString() {
         return this.string != null
             ? this.string
-            : this.prefix + VfsUtil.getRelativePath(assetFile, relativeFolder, '/');
+            : this.prefix + (relativeFolder != null ? VfsUtil.getRelativePath(assetFile, relativeFolder, '/') : "");
     }
 }

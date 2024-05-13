@@ -16,7 +16,7 @@ public class TemplateUsage implements Serializable {
     private final String template;
 
     @NotNull
-    private Collection<String> scopes = new HashSet<>();
+    private Collection<String> scopes;
 
     public TemplateUsage(@NotNull String template, @NotNull Collection<String> scopes) {
         this.template = template;

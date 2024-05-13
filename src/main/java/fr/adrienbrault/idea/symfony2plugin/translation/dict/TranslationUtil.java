@@ -167,7 +167,7 @@ public class TranslationUtil {
             elements.addAll(FileBasedIndex.getInstance()
                 .getValues(TranslationStubIndex.KEY, domain, GlobalSearchScope.filesScope(project, Collections.singletonList(psiFile.getVirtualFile()))).stream()
                 .filter(string -> string.contains(translationKey)).map(string -> psiFile)
-                .collect(Collectors.toList())
+                .toList()
             );
         }
 
@@ -230,7 +230,7 @@ public class TranslationUtil {
 
                     // <trans-unit id="1" resname="title.test">
                     String resname = transUnit.getAttributeValue("resname");
-                    if(resname != null && key.equals(resname)) {
+                    if(key.equals(resname)) {
                         psiElements.add(transUnit);
                     }
                 }
