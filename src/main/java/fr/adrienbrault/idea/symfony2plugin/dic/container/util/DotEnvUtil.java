@@ -115,20 +115,20 @@ public class DotEnvUtil {
 
         for (VirtualFile virtualFile : files) {
             PsiFile file = PsiManager.getInstance(project).findFile(virtualFile);
-            if(file == null) {
+            if (file == null) {
                 continue;
             }
 
             Properties variables = new Properties();
             try {
                 variables.load(virtualFile.getInputStream());
-            } catch (IOException e) {
+            } catch (Throwable e) {
                 continue;
             }
 
             for (Map.Entry<Object, Object> variable : variables.entrySet()) {
                 Object key = variable.getKey();
-                if(key instanceof String) {
+                if (key instanceof String) {
                     consumer.accept(Pair.create((String) key, file));
                 }
             }
