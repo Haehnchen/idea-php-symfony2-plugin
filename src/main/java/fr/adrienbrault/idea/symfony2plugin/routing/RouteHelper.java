@@ -115,6 +115,22 @@ public class RouteHelper {
         return routes;
     }
 
+    public static boolean isExistingRouteName(@NotNull Project project, @NotNull String routeName) {
+        return getFQCNRoute(project, routeName) != null
+            || !getRoute(project, routeName).isEmpty();
+    }
+
+    /**
+     * "App\\Controller\\Car\\ZipController::index" => "App\Controller\Car\ZipController::index"
+     */
+    public static String unescapeRouteName(@NotNull String routeName) {
+        if (routeName.contains("\\")) {
+           return routeName.replace("\\\\", "\\");
+        }
+
+        return routeName;
+    }
+
     public static PsiElement[] getRouteParameterPsiElements(@NotNull Project project, @NotNull String routeName, @NotNull String parameterName) {
         Collection<PsiElement> results = new ArrayList<>();
 
@@ -134,11 +150,44 @@ public class RouteHelper {
     public static PsiElement[] getMethods(@NotNull Project project, @NotNull String routeName) {
         Set<PsiElement> targets = new HashSet<>();
 
+        Method fqcnRoute = getFQCNRoute(project, routeName);
+        if (fqcnRoute != null) {
+            targets.add(fqcnRoute);
+        }
+
         for (Route route : getRoute(project, routeName)) {
             targets.addAll(Arrays.asList(getMethodsOnControllerShortcut(project, route.getController())));
         }
 
         return targets.toArray(new PsiElement[0]);
+    }
+
+    /**
+     * "App\Controller\Foo"
+     * "App\Controller\Foo::method"
+     */
+    public static Method getFQCNRoute(@NotNull Project project, @NotNull String routeName) {
+        if (!routeName.contains("\\")) {
+            return null;
+        }
+
+        String className = null;
+        String method = null;
+
+        if (routeName.contains(":")) {
+            String[] split = routeName.split("::");
+            if (split.length == 2) {
+                className = "\\" + StringUtils.stripStart(split[0], "\\");
+                method = split[1];
+            }
+        } else {
+            className = "\\" + StringUtils.stripStart(routeName, "\\");
+            method = "__invoke";
+        }
+
+        return className != null && method != null
+            ? PhpElementsUtil.getClassMethod(project, className, method)
+            : null;
     }
 
     public static Collection<Route> findRoutesByPath(@NotNull Project project, @NotNull String path) {
@@ -1285,15 +1334,19 @@ public class RouteHelper {
         return url.isEmpty() ? null : url;
     }
 
-    public static List<LookupElement> getRoutesLookupElements(final @NotNull Project project) {
-
+    public static List<LookupElement> getRoutesLookupElements(final @NotNull Project project, boolean escapeRouteName) {
         Map<String, Route> routes = RouteHelper.getCompiledRoutes(project);
 
         final List<LookupElement> lookupElements = new ArrayList<>();
 
         final Set<String> uniqueSet = new HashSet<>();
         for (Route route : routes.values()) {
-            lookupElements.add(new RouteLookupElement(route));
+            RouteLookupElement lookupElement = new RouteLookupElement(route);
+            if (escapeRouteName) {
+                lookupElement.withEscape();
+            }
+
+            lookupElements.add(lookupElement);
             uniqueSet.add(route.getName());
         }
 
@@ -1303,13 +1356,21 @@ public class RouteHelper {
             }
 
             for (StubIndexedRoute route: FileBasedIndex.getInstance().getValues(RoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project))) {
-                lookupElements.add(new RouteLookupElement(new Route(route), true));
+                RouteLookupElement lookupElement = new RouteLookupElement(new Route(route), true);
+                if (escapeRouteName) {
+                    lookupElement.withEscape();
+                }
+
+                lookupElements.add(lookupElement);
                 uniqueSet.add(routeName);
             }
         }
 
         return lookupElements;
+    }
 
+    public static List<LookupElement> getRoutesLookupElements(final @NotNull Project project) {
+        return getRoutesLookupElements(project, false);
     }
 
     @NotNull

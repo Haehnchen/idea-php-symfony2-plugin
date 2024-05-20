@@ -7,14 +7,11 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.routing.PhpRouteReferenceContributor;
-import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -51,8 +48,7 @@ public class PhpRouteMissingInspection extends LocalInspectionTool {
             return;
         }
 
-        Collection<Route> route = RouteHelper.getRoute(element.getProject(), routeName);
-        if(route.isEmpty()) {
+        if (!RouteHelper.isExistingRouteName(element.getProject(), routeName)) {
             holder.registerProblem(element, "Symfony: Missing Route", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, new RouteGuessTypoQuickFix(routeName));
         }
     }

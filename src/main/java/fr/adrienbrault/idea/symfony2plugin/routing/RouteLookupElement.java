@@ -23,6 +23,7 @@ public class RouteLookupElement extends LookupElement {
     final private Route route;
     private boolean isWeak = false;
     private InsertHandler<RouteLookupElement> insertHandler;
+    private boolean escape = false;
 
     public RouteLookupElement(@NotNull Route route) {
         this.route = route;
@@ -36,6 +37,10 @@ public class RouteLookupElement extends LookupElement {
     @NotNull
     @Override
     public String getLookupString() {
+        if (escape) {
+            return route.getName().replace("\\", "\\\\");
+        }
+
         return route.getName();
     }
 
@@ -79,6 +84,10 @@ public class RouteLookupElement extends LookupElement {
 
     public void withInsertHandler(InsertHandler<RouteLookupElement> insertHandler) {
         this.insertHandler = insertHandler;
+    }
+
+    public void withEscape() {
+        this.escape = true;
     }
 
     public Route getRoute() {

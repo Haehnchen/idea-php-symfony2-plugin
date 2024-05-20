@@ -66,7 +66,7 @@ public class TwigHtmlCompletionContributor extends CompletionContributor {
                         return;
                     }
 
-                    List<LookupElement> routesLookupElements = RouteHelper.getRoutesLookupElements(parameters.getPosition().getProject());
+                    List<LookupElement> routesLookupElements = RouteHelper.getRoutesLookupElements(parameters.getPosition().getProject(), true);
                     for (LookupElement element : routesLookupElements) {
                         if (element instanceof RouteLookupElement) {
                             ((RouteLookupElement) element).withInsertHandler(TwigPathFunctionInsertHandler.getInstance());

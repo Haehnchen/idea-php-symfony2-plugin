@@ -11,6 +11,7 @@ public class TwigRouteMissingInspectionTest extends SymfonyLightCodeInsightFixtu
         super.setUp();
 
         myFixture.copyFileToProject("TwigRouteMissingInspection.xml");
+        myFixture.copyFileToProject("TwigRouteMissingInspection.php");
     }
 
     protected String getTestDataPath() {
@@ -29,6 +30,18 @@ public class TwigRouteMissingInspectionTest extends SymfonyLightCodeInsightFixtu
         assertLocalInspectionNotContains(
             "test.html.twig",
             "{{ path('my_<caret>foobar') }}",
+            "Symfony: Missing Route"
+        );
+
+        assertLocalInspectionNotContains(
+            "test.html.twig",
+            "{{ path('App\\\\Controller\\\\Foobar<caret>Controller') }}",
+            "Symfony: Missing Route"
+        );
+
+        assertLocalInspectionNotContains(
+            "test.html.twig",
+            "{{ path('App\\\\Controller\\\\FooCon<caret>troller::foobar') }}",
             "Symfony: Missing Route"
         );
     }

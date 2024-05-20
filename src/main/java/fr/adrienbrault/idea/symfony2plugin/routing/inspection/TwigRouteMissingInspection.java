@@ -23,7 +23,7 @@ public class TwigRouteMissingInspection extends LocalInspectionTool {
 
         return new PsiElementVisitor() {
             @Override
-            public void visitElement(PsiElement element) {
+            public void visitElement(@NotNull PsiElement element) {
                 if(TwigPattern.getAutocompletableRoutePattern().accepts(element) && TwigUtil.isValidStringWithoutInterpolatedOrConcat(element)) {
                     invoke(element, holder);
                 }
@@ -35,11 +35,11 @@ public class TwigRouteMissingInspection extends LocalInspectionTool {
 
     private void invoke(@NotNull final PsiElement element, @NotNull ProblemsHolder holder) {
         String text = element.getText();
-        if(StringUtils.isBlank(text)) {
+        if (StringUtils.isBlank(text)) {
             return;
         }
 
-        if(RouteHelper.getRoute(element.getProject(), text).isEmpty()) {
+        if (!RouteHelper.isExistingRouteName(element.getProject(), RouteHelper.unescapeRouteName(text))) {
             holder.registerProblem(element, "Symfony: Missing Route", new RouteGuessTypoQuickFix(text));
         }
     }

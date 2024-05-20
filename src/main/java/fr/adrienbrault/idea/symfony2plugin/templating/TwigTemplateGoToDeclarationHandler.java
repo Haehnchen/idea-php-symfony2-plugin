@@ -300,12 +300,12 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
     private Collection<PsiElement> getRouteGoTo(@NotNull PsiElement psiElement) {
         String text = PsiElementUtils.getText(psiElement);
 
-        if(StringUtils.isBlank(text)) {
+        if (StringUtils.isBlank(text)) {
             return Collections.emptyList();
         }
 
-        PsiElement[] methods = RouteHelper.getMethods(psiElement.getProject(), text);
-        if(methods.length > 0) {
+        PsiElement[] methods = RouteHelper.getMethods(psiElement.getProject(), RouteHelper.unescapeRouteName(text));
+        if (methods.length > 0) {
             return Arrays.asList(methods);
         }
 

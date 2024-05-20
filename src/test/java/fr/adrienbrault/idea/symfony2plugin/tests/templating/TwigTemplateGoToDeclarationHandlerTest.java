@@ -300,4 +300,18 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
             PlatformPatterns.psiElement(PhpClass.class)
         );
     }
+
+    public void testFoo() {
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{{ path('App\\\\Controller\\\\Foobar<caret>Controller') }}",
+            PlatformPatterns.psiElement(Method.class)
+        );
+
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{{ path('App\\\\Controller\\\\FooCo<caret>ntroller::foobar') }}",
+            PlatformPatterns.psiElement(Method.class)
+        );
+    }
 }
