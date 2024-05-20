@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.SimpleModificationTracker;
 import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.vfs.InvalidVirtualFileAccessException;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -124,7 +125,13 @@ public class TranslationIndex {
                     Set<String> caches = new HashSet<>();
 
                     for (String root : new String[] {"var/cache", "app/cache"}) {
-                        VirtualFile cache = VfsUtil.findRelativeFile(projectDir, root.split("/"));
+                        VirtualFile cache = null;
+                        try {
+                            cache = VfsUtil.findRelativeFile(projectDir, root.split("/"));
+                        } catch (InvalidVirtualFileAccessException ignored) {
+                            // "Accessing invalid virtual file"
+                        }
+
                         if (cache == null) {
                             continue;
                         }

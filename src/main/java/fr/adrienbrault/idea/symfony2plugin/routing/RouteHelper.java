@@ -7,6 +7,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.SimpleModificationTracker;
 import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.vfs.InvalidVirtualFileAccessException;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
@@ -482,8 +483,15 @@ public class RouteHelper {
                         Set<String> files = new HashSet<>();
 
                         // old "app/cache" is ignored for now
-                        VirtualFile cache = VfsUtil.findRelativeFile(projectDir, "var", "cache");
-                        for (VirtualFile child : cache != null ? cache.getChildren() : new VirtualFile[] {}) {
+                        VirtualFile cache = null;
+
+                        try {
+                            cache = VfsUtil.findRelativeFile(projectDir, "var", "cache");
+                        } catch (InvalidVirtualFileAccessException ignored) {
+                            // "Accessing invalid virtual file"
+                        }
+
+                        for (VirtualFile child : (cache != null) ? cache.getChildren() : new VirtualFile[]{}) {
                             String filename = child.getName();
                             // support "dev" and "dev_*"
                             if ("dev".equals(filename) || filename.startsWith("dev_")) {
