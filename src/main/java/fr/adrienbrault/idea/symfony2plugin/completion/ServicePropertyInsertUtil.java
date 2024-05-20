@@ -90,29 +90,12 @@ public class ServicePropertyInsertUtil {
             );
         }
 
-        HashSet<String> objects = new HashSet<>();
+        HashSet<String> classes = new HashSet<>();
 
-        objects.addAll(PhpIndex.getInstance(project).getAllClassFqns(PrefixMatcher.ALWAYS_TRUE));
-        objects.addAll(PhpIndex.getInstance(project).getAllInterfacesFqns(PrefixMatcher.ALWAYS_TRUE));
+        classes.addAll(PhpIndex.getInstance(project).getAllClassFqns(NonGarbageClassPrefixMatcher.INSTANCE));
+        classes.addAll(PhpIndex.getInstance(project).getAllInterfacesFqns(NonGarbageClassPrefixMatcher.INSTANCE));
 
-        Set<String> collect = objects.stream().filter(s -> {
-            int i = s.lastIndexOf("\\");
-            if (i > 0) {
-                if (s.toLowerCase().contains("\\test\\")) {
-                    return false;
-                }
-
-                s = s.substring(i);
-            }
-
-            return !s.endsWith("Test")
-                && !s.toLowerCase().contains("_phpstan_")
-                && !s.toLowerCase().contains("ecsprefix")
-                && !s.toLowerCase().contains("_humbugbox")
-                && !s.toLowerCase().contains("rectorprefix");
-        }).collect(Collectors.toSet());
-
-        for (String fqn : collect) {
+        for (String fqn : classes) {
             // Bar\Foo => Foo
             int i = fqn.lastIndexOf("\\");
             String classPropertyNameRaw = i > 0
@@ -175,6 +158,37 @@ public class ServicePropertyInsertUtil {
             .sorted((o1, o2) -> Integer.compare(o2.weight, o1.weight))
             .map(m -> m.fqn)
             .collect(Collectors.toList());
+    }
+
+    /**
+     * Filter some invalid classes fqn
+     * - RectorPrefix2...
+     * - _PHPStan_f12ae...
+     */
+    private static class NonGarbageClassPrefixMatcher extends PrefixMatcher {
+        private static final NonGarbageClassPrefixMatcher INSTANCE = new NonGarbageClassPrefixMatcher();
+
+        private NonGarbageClassPrefixMatcher() {
+            super("");
+        }
+
+        @Override
+        public boolean prefixMatches(@NotNull String fqn) {
+            if (fqn.contains("\\") && fqn.toLowerCase().contains("\\test\\")) {
+                return false;
+            }
+
+            return !fqn.endsWith("Test")
+                && !fqn.toLowerCase().contains("_phpstan_")
+                && !fqn.toLowerCase().contains("ecsprefix")
+                && !fqn.toLowerCase().contains("_humbugbox")
+                && !fqn.toLowerCase().contains("rectorprefix");
+        }
+
+        @Override
+        public @NotNull PrefixMatcher cloneWithPrefix(@NotNull String prefix) {
+            return new NonGarbageClassPrefixMatcher();
+        }
     }
 
     private static class Match {
