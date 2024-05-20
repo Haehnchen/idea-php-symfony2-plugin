@@ -17,6 +17,9 @@ import kotlin.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -46,6 +49,8 @@ public class RouteUrlMatcherSymbolContributor implements ChooseByNameContributor
             return;
         }
 
+        Set<PsiElement> targets = new HashSet<>();
+
         for (Pair<Route, PsiElement> entry : RouteHelper.getMethodsForPathWithPlaceholderMatchRoutes(project, name)) {
             Route route = entry.getFirst();
 
@@ -54,8 +59,14 @@ public class RouteUrlMatcherSymbolContributor implements ChooseByNameContributor
                 continue;
             }
 
+            PsiElement second = entry.getSecond();
+            if (targets.contains(second)) {
+                continue;
+            }
+
+            targets.add(second);
             processor.process((NavigationItemPresentableOverwrite.create(
-                entry.getSecond(),
+                second,
                 route.getPathPresentable(),
                 Symfony2Icons.ROUTE,
                 "Symfony Route",
