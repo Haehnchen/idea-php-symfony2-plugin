@@ -21,6 +21,15 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2024.1.273
+* Ignore "Accessing invalid virtual file" errors for project root dir changes (Daniel Espendiller)
+* Catch all invalid files for dotenv extract "Malformed \uxxxx encoding." (Daniel Espendiller)
+* Collect valid class on property injection directly via a fqn prefix (Daniel Espendiller)
+* Reduce "search everywhere" route target to be unique (Daniel Espendiller)
+* [#2348](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2348) provde FQCN-based Routes support (only compiled provider) / [Twig] Escaping route names with backslashes (Daniel Espendiller)
+* Replace deprecataed "new LayeredIcon" usages (Daniel Espendiller)
+* Fix "featureTypeProvider" setting typo (Daniel Espendiller)
+
 ## 2024.1.272
 * Fix substring error if "twig:" is not fully given (Daniel Espendiller)
 * Form builder field completion, should support function+property types and grey-out already existing fields (Daniel Espendiller)
