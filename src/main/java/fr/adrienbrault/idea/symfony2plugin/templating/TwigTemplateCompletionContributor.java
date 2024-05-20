@@ -345,7 +345,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         return;
                     }
 
-                    resultSet.addAllElements(RouteHelper.getRoutesLookupElements(parameters.getPosition().getProject()));
+                    resultSet.addAllElements(RouteHelper.getRoutesLookupElements(parameters.getPosition().getProject(), true));
                 }
             }
         );
