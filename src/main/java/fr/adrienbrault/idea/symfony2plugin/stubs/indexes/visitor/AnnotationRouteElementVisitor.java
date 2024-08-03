@@ -57,17 +57,15 @@ public class AnnotationRouteElementVisitor {
                 PhpDocUtil.processTagElementsByPredicate(docComment, this::visitPhpDocTag, phpDocTag -> true);
             }
 
-            PhpAttributesList childOfType = PsiTreeUtil.getChildOfType(method, PhpAttributesList.class);
-            if (childOfType != null) {
-                visitPhpAttributesList(childOfType, method, phpClass, false);
+            for (PhpAttributesList phpAttributesList : PsiTreeUtil.getChildrenOfTypeAsList(method, PhpAttributesList.class)) {
+                visitPhpAttributesList(phpAttributesList, method, phpClass, false);
             }
         }
 
         Method invoke = phpClass.findOwnMethodByName("__invoke");
         if (invoke != null) {
-            PhpAttributesList childOfType = PsiTreeUtil.getChildOfType(phpClass, PhpAttributesList.class);
-            if (childOfType != null) {
-                visitPhpAttributesList(childOfType, invoke, phpClass, true);
+            for (PhpAttributesList phpAttributesList : PsiTreeUtil.getChildrenOfTypeAsList(phpClass, PhpAttributesList.class)) {
+                visitPhpAttributesList(phpAttributesList, invoke, phpClass, true);
             }
         }
     }
