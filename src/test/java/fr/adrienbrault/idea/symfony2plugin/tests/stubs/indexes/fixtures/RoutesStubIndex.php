@@ -187,6 +187,12 @@ namespace AppBundle\My\Controller
         {
         }
 
+        #[IsFoobar()]
+        #[Route('/multiple_attributes', name: 'multiple_attributes')]
+        public function multipleAttributes()
+        {
+        }
+
         #[Route('/attributesWithoutName', methods: ['GET', 'POST'])]
         public function attributesWithoutName()
         {
