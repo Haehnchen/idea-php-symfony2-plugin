@@ -26,6 +26,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableC
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.StaticVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.ForEachLoopResolver;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormFieldResolver;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormVarsResolver;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.TwigTypeResolver;
@@ -87,6 +88,7 @@ public class TwigTypeResolveUtil {
     private static final TwigTypeResolver[] TWIG_TYPE_RESOLVERS = new TwigTypeResolver[] {
         new FormVarsResolver(),
         new FormFieldResolver(),
+        new ForEachLoopResolver(),
     };
 
     @NotNull
@@ -369,6 +371,8 @@ public class TwigTypeResolveUtil {
         if(!(twigCompositeElement instanceof TwigCompositeElement)) {
             return;
         }
+
+        globalVars.put("loop", new PsiVariable("\\loop"));
 
         // {% for user in "users" %}
         PsiElement forTag = twigCompositeElement.getFirstChild();
