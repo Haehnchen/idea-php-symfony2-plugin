@@ -878,6 +878,9 @@
             <add-to-group group-id="NewGroup" anchor="before" relative-to-action="SymfonyGroup" />
         </group>
 
+        <action id="Symfony2Symbols" class="fr.adrienbrault.idea.symfony2plugin.action.SymfonySymbolSearchAction" text="Symfony Symbol..." icon="SymfonyIcons.Symfony">
+            <add-to-group group-id="GoToTargetEx"/>
+        </action>
         <action icon="SymfonyIcons.TwigBlockOverwrite"
                 id="SymfonyTwigBlockOverwrite"
                 class="fr.adrienbrault.idea.symfony2plugin.templating.action.TwigBlockOverwriteGenerator"
