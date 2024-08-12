@@ -21,6 +21,7 @@ import fr.adrienbrault.idea.symfony2plugin.profiler.dict.MailMessage;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface;
 import fr.adrienbrault.idea.symfony2plugin.profiler.factory.ProfilerFactoryUtil;
 import fr.adrienbrault.idea.symfony2plugin.profiler.widget.action.SymfonyProfilerWidgetActions;
+import kotlin.Suppress;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -140,6 +141,7 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
         return actionGroup;
     }
 
+    @Suppress(names = {"DEPRECATION"})
     public @Nullable JBPopup getPopup() {
         if (isDisposed()) {
             return null;
