@@ -21,6 +21,14 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2024.1.275
+* Higher template file limit (Daniel Espendiller)
+* Support "\\Symfony\\Component\\Routing\\Attribute\\Route" for route url and naming completion (Daniel Espendiller)
+* Fix indexing routing php attributes, when different attributes in same method (Daniel Espendiller)
+
+## 2024.1.274
+* [#2379](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2379) fix plugin xml loading ordering
+
 ## 2024.1.273
 * Ignore "Accessing invalid virtual file" errors for project root dir changes (Daniel Espendiller)
 * Catch all invalid files for dotenv extract "Malformed \uxxxx encoding." (Daniel Espendiller)
