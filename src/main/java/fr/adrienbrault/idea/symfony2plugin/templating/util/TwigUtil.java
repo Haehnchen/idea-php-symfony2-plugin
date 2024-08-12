@@ -3295,7 +3295,7 @@ public class TwigUtil {
 
         @NotNull
         static Map<String, VirtualFile> createResult(@NotNull VirtualFile virtualFile, @NotNull Project project, @NotNull TwigPath twigPath, boolean withPhp) {
-            MyLimitedVirtualFileVisitor visitor = new MyLimitedVirtualFileVisitor(project, twigPath, withPhp, 5, 150);
+            MyLimitedVirtualFileVisitor visitor = new MyLimitedVirtualFileVisitor(project, twigPath, withPhp, 10, 800);
             VfsUtil.visitChildrenRecursively(virtualFile, visitor);
             return visitor.getResults();
         }
