@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
+import com.intellij.lang.ASTNode;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -7,6 +8,7 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiComment;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiWhiteSpace;
+import com.intellij.psi.formatter.FormatterUtil;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
@@ -35,6 +37,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -182,7 +185,10 @@ public class TwigTypeResolveUtil {
             return variables;
         }
 
-        Map<String, String> inlineCommentDocsVars = getInlineCommentDocsVars(twigCompositeElement);
+        Map<String, String> inlineCommentDocsVars = new HashMap<>() {{
+            putAll(getInlineCommentDocsVars(twigCompositeElement));
+            putAll(getTypesTagVars(twigCompositeElement));
+        }};
 
         // visit parent elements for extending scope
         if(nextParent) {
@@ -196,14 +202,21 @@ public class TwigTypeResolveUtil {
     }
 
     /**
-     * Find file related doc blocks:
+     * Find file related doc blocks or "types" tags:
      *
-     * "@var foo \Foo"
+     * - "@var foo \Foo"
+     * - "{% types {...} %}"
      */
     public static Map<String, String> findFileVariableDocBlock(@NotNull TwigFile twigFile) {
-        return getInlineCommentDocsVars(twigFile);
+        return new HashMap<>() {{
+            putAll(getInlineCommentDocsVars(twigFile));
+            putAll(getTypesTagVars(twigFile));
+        }};
     }
 
+    /**
+     * "@var foo \Foo"
+     */
     private static Map<String, String> getInlineCommentDocsVars(@NotNull PsiElement twigCompositeElement) {
         Map<String, String> variables = new HashMap<>();
 
@@ -226,6 +239,86 @@ public class TwigTypeResolveUtil {
         }
 
         return variables;
+    }
+
+    /**
+     * {% types {...} %}
+     */
+    private static Map<String, String> getTypesTagVars(@NotNull PsiElement twigFile) {
+        Map<String, String> variables = new HashMap<>();
+
+        for (PsiElement psiComment: YamlHelper.getChildrenFix(twigFile)) {
+            if (!(psiComment instanceof TwigCompositeElement) || psiComment.getNode().getElementType() != TwigElementTypes.TAG) {
+                continue;
+            }
+
+            PsiElement firstChild = psiComment.getFirstChild();
+            if (firstChild == null) {
+                continue;
+            }
+
+            PsiElement tagName = PsiElementUtils.getNextSiblingAndSkip(firstChild, TwigTokenTypes.TAG_NAME);
+            if (tagName == null || !"types".equals(tagName.getText())) {
+                continue;
+            }
+
+            ASTNode lbraceCurlPsi = FormatterUtil.getNextNonWhitespaceLeaf(tagName.getNode());
+            if (lbraceCurlPsi == null || lbraceCurlPsi.getElementType() != TwigTokenTypes.LBRACE_CURL) {
+                continue;
+            }
+
+            ASTNode variableNamePsi = FormatterUtil.getNextNonWhitespaceLeaf(lbraceCurlPsi);
+            if (variableNamePsi == null) {
+                continue;
+            }
+
+            if (variableNamePsi.getElementType() == TwigTokenTypes.IDENTIFIER) {
+                String variableName = variableNamePsi.getText();
+                if (!variableName.isBlank()) {
+                    variables.put(variableName, getTypesTagVarValue(variableNamePsi.getPsi()));
+                }
+            }
+
+            for (PsiElement commaPsi : PsiElementUtils.getNextSiblingOfTypes(variableNamePsi.getPsi(), PlatformPatterns.psiElement().withElementType(TwigTokenTypes.COMMA))) {
+                ASTNode commaPsiNext = FormatterUtil.getNextNonWhitespaceLeaf(commaPsi.getNode());
+                if (commaPsiNext != null && commaPsiNext.getElementType() == TwigTokenTypes.IDENTIFIER) {
+                    String variableName = commaPsiNext.getText();
+                    if (!variableName.isBlank()) {
+                        variables.put(variableName, getTypesTagVarValue(commaPsiNext.getPsi()));
+                    }
+                }
+            }
+        }
+
+        return variables;
+    }
+
+    /**
+     * Find value tarting scope key:
+     * - : 'foo'
+     * - : "foo"
+     */
+    @Nullable
+    private static String getTypesTagVarValue(@NotNull PsiElement psiColon) {
+        PsiElement filter = PsiElementUtils.getNextSiblingAndSkip(psiColon, TwigTokenTypes.STRING_TEXT, TwigTokenTypes.SINGLE_QUOTE, TwigTokenTypes.COLON, TwigTokenTypes.DOUBLE_QUOTE, TwigTokenTypes.QUESTION);
+        if (filter == null) {
+            return null;
+        }
+
+        String type = PsiElementUtils.trimQuote(filter.getText());
+        if (type.isBlank()) {
+            return null;
+        }
+
+        // secure value
+        Matcher matcher = Pattern.compile("^(?<class>[\\w\\\\\\[\\]]+)$").matcher(type);
+        if (matcher.find()) {
+            // unescape: see also for Twig 4: https://github.com/twigphp/Twig/pull/4199
+            return matcher.group("class").replace("\\\\", "\\");
+        }
+
+        // unknown
+        return "\\mixed";
     }
 
     @NotNull
