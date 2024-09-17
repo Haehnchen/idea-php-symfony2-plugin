@@ -53,6 +53,39 @@ public class TwigTypeResolveUtilTest extends SymfonyLightCodeInsightFixtureTestC
         assertEquals("\\AppBundle\\Entity\\MeterValueDTO", fileVariableDocBlock.get("foo_6"));
     }
 
+    /**
+     * @see TwigTypeResolveUtil#findFileVariableDocBlock
+     */
+    public void testFindFileTypeTag() {
+        PsiFile fileFromText = PsiFileFactory.getInstance(getProject()).createFileFromText(TwigLanguage.INSTANCE, "" +
+                "{% types {\n" +
+                "    is_correct: 'bool',\n" +
+                "    score: 'int',\n" +
+                "    foobar_1: 'array<int, App\\\\User>',\n" +
+                "    foobar_2?: '\\\\App\\\\User'," +
+                "    foobar_3: '\\\\App\\\\User[]'," +
+                "    foobar_4: '\\\\App\\\\User[]|\\User'," +
+                "    foobar_5: '',foobar_6: ''\r\n,\n\tfoobar_7:''\n\t\r," +
+                "} %}" +
+                "\n"
+        );
+
+        Map<String, String> fileVariableDocBlock = TwigTypeResolveUtil.findFileVariableDocBlock((TwigFile) fileFromText);
+        assertEquals("bool", fileVariableDocBlock.get("is_correct"));
+        assertEquals("int", fileVariableDocBlock.get("score"));
+        assertNull(fileVariableDocBlock.get("foobar_5"));
+
+        assertEquals("\\App\\User", fileVariableDocBlock.get("foobar_2"));
+        assertEquals("\\App\\User[]", fileVariableDocBlock.get("foobar_3"));
+
+        // maybe resolve this
+        assertEquals("\\mixed", fileVariableDocBlock.get("foobar_1"));
+        assertEquals("\\mixed", fileVariableDocBlock.get("foobar_4"));
+
+        assertNull(fileVariableDocBlock.get("foobar_6"));
+        assertNull(fileVariableDocBlock.get("foobar_7"));
+    }
+
     public void testReqExForInlineDocVariables() {
         assertMatches("@var foo_1 \\AppBundle\\Entity\\MeterValueDTO", TwigTypeResolveUtil.DOC_TYPE_PATTERN_SINGLE);
         assertMatches("@var \\AppBundle\\Entity\\MeterValueDTO foo_1", TwigTypeResolveUtil.DOC_TYPE_PATTERN_SINGLE);

@@ -20,11 +20,16 @@ public class FileDocVariableCollector implements TwigFileVariableCollector {
         variables.putAll(convertHashMapToTypeSet(TwigTypeResolveUtil.findFileVariableDocBlock((TwigFile) parameter.getElement().getContainingFile())));
     }
 
-    private static Map<String, Set<String>> convertHashMapToTypeSet(Map<String, String> hashMap) {
+    private static Map<String, Set<String>> convertHashMapToTypeSet(@NotNull Map<String, String> hashMap) {
         HashMap<String, Set<String>> globalVars = new HashMap<>();
 
         for(final Map.Entry<String, String> entry: hashMap.entrySet()) {
-            globalVars.put(entry.getKey(), new HashSet<>(Collections.singletonList(entry.getValue())));
+            String value = entry.getValue();
+            if (value != null) {
+                globalVars.put(entry.getKey(), new HashSet<>(Collections.singletonList(value)));
+            } else {
+                globalVars.put(entry.getKey(), new HashSet<>());
+            }
         }
 
         return globalVars;
