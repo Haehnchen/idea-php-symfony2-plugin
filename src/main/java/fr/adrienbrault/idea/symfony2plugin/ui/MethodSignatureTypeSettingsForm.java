@@ -55,7 +55,7 @@ public class MethodSignatureTypeSettingsForm  implements Configurable {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                IdeHelper.openUrl(Symfony2ProjectComponent.HELP_URL + "extension/signature_type.html");
+                IdeHelper.openUrl("https://www.jetbrains.com/help/phpstorm/symfony-creating-helper-functions.html#signature-types");
             }
         });
 

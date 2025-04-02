@@ -270,7 +270,7 @@
         <properties>
           <horizontalAlignment value="0"/>
           <horizontalTextPosition value="4"/>
-          <text value="Open Help Page"/>
+          <text value="Project Page / Documentation"/>
         </properties>
       </component>
       <component id="47a96" class="javax.swing.JButton" binding="buttonReindex">
