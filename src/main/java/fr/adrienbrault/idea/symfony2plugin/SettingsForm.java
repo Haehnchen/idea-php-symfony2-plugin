@@ -68,7 +68,7 @@ public class SettingsForm implements Configurable {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                IdeHelper.openUrl(Symfony2ProjectComponent.HELP_URL);
+                IdeHelper.openUrl("https://espend.de/phpstorm/plugin/symfony");
             }
         });
 

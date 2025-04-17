@@ -57,7 +57,7 @@ public class MethodParameterReferenceSettingsForm  implements Configurable {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                IdeHelper.openUrl(Symfony2ProjectComponent.HELP_URL + "extension/method_parameter.html");
+                IdeHelper.openUrl("https://www.jetbrains.com/help/phpstorm/symfony-creating-helper-functions.html#method-parameter");
             }
         });
 
