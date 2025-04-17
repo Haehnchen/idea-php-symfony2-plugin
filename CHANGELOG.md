@@ -22,12 +22,17 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2025.1.277
+* Replace Jaccard distance deps (Daniel Espendiller)
+* 2025.1 build (Daniel Espendiller)
+* [#2422](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/2422) Help buttons targeting a not found page (Sadetdin EYILI)
+
 ## 2024.1.276
 * Add linemarker for Twig template usages (Daniel Espendiller)
 * Add twig component usage index (Daniel Espendiller)
 * Add "props" support for Anonymous Twig Components (Daniel Espendiller)
 * [#2396](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2396) add experimental support for extracting Twig "types" variables with types (Daniel Espendiller)
-
+ 
 ## 2024.1.275
 * Higher template file limit (Daniel Espendiller)
 * Support "\\Symfony\\Component\\Routing\\Attribute\\Route" for route url and naming completion (Daniel Espendiller)
