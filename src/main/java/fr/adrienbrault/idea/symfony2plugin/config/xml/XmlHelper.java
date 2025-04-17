@@ -809,7 +809,7 @@ public class XmlHelper {
      * <service class="Foobar"></service>
      */
     public static PsiElementPattern.Capture<PsiElement> getXmlTagNameLeafStartPattern() {
-        return PlatformPatterns.psiElement(XmlElementType.XML_NAME)
+        return PlatformPatterns.psiElement(XmlTokenType.XML_NAME)
             .afterLeaf(PlatformPatterns.psiElement(XmlTokenType.XML_START_TAG_START))
             .withParent(XmlTag.class);
     }

@@ -9,7 +9,6 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
-import com.intellij.util.containers.ContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
@@ -32,10 +31,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -71,15 +67,15 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
         }
 
         // get all parent yaml keys
-        List<String> items = YamlHelper.getParentArrayKeys(element);
-        if(items.isEmpty()) {
+        List<String> itemsRaw = YamlHelper.getParentArrayKeys(element);
+        if(itemsRaw.isEmpty()) {
             return;
         }
 
         // normalize for xml
-        items = ContainerUtil.map(items, s -> s.replace('_', '-'));
+        List<String> items = new ArrayList<>(itemsRaw.stream().map(s -> s.replace('_', '-')).toList());
 
-        // reverse to get top most item first
+        // reverse to get the top most item first
         Collections.reverse(items);
 
         Document document = getConfigTemplate(ProjectUtil.getProjectDir(element));
