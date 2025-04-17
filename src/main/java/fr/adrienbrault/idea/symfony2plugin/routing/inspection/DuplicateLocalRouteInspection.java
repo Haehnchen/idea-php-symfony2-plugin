@@ -29,6 +29,7 @@ import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.YAMLMapping;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -103,7 +104,7 @@ public class DuplicateLocalRouteInspection extends LocalInspectionTool {
                     String contents = element.getContents();
 
                     for (Method ownMethod : method.getContainingClass().getOwnMethods()) {
-                        Collection<PhpAttribute> attributes = ownMethod.getAttributes("\\Symfony\\Component\\Routing\\Annotation\\Route");
+                        Collection<PhpAttribute> attributes = new ArrayList<>(ownMethod.getAttributes("\\Symfony\\Component\\Routing\\Annotation\\Route"));
                         attributes.addAll(ownMethod.getAttributes("\\Symfony\\Component\\Routing\\Attribute\\Route"));
 
                         for (PhpAttribute attribute : attributes) {
