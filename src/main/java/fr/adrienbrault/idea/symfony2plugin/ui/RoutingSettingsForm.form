@@ -33,7 +33,7 @@
           <component id="92ef" class="javax.swing.JTextPane" binding="ifYouApplicationDoesTextPane" default-binding="true">
             <constraints border-constraint="South"/>
             <properties>
-              <text value="If you application does not support guessing the value for compiled route files, you add custom ones. Some examples:&#10;var/cache/dev/[appDevUrlGenerator.php, UrlGenerator.php, url_generating_routes.php]"/>
+              <text value="If you application does not support guessing the value for compiled route files, you add custom ones. Some examples: var/cache/dev/[appDevUrlGenerator.php, UrlGenerator.php, url_generating_routes.php]"/>
             </properties>
           </component>
         </children>
