@@ -22,6 +22,9 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2025.1.278
+* [#2427](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/2427) inline generated form code (Daniel Espendiller)
+
 ## 2025.1.277
 * Replace Jaccard distance deps (Daniel Espendiller)
 * 2025.1 build (Daniel Espendiller)
