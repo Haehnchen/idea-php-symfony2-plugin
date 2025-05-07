@@ -85,6 +85,10 @@ public class VoterGotoCompletionRegistrar implements GotoCompletionRegistrar {
             .withSignature("Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "isGranted")
             .withSignature("Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "denyAccessUnlessGranted")
 
+            // Symfony 4 / 5 / 6
+            .withSignature("Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "isGranted")
+            .withSignature("Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "denyAccessUnlessGranted")
+
             .withSignature("Symfony\\Component\\Security\\Core\\Authorization\\AuthorizationCheckerInterface", "isGranted")
             .match();
 
