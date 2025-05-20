@@ -76,6 +76,21 @@ public class TwigExtensionParserTest extends SymfonyLightCodeInsightFixtureTestC
             "#Fmax",
             TwigExtensionParser.getFunctions(getProject()).get("conditional_return").getSignature()
         );
+
+        assertEquals(
+            "#M#C\\App\\Twig\\AppExtension.formatProductNumberFilter",
+            TwigExtensionParser.getFilters(getProject()).get("product_number_filter").getSignature()
+        );
+
+        assertEquals(
+            "#M#C\\App\\Twig\\AppExtension.formatProductNumberFunction",
+            TwigExtensionParser.getFunctions(getProject()).get("product_number_function").getSignature()
+        );
+
+        assertEquals(
+            "#M#C\\App\\Twig\\AppExtension.formatProductNumberTest",
+            TwigExtensionParser.getSimpleTest(getProject()).get("product_number_test").getSignature()
+        );
     }
 
     public void testExtensionAreCollectedForDeprecated() {
