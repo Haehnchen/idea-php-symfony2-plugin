@@ -30,7 +30,8 @@ public class IndexUtil {
             TwigIncludeStubIndex.KEY,
             TwigMacroFunctionStubIndex.KEY,
             TranslationStubIndex.KEY,
-            TwigBlockIndexExtension.KEY
+            TwigBlockIndexExtension.KEY,
+            TwigAttributeIndex.KEY
         };
 
         for(ID<?,?> id: indexIds) {
