@@ -14,9 +14,8 @@ import javax.swing.*;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class DoctrineEntityLookupElement extends LookupElement {
-
     private final String entityName;
-    private final PhpClass className;
+    private final String className;
     private boolean useClassNameAsLookupString = false;
     private DoctrineTypes.Manager manager;
     private boolean isWeak = false;
@@ -26,14 +25,14 @@ public class DoctrineEntityLookupElement extends LookupElement {
         this.useClassNameAsLookupString = useClassNameAsLookupString;
     }
 
-    public DoctrineEntityLookupElement(String entityName, PhpClass className, boolean useClassNameAsLookupString, boolean isWeak) {
-        this(entityName, className, useClassNameAsLookupString);
+    public DoctrineEntityLookupElement(String entityName, PhpClass phpClass, boolean useClassNameAsLookupString, boolean isWeak) {
+        this(entityName, phpClass, useClassNameAsLookupString);
         this.isWeak = isWeak;
     }
 
-    public DoctrineEntityLookupElement(String entityName, PhpClass className) {
+    public DoctrineEntityLookupElement(String entityName, PhpClass phpClass) {
         this.entityName = entityName;
-        this.className = className;
+        this.className = StringUtils.stripStart(phpClass.getFQN(), "\\");
     }
 
     public DoctrineEntityLookupElement withManager(DoctrineTypes.Manager manager) {
@@ -44,46 +43,42 @@ public class DoctrineEntityLookupElement extends LookupElement {
     @NotNull
     @Override
     public String getLookupString() {
-
-        if(this.useClassNameAsLookupString) {
-            return StringUtils.stripStart(this.className.getPresentableFQN(), "\\");
+        if (this.useClassNameAsLookupString) {
+            return this.className;
         }
 
         return entityName;
     }
 
-    public void renderElement(LookupElementPresentation presentation) {
-
-        if(this.useClassNameAsLookupString) {
-            presentation.setItemText(className.getPresentableFQN());
+    public void renderElement(@NotNull LookupElementPresentation presentation) {
+        if (this.useClassNameAsLookupString) {
+            presentation.setItemText(className);
             presentation.setTypeText(getLookupString());
         } else {
             presentation.setItemText(getLookupString());
-            presentation.setTypeText(className.getPresentableFQN());
+            presentation.setTypeText(className);
         }
 
         presentation.setTypeGrayed(true);
-        if(isWeak) {
+        if (isWeak) {
             // @TODO: remove weak
             presentation.setIcon(getWeakIcon());
         } else {
             presentation.setIcon(getIcon());
         }
-
-
     }
 
     @Nullable
     private Icon getWeakIcon() {
-        if(manager == null) {
+        if (manager == null) {
             return null;
         }
 
-        if(manager == DoctrineTypes.Manager.ORM) {
+        if (manager == DoctrineTypes.Manager.ORM) {
             return Symfony2Icons.DOCTRINE_WEAK;
         }
 
-        if(manager == DoctrineTypes.Manager.MONGO_DB || manager == DoctrineTypes.Manager.COUCH_DB) {
+        if (manager == DoctrineTypes.Manager.MONGO_DB || manager == DoctrineTypes.Manager.COUCH_DB) {
             return Symfony2Icons.NO_SQL;
         }
 
@@ -92,20 +87,19 @@ public class DoctrineEntityLookupElement extends LookupElement {
 
     @Nullable
     private Icon getIcon() {
-        if(manager == null) {
+        if (manager == null) {
             return null;
         }
 
-        if(manager == DoctrineTypes.Manager.ORM) {
+        if (manager == DoctrineTypes.Manager.ORM) {
             return Symfony2Icons.DOCTRINE;
         }
 
-        if(manager == DoctrineTypes.Manager.MONGO_DB || manager == DoctrineTypes.Manager.COUCH_DB) {
+        if (manager == DoctrineTypes.Manager.MONGO_DB || manager == DoctrineTypes.Manager.COUCH_DB) {
             return Symfony2Icons.NO_SQL;
         }
 
         return null;
     }
-
 }
 
