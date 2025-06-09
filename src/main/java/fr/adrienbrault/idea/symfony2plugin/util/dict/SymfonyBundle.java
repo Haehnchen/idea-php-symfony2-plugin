@@ -17,6 +17,12 @@ public class SymfonyBundle {
     final private PhpClass phpClass;
 
     @NotNull
+    final private String phpClassName;
+
+    @NotNull
+    private final String phpClassNameNamespaceName;
+
+    @NotNull
     public PhpClass getPhpClass() {
         return this.phpClass;
     }
@@ -28,11 +34,14 @@ public class SymfonyBundle {
 
     @NotNull
     public String getName() {
-        return this.phpClass.getName();
+        return this.phpClassName;
     }
 
     public SymfonyBundle(@NotNull PhpClass phpClass) {
         this.phpClass = phpClass;
+
+        this.phpClassName = this.phpClass.getName();
+        this.phpClassNameNamespaceName = this.phpClass.getNamespaceName();
     }
 
     @Nullable
@@ -41,12 +50,7 @@ public class SymfonyBundle {
             return null;
         }
 
-        PsiDirectory bundleDirectory = this.phpClass.getContainingFile().getContainingDirectory();
-        if(null == bundleDirectory) {
-            return null;
-        }
-
-        return bundleDirectory;
+        return this.phpClass.getContainingFile().getContainingDirectory();
     }
 
     @Nullable
@@ -78,7 +82,7 @@ public class SymfonyBundle {
     }
 
     public boolean isInBundle(@NotNull PhpClass phpClass) {
-        return phpClass.getNamespaceName().startsWith(this.phpClass.getNamespaceName());
+        return phpClass.getNamespaceName().startsWith(this.phpClassNameNamespaceName);
     }
 
     public boolean isInBundle(@NotNull PsiFile psiFile) {

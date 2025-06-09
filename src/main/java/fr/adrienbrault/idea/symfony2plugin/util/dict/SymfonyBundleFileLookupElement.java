@@ -6,17 +6,21 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.intellij.util.IconUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class SymfonyBundleFileLookupElement extends LookupElement {
-
+    private final @NotNull String bundleName;
     private final BundleFile bundleFile;
     private InsertHandler<LookupElement> insertHandler = null;
+    private final @Nullable String shortcutName;
 
     public SymfonyBundleFileLookupElement(BundleFile bundleFile) {
         this.bundleFile = bundleFile;
+        this.shortcutName = bundleFile.getShortcutPath();
+        this.bundleName = bundleFile.getSymfonyBundle().getName();
     }
 
     public SymfonyBundleFileLookupElement(BundleFile bundleFile, InsertHandler<LookupElement> insertHandler) {
@@ -27,23 +31,21 @@ public class SymfonyBundleFileLookupElement extends LookupElement {
     @NotNull
     @Override
     public String getLookupString() {
-        String shortcutName = this.bundleFile.getShortcutPath();
-        if(shortcutName == null) {
+        if (shortcutName == null) {
             return "";
         }
 
         // we strip any control char, so only use the pathname
-        if(shortcutName.startsWith("@")) {
-            shortcutName = shortcutName.substring(1);
+        if (shortcutName.startsWith("@")) {
+            return shortcutName.substring(1);
         }
 
         return shortcutName;
     }
 
     @Override
-    public void handleInsert(InsertionContext context) {
-
-        if(this.insertHandler != null) {
+    public void handleInsert(@NotNull InsertionContext context) {
+        if (this.insertHandler != null) {
             this.insertHandler.handleInsert(context, this);
             return;
         }
@@ -53,10 +55,8 @@ public class SymfonyBundleFileLookupElement extends LookupElement {
 
     public void renderElement(LookupElementPresentation presentation) {
         presentation.setItemText(getLookupString());
-        presentation.setTypeText(this.bundleFile.getSymfonyBundle().getName());
+        presentation.setTypeText(bundleName);
         presentation.setTypeGrayed(true);
         presentation.setIcon(IconUtil.getIcon(this.bundleFile.getVirtualFile(), 0, this.bundleFile.getProject()));
-
     }
-
 }
