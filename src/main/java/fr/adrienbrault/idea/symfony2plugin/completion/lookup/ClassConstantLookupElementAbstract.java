@@ -11,12 +11,15 @@ import org.jetbrains.annotations.NotNull;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 abstract public class ClassConstantLookupElementAbstract extends LookupElement implements ClassConstantInsertHandler.ClassConstantLookupElementInterface {
-
     @NotNull
     protected final PhpClass phpClass;
 
+    @NotNull
+    String phpClassName;
+
     public ClassConstantLookupElementAbstract(@NotNull PhpClass phpClass) {
         this.phpClass = phpClass;
+        this.phpClassName = phpClass.getName();
     }
 
     @Override
@@ -30,7 +33,7 @@ abstract public class ClassConstantLookupElementAbstract extends LookupElement i
     @NotNull
     @Override
     public String getLookupString() {
-        return phpClass.getName();
+        return this.phpClassName;
     }
 
     @NotNull
@@ -45,7 +48,7 @@ abstract public class ClassConstantLookupElementAbstract extends LookupElement i
     }
 
     @Override
-    public void handleInsert(InsertionContext context) {
+    public void handleInsert(@NotNull InsertionContext context) {
         ClassConstantInsertHandler.getInstance().handleInsert(context, this);
     }
 }
