@@ -658,9 +658,12 @@ public class TwigTypeResolveUtil {
     }
 
     public static boolean isPropertyShortcutMethod(Method method) {
+        return isPropertyShortcutMethod(method.getName());
+    }
 
-        for(String shortcut: PROPERTY_SHORTCUTS) {
-            if(method.getName().startsWith(shortcut) && method.getName().length() > shortcut.length()) {
+    public static boolean isPropertyShortcutMethod(String methodName) {
+        for (String shortcut: PROPERTY_SHORTCUTS) {
+            if (methodName.startsWith(shortcut) && methodName.length() > shortcut.length()) {
                 return true;
             }
         }
@@ -669,9 +672,8 @@ public class TwigTypeResolveUtil {
     }
 
     public static boolean isPropertyShortcutMethodEqual(String methodName, String variableName) {
-
-        for(String shortcut: PROPERTY_SHORTCUTS) {
-            if(methodName.equalsIgnoreCase(shortcut + variableName)) {
+        for (String shortcut: PROPERTY_SHORTCUTS) {
+            if (methodName.equalsIgnoreCase(shortcut + variableName)) {
                 return true;
             }
         }
@@ -688,11 +690,13 @@ public class TwigTypeResolveUtil {
      */
     @NotNull
     public static String getPropertyShortcutMethodName(@NotNull Method method) {
-        String methodName = method.getName();
+        return getPropertyShortcutMethodName(method.getName());
+    }
 
-        for(String shortcut: PROPERTY_SHORTCUTS) {
+    public static String getPropertyShortcutMethodName(@NotNull String methodName) {
+        for (String shortcut: PROPERTY_SHORTCUTS) {
             // strip possible property shortcut and make it lcfirst
-            if(method.getName().startsWith(shortcut) && method.getName().length() > shortcut.length()) {
+            if (methodName.startsWith(shortcut) && methodName.length() > shortcut.length()) {
                 methodName = methodName.substring(shortcut.length());
                 return Character.toLowerCase(methodName.charAt(0)) + methodName.substring(1);
             }

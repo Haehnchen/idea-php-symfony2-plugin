@@ -8,31 +8,36 @@ import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.TwigTypeInsertHandler;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class PhpTwigMethodLookupElement extends PhpLookupElement {
+    @Nullable
+    private String methodName;
+
     PhpTwigMethodLookupElement(@NotNull PhpNamedElement namedElement) {
         super(namedElement);
+
+        if (namedElement instanceof Method method) {
+            this.methodName = method.getName();
+        }
     }
 
     @Override
-    public void handleInsert(InsertionContext context) {
+    public void handleInsert(@NotNull InsertionContext context) {
         TwigTypeInsertHandler.getInstance().handleInsert(context, this);
     }
 
     @Override
-    public void renderElement(LookupElementPresentation presentation) {
+    public void renderElement(@NotNull LookupElementPresentation presentation) {
         super.renderElement(presentation);
 
-        PhpNamedElement phpNamedElement = this.getNamedElement();
-
         // reset method to show full name again, which was stripped inside getLookupString
-        if(phpNamedElement instanceof Method && TwigTypeResolveUtil.isPropertyShortcutMethod((Method) phpNamedElement)) {
-            presentation.setItemText(phpNamedElement.getName());
+        if (methodName != null && TwigTypeResolveUtil.isPropertyShortcutMethod(methodName)) {
+            presentation.setItemText(methodName);
         }
-
     }
 
     @NotNull
@@ -40,8 +45,8 @@ public class PhpTwigMethodLookupElement extends PhpLookupElement {
         String lookupString = super.getLookupString();
 
         // remove property shortcuts eg getter / issers
-        if(this.getNamedElement() instanceof Method && TwigTypeResolveUtil.isPropertyShortcutMethod((Method) this.getNamedElement())) {
-            lookupString = TwigTypeResolveUtil.getPropertyShortcutMethodName((Method) this.getNamedElement());
+        if (methodName != null && TwigTypeResolveUtil.isPropertyShortcutMethod(methodName)) {
+            lookupString = TwigTypeResolveUtil.getPropertyShortcutMethodName(methodName);
         }
 
         return lookupString;
