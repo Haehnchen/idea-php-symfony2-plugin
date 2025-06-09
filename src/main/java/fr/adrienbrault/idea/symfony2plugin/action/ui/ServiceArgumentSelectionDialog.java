@@ -20,6 +20,7 @@ import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -29,7 +30,7 @@ import java.util.Set;
 public class ServiceArgumentSelectionDialog extends JDialog {
 
     private final Project project;
-    private final Map<String, Set<String>> arguments;
+    private final Map<String, Set<String>> arguments = new HashMap<>();
     private final Callback callback;
     private JPanel panel1;
     private JButton generateButton;
@@ -41,7 +42,7 @@ public class ServiceArgumentSelectionDialog extends JDialog {
 
     public ServiceArgumentSelectionDialog(Project project, Map<String, Set<String>> arguments, Callback callback) {
         this.project = project;
-        this.arguments = arguments;
+        this.arguments.putAll(arguments);
         this.callback = callback;
     }
 
