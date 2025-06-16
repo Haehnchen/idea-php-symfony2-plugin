@@ -65,7 +65,7 @@ Building, debugging and other
 * Choose `View > Tool Windows > Gradle`
 * Double click `idea-php-symfony2-plugin > Tasks > intellij > runIde`
 
-If you are having difficulties, consult the documentation: http://confluence.jetbrains.com/display/PhpStorm/Setting-up+environment+for+PhpStorm+plugin+development
+If you are having difficulties, consult the documentation: https://plugins.jetbrains.com/docs/intellij/phpstorm.html
 
 * Want to sponsor my development? Nice! You can sponsor me via [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=5ZTGW6H4Y7MT8) or [Github](https://github.com/sponsors/Haehnchen). Github matches your donation so the total donation will be doubled. 
 
