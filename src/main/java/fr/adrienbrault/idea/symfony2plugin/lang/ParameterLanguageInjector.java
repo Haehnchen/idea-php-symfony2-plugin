@@ -41,7 +41,7 @@ public class ParameterLanguageInjector implements MultiHostInjector {
     };
 
     private final MethodLanguageInjection[] LANGUAGE_INJECTIONS = {
-        new MethodLanguageInjection(LANGUAGE_ID_CSS, "@media all { ", " }", CSS_SELECTOR_SIGNATURES),
+        new MethodLanguageInjection(LANGUAGE_ID_CSS, "@media all { ", " {} }", CSS_SELECTOR_SIGNATURES),
         new MethodLanguageInjection(LANGUAGE_ID_XPATH, null, null, XPATH_SIGNATURES),
         new MethodLanguageInjection(LANGUAGE_ID_JSON, null, null, JSON_SIGNATURES),
         new MethodLanguageInjection(LANGUAGE_ID_DQL, null, null, DQL_SIGNATURES),
