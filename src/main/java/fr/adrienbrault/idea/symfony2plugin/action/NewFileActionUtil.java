@@ -7,11 +7,9 @@ import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.StreamUtil;
 import com.intellij.psi.PsiDirectory;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.roots.PhpNamespaceCompositeProvider;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.StringUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.SymfonyCommandUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.*;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyCommand;
 import fr.adrienbrault.idea.symfony2plugin.util.psi.PhpBundleFileFactory;
@@ -64,7 +62,32 @@ public class NewFileActionUtil {
         return false;
     }
 
-    public static String guessCommandTemplateType(@NotNull Project project) {
+    public static String guessCommandTemplateType(@NotNull Project project, @NotNull String namespace) {
+        // Check if InvokableCommand is available (Symfony 7.3+)
+        if (PhpElementsUtil.getClassInterface(project, "\\Symfony\\Component\\Console\\Command\\InvokableCommand") != null) {
+            String normalizedNamespace = "\\" + org.apache.commons.lang3.StringUtils.strip(namespace, "\\") + "\\";
+            Collection<PhpClass> commandClasses = PhpIndexUtil.getPhpClassInsideNamespace(project, normalizedNamespace);
+
+            boolean hasExecuteMethod = false;
+
+            // Iterate over each class in the same namespace
+            for (PhpClass phpClass : commandClasses) {
+                if (phpClass.getAttributes("\\Symfony\\Component\\Console\\Attribute\\AsCommand").isEmpty() && !PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Console\\Command\\Command")) {
+                    continue;
+                }
+
+                if (phpClass.findOwnMethodByName("execute") != null) {
+                    hasExecuteMethod = true;
+                    break;
+                }
+            }
+
+            // if existing commands use execute, use invokable template
+            if (!hasExecuteMethod) {
+                return "command_invokable";
+            }
+        }
+
         if (PhpElementsUtil.getClassInterface(project, "\\Symfony\\Component\\Console\\Attribute\\AsCommand") != null) {
             return "command_attributes";
         }
