@@ -64,6 +64,7 @@ public class Settings implements PersistentStateComponent<Settings> {
     public boolean twigBundleNamespaceSupport = false;
 
     public boolean dismissEnableNotification = false;
+    public boolean dismissYamlSchemaNotification = false;
 
     public boolean profilerLocalEnabled = false;
     public String profilerLocalUrl = "http://127.0.0.1:8000";

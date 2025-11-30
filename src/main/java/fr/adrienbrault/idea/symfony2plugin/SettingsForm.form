@@ -40,6 +40,8 @@
         <rowspec value="center:max(d;4px):noGrow"/>
         <rowspec value="top:4dlu:noGrow"/>
         <rowspec value="center:max(d;4px):noGrow"/>
+        <rowspec value="top:4dlu:noGrow"/>
+        <rowspec value="center:max(d;4px):noGrow"/>
         <colspec value="fill:max(d;4px):noGrow"/>
         <colspec value="left:4dlu:noGrow"/>
         <colspec value="fill:d:grow"/>
@@ -209,7 +211,7 @@
           </component>
           <component id="58414" class="javax.swing.JLabel" binding="directoryToAppLabel">
             <constraints>
-              <grid row="30" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="32" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
               <forms/>
             </constraints>
             <properties>
@@ -218,7 +220,7 @@
           </component>
           <component id="c6525" class="com.intellij.openapi.ui.TextFieldWithBrowseButton" binding="directoryToApp">
             <constraints>
-              <grid row="30" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+              <grid row="32" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                 <preferred-size width="150" height="-1"/>
               </grid>
               <forms defaultalign-horz="false"/>
@@ -227,7 +229,7 @@
           </component>
           <component id="b7268" class="javax.swing.JButton" binding="directoryToAppReset">
             <constraints>
-              <grid row="30" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="32" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
               <forms/>
             </constraints>
             <properties>
@@ -236,7 +238,7 @@
           </component>
           <component id="4cd0" class="javax.swing.JLabel">
             <constraints>
-              <grid row="28" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="30" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
               <forms/>
             </constraints>
             <properties>
@@ -245,12 +247,22 @@
           </component>
           <component id="3c3bc" class="javax.swing.JCheckBox" binding="featureTypeProvider">
             <constraints>
-              <grid row="26" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="28" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
               <forms/>
             </constraints>
             <properties>
               <text value="Type Provider"/>
               <toolTipText value="Resolve return type via parameter eg &quot;ContainerInterface::get, EntityManager::find&quot;"/>
+            </properties>
+          </component>
+          <component id="dismissYamlSchema" class="javax.swing.JCheckBox" binding="dismissYamlSchemaNotification">
+            <constraints>
+              <grid row="26" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <forms/>
+            </constraints>
+            <properties>
+              <text value="Dismiss YAML Schema Notification"/>
+              <toolTipText value="Don't show notification banner suggesting to add YAML schema hint for Symfony service files"/>
             </properties>
           </component>
         </children>
