@@ -121,7 +121,7 @@ public class NewFileActionUtil {
                 namespace = "\\" + org.apache.commons.lang3.StringUtils.strip(namespace, "\\") + "\\";
 
                 for (SymfonyCommand command : commands) {
-                    if (command.getPhpClass().getFQN().startsWith(namespace)) {
+                    if (command.getFqn().startsWith(namespace)) {
                         String name = command.getName();
                         int i = name.indexOf(":");
                         if (i > 0) {

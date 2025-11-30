@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -60,16 +61,8 @@ public class SymfonyCommandUtil {
             false
         );
 
-        Collection<SymfonyCommand> symfonyCommands = new ArrayList<>();
-        for (Map.Entry<String, String> entry : cachedValue.entrySet()) {
-            Collection<PhpClass> anyByFQN = PhpIndex.getInstance(project).getAnyByFQN(entry.getValue());
-            if (anyByFQN.isEmpty()) {
-                continue;
-            }
-
-            symfonyCommands.add(new SymfonyCommand(entry.getKey(), anyByFQN.iterator().next()));
-        }
-
-        return symfonyCommands;
+        return cachedValue.entrySet().stream()
+            .map(entry -> new SymfonyCommand(entry.getKey(), entry.getValue()))
+            .collect(Collectors.toList());
     }
 }

@@ -32,7 +32,6 @@ public class SymfonyCommandUtilTest extends SymfonyLightCodeInsightFixtureTestCa
                 .orElseThrow();
 
             assertNotNull(command);
-            assertNotNull(command.getPhpClass());
         }
     }
 }

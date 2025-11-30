@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.util.dict;
 
-import com.jetbrains.php.lang.psi.elements.PhpClass;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -11,20 +10,26 @@ public class SymfonyCommand {
     private final String name;
 
     @NotNull
-    private final PhpClass phpClass;
+    private final String fqn;
 
-    public SymfonyCommand(@NotNull String name, @NotNull PhpClass phpClass) {
+    /**
+     * @param fqn starting with "\"
+     */
+    public SymfonyCommand(@NotNull String name, @NotNull String fqn) {
+        if (!fqn.startsWith("\\")) {
+            throw new IllegalArgumentException("Invalid fqn: " + fqn);
+        }
+
         this.name = name;
-        this.phpClass = phpClass;
+        this.fqn = fqn;
     }
-
+    
     @NotNull
     public String getName() {
         return name;
     }
 
-    @NotNull
-    public PhpClass getPhpClass() {
-        return phpClass;
+    public @NotNull String getFqn() {
+        return fqn;
     }
 }
