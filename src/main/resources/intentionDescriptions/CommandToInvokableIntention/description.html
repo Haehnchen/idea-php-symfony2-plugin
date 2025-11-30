@@ -1,0 +1,20 @@
+<html>
+<body>
+Migrate Symfony Command to invokable style (Symfony 7.3+)
+<!-- tooltip end -->
+<p>
+Converts a traditional Symfony Command with <code>execute()</code> method to the new invokable command style
+with <code>__invoke()</code> method using SymfonyStyle and input attributes.
+</p>
+<p>
+This migration:
+<ul>
+    <li>Renames <code>execute()</code> to <code>__invoke()</code></li>
+    <li>Replaces <code>InputInterface</code> and <code>OutputInterface</code> with <code>SymfonyStyle $io</code></li>
+    <li>Converts <code>addArgument()</code> and <code>addOption()</code> calls to <code>#[Argument]</code> and <code>#[Option]</code> attributes</li>
+    <li>Updates method body to use direct parameter access instead of <code>$input->getArgument()</code></li>
+    <li>Removes <code>configure()</code> method if it only contains argument/option definitions</li>
+</ul>
+</p>
+</body>
+</html>

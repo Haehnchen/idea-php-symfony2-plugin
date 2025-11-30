@@ -1,0 +1,31 @@
+namespace App\Command;
+
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+
+class CreateUserCommand extends Command
+{
+    protected function configure(): void
+    {
+        $this
+            ->addArgument('username', InputArgument::REQUIRED, 'The username')
+            ->addOption('admin', null, InputOption::VALUE_NONE, 'Make user admin');
+    }
+
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $username = $input->getArgument('username');
+        $isAdmin = $input->getOption('admin');
+
+        $output->writeln("Creating user: $username");
+
+        if ($isAdmin) {
+            $output->writeln('User will be admin');
+        }
+
+        return Command::SUCCESS;
+    }
+}

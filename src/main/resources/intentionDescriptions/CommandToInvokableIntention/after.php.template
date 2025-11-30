@@ -1,0 +1,25 @@
+namespace App\Command;
+
+use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Input\Attribute\Argument;
+use Symfony\Component\Console\Input\Attribute\Option;
+use Symfony\Component\Console\Output\OutputInterface;
+
+class CreateUserCommand
+{
+    public function __invoke(
+        OutputInterface $output,
+        #[Argument(description: 'The username')]
+        string $username,
+        #[Option(description: 'Make user admin')]
+        bool $admin = false
+    ): int {
+        $output->writeln("Creating user: $username");
+
+        if ($admin) {
+            $output->writeln('User will be admin');
+        }
+
+        return 0;
+    }
+}

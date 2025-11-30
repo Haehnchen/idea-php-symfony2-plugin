@@ -720,6 +720,13 @@
             <category>PHP</category>
             <descriptionDirectoryName>PhpPropertyArgumentIntention</descriptionDirectoryName>
         </intentionAction>
+
+        <intentionAction>
+            <language>PHP</language>
+            <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.CommandToInvokableIntention</className>
+            <category>PHP</category>
+            <descriptionDirectoryName>CommandToInvokableIntention</descriptionDirectoryName>
+        </intentionAction>
     </extensions>
 
     <extensionPoints>
