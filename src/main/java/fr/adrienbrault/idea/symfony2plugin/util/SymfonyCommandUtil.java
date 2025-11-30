@@ -9,6 +9,7 @@ import com.intellij.psi.util.PsiModificationTracker;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.dic.command.SymfonyCommandTestRunLineMarkerProvider;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyCommand;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,11 +32,24 @@ public class SymfonyCommandUtil {
             () -> {
                 Map<String, String> symfonyCommands = new HashMap<>();
 
+                // Traditional Command subclasses
                 for (PhpClass phpClass : PhpIndexUtil.getAllSubclasses(project, "\\Symfony\\Component\\Console\\Command\\Command")) {
                     if (PhpElementsUtil.isTestClass(phpClass)) {
                         continue;
                     }
 
+                    for (String commandName : SymfonyCommandTestRunLineMarkerProvider.getCommandNameFromClass(phpClass)) {
+                        symfonyCommands.put(commandName, phpClass.getFQN());
+                    }
+                }
+
+                // AsCommand attributes from index
+                for (PhpClass phpClass : PhpAttributeIndexUtil.getClassesWithAttribute(project, "\\Symfony\\Component\\Console\\Attribute\\AsCommand")) {
+                    if (PhpElementsUtil.isTestClass(phpClass)) {
+                        continue;
+                    }
+
+                    // Extract command names from the class (using existing method)
                     for (String commandName : SymfonyCommandTestRunLineMarkerProvider.getCommandNameFromClass(phpClass)) {
                         symfonyCommands.put(commandName, phpClass.getFQN());
                     }
