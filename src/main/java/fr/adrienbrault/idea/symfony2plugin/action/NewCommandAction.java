@@ -85,7 +85,7 @@ public class NewCommandAction extends AbstractProjectDumbAwareAction {
             PsiElement commandAttributes = PhpBundleFileFactory.createFile(
                 project,
                 directory.getVirtualFile(),
-                NewFileActionUtil.guessCommandTemplateType(project),
+                NewFileActionUtil.guessCommandTemplateType(project, strings.get(0)),
                 finalClassName,
                 hashMap
             );
