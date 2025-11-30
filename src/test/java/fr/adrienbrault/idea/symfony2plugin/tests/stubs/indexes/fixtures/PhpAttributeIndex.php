@@ -23,3 +23,16 @@ class AppExtension
     {
     }
 }
+
+namespace App\Command;
+
+use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Command\Command;
+
+#[AsCommand(
+    name: 'app:create-user',
+    aliases: ['app:create-admin']
+)]
+class CreateUserCommand extends Command
+{
+}

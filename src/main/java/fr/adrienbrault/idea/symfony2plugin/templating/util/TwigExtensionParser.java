@@ -12,10 +12,10 @@ import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigAttributeIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpPsiAttributesUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -33,15 +33,6 @@ public class TwigExtensionParser  {
     private static final Key<CachedValue<Map<String, TwigExtension>>> TEST_CACHE = new Key<>("TWIG_EXTENSIONS_TEST");
     private static final Key<CachedValue<Map<String, TwigExtension>>> FILTERS_CACHE = new Key<>("TWIG_EXTENSIONS_FILTERS");
     private static final Key<CachedValue<Map<String, TwigExtension>>> OPERATORS_CACHE = new Key<>("TWIG_EXTENSIONS_OPERATORS");
-
-    private static final Key<CachedValue<Map<String, List<String>>>> TWIG_ATTRIBUTE_FUNCTION_INDEX = new Key<>("TWIG_ATTRIBUTE_FUNCTION_INDEX");
-    private static final Key<CachedValue<Set<String>>> TWIG_ATTRIBUTE_FUNCTION_INDEX_NAMES = new Key<>("TWIG_ATTRIBUTE_FUNCTION_INDEX_NAMES");
-
-    private static final Key<CachedValue<Map<String, List<String>>>> TWIG_ATTRIBUTE_FILTER_INDEX = new Key<>("TWIG_ATTRIBUTE_FILTER_INDEX");
-    private static final Key<CachedValue<Set<String>>> TWIG_ATTRIBUTE_FILTER_NAMES = new Key<>("TWIG_ATTRIBUTE_FILTER_NAMES");
-
-    private static final Key<CachedValue<Map<String, List<String>>>> TWIG_ATTRIBUTE_TEST_INDEX = new Key<>("TWIG_ATTRIBUTE_TEST_INDEX");
-    private static final Key<CachedValue<Set<String>>> TWIG_ATTRIBUTE_TEST_NAMES = new Key<>("TWIG_ATTRIBUTE_FUNCTION_FILTER_NAMES");
 
     public enum TwigExtensionType {
         FUNCTION_METHOD, FUNCTION_NODE, SIMPLE_FUNCTION, FILTER, SIMPLE_TEST, OPERATOR
@@ -105,8 +96,14 @@ public class TwigExtensionParser  {
             }
         }
 
-        for (Map.Entry<String, List<String>> entry : FileIndexCaches.getStringDataCache(project, TWIG_ATTRIBUTE_FILTER_INDEX, TWIG_ATTRIBUTE_FILTER_NAMES, TwigAttributeIndex.KEY, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), PhpFileType.INSTANCE)).entrySet()) {
-            extensions.put(entry.getKey(), new TwigExtension(TwigExtensionType.FILTER, entry.getValue().getFirst()));
+        // Process AsTwigFilter attributes from index
+        // Index stores: [class FQN, method name, filter name]
+        for (List<String> data : PhpAttributeIndexUtil.getAttributeData(project, "\\Twig\\Attribute\\AsTwigFilter")) {
+            if (data.size() >= 3) {
+                String filterName = data.get(2);
+                String signature = String.format("#M#C\\%s.%s", data.get(0), data.get(1));
+                extensions.put(filterName, new TwigExtension(TwigExtensionType.FILTER, signature));
+            }
         }
 
         return Collections.unmodifiableMap(extensions);
@@ -130,8 +127,14 @@ public class TwigExtensionParser  {
             }
         }
 
-        for (Map.Entry<String, List<String>> entry : FileIndexCaches.getStringDataCache(project, TWIG_ATTRIBUTE_FUNCTION_INDEX, TWIG_ATTRIBUTE_FUNCTION_INDEX_NAMES, TwigAttributeIndex.KEY, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), PhpFileType.INSTANCE)).entrySet()) {
-            extensions.put(entry.getKey(), new TwigExtension(TwigExtensionType.FUNCTION_METHOD, entry.getValue().getFirst()));
+        // Process AsTwigFunction attributes from index
+        // Index stores: [class FQN, method name, function name]
+        for (List<String> data : PhpAttributeIndexUtil.getAttributeData(project, "\\Twig\\Attribute\\AsTwigFunction")) {
+            if (data.size() >= 3) {
+                String functionName = data.get(2);
+                String signature = String.format("#M#C\\%s.%s", data.get(0), data.get(1));
+                extensions.put(functionName, new TwigExtension(TwigExtensionType.FUNCTION_METHOD, signature));
+            }
         }
 
         return Collections.unmodifiableMap(extensions);
@@ -150,8 +153,14 @@ public class TwigExtensionParser  {
             }
         }
 
-        for (Map.Entry<String, List<String>> entry : FileIndexCaches.getStringDataCache(project, TWIG_ATTRIBUTE_TEST_INDEX, TWIG_ATTRIBUTE_TEST_NAMES, TwigAttributeIndex.KEY, GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), PhpFileType.INSTANCE)).entrySet()) {
-            extensions.put(entry.getKey(), new TwigExtension(TwigExtensionType.SIMPLE_TEST, entry.getValue().getFirst()));
+        // Process AsTwigTest attributes from index
+        // Index stores: [class FQN, method name, test name]
+        for (List<String> data : PhpAttributeIndexUtil.getAttributeData(project, "\\Twig\\Attribute\\AsTwigTest")) {
+            if (data.size() >= 3) {
+                String testName = data.get(2);
+                String signature = String.format("#M#C\\%s.%s", data.get(0), data.get(1));
+                extensions.put(testName, new TwigExtension(TwigExtensionType.SIMPLE_TEST, signature));
+            }
         }
 
         return Collections.unmodifiableMap(extensions);

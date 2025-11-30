@@ -31,7 +31,7 @@ public class IndexUtil {
             TwigMacroFunctionStubIndex.KEY,
             TranslationStubIndex.KEY,
             TwigBlockIndexExtension.KEY,
-            TwigAttributeIndex.KEY
+            PhpAttributeIndex.KEY
         };
 
         for(ID<?,?> id: indexIds) {
