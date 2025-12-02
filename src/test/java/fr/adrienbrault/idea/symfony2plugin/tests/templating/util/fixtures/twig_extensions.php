@@ -122,6 +122,8 @@ namespace Twig
                 new TwigFunction('class_php_callable_method_foobar', $this->getFoobar(...)),
                 new TwigFunction('class_php_callable_function_foobar', max(...)),
                 new TwigFunction('attribute_parser_callable', null, ['parser_callable' => [self::class, 'parseAttributeFunction']]),
+                new TwigFunction('deprecated_function_info', [self::class, 'deprecatedFunctionInfo'], ['deprecation_info' => new \Twig\DeprecatedCallableInfo('twig/twig', '3.12')]),
+                new TwigFunction('deprecated_function', [self::class, 'deprecatedFunction'], ['deprecated' => 12.12]),
             ];
         }
 

@@ -28,8 +28,11 @@ import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.Function;
+import com.jetbrains.php.lang.psi.elements.FunctionReference;
 import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.php.phpunit.PhpUnitUtil;
 import com.jetbrains.twig.TwigFile;
@@ -118,6 +121,8 @@ public class TwigUtil {
 
     private static final Key<CachedValue<Set<String>>> SYMFONY_NAMED_TOKEN_TAGS = new Key<>("SYMFONY_NAMED_TOKEN_TAGS");
     private static final Key<CachedValue<Map<String, String>>> SYMFONY_DEPRECATED_NAMED_TOKEN_TAGS = new Key<>("SYMFONY_DEPRECATED_NAMED_TOKEN_TAGS");
+    private static final Key<CachedValue<Set<String>>> SYMFONY_DEPRECATED_FILTERS = new Key<>("SYMFONY_DEPRECATED_FILTERS");
+    private static final Key<CachedValue<Set<String>>> SYMFONY_DEPRECATED_FUNCTIONS = new Key<>("SYMFONY_DEPRECATED_FUNCTIONS");
 
     public static final String[] CSS_FILES_EXTENSIONS = new String[] { "css", "less", "sass", "scss" };
 
@@ -2745,13 +2750,106 @@ public class TwigUtil {
 
                 PhpClass phpClass = triple.getThird().getContainingClass();
 
-                if (phpClass != null && phpClass.isDeprecated()) {
-                    PhpElementsUtil.getClassDeprecatedMessage(phpClass);
-                    deprecations.put(currentTagName, PhpElementsUtil.getClassDeprecatedMessage(phpClass));
+                if (phpClass != null) {
+                    // Check for @deprecated or #[Deprecated]
+                    if (phpClass.isDeprecated()) {
+                        deprecations.put(currentTagName, PhpElementsUtil.getClassDeprecatedMessage(phpClass));
+                    } else {
+                        // Check for trigger_deprecation() in parse() method
+                        Method parseMethod = phpClass.findOwnMethodByName("parse");
+                        if (parseMethod != null) {
+                            Collection<FunctionReference> calls = PhpElementsUtil.collectFunctionReferencesInsideControlFlow(parseMethod, "trigger_deprecation");
+                            if (!calls.isEmpty()) {
+                                deprecations.put(currentTagName, null);
+                            }
+                        }
+                    }
                 }
             });
 
             return CachedValueProvider.Result.create(Collections.unmodifiableMap(deprecations), PsiModificationTracker.MODIFICATION_COUNT);
+        }, false);
+    }
+
+    /**
+     * Get all deprecated Twig filters
+     *
+     * @return set of deprecated filter names
+     */
+    @NotNull
+    public static Set<String> getDeprecatedFilters(@NotNull Project project) {
+        return CachedValuesManager.getManager(project).getCachedValue(project, SYMFONY_DEPRECATED_FILTERS, () -> {
+            Set<String> deprecatedNames = new HashSet<>();
+
+            Map<String, TwigExtension> filters = TwigExtensionParser.getFilters(project);
+            for (Map.Entry<String, TwigExtension> entry : filters.entrySet()) {
+                String filterName = entry.getKey();
+                TwigExtension extension = entry.getValue();
+
+                // Check for deprecated/deprecation_info options
+                if (extension.isDeprecated()) {
+                    deprecatedNames.add(filterName);
+                    continue;
+                }
+
+                // Check if the target method calls triggerDeprecation
+                String signature = extension.getSignature();
+                if (signature != null) {
+                    Collection<? extends PhpNamedElement> elements = PhpIndex.getInstance(project).getBySignature(signature);
+                    for (PhpNamedElement element : elements) {
+                        if (element instanceof Method method) {
+                            Collection<MethodReference> calls = PhpElementsUtil.collectMethodReferencesInsideControlFlow(method, "triggerDeprecation");
+                            if (!calls.isEmpty()) {
+                                deprecatedNames.add(filterName);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return CachedValueProvider.Result.create(Collections.unmodifiableSet(deprecatedNames), PsiModificationTracker.MODIFICATION_COUNT);
+        }, false);
+    }
+
+    /**
+     * Get all deprecated Twig functions
+     *
+     * @return set of deprecated function names
+     */
+    @NotNull
+    public static Set<String> getDeprecatedFunctions(@NotNull Project project) {
+        return CachedValuesManager.getManager(project).getCachedValue(project, SYMFONY_DEPRECATED_FUNCTIONS, () -> {
+            Set<String> deprecatedNames = new HashSet<>();
+
+            Map<String, TwigExtension> functions = TwigExtensionParser.getFunctions(project);
+            for (Map.Entry<String, TwigExtension> entry : functions.entrySet()) {
+                String functionName = entry.getKey();
+                TwigExtension extension = entry.getValue();
+
+                // Check for deprecated/deprecation_info options
+                if (extension.isDeprecated()) {
+                    deprecatedNames.add(functionName);
+                    continue;
+                }
+
+                // Check if the target method calls triggerDeprecation
+                String signature = extension.getSignature();
+                if (signature != null) {
+                    Collection<? extends PhpNamedElement> elements = PhpIndex.getInstance(project).getBySignature(signature);
+                    for (PhpNamedElement element : elements) {
+                        if (element instanceof Method method) {
+                            Collection<MethodReference> calls = PhpElementsUtil.collectMethodReferencesInsideControlFlow(method, "triggerDeprecation");
+                            if (!calls.isEmpty()) {
+                                deprecatedNames.add(functionName);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return CachedValueProvider.Result.create(Collections.unmodifiableSet(deprecatedNames), PsiModificationTracker.MODIFICATION_COUNT);
         }, false);
     }
 

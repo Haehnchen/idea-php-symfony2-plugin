@@ -405,4 +405,94 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
 
         assertTrue(PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern().accepts(psiElement5));
     }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#getClassDeprecatedMessage
+     */
+    public void testGetClassDeprecatedMessageWithAnnotation() {
+        PhpClass phpClass = PhpPsiElementFactory.createFromText(getProject(), PhpClass.class,
+            "<?php\n" +
+            "/**\n" +
+            " * @deprecated This class is deprecated, use NewClass instead\n" +
+            " */\n" +
+            "class DeprecatedClass {}"
+        );
+
+        String message = PhpElementsUtil.getClassDeprecatedMessage(phpClass);
+        assertNotNull(message);
+        assertEquals("Deprecated: This class is deprecated, use NewClass instead", message);
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#getClassDeprecatedMessage
+     */
+    public void testGetClassDeprecatedMessageWithAnnotationNoMessage() {
+        PhpClass phpClass = PhpPsiElementFactory.createFromText(getProject(), PhpClass.class,
+            "<?php\n" +
+            "/**\n" +
+            " * @deprecated\n" +
+            " */\n" +
+            "class DeprecatedClass {}"
+        );
+
+        String message = PhpElementsUtil.getClassDeprecatedMessage(phpClass);
+        assertNull(message);
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#getClassDeprecatedMessage
+     */
+    public void testGetClassDeprecatedMessageWithAttribute() {
+        PhpClass phpClass = PhpPsiElementFactory.createFromText(getProject(), PhpClass.class,
+            "<?php\n" +
+            "#[\\Deprecated(message: 'Use NewClass instead')]\n" +
+            "class DeprecatedClass {}"
+        );
+
+        String message = PhpElementsUtil.getClassDeprecatedMessage(phpClass);
+        assertNotNull(message);
+        assertEquals("Deprecated: Use NewClass instead", message);
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#getClassDeprecatedMessage
+     */
+    public void testGetClassDeprecatedMessageWithAttributePositionalParameter() {
+        PhpClass phpClass = PhpPsiElementFactory.createFromText(getProject(), PhpClass.class,
+            "<?php\n" +
+            "#[\\Deprecated('Use NewClass instead')]\n" +
+            "class DeprecatedClass {}"
+        );
+
+        String message = PhpElementsUtil.getClassDeprecatedMessage(phpClass);
+        assertNotNull(message);
+        assertEquals("Deprecated: Use NewClass instead", message);
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#getClassDeprecatedMessage
+     */
+    public void testGetClassDeprecatedMessageWithAttributeNoMessage() {
+        PhpClass phpClass = PhpPsiElementFactory.createFromText(getProject(), PhpClass.class,
+            "<?php\n" +
+            "#[\\Deprecated]\n" +
+            "class DeprecatedClass {}"
+        );
+
+        String message = PhpElementsUtil.getClassDeprecatedMessage(phpClass);
+        assertNull(message);
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#getClassDeprecatedMessage
+     */
+    public void testGetClassDeprecatedMessageWithNonDeprecatedClass() {
+        PhpClass phpClass = PhpPsiElementFactory.createFromText(getProject(), PhpClass.class,
+            "<?php\n" +
+            "class NormalClass {}"
+        );
+
+        String message = PhpElementsUtil.getClassDeprecatedMessage(phpClass);
+        assertNull(message);
+    }
 }

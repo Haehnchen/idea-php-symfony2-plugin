@@ -1211,7 +1211,7 @@ public class TwigPattern {
     /**
      * {% apply <caret> %}foobar{% endapply %}
      */
-    static ElementPattern<PsiElement> getApplyFilterPattern() {
+    public static ElementPattern<PsiElement> getApplyFilterPattern() {
         return PlatformPatterns
             .psiElement(TwigTokenTypes.IDENTIFIER)
             .afterLeafSkipping(
