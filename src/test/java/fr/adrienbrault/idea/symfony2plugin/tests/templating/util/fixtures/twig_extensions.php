@@ -65,6 +65,9 @@ namespace
 
 namespace Twig
 {
+    final class DeprecatedCallableInfo {}
+    class DefaultFilter {}
+
     // Twig 3.0
     class TwigFilter {}
     class TwigFunction {}
@@ -87,6 +90,9 @@ namespace Twig
                 'localizeddate' => new \Twig_Filter_Function('foobar'),
                 new \Twig_Filter('trans_2', [$this, 'foobar']),
                 new TwigFilter('trans_3', [$this, 'foobar']),
+                new TwigFilter('default', [self::class, 'default'], ['node_class' => DefaultFilter::class]),
+                new TwigFilter('spaceless_deprecation_info', [self::class, 'spaceless'], ['is_safe' => ['html'], 'deprecation_info' => new \Twig\DeprecatedCallableInfo('twig/twig', '3.12')]),
+                new TwigFilter('spaceless_deprecation_deprecated', [self::class, 'spaceless'], ['is_safe' => ['html'], 'deprecated' => 12.12]),
             ];
         }
 
@@ -115,6 +121,7 @@ namespace Twig
                 new TwigFunction('class_instance_foobar', [\ClassInstance::class, 'getFoobar']),
                 new TwigFunction('class_php_callable_method_foobar', $this->getFoobar(...)),
                 new TwigFunction('class_php_callable_function_foobar', max(...)),
+                new TwigFunction('attribute_parser_callable', null, ['parser_callable' => [self::class, 'parseAttributeFunction']]),
             ];
         }
 

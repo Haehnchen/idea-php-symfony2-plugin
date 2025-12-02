@@ -368,9 +368,11 @@ public class TwigExtensionParser  {
 
                         Collection<String> typed = new HashSet<>();
                         Project project = method.getProject();
-                        for (PhpNamedElement phpNamedElement : PhpElementsUtil.getPsiElementsBySignature(project, signature)) {
-                            if (phpNamedElement instanceof Function) {
-                                typed.addAll(PhpElementsUtil.getClassFromPhpTypeSet(project, phpNamedElement.getType().getTypes()).stream().map(PhpNamedElement::getFQN).toList());
+                        if (signature != null) {
+                            for (PhpNamedElement phpNamedElement : PhpElementsUtil.getPsiElementsBySignature(project, signature)) {
+                                if (phpNamedElement instanceof Function) {
+                                    typed.addAll(PhpElementsUtil.getClassFromPhpTypeSet(project, phpNamedElement.getType().getTypes()).stream().map(PhpNamedElement::getFQN).toList());
+                                }
                             }
                         }
 
@@ -441,8 +443,17 @@ public class TwigExtensionParser  {
     static private Map<String, String> getOptions(@NotNull ArrayCreationExpression arrayCreationExpression) {
         Map<String, String> options = new HashMap<>();
 
-        for (String optionTrue: new String[] {"needs_environment", "needs_context"}) {
+        for (String optionTrue: new String[] {"needs_environment", "needs_context", "parser_callable", "deprecation_info", "deprecated"}) {
             PhpPsiElement phpPsiElement = PhpElementsUtil.getArrayValue(arrayCreationExpression, optionTrue);
+            if (phpPsiElement == null) {
+                continue;
+            }
+
+            if (optionTrue.equals("deprecation_info") || optionTrue.equals("deprecated")) {
+                options.put(optionTrue, "true");
+                continue;
+            }
+
             if (phpPsiElement instanceof ConstantReference) {
                 String value = phpPsiElement.getName();
                 if (value != null && value.equalsIgnoreCase("true")) {
@@ -467,6 +478,13 @@ public class TwigExtensionParser  {
                         String signature = null;
                         if (psiElement.length > 1) {
                             signature = getCallableSignature(psiElement[1], method);
+                        }
+
+                        if (signature == null && psiElement.length > 2 && psiElement[2] instanceof ArrayCreationExpression arrayCreationExpression) {
+                            PhpPsiElement phpPsiElement = PhpElementsUtil.getArrayValue(arrayCreationExpression, "parser_callable");
+                            if (phpPsiElement != null) {
+                                signature = getCallableSignature(phpPsiElement, method);
+                            }
                         }
 
                         // creation options like: needs_environment
