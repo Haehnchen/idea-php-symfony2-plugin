@@ -1,7 +1,17 @@
 <html>
 <body>
-<p>Detect Twig token tags which are marked as deprecated via PhpClass</p>
+<p>Detect deprecated Twig extensions including tags, filters, and functions</p>
 <!-- tooltip end -->
-<p>Deprecation inspection for Twig token tags</p>
+<p>
+  Reports the usage of deprecated Twig extensions:
+</p>
+<ul>
+  <li><b>Tags</b>: Deprecated TokenParser classes via @deprecated annotation, #[Deprecated] or DeprecatedCallableInfo::triggerDeprecation attribute (e.g., {% spaceless %})</li>
+  <li><b>Filters</b>: Deprecated via "deprecated" or "deprecation_info" options in Twig extension (e.g., {{ value|deprecated_filter }})</li>
+  <li><b>Functions</b>: Deprecated via "deprecated" or "deprecation_info" options in Twig extension (e.g., {{ deprecated_function() }})</li>
+</ul>
+<p>
+  This inspection helps identify and migrate away from deprecated Twig functionality to ensure compatibility with future Twig versions.
+</p>
 </body>
 </html>

@@ -583,19 +583,69 @@ public class PhpElementsUtil {
             );
     }
 
+    /**
+     * Collect all function references with the given name(s) inside a control flow
+     *
+     * @param phpScopeHolder the scope holder (method, function, etc.)
+     * @param functionName   the function name(s) to search for
+     * @return collection of function references found
+     */
+    @NotNull
+    public static Collection<FunctionReference> collectFunctionReferencesInsideControlFlow(@NotNull PhpScopeHolder phpScopeHolder, @NotNull String... functionName) {
+        Collection<FunctionReference> functionReferences = new ArrayList<>();
 
+        PhpControlFlowUtil.processFlow(phpScopeHolder.getControlFlow(), new PhpInstructionProcessor() {
+            @Override
+            public boolean processPhpCallInstruction(PhpCallInstruction instruction) {
+                if (instruction.getFunctionReference() instanceof FunctionReference funcReference && Arrays.stream(functionName).anyMatch(s -> s.equals(funcReference.getName()))) {
+                    functionReferences.add(funcReference);
+                }
+                return super.processPhpCallInstruction(instruction);
+            }
+        });
+
+        return functionReferences;
+    }
+
+    /**
+     * Get deprecation message from a PHP class
+     * Supports both @deprecated annotation and #[Deprecated] attribute
+     *
+     * @param phpClass the PHP class to check
+     * @return deprecation message or null if not deprecated or no message provided
+     */
     @Nullable
     public static String getClassDeprecatedMessage(@NotNull PhpClass phpClass) {
+        // Check for #[Deprecated] attribute (PHP 8.4+)
+        for (PhpAttribute attribute : phpClass.getAttributes()) {
+            String attributeFQN = attribute.getFQN();
+            if (attributeFQN != null && isEqualClassName(attributeFQN, "Deprecated")) {
+                // Try named parameter first: #[Deprecated(message: 'text')]
+                String message = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, "message");
+
+                // Try positional parameter: #[Deprecated('text')]
+                if (StringUtils.isBlank(message)) {
+                    message = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, 0, "message");
+                }
+
+                if (StringUtils.isNotBlank(message)) {
+                    return StringUtils.abbreviate("Deprecated: " + message, 100);
+                }
+
+                // Attribute found but no message provided
+                return null;
+            }
+        }
+
+        // Check for @deprecated doc comment
         if (phpClass.isDeprecated()) {
             PhpDocComment docComment = phpClass.getDocComment();
             if (docComment != null) {
                 for (PhpDocTag deprecatedTag : docComment.getTagElementsByName("@deprecated")) {
-                    // deprecatedTag.getValue provides a number !?
                     String tagValue = deprecatedTag.getText();
                     if (StringUtils.isNotBlank(tagValue)) {
                         String trim = tagValue.replace("@deprecated", "").trim();
-
-                        if (StringUtils.isNotBlank(tagValue)) {
+                        if (StringUtils.isNotBlank(trim)) {
                             return StringUtils.abbreviate("Deprecated: " + trim, 100);
                         }
                     }

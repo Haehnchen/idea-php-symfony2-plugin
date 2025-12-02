@@ -129,9 +129,13 @@ public class TwigExtensionParserTest extends SymfonyLightCodeInsightFixtureTestC
 
     public void testExtensionDeprecatedOptions() {
         Map<String, TwigExtension> filters = TwigExtensionParser.getFilters(getProject());
+        Map<String, TwigExtension> functions = TwigExtensionParser.getFunctions(getProject());
 
         assertTrue(filters.get("spaceless_deprecation_info").isDeprecated());
         assertTrue(filters.get("spaceless_deprecation_deprecated").isDeprecated());
+
+        assertTrue(functions.get("deprecated_function_info").isDeprecated());
+        assertTrue(functions.get("deprecated_function").isDeprecated());
     }
 
     public void testExtensionAreCollectedForVersion2() {
