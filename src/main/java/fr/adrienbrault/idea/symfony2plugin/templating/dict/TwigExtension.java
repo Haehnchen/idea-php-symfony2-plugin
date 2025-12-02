@@ -58,12 +58,16 @@ public class TwigExtension {
     }
 
     @Nullable
-    String getOption(String key) {
+    public String getOption(String key) {
         return options.getOrDefault(key, null);
     }
 
     @NotNull
     public Collection<String> getTypes() {
         return types;
+    }
+
+    public boolean isDeprecated() {
+        return options.containsKey("deprecated") || options.containsKey("deprecation_info");
     }
 }
