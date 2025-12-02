@@ -67,6 +67,7 @@ public class SettingsForm implements Configurable {
     private JCheckBox featureTwigIcon;
     private JButton buttonAutoConfigure;
     private JCheckBox featureTypeProvider;
+    private JCheckBox dismissYamlSchemaNotification;
 
     public SettingsForm(@NotNull final Project project) {
         this.project = project;
@@ -143,6 +144,7 @@ public class SettingsForm implements Configurable {
                 || !codeFoldingTwigConstant.isSelected() == getSettings().codeFoldingTwigConstant
                 || !featureTwigIcon.isSelected() == getSettings().featureTwigIcon
                 || !featureTypeProvider.isSelected() == getSettings().featureTypeProvider
+                || !dismissYamlSchemaNotification.isSelected() == getSettings().dismissYamlSchemaNotification
 
                 || !directoryToApp.getText().equals(getSettings().directoryToApp)
                 || !directoryToWeb.getText().equals(getSettings().directoryToWeb)
@@ -165,6 +167,7 @@ public class SettingsForm implements Configurable {
         getSettings().codeFoldingTwigConstant = codeFoldingTwigConstant.isSelected();
         getSettings().featureTwigIcon = featureTwigIcon.isSelected();
         getSettings().featureTypeProvider = featureTypeProvider.isSelected();
+        getSettings().dismissYamlSchemaNotification = dismissYamlSchemaNotification.isSelected();
 
         getSettings().directoryToApp = directoryToApp.getText();
         getSettings().directoryToWeb = directoryToWeb.getText();
@@ -198,6 +201,7 @@ public class SettingsForm implements Configurable {
         codeFoldingTwigConstant.setSelected(getSettings().codeFoldingTwigConstant);
         featureTwigIcon.setSelected(getSettings().featureTwigIcon);
         featureTypeProvider.setSelected(getSettings().featureTypeProvider);
+        dismissYamlSchemaNotification.setSelected(getSettings().dismissYamlSchemaNotification);
 
         directoryToApp.setText(getSettings().directoryToApp);
         directoryToWeb.setText(getSettings().directoryToWeb);
@@ -275,7 +279,7 @@ public class SettingsForm implements Configurable {
         panel1 = new JPanel();
         panel1.setLayout(new GridLayoutManager(2, 5, new Insets(0, 0, 0, 0), -1, -1));
         final JPanel panel2 = new JPanel();
-        panel2.setLayout(new FormLayout("fill:max(d;4px):noGrow,left:4dlu:noGrow,fill:d:grow,left:4dlu:noGrow,fill:max(d;4px):noGrow,left:4dlu:noGrow,fill:max(d;4px):noGrow", "center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:6dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow"));
+        panel2.setLayout(new FormLayout("fill:max(d;4px):noGrow,left:4dlu:noGrow,fill:d:grow,left:4dlu:noGrow,fill:max(d;4px):noGrow,left:4dlu:noGrow,fill:max(d;4px):noGrow", "center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:6dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow"));
         panel1.add(panel2, new GridConstraints(1, 0, 1, 5, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         directoryToWebLabel = new JLabel();
         directoryToWebLabel.setText("Web Directory");
@@ -332,19 +336,23 @@ public class SettingsForm implements Configurable {
         panel2.add(featureTwigIcon, cc.xy(3, 25));
         directoryToAppLabel = new JLabel();
         directoryToAppLabel.setText("App Directory");
-        panel2.add(directoryToAppLabel, cc.xy(1, 31));
+        panel2.add(directoryToAppLabel, cc.xy(1, 33));
         directoryToApp = new TextFieldWithBrowseButton();
-        panel2.add(directoryToApp, cc.xy(3, 31, CellConstraints.FILL, CellConstraints.DEFAULT));
+        panel2.add(directoryToApp, cc.xy(3, 33, CellConstraints.FILL, CellConstraints.DEFAULT));
         directoryToAppReset = new JButton();
         directoryToAppReset.setText("Default");
-        panel2.add(directoryToAppReset, cc.xy(5, 31));
+        panel2.add(directoryToAppReset, cc.xy(5, 33));
         final JLabel label5 = new JLabel();
         label5.setText("Legacy Features");
-        panel2.add(label5, cc.xy(1, 29));
+        panel2.add(label5, cc.xy(1, 31));
         featureTypeProvider = new JCheckBox();
         featureTypeProvider.setText("Type Provider");
         featureTypeProvider.setToolTipText("Resolve return type via parameter eg \"ContainerInterface::get, EntityManager::find\"");
-        panel2.add(featureTypeProvider, cc.xy(3, 27));
+        panel2.add(featureTypeProvider, cc.xy(3, 29));
+        dismissYamlSchemaNotification = new JCheckBox();
+        dismissYamlSchemaNotification.setText("Dismiss YAML Schema Notification");
+        dismissYamlSchemaNotification.setToolTipText("Don't show notification banner suggesting to add YAML schema hint for Symfony service files");
+        panel2.add(dismissYamlSchemaNotification, cc.xy(3, 27));
         pluginEnabled = new JCheckBox();
         pluginEnabled.setText("Enable for Project (needs restart)");
         panel1.add(pluginEnabled, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
