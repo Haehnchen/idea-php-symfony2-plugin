@@ -12,6 +12,20 @@ namespace Symfony\Component\Console\Command
     }
 }
 
+namespace Symfony\Component\Console\Attribute
+{
+    #[\Attribute(\Attribute::TARGET_CLASS)]
+    class AsCommand
+    {
+        public function __construct(
+            public ?string $name = null,
+            public ?string $description = null,
+            public array $aliases = [],
+            public bool $hidden = false
+        ) {}
+    }
+}
+
 namespace Symfony\Component\Console\Input
 {
     interface InputInterface
@@ -36,6 +50,17 @@ namespace Symfony\Component\Console\Style
         public function writeln($message);
         public function success($message);
         public function error($message);
+    }
+}
+
+namespace Symfony\Component\Console
+{
+    class Cursor
+    {
+    }
+
+    class Application
+    {
     }
 }
 

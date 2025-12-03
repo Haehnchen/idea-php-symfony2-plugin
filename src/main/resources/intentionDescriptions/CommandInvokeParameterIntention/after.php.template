@@ -1,0 +1,15 @@
+<?php
+
+namespace App\Command;
+
+use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Style\SymfonyStyle;
+
+#[AsCommand(name: 'app:example')]
+class ExampleCommand
+{
+    public function __invoke(SymfonyStyle $io): int
+    {
+        return 0;
+    }
+}

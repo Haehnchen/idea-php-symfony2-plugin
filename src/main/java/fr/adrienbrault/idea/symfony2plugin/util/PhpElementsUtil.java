@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.util;
 
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.lang.ASTNode;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Ref;
 import com.intellij.patterns.ElementPattern;
@@ -9,6 +10,7 @@ import com.intellij.patterns.PatternCondition;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.*;
+import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.psi.formatter.FormatterUtil;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
@@ -2216,6 +2218,125 @@ public class PhpElementsUtil {
             }
 
             return null;
+        }
+    }
+
+    /**
+     * Adds a parameter with the given fully qualified class name and variable name to a method.
+     * This method handles use statement insertion and parameter list modification with reformatting.
+     * The parameter is inserted before any optional parameters to maintain valid PHP syntax.
+     *
+     * @param method The method to add the parameter to
+     * @param fqn The fully qualified class name for the parameter type (e.g., "\\Symfony\\Component\\Console\\Style\\SymfonyStyle")
+     * @param variableName The variable name for the parameter (e.g., "io")
+     */
+    public static void addParameterToMethod(@NotNull Method method, @NotNull String fqn, @NotNull String variableName) {
+        PhpClass phpClass = method.getContainingClass();
+        if (phpClass == null) {
+            return;
+        }
+
+        Project project = method.getProject();
+
+        insertUseIfNecessary(phpClass, fqn);
+
+        PsiFile file = method.getContainingFile();
+        Document document = PsiDocumentManager.getInstance(project).getDocument(file);
+        if (document == null) {
+            return;
+        }
+
+        PsiDocumentManager psiDocManager = PsiDocumentManager.getInstance(project);
+        psiDocManager.doPostponedOperationsAndUnblockDocument(document);
+
+        String shortName = fqn.substring(fqn.lastIndexOf('\\') + 1);
+        String newParameter = shortName + " $" + variableName;
+
+        Parameter[] existingParams = method.getParameters();
+        int insertOffset;
+        String textToInsert;
+
+        if (existingParams.length > 0) {
+            // Find the first optional parameter (has default value)
+            Parameter firstOptionalParam = null;
+            Parameter lastRequiredParam = null;
+
+            for (Parameter param : existingParams) {
+                if (param.getDefaultValue() != null) {
+                    if (firstOptionalParam == null) {
+                        firstOptionalParam = param;
+                    }
+                } else {
+                    lastRequiredParam = param;
+                }
+            }
+
+            if (firstOptionalParam != null && lastRequiredParam == null) {
+                // All existing parameters are optional, insert at the beginning
+                insertOffset = existingParams[0].getTextRange().getStartOffset();
+                textToInsert = newParameter + ", ";
+            } else if (firstOptionalParam != null) {
+                // Insert after the last required parameter
+                insertOffset = lastRequiredParam.getTextRange().getEndOffset();
+                textToInsert = ", " + newParameter;
+            } else {
+                // No optional parameters, append at the end
+                Parameter lastParam = existingParams[existingParams.length - 1];
+                insertOffset = lastParam.getTextRange().getEndOffset();
+                textToInsert = ", " + newParameter;
+            }
+        } else {
+            String methodText = method.getText();
+            int methodStartOffset = method.getTextRange().getStartOffset();
+
+            int openParenIndex = methodText.indexOf('(');
+            if (openParenIndex == -1) {
+                return;
+            }
+
+            insertOffset = methodStartOffset + openParenIndex + 1;
+            textToInsert = newParameter;
+        }
+
+        document.insertString(insertOffset, textToInsert);
+
+        psiDocManager.commitDocument(document);
+        psiDocManager.doPostponedOperationsAndUnblockDocument(document);
+
+        PsiFile freshFile = PsiDocumentManager.getInstance(project).getPsiFile(document);
+        if (freshFile != null) {
+            PhpClass freshPhpClass = PsiTreeUtil.findChildOfType(freshFile, PhpClass.class);
+            if (freshPhpClass != null) {
+                Method freshMethod = freshPhpClass.findOwnMethodByName(method.getName());
+                if (freshMethod != null) {
+                    reformatMethodSignature(project, freshMethod);
+                }
+            }
+        }
+    }
+
+    /**
+     * Reformats the method signature (from method start to body start).
+     *
+     * @param project The project
+     * @param method The method to reformat
+     */
+    public static void reformatMethodSignature(@NotNull Project project, @NotNull Method method) {
+        PsiFile containingFile = method.getContainingFile();
+
+        GroupStatement body = PsiTreeUtil.findChildOfType(method, GroupStatement.class);
+        if (body == null) {
+            return;
+        }
+
+        int startOffset = method.getTextRange().getStartOffset();
+        int endOffset = body.getTextRange().getStartOffset();
+
+        CodeStyleManager codeStyleManager = CodeStyleManager.getInstance(project);
+        try {
+            codeStyleManager.reformatRange(containingFile, startOffset, endOffset);
+        } catch (com.intellij.util.IncorrectOperationException e) {
+            // Ignore formatting errors
         }
     }
 }
