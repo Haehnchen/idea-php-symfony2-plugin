@@ -213,6 +213,70 @@ public class AnnotationBackportUtil {
         }), "_") + (!name.startsWith("_") ? "_" : "") + name.toLowerCase();
     }
 
+    /**
+     * Generate a route path/URL from the method and controller name.
+     *
+     * "App\Controller\ProductController::indexAction" => "/product"
+     * "App\Controller\ProductController::showAction" => "/product/show"
+     * "App\Controller\Admin\UserController::editAction" => "/admin/user/edit"
+     */
+    @Nullable
+    public static String getRoutePathByMethod(@NotNull Method method) {
+        String methodName = method.getName();
+
+        // strip "Action" suffix
+        if (methodName.endsWith("Action")) {
+            methodName = methodName.substring(0, methodName.length() - "Action".length());
+        }
+
+        PhpClass containingClass = method.getContainingClass();
+        if (containingClass == null) {
+            return null;
+        }
+
+        String[] fqnParts = org.apache.commons.lang3.StringUtils.strip(containingClass.getFQN(), "\\").split("\\\\");
+
+        // filter and transform namespace parts
+        List<String> pathParts = new ArrayList<>();
+        boolean foundController = false;
+
+        for (String part : fqnParts) {
+            if (org.apache.commons.lang3.StringUtils.isBlank(part)) {
+                continue;
+            }
+
+            String lowerPart = part.toLowerCase();
+
+            // skip everything before "controller" namespace
+            if ("controller".equalsIgnoreCase(part)) {
+                foundController = true;
+                continue;
+            }
+
+            if (!foundController) {
+                continue;
+            }
+
+            // strip "Controller" suffix from class name
+            if (lowerPart.endsWith("controller")) {
+                pathParts.add(lowerPart.substring(0, lowerPart.length() - "controller".length()));
+            } else {
+                pathParts.add(lowerPart);
+            }
+        }
+
+        if (pathParts.isEmpty()) {
+            return null;
+        }
+
+        // add method name if not "index"
+        if (!"index".equalsIgnoreCase(methodName)) {
+            pathParts.add(methodName.toLowerCase());
+        }
+
+        return "/" + org.apache.commons.lang3.StringUtils.join(pathParts, "/");
+    }
+
     @Nullable
     public static Method getMethodScope(@NotNull PhpDocTag phpDocTag) {
         PhpDocComment parentOfType = PsiTreeUtil.getParentOfType(phpDocTag, PhpDocComment.class);
