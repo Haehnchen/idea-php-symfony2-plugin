@@ -1,0 +1,24 @@
+<html>
+<body>
+Add Symfony Route attribute to controller action
+<!-- tooltip end -->
+<p>
+Adds a <code>#[Route]</code> attribute to a public method in a Symfony controller class.
+</p>
+<p>
+The intention is available when:
+<ul>
+    <li>The method is public and non-static</li>
+    <li>The method doesn't already have a Route attribute</li>
+    <li>The class is a controller (extends AbstractController, has #[AsController], or has Route attributes)</li>
+</ul>
+</p>
+<p>
+The route path and name are automatically generated based on the controller and method name:
+<ul>
+    <li><code>App\Controller\ProductController::index</code> → <code>#[Route('/product', name: 'app_product_index')]</code></li>
+    <li><code>App\Controller\Admin\UserController::edit</code> → <code>#[Route('/admin/user/edit', name: 'app_admin_user_edit')]</code></li>
+</ul>
+</p>
+</body>
+</html>

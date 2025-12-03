@@ -743,6 +743,12 @@
             <category>PHP</category>
             <descriptionDirectoryName>CommandToInvokableIntention</descriptionDirectoryName>
         </intentionAction>
+
+        <intentionAction>
+            <language>PHP</language>
+            <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.AddRouteAttributeIntention</className>
+            <category>Symfony</category>
+        </intentionAction>
     </extensions>
 
     <extensionPoints>

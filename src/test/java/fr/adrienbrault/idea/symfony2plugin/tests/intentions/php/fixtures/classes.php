@@ -59,4 +59,56 @@ namespace Symfony\Component\Console\Input\Attribute
     }
 }
 
+namespace Symfony\Bundle\FrameworkBundle\Controller
+{
+    class AbstractController
+    {
+    }
+}
+
+namespace Symfony\Component\Routing\Attribute
+{
+    #[\Attribute(\Attribute::TARGET_CLASS | \Attribute::TARGET_METHOD | \Attribute::IS_REPEATABLE)]
+    class Route
+    {
+        public function __construct(
+            ?string $path = null,
+            ?string $name = null,
+            array $requirements = [],
+            array $options = [],
+            array $defaults = [],
+            ?string $host = null,
+            array|string $methods = [],
+            array|string $schemes = [],
+            ?string $condition = null,
+            ?int $priority = null,
+            ?string $locale = null,
+            ?string $format = null,
+            ?bool $utf8 = null,
+            ?bool $stateless = null,
+            ?string $env = null
+        ) {}
+    }
+}
+
+namespace Symfony\Component\Routing\Annotation
+{
+    #[\Attribute(\Attribute::TARGET_CLASS | \Attribute::TARGET_METHOD | \Attribute::IS_REPEATABLE)]
+    class Route
+    {
+        public function __construct(
+            ?string $path = null,
+            ?string $name = null
+        ) {}
+    }
+}
+
+namespace Symfony\Component\HttpKernel\Attribute
+{
+    #[\Attribute(\Attribute::TARGET_CLASS)]
+    class AsController
+    {
+    }
+}
+
 
