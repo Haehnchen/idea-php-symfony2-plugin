@@ -63,12 +63,12 @@ public class PhpServiceIntention extends PsiElementBaseIntentionAction {
     @NotNull
     @Override
     public String getFamilyName() {
-        return "Symfony2MethodCreateService";
+        return "Generate Symfony service";
     }
 
     @NotNull
     @Override
     public String getText() {
-        return "Generate Symfony service";
+        return getFamilyName();
     }
 }

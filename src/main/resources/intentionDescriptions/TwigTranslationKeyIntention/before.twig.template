@@ -1,0 +1,7 @@
+{# templates/product/show.html.twig #}
+<h1>{{ 'product.title'|trans }}</h1>
+<p>{{ 'product.description'|trans }}</p>
+<button>{{ 'product.add_to_cart'|trans }}</button>
+
+{# Translation key 'product.add_to_cart' exists in messages.en.yaml
+   but is missing in messages.fr.yaml #}

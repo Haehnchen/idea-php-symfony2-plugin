@@ -69,13 +69,13 @@ public class XmlServiceSuggestIntention extends PsiElementBaseIntentionAction {
     @NotNull
     @Override
     public String getFamilyName() {
-        return "Symfony";
+        return "Symfony: Suggest Service";
     }
 
     @NotNull
     @Override
     public String getText() {
-        return "Symfony: Suggest Service";
+        return getFamilyName();
     }
 
     public static class MyInsertCallback implements ServiceSuggestDialog.Callback {

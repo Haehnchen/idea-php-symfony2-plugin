@@ -48,13 +48,13 @@ public class TwigTranslationKeyIntention extends PsiElementBaseIntentionAction {
     @NotNull
     @Override
     public String getFamilyName() {
-        return "Symfony";
+        return "Symfony: create translation key";
     }
 
     @NotNull
     @Override
     public String getText() {
-        return "Symfony: create translation key";
+        return getFamilyName();
     }
 
     @Nullable

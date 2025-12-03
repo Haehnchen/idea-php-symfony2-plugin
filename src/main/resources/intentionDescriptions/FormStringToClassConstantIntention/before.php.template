@@ -1,0 +1,19 @@
+namespace App\Form;
+
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\FormBuilderInterface;
+
+class ProductType extends AbstractType
+{
+    public function buildForm(FormBuilderInterface $builder, array $options): void
+    {
+        $builder
+            ->add('name', 'text')
+            ->add('description', 'textarea')
+            ->add('price', 'number')
+            ->add('category', 'entity', [
+                'class' => 'App\Entity\Category',
+            ])
+            ->add('submit', 'submit');
+    }
+}

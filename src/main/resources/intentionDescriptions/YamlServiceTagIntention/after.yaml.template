@@ -1,0 +1,10 @@
+# config/services.yaml
+#
+# After applying the intention, the kernel.event_subscriber tag is added:
+
+services:
+    App\EventSubscriber\OrderEventSubscriber:
+        arguments:
+            - '@logger'
+        tags:
+            - kernel.event_subscriber

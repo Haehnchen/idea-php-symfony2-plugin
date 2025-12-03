@@ -1,0 +1,4 @@
+services:
+    App\Service\OrderProcessor:
+        arguments:
+            - '@logger'

@@ -1,0 +1,7 @@
+# translations/messages.fr.yaml
+# After using the intention and entering the French translation:
+
+product:
+    title: 'Produit'
+    description: 'Description du produit'
+    add_to_cart: 'Ajouter au panier'

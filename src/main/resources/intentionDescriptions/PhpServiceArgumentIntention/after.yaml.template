@@ -1,0 +1,11 @@
+# config/services.yaml
+#
+# After applying the intention, the service definition
+# is synchronized with the constructor parameters:
+
+services:
+    App\Service\OrderProcessor:
+        arguments:
+            - '@logger'
+            - '@App\Repository\OrderRepository'
+            - '@App\Service\EmailService'

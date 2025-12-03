@@ -48,13 +48,13 @@ public class PhpBundleCompilerPassIntention extends PsiElementBaseIntentionActio
     @NotNull
     @Override
     public String getFamilyName() {
-        return "Symfony";
+        return "Symfony: Create CompilerPass";
     }
 
     @NotNull
     @Override
     public String getText() {
-        return "Symfony: Create CompilerPass";
+        return getFamilyName();
     }
 
 }

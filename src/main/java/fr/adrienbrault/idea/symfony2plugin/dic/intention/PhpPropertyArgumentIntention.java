@@ -51,7 +51,7 @@ public class PhpPropertyArgumentIntention extends IntentionAndQuickFixAction imp
 
     @Override
     public @NotNull @IntentionFamilyName String getFamilyName() {
-        return "Symfony";
+        return getName();
     }
 
     @Override
