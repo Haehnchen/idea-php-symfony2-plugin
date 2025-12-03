@@ -1,0 +1,23 @@
+<html>
+<body>
+<p>Detects when a Symfony Command __invoke() method returns a non-integer value</p>
+<!-- tooltip end -->
+<p>
+  Symfony 7.3+ invokable commands using the <code>#[AsCommand]</code> attribute must return an integer exit code from the <code>__invoke()</code> method.
+</p>
+<p>
+  Valid return values are:
+</p>
+<ul>
+  <li><code>Command::SUCCESS</code> (0) - Command completed successfully</li>
+  <li><code>Command::FAILURE</code> (1) - Command failed</li>
+  <li><code>Command::INVALID</code> (2) - Invalid input</li>
+</ul>
+<p>
+  Returning non-integer values (strings, null, objects) will cause a TypeError at runtime.
+</p>
+<p>
+  See <a href="https://symfony.com/doc/current/console.html">Symfony Console documentation</a> for more information.
+</p>
+</body>
+</html>

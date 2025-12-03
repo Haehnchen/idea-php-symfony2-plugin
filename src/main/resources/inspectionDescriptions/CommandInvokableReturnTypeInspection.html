@@ -1,0 +1,20 @@
+<html>
+<body>
+<p>Consider adding an int return type to the __invoke() method in Symfony Commands</p>
+<!-- tooltip end -->
+<p>
+  Symfony 7.3+ invokable commands using the <code>#[AsCommand]</code> attribute should declare <code>int</code> as the return type for the exit code.
+</p>
+<p>
+  Valid return values are:
+</p>
+<ul>
+  <li><code>Command::SUCCESS</code> (0) - Command completed successfully</li>
+  <li><code>Command::FAILURE</code> (1) - Command failed</li>
+  <li><code>Command::INVALID</code> (2) - Invalid input</li>
+</ul>
+<p>
+  See <a href="https://symfony.com/doc/current/console.html">Symfony Console documentation</a> for more information.
+</p>
+</body>
+</html>
