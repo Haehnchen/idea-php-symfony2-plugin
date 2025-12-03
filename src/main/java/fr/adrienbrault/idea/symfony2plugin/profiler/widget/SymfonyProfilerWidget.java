@@ -1,18 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.profiler.widget;
 
 import com.intellij.openapi.actionSystem.*;
-import com.intellij.openapi.actionSystem.impl.SimpleDataContext;
-import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
-import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.popup.JBPopup;
+import com.intellij.openapi.ui.popup.JBPopupFactory;
+import com.intellij.openapi.ui.popup.ListPopup;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.wm.IdeFocusManager;
-import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.StatusBarWidget;
-import com.intellij.openapi.wm.impl.status.EditorBasedWidget;
-import com.intellij.ui.popup.PopupFactoryImpl;
+import com.intellij.openapi.wm.impl.status.EditorBasedStatusBarPopup;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerIndexInterface;
 import fr.adrienbrault.idea.symfony2plugin.profiler.collector.DefaultDataCollectorInterface;
@@ -30,20 +24,33 @@ import java.util.*;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBarWidget.MultipleTextValuesPresentation,  StatusBarWidget.Multiframe {
+public class SymfonyProfilerWidget extends EditorBasedStatusBarPopup {
     public static final String ID = "symfony2.profiler";
 
     public SymfonyProfilerWidget(@NotNull Project project) {
-        super(project);
+        super(project, false);
     }
 
     @Override
-    public @NotNull StatusBarWidget copy() {
-        return new SymfonyProfilerWidget(getProject());
+    protected @NotNull WidgetState getWidgetState(@Nullable VirtualFile file) {
+        return new WidgetState("Symfony Profiler", "Symfony", true);
+    }
+
+    @Override
+    protected @NotNull StatusBarWidget createInstance(@NotNull Project project) {
+        return new SymfonyProfilerWidget(project);
+    }
+
+    @Override
+    protected @Nullable ListPopup createPopup(@NotNull DataContext context) {
+        ActionGroup actionGroup = getActions();
+        return JBPopupFactory.getInstance()
+                .createActionGroupPopup("Symfony Profiler", actionGroup, context,
+                        JBPopupFactory.ActionSelectionAid.SPEEDSEARCH, false);
     }
 
     //constructs the actions for the widget popup
-    public DefaultActionGroup getActions(){
+    private DefaultActionGroup getActions(){
         DefaultActionGroup actionGroup = new DefaultActionGroup("Symfony.Profiler", false);
 
         ProfilerIndexInterface index = ProfilerFactoryUtil.createIndex(getProject());
@@ -140,70 +147,9 @@ public class SymfonyProfilerWidget extends EditorBasedWidget implements StatusBa
         return actionGroup;
     }
 
-    public @Nullable JBPopup getPopup() {
-        if (isDisposed()) {
-            return null;
-        }
-
-        ActionGroup popupGroup = getActions();
-
-        DataContext dataContext = SimpleDataContext.builder()
-                .add(CommonDataKeys.PROJECT, getProject())
-                .add(PlatformDataKeys.CONTEXT_COMPONENT, IdeFocusManager.getInstance(getProject()).getFocusOwner())
-                .build();
-
-        return new PopupFactoryImpl.ActionGroupPopup(
-                "Symfony Profiler",
-                popupGroup,
-                dataContext,
-                false,
-                false,
-                false,
-                true,
-                null,
-                -1,
-                null,
-                null
-        );
-    }
-
-    @Nullable
-    @Override
-    public String getSelectedValue() {
-        return "Symfony";
-    }
-
     @NotNull
     @Override
     public String ID() {
         return ID;
-    }
-
-    @Override
-    public @Nullable WidgetPresentation getPresentation() {
-        return this;
-    }
-
-    @Nullable
-    @Override
-    public String getTooltipText() {
-        return "Symfony Profiler";
-    }
-
-    @Override
-    public void install(@NotNull StatusBar statusBar) {
-        super.install(statusBar);
-
-        myConnection.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new FileEditorManagerListener() {
-            @Override
-            public void selectionChanged(@NotNull FileEditorManagerEvent event) {
-                statusBar.updateWidget(ID());
-            }
-
-            @Override
-            public void fileOpened(@NotNull FileEditorManager source, @NotNull VirtualFile file) {
-                statusBar.updateWidget(ID());
-            }
-        });
     }
 }
