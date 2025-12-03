@@ -1,0 +1,14 @@
+<?php
+
+namespace App\Command;
+
+use Symfony\Component\Console\Attribute\AsCommand;
+
+#[AsCommand(name: 'app:example')]
+class ExampleCommand
+{
+    public function __invoke(): int
+    {
+        return 0;
+    }
+}

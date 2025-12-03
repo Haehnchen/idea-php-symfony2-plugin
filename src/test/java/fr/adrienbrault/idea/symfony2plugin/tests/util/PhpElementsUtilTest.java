@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.util;
 
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -494,5 +495,78 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
 
         String message = PhpElementsUtil.getClassDeprecatedMessage(phpClass);
         assertNull(message);
+    }
+
+    public void testAddParameterToMethodAddsParameter() {
+        myFixture.configureByText(
+            PhpFileType.INSTANCE,
+            "<?php\n" +
+                "namespace App\\Command;\n" +
+                "\n" +
+                "class TestCommand\n" +
+                "{\n" +
+                "    public function __invoke(): int\n" +
+                "    {\n" +
+                "        return 0;\n" +
+                "    }\n" +
+                "}\n"
+        );
+
+        PhpClass phpClass = PsiTreeUtil.findChildOfType(myFixture.getFile(), PhpClass.class);
+        assertNotNull(phpClass);
+
+        Method invokeMethod = phpClass.findOwnMethodByName("__invoke");
+        assertNotNull(invokeMethod);
+
+        WriteCommandAction.runWriteCommandAction(getProject(), () ->
+            PhpElementsUtil.addParameterToMethod(
+                invokeMethod,
+                "\\Symfony\\Component\\Console\\Style\\SymfonyStyle",
+                "io"
+            )
+        );
+
+        String result = myFixture.getFile().getText();
+
+        assertTrue("Should have SymfonyStyle parameter", result.contains("SymfonyStyle $io"));
+        assertTrue("Should have use statement", result.contains("use Symfony\\Component\\Console\\Style\\SymfonyStyle;"));
+    }
+
+    public void testAddParameterToMethodAppendsToExisting() {
+        myFixture.configureByText(
+            PhpFileType.INSTANCE,
+            "<?php\n" +
+                "namespace App\\Command;\n" +
+                "use Symfony\\Component\\Console\\Input\\InputInterface;\n" +
+                "\n" +
+                "class TestCommand\n" +
+                "{\n" +
+                "    public function __invoke(InputInterface $input, ?string $name = 'World'): int\n" +
+                "    {\n" +
+                "        return 0;\n" +
+                "    }\n" +
+                "}\n"
+        );
+
+        PhpClass phpClass = PsiTreeUtil.findChildOfType(myFixture.getFile(), PhpClass.class);
+        assertNotNull(phpClass);
+
+        Method invokeMethod = phpClass.findOwnMethodByName("__invoke");
+        assertNotNull(invokeMethod);
+
+        WriteCommandAction.runWriteCommandAction(getProject(), () ->
+            PhpElementsUtil.addParameterToMethod(
+                invokeMethod,
+                "\\Symfony\\Component\\Console\\Output\\OutputInterface",
+                "output"
+            )
+        );
+
+        String result = myFixture.getFile().getText();
+
+        assertTrue("Should have InputInterface parameter", result.contains("InputInterface $input"));
+        assertTrue("Should have OutputInterface parameter", result.contains("OutputInterface $output"));
+        assertTrue("Should have use statement", result.contains("use Symfony\\Component\\Console\\Output\\OutputInterface;"));
+        assertTrue("Should respect optional arguments last", result.contains("InputInterface $input, OutputInterface $output, ?string $name = 'World'"));
     }
 }
