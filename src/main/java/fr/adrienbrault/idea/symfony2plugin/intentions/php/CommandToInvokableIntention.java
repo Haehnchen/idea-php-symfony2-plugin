@@ -179,13 +179,13 @@ public class CommandToInvokableIntention extends PsiElementBaseIntentionAction i
     @NotNull
     @Override
     public String getFamilyName() {
-        return "Symfony";
+        return "Symfony: Migrate to invokable command";
     }
 
     @NotNull
     @Override
     public String getText() {
-        return "Symfony: Migrate to invokable command";
+        return getFamilyName();
     }
 
     @Override

@@ -1,0 +1,11 @@
+<!-- config/services.xml -->
+<!--
+After applying the intention, the kernel.event_subscriber tag is added:
+-->
+
+<services>
+    <service id="App\EventSubscriber\OrderEventSubscriber" class="App\EventSubscriber\OrderEventSubscriber">
+        <argument type="service" id="logger"/>
+        <tag name="kernel.event_subscriber"/>
+    </service>
+</services>

@@ -65,13 +65,13 @@ public class DoctrineRepositoryClassConstantIntention extends PsiElementBaseInte
     @NotNull
     @Override
     public String getFamilyName() {
-        return "Symfony";
+        return "Doctrine: use class constant";
     }
 
     @NotNull
     @Override
     public String getText() {
-        return "Doctrine: use class constant";
+        return getFamilyName();
     }
 
 

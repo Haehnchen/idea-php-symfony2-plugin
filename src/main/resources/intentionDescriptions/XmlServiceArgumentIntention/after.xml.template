@@ -1,0 +1,12 @@
+<!-- config/services.xml -->
+<!--
+After applying the intention, all constructor arguments are present:
+-->
+
+<services>
+    <service id="App\Service\OrderProcessor" class="App\Service\OrderProcessor">
+        <argument type="service" id="logger"/>
+        <argument type="service" id="App\Repository\OrderRepository"/>
+        <argument type="service" id="App\Service\EmailService"/>
+    </service>
+</services>

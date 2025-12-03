@@ -1,0 +1,9 @@
+# Generated service definition (YAML format)
+# After using the dialog and clicking "Insert" or "Copy"
+
+services:
+    App\Service\OrderProcessor:
+        arguments:
+            - '@logger'
+            - '@App\Repository\OrderRepository'
+            - '@App\Service\EmailService'

@@ -1,0 +1,23 @@
+namespace App\Controller;
+
+use App\Entity\Product;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+
+class ProductController extends AbstractController
+{
+    public function __construct(
+        private EntityManagerInterface $entityManager
+    ) {
+    }
+
+    public function show(int $id)
+    {
+        $repository = $this->entityManager->getRepository(Product::class);
+        $product = $this->entityManager->find(Product::class, $id);
+
+        return $this->render('product/show.html.twig', [
+            'product' => $product
+        ]);
+    }
+}

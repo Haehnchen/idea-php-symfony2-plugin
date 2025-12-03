@@ -1,0 +1,17 @@
+<!-- config/services.xml -->
+<!--
+PHP class constructor:
+public function __construct(
+    private LoggerInterface $logger,
+    private OrderRepository $orderRepository,
+    private EmailService $emailService,
+) {}
+
+But XML service definition has only one argument:
+-->
+
+<services>
+    <service id="App\Service\OrderProcessor" class="App\Service\OrderProcessor">
+        <argument type="service" id="logger"/>
+    </service>
+</services>

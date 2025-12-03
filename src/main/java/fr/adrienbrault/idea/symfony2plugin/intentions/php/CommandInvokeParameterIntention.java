@@ -156,13 +156,13 @@ public class CommandInvokeParameterIntention extends PsiElementBaseIntentionActi
     @NotNull
     @Override
     public String getFamilyName() {
-        return "Symfony";
+        return "Symfony: Add parameter to __invoke";
     }
 
     @NotNull
     @Override
     public String getText() {
-        return "Symfony: Add parameter to __invoke";
+        return getFamilyName();
     }
 
     @Override

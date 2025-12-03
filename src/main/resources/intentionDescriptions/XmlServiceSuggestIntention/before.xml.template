@@ -1,0 +1,8 @@
+<!-- config/services.xml -->
+<services>
+    <service id="App\Service\OrderProcessor" class="App\Service\OrderProcessor">
+        <argument type="service" id="logger"/>
+        <argument/>
+        <!-- Empty argument - need to fill in service ID -->
+    </service>
+</services>

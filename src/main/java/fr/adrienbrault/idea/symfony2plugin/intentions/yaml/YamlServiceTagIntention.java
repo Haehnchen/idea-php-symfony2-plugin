@@ -135,13 +135,13 @@ public class YamlServiceTagIntention extends PsiElementBaseIntentionAction {
     @NotNull
     @Override
     public String getFamilyName() {
-        return "Symfony";
+        return "Symfony: Add Tags";
     }
 
     @NotNull
     @Override
     public String getText() {
-        return "Symfony: Add Tags";
+        return getFamilyName();
     }
 
     @Nullable

@@ -663,85 +663,73 @@
         <intentionAction>
             <language>PHP</language>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.PhpServiceIntention</className>
-            <category>PHP</category>
-            <descriptionDirectoryName>Symfony2ConstructorCreateServer</descriptionDirectoryName>
+            <category>Symfony</category>
         </intentionAction>
 
         <intentionAction>
             <language>XML</language>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.XmlServiceArgumentIntention</className>
-            <category>XML</category>
-            <descriptionDirectoryName>XmlServiceArgumentIntention</descriptionDirectoryName>
+            <category>Symfony</category>
         </intentionAction>
 
         <intentionAction>
             <language>XML</language>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.xml.XmlServiceSuggestIntention</className>
-            <category>XML</category>
-            <descriptionDirectoryName>XmlServiceSuggestIntention</descriptionDirectoryName>
+            <category>Symfony</category>
         </intentionAction>
 
         <intentionAction>
             <language>XML</language>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.xml.XmlServiceTagIntention</className>
-            <category>XML</category>
-            <descriptionDirectoryName>SymfonyXmlServiceTagIntention</descriptionDirectoryName>
+            <category>Symfony</category>
         </intentionAction>
 
         <intentionAction>
             <language>yaml</language>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.yaml.YamlServiceTagIntention</className>
-            <category>yaml</category>
-            <descriptionDirectoryName>SymfonyYamlServiceTagIntention</descriptionDirectoryName>
+            <category>Symfony</category>
         </intentionAction>
 
         <intentionAction>
             <language>PHP</language>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.PhpBundleCompilerPassIntention</className>
-            <category>PHP</category>
-            <descriptionDirectoryName>PhpBundleCompilerPassIntention</descriptionDirectoryName>
+            <category>Symfony</category>
         </intentionAction>
 
         <intentionAction>
             <language>PHP</language>
             <className>fr.adrienbrault.idea.symfony2plugin.form.intention.FormStringToClassConstantIntention</className>
-            <category>PHP</category>
-            <descriptionDirectoryName>FormStringToClassConstantIntention</descriptionDirectoryName>
+            <category>Symfony</category>
         </intentionAction>
 
         <intentionAction>
             <language>PHP</language>
             <className>fr.adrienbrault.idea.symfony2plugin.doctrine.intention.DoctrineRepositoryClassConstantIntention</className>
-            <category>PHP</category>
-            <descriptionDirectoryName>DoctrineRepositoryClassConstantIntention</descriptionDirectoryName>
+            <category>Symfony</category>
         </intentionAction>
 
         <intentionAction>
             <language>Twig</language>
             <className>fr.adrienbrault.idea.symfony2plugin.translation.intention.TwigTranslationKeyIntention</className>
-            <category>Twig</category>
-            <descriptionDirectoryName>TwigTranslationKeyIntention</descriptionDirectoryName>
+            <category>Symfony</category>
         </intentionAction>
 
         <intentionAction>
             <language>PHP</language>
             <className>fr.adrienbrault.idea.symfony2plugin.dic.intention.PhpServiceArgumentIntention</className>
-            <category>PHP</category>
-            <descriptionDirectoryName>DoctrineRepositoryClassConstantIntention</descriptionDirectoryName>
+            <category>Symfony</category>
         </intentionAction>
 
         <intentionAction>
             <language>PHP</language>
             <className>fr.adrienbrault.idea.symfony2plugin.dic.intention.PhpPropertyArgumentIntention</className>
-            <category>PHP</category>
-            <descriptionDirectoryName>PhpPropertyArgumentIntention</descriptionDirectoryName>
+            <category>Symfony</category>
         </intentionAction>
 
         <intentionAction>
             <language>PHP</language>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.CommandToInvokableIntention</className>
-            <category>PHP</category>
-            <descriptionDirectoryName>CommandToInvokableIntention</descriptionDirectoryName>
+            <category>Symfony</category>
         </intentionAction>
 
         <intentionAction>
@@ -753,7 +741,7 @@
         <intentionAction>
             <language>PHP</language>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.CommandInvokeParameterIntention</className>
-            <category>PHP</category>
+            <category>Symfony</category>
         </intentionAction>
     </extensions>
 

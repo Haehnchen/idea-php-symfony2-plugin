@@ -56,13 +56,13 @@ public class FormStringToClassConstantIntention extends PsiElementBaseIntentionA
     @NotNull
     @Override
     public String getFamilyName() {
-        return "Symfony";
+        return "Symfony: use FormType class constant";
     }
 
     @NotNull
     @Override
     public String getText() {
-        return "Symfony: use FormType class constant";
+        return getFamilyName();
     }
 
 }

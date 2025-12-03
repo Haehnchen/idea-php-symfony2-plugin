@@ -1,0 +1,17 @@
+# config/services.yaml
+#
+# PHP class implements EventSubscriberInterface:
+# class OrderEventSubscriber implements EventSubscriberInterface
+# {
+#     public static function getSubscribedEvents(): array
+#     {
+#         return [OrderPlacedEvent::class => 'onOrderPlaced'];
+#     }
+# }
+#
+# But the service definition is missing the kernel.event_subscriber tag:
+
+services:
+    App\EventSubscriber\OrderEventSubscriber:
+        arguments:
+            - '@logger'

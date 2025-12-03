@@ -80,13 +80,13 @@ public class XmlServiceArgumentIntention extends PsiElementBaseIntentionAction {
     @NotNull
     @Override
     public String getFamilyName() {
-        return "Symfony";
+        return "Symfony: Add Arguments";
     }
 
     @NotNull
     @Override
     public String getText() {
-        return "Symfony: Add Arguments";
+        return getFamilyName();
     }
 
     @Override

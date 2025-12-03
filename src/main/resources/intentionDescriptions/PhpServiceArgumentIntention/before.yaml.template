@@ -1,0 +1,15 @@
+# config/services.yaml
+#
+# PHP class constructor has been updated:
+# public function __construct(
+#     private LoggerInterface $logger,
+#     private OrderRepository $orderRepository,
+#     private EmailService $emailService,
+# ) {}
+#
+# But service definition is outdated:
+
+services:
+    App\Service\OrderProcessor:
+        arguments:
+            - '@logger'

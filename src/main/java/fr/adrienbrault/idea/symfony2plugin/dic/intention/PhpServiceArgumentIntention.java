@@ -114,13 +114,13 @@ public class PhpServiceArgumentIntention extends PsiElementBaseIntentionAction {
     @NotNull
     @Override
     public String getFamilyName() {
-        return "Symfony";
+        return "Symfony: Update service arguments";
     }
 
     @NotNull
     @Override
     public String getText() {
-        return "Symfony: Update service arguments";
+        return getFamilyName();
     }
 
     @NotNull

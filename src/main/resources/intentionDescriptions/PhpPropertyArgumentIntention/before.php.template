@@ -1,0 +1,16 @@
+namespace App\Controller;
+
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+
+class ProductController extends AbstractController
+{
+    public function index(): Response
+    {
+        $products = $this->productRepository->findAll();
+
+        return $this->render('product/index.html.twig', [
+            'products' => $products
+        ]);
+    }
+}

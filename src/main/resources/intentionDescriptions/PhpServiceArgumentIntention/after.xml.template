@@ -1,0 +1,13 @@
+<!-- config/services.xml -->
+<!--
+After applying the intention, the service definition
+is synchronized with the constructor parameters:
+-->
+
+<services>
+    <service id="App\Service\OrderProcessor">
+        <argument type="service" id="logger"/>
+        <argument type="service" id="App\Repository\OrderRepository"/>
+        <argument type="service" id="App\Service\EmailService"/>
+    </service>
+</services>
