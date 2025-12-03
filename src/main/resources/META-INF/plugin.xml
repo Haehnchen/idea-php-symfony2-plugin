@@ -646,6 +646,20 @@
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.ServiceNamedArgumentExistsInspection"
                          language="yaml"/>
 
+        <localInspection groupPath="Symfony" shortName="CommandInvokableReturnTypeInspection" displayName="Consider adding int return type to command __invoke()"
+                         groupName="Command"
+                         enabledByDefault="true"
+                         level="WEAK WARNING"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.codeInspection.command.CommandInvokableReturnTypeInspection"
+                         language="PHP"/>
+
+        <localInspection groupPath="Symfony" shortName="CommandInvokableReturnValueInspection" displayName="Command must return an integer value"
+                         groupName="Command"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.codeInspection.command.CommandInvokableReturnValueInspection"
+                         language="PHP"/>
+
         <intentionAction>
             <language>PHP</language>
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.PhpServiceIntention</className>
