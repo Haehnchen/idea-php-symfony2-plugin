@@ -5,8 +5,8 @@ fun properties(key: String) = project.findProperty(key).toString()
 
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "2.0.0"
-    id("org.jetbrains.intellij.platform") version "2.4.0"
+    id("org.jetbrains.kotlin.jvm") version "2.2.21"
+    id("org.jetbrains.intellij.platform") version "2.10.4"
     id("org.jetbrains.changelog") version "1.3.1"
     id("org.jetbrains.qodana") version "0.1.13"
 }
@@ -27,7 +27,9 @@ dependencies {
     intellijPlatform {
         val version = providers.gradleProperty("platformVersion")
         val type = providers.gradleProperty("platformType")
-        create(type, version, useInstaller = false)
+        create(type, version) {
+            useInstaller = false
+        }
 
         bundledPlugins(properties("platformBundledPlugins").split(',').map(String::trim).filter(String::isNotEmpty))
         plugins(properties("platformPlugins").split(',').map(String::trim).filter(String::isNotEmpty))
@@ -72,7 +74,9 @@ tasks {
             targetCompatibility = it
         }
         withType<KotlinCompile> {
-            kotlinOptions.jvmTarget = it
+            compilerOptions {
+                jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(it))
+            }
         }
     }
 
