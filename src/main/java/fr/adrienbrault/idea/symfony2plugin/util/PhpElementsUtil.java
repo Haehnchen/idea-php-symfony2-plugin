@@ -2238,7 +2238,7 @@ public class PhpElementsUtil {
 
         Project project = method.getProject();
 
-        insertUseIfNecessary(phpClass, fqn);
+        String shortName = insertUseIfNecessary(phpClass, fqn);
 
         PsiFile file = method.getContainingFile();
         Document document = PsiDocumentManager.getInstance(project).getDocument(file);
@@ -2249,7 +2249,6 @@ public class PhpElementsUtil {
         PsiDocumentManager psiDocManager = PsiDocumentManager.getInstance(project);
         psiDocManager.doPostponedOperationsAndUnblockDocument(document);
 
-        String shortName = fqn.substring(fqn.lastIndexOf('\\') + 1);
         String newParameter = shortName + " $" + variableName;
 
         Parameter[] existingParams = method.getParameters();
@@ -2286,15 +2285,30 @@ public class PhpElementsUtil {
                 textToInsert = ", " + newParameter;
             }
         } else {
-            String methodText = method.getText();
-            int methodStartOffset = method.getTextRange().getStartOffset();
-
-            int openParenIndex = methodText.indexOf('(');
-            if (openParenIndex == -1) {
+            // Find the opening parenthesis after the method name, not in attributes
+            PsiElement nameIdentifier = method.getNameIdentifier();
+            if (nameIdentifier == null) {
                 return;
             }
 
-            insertOffset = methodStartOffset + openParenIndex + 1;
+            // Search for '(' starting from after the method name
+            PsiElement current = nameIdentifier.getNextSibling();
+            int openParenOffset = -1;
+            while (current != null) {
+                if (current.getText().contains("(")) {
+                    String text = current.getText();
+                    int parenIndex = text.indexOf('(');
+                    openParenOffset = current.getTextRange().getStartOffset() + parenIndex;
+                    break;
+                }
+                current = current.getNextSibling();
+            }
+
+            if (openParenOffset == -1) {
+                return;
+            }
+
+            insertOffset = openParenOffset + 1;
             textToInsert = newParameter;
         }
 

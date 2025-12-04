@@ -743,6 +743,12 @@
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.CommandInvokeParameterIntention</className>
             <category>Symfony</category>
         </intentionAction>
+
+        <intentionAction>
+            <language>PHP</language>
+            <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.RouteActionParameterIntention</className>
+            <category>Symfony</category>
+        </intentionAction>
     </extensions>
 
     <extensionPoints>

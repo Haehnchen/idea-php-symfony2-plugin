@@ -569,4 +569,112 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
         assertTrue("Should have use statement", result.contains("use Symfony\\Component\\Console\\Output\\OutputInterface;"));
         assertTrue("Should respect optional arguments last", result.contains("InputInterface $input, OutputInterface $output, ?string $name = 'World'"));
     }
+
+    public void testAddParameterToMethodWithAttributeAndNoParams() {
+        myFixture.configureByText(
+            PhpFileType.INSTANCE,
+            "<?php\n" +
+                "namespace App\\Controller;\n" +
+                "\n" +
+                "class TestController\n" +
+                "{\n" +
+                "    #[Route('/foobar')]\n" +
+                "    public function index(): void\n" +
+                "    {\n" +
+                "    }\n" +
+                "}\n"
+        );
+
+        PhpClass phpClass = PsiTreeUtil.findChildOfType(myFixture.getFile(), PhpClass.class);
+        assertNotNull(phpClass);
+
+        Method indexMethod = phpClass.findOwnMethodByName("index");
+        assertNotNull(indexMethod);
+
+        WriteCommandAction.runWriteCommandAction(getProject(), () ->
+            PhpElementsUtil.addParameterToMethod(
+                indexMethod,
+                "\\Symfony\\Component\\HttpFoundation\\Request",
+                "request"
+            )
+        );
+
+        String result = myFixture.getFile().getText();
+
+        assertTrue("Should have Request parameter in method signature", result.contains("public function index(Request $request)"));
+        assertTrue("Should have use statement", result.contains("use Symfony\\Component\\HttpFoundation\\Request;"));
+        assertFalse("Should not modify Route attribute", result.contains("#[Route(Request"));
+    }
+
+    public void testAddParameterToMethodWithMultipleAttributesAndNoParams() {
+        myFixture.configureByText(
+            PhpFileType.INSTANCE,
+            "<?php\n" +
+                "namespace App\\Controller;\n" +
+                "\n" +
+                "class TestController\n" +
+                "{\n" +
+                "    #[Route('/foobar', name: 'index', methods: ['GET', 'POST'])]\n" +
+                "    #[IsGranted('ROLE_ADMIN')]\n" +
+                "    public function index(): void\n" +
+                "    {\n" +
+                "    }\n" +
+                "}\n"
+        );
+
+        PhpClass phpClass = PsiTreeUtil.findChildOfType(myFixture.getFile(), PhpClass.class);
+        assertNotNull(phpClass);
+
+        Method indexMethod = phpClass.findOwnMethodByName("index");
+        assertNotNull(indexMethod);
+
+        WriteCommandAction.runWriteCommandAction(getProject(), () ->
+            PhpElementsUtil.addParameterToMethod(
+                indexMethod,
+                "\\Symfony\\Component\\HttpFoundation\\Request",
+                "request"
+            )
+        );
+
+        String result = myFixture.getFile().getText();
+
+        assertTrue("Should have Request parameter in method signature", result.contains("public function index(Request $request)"));
+        assertTrue("Should preserve Route attribute", result.contains("#[Route('/foobar', name: 'index', methods: ['GET', 'POST'])]"));
+        assertTrue("Should preserve IsGranted attribute", result.contains("#[IsGranted('ROLE_ADMIN')]"));
+    }
+
+    public void testAddParameterToMethodWithAttributeAndExistingParams() {
+        myFixture.configureByText(
+            PhpFileType.INSTANCE,
+            "<?php\n" +
+                "namespace App\\Controller;\n" +
+                "\n" +
+                "class TestController\n" +
+                "{\n" +
+                "    #[Route('/foobar/{id}')]\n" +
+                "    public function show(int $id): void\n" +
+                "    {\n" +
+                "    }\n" +
+                "}\n"
+        );
+
+        PhpClass phpClass = PsiTreeUtil.findChildOfType(myFixture.getFile(), PhpClass.class);
+        assertNotNull(phpClass);
+
+        Method showMethod = phpClass.findOwnMethodByName("show");
+        assertNotNull(showMethod);
+
+        WriteCommandAction.runWriteCommandAction(getProject(), () ->
+            PhpElementsUtil.addParameterToMethod(
+                showMethod,
+                "\\Symfony\\Component\\HttpFoundation\\Request",
+                "request"
+            )
+        );
+
+        String result = myFixture.getFile().getText();
+
+        assertTrue("Should have both parameters", result.contains("int $id, Request $request"));
+        assertTrue("Should preserve Route attribute", result.contains("#[Route('/foobar/{id}')]"));
+    }
 }

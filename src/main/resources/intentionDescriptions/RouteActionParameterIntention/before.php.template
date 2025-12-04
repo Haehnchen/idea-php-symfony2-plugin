@@ -1,0 +1,10 @@
+<?php
+use Symfony\Component\Routing\Attribute\Route;
+
+class MyController
+{
+    #[Route('/hello')]
+    public function index(): Response
+    {
+    }
+}
