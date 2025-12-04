@@ -123,7 +123,8 @@ namespace Symfony\Component\Routing\Annotation
     {
         public function __construct(
             ?string $path = null,
-            ?string $name = null
+            ?string $name = null,
+            public array $methods = []
         ) {}
     }
 }
@@ -133,6 +134,15 @@ namespace Symfony\Component\HttpKernel\Attribute
     #[\Attribute(\Attribute::TARGET_CLASS)]
     class AsController
     {
+    }
+}
+
+namespace Symfony\Component\HttpFoundation
+{
+    class Request
+    {
+        public function get($key, $default = null) {}
+        public function getContent() {}
     }
 }
 
