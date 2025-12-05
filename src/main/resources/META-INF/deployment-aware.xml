@@ -17,7 +17,7 @@
 
 
     <extensions defaultExtensionNs="com.intellij">
-        <postStartupActivity implementation="fr.adrienbrault.idea.symfony2plugin.webDeployment.WebDeploymentProjectComponent$PostStartupActivity"/>
+        <postStartupActivity implementation="fr.adrienbrault.idea.symfony2plugin.webDeployment.WebDeploymentPostStartupActivity"/>
         <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.webDeployment.WebDeploymentProjectComponent$ProjectService"/>
     </extensions>
 

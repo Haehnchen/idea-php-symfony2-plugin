@@ -17,17 +17,6 @@ import java.util.TimerTask;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class WebDeploymentProjectComponent {
-    public static class PostStartupActivity implements com.intellij.openapi.startup.StartupActivity {
-        @Override
-        public void runActivity(@NotNull Project project) {
-            if(!WebDeploymentUtil.isEnabled(project)) {
-                return;
-            }
-
-            project.getService(ProjectService.class).start();
-        }
-    }
-
     public static class ProjectService implements Disposable {
         private final Project project;
         private Timer timer1;
