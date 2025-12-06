@@ -41,6 +41,7 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
     testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.8.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 // Configure Gradle IntelliJ Plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
@@ -116,7 +117,7 @@ tasks {
     test {
         // Support "setUp" like "BasePlatformTestCase::setUp" as valid test structure
         useJUnitPlatform {
-            includeEngines("junit-vintage")
+            includeEngines("junit-vintage", "junit-jupiter")
         }
     }
 }
