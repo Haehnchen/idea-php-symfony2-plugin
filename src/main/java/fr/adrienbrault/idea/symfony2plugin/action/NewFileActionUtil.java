@@ -17,6 +17,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -164,9 +166,13 @@ public class NewFileActionUtil {
 
     @Nullable
     public static String getFileTemplateContent(@NotNull String filename) {
-        try {
+        try (InputStream inputStream = PhpBundleFileFactory.class.getResourceAsStream(filename)) {
+            if (inputStream == null) {
+                return null;
+            }
             // replace on windows, just for secure reasons
-            return StreamUtil.readText(PhpBundleFileFactory.class.getResourceAsStream(filename), "UTF-8").replace("\r\n", "\n");
+            byte[] bytes = StreamUtil.readBytes(inputStream);
+            return new String(bytes, StandardCharsets.UTF_8).replace("\r\n", "\n");
         } catch (IOException e) {
             return null;
         }

@@ -46,29 +46,4 @@ public class ObjectManagerFindContextTypeProviderTest extends SymfonyLightCodeIn
             PlatformPatterns.psiElement(Method.class).withName("getId")
         );
     }
-
-    public void testThatEntityIsAttachedToConstructor() {
-        // 2023.3.4 issue
-        if (true) return;
-
-        assertPhpReferenceResolveTo(PhpFileType.INSTANCE,
-            "<?php\n" +
-                "\n" +
-                "class Foo\n" +
-                "{\n" +
-                "    private $er;\n" +
-                "\n" +
-                "    public function __construct(\\Foo\\BarRepository $er)\n" +
-                "    {\n" +
-                "        $this->er = $er;\n" +
-                "    }\n" +
-                "\n" +
-                "    public function foo()\n" +
-                "    {\n" +
-                "        $this->er->find()->ge<caret>tId();\n" +
-                "    }\n" +
-                "}\n",
-            PlatformPatterns.psiElement(Method.class).withName("getId")
-        );
-    }
 }

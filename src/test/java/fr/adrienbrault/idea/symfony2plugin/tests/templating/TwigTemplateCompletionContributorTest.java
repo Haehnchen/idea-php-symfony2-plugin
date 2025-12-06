@@ -1,14 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating;
 
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import org.jetbrains.annotations.NotNull;
-
-import java.io.IOException;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -72,17 +66,6 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ d_test<caret> }}", "{{ d_test() }}");
     }
 
-    public void testThatMacroSelfImportProvidesCompletion() {
-        // skip for _self resolving issue
-        if(true) return;
-
-        assertCompletionContains(TwigFileType.INSTANCE, "" +
-                "{% from _self import <caret> %}\n" +
-                "{% macro foobar(foobar) %}{% endmacro %}\n",
-            "foobar"
-        );
-    }
-
     public void testThatMacroImportProvidesCompletion() {
         assertCompletionContains(TwigFileType.INSTANCE, "" +
                 "{% import _self as foobar1 %}\n" +
@@ -144,25 +127,5 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
                 "{{ _self.f<caret>o }}",
             "foobar"
         );
-    }
-
-    private void createWorkaroundFile(@NotNull String file, @NotNull String content) {
-
-        try {
-            createDummyFiles(file);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // build pseudo file with block
-        final VirtualFile relativeFile = VfsUtil.findRelativeFile(getProject().getBaseDir(), file.split("/"));
-        ApplicationManager.getApplication().runWriteAction(() -> {
-            try {
-                relativeFile.setBinaryContent(content.getBytes());
-            } catch (IOException e2) {
-                e2.printStackTrace();
-            }
-            relativeFile.refresh(false, false);
-        });
     }
 }
