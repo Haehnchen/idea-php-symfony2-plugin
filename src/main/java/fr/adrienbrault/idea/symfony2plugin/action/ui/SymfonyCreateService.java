@@ -242,9 +242,12 @@ public class SymfonyCreateService extends JDialog {
         }
 
         try {
-            String data = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
-            if (data != null && data.length() <= 255 && data.matches("[_A-Za-z0-9\\\\]+")) {
-                classCompletionPanelWrapper.setClassName(data);
+            Object data = Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
+            if (data instanceof String) {
+                String stringData = (String) data;
+                if (stringData.length() <= 255 && stringData.matches("[_A-Za-z0-9\\\\]+")) {
+                    classCompletionPanelWrapper.setClassName(stringData);
+                }
             }
         } catch (UnsupportedFlavorException | IOException ignored) {
         }
@@ -271,7 +274,12 @@ public class SymfonyCreateService extends JDialog {
 
     private void insertXmlServiceTag() {
 
-        final XmlTag rootTag = ((XmlFile) SymfonyCreateService.this.psiFile).getRootTag();
+        XmlFile psiFile1 = (XmlFile) SymfonyCreateService.this.psiFile;
+        if (psiFile1 == null) {
+            return;
+        }
+
+        final XmlTag rootTag = psiFile1.getRootTag();
         if (rootTag == null) {
             return;
         }
@@ -548,7 +556,7 @@ public class SymfonyCreateService extends JDialog {
             tableView.getListTableModel().fireTableDataChanged();
         }
 
-        public Class getColumnClass() {
+        public Class<?> getColumnClass() {
             return Boolean.class;
         }
 
@@ -590,7 +598,7 @@ public class SymfonyCreateService extends JDialog {
         public TableCellEditor getEditor(MethodParameter.MethodModelParameter modelParameter) {
 
             Set<String> sorted = modelParameter.getPossibleServices();
-            ComboBox comboBox = new ComboBox(sorted.toArray(new String[0]), 200);
+            ComboBox<String> comboBox = new ComboBox<>(sorted.toArray(new String[sorted.size()]), 200);
             comboBox.setEditable(true);
 
             return new DefaultCellEditor(comboBox);
@@ -621,7 +629,7 @@ public class SymfonyCreateService extends JDialog {
             return modelParameter.getMethod().getIcon();
         }
 
-        public Class getColumnClass() {
+        public Class<?> getColumnClass() {
             return ImageIcon.class;
         }
 
@@ -648,11 +656,11 @@ public class SymfonyCreateService extends JDialog {
     private Set<String> getPossibleServices(Parameter parameter) {
 
         PhpPsiElement phpPsiElement = parameter.getFirstPsiChild();
-        if (!(phpPsiElement instanceof ClassReference)) {
+        if (!(phpPsiElement instanceof ClassReference classReference)) {
             return Collections.emptySet();
         }
 
-        String type = ((ClassReference) phpPsiElement).getFQN();
+        String type = classReference.getFQN();
         if (type == null) {
             return Collections.emptySet();
         }
