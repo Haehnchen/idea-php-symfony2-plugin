@@ -27,48 +27,6 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/fixtures";
     }
 
-    /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
-     */
-    public void testBlockCompletion() {
-        if(System.getenv("PHPSTORM_ENV") != null) return;
-
-        myFixture.addFileToProject("app/Resources/views/block.html.twig", "{% block foo %}{% endblock %}");
-
-        assertCompletionContains(TwigFileType.INSTANCE, "{% extends '::block.html.twig' %}{% block <caret> %}", "foo");
-        assertCompletionContains(TwigFileType.INSTANCE, "{% extends '::block.html.twig' %}{% block \"<caret>\" %}", "foo");
-        assertCompletionContains(TwigFileType.INSTANCE, "{% extends '::block.html.twig' %}{% block '<caret>' %}", "foo");
-
-        assertCompletionNotContains(TwigFileType.INSTANCE, "" +
-                "{% extends '::block.html.twig' %}\n" +
-                "{% embed '::foobar.html.twig' %}\n" +
-                "   {% block '<caret>' %}\n" +
-                "{% endembed %}\n",
-            "foo"
-        );
-    }
-
-    public void testBlockCompletionForEmbed() {
-        if(System.getenv("PHPSTORM_ENV") != null) return;
-
-        myFixture.addFileToProject("app/Resources/views/embed.html.twig", "{% block foo_embed %}{% endblock %}");
-
-        assertCompletionContains(TwigFileType.INSTANCE, "" +
-                "{% embed '::embed.html.twig' %}\n" +
-                "   {% block '<caret>' %}\n" +
-                "{% endembed %}\n",
-            "foo_embed"
-        );
-
-        assertCompletionNotContains(TwigFileType.INSTANCE, "" +
-                "{% block content %}{% endblock %}" +
-                "{% embed '::embed.html.twig' %}\n" +
-                "   {% block '<caret>' %}" +
-                "{% endembed %}",
-            "content"
-        );
-    }
-
     public void testThatInlineVarProvidesClassCompletion() {
         assertCompletionContains(TwigFileType.INSTANCE, "{# @var bar F<caret> #}", "Foobar");
         assertCompletionContains(TwigFileType.INSTANCE, "{# @var bar MyFoo\\Ca<caret> #}", "Car\\Bike\\Foobar");

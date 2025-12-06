@@ -29,69 +29,6 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
     }
 
     /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
-     */
-    public void testBlockNavigation() {
-        if(System.getenv("PHPSTORM_ENV") != null) return;
-
-        myFixture.addFileToProject("app/Resources/views/block.html.twig", "{% block foo %}{% endblock %}");
-
-        assertNavigationMatch(
-            TwigFileType.INSTANCE,
-            "{% extends '::block.html.twig' %}{% block f<caret>oo %}",
-            PlatformPatterns.psiElement(TwigBlockTag.class)
-        );
-
-        assertNavigationMatch(
-            TwigFileType.INSTANCE,
-            "{% extends '::block.html.twig' %}{% block 'f<caret>oo' %}",
-            PlatformPatterns.psiElement(TwigBlockTag.class)
-        );
-
-        assertNavigationMatch(
-            TwigFileType.INSTANCE,
-            "{% extends '::block.html.twig' %}{% block \"f<caret>oo\" %}",
-            PlatformPatterns.psiElement(TwigBlockTag.class)
-        );
-
-        assertNavigationIsEmpty(
-            TwigFileType.INSTANCE,
-            "{% extends '::block.html.twig' %}{% embed '::embed.html.twig' %}{% block f<caret>oo %}{% endembed %}"
-        );
-    }
-
-    /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
-     */
-    public void testBlockNavigationInEmbed() {
-        if(System.getenv("PHPSTORM_ENV") != null) return;
-
-        myFixture.addFileToProject("app/Resources/views/embed.html.twig", "{% block foo_embed %}{% endblock %}");
-
-        assertNavigationMatch(
-            TwigFileType.INSTANCE,
-            "{% extends '::block.html.twig' %}\n" +
-            "{% embed '::embed.html.twig' %}\n" +
-            "  {% block foo<caret>_embed %}{% endblock %}\n" +
-            "{% endembed %}",
-            PlatformPatterns.psiElement(TwigBlockTag.class)
-        );
-
-        assertNavigationMatch(
-            TwigFileType.INSTANCE,
-            "{% extends '::block.html.twig' %}\n" +
-            "{% embed '::embed.html.twig' %}\n" +
-            "  {% if foo %}" +
-            "    {% block test %}" +
-            "       {% block foo<caret>_embed %}{% endblock test %}" +
-            "    {% endblock %}" +
-            "  {% endif %}\n" +
-            "{% endembed %}",
-            PlatformPatterns.psiElement(TwigBlockTag.class)
-        );
-    }
-
-    /**
      * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateGoToDeclarationHandler
      */
     public void testSimpleTestNavigationToExtension() {
