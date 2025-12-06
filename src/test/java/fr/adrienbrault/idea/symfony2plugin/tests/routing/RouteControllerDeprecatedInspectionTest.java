@@ -58,4 +58,63 @@ public class RouteControllerDeprecatedInspectionTest extends SymfonyLightCodeIns
             "Symfony: Controller action is deprecated"
         );
     }
+
+    public void testDeprecatedRouteActionForPhpAttribute() {
+        // Test deprecated method with #[\Deprecated] attribute
+        assertLocalInspectionContains("foobar.yml","" +
+                "blog_deprecated_method:\n" +
+                "    controller: App\\Controller\\DeprecatedAttributeController::newDeprecatedMeth<caret>od",
+            "Symfony: Controller action is deprecated"
+        );
+
+        // Test deprecated method with #[\Deprecated] attribute and message
+        assertLocalInspectionContains("foobar.yml","" +
+                "blog_deprecated_method_message:\n" +
+                "    controller: App\\Controller\\DeprecatedAttributeController::newDeprecatedMethodWithMessa<caret>ge",
+            "Symfony: Controller action is deprecated"
+        );
+
+        // Test non-deprecated method should not trigger inspection
+        assertLocalInspectionNotContains("foobar.yml","" +
+                "blog_not_deprecated:\n" +
+                "    controller: App\\Controller\\DeprecatedAttributeController::notDeprecatedMet<caret>hod",
+            "Symfony: Controller action is deprecated"
+        );
+    }
+
+    public void testDeprecatedRouteActionForDeprecatedClassWithAttribute() {
+        // Test deprecated class with #[\Deprecated] attribute
+        assertLocalInspectionContains("foobar.yml","" +
+                "blog_deprecated_class:\n" +
+                "    controller: App\\Controller\\DeprecatedClassController::someMeth<caret>od",
+            "Symfony: Controller action is deprecated"
+        );
+
+        // Test deprecated class with #[\Deprecated] attribute and message
+        assertLocalInspectionContains("foobar.yml","" +
+                "blog_deprecated_class_message:\n" +
+                "    controller: App\\Controller\\DeprecatedClassWithMessageController::someMeth<caret>od",
+            "Symfony: Controller action is deprecated"
+        );
+    }
+
+    public void testDeprecatedRouteActionForPhpAttributeXml() {
+        // Test deprecated method with #[\Deprecated] attribute in XML
+        assertLocalInspectionContains("foobar.xml",
+            "<routes>\n" +
+                "   <route controller=\"App\\Controller\\DeprecatedAttributeController::newDeprecatedMeth<caret>od\"/>\n" +
+                "</routes>",
+            "Symfony: Controller action is deprecated"
+        );
+
+        // Test deprecated class with #[\Deprecated] attribute in XML
+        assertLocalInspectionContains("foobar.xml",
+            "<routes>\n" +
+                "   <route>\n" +
+                "       <default key=\"_controller\">App\\Controller\\DeprecatedClassController::someMeth<caret>od</default>\n" +
+                "   </route>\n" +
+                "</routes>",
+            "Symfony: Controller action is deprecated"
+        );
+    }
 }

@@ -1,5 +1,79 @@
 <html>
 <body>
-No route definition found. See <a href="https://symfony.com/doc/current/routing.html?phpstorm">Symfony documention</a> for more information
+Detects references to Symfony routes in PHP code that cannot be found in routing configuration.
+<!-- tooltip end -->
+
+<p>
+This inspection analyzes PHP code and identifies when route names used in Symfony URL generation methods
+don't correspond to any routes defined in the Symfony routing configuration.
+</p>
+
+<p>
+The inspection checks for missing routes in:
+</p>
+<ul>
+<li><code>$this->generateUrl('route_name')</code></li>
+<li><code>$this->redirectToRoute('route_name')</code></li>
+<li><code>$urlGenerator->generate('route_name')</code></li>
+<li><code>$this->forward('App\\Controller\\SomeController::method')</code></li>
+</ul>
+
+<p>
+Example PHP controller:
+</p>
+<pre><code>
+class BlogController extends AbstractController
+{
+    public function redirectToHome(): Response
+    {
+        // This will be highlighted if 'homepage' route doesn't exist
+        return $this->redirectToRoute('homepage');
+    }
+
+    public function showProduct(int $id): Response
+    {
+        // This will be highlighted if 'product_detail' route doesn't exist
+        $url = $this->generateUrl('product_detail', ['id' => $id]);
+        return new RedirectResponse($url);
+    }
+
+    public function redirectToAdmin(): Response
+    {
+        // This will be highlighted if 'admin_dashboard' route doesn't exist
+        return $this->redirect($this->generateUrl('admin_dashboard'));
+    }
+}
+</code></pre>
+
+<p>
+Example PHP service with UrlGenerator:
+</p>
+<pre><code>
+class NotificationService
+{
+    private $urlGenerator;
+
+    public function __construct(UrlGeneratorInterface $urlGenerator)
+    {
+        $this->urlGenerator = $urlGenerator;
+    }
+
+    public function sendEmailNotification(User $user): void
+    {
+        // This will be highlighted if 'user_profile' route doesn't exist
+        $profileUrl = $this->urlGenerator->generate('user_profile', [
+            'id' => $user->getId()
+        ]);
+    }
+}
+</code></pre>
+
+<p>
+When a missing route is detected, the inspection provides quick fixes:
+</p>
+<ul>
+<li>Suggest possible typo corrections in the route name</li>
+<li>Help identify the correct route name from available routes</li>
+</ul>
 </body>
 </html>

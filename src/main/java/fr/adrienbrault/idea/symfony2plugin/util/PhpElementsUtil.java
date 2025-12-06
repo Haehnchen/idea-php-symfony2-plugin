@@ -621,7 +621,7 @@ public class PhpElementsUtil {
         // Check for #[Deprecated] attribute (PHP 8.4+)
         for (PhpAttribute attribute : phpClass.getAttributes()) {
             String attributeFQN = attribute.getFQN();
-            if (attributeFQN != null && isEqualClassName(attributeFQN, "Deprecated")) {
+            if ("\\Deprecated".equals(attributeFQN)) {
                 // Try named parameter first: #[Deprecated(message: 'text')]
                 String message = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, "message");
 
@@ -656,6 +656,31 @@ public class PhpElementsUtil {
         }
 
         return null;
+    }
+
+    /**
+     * Check if a PHP class, method or function is deprecated
+     * Supports both @deprecated annotation and #[Deprecated] attribute
+     *
+     * @param phpClassOrFuncRef PHP class, method or function
+     */
+    public static boolean isClassOrFunctionDeprecated(@NotNull PhpNamedElement phpClassOrFuncRef) {
+        // First, check PhpStorm's built-in deprecation check
+        if (phpClassOrFuncRef.isDeprecated()) {
+            return true;
+        }
+
+        // not supported be the main internal function
+        // Check for #[Deprecated] attribute (PHP 8.4+)
+        if (phpClassOrFuncRef instanceof PhpAttributesOwner phpAttributesOwner) {
+            for (PhpAttribute attribute : phpAttributesOwner.getAttributes()) {
+                if ("\\Deprecated".equals(attribute.getFQN())) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**

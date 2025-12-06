@@ -1,13 +1,13 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.inspection;
 
+import fr.adrienbrault.idea.symfony2plugin.templating.inspection.TemplateMissingAnnotationPhpAttributeLocalInspection;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import fr.adrienbrault.idea.symfony2plugin.templating.inspection.TemplateExistsAnnotationPhpAttributeLocalInspection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see TemplateExistsAnnotationPhpAttributeLocalInspection
+ * @see TemplateMissingAnnotationPhpAttributeLocalInspection
  */
-public class TemplateExistsAnnotationPhpAttributeLocalInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
+public class TemplateMissingAnnotationPhpAttributeLocalInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
         super.setUp();
 

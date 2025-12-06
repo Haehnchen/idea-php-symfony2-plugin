@@ -1,0 +1,43 @@
+<html>
+<body>
+Inspection that detects deprecated controller actions referenced in YAML routing configurations.
+<!-- tooltip end -->
+
+<p>
+    This inspection analyzes route definitions in YAML routing files (<code>routes.yaml</code>,
+    <code>routing.yaml</code>, etc.) and identifies when the referenced
+    controller actions (methods or controller classes) have been marked as deprecated.
+</p>
+
+<p>
+    The inspection checks for:
+</p>
+<ul>
+    <li>Deprecated controller methods or classes using <code>@deprecated</code> or <code>#[Deprecated]</code></li>
+    <li>Controller actions that should no longer be used in new code</li>
+</ul>
+
+Example YAML route configuration:
+<pre><code>
+# config/routes.yaml
+blog_show:
+    path: /blog/{slug}
+    controller: App\Controller\BlogController::show  # Will be highlighted if deprecated
+</code></pre>
+
+Or using the legacy <code>_controller</code> key:
+
+<pre><code>
+# config/routes.yaml
+blog_show:
+    path: /blog/{slug}
+    defaults:
+        _controller: App\Controller\BlogController::show  # Will be highlighted if deprecated
+</code></pre>
+
+<p>
+    If the <code>BlogController::show</code> method or the <code>BlogController</code> class is marked as deprecated,
+    this inspection will highlight the route definition and warn about the deprecation.
+</p>
+</body>
+</html>

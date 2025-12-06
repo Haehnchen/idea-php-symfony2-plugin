@@ -1,0 +1,46 @@
+<html>
+<body>
+Detects references to Symfony routes that cannot be found in routing configuration.
+<!-- tooltip end -->
+
+<p>
+    This inspection analyzes Twig templates and identifies when route names used in <code>path()</code> and <code>url()</code>
+    functions don't correspond to any routes defined in the Symfony routing configuration.
+</p>
+
+<p>
+    The inspection checks for missing routes in:
+</p>
+<ul>
+    <li><code>{{ path('route_name') }}</code></li>
+    <li><code>{{ url('route_name') }}</code></li>
+    <li><code>{{ path('route_name', {'param': 'value'}) }}</code></li>
+    <li><code>{{ url('route_name', {'param': 'value'}) }}</code></li>
+</ul>
+
+<p>
+    Example Twig template:
+</p>
+<pre><code>
+{# This will be highlighted if 'homepage' route doesn't exist #}
+<a href="{{ path('homepage') }}">Home</a>
+
+{# This will be highlighted if 'product_detail' route doesn't exist #}
+{{ path('product_detail', {'id': product.id}) }}
+
+{# This will be highlighted if 'contact_form' route doesn't exist #}
+{{ url('contact_form') }}
+
+{# This will be highlighted if 'admin_dashboard' route doesn't exist #}
+{{ path('admin_dashboard') }}
+</code></pre>
+
+<p>
+    When a missing route is detected, the inspection provides quick fixes:
+</p>
+<ul>
+    <li>Suggest possible typo corrections in the route name</li>
+    <li>Help identify the correct route name from available routes</li>
+</ul>
+</body>
+</html>

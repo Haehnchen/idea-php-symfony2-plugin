@@ -1,5 +1,80 @@
 <html>
 <body>
-Twig template is not found in configured template paths
+Detects references to Twig templates in PHP code that cannot be found in configured template paths.
+<!-- tooltip end -->
+
+<p>
+This inspection analyzes PHP code and identifies when template references in Symfony/Twig methods
+point to template files that don't exist in any of the configured template directories.
+</p>
+
+<p>
+The inspection checks for missing templates in:
+</p>
+<ul>
+<li><code>$this->render('template.html.twig')</code></li>
+<li><code>$this->renderView('template.html.twig')</code></li>
+<li><code>$twig->render('template.html.twig')</code></li>
+<li><code>$twig->loadTemplate('template.html.twig')</code></li>
+<li><code>$engine->render('template.html.twig')</code></li>
+<li><code>$this->stream('template.html.twig')</code></li>
+</ul>
+
+<p>
+Example PHP controller:
+</p>
+<pre><code>
+class BlogController extends AbstractController
+{
+    // This will be highlighted if 'blog/index.html.twig' doesn't exist
+    public function index(): Response
+    {
+        return $this->render('blog/index.html.twig', [
+            'posts' => $this->getDoctrine()->getRepository(Post::class)->findAll()
+        ]);
+    }
+
+    // This will be highlighted if 'blog/show.html.twig' doesn't exist
+    public function show(Post $post): Response
+    {
+        return $this->render('blog/show.html.twig', [
+            'post' => $post
+        ]);
+    }
+}
+</code></pre>
+
+<p>
+Example PHP service with Twig:
+</p>
+<pre><code>
+class EmailService
+{
+    private $twig;
+
+    public function __construct(Environment $twig)
+    {
+        $this->twig = $twig;
+    }
+
+    // This will be highlighted if 'emails/welcome.html.twig' doesn't exist
+    public function sendWelcomeEmail(User $user): void
+    {
+        $content = $this->twig->render('emails/welcome.html.twig', [
+            'user' => $user
+        ]);
+
+        // send email logic...
+    }
+}
+</code></pre>
+
+<p>
+When a missing template is detected, the inspection provides quick fixes:
+</p>
+<ul>
+<li>Create the missing template file with the appropriate directory structure</li>
+<li>Suggest possible typo corrections in the template name</li>
+</ul>
 </body>
 </html>

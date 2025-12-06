@@ -2752,7 +2752,7 @@ public class TwigUtil {
 
                 if (phpClass != null) {
                     // Check for @deprecated or #[Deprecated]
-                    if (phpClass.isDeprecated()) {
+                    if (PhpElementsUtil.isClassOrFunctionDeprecated(phpClass)) {
                         deprecations.put(currentTagName, PhpElementsUtil.getClassDeprecatedMessage(phpClass));
                     } else {
                         // Check for trigger_deprecation() in parse() method

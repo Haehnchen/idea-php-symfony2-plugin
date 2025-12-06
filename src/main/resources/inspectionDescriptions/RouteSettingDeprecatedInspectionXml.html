@@ -1,6 +1,57 @@
 <html>
 <body>
-Route settings deprecated inspection
+Detects deprecated Symfony route configuration settings in XML routing files.
 <!-- tooltip end -->
+
+<p>
+This inspection analyzes XML routing files and identifies deprecated route configuration options
+that should be replaced with their modern equivalents in newer Symfony versions.
+</p>
+
+<p>
+The inspection checks for deprecated settings in:
+</p>
+<ul>
+<li><code>pattern</code> attribute - Should be replaced with <code>path</code> attribute</li>
+<li><code>_method</code> requirement - Should use HTTP method constraints directly</li>
+<li><code>_scheme</code> requirement - Should use scheme constraints directly</li>
+</ul>
+
+<p>
+Example deprecated XML configuration:
+</p>
+<pre><code>
+<!-- config/routes.xml -->
+&lt;routes&gt;
+    &lt;route id="blog_show"
+           controller="App\Controller\BlogController::show"
+           pattern="/blog/{slug}"&gt;  &lt;!-- DEPRECATED: 'pattern' should be 'path' --&gt;
+        &lt;requirement key="_method"&gt;GET&lt;/requirement&gt;  &lt;!-- DEPRECATED --&gt;
+        &lt;requirement key="_scheme"&gt;https&lt;/requirement&gt; &lt;!-- DEPRECATED --&gt;
+    &lt;/route&gt;
+&lt;/routes&gt;
+</code></pre>
+
+<p>
+Example modern XML configuration:
+</p>
+<pre><code>
+<!-- config/routes.xml -->
+&lt;routes&gt;
+    &lt;route id="blog_show"
+           controller="App\Controller\BlogController::show"
+           path="/blog/{slug}"&gt;  &lt;!-- MODERN: Use 'path' instead of 'pattern' --&gt;
+        &lt;!-- MODERN: Use 'methods' and 'schemes' directly --&gt;
+        &lt;default key="_controller"&gt;App\Controller\BlogController::show&lt;/default&gt;
+    &lt;/route&gt;
+
+    &lt;!-- Alternative with method and scheme constraints --&gt;
+    &lt;route id="blog_show_secure"
+           path="/blog/{slug}"
+           controller="App\Controller\BlogController::show"
+           methods="GET"
+           schemes="https" /&gt;
+&lt;/routes&gt;
+</code></pre>
 </body>
 </html>
