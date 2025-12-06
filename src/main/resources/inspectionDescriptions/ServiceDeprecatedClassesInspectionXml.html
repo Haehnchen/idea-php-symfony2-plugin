@@ -1,5 +1,45 @@
 <html>
 <body>
+Service or class referenced in XML configuration is deprecated
 <!-- tooltip end -->
+
+<p>
+This inspection detects deprecated services and classes used in Symfony XML service configuration.
+It identifies services or classes that have been marked as deprecated and should be replaced
+with newer alternatives.
+</p>
+
+<p>
+The inspection checks for:
+</p>
+
+<ul>
+    <li>Service classes with <code>@deprecated</code> PHPDoc annotation</li>
+    <li>Classes marked with <code>#[Deprecated]</code> attribute</li>
+    <li>Services explicitly marked as deprecated in Symfony's service definition</li>
+</ul>
+
+<p>
+Example XML configuration that would trigger this inspection:
+</p>
+
+<pre><code>
+&lt;services&gt;
+    &lt;!-- This will trigger inspection if class is deprecated --&gt;
+    &lt;service id="old_service" class="App\Legacy\OldService"&gt;
+        &lt;!-- OldService has @deprecated annotation --&gt;
+    &lt;/service&gt;
+
+    &lt;!-- This will trigger inspection if service is deprecated --&gt;
+    &lt;service id="deprecated_service" class="App\Service\SomeService"&gt;
+        &lt;!-- Service is marked as deprecated in Symfony --&gt;
+    &lt;/service&gt;
+
+    &lt;!-- This will trigger inspection in arguments --&gt;
+    &lt;service id="my_service" class="App\Service\MyService"&gt;
+        &lt;argument type="service" id="deprecated_dependency" /&gt;
+    &lt;/service&gt;
+&lt;/services&gt;
+</code></pre>
 </body>
 </html>

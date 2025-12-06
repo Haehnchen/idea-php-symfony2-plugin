@@ -1,0 +1,54 @@
+<html>
+<body>
+Service class needs to implement required interface for its tag
+<!-- tooltip end -->
+
+<p>
+This inspection detects Symfony services that are tagged with interfaces but don't implement
+the required interface. In Symfony's dependency injection container, certain tags require
+the service class to implement specific interfaces to function correctly.
+</p>
+
+<p>
+The inspection checks for:
+</p>
+
+<ul>
+    <li>Services with tags that require specific interfaces</li>
+    <li>Service classes that don't implement the required interface for their tag</li>
+    <li>Tagged services that would fail at runtime due to missing interface implementation</li>
+</ul>
+
+<p>
+Example YAML service configuration that would trigger this inspection:
+</p>
+
+<pre><code>
+# config/services.yaml
+services:
+    # This will trigger inspection - EventSubscriberInterface is required
+    my_subscriber:
+        class: App\Service\MySubscriber
+        tags:
+            - { name: kernel.event_subscriber }
+
+    # This will trigger inspection - CommandInterface is required
+    my_command:
+        class: App\Service\MyTask
+        tags:
+            - { name: console.command }
+
+    # This will trigger inspection - FormTypeExtensionInterface is required
+    my_form_extension:
+        class: App\Form\MyExtension
+        tags:
+            - { name: form.type_extension, extended_type: App\Form\ProductType }
+
+    # This is valid - implements required interface
+    valid_subscriber:
+        class: App\Event\MyEventSubscriber
+        tags:
+            - { name: kernel.event_subscriber }
+</code></pre>
+</body>
+</html>

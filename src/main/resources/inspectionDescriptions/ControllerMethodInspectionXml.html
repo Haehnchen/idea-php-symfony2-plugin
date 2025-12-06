@@ -1,0 +1,49 @@
+<html>
+<body>
+Controller action method referenced in route does not exist in the specified class
+<!-- tooltip end -->
+
+<p>
+This inspection detects missing controller action methods in Symfony XML route definitions.
+It validates that when a route references a controller action, the corresponding method
+actually exists in the controller class.
+</p>
+
+<p>
+The inspection checks for:
+</p>
+
+<ul>
+    <li>Controller methods referenced in XML route configurations that don't exist</li>
+    <li>Misspelled method names in controller references</li>
+    <li>Controllers that exist but lack the specified action method</li>
+</ul>
+
+<p>
+Example XML route configuration that would trigger this inspection:
+</p>
+
+<pre><code>
+&lt;routes&gt;
+    &lt;route id="homepage" controller="App\Controller\HomeController::index" /&gt;
+        &lt;!-- OK if index() method exists in HomeController --&gt;
+
+    &lt;route id="contact" controller="App\Controller\ContactController::show" /&gt;
+        &lt;!-- Triggers inspection if show() method doesn't exist in ContactController --&gt;
+
+    &lt;route id="product_list" controller="App\Controller\ProductController::listProducts" /&gt;
+        &lt;!-- Triggers inspection if listProducts() method doesn't exist --&gt;
+&lt;/routes&gt;
+</code></pre>
+
+<p>
+The inspection supports various controller reference formats:
+</p>
+
+<ul>
+    <li><code>App\Controller\MyController::methodName</code> - Class::method syntax</li>
+    <li><code>MyController::methodName</code> - Shortcut syntax</li>
+    <li><code>service_id:methodName</code> - Service ID syntax</li>
+</ul>
+</body>
+</html>

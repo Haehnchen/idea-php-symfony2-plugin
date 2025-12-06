@@ -1,0 +1,47 @@
+<html>
+<body>
+Constant referenced in XML configuration is not defined or cannot be resolved
+<!-- tooltip end -->
+
+<p>
+This inspection detects undefined constants in Symfony XML configuration files.
+It validates that constants referenced using <code>&lt;argument type="constant"&gt;</code>
+are actually defined and available.
+</p>
+
+<p>
+The inspection checks for:
+</p>
+
+<ul>
+    <li>Undefined PHP constants in <code>&lt;argument type="constant"&gt;</code> elements</li>
+    <li>Constants that don't exist in the current PHP context</li>
+    <li>Misspelled constant names</li>
+</ul>
+
+<p>
+Example XML configuration that would trigger this inspection:
+</p>
+
+<pre><code>
+&lt;services&gt;
+    &lt;service id="my_service" class="App\Service\MyService"&gt;
+        &lt;!-- Valid constant references --&gt;
+        &lt;argument type="constant"&gt;DateTime::class&lt;/argument&gt;
+        &lt;argument type="constant"&gt;PHP_VERSION&lt;/argument&gt;
+
+        &lt;!-- Invalid constant that will trigger inspection --&gt;
+        &lt;argument type="constant"&gt;\Foobar\Car::UNDEFINED_CONSTANT&lt;/argument&gt;
+
+        &lt;!-- If MAX_ITEMS doesn't exist on MyService class, this will trigger inspection --&gt;
+        &lt;argument type="constant"&gt;App\Service\MyService::MAX_ITEMS&lt;/argument&gt;
+    &lt;/service&gt;
+
+    &lt;service id="another_service" class="DateTime"&gt;
+        &lt;argument type="constant"&gt;\Foobar\Car::FOOBAR_1&lt;/argument&gt; &lt;!-- This will trigger inspection --&gt;
+    &lt;/service&gt;
+&lt;/services&gt;
+</code></pre>
+
+</body>
+</html>

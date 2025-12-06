@@ -1,0 +1,55 @@
+<html>
+<body>
+Symfony service referenced in PHP code does not exist
+<!-- tooltip end -->
+
+<p>
+This inspection detects references to non-existent Symfony services in PHP code.
+It validates that service IDs used in container-related method calls actually exist
+in the service container.
+</p>
+
+<p>
+The inspection checks for:
+</p>
+
+<ul>
+    <li>Service IDs in <code>$container->get()</code> calls that don't exist</li>
+    <li>Invalid service references in container-related methods</li>
+    <li>Service locator calls with non-existent service IDs</li>
+</ul>
+
+<p>
+Example PHP code that would trigger this inspection:
+</p>
+
+<pre><code>
+// In a controller or service
+public function myAction(ContainerInterface $container): Response
+{
+    // This will trigger inspection - service doesn't exist
+    $nonExistent = $container->get('non_existent_service');
+
+    // This is valid - doctrine service exists
+    $entityManager = $container->get('doctrine.orm.entity_manager');
+
+    return new Response();
+}
+
+// Service constructor injection
+public function __construct(
+    ContainerInterface $container
+) {
+    // This will trigger inspection - service doesn't exist
+    $this->missingService = $container->get('missing.service.id');
+}
+
+// Using service locator
+public function someMethod(ServiceLocator $locator): void
+{
+    // This will trigger inspection if service doesn't exist
+    $service = $locator->get('undefined_service');
+}
+</code></pre>
+</body>
+</html>

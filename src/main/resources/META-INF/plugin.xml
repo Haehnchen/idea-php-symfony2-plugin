@@ -333,18 +333,6 @@
                          language=""
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.DuplicateLocalRouteInspection"/>
 
-        <localInspection groupPath="Symfony" shortName="Symfony2YamlDuplicateServiceKeyInspection" displayName="Duplicate Key"
-                         groupName="Service"
-                         enabledByDefault="true" level="WARNING"
-                         language="yaml"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.inspection.YamlDuplicateServiceKeyInspection"/>
-
-        <localInspection groupPath="Symfony" shortName="Symfony2YamlDuplicateParameterKeyInspection" displayName="Duplicate Key"
-                         groupName="Service"
-                         enabledByDefault="true" level="WARNING"
-                         language="yaml"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.inspection.YamlDuplicateParameterKeyInspection"/>
-
         <localInspection groupPath="Symfony" shortName="Symfony2XmlDuplicateServiceKeyInspection" displayName="Duplicate Key"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
@@ -498,14 +486,14 @@
                          enabledByDefault="true"
                          level="WARNING"
                          language="XML"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.ContainerConstantInspection$MyXmlLocalInspectionTool"/>
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.ContainerConstantInspection$ContainerConstantXmlInspection"/>
 
         <localInspection groupPath="Symfony" shortName="ContainerConstantYaml" displayName="Constant not found in yaml definition"
                          groupName="Service"
                          enabledByDefault="true"
                          level="WARNING"
                          language="yaml"
-                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.ContainerConstantInspection$MyYamlLocalInspectionTool"/>
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.ContainerConstantInspection$ContainerConstantYamlInspection"/>
 
         <localInspection groupPath="Symfony" shortName="TwigTranslationDomain" displayName="Twig: Missing translation domain"
                          groupName="Translation"

@@ -20,7 +20,7 @@ import org.jetbrains.yaml.psi.YAMLScalar;
 public class ContainerConstantInspection extends LocalInspectionTool {
     public static final String MESSAGE = "Symfony: constant not found";
 
-    public static class MyYamlLocalInspectionTool extends LocalInspectionTool {
+    public static class ContainerConstantYamlInspection extends LocalInspectionTool {
         @Override
         public @NotNull PsiElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
             Project project = holder.getProject();
@@ -41,7 +41,7 @@ public class ContainerConstantInspection extends LocalInspectionTool {
         }
     }
 
-    public static class MyXmlLocalInspectionTool extends LocalInspectionTool {
+    public static class ContainerConstantXmlInspection extends LocalInspectionTool {
         @Override
         public @NotNull PsiElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
             Project project = holder.getProject();

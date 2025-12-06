@@ -1,0 +1,22 @@
+<html>
+<body>
+Duplicate service key in XML configuration
+<!-- tooltip end -->
+
+<p>
+Detects duplicate service keys in Symfony XML configuration files.
+Each service ID must be unique within the services section.
+</p>
+
+<p>
+Example:
+</p>
+
+<pre><code>
+&lt;services&gt;
+    &lt;service id="my_service" class="App\Service\MyService" /&gt;
+    &lt;service id="my_service" class="App\Service\OtherService" /&gt; &lt;!-- Duplicate ID --&gt;
+&lt;/services&gt;
+</code></pre>
+</body>
+</html>

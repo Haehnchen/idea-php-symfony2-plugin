@@ -1,0 +1,22 @@
+<html>
+<body>
+Duplicate parameter key in XML configuration
+<!-- tooltip end -->
+
+<p>
+Detects duplicate parameter keys in Symfony XML configuration files.
+Each parameter key must be unique within the parameters section.
+</p>
+
+<p>
+Example:
+</p>
+
+<pre><code>
+&lt;parameters&gt;
+    &lt;parameter key="cache_dir"&gt;/app/cache&lt;/parameter&gt;
+    &lt;parameter key="cache_dir"&gt;/app/cache2&lt;/parameter&gt; &lt;!-- Duplicate key --&gt;
+&lt;/parameters&gt;
+</code></pre>
+</body>
+</html>

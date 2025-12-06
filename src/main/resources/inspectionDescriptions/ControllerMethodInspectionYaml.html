@@ -1,0 +1,60 @@
+<html>
+<body>
+Controller action method referenced in route does not exist in the specified class
+<!-- tooltip end -->
+
+<p>
+This inspection detects missing controller action methods in Symfony YAML route definitions.
+It validates that when a route references a controller action, the corresponding method
+actually exists in the controller class.
+</p>
+
+<p>
+The inspection checks for:
+</p>
+
+<ul>
+    <li>Controller methods referenced in YAML route configurations that don't exist</li>
+    <li>Misspelled method names in controller references</li>
+    <li>Controllers that exist but lack the specified action method</li>
+</ul>
+
+<p>
+Example YAML route configuration that would trigger this inspection:
+</p>
+
+<pre><code>
+# config/routes.yaml
+homepage:
+    controller: App\Controller\HomeController::index
+    # OK if index() method exists in HomeController
+
+contact:
+    controller: App\Controller\ContactController::show
+    # Triggers inspection if show() method doesn't exist in ContactController
+
+product_list:
+    controller: App\Controller\ProductController::listProducts
+    # Triggers inspection if listProducts() method doesn't exist
+
+# Alternative formats supported:
+api_user_profile:
+    controller: user_controller::getProfile  # Shortcut syntax
+    # Triggers inspection if getProfile() doesn't exist
+
+service_action:
+    controller: app.service.my_service:processData  # Service ID syntax
+    # Triggers inspection if processData() doesn't exist in the service
+</code></pre>
+
+<p>
+The inspection supports various controller reference formats:
+</p>
+
+<ul>
+    <li><code>App\Controller\MyController::methodName</code> - Class::method syntax</li>
+    <li><code>MyController::methodName</code> - Shortcut syntax (configured in framework.yaml)</li>
+    <li><code>service_id:methodName</code> - Service ID syntax</li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<html>
+<body>
+Service argument is missing or does not match constructor signature
+<!-- tooltip end -->
+
+<p>
+This inspection detects missing arguments in Symfony service definitions within YAML configuration files.
+It analyzes service definitions to identify when required constructor or method arguments are not properly configured.
+</p>
+
+<p>
+The inspection checks for:
+</p>
+
+<ul>
+    <li>Missing constructor arguments in service definitions</li>
+    <li>Arguments that don't match the service class constructor signature</li>
+    <li>Required parameters that are not provided in the YAML configuration</li>
+    <li>Services that are not using autowiring and have missing arguments</li>
+</ul>
+
+<p>
+The inspection ignores services with:
+</p>
+
+<ul>
+    <li><code>parent</code> key (child services)</li>
+    <li><code>factory</code> keys (factory-based services)</li>
+    <li><code>abstract: true</code></li>
+    <li><code>autowire: true</code> (autowired services)</li>
+</ul>
+
+<p>
+Example YAML service definition that would trigger this inspection:
+</p>
+
+<pre><code>
+services:
+    my_service:
+        class: App\Service\MyService
+        # Missing arguments section
+
+    another_service:
+        class: App\Service\AnotherService
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            # Missing second required argument
+
+    # This service would NOT trigger inspection (autowired)
+    autowired_service:
+        class: App\Service\AutowiredService
+        autowire: true
+</code></pre>
+</body>
+</html>
