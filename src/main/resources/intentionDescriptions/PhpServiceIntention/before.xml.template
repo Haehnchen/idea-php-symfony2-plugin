@@ -1,5 +1,0 @@
-<services>
-    <service id="App\Service\OrderProcessor" class="App\Service\OrderProcessor">
-        <argument type="service" id="logger"/>
-    </service>
-</services>

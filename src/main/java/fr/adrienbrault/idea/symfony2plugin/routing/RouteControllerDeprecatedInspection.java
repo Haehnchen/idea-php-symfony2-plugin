@@ -13,6 +13,7 @@ import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -21,7 +22,7 @@ import org.jetbrains.annotations.NotNull;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class RouteControllerDeprecatedInspection {
-    public static class MyXmlLocalInspectionTool extends LocalInspectionTool {
+    public static class RouteControllerDeprecatedXmlLocalInspectionTool extends LocalInspectionTool {
         @Override
         public @NotNull PsiElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
             Project project = holder.getProject();
@@ -37,7 +38,7 @@ public class RouteControllerDeprecatedInspection {
                         if (parent != null) {
                             String text = RouteXmlReferenceContributor.getControllerText(parent);
                             if(text != null) {
-                                extracted(project, element, text, holder);
+                                hasDeprecatedActionOrClass(project, element, text, holder);
                             }
                         }
                     }
@@ -48,7 +49,7 @@ public class RouteControllerDeprecatedInspection {
         }
     }
 
-    public static class MyYamlLocalInspectionTool extends LocalInspectionTool {
+    public static class RouteControllerDeprecatedYamlLocalInspectionTool extends LocalInspectionTool {
         @Override
         public @NotNull PsiElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
             Project project = holder.getProject();
@@ -62,7 +63,7 @@ public class RouteControllerDeprecatedInspection {
                     if(YamlElementPatternHelper.getSingleLineScalarKey("_controller", "controller").accepts(element)) {
                         String text = PsiElementUtils.trimQuote(element.getText());
                         if (StringUtils.isNotBlank(text)) {
-                            extracted(project, element, text, holder);
+                            hasDeprecatedActionOrClass(project, element, text, holder);
                         }
                     }
 
@@ -72,22 +73,20 @@ public class RouteControllerDeprecatedInspection {
         }
     }
 
-    private static void extracted(@NotNull Project project, @NotNull PsiElement element, String text, @NotNull ProblemsHolder holder) {
+    private static void hasDeprecatedActionOrClass(@NotNull Project project, @NotNull PsiElement element, String text, @NotNull ProblemsHolder holder) {
         for (PsiElement psiElement : RouteHelper.getMethodsOnControllerShortcut(project, text)) {
-            if (!(psiElement instanceof PhpNamedElement)) {
+            if (!(psiElement instanceof PhpNamedElement phpNamedElement)) {
                 continue;
             }
 
-            // action is deprecated
-            if (((PhpNamedElement) psiElement).isDeprecated()) {
+            if (psiElement instanceof Method method && PhpElementsUtil.isClassOrFunctionDeprecated(method)) {
                 holder.registerProblem(element, "Symfony: Controller action is deprecated", ProblemHighlightType.LIKE_DEPRECATED);
                 break;
             }
 
-            // class is deprecated
-            if (psiElement instanceof PhpClassMember) {
-                PhpClass containingClass = ((Method) psiElement).getContainingClass();
-                if (containingClass != null && containingClass.isDeprecated()) {
+            if (psiElement instanceof PhpClassMember phpClassMember) {
+                PhpClass containingClass = phpClassMember.getContainingClass();
+                if (containingClass != null && PhpElementsUtil.isClassOrFunctionDeprecated(containingClass)) {
                     holder.registerProblem(element, "Symfony: Controller action is deprecated", ProblemHighlightType.LIKE_DEPRECATED);
                     break;
                 }

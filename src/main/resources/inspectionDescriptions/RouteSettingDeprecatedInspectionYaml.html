@@ -1,6 +1,50 @@
 <html>
 <body>
-Route settings deprecated inspection
+Detects deprecated Symfony route configuration settings in YAML routing files.
 <!-- tooltip end -->
+
+<p>
+This inspection analyzes YAML routing files and identifies deprecated route configuration options
+that should be replaced with their modern equivalents in newer Symfony versions.
+</p>
+
+<p>
+The inspection checks for deprecated settings in:
+</p>
+<ul>
+<li><code>pattern</code> - Should be replaced with <code>path</code></li>
+<li><code>_method</code> requirement - Should use HTTP method constraints directly</li>
+<li><code>_scheme</code> requirement - Should use scheme constraints directly</li>
+</ul>
+
+<p>
+Example deprecated YAML configuration:
+</p>
+<pre><code>
+# config/routes.yaml
+blog_show:
+    # DEPRECATED: 'pattern' should be 'path'
+    pattern: /blog/{slug}
+    controller: App\Controller\BlogController::show
+    requirements:
+        # DEPRECATED: '_method' should use 'methods' directly
+        _method: GET
+        # DEPRECATED: '_scheme' should use 'schemes' directly
+        _scheme: https
+</code></pre>
+
+<p>
+Example modern YAML configuration:
+</p>
+<pre><code>
+# config/routes.yaml
+blog_show:
+    # MODERN: Use 'path' instead of 'pattern'
+    path: /blog/{slug}
+    controller: App\Controller\BlogController::show
+    # MODERN: Use 'methods' and 'schemes' directly
+    methods: [GET]
+    schemes: [https]
+</code></pre>
 </body>
 </html>

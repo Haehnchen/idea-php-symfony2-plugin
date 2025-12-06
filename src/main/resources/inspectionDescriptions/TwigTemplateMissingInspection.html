@@ -1,5 +1,49 @@
 <html>
 <body>
-Twig template is not found in configured template paths
+Detects references to Twig templates that cannot be found in configured template paths.
+<!-- tooltip end -->
+
+<p>
+    This inspection analyzes Twig templates and identifies when template references (includes, embeds, extends, etc.)
+    point to template files that don't exist in any of the configured template directories.
+</p>
+
+<p>
+    The inspection checks for missing templates in:
+</p>
+<ul>
+    <li><code>{% include 'template.html.twig' %}</code></li>
+    <li><code>{% embed 'template.html.twig' %}</code></li>
+    <li><code>{% extends 'template.html.twig' %}</code></li>
+    <li><code>{{ include('template.html.twig') }}</code></li>
+    <li><code>{{ source('template.html.twig') }}</code></li>
+</ul>
+
+<p>
+    Example Twig template:
+</p>
+<pre><code>
+{# This will be highlighted if 'header.html.twig' doesn't exist #}
+{% include 'header.html.twig' %}
+
+{# This will be highlighted if 'forms/contact.html.twig' doesn't exist #}
+{% embed 'forms/contact.html.twig' %}
+    {% block content %}
+        Contact form content
+    {% endblock %}
+{% endembed %}
+
+{# This will be highlighted if 'base.html.twig' doesn't exist #}
+{% extends 'base.html.twig' %}
+</code></pre>
+
+<p>
+    When a missing template is detected, the inspection provides quick fixes:
+</p>
+<ul>
+    <li>Create the missing template file with the appropriate directory structure</li>
+    <li>Suggest possible typo corrections in the template name</li>
+</ul>
+
 </body>
 </html>

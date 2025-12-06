@@ -1,3 +1,14 @@
+# PHP class constructor not in sync with services.yaml
+# class OrderProcessor
+# {
+#     public function __construct(
+#         private LoggerInterface $logger,
+#         private OrderRepository $orderRepository,
+#         private EmailService $emailService,
+#     ) {
+#     }
+# }
+
 services:
     App\Service\OrderProcessor:
         arguments:

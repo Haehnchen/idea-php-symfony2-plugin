@@ -1,6 +1,34 @@
 <html>
 <body>
-Variable usage is deprecated
+Detects usage of deprecated PHP methods in Twig templates.
 <!-- tooltip end -->
+
+<p>
+This inspection analyzes Twig templates and identifies when variables or method calls reference PHP methods
+that have been marked as deprecated using either <code>@deprecated</code> annotation or <code>#[Deprecated]</code> attribute.
+</p>
+
+<p>
+The inspection checks for:
+</p>
+
+<ul>
+    <li>Deprecated methods called in Twig templates</li>
+    <li>Methods marked with <code>@deprecated</code> or <code>#[Deprecated]</code> PHPDoc/attribute</li>
+</ul>
+
+<p>
+Example Twig template:
+</p>
+
+<pre><code>
+{# If User::getUsername() is deprecated, this will be highlighted #}
+{{ user.username }}
+
+{# If ProductService::getFeaturedProducts() is deprecated, this will be highlighted #}
+{% for product in products.getFeaturedProducts() %}
+    {{ product.name }}
+{% endfor %}
+</code></pre>
 </body>
 </html>

@@ -1,0 +1,44 @@
+<html>
+<body>
+Inspection that detects missing Twig templates when using PHP attributes or PHPDoc annotations.
+<!-- tooltip end -->
+
+<p>
+    This inspection validates template references in PHP attributes (like <code>#[Template]</code>) and PHPDoc annotations (like <code>@Template</code>)
+    to ensure the referenced template files actually exist in the project.
+</p>
+
+<p>
+    The inspection supports:
+</p>
+<ul>
+    <li>PHP 8 attributes: <code>#[Template("template.html.twig")]</code></li>
+    <li>PHPDoc annotations: <code>@Template("template.html.twig")</code></li>
+    <li>Auto-detection of template names for empty attributes/annotations based on controller and method names</li>
+    <li>Both <code>.html.twig</code> and other template extensions</li>
+</ul>
+
+<p>
+    When a missing template is detected, the inspection provides quick fixes:
+</p>
+<ul>
+    <li>Create the missing template file</li>
+    <li>Suggest possible typos in the template name</li>
+</ul>
+
+    Example:
+    <pre><code>use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+
+class BlogController extends AbstractController
+{
+    #[Route("/blog/{slug}")]
+    #[Template("blog/show.html.twig")] // Missing template
+    public function show(string $slug): Response
+    {
+        return [];
+    }
+}</code></pre>
+</body>
+</html>

@@ -12,6 +12,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -67,7 +68,7 @@ public class TwigVariableDeprecatedInspection extends LocalInspectionTool {
                 String text = element.getText();
 
                 for (PhpNamedElement namedElement : TwigTypeResolveUtil.getTwigPhpNameTargets(phpClass, text)) {
-                    if(namedElement instanceof Method && namedElement.isDeprecated()) {
+                    if(namedElement instanceof Method method && PhpElementsUtil.isClassOrFunctionDeprecated(method)) {
                         this.holder.registerProblem(element, String.format("Method '%s::%s' is deprecated", phpClass.getName(), namedElement.getName()), ProblemHighlightType.LIKE_DEPRECATED);
                     }
                 }

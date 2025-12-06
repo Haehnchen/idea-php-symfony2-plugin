@@ -26,7 +26,7 @@ import java.util.*;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class TemplateExistsAnnotationPhpAttributeLocalInspection extends LocalInspectionTool {
+public class TemplateMissingAnnotationPhpAttributeLocalInspection extends LocalInspectionTool {
     @NotNull
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
         return new PsiElementVisitor() {
