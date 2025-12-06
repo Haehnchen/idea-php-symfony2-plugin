@@ -1,0 +1,46 @@
+<html>
+<body>
+Symfony service referenced in YAML configuration does not exist
+<!-- tooltip end -->
+
+<p>
+This inspection detects references to non-existent Symfony services in YAML configuration files.
+It validates that service IDs referenced in YAML actually exist in the service container.
+</p>
+
+<p>
+The inspection checks for:
+</p>
+
+<ul>
+    <li>Service IDs referenced in YAML service definitions that don't exist</li>
+    <li>Invalid service references in arguments and calls</li>
+    <li>Service aliases that point to non-existent services</li>
+</ul>
+
+<p>
+Example YAML configuration that would trigger this inspection:
+</p>
+
+<pre><code>
+services:
+    my_service:
+        class: App\Service\MyService
+        arguments:
+            - "@non_existent_service"      # This will trigger inspection
+            - "@?optional_service"         # This is OK (optional)
+            - "@@service_factory"          # This is OK (factory)
+
+    another_service:
+        class: App\Service\AnotherService
+        calls:
+            - method: someMethod
+              arguments:
+                - "@missing_service"         # This will trigger inspection
+
+    # This will trigger inspection - alias points to non-existent service
+    my_alias:
+        alias: undefined_service
+</code></pre>
+</body>
+</html>

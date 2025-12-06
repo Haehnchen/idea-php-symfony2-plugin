@@ -1,0 +1,44 @@
+<html>
+<body>
+Translation domain is not defined or might contain a typo
+<!-- tooltip end -->
+
+<p>
+This inspection detects invalid or potentially misspelled translation domains in PHP code.
+It validates that translation domains used in translation functions actually exist
+in the project's translation files.
+</p>
+
+<p>
+The inspection checks for:
+</p>
+
+<ul>
+    <li>Translation domains in <code>$translator->trans()</code> calls that don't exist</li>
+    <li>Potential typos in domain names (e.g., "messsages" instead of "messages")</li>
+    <li>Domains that are not configured in the translation system</li>
+</ul>
+
+<p>
+Example PHP code that would trigger this inspection:
+</p>
+
+<pre><code>
+// This will trigger inspection - domain doesn't exist
+$translator->trans('key', [], 'unknowndomain');
+
+// This might trigger inspection if "messsages" is a typo
+$translator->trans('hello.world', [], 'messsages');
+
+// This is valid - "messages" is a common default domain
+$translator->trans('key', [], 'messages');
+
+// This is valid - custom domain exists
+$translator->trans('product.name', [], 'catalog');
+</code></pre>
+
+<p>
+A quick fix is available to suggest correct domain names when typos are detected.
+</p>
+</body>
+</html>

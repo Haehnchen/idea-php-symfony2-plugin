@@ -1,0 +1,42 @@
+<html>
+<body>
+Constant referenced in YAML configuration is not defined or cannot be resolved
+<!-- tooltip end -->
+
+<p>
+This inspection detects undefined constants in Symfony YAML configuration files.
+It validates that constants referenced using the <code>!php/const:</code> tag format
+are actually defined and available.
+</p>
+
+<p>
+The inspection checks for:
+</p>
+
+<ul>
+    <li>Undefined PHP constants referenced with <code>!php/const:</code> tag</li>
+    <li>Constants that don't exist in the current PHP context</li>
+    <li>Misspelled constant names</li>
+</ul>
+
+<p>
+Example YAML configuration that would trigger this inspection:
+</p>
+
+<pre><code>
+parameters:
+    # Global constants
+    php_version: !php/const:PHP_VERSION
+    undefined_global: !php/const:UNDEFINED_CONSTANT         # This will trigger inspection
+
+services:
+    my_service:
+        class: App\Service\MyService
+        arguments:
+            # Class constants
+            - !php/const:App\Entity\User::class
+            - !php/const:App\Service\MyService::MAX_ITEMS  # If MAX_ITEMS doesn't exist, this will trigger inspection
+            - !php/const:\Foobar\Car::UNDEFINED_CLASS      # This will trigger inspection
+</code></pre>
+</body>
+</html>

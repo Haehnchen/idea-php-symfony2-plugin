@@ -1,0 +1,43 @@
+<html>
+<body>
+Translation key is not found in any translation file
+<!-- tooltip end -->
+
+<p>
+This inspection detects translation keys in Twig templates that don't exist in any translation file.
+It validates that trans, transchoice, and filter translation calls reference valid translation keys.
+</p>
+
+<p>
+The inspection checks for:
+</p>
+
+<ul>
+    <li>Translation keys used in <code>{{ trans() }}</code> or <code>{{ transchoice() }}</code> that don't exist</li>
+    <li>Translation keys in <code>{% trans %}</code> blocks that are missing from translation files</li>
+    <li>Translation keys used with <code>|trans</code> filter that are not defined</li>
+</ul>
+
+<p>
+Example Twig template that would trigger this inspection:
+</p>
+
+<pre><code>
+{# This will trigger inspection if key doesn't exist #}
+{{ 'missing.translation.key'|trans }}
+
+{# This will trigger inspection if key doesn't exist #}
+{% trans with {'%name%': 'John'} from 'messages' %}hello.welcome{% endtrans %}
+
+{# This will trigger inspection if key doesn't exist #}
+{{ transchoice(count, 'item.none', 'item.some') }}
+
+{# This is valid - key exists in translations/messages.en.yml #}
+{{ 'homepage.welcome'|trans }}
+</code></pre>
+
+<p>
+A quick fix is available to automatically create the missing translation key in the appropriate translation file.
+</p>
+</body>
+</html>

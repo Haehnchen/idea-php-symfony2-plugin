@@ -1,0 +1,52 @@
+<html>
+<body>
+Service or class referenced in YAML configuration is deprecated
+<!-- tooltip end -->
+
+<p>
+This inspection detects deprecated services and classes used in Symfony YAML service configuration.
+It identifies services or classes that have been marked as deprecated and should be replaced
+with newer alternatives.
+</p>
+
+<p>
+The inspection checks for:
+</p>
+
+<ul>
+    <li>Service classes with <code>@deprecated</code> PHPDoc annotation</li>
+    <li>Classes marked with <code>#[Deprecated]</code> attribute</li>
+    <li>Services explicitly marked as deprecated in Symfony's service definition</li>
+</ul>
+
+<p>
+Example YAML configuration that would trigger this inspection:
+</p>
+
+<pre><code>
+# config/services.yaml
+services:
+    # This will trigger inspection if class is deprecated
+    old_service:
+        class: App\Legacy\OldService
+        # OldService has @deprecated annotation
+
+    # This will trigger inspection if service is deprecated
+    deprecated_service:
+        class: App\Service\SomeService
+        # Service is marked as deprecated in Symfony
+
+    # This will trigger inspection in dependencies
+    my_service:
+        class: App\Service\MyService
+        arguments:
+            - "@deprecated_dependency"
+            # This dependency is deprecated
+
+    # This will trigger inspection with aliases
+    my_alias:
+        alias: deprecated_service
+        # The target service is deprecated
+</code></pre>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<html>
+<body>
+Service or class referenced in PHP code is deprecated
+<!-- tooltip end -->
+
+<p>
+This inspection detects deprecated services and classes when they are used in PHP code.
+It identifies services or classes that have been marked as deprecated and should be replaced
+with newer alternatives.
+</p>
+
+<p>
+The inspection checks for:
+</p>
+
+<ul>
+    <li>Service classes with <code>@deprecated</code> PHPDoc annotation</li>
+    <li>Classes marked with <code>#[Deprecated]</code> attribute</li>
+    <li>Services explicitly marked as deprecated in Symfony's service definition</li>
+</ul>
+
+<p>
+Example PHP code that would trigger this inspection:
+</p>
+
+<pre><code>
+// This will trigger inspection if class is deprecated
+use App\Legacy\OldService;
+
+class MyService
+{
+    public function __construct(
+        OldService $oldService,  // OldService has @deprecated annotation
+        #[Required] DeprecatedService $depService
+    ) {
+        // ...
+    }
+}
+
+// This will trigger inspection for service ID
+public function someMethod(ContainerInterface $container): void
+{
+    $service = $container->get('deprecated_service');
+    // This service is marked as deprecated in Symfony
+}
+
+// This will trigger inspection for dependency injection
+#[Route('/example')]
+class ExampleController extends AbstractController
+{
+    public function __construct(
+        private OldLegacyService $legacyService  // Deprecated service
+    ) {}
+}
+</code></pre>
+</body>
+</html>
