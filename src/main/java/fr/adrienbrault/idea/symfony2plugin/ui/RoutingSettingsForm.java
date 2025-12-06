@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.ui;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
+import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
@@ -146,7 +147,7 @@ public class RoutingSettingsForm implements Configurable {
     }
 
     private void addWebDeploymentButton(ToolbarDecorator tablePanel) {
-        tablePanel.addExtraAction(new AnActionButton("Remote", AllIcons.Actions.Download) {
+        tablePanel.addExtraAction((AnAction) new AnActionButton("Remote", AllIcons.Actions.Download) {
             @Override
             public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
                 UiSettingsUtil.openFileDialogForDefaultWebServerConnection(project, new WebServerFileDialogExtensionCallback("php") {
@@ -200,10 +201,6 @@ public class RoutingSettingsForm implements Configurable {
         while (this.modelList.getRowCount() > 0) {
             this.modelList.removeRow(0);
         }
-    }
-
-    @Override
-    public void disposeUIResources() {
     }
 
     {

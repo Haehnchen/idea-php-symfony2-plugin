@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.ui;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
+import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
@@ -143,9 +144,9 @@ public class ContainerSettingsForm implements Configurable {
     }
 
     private void addWebDeploymentButton(ToolbarDecorator tablePanel) {
-        tablePanel.addExtraAction(new AnActionButton("Remote", AllIcons.Actions.Download) {
+        tablePanel.addExtraAction((AnAction) new AnActionButton("Remote", AllIcons.Actions.Download) {
             @Override
-            public void actionPerformed(AnActionEvent anActionEvent) {
+            public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
                 UiSettingsUtil.openFileDialogForDefaultWebServerConnection(project, new WebServerFileDialogExtensionCallback("xml") {
                     @Override
                     public void success(@NotNull WebServerConfig server, @NotNull WebServerConfig.RemotePath remotePath) {
