@@ -29,10 +29,18 @@ dependencies {
         val type = providers.gradleProperty("platformType")
         create(type, version) {
             useInstaller = false
+            useCache = true
         }
 
-        bundledPlugins(properties("platformBundledPlugins").split(',').map(String::trim).filter(String::isNotEmpty))
-        plugins(properties("platformPlugins").split(',').map(String::trim).filter(String::isNotEmpty))
+        bundledPlugins("com.intellij.java", "com.jetbrains.plugins.webDeployment", "org.jetbrains.plugins.yaml", "JavaScript")
+
+        compatiblePlugins(
+            "com.jetbrains.php",
+            "com.jetbrains.twig",
+            "com.jetbrains.php.dql",
+            "de.espend.idea.php.annotation",
+            "de.espend.idea.php.toolbox"
+        )
 
         testFramework(TestFrameworkType.Platform)
         testFramework(TestFrameworkType.Plugin.Java)
@@ -46,11 +54,23 @@ dependencies {
 
 // Configure Gradle IntelliJ Plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
 intellijPlatform {
+    val version = providers.gradleProperty("platformVersion")
+    val type = providers.gradleProperty("platformType")
+
     pluginConfiguration {
         name = properties("pluginName")
     }
     instrumentCode = false
     buildSearchableOptions = false
+
+    pluginVerification {
+        ides {
+            create(type, version) {
+                useInstaller = false
+                useCache = true
+            }
+        }
+    }
 }
 
 // Configure Gradle Changelog Plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
