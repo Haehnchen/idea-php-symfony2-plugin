@@ -60,8 +60,6 @@ intellijPlatform {
     pluginConfiguration {
         name = properties("pluginName")
     }
-    instrumentCode = false
-    buildSearchableOptions = false
 
     pluginVerification {
         ides {
