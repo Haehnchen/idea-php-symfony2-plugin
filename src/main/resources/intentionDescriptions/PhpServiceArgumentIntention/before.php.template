@@ -1,0 +1,19 @@
+// src/Service/OrderProcessor.php
+//
+// You've updated the constructor, adding new dependencies.
+// Use the intention to sync the service definition in
+// config/services.yaml or config/services.xml
+
+namespace App\Service;
+
+use App\Repository\OrderRepository;
+use Psr\Log\LoggerInterface;
+
+class OrderProcessor
+{
+    public function __construct(
+        private LoggerInterface $logger,
+        private OrderRepository $orderRepository,
+        private EmailService $emailService,<spot>
+    ) {}
+}
