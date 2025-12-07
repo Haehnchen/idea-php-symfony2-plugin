@@ -1,8 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.ui;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Disposer;
-import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.StatusBarWidget;
 import com.intellij.openapi.wm.StatusBarWidgetFactory;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;

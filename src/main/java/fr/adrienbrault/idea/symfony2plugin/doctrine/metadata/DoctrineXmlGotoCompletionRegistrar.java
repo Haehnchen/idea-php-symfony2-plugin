@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.doctrine.metadata;
 
-import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiElement;
