@@ -4,6 +4,7 @@ import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.impl.DefaultProject;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.TableView;
 import com.intellij.util.ui.ColumnInfo;
@@ -44,6 +45,10 @@ public class TwigSettingsForm implements Configurable {
     }
 
     private void attachItems() {
+        if (this.project instanceof DefaultProject) {
+            return;
+        }
+
         if (DumbService.getInstance(project).isDumb()) {
             this.tableView.getEmptyText().setText("Not available while indexing. Please re-open this screen when ready.");
 
