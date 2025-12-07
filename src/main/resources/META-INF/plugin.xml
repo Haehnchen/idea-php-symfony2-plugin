@@ -333,13 +333,13 @@
                          language=""
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.DuplicateLocalRouteInspection"/>
 
-        <localInspection groupPath="Symfony" shortName="Symfony2XmlDuplicateServiceKeyInspection" displayName="Duplicate Key"
+        <localInspection groupPath="Symfony" shortName="XmlDuplicateServiceKeyInspection" displayName="Duplicate Key"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
                          language="XML"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.inspection.XmlDuplicateServiceKeyInspection"/>
 
-        <localInspection groupPath="Symfony" shortName="Symfony2XmlDuplicateParameterKeyInspection" displayName="Duplicate Key"
+        <localInspection groupPath="Symfony" shortName="XmlDuplicateParameterKeyInspection" displayName="Duplicate Key"
                          groupName="Service"
                          enabledByDefault="true" level="WARNING"
                          language="XML"
