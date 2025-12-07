@@ -26,7 +26,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.*;
-import com.intellij.psi.impl.source.tree.injected.InjectedLanguageUtil;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -802,8 +801,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
                     }
                 };
 
-                Editor editor = InjectedLanguageUtil.getEditorForInjectedLanguageNoCommit(getEditor(), getFile());
-                handler.invokeCompletion(getProject(), editor);
+                handler.invokeCompletion(getProject(), getEditor());
                 PsiDocumentManager.getInstance(getProject()).commitAllDocuments();
             }, null, null);
         }

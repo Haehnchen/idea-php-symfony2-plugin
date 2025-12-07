@@ -40,12 +40,6 @@ public class DoctrineXmlGotoCompletionRegistrar implements GotoCompletionRegistr
 
         @NotNull
         @Override
-        public Collection<LookupElement> getLookupElements() {
-            return Collections.emptyList();
-        }
-
-        @NotNull
-        @Override
         public Collection<PsiElement> getPsiTargets(PsiElement element) {
             PsiElement parent = element.getParent();
             if(!(parent instanceof XmlAttributeValue)) {

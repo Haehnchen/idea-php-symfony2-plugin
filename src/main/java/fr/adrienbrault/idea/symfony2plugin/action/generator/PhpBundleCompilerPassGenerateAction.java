@@ -40,10 +40,6 @@ public class PhpBundleCompilerPassGenerateAction extends CodeInsightAction {
             }
         }
 
-        @Override
-        public boolean startInWriteAction() {
-            return true;
-        }
     }
 
 }

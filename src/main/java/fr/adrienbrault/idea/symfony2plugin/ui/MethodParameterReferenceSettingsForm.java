@@ -11,7 +11,6 @@ import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ElementProducer;
 import com.intellij.util.ui.ListTableModel;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.assistant.reference.AssistantReferenceUtil;
 import fr.adrienbrault.idea.symfony2plugin.assistant.reference.MethodParameterSetting;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
@@ -143,11 +142,6 @@ public class MethodParameterReferenceSettingsForm implements Configurable {
         this.resetList();
         this.attachItems();
         this.changed = false;
-    }
-
-    @Override
-    public void disposeUIResources() {
-
     }
 
     {

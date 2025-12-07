@@ -36,7 +36,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -126,12 +125,6 @@ public class XmlGotoCompletionRegistrar implements GotoCompletionRegistrar  {
 
         ImportResourceGotoCompletionProvider(PsiElement element) {
             super(element);
-        }
-
-        @NotNull
-        @Override
-        public Collection<LookupElement> getLookupElements() {
-            return Collections.emptyList();
         }
 
         @NotNull
@@ -255,11 +248,6 @@ public class XmlGotoCompletionRegistrar implements GotoCompletionRegistrar  {
             return lookupElements;
         }
 
-        @NotNull
-        @Override
-        public Collection<PsiElement> getPsiTargets(PsiElement element) {
-            return Collections.emptyList();
-        }
     }
 
     private static class MyDecoratedServiceCompletionProvider extends DecoratedServiceCompletionProvider {
@@ -298,11 +286,6 @@ public class XmlGotoCompletionRegistrar implements GotoCompletionRegistrar  {
         @Override
         public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
             return new GotoCompletionProvider(psiElement) {
-                @NotNull
-                @Override
-                public Collection<LookupElement> getLookupElements() {
-                    return Collections.emptyList();
-                }
 
                 @NotNull
                 @Override

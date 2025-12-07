@@ -161,10 +161,6 @@ public class IncludeVariableCollector implements TwigFileVariableCollector {
     }
 
 
-    @Override
-    public void collect(@NotNull TwigFileVariableCollectorParameter parameter, @NotNull Map<String, Set<String>> variables) {
-    }
-
     private Collection<VirtualFile> getImplements(TwigFile twigFile) {
         final Set<VirtualFile> targets = new HashSet<>();
 

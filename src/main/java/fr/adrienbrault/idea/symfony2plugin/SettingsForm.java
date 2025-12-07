@@ -178,10 +178,6 @@ public class SettingsForm implements Configurable {
         updateUIFromSettings();
     }
 
-    @Override
-    public void disposeUIResources() {
-    }
-
     private Settings getSettings() {
         return Settings.getInstance(project);
     }

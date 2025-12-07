@@ -72,11 +72,6 @@ public class FormTypeConstantMigrationAction extends CodeInsightAction {
 
         }
 
-        @Override
-        public boolean startInWriteAction() {
-            return true;
-        }
-
         private static class FormTypeStringElementVisitor extends PsiRecursiveElementVisitor {
             @NotNull
             private final Collection<StringLiteralExpression> formTypes;

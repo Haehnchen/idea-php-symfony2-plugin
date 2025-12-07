@@ -19,7 +19,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.*;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;

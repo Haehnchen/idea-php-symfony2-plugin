@@ -4,7 +4,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.Nullable;
 

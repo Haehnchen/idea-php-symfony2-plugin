@@ -598,7 +598,7 @@ public class SymfonyCreateService extends JDialog {
         public TableCellEditor getEditor(MethodParameter.MethodModelParameter modelParameter) {
 
             Set<String> sorted = modelParameter.getPossibleServices();
-            ComboBox<String> comboBox = new ComboBox<>(sorted.toArray(new String[sorted.size()]), 200);
+            ComboBox<String> comboBox = new ComboBox<>(sorted.toArray(new String[0]), 200);
             comboBox.setEditable(true);
 
             return new DefaultCellEditor(comboBox);
