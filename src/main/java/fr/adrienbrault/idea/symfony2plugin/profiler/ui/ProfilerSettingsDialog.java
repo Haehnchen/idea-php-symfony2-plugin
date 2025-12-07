@@ -108,11 +108,6 @@ public class ProfilerSettingsDialog implements Configurable {
         }
     }
 
-    @Override
-    public void disposeUIResources() {
-
-    }
-
     private TextBrowseFolderListener createBrowseFolderListener(final JTextField textField, final FileChooserDescriptor fileChooserDescriptor) {
         return new TextBrowseFolderListener(fileChooserDescriptor) {
             @Override

@@ -51,12 +51,6 @@ abstract public class DecoratedServiceCompletionProvider extends GotoCompletionP
 
     @NotNull
     @Override
-    public Collection<LookupElement> getLookupElements() {
-        return Collections.emptyList();
-    }
-
-    @NotNull
-    @Override
     public Collection<PsiElement> getPsiTargets(PsiElement element) {
         String decoratesId = GotoCompletionUtil.getTextValueForElement(element);
         if(decoratesId == null) {

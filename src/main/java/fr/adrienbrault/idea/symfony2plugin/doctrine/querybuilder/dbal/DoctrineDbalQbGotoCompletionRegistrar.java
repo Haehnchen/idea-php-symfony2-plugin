@@ -164,11 +164,6 @@ public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegi
             return lookupElements;
         }
 
-        @NotNull
-        @Override
-        public Collection<PsiElement> getPsiTargets(PsiElement element) {
-            return Collections.emptyList();
-        }
     }
 
     private boolean isTableNameRegistrar(PsiElement context) {

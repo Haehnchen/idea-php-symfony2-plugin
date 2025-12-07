@@ -37,13 +37,4 @@ public class SymfonyStatusbarWidgetFactory implements StatusBarWidgetFactory {
         return new SymfonyProfilerWidget(project);
     }
 
-    @Override
-    public void disposeWidget(@NotNull StatusBarWidget statusBarWidget) {
-        Disposer.dispose(statusBarWidget);
-    }
-
-    @Override
-    public boolean canBeEnabledOn(@NotNull StatusBar statusBar) {
-        return true;
-    }
 }

@@ -1,5 +1,5 @@
 <!-- All feature that are only available via valid plugin license (paid) -->
-<idea-plugin url="https://www.jetbrains.com/idea">
+<idea-plugin>
 
     <extensionPoints>
         <extensionPoint dynamic="true" name="extension.PluginConfigurationExtension" interface="fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtension"/>

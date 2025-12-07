@@ -1,4 +1,4 @@
-<idea-plugin url="https://www.jetbrains.com/idea">
+<idea-plugin>
     <extensions defaultExtensionNs="de.espend.idea.php.annotation">
         <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.twig.annotation.TemplateAnnotationReferences"/>
         <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineAnnotationTargetEntityReferences"/>
