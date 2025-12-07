@@ -22,6 +22,40 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2025.1.281
+* Refactor WebDeployment startup activity: migrate to `ProjectActivity` and clean up legacy code (Daniel Espendiller)
+* Refactor Symfony Profiler widget to use `EditorBasedStatusBarPopup` and simplify popup creation (Daniel Espendiller)
+* Add intention to add parameters to Symfony route action methods (Daniel Espendiller)
+* Add intention to add parameters to `__invoke` method of invokable Symfony Commands (Daniel Espendiller)
+* Add intention action to add Symfony Route attributes to controller methods (Daniel Espendiller)
+* Add inspections for Symfony Commands: enforce `int` return type and valid return values for `__invoke` method (Daniel Espendiller)
+* Add support for detecting deprecated Twig filters and functions (Daniel Espendiller)
+* Add support for Twig extension options "parser_callable" and deprecation markers (Daniel Espendiller)
+* Add inspection for deprecated array arguments in Symfony Validator Constraint constructors, providing a quick fix to convert arrays to named arguments. (Daniel Espendiller)
+* [paid] Add inspection for Doctrine QueryBuilder::update() and ::delete() empty alias parameter deprecation (Daniel Espendiller)
+* [paid] Add inspection for Doctrine QueryBuilder::setParameters() array deprecation (Daniel Espendiller)
+* Add notification banner for "Symfony 7.4 JSON schema hint for better autocompletion" (Daniel Espendiller)
+* Add migration for "Invokable Commands and Input Attributes" (Daniel Espendiller)
+* Add templates+guesser for "Invokable Commands and Input Attributes" (Daniel Espendiller)
+* provide general attribute indexer. "AsCommand" classes are now indexed (Daniel Espendiller)
+* [#2223](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/2431) Fix incorrect CSS Selector error when valid HTML tag is being selected (Thomas Schulz)
+* Actualize link to plugin development guide (Andrii Dembitskyi)
+* Fix read thread access of Doctrine repository lookup rendering (Daniel Espendiller)
+* Bump IntelliJ platform version to update to 2025.2.5; enable Gradle configuration cache; fix minor code deprecations. (Daniel Espendiller)
+
+## 2025.1.280
+* Provide settings checkbox for service property injection completion (Daniel Espendiller)
+* Fix init state for service selection dialog (Daniel Espendiller)
+* Fix read thread access of bundle files lookup rendering (Daniel Espendiller)
+* Fix read thread access of class consts lookup rendering (Daniel Espendiller)
+* Fix read thread access of Doctrine entity lookup rendering (Daniel Espendiller)
+* Fix read thread access of Twig lookup elements rendering (Daniel Espendiller)
+* Add support for Twig extension registered via Attributes (Daniel Espendiller)
+* Fix voter goto completion for Symfony 4/5/6 (Weichao Yu) [#2431](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/2431)
+
+## 2025.1.279
+* Migrate forms to use generated code (Daniel Espendiller)
+
 ## 2025.1.278
 * [#2427](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/2427) inline generated form code (Daniel Espendiller)
 
@@ -35,7 +69,7 @@ Changelog
 * Add twig component usage index (Daniel Espendiller)
 * Add "props" support for Anonymous Twig Components (Daniel Espendiller)
 * [#2396](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2396) add experimental support for extracting Twig "types" variables with types (Daniel Espendiller)
- 
+
 ## 2024.1.275
 * Higher template file limit (Daniel Espendiller)
 * Support "\\Symfony\\Component\\Routing\\Attribute\\Route" for route url and naming completion (Daniel Espendiller)
