@@ -1,8 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.ui.utils;
 
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.editor.event.DocumentAdapter;
 import com.intellij.openapi.editor.event.DocumentEvent;
+import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.EditorTextField;
@@ -54,9 +54,9 @@ public class ClassCompletionPanelWrapper {
 
         PhpCompletionUtil.installClassCompletion(this.field, null, getDisposable(), null);
 
-        this.field.getDocument().addDocumentListener(new DocumentAdapter() {
+        this.field.getDocument().addDocumentListener(new DocumentListener() {
             @Override
-            public void documentChanged(DocumentEvent e) {
+            public void documentChanged(@NotNull DocumentEvent e) {
                 String text = field.getText();
                 if (StringUtil.isEmpty(text) || StringUtil.endsWith(text, "\\")) {
                     return;
@@ -64,7 +64,7 @@ public class ClassCompletionPanelWrapper {
 
                 addUpdateRequest(250, () -> consumer.consume(field.getText()));
             }
-        });
+        }, getDisposable());
 
         GridBagConstraints gbConstraints = new GridBagConstraints();
         gbConstraints.fill = 1;

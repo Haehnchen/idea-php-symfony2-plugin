@@ -25,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -76,14 +77,15 @@ public class SymfonyWebpackUtil {
         String s;
 
         try {
-            s = StreamUtil.readText(virtualFile.getInputStream(), "UTF-8");
+            byte[] bytes = StreamUtil.readBytes(virtualFile.getInputStream());
+            s = new String(bytes, StandardCharsets.UTF_8);
         } catch (IOException e) {
             return;
         }
 
         JsonObject jsonObject;
         try {
-            jsonObject = new JsonParser().parse(s).getAsJsonObject();
+            jsonObject = JsonParser.parseString(s).getAsJsonObject();
         } catch (JsonSyntaxException e) {
             return;
         }
@@ -159,7 +161,8 @@ public class SymfonyWebpackUtil {
     private static void visitManifestJson(@NotNull VirtualFile virtualFile, @NotNull Consumer<Pair<String, String>> consumer) {
         JsonElement jsonElement;
         try {
-            String s = StreamUtil.readText(virtualFile.getInputStream(), "UTF-8");
+            byte[] bytes = StreamUtil.readBytes(virtualFile.getInputStream());
+            String s = new String(bytes, StandardCharsets.UTF_8);
             jsonElement = JsonParser.parseString(s);
         } catch (JsonSyntaxException | IOException e) {
             return;

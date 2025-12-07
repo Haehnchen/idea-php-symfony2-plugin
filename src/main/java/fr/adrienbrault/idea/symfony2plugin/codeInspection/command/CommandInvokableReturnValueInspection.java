@@ -7,10 +7,8 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.lang.psi.elements.Method;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.PhpReturn;
-import com.jetbrains.php.lang.psi.elements.PhpTypedElement;
+import com.jetbrains.php.lang.psi.PhpPsiUtil;
+import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import org.jetbrains.annotations.NotNull;
@@ -82,8 +80,13 @@ public class CommandInvokableReturnValueInspection extends LocalInspectionTool {
     }
 
     private boolean hasIntReturnType(@NotNull Method method) {
-        PhpType returnType = method.getReturnType() != null ? method.getReturnType().getType() : null;
-        if (returnType == null || returnType.isEmpty()) {
+        PhpReturnType childByCondition = PhpPsiUtil.getChildByCondition(method, PhpReturnType.INSTANCEOF);
+        if (childByCondition == null) {
+            return false;
+        }
+
+        PhpType returnType =  childByCondition.getType();
+        if (returnType.isEmpty()) {
             return false;
         }
 

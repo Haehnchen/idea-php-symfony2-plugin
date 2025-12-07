@@ -21,6 +21,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
@@ -296,8 +297,8 @@ public class ProfilerUtil {
     public static String getProfilerUrlContent(@NotNull String url) {
         URLConnection conn;
         try {
-            conn = new URL(url).openConnection();
-        } catch (IOException e) {
+            conn = URI.create(url).toURL().openConnection();
+        } catch (IOException | IllegalArgumentException e) {
             e.printStackTrace();
             return null;
         }
@@ -426,11 +427,11 @@ public class ProfilerUtil {
     public static String getBaseProfilerUrlFromRequest(@NotNull ProfilerRequestInterface request) {
         URL url = null;
         try {
-            url = new URL(request.getProfilerUrl());
-        } catch (MalformedURLException e) {
+            url = URI.create(request.getProfilerUrl()).toURL();
+        } catch (MalformedURLException | IllegalArgumentException e) {
             try {
-                url = new URL(request.getUrl());
-            } catch (MalformedURLException ignored) {
+                url = URI.create(request.getUrl()).toURL();
+            } catch (MalformedURLException | IllegalArgumentException ignored) {
             }
         }
 
@@ -461,7 +462,7 @@ public class ProfilerUtil {
         String path = profilerRequest.getUrl();
 
         try {
-            URL url = new URL(profilerRequest.getUrl());
+            URL url = URI.create(profilerRequest.getUrl()).toURL();
             path = url.getPath();
 
             Matcher matcher = Pattern.compile(".*(/app_[\\w]{2,6}.php)/").matcher(path);
@@ -469,7 +470,7 @@ public class ProfilerUtil {
                 path = "/" + path.substring(matcher.end());
             }
 
-        } catch (MalformedURLException ignored) {
+        } catch (MalformedURLException | IllegalArgumentException ignored) {
         }
 
         return String.format("(%s) %s", statusCode == 0 ? "n/a" : statusCode, StringUtils.abbreviate(path, 35));

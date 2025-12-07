@@ -13,6 +13,7 @@ import org.apache.commons.vfs2.FileObject;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,7 +39,8 @@ public class RoutingRemoteFileStorage implements RemoteFileStorageInterface<Map<
 
             String content;
             try {
-                content = StreamUtil.readText(file.getContent().getInputStream(), "UTF-8");
+                byte[] bytes = StreamUtil.readBytes(file.getContent().getInputStream());
+                content = new String(bytes, StandardCharsets.UTF_8);
             } catch (IOException e) {
                 continue;
             }

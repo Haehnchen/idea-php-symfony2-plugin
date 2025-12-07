@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.util.yaml;
 
-import com.intellij.openapi.application.Result;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.text.StringUtil;
@@ -866,19 +865,11 @@ public class YamlHelper {
             return null;
         }
 
-        // finally wirte changes
+        // finally write changes
         final YAMLMapping finalChildOfType = childOfType;
-        new WriteCommandAction(yamlFile.getProject()) {
-            @Override
-            protected void run(@NotNull Result result) throws Throwable {
-                finalChildOfType.putKeyValue(next);
-            }
-
-            @Override
-            public String getGroupID() {
-                return "Key insertion";
-            }
-        }.execute();
+        WriteCommandAction.writeCommandAction(yamlFile.getProject())
+            .withName("Key insertion")
+            .run(() -> finalChildOfType.putKeyValue(next));
 
         return childOfType;
     }

@@ -21,7 +21,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
-import java.net.URL;
+import java.net.URI;
 import java.util.Collection;
 
 /**
@@ -164,7 +164,7 @@ public class SymfonyProfilerWidgetActions {
             }
 
             try {
-                desktop.browse(new URL(urlForRequest).toURI());
+                desktop.browse(URI.create(urlForRequest));
             } catch (Exception ignored) {
             }
         }

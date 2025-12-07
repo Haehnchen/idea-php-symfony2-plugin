@@ -15,7 +15,6 @@ import com.intellij.openapi.util.Iconable;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.util.SlowOperations;
 import com.intellij.util.ThrowableRunnable;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.findUsages.PhpGotoTargetRendererProvider;
@@ -145,16 +144,14 @@ public class PhpPropertyArgumentIntention extends IntentionAndQuickFixAction imp
 
     private static void buildProperty(@NotNull Project project, @NotNull FieldReference fieldReference, @NotNull String classFqn) {
         try {
-            SlowOperations.allowSlowOperations(() -> {
-                PhpClass phpClassScope = PsiTreeUtil.getParentOfType(fieldReference, PhpClass.class);
-                if (phpClassScope == null || !ServiceUtil.isPhpClassAService(phpClassScope)) {
-                    return;
-                }
+            PhpClass phpClassScope = PsiTreeUtil.getParentOfType(fieldReference, PhpClass.class);
+            if (phpClassScope == null || !ServiceUtil.isPhpClassAService(phpClassScope)) {
+                return;
+            }
 
-                WriteCommandAction.writeCommandAction(project)
-                    .withName("Symfony: Add Property Service")
-                    .run((ThrowableRunnable<Throwable>) () -> ServicePropertyInsertUtil.appendPropertyInjection(phpClassScope, fieldReference.getName(), classFqn));
-            });
+            WriteCommandAction.writeCommandAction(project)
+                .withName("Symfony: Add Property Service")
+                .run((ThrowableRunnable<Throwable>) () -> ServicePropertyInsertUtil.appendPropertyInjection(phpClassScope, fieldReference.getName(), classFqn));
         } catch (Throwable ignored) {
         }
     }
