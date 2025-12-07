@@ -17,6 +17,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -90,7 +91,9 @@ public class TranslationStringMap {
     public void parse(@NotNull Project project, @NotNull VirtualFile virtualFile) {
         PsiFile psiFile;
         try {
-            psiFile = PhpPsiElementFactory.createPsiFileFromText(project, StreamUtil.readText(virtualFile.getInputStream(), "UTF-8"));
+            byte[] bytes = StreamUtil.readBytes(virtualFile.getInputStream());
+            String content = new String(bytes, StandardCharsets.UTF_8);
+            psiFile = PhpPsiElementFactory.createPsiFileFromText(project, content);
         } catch (IOException e) {
             return;
         }

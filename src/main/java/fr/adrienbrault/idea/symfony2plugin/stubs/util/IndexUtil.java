@@ -35,8 +35,7 @@ public class IndexUtil {
         };
 
         for(ID<?,?> id: indexIds) {
-            FileBasedIndex.getInstance().requestRebuild(id);
-            FileBasedIndex.getInstance().scheduleRebuild(id, new Throwable());
+            FileBasedIndex.getInstance().requestRebuild(id, new Throwable());
         }
     }
 
