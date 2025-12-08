@@ -7,6 +7,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class CreateUserCommand
 {
+    public function __construct()
+    {
+    }
+
     public function __invoke(
         OutputInterface $output,
         #[Argument(description: 'The username')]

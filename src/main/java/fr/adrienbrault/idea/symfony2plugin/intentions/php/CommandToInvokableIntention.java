@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.intentions.php;
 
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
+import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo;
 import com.intellij.lang.LanguageImportStatements;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
@@ -12,6 +13,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.IncorrectOperationException;
+import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.CodeUtil;
@@ -33,6 +35,10 @@ import java.util.List;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class CommandToInvokableIntention extends PsiElementBaseIntentionAction implements Iconable {
+    @Override
+    public @NotNull IntentionPreviewInfo generatePreview(@NotNull Project project, @NotNull Editor editor, @NotNull PsiFile file) {
+        return IntentionPreviewInfo.EMPTY;
+    }
 
     @Override
     public void invoke(@NotNull Project project, Editor editor, @NotNull PsiElement psiElement) throws IncorrectOperationException {
@@ -48,9 +54,12 @@ public class CommandToInvokableIntention extends PsiElementBaseIntentionAction i
 
         // Remove "extends Command" FIRST, before other PSI modifications
         // This must be done before replacing methods to avoid PSI invalidation issues
-        removeCommandExtends(phpClass);
+        if (removeCommandExtends(phpClass)) {
+            // Remove parent::__construct() calls since we no longer extend Command
+            removeParentConstructorCalls(phpClass);
+        }
 
-        // Get parameter names from execute method
+        // Get parameter names from the execute method
         ParameterNames paramNames = extractParameterNames(executeMethod);
 
         // Collect arguments and options from configure() method
@@ -69,14 +78,59 @@ public class CommandToInvokableIntention extends PsiElementBaseIntentionAction i
         optimizeImports(phpClass.getContainingFile());
     }
 
-    private void removeCommandExtends(@NotNull PhpClass phpClass) {
+    private boolean removeCommandExtends(@NotNull PhpClass phpClass) {
         // Check if class extends Command
         if (!PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Console\\Command\\Command")) {
-            return;
+            return false;
         }
 
         // Use shared utility method to remove the extends clause
-        CodeUtil.removeExtendsClause(phpClass, "\\Symfony\\Component\\Console\\Command\\Command");
+        return CodeUtil.removeExtendsClause(phpClass, "\\Symfony\\Component\\Console\\Command\\Command");
+    }
+
+    /**
+     * Removes parent::__construct() calls from the class constructor.
+     * Since we're removing "extends Command", any parent constructor calls become invalid.
+     */
+    private void removeParentConstructorCalls(@NotNull PhpClass phpClass) {
+        // Find the constructor method
+        Method constructor = phpClass.getConstructor();
+        if (constructor == null) {
+            return;
+        }
+
+        // Find the method body
+        GroupStatement body = PsiTreeUtil.findChildOfType(constructor, GroupStatement.class);
+        if (body == null) {
+            return;
+        }
+
+        // Find all parent::__construct() calls
+        Collection<MethodReference> methodReferences = PsiTreeUtil.findChildrenOfType(body, MethodReference.class);
+        List<MethodReference> parentConstructorCalls = new ArrayList<>();
+
+        for (MethodReference methodRef : methodReferences) {
+            // Check if this is a parent::__construct() call
+            if ("__construct".equals(methodRef.getName())) {
+                PsiElement classReference = methodRef.getClassReference();
+                if (classReference != null && "parent".equals(classReference.getText())) {
+                    parentConstructorCalls.add(methodRef);
+                }
+            }
+        }
+
+        if (parentConstructorCalls.isEmpty()) {
+            return;
+        }
+
+        // Remove each parent::__construct() call statement
+        for (MethodReference parentCall : parentConstructorCalls) {
+            // Navigate up to find the statement containing this call
+            PsiElement statement = PsiTreeUtil.getParentOfType(parentCall, com.jetbrains.php.lang.psi.elements.Statement.class);
+            if (statement != null) {
+                statement.delete();
+            }
+        }
     }
 
     private void optimizeImports(@NotNull PsiFile file) {
@@ -336,6 +390,13 @@ public class CommandToInvokableIntention extends PsiElementBaseIntentionAction i
             if (freshPhpClass != null) {
                 Method invokeMethod = freshPhpClass.findOwnMethodByName("__invoke");
                 if (invokeMethod != null) {
+                    // Replace $input->getArgument() and $input->getOption() calls with direct variables
+                    replaceInputMethodCallsWithVariables(invokeMethod, configureData, paramNames);
+
+                    // Commit after replacements
+                    psiDocManager.commitDocument(document);
+                    psiDocManager.doPostponedOperationsAndUnblockDocument(document);
+
                     // Reformat the __invoke method
                     reformatMethod(project, invokeMethod);
                 }
@@ -344,6 +405,151 @@ public class CommandToInvokableIntention extends PsiElementBaseIntentionAction i
 
         // Final commit
         psiDocManager.doPostponedOperationsAndUnblockDocument(document);
+    }
+
+    /**
+     * Replaces $input->getArgument('name') and $input->getOption('name') calls with direct variable access.
+     * Also handles type casts like (int) $input->getArgument('name').
+     * Removes redundant self-assignments like $var = $var.
+     */
+    private void replaceInputMethodCallsWithVariables(@NotNull Method invokeMethod, @NotNull ConfigureData configureData, @NotNull ParameterNames paramNames) {
+        GroupStatement body = PsiTreeUtil.findChildOfType(invokeMethod, GroupStatement.class);
+        if (body == null) {
+            return;
+        }
+
+        // Build a map of argument/option names to their variable names
+        java.util.Map<String, String> argumentVariableMap = new java.util.HashMap<>();
+        java.util.Map<String, String> optionVariableMap = new java.util.HashMap<>();
+
+        for (ArgumentInfo arg : configureData.arguments) {
+            String variableName = convertToValidPhpVariableName(arg.name);
+            argumentVariableMap.put(arg.name, variableName);
+        }
+
+        for (OptionInfo opt : configureData.options) {
+            String variableName = convertToValidPhpVariableName(opt.name);
+            optionVariableMap.put(opt.name, variableName);
+        }
+
+        // Find all method calls in the body
+        Collection<MethodReference> methodCalls = PsiTreeUtil.findChildrenOfType(body, MethodReference.class);
+        List<MethodReference> callsToReplace = new ArrayList<>();
+
+        for (MethodReference methodCall : methodCalls) {
+            String methodName = methodCall.getName();
+            if (methodName == null) {
+                continue;
+            }
+
+            // Check if this is $input->getArgument() or $input->getOption() on InputInterface
+            if ("getArgument".equals(methodName)) {
+                if (PhpElementsUtil.isMethodReferenceInstanceOf(methodCall, "\\Symfony\\Component\\Console\\Input\\InputInterface", "getArgument")) {
+                    callsToReplace.add(methodCall);
+                }
+            } else if ("getOption".equals(methodName)) {
+                if (PhpElementsUtil.isMethodReferenceInstanceOf(methodCall, "\\Symfony\\Component\\Console\\Input\\InputInterface", "getOption")) {
+                    callsToReplace.add(methodCall);
+                }
+            }
+        }
+
+        // Replace each call
+        for (MethodReference methodCall : callsToReplace) {
+            String methodName = methodCall.getName();
+            if (methodName == null) {
+                continue;
+            }
+
+            // Get the argument/option name from the first parameter
+            PsiElement nameParam = PsiElementUtils.getMethodParameterPsiElementAt(methodCall, 0);
+            if (nameParam == null) {
+                continue;
+            }
+
+            String paramName = PhpElementsUtil.getStringValue(nameParam);
+            if (StringUtils.isBlank(paramName)) {
+                continue;
+            }
+
+            // Get the variable name from our map
+            String variableName;
+            if ("getArgument".equals(methodName)) {
+                variableName = argumentVariableMap.get(paramName);
+            } else {
+                variableName = optionVariableMap.get(paramName);
+            }
+
+            if (variableName == null) {
+                continue;
+            }
+
+            // Check if the method call is wrapped in a type cast
+            PsiElement parent = methodCall.getParent();
+            PsiElement elementToReplace = methodCall;
+
+            if (parent instanceof UnaryExpression) {
+                UnaryExpression unaryExpr = (UnaryExpression) parent;
+                // Check if this is a cast expression by looking at the operator
+                PsiElement operator = unaryExpr.getOperation();
+                if (operator != null) {
+                    String operatorText = operator.getText();
+                    // Common PHP type casts: (int), (string), (bool), (array), (object), (float), (double)
+                    if (operatorText.matches("\\(\\s*(int|integer|string|bool|boolean|array|object|float|double|real)\\s*\\)")) {
+                        elementToReplace = unaryExpr;
+                    }
+                }
+            }
+
+            // Create a new variable reference
+            PhpPsiElement newVariable = PhpPsiElementFactory.createFromText(
+                invokeMethod.getProject(),
+                Variable.class,
+                "$" + variableName
+            );
+
+            if (newVariable != null) {
+                elementToReplace.replace(newVariable);
+            }
+        }
+
+        // Remove redundant self-assignments like $var = $var
+        removeRedundantSelfAssignments(body);
+    }
+
+    /**
+     * Removes redundant self-assignments like $var = $var.
+     * These occur when we replace $input->getArgument('name') with $name,
+     * and the original code had $name = $input->getArgument('name').
+     */
+    private void removeRedundantSelfAssignments(@NotNull GroupStatement body) {
+        Collection<AssignmentExpression> assignments = PsiTreeUtil.findChildrenOfType(body, AssignmentExpression.class);
+        List<PsiElement> statementsToRemove = new ArrayList<>();
+
+        for (AssignmentExpression assignment : assignments) {
+            PhpPsiElement variable = assignment.getVariable();
+            PhpPsiElement value = assignment.getValue();
+
+            // Check if both left and right side are variables
+            if (variable instanceof Variable && value instanceof Variable) {
+                String leftVarName = ((Variable) variable).getName();
+                String rightVarName = ((Variable) value).getName();
+
+                // If they're the same variable, mark the statement for removal
+                if (leftVarName != null && leftVarName.equals(rightVarName)) {
+                    // Navigate up to find the statement containing this assignment
+                    PsiElement statement = PsiTreeUtil.getParentOfType(assignment, com.jetbrains.php.lang.psi.elements.Statement.class);
+                    if (statement != null && !statementsToRemove.contains(statement)) {
+                        statementsToRemove.add(statement);
+                    }
+                }
+            }
+        }
+
+        // Remove all redundant statements
+        for (PsiElement statement : statementsToRemove) {
+            statement.delete();
+        }
     }
 
     private void reformatMethod(@NotNull Project project, @NotNull Method method) {
