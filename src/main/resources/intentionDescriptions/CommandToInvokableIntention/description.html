@@ -3,8 +3,16 @@
 Migrate Symfony Command to invokable style (Symfony 7.3+)
 <!-- tooltip end -->
 <p>
-Converts a traditional Symfony Command with <code>execute()</code> method to the new invokable command style
-with <code>__invoke()</code> method using SymfonyStyle and input attributes.
+Converts traditional Symfony Command with <code>execute()</code> method to invokable command style using <code>__invoke()</code> with Argument and Option attributes.
 </p>
+<p>
+This intention automatically:
+</p>
+<ul>
+    <li>Removes <code>extends Command</code> and <code>parent::__construct()</code> calls</li>
+    <li>Migrates <code>configure()</code> arguments/options to method parameters with attributes</li>
+    <li>Replaces <code>$input->getArgument()</code> and <code>$input->getOption()</code> with direct variable access</li>
+    <li>Removes redundant type casts and self-assignments</li>
+</ul>
 </body>
 </html>
