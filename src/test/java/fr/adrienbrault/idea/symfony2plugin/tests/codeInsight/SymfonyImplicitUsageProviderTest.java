@@ -395,6 +395,79 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
         assertFalse(new SymfonyImplicitUsageProvider().isImplicitUsage(firstClassFromFile2));
     }
 
+    public void testTwigExtensionMethodsWithAttributesAreMarkedAsUsed() {
+        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "\n" +
+            "namespace App\\Twig;\n" +
+            "\n" +
+            "use Twig\\Attribute\\AsTwigFunction;\n" +
+            "use Twig\\Attribute\\AsTwigFilter;\n" +
+            "use Twig\\Attribute\\AsTwigTest;\n" +
+            "\n" +
+            "class MyTwigExtension\n" +
+            "{\n" +
+            "    #[AsTwigFunction('my_function')]\n" +
+            "    public function myFunction(): string\n" +
+            "    {\n" +
+            "        return 'Hello';\n" +
+            "    }\n" +
+            "\n" +
+            "    #[AsTwigFilter('my_filter')]\n" +
+            "    public function myFilter(): string\n" +
+            "    {\n" +
+            "        return 'Filtered';\n" +
+            "    }\n" +
+            "\n" +
+            "    #[AsTwigTest('my_test')]\n" +
+            "    public function myTest(): bool\n" +
+            "    {\n" +
+            "        return true;\n" +
+            "    }\n" +
+            "\n" +
+            "    public function unusedMethod(): string\n" +
+            "    {\n" +
+            "        return 'Not used';\n" +
+            "    }\n" +
+            "}"
+        );
+
+        PhpClass phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
+
+        // Methods with Twig attributes should be marked as used
+        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("myFunction")));
+        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("myFilter")));
+        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("myTest")));
+
+        // Method without attributes should not be marked as used
+        assertFalse(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("unusedMethod")));
+    }
+
+
+    public void testTwigExtensionMethodWithMultipleAttributes() {
+        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "\n" +
+            "namespace App\\Twig;\n" +
+            "\n" +
+            "use Twig\\Attribute\\AsTwigFunction;\n" +
+            "use Twig\\Attribute\\AsTwigFilter;\n" +
+            "\n" +
+            "class MyTwigExtension\n" +
+            "{\n" +
+            "    #[AsTwigFunction('callable_method')]\n" +
+            "    #[AsTwigFilter('callable_filter')]\n" +
+            "    public function callableMethod(): string\n" +
+            "    {\n" +
+            "        return 'Callable';\n" +
+            "    }\n" +
+            "}"
+        );
+
+        PhpClass phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
+
+        // Method with multiple attributes should be marked as used
+        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("callableMethod")));
+    }
+
     private PhpClass createPhpControllerClassWithRouteContent(@NotNull String content) {
         return createPhpControllerClassWithRouteContent("\\App\\Controller\\FooController", content);
     }

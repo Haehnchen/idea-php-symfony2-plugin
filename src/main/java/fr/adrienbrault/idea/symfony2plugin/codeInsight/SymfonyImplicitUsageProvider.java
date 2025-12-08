@@ -32,7 +32,8 @@ public class SymfonyImplicitUsageProvider implements ImplicitUsageProvider {
         if (element instanceof Method method && method.getAccess() == PhpModifier.Access.PUBLIC) {
             return isMethodARoute(method)
                 || isSubscribedEvent(method)
-                || isAsEventListenerMethodPhpAttribute(method);
+                || isAsEventListenerMethodPhpAttribute(method)
+                || hasTwigAttribute(method);
         } else if (element instanceof PhpClass phpClass) {
             return isRouteClass(phpClass)
                 || isCommandAndService(phpClass)
@@ -228,5 +229,11 @@ public class SymfonyImplicitUsageProvider implements ImplicitUsageProvider {
         }
 
         return false;
+    }
+
+    private boolean hasTwigAttribute(@NotNull Method method) {
+        return !method.getAttributes("\\Twig\\Attribute\\AsTwigFilter").isEmpty()
+            || !method.getAttributes("\\Twig\\Attribute\\AsTwigFunction").isEmpty()
+            || !method.getAttributes("\\Twig\\Attribute\\AsTwigTest").isEmpty();
     }
 }
