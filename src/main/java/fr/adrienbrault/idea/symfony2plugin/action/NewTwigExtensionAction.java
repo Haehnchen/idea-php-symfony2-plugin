@@ -11,6 +11,7 @@ import com.jetbrains.php.refactoring.PhpNameUtil;
 import com.jetbrains.php.roots.PhpNamespaceCompositeProvider;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.psi.PhpBundleFileFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -18,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -63,8 +65,11 @@ public class NewTwigExtensionAction extends AbstractProjectDumbAwareAction {
             return;
         }
 
+        // Detect available Twig attributes in the project
+        String templateName = detectTemplate(project);
+
         ApplicationManager.getApplication().runWriteAction(() -> {
-            HashMap<String, String> hashMap = new HashMap<>() {{
+            Map<String, String> hashMap = new HashMap<>() {{
                 put("class", className);
                 put("namespace", strings.get(0));
             }};
@@ -72,13 +77,24 @@ public class NewTwigExtensionAction extends AbstractProjectDumbAwareAction {
             PsiElement commandAttributes = PhpBundleFileFactory.createFile(
                 project,
                 directory.getVirtualFile(),
-                "twig_extension",
+                templateName,
                 className,
                 hashMap
             );
 
             new OpenFileDescriptor(project, commandAttributes.getContainingFile().getVirtualFile(), 0).navigate(true);
         });
+    }
+
+    @NotNull
+    private static String detectTemplate(@NotNull Project project) {
+        // If attributes are available, use the new attribute-based template
+        if (PhpElementsUtil.getClassInterface(project, "\\Twig\\Attribute\\AsTwigFunction") != null) {
+            return "twig_extension_function_attribute";
+        }
+
+        // Default to traditional template
+        return "twig_extension";
     }
 
     public static class Shortcut extends NewTwigExtensionAction {
