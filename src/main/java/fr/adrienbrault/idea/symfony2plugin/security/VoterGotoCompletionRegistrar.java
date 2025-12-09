@@ -27,11 +27,25 @@ public class VoterGotoCompletionRegistrar implements GotoCompletionRegistrar {
         // {% is_granted('foobar') %}
         // {% is_granted({'foobar'}) %}
         // {% is_granted(['foobar']) %}
+        // {% set voter_decision = access_decision('post_edit', post) %} (Symfony 7.4)
         registrar.register(
             PlatformPatterns.or(
-                TwigPattern.getPrintBlockOrTagFunctionPattern("is_granted"),
-                TwigPattern.getFunctionWithFirstParameterAsArrayPattern("is_granted"),
-                TwigPattern.getFunctionWithFirstParameterAsLiteralPattern("is_granted")
+                TwigPattern.getPrintBlockOrTagFunctionPattern("is_granted", "access_decision"),
+                TwigPattern.getFunctionWithFirstParameterAsArrayPattern("is_granted", "access_decision"),
+                TwigPattern.getFunctionWithFirstParameterAsLiteralPattern("is_granted", "access_decision")
+            ),
+            MyVisitorGotoCompletionProvider::new
+        );
+
+        // {% is_granted_for_user(user, 'foobar') %}
+        // {% is_granted_for_user(user, {'foobar'}) %}
+        // {% is_granted_for_user(user, ['foobar']) %}
+        // {% set voter_decision = access_decision_for_user(user, 'post_edit', post) %} (Symfony 7.4)
+        registrar.register(
+            PlatformPatterns.or(
+                TwigPattern.getPrintBlockOrTagFunctionSecondParameterPattern("is_granted_for_user", "access_decision_for_user"),
+                TwigPattern.getFunctionWithSecondParameterAsArrayPattern("is_granted_for_user", "access_decision_for_user"),
+                TwigPattern.getFunctionWithSecondParameterAsLiteralPattern("is_granted_for_user", "access_decision_for_user")
             ),
             MyVisitorGotoCompletionProvider::new
         );
@@ -96,6 +110,15 @@ public class VoterGotoCompletionRegistrar implements GotoCompletionRegistrar {
             return true;
         }
 
+        // Check for isGrantedForUser second parameter (index 1)
+        MethodMatcher.MethodMatchParameter secondParameterMatch = new MethodMatcher.StringParameterRecursiveMatcher(stringLiteralExpression, 1)
+            .withSignature("Symfony\\Component\\Security\\Core\\Authorization\\UserAuthorizationCheckerInterface", "isGrantedForUser")
+            .match();
+
+        if (secondParameterMatch != null) {
+            return true;
+        }
+
         MethodMatcher.MethodMatchParameter arrayMatchParameter = new MethodMatcher.ArrayParameterMatcher(stringLiteralExpression, 0)
             .withSignature("Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "isGranted")
             .withSignature("Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "denyAccessUnlessGranted")
@@ -107,6 +130,15 @@ public class VoterGotoCompletionRegistrar implements GotoCompletionRegistrar {
             .withSignature("Symfony\\Component\\Security\\Core\\Authorization\\AuthorizationCheckerInterface", "isGranted")
             .match();
 
-        return arrayMatchParameter != null;
+        if (arrayMatchParameter != null) {
+            return true;
+        }
+
+        // Check for isGrantedForUser second parameter as an array (index 1)
+        MethodMatcher.MethodMatchParameter secondArrayParameterMatch = new MethodMatcher.ArrayParameterMatcher(stringLiteralExpression, 1)
+            .withSignature("Symfony\\Component\\Security\\Core\\Authorization\\UserAuthorizationCheckerInterface", "isGrantedForUser")
+            .match();
+
+        return secondArrayParameterMatch != null;
     }
 }

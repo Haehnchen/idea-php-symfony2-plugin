@@ -6,6 +6,18 @@ namespace Symfony\Component\Security\Core\Authorization
     {
         public function isGranted($attributes, $object = null);
     }
+
+    interface UserAuthorizationCheckerInterface
+    {
+        public function isGrantedForUser(\Symfony\Component\Security\Core\User\UserInterface $user, $attribute, $subject = null);
+    }
+}
+
+namespace Symfony\Component\Security\Core\User
+{
+    interface UserInterface
+    {
+    }
 }
 
 namespace Sensio\Bundle\FrameworkExtraBundle\Configuration
