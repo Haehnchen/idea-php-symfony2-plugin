@@ -111,4 +111,204 @@ public class VoterGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFix
             PlatformPatterns.psiElement()
         );
     }
+
+    public void testTwigIsGrantedForUserCompletion() {
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{{ is_granted_for_user(user, '<caret>') }}",
+            "YAML_ROLE_USER_FOOBAR"
+        );
+
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{% if is_granted_for_user(another_user, '<caret>') %}",
+            "YAML_ROLE_USER_FOOBAR"
+        );
+    }
+
+    public void testTwigIsGrantedForUserNavigation() {
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{{ is_granted_for_user(user, 'YAML_ROLE<caret>_USER_FOOBAR') }}",
+            PlatformPatterns.psiElement()
+        );
+
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{% if is_granted_for_user(another_user, 'YAML_ROLE<caret>_USER_FOOBAR') %}",
+            PlatformPatterns.psiElement()
+        );
+    }
+
+    public void testTwigIsGrantedForUserAsArrayCompletion() {
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{{ is_granted_for_user(user, ['<caret>']) }}",
+            "YAML_ROLE_USER_FOOBAR"
+        );
+
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{{ is_granted_for_user(user, {'<caret>'}) }}",
+            "YAML_ROLE_USER_FOOBAR"
+        );
+
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{{ is_granted_for_user(user, ['foobar', '<caret>']) }}",
+            "YAML_ROLE_USER_FOOBAR"
+        );
+    }
+
+    public void testTwigIsGrantedForUserAsArrayNavigation() {
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{{ is_granted_for_user(user, ['YAML_ROLE<caret>_USER_FOOBAR']) }}",
+            PlatformPatterns.psiElement()
+        );
+
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{{ is_granted_for_user(user, {'YAML_ROLE<caret>_USER_FOOBAR'}) }}",
+            PlatformPatterns.psiElement()
+        );
+
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{{ is_granted_for_user(user, ['foobar', 'YAML_ROLE<caret>_USER_FOOBAR']) }}",
+            PlatformPatterns.psiElement()
+        );
+    }
+
+    public void testPhpIsGrantedForUserCompletion() {
+        assertCompletionContains(PhpFileType.INSTANCE,"<?php\n" +
+                "/** @var $x \\Symfony\\Component\\Security\\Core\\Authorization\\UserAuthorizationCheckerInterface */\n" +
+                "/** @var $user \\Symfony\\Component\\Security\\Core\\User\\UserInterface */\n" +
+                "$x->isGrantedForUser($user, '<caret>');",
+            "YAML_ROLE_USER_FOOBAR"
+        );
+
+        assertCompletionContains(PhpFileType.INSTANCE,"<?php\n" +
+                "/** @var $x \\Symfony\\Component\\Security\\Core\\Authorization\\UserAuthorizationCheckerInterface */\n" +
+                "/** @var $user \\Symfony\\Component\\Security\\Core\\User\\UserInterface */\n" +
+                "$x->isGrantedForUser($user, [null, '<caret>']);",
+            "YAML_ROLE_USER_FOOBAR"
+        );
+    }
+
+    public void testPhpIsGrantedForUserNavigation() {
+        assertNavigationMatch(PhpFileType.INSTANCE,"<?php\n" +
+                "/** @var $x \\Symfony\\Component\\Security\\Core\\Authorization\\UserAuthorizationCheckerInterface */\n" +
+                "/** @var $user \\Symfony\\Component\\Security\\Core\\User\\UserInterface */\n" +
+                "$x->isGrantedForUser($user, 'YAML_ROLE_USE<caret>R_FOOBAR');",
+            PlatformPatterns.psiElement()
+        );
+
+        assertNavigationMatch(PhpFileType.INSTANCE,"<?php\n" +
+                "/** @var $x \\Symfony\\Component\\Security\\Core\\Authorization\\UserAuthorizationCheckerInterface */\n" +
+                "/** @var $user \\Symfony\\Component\\Security\\Core\\User\\UserInterface */\n" +
+                "$x->isGrantedForUser($user, [null, 'YAML_ROLE_USE<caret>R_FOOBAR']);",
+            PlatformPatterns.psiElement()
+        );
+    }
+
+    public void testTwigAccessDecisionCompletion() {
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{% set voter_decision = access_decision('<caret>', post) %}",
+            "YAML_ROLE_USER_FOOBAR"
+        );
+
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{{ access_decision('<caret>') }}",
+            "YAML_ROLE_USER_FOOBAR"
+        );
+    }
+
+    public void testTwigAccessDecisionNavigation() {
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{% set voter_decision = access_decision('YAML_ROLE<caret>_USER_FOOBAR', post) %}",
+            PlatformPatterns.psiElement()
+        );
+    }
+
+    public void testTwigAccessDecisionAsArrayCompletion() {
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{{ access_decision(['<caret>']) }}",
+            "YAML_ROLE_USER_FOOBAR"
+        );
+
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{{ access_decision({'<caret>'}) }}",
+            "YAML_ROLE_USER_FOOBAR"
+        );
+    }
+
+    public void testTwigAccessDecisionAsArrayNavigation() {
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{{ access_decision(['YAML_ROLE<caret>_USER_FOOBAR']) }}",
+            PlatformPatterns.psiElement()
+        );
+
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{{ access_decision({'YAML_ROLE<caret>_USER_FOOBAR'}) }}",
+            PlatformPatterns.psiElement()
+        );
+    }
+
+    public void testTwigAccessDecisionForUserCompletion() {
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{% set voter_decision = access_decision_for_user(user, '<caret>', post) %}",
+            "YAML_ROLE_USER_FOOBAR"
+        );
+
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{{ access_decision_for_user(another_user, '<caret>') }}",
+            "YAML_ROLE_USER_FOOBAR"
+        );
+    }
+
+    public void testTwigAccessDecisionForUserNavigation() {
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{% set voter_decision = access_decision_for_user(user, 'YAML_ROLE<caret>_USER_FOOBAR', post) %}",
+            PlatformPatterns.psiElement()
+        );
+    }
+
+    public void testTwigAccessDecisionForUserAsArrayCompletion() {
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{{ access_decision_for_user(user, ['<caret>']) }}",
+            "YAML_ROLE_USER_FOOBAR"
+        );
+
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{{ access_decision_for_user(user, {'<caret>'}) }}",
+            "YAML_ROLE_USER_FOOBAR"
+        );
+    }
+
+    public void testTwigAccessDecisionForUserAsArrayNavigation() {
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{{ access_decision_for_user(user, ['YAML_ROLE<caret>_USER_FOOBAR']) }}",
+            PlatformPatterns.psiElement()
+        );
+
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{{ access_decision_for_user(user, {'YAML_ROLE<caret>_USER_FOOBAR'}) }}",
+            PlatformPatterns.psiElement()
+        );
+    }
 }

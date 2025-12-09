@@ -226,6 +226,38 @@ public class TwigPattern {
     }
 
     /**
+     * Check for {{ foo(bar, '|')  }}, {% foo(bar, '|') %}
+     *
+     * @param functionName twig function name
+     */
+    public static ElementPattern<PsiElement> getPrintBlockOrTagFunctionSecondParameterPattern(String... functionName) {
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.STRING_TEXT)
+            .withParent(
+                getFunctionCallScopePattern()
+            )
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
+                    PlatformPatterns.or(PARAMETER_WHITE_LIST),
+                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE).afterLeafSkipping(
+                        PlatformPatterns.or(
+                            PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                        ),
+                        PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf(functionName))
+                    )
+                )
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    /**
      * {{ foo('<caret>') }}
      * {{ 'test'|foo('<caret>') }}
      * {% apply date('<caret>') %}foobar{% endapply %}
@@ -274,6 +306,47 @@ public class TwigPattern {
                         PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
                     ),
                     PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf(functionName))
+                )
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    /**
+     * Literal as second parameter
+     *
+     * {{ foo(bar, {'foobar', 'foo<caret>bar'}) }}
+     * {{ foo(bar, {'fo<caret>obar'}) }}
+     */
+    public static ElementPattern<PsiElement> getFunctionWithSecondParameterAsLiteralPattern(@NotNull String... functionName) {
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.STRING_TEXT).afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                ),
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_CURL),
+                    PlatformPatterns.psiElement(TwigTokenTypes.COMMA)
+                )
+            )
+            .withParent(
+                PlatformPatterns.psiElement(TwigElementTypes.LITERAL).afterLeafSkipping(
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                    ),
+                    PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
+                        PlatformPatterns.or(PARAMETER_WHITE_LIST),
+                        PlatformPatterns.psiElement(TwigTokenTypes.LBRACE).afterLeafSkipping(
+                            PlatformPatterns.or(
+                                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                            ),
+                            PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf(functionName))
+                        )
+                    )
                 )
             )
             .withLanguage(TwigLanguage.INSTANCE);
@@ -407,6 +480,74 @@ public class TwigPattern {
                 ).withLanguage(TwigLanguage.INSTANCE),
 
                 // {{ foo(['foobar', 'foo<caret>bar']) }}
+                PlatformPatterns
+                    .psiElement(TwigTokenTypes.STRING_TEXT).afterLeafSkipping(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement().withElementType(PlatformPatterns.elementType().or(
+                        TwigTokenTypes.SINGLE_QUOTE,
+                        TwigTokenTypes.DOUBLE_QUOTE
+                    )).afterLeafSkipping(
+                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                        PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
+                            PlatformPatterns.or(
+                                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                                PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT),
+                                PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                                PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
+                                PlatformPatterns.psiElement(TwigTokenTypes.COMMA)
+                            ),
+                            functionPattern
+                        )
+                    )
+                ).withLanguage(TwigLanguage.INSTANCE)
+            );
+    }
+
+    /**
+     * Array values as second parameter
+     *
+     * {{ foo(bar, ['foobar', 'foo<caret>bar']) }}
+     * {{ foo(bar, ['fo<caret>obar']) }}
+     */
+    public static ElementPattern<PsiElement> getFunctionWithSecondParameterAsArrayPattern(@NotNull String... functionName) {
+
+        // "foo(param, [<caret>"
+        PsiElementPattern.Capture<PsiElement> functionPattern = PlatformPatterns
+            .psiElement(TwigTokenTypes.LBRACE_SQ)
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
+                    PlatformPatterns.or(PARAMETER_WHITE_LIST),
+                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE).afterLeafSkipping(
+                        PlatformPatterns.or(
+                            PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                        ),
+                        PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf(functionName))
+                    )
+                )
+            );
+
+        return
+            PlatformPatterns.or(
+                // {{ foo(bar, ['fo<caret>obar']) }}
+                PlatformPatterns
+                    .psiElement(TwigTokenTypes.STRING_TEXT).afterLeafSkipping(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement().withElementType(PlatformPatterns.elementType().or(
+                        TwigTokenTypes.SINGLE_QUOTE,
+                        TwigTokenTypes.DOUBLE_QUOTE
+                    )).afterLeafSkipping(
+                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                        functionPattern
+                    )
+                ).withLanguage(TwigLanguage.INSTANCE),
+
+                // {{ foo(bar, ['foobar', 'foo<caret>bar']) }}
                 PlatformPatterns
                     .psiElement(TwigTokenTypes.STRING_TEXT).afterLeafSkipping(
                     PlatformPatterns.psiElement(PsiWhiteSpace.class),
