@@ -15,6 +15,7 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         myFixture.copyFileToProject("classes.php");
         myFixture.copyFileToProject("TwigTemplateCompletionContributorTest.php");
         myFixture.copyFileToProject("routing.xml");
+        myFixture.copyFileToProject("TwigFilterExtension.php");
     }
 
     public String getTestDataPath() {
@@ -127,5 +128,26 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
                 "{{ _self.f<caret>o }}",
             "foobar"
         );
+    }
+
+    public void testThatEnumProvidesCompletionForEnumClasses() {
+        // Test basic completion - enum should be available
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ enum('<caret>') }}", "FooEnum");
+
+        // Ensure non-enum classes are NOT included
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ enum('<caret>') }}", "FooConst");
+
+        // Test namespace-based completion
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ enum('App\\<caret>') }}", "\\\\Bike\\\\FooEnum");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ enum('App\\<caret>') }}", "\\\\Bike\\\\FooConst");
+
+        // Test sub-namespace completion
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ enum('App\\\\Bike\\\\<caret>') }}", "FooEnum");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ enum('App\\\\Bike\\\\<caret>') }}", "FooConst");
+
+        // Test that the insert handler properly escapes backslashes
+        assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ enum('<caret>') }}", "{{ enum('App\\\\Bike\\\\FooEnum') }}", l -> "FooEnum".equals(l.getLookupString()));
+        assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ enum('App\\<caret>') }}", "{{ enum('App\\\\\\Bike\\\\FooEnum') }}", l -> "\\\\Bike\\\\FooEnum".equals(l.getLookupString()));
+        assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ enum('App\\\\Bike\\\\Foo<caret>') }}", "{{ enum('App\\\\Bike\\\\FooEnum') }}", l -> "FooEnum".equals(l.getLookupString()));
     }
 }

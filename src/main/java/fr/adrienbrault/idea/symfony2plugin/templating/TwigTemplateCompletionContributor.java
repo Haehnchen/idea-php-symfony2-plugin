@@ -437,6 +437,13 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             new ConstantCompletionParametersCompletionProvider()
         );
 
+        // {{ enum('App\\Config\\SomeOption') }}
+        extend(
+            CompletionType.BASIC,
+            TwigPattern.getPrintBlockOrTagFunctionPattern("enum"),
+            new EnumCompletionParametersCompletionProvider()
+        );
+
         // {% e => {% extends '...'
         extend(
             CompletionType.BASIC,
@@ -1629,6 +1636,73 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             items.addAll(phpClass.getEnumCases());
 
             return items;
+        }
+    }
+
+    /**
+     * {{ enum('<caret>') }}
+     * {{ enum('Foo\\<caret>') }}
+     */
+    private static class EnumCompletionParametersCompletionProvider extends CompletionProvider<CompletionParameters> {
+        public void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet resultSet) {
+            PsiElement position = parameters.getPosition();
+            if (!Symfony2ProjectComponent.isEnabled(position)) {
+                return;
+            }
+
+            Project project = position.getProject();
+            PhpIndex instance = PhpIndex.getInstance(project);
+
+            PrefixMatcher prefixMatcher = resultSet.getPrefixMatcher();
+            String prefix = prefixMatcher.getPrefix();
+
+            if (prefix.contains("\\")) {
+                // 'FOO\\Foo<caret>'
+                int i = prefix.lastIndexOf("\\");
+                String substring = "\\" + StringUtils.stripStart(prefix.substring(0, i).replace("\\\\", "\\"), "\\");
+                String pre = prefix.substring(prefix.lastIndexOf("\\") + 1);
+                CompletionResultSet completionResultSet = resultSet.withPrefixMatcher(pre);
+
+                for (PhpClass phpClass: PhpIndexUtil.getPhpClassInsideNamespace(project, substring)) {
+                    // Only include enum classes
+                    if (!phpClass.isEnum()) {
+                        continue;
+                    }
+
+                    String fqn = phpClass.getFQN().substring(substring.length());
+                    String fqnNoLeadingSlash = StringUtils.stripStart(phpClass.getFQN(), "\\");
+
+                    LookupElementBuilder element = LookupElementBuilder
+                        .create(fqn.replace("\\", "\\\\"))
+                        .withInsertHandler(TwigEscapedSlashInsertHandler.getInstance())
+                        .withTypeText(fqnNoLeadingSlash, true)
+                        .withIcon(phpClass.getIcon());
+
+                    completionResultSet.addElement(element);
+                }
+            } else {
+                // '<caret>'
+                Collection<PhpClass> phpClasses = new ArrayList<>();
+                for (String className : instance.getAllClassNames(resultSet.getPrefixMatcher())) {
+                    phpClasses.addAll(instance.getClassesByName(className));
+                }
+
+                for (PhpClass phpClass : phpClasses) {
+                    // Only include enum classes
+                    if (!phpClass.isEnum()) {
+                        continue;
+                    }
+
+                    String fqnNoLeadingSlash = StringUtils.stripStart(phpClass.getFQN(), "\\");
+                    LookupElementBuilder element = LookupElementBuilder
+                        .createWithSmartPointer(phpClass.getName(), phpClass)
+                        .withInsertHandler(TwigEscapedSlashInsertHandler.getInstance())
+                        .withTypeText(fqnNoLeadingSlash, true)
+                        .withIcon(phpClass.getIcon());
+
+                    resultSet.addElement(element);
+                }
+            }
         }
     }
 

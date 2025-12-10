@@ -168,6 +168,11 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             targets.addAll(getConstantGoto(psiElement));
         }
 
+        // enum('App\\Config\\SomeOption')
+        if (TwigPattern.getPrintBlockOrTagFunctionPattern("enum").accepts(psiElement)) {
+            targets.addAll(getEnumGoto(psiElement));
+        }
+
         // {# @var user \Foo #}
         if (TwigPattern.getTwigTypeDocBlockPattern().accepts(psiElement)) {
             targets.addAll(getVarClassGoto(psiElement));
@@ -376,6 +381,21 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         targetPsiElements.addAll(phpClass.getEnumCases().stream().filter(e -> parts[1].equals(e.getName())).toList());
 
         return targetPsiElements;
+    }
+
+    @NotNull
+    private Collection<PsiElement> getEnumGoto(@NotNull PsiElement psiElement) {
+        String contents = psiElement.getText();
+        if(StringUtils.isBlank(contents)) {
+            return Collections.emptyList();
+        }
+
+        PhpClass phpClass = PhpElementsUtil.getClassInterface(psiElement.getProject(), contents.replace("\\\\", "\\"));
+        if (phpClass == null || !phpClass.isEnum()) {
+            return Collections.emptyList();
+        }
+
+        return Collections.singletonList(phpClass);
     }
 
     /**

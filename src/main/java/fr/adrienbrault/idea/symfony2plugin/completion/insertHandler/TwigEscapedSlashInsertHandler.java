@@ -6,9 +6,12 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.editor.Document;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.SmartPsiElementPointer;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpClassMember;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
 
 /**
  * "Foo\Foo" => "Foo\\Foo"
@@ -24,19 +27,21 @@ public class TwigEscapedSlashInsertHandler implements InsertHandler<LookupElemen
             return;
         }
 
-        String classFqn = null;
-        String fieldName = null;
+        String insertString = "";
+        PsiElement element = smartPsiElementPointer.getElement();
+        if (element instanceof PhpClassMember phpClassMember) {
+            String classFqn = Objects.requireNonNull(phpClassMember.getContainingClass()).getFQN();
+            String fieldName = phpClassMember.getName();
 
-        if (smartPsiElementPointer.getElement() instanceof PhpClassMember phpClassMember) {
-            classFqn = phpClassMember.getContainingClass().getFQN();
-            fieldName = phpClassMember.getName();
+            insertString = StringUtils.stripStart(classFqn, "\\").replace("\\", "\\\\") + "::" + fieldName;
+        } else if (element instanceof PhpClass phpClass) {
+            insertString = StringUtils.stripStart(phpClass.getFQN(), "\\").replace("\\", "\\\\");
         }
 
         Document document = context.getDocument();
         document.deleteString(context.getStartOffset(), context.getTailOffset());
 
-        String s = StringUtils.stripStart(classFqn, "\\").replace("\\", "\\\\") + "::" + fieldName;
-        document.insertString(context.getStartOffset(), s);
+        document.insertString(context.getStartOffset(), insertString);
         context.commitDocument();
 
         PsiElement elementAt = context.getFile().findElementAt(context.getEditor().getCaretModel().getOffset());
@@ -44,7 +49,7 @@ public class TwigEscapedSlashInsertHandler implements InsertHandler<LookupElemen
             return;
         }
 
-        context.getEditor().getCaretModel().moveCaretRelatively(s.length(), 0, false, false, true);
+        context.getEditor().getCaretModel().moveCaretRelatively(insertString.length(), 0, false, false, true);
     }
 
     public static TwigEscapedSlashInsertHandler getInstance(){
