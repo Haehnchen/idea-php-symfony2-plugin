@@ -767,6 +767,7 @@
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.form.FormOptionGotoCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.templating.BlockGotoCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.templating.FilterGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.templating.GuardGotoCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.templating.TranslationTagGotoCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.form.FormGotoCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.config.php.PhpEventDispatcherGotoCompletionRegistrar"/>
