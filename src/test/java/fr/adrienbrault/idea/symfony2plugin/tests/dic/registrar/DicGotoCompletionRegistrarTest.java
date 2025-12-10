@@ -13,6 +13,7 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
         super.setUp();
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("classes.php"));
         myFixture.copyFileToProject("services.yml");
+        myFixture.copyFileToProject(".env");
     }
 
     public String getTestDataPath() {
@@ -95,7 +96,7 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
                 "class MyService\n" +
                 "{\n" +
                 "    public function __construct(\n" +
-                "        #[Autowire('fo<caret>o')]\n" +
+                "        #[Autowire('%fo<caret>o%')]\n" +
                 "        private $parameter2" +
                 "    ) {}\n" +
                 "}",
@@ -123,7 +124,7 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
                 "class MyService\n" +
                 "{\n" +
                 "    public function __construct(\n" +
-                "        #[Autowire(value: 'fo<caret>o')]\n" +
+                "        #[Autowire(value: '%fo<caret>o%')]\n" +
                 "        private $parameter2" +
                 "    ) {}\n" +
                 "}",
@@ -295,6 +296,298 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
                 "#[When('<caret>')]\n" +
                 "class HandlerCollection {}",
             "dev", "test", "prod"
+        );
+    }
+
+    public void testParameterContributorForParamAttribute() {
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\Autowire;\n" +
+                "\n" +
+                "class MyService\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[Autowire(param: '<caret>')]\n" +
+                "        private bool $debugMode" +
+                "    ) {}\n" +
+                "}",
+            "foo"
+        );
+
+        assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\Autowire;\n" +
+                "\n" +
+                "class MyService\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[Autowire(param: 'fo<caret>o')]\n" +
+                "        private bool $debugMode" +
+                "    ) {}\n" +
+                "}",
+            PlatformPatterns.psiElement()
+        );
+    }
+
+    public void testEnvironmentVariableContributorForEnvAttribute() {
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\Autowire;\n" +
+                "\n" +
+                "class MyService\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[Autowire(env: '<caret>')]\n" +
+                "        private string $senderName" +
+                "    ) {}\n" +
+                "}",
+            "DATABASE_URL", "APP_ENV", "SOME_ENV_VAR"
+        );
+
+        assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\Autowire;\n" +
+                "\n" +
+                "class MyService\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[Autowire(env: 'DATABASE<caret>_URL')]\n" +
+                "        private string $senderName" +
+                "    ) {}\n" +
+                "}",
+            PlatformPatterns.psiElement()
+        );
+    }
+
+    public void testEnvironmentVariableContributorForEnvAttributeWithProcessor() {
+        assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\Autowire;\n" +
+                "\n" +
+                "class MyService\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[Autowire(env: 'bool:SOME_ENV<caret>_VAR')]\n" +
+                "        private bool $allowAttachments" +
+                "    ) {}\n" +
+                "}",
+            PlatformPatterns.psiElement()
+        );
+
+        assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\Autowire;\n" +
+                "\n" +
+                "class MyService\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[Autowire(env: 'int:APP<caret>_ENV')]\n" +
+                "        private int $someValue" +
+                "    ) {}\n" +
+                "}",
+            PlatformPatterns.psiElement()
+        );
+
+        assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\Autowire;\n" +
+                "\n" +
+                "class MyService\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[Autowire(env: 'resolve:DATABASE<caret>_URL')]\n" +
+                "        private string $dbUrl" +
+                "    ) {}\n" +
+                "}",
+            PlatformPatterns.psiElement()
+        );
+    }
+
+    public void testServiceContributorForAutowireServiceClosure() {
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\AutowireServiceClosure;\n" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[AutowireServiceClosure('<caret>')]\n" +
+                "        private $formatter" +
+                "    ) {}\n" +
+                "}",
+            "foo_bar_service"
+        );
+
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\AutowireServiceClosure;\n" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[AutowireServiceClosure(service: '<caret>')]\n" +
+                "        private $formatter" +
+                "    ) {}\n" +
+                "}",
+            "foo_bar_service"
+        );
+
+        assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\AutowireServiceClosure;\n" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[AutowireServiceClosure('foo_bar<caret>_service')]\n" +
+                "        private $formatter" +
+                "    ) {}\n" +
+                "}",
+            PlatformPatterns.psiElement()
+        );
+    }
+
+    public void testServiceContributorForAutowireMethodOf() {
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\AutowireMethodOf;\n" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[AutowireMethodOf('<caret>')]\n" +
+                "        private $formatter" +
+                "    ) {}\n" +
+                "}",
+            "foo_bar_service"
+        );
+
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\AutowireMethodOf;\n" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[AutowireMethodOf(service: '<caret>')]\n" +
+                "        private $formatter" +
+                "    ) {}\n" +
+                "}",
+            "foo_bar_service"
+        );
+
+        assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\AutowireMethodOf;\n" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[AutowireMethodOf('foo_bar<caret>_service')]\n" +
+                "        private $formatter" +
+                "    ) {}\n" +
+                "}",
+            PlatformPatterns.psiElement()
+        );
+    }
+
+    public void testServiceContributorForAutowireCallable() {
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\AutowireCallable;\n" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[AutowireCallable(service: '<caret>')]\n" +
+                "        private $formatter" +
+                "    ) {}\n" +
+                "}",
+            "foo_bar_service"
+        );
+
+        assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\AutowireCallable;\n" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[AutowireCallable(service: 'foo_bar<caret>_service')]\n" +
+                "        private $formatter" +
+                "    ) {}\n" +
+                "}",
+            PlatformPatterns.psiElement()
+        );
+    }
+
+    public void testMethodContributorForAutowireCallable() {
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\AutowireCallable;\n" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[AutowireCallable(service: 'foo_bar_service', method: '<caret>')]\n" +
+                "        private $formatter" +
+                "    ) {}\n" +
+                "}",
+            "format", "process"
+        );
+
+        assertCompletionNotContains(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\AutowireCallable;\n" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[AutowireCallable(service: 'foo_bar_service', method: '<caret>')]\n" +
+                "        private $formatter" +
+                "    ) {}\n" +
+                "}",
+            "privateMethod", "staticMethod"
+        );
+
+        assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\AutowireCallable;\n" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[AutowireCallable(service: 'foo_bar_service', method: 'for<caret>mat')]\n" +
+                "        private $formatter" +
+                "    ) {}\n" +
+                "}",
+            PlatformPatterns.psiElement()
+        );
+    }
+
+    public void testMethodContributorForAutowireCallableWithClassConstant() {
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\AutowireCallable;\n" +
+                "use Foo\\Bar;\n" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[AutowireCallable(service: Bar::class, method: '<caret>')]\n" +
+                "        private $formatter" +
+                "    ) {}\n" +
+                "}",
+            "format", "process"
+        );
+
+        assertCompletionNotContains(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\AutowireCallable;\n" +
+                "use Foo\\Bar;\n" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[AutowireCallable(service: Bar::class, method: '<caret>')]\n" +
+                "        private $formatter" +
+                "    ) {}\n" +
+                "}",
+            "privateMethod", "staticMethod"
+        );
+
+        assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\AutowireCallable;\n" +
+                "use Foo\\Bar;\n" +
+                "\n" +
+                "class HandlerCollection\n" +
+                "{\n" +
+                "    public function __construct(\n" +
+                "        #[AutowireCallable(service: Bar::class, method: 'for<caret>mat')]\n" +
+                "        private $formatter" +
+                "    ) {}\n" +
+                "}",
+            PlatformPatterns.psiElement()
         );
     }
 }

@@ -17,11 +17,15 @@ namespace Symfony\Component\DependencyInjection\Attribute
          * @param string|null $value      Parameter value (ie "%kernel.project_dir%/some/path")
          * @param string|null $service    Service ID (ie "some.service")
          * @param string|null $expression Expression (ie 'service("some.service").someMethod()')
+         * @param string|null $param      Container parameter name (ie "kernel.debug")
+         * @param string|null $env        Environment variable name (ie "DATABASE_URL")
          */
         public function __construct(
             string $value = null,
             string $service = null,
             string $expression = null,
+            string $param = null,
+            string $env = null,
         ) {}
     }
 
@@ -73,6 +77,31 @@ namespace Symfony\Component\DependencyInjection\Attribute
         ) {
         }
     }
+
+    class AutowireServiceClosure
+    {
+        public function __construct(
+            public ?string $service = null,
+        ) {
+        }
+    }
+
+    class AutowireCallable
+    {
+        public function __construct(
+            public ?string $service = null,
+            public ?string $method = null,
+        ) {
+        }
+    }
+
+    class AutowireMethodOf
+    {
+        public function __construct(
+            public ?string $service = null,
+        ) {
+        }
+    }
 }
 
 namespace
@@ -99,6 +128,21 @@ namespace Foo
 {
     class Bar
     {
+        public function format($message) {
+            return strtoupper($message);
+        }
+
+        public function process($data) {
+            return $data;
+        }
+
+        private function privateMethod() {
+            return 'private';
+        }
+
+        public static function staticMethod() {
+            return 'static';
+        }
     }
 }
 

@@ -79,6 +79,9 @@ public class ServiceContainerUtil {
     public static final String DECORATOR_ATTRIBUTE_CLASS = "\\Symfony\\Component\\DependencyInjection\\Attribute\\AsDecorator";
     public static final String AUTOCONFIGURE_ATTRIBUTE_CLASS = "\\Symfony\\Component\\DependencyInjection\\Attribute\\Autoconfigure";
     public static final String AUTOWIRE_LOCATOR_ATTRIBUTE_CLASS = "\\Symfony\\Component\\DependencyInjection\\Attribute\\AutowireLocator";
+    public static final String AUTOWIRE_SERVICE_CLOSURE_ATTRIBUTE_CLASS = "\\Symfony\\Component\\DependencyInjection\\Attribute\\AutowireServiceClosure";
+    public static final String AUTOWIRE_CALLABLE_ATTRIBUTE_CLASS = "\\Symfony\\Component\\DependencyInjection\\Attribute\\AutowireCallable";
+    public static final String AUTOWIRE_METHOD_OF_ATTRIBUTE_CLASS = "\\Symfony\\Component\\DependencyInjection\\Attribute\\AutowireMethodOf";
 
     @NotNull
     public static Collection<ServiceSerializable> getServicesInFile(@NotNull PsiFile psiFile) {
