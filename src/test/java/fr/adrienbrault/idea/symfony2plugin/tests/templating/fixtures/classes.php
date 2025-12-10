@@ -85,5 +85,11 @@ namespace Symfony\Component\HttpFoundation
 
 namespace App\Bike
 {
-    enum FooEnum {}
+    enum FooEnum
+    {
+        case FOOBAR;
+        case FOOBAR1;
+        case FOOBAR2;
+        case FOOBAR3;
+    }
 }
