@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Twig;
+
+use Twig\Attribute\AsTwigFilter;
+use Twig\Attribute\AsTwigFunction;
+use Twig\Attribute\AsTwigTest;
+use Twig\Environment;
+
+class MyExtension
+{
+    #[AsTwigFilter('filter_name', needsEnvironment: true)]
+    public function filterMethod(Environment $env, $value)
+    {
+        return $value;
+    }
+
+    #[AsTwigFunction('function_name', needsEnvironment: true, needsContext: true, isSafe: ['html'])]
+    public function functionMethod(Environment $env, $context, $value)
+    {
+        return $value;
+    }
+
+    #[AsTwigTest('test_name')]
+    public function testMethod($value)
+    {
+        return $value;
+    }
+}

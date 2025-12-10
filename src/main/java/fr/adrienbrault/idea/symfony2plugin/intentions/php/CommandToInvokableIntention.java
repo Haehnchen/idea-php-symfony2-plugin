@@ -14,6 +14,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.IncorrectOperationException;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.util.CodeUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import icons.SymfonyIcons;
@@ -74,61 +75,8 @@ public class CommandToInvokableIntention extends PsiElementBaseIntentionAction i
             return;
         }
 
-        // Navigate the PSI tree to find the extends clause
-        var extendsList = phpClass.getExtendsList();
-
-        List<ClassReference> references = extendsList.getReferenceElements();
-        if (references.isEmpty()) {
-            return;
-        }
-
-        // Find the Command reference
-        ClassReference commandRef = null;
-        for (ClassReference classRef : references) {
-            PhpClass resolvedClass = (PhpClass) classRef.resolve();
-            if (resolvedClass != null && "\\Symfony\\Component\\Console\\Command\\Command".equals(resolvedClass.getFQN())) {
-                commandRef = classRef;
-                break;
-            }
-        }
-
-        if (commandRef == null) {
-            return;
-        }
-
-        // If this is the only extends, remove the entire extends clause using Document API
-        // This avoids PSI null issues by editing at the text level
-        if (references.size() == 1) {
-            // Find whitespace before the extends list - we want to delete from there
-            // to include any spaces between the class name and "extends"
-            PsiElement startElement = extendsList;
-            PsiElement prev = extendsList.getPrevSibling();
-
-            // Skip backwards through whitespace to find the actual start
-            while (prev != null && (prev.getText().trim().isEmpty() || "extends".equals(prev.getText().trim()))) {
-                startElement = prev;
-                prev = prev.getPrevSibling();
-            }
-
-            // Use Document API to delete the text range
-            PsiFile file = phpClass.getContainingFile();
-            Document document = PsiDocumentManager.getInstance(phpClass.getProject()).getDocument(file);
-
-            if (document != null) {
-                int startOffset = startElement.getTextRange().getStartOffset();
-                int endOffset = extendsList.getTextRange().getEndOffset();
-
-                document.deleteString(startOffset, endOffset);
-
-                // Commit and synchronize PSI
-                PsiDocumentManager psiDocManager = PsiDocumentManager.getInstance(phpClass.getProject());
-                psiDocManager.commitDocument(document);
-                psiDocManager.doPostponedOperationsAndUnblockDocument(document);
-            }
-        } else {
-            // Multiple extends, just remove this one reference (PSI deletion is safe here)
-            commandRef.delete();
-        }
+        // Use shared utility method to remove the extends clause
+        CodeUtil.removeExtendsClause(phpClass, "\\Symfony\\Component\\Console\\Command\\Command");
     }
 
     private void optimizeImports(@NotNull PsiFile file) {

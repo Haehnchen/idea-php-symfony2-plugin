@@ -1,0 +1,52 @@
+<?php
+
+namespace App\Twig;
+
+use Twig\Extension\AbstractExtension;
+use Twig\TwigFilter;
+use Twig\TwigFunction;
+use Twig\TwigTest;
+use Twig\Environment;
+
+class MyExtension extends AbstractExtension
+{
+    public function getFilters()
+    {
+        return [
+            new TwigFilter('filter_name', [$this, 'filterMethod'], ['needs_environment' => true]),
+        ];
+    }
+
+    public function getFunctions()
+    {
+        return [
+            new TwigFunction('function_name', [$this, 'functionMethod'], [
+                'needs_environment' => true,
+                'needs_context' => true,
+                'is_safe' => ['html']
+            ]),
+        ];
+    }
+
+    public function getTests()
+    {
+        return [
+            new TwigTest('test_name', [$this, 'testMethod']),
+        ];
+    }
+
+    public function filterMethod(Environment $env, $value)
+    {
+        return $value;
+    }
+
+    public function functionMethod(Environment $env, $context, $value)
+    {
+        return $value;
+    }
+
+    public function testMethod($value)
+    {
+        return $value;
+    }
+}

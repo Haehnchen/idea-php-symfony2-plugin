@@ -17,6 +17,7 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.CodeUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import icons.SymfonyIcons;
 import org.jetbrains.annotations.NotNull;
@@ -80,41 +81,13 @@ public class AddRouteAttributeIntention extends PsiElementBaseIntentionAction im
         psiDocManager.commitDocument(document);
         psiDocManager.doPostponedOperationsAndUnblockDocument(document);
 
-        reformatAddedAttribute(project, document, methodStartOffset);
+        CodeUtil.reformatAddedAttribute(project, document, methodStartOffset);
 
         // position caret after the opening quote of the path: #[Route('<caret>/...
         if (editor != null) {
             int caretOffset = methodStartOffset + attributePrefix.length();
             editor.getCaretModel().moveToOffset(caretOffset);
         }
-    }
-
-    private void reformatAddedAttribute(@NotNull Project project, @NotNull Document document, int attributeStartOffset) {
-        PsiDocumentManager psiDocManager = PsiDocumentManager.getInstance(project);
-        PsiFile freshFile = psiDocManager.getPsiFile(document);
-        if (freshFile == null) {
-            return;
-        }
-
-        PsiElement elementAtOffset = freshFile.findElementAt(attributeStartOffset);
-        if (elementAtOffset == null) {
-            return;
-        }
-
-        Method freshMethod = PsiTreeUtil.getParentOfType(elementAtOffset, Method.class);
-        if (freshMethod == null) {
-            return;
-        }
-
-        PsiElement nameIdentifier = freshMethod.getNameIdentifier();
-        if (nameIdentifier == null) {
-            return;
-        }
-
-        int endOffset = nameIdentifier.getTextRange().getEndOffset();
-
-        CodeStyleManager codeStyleManager = CodeStyleManager.getInstance(project);
-        codeStyleManager.reformatRange(freshFile, attributeStartOffset, endOffset);
     }
 
     @Override

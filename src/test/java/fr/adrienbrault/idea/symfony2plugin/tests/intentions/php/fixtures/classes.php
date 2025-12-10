@@ -146,4 +146,56 @@ namespace Symfony\Component\HttpFoundation
     }
 }
 
+namespace Twig\Extension {
+    class AbstractExtension { }
+}
+
+namespace Twig {
+    class TwigFilter {
+        public function __construct(string $name, callable $callable, array $options = []) {}
+    }
+
+    class TwigFunction {
+        public function __construct(string $name, callable $callable, array $options = []) {}
+    }
+
+    class TwigTest {
+        public function __construct(string $name, callable $callable, array $options = []) {}
+    }
+
+    class Environment {}
+}
+
+namespace Twig\Attribute {
+    #[\Attribute(\Attribute::TARGET_METHOD)]
+    class AsTwigFilter {
+        public function __construct(
+            public string $name,
+            public bool $needsEnvironment = false,
+            public bool $needsContext = false,
+            public array $isSafe = [],
+            public bool $isVariadic = false
+        ) {}
+    }
+
+    #[\Attribute(\Attribute::TARGET_METHOD)]
+    class AsTwigFunction {
+        public function __construct(
+            public string $name,
+            public bool $needsEnvironment = false,
+            public bool $needsContext = false,
+            public array $isSafe = [],
+            public bool $isVariadic = false
+        ) {}
+    }
+
+    #[\Attribute(\Attribute::TARGET_METHOD)]
+    class AsTwigTest {
+        public function __construct(
+            public string $name,
+            public bool $needsEnvironment = false,
+            public bool $needsContext = false
+        ) {}
+    }
+}
 
