@@ -3,6 +3,8 @@
 namespace{
     function my_json_decode() {}
     function twig_test_even() {}
+    function constant($name) {}
+    function enum($name) {}
 
     interface Twig_ExtensionInterface {}
     interface Twig_Environment {}
@@ -43,6 +45,8 @@ class DoctrineExtension extends \Twig_Extension
         return array(
             new \Twig_SimpleFunction('foobar', array($this, 'foobar')),
             new \Twig_SimpleFunction('json_bar', 'my_json_decode'),
+            new \Twig_SimpleFunction('constant', 'constant'),
+            new \Twig_SimpleFunction('enum', 'enum'),
         );
     }
 

@@ -81,3 +81,9 @@ namespace Symfony\Component\HttpFoundation
         public function isMethod(string $method) {}
     }
 }
+
+
+namespace App\Bike
+{
+    enum FooEnum {}
+}
