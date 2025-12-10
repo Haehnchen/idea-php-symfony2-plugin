@@ -1640,4 +1640,52 @@ public class TwigPattern {
                 elementType != TwigTokenTypes.COLON;
         }
     }
+
+    /**
+     * {% guard function importmap %}
+     * {% guard filter upper %}
+     * {% guard test even %}
+     *
+     * Pattern for the type keyword after "guard" tag name
+     */
+    public static ElementPattern<PsiElement> getGuardTypePattern() {
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.IDENTIFIER)
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText("guard")
+            )
+            .withParent(
+                PlatformPatterns.psiElement(TwigElementTypes.TAG)
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    /**
+     * {% guard function importmap %}
+     * {% guard filter upper %}
+     * {% guard test even %}
+     *
+     * Pattern for the callable name after "guard" type keyword
+     */
+    public static ElementPattern<PsiElement> getGuardCallablePattern() {
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.IDENTIFIER)
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(
+                    PlatformPatterns.string().oneOf("function", "filter", "test")
+                )
+            )
+            .withParent(
+                PlatformPatterns.psiElement(TwigElementTypes.TAG)
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
 }
