@@ -19,14 +19,14 @@ public class PhpCommandGotoCompletionRegistrarTest extends SymfonyLightCodeInsig
 
     public void testCommandArguments() {
         String[] argsLookup = {"arg1", "arg2", "arg3" ,"argDef"};
-        assertAtTextCompletionContains("<getArgument>", argsLookup);
-        assertAtTextCompletionContains("<hasArgument>", argsLookup);
+        assertAtTextCompletionContains("GETARGUMENT", argsLookup);
+        assertAtTextCompletionContains("HASARGUMENT", argsLookup);
     }
 
     public void testCommandOptions() {
         String[] optsLookup = {"opt1", "opt2", "opt3" ,"optDef", "optSingleDef"};
-        assertAtTextCompletionContains("<getOption>", optsLookup);
-        assertAtTextCompletionContains("<hasOption>", optsLookup);
+        assertAtTextCompletionContains("GETOPTION", optsLookup);
+        assertAtTextCompletionContains("HASOPTION", optsLookup);
     }
 
 }

@@ -37,6 +37,7 @@ dependencies {
             "com.jetbrains.php",
             "com.jetbrains.twig",
             "com.jetbrains.php.dql",
+            "org.jetbrains.plugins.terminal",
             "de.espend.idea.php.annotation",
             "de.espend.idea.php.toolbox"
         )
