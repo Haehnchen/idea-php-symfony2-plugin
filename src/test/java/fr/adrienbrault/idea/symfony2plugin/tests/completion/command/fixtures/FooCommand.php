@@ -4,11 +4,10 @@ namespace Symfony\Component\Console\Command {
 
     class Command {
         protected function configure() {}
-        function addOption()  { return $this; }
+        function addOption() { return $this; }
         function addArgument() { return $this; }
         function setDefinition() { return $this; }
-    };
-
+    }
 }
 
 namespace Symfony\Component\Console\Input {
@@ -20,9 +19,15 @@ namespace Symfony\Component\Console\Input {
         public function getOption();
     }
 
-    class InputArgument {}
-    class InputOption {}
+    class InputArgument
+    {
+        public function __construct($name, $mode = null, $description = '', $default = null) {}
+    }
 
+    class InputOption
+    {
+        public function __construct($name, $shortcut = null, $mode = null, $description = '', $default = null) {}
+    }
 }
 
 namespace Foo {
@@ -57,14 +62,13 @@ namespace Foo {
 
         protected function execute(InputInterface $input)
         {
-            $input->getArgument("<getArgument>");
-            $input->hasArgument("<hasArgument>");
+            $input->getArgument("GETARGUMENT");
+            $input->hasArgument("HASARGUMENT");
 
-            $input->getOption("<getOption>");
-            $input->hasOption("<hasOption>");
+            $input->getOption("GETOPTION");
+            $input->hasOption("HASOPTION");
         }
 
     }
 }
-
 

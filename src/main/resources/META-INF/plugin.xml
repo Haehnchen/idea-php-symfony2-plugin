@@ -235,7 +235,8 @@
 
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.ConstantEnumCompletionContributor"/>
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.QueryBuilderCompletionContributor"/>
-
+        <completion.contributor language="any" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.command.CommandNameTerminalCompletionContributor"/>
+        <completion.contributor language="any" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.command.CommandOptionTerminalCompletionContributor"/>
         <completion.contributor language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.XmlCompletionContributor"/>
         <completion.contributor language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor"/>
         <completion.contributor language="HTML" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.completion.TwigHtmlCompletionContributor"/>
@@ -834,12 +835,12 @@
         <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.GlobalTwigConfigVariableCollector"/>
         <TwigVariableCollector implementation="fr.adrienbrault.idea.symfony2plugin.ux.variable.collector.UxComponentVariableCollector"/>
     </extensions>
-
     <depends>com.jetbrains.twig</depends>
     <depends>com.jetbrains.php</depends>
     <depends>JavaScript</depends>
     <depends>com.intellij.modules.platform</depends>
     <depends>org.jetbrains.plugins.yaml</depends>
+    <depends>org.jetbrains.plugins.terminal</depends>
     <depends config-file="annotation.xml">de.espend.idea.php.annotation</depends>
 
     <depends config-file="dql.xml" optional="true" >com.jetbrains.php.dql</depends>
