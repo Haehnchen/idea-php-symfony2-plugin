@@ -582,12 +582,11 @@ public class SymfonyCreateService extends JDialog {
             service.setLocationRelativeTo(component);
         }
 
-        // https://plugins.jetbrains.com/docs/intellij/general-threading-rules.html#read-access
-        // fix: "Thread context was already set: com.intellij.openapi.actionSystem.ex.ActionContextElement"
-        // https://intellij-support.jetbrains.com/hc/en-us/community/posts/14397678486418--Thread-context-was-already-set-CoroutineName-commit-workflow-when-showing-window-during-commit-check?page=1#community_comment_15082225353874
-        try (var ignored = ThreadContext.resetThreadContext()) {
+        // The invokeLater() method schedules the setVisible(true) call to run on the EDT asynchronously, which prevents the thread context conflict.
+        // This is the standard approach for showing dialogs in IntelliJ plugins.
+        ApplicationManager.getApplication().invokeLater(() -> {
             service.setVisible(true);
-        }
+        });
 
         return service;
     }
