@@ -38,6 +38,7 @@ dependencies {
             "com.jetbrains.php",
             "com.jetbrains.twig",
             "com.jetbrains.php.dql",
+            "org.jetbrains.plugins.terminal",
             "de.espend.idea.php.annotation",
             "de.espend.idea.php.toolbox"
         )
@@ -61,11 +62,13 @@ intellijPlatform {
         name = properties("pluginName")
     }
 
+    buildSearchableOptions = false
+
     pluginVerification {
         ides {
             create(type, version) {
                 useInstaller = false
-                useCache = true
+                useCache = false
             }
         }
     }
