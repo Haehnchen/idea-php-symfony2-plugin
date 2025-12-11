@@ -61,6 +61,8 @@ intellijPlatform {
         name = properties("pluginName")
     }
 
+    buildSearchableOptions = false
+
     pluginVerification {
         ides {
             create(type, version) {
