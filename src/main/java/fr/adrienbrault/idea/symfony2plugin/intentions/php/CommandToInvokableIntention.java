@@ -363,10 +363,10 @@ public class CommandToInvokableIntention extends PsiElementBaseIntentionAction i
             boolean needsOption = !configureData.options.isEmpty();
 
             if (needsArgument) {
-                PhpElementsUtil.insertUseIfNecessary(phpClass, "\\Symfony\\Component\\Console\\Input\\Attribute\\Argument");
+                PhpElementsUtil.insertUseIfNecessary(phpClass, "\\Symfony\\Component\\Console\\Attribute\\Argument");
             }
             if (needsOption) {
-                PhpElementsUtil.insertUseIfNecessary(phpClass, "\\Symfony\\Component\\Console\\Input\\Attribute\\Option");
+                PhpElementsUtil.insertUseIfNecessary(phpClass, "\\Symfony\\Component\\Console\\Attribute\\Option");
             }
 
             // Commit and unblock after adding use statements to allow further document modifications
