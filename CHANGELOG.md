@@ -22,6 +22,21 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2025.1.282
+* Refactor Symfony commands `options` and `arguments` extraction, supporting both traditional and modern approaches (Daniel Espendiller)
+* Update `#[Argument]` and `#[Option]` attributes to correct namespace during invokable command migration (Daniel Espendiller)
+* Add support for `#[AutowireServiceClosure]`, `#[AutowireMethodOf]`, and `#[AutowireCallable]` attributes with completion and navigation - Strip processor prefixes (e.g., `bool:`, `int:`) from `#[Autowire(env:)]` attributes for navigation and completion - Add `%parameter%` wrapping support in `#[Autowire()]` attributes with completion and navigation - Add support for `#[Autowire(param:)]` and `#[Autowire(env:)]` attributes with completion and navigation (Daniel Espendiller)
+* Remove `parent::__construct` calls during invokable command migration / replace `$input->getArgument()` and `$input->getOption()` calls with direct variable usage during invokable command migration (Daniel Espendiller)
+* Add support for `enum` Twig function with completion, navigation, and insert handler for enum classes (Daniel Espendiller)
+* Add completion and navigation support for Twig `guard` tag with `function`, `filter`, and `test` types (Daniel Espendiller)
+* Intention action to migrate TwigExtension getFilters(), getFunctions(), and getTests() methods to use PHP attributes (#[AsTwigFilter], #[AsTwigFunction], #[AsTwigTest]). (Daniel Espendiller)
+* [paid] Add inspection to detect deprecated array usage in Doctrine DBAL QueryBuilder (like `select`) methods and provide quick fixes (Daniel Espendiller)
+* Add support for `is_granted_for_user` `access_decision` `access_decision_for_user` Twig function and UserAuthorizationCheckerInterface with completion and navigation (Daniel Espendiller)
+* Add support for Twig attributes extension inside the TwigExtension template (`NewTwigExtensionAction`) (Daniel Espendiller)
+* Add support for detecting `AsTwig*` attributes in SymfonyImplicitUsageProvider (Daniel Espendiller)
+* Use the latest "org.jetbrains.intellij.platform" features and migrate to "compatiblePlugins" for installing plugins (Daniel Espendiller)
+* Fix upcoming deprecations (Daniel Espendiller)
+
 ## 2025.1.281
 * Refactor WebDeployment startup activity: migrate to `ProjectActivity` and clean up legacy code (Daniel Espendiller)
 * Refactor Symfony Profiler widget to use `EditorBasedStatusBarPopup` and simplify popup creation (Daniel Espendiller)
