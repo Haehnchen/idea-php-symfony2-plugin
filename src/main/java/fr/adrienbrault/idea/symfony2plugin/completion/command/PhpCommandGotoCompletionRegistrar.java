@@ -5,18 +5,17 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.util.Processor;
 import com.jetbrains.php.lang.PhpLanguage;
-import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyCommandUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -79,26 +78,52 @@ public class PhpCommandGotoCompletionRegistrar implements GotoCompletionRegistra
 
             Collection<LookupElement> elements = new ArrayList<>();
 
-            Map<String, CommandArg> targets = getCommandConfigurationMap(phpClass, addMethod);
+            if("addOption".equals(addMethod)) {
+                // For options, use Map<String, CommandOption>
+                Map<String, SymfonyCommandUtil.CommandOption> targets = SymfonyCommandUtil.getCommandOptions(phpClass);
 
-            for(CommandArg key: targets.values()) {
-                LookupElementBuilder lookup = LookupElementBuilder.create(key.getName()).withIcon(Symfony2Icons.SYMFONY);
+                for(SymfonyCommandUtil.CommandOption key: targets.values()) {
+                    LookupElementBuilder lookup = LookupElementBuilder.create(key.name()).withIcon(Symfony2Icons.SYMFONY);
 
-                String description = key.getDescription();
-                if(description != null) {
+                    String description = key.description();
+                    if(description != null) {
 
-                    if(description.length() > 25) {
-                        description = StringUtils.abbreviate(description, 25);
+                        if(description.length() > 25) {
+                            description = StringUtils.abbreviate(description, 25);
+                        }
+
+                        lookup = lookup.withTypeText(description, true);
                     }
 
-                    lookup = lookup.withTypeText(description, true);
-                }
+                    if(key.defaultValue() != null) {
+                        lookup = lookup.withTailText("(" + key.defaultValue() + ")", true);
+                    }
 
-                if(key.getDefaultValue() != null) {
-                    lookup = lookup.withTailText("(" + key.getDefaultValue() + ")", true);
+                    elements.add(lookup);
                 }
+            } else {
+                // For arguments, use Map<String, CommandArgument>
+                Map<String, SymfonyCommandUtil.CommandArgument> targets = SymfonyCommandUtil.getCommandArguments(phpClass);
 
-                elements.add(lookup);
+                for(SymfonyCommandUtil.CommandArgument key: targets.values()) {
+                    LookupElementBuilder lookup = LookupElementBuilder.create(key.name()).withIcon(Symfony2Icons.SYMFONY);
+
+                    String description = key.description();
+                    if(description != null) {
+
+                        if(description.length() > 25) {
+                            description = StringUtils.abbreviate(description, 25);
+                        }
+
+                        lookup = lookup.withTypeText(description, true);
+                    }
+
+                    if(key.defaultValue() != null) {
+                        lookup = lookup.withTailText("(" + key.defaultValue() + ")", true);
+                    }
+
+                    elements.add(lookup);
+                }
             }
 
             return elements;
@@ -118,160 +143,19 @@ public class PhpCommandGotoCompletionRegistrar implements GotoCompletionRegistra
                 return Collections.emptyList();
             }
 
-            Map<String, CommandArg> targets = getCommandConfigurationMap(phpClass, addMethod);
-            if(!targets.containsKey(contents)) {
-                return Collections.emptyList();
-            }
-
-            return Collections.singletonList(targets.get(contents).getTarget());
-        }
-
-        @Nullable
-        private String getParameterStringValue(@NotNull PsiElement[] parameters, int index) {
-
-            if(index >= parameters.length ) {
-                return null;
-            }
-
-            if(!(parameters[index] instanceof StringLiteralExpression)) {
-                return null;
-            }
-
-            String contents = ((StringLiteralExpression) parameters[index]).getContents();
-            if(StringUtils.isBlank(contents)) {
-                return null;
-            }
-
-            return contents;
-        }
-
-        private Map<String, CommandArg> getCommandConfigurationMap(@NotNull PhpClass phpClass, final @NotNull String methodName) {
-
-            Method configure = phpClass.findMethodByName("configure");
-            if(configure == null) {
-                return Collections.emptyMap();
-            }
-
-            Collection<PsiElement> psiElements = PhpElementsUtil.collectMethodElementsWithParents(configure, new CommandDefPsiElementFilter(methodName));
-            if(psiElements.isEmpty()) {
-                return Collections.emptyMap();
-            }
-
-            Map<String, CommandArg> targets = new HashMap<>();
-
-            for (PsiElement element : psiElements) {
-
-                if(!(element instanceof MethodReference)) {
-                    continue;
+            if("addOption".equals(addMethod)) {
+                Map<String, SymfonyCommandUtil.CommandOption> targets = SymfonyCommandUtil.getCommandOptions(phpClass);
+                if(!targets.containsKey(contents)) {
+                    return Collections.emptyList();
                 }
-
-                /*
-                  ->setDefinition(new InputArgument())
-                  ->setDefinition(array(
-                     new InputArgument(),
-                     new InputOption(),
-                  ));
-                */
-                if("setDefinition".equals(((MethodReference) element).getName())) {
-
-                    Collection<NewExpression> newExpressions = PsiTreeUtil.collectElementsOfType(element, NewExpression.class);
-                    for (NewExpression newExpression : newExpressions) {
-                        if(methodName.equals("addOption") && PhpElementsUtil.getNewExpressionPhpClassWithInstance(newExpression, "Symfony\\Component\\Console\\Input\\InputOption") != null) {
-
-                            // new InputOption()
-                            PsiElement[] parameters = newExpression.getParameters();
-                            String contents = getParameterStringValue(parameters, 0);
-                            if(contents != null && StringUtils.isNotBlank(contents)) {
-                                targets.put(contents, new CommandArg(parameters[0], contents, getParameterStringValue(parameters, 3), getParameterStringValue(parameters, 4)));
-                            }
-
-                        } else if(methodName.equals("addArgument") && PhpElementsUtil.getNewExpressionPhpClassWithInstance(newExpression, "Symfony\\Component\\Console\\Input\\InputArgument") != null) {
-
-                            // new InputArgument()
-                            PsiElement[] parameters = newExpression.getParameters();
-                            String contents = getParameterStringValue(parameters, 0);
-                            if(contents != null && StringUtils.isNotBlank(contents)) {
-                                targets.put(contents, new CommandArg(parameters[0], contents, getParameterStringValue(parameters, 2), getParameterStringValue(parameters, 3)));
-                            }
-                        }
-
-                    }
-
-                } else {
-
-                    /*
-                        ->addArgument('arg3', null, 'desc')
-                        ->addOption('opt1', null, null, 'desc', 'default')
-                    */
-                    PsiElement[] parameters = ((MethodReference) element).getParameters();
-                    if(parameters.length > 0 && parameters[0] instanceof StringLiteralExpression) {
-                        String contents = ((StringLiteralExpression) parameters[0]).getContents();
-                        if(StringUtils.isNotBlank(contents)) {
-                            if(methodName.equals("addOption")) {
-                                targets.put(contents, new CommandArg(parameters[0], contents, getParameterStringValue(parameters, 3), getParameterStringValue(parameters, 4)));
-                            } else if(methodName.equals("addArgument")) {
-                                targets.put(contents, new CommandArg(parameters[0], contents, getParameterStringValue(parameters, 2), getParameterStringValue(parameters, 3)));
-                            }
-                        }
-                    }
+                return Collections.singletonList(targets.get(contents).target());
+            } else {
+                Map<String, SymfonyCommandUtil.CommandArgument> targets = SymfonyCommandUtil.getCommandArguments(phpClass);
+                if(!targets.containsKey(contents)) {
+                    return Collections.emptyList();
                 }
-
+                return Collections.singletonList(targets.get(contents).target());
             }
-
-            return targets;
-        }
-
-        private record CommandDefPsiElementFilter(String methodName) implements Processor<PsiElement> {
-            @Override
-            public boolean process(PsiElement psiElement) {
-                if (!(psiElement instanceof MethodReference)) {
-                    return false;
-                }
-
-                String name = ((MethodReference) psiElement).getName();
-                return methodName.equals(name) || "setDefinition".equals(name);
-            }
-        }
-    }
-
-    private static class CommandArg {
-
-        @NotNull
-        private final PsiElement target;
-        private final String name;
-        private String description;
-        private String defaultValue;
-
-        public CommandArg(@NotNull PsiElement target, @NotNull String name) {
-            this.target = target;
-            this.name = name;
-        }
-
-        private CommandArg(@NotNull PsiElement target, @NotNull String name, @Nullable String description, @Nullable String defaultValue) {
-            this.target = target;
-            this.name = name;
-            this.description = description;
-            this.defaultValue = defaultValue;
-        }
-
-        @NotNull
-        public String getName() {
-            return name;
-        }
-
-        @Nullable
-        public String getDescription() {
-            return description;
-        }
-
-        @Nullable
-        public String getDefaultValue() {
-            return defaultValue;
-        }
-
-        @NotNull
-        public PsiElement getTarget() {
-            return target;
         }
     }
 
