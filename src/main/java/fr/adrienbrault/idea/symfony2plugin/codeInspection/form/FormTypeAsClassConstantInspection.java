@@ -27,7 +27,7 @@ public class FormTypeAsClassConstantInspection extends LocalInspectionTool {
 
     @NotNull
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
-        if(!Symfony2ProjectComponent.isEnabled(holder.getProject()) || !SymfonyUtil.isVersionGreaterThenEquals(holder.getProject(), "2.8")) {
+        if(!Symfony2ProjectComponent.isEnabled(holder.getProject())) {
             return super.buildVisitor(holder, isOnTheFly);
         }
 
@@ -36,6 +36,7 @@ public class FormTypeAsClassConstantInspection extends LocalInspectionTool {
 
     private static class MyPsiElementVisitor extends PsiElementVisitor {
         private final ProblemsHolder holder;
+        private Boolean isVersionGreaterThenEquals = null;
 
         MyPsiElementVisitor(ProblemsHolder holder) {
             this.holder = holder;
@@ -43,16 +44,24 @@ public class FormTypeAsClassConstantInspection extends LocalInspectionTool {
 
         @Override
         public void visitElement(PsiElement element) {
-            if(!(element instanceof MethodReference) ||
-                !ArrayUtil.contains(((MethodReference) element).getName(), "add", "create") ||
-                !PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) element, "Symfony\\Component\\Form\\FormBuilderInterface")
+            if(!(element instanceof MethodReference methodReference) ||
+                !ArrayUtil.contains(methodReference.getName(), "add", "create") ||
+                !PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "Symfony\\Component\\Form\\FormBuilderInterface")
                 ) {
 
                 super.visitElement(element);
                 return;
             }
 
-            PsiElement[] parameters = ((MethodReference) element).getParameters();
+            if (isVersionGreaterThenEquals == null) {
+                isVersionGreaterThenEquals = SymfonyUtil.isVersionGreaterThenEquals(holder.getProject(), "2.8");
+            }
+
+            if (!isVersionGreaterThenEquals) {
+                return;
+            }
+
+            PsiElement[] parameters = methodReference.getParameters();
             if(parameters.length < 2) {
                 super.visitElement(element);
                 return;
