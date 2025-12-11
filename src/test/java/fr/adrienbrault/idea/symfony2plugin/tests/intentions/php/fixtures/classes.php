@@ -24,6 +24,23 @@ namespace Symfony\Component\Console\Attribute
             public bool $hidden = false
         ) {}
     }
+
+    #[\Attribute(\Attribute::TARGET_PARAMETER)]
+    class Argument
+    {
+        public function __construct(
+            public ?string $description = null
+        ) {}
+    }
+
+    #[\Attribute(\Attribute::TARGET_PARAMETER)]
+    class Option
+    {
+        public function __construct(
+            public ?string $shortcut = null,
+            public ?string $description = null
+        ) {}
+    }
 }
 
 namespace Symfony\Component\Console\Input
@@ -61,26 +78,6 @@ namespace Symfony\Component\Console
 
     class Application
     {
-    }
-}
-
-namespace Symfony\Component\Console\Input\Attribute
-{
-    #[\Attribute(\Attribute::TARGET_PARAMETER)]
-    class Argument
-    {
-        public function __construct(
-            public ?string $description = null
-        ) {}
-    }
-
-    #[\Attribute(\Attribute::TARGET_PARAMETER)]
-    class Option
-    {
-        public function __construct(
-            public ?string $shortcut = null,
-            public ?string $description = null
-        ) {}
     }
 }
 
