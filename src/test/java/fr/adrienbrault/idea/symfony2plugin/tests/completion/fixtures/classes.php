@@ -63,3 +63,23 @@ namespace Symfony\Component\HttpKernel\Attribute {
     {
     }
 }
+
+namespace Twig\Extension {
+    class AbstractExtension
+    {
+    }
+}
+
+namespace Twig\Attribute {
+    class AsTwigFilter
+    {
+    }
+
+    class AsTwigFunction
+    {
+    }
+
+    class AsTwigTest
+    {
+    }
+}
