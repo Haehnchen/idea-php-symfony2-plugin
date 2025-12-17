@@ -110,7 +110,7 @@ public class AddRouteAttributeIntention extends PsiElementBaseIntentionAction im
             return false;
         }
 
-        if (PhpElementsUtil.getClassInterface(project, ROUTE_ATTRIBUTE_CLASS) == null) {
+        if (!PhpElementsUtil.hasClassOrInterface(project, ROUTE_ATTRIBUTE_CLASS)) {
             return false;
         }
 

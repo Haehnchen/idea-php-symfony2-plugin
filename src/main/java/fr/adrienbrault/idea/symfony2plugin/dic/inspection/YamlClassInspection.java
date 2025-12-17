@@ -66,7 +66,7 @@ public class YamlClassInspection extends LocalInspectionTool {
 
         if (YamlHelper.isValidParameterName(className)) {
             String resolvedParameter = ContainerCollectionResolver.resolveParameter(project, className);
-            if (resolvedParameter != null && !PhpIndex.getInstance(project).getAnyByFQN(resolvedParameter).isEmpty()) {
+            if (resolvedParameter != null && PhpElementsUtil.hasClassOrInterface(project, resolvedParameter)) {
                 return;
             }
         }

@@ -62,7 +62,7 @@ public class ServicePropertyInsertUtil {
         for (String property : propertyNameFind) {
             if (alias.containsKey(property.toLowerCase())) {
                 String key = property.toLowerCase();
-                if (!PhpIndex.getInstance(project).getAnyByFQN(alias.get(key)).isEmpty()) {
+                if (PhpElementsUtil.hasClassOrInterface(project, alias.get(key))) {
                     String fqn = alias.get(key);
                     servicesMatch.put(fqn, new Match(fqn, 4));
                 }
