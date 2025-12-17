@@ -249,6 +249,12 @@
 
         <completion.contributor language="PHP" order="last" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.PhpIncompleteCompletionContributor"/>
 
+        <!-- provide completion after "#" inside the method scope -->
+        <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.PhpAttributeCompletionContributor" order="first"/>
+        <completion.confidence implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.PhpAttributeCompletionPopupHandlerCompletionConfidence$PhpAttributeCompletionConfidence" language="PHP"/>
+        <typedHandler implementation="fr.adrienbrault.idea.symfony2plugin.completion.PhpAttributeCompletionPopupHandlerCompletionConfidence$PhpAttributeAutoPopupHandler"/>
+
+
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex"/>
