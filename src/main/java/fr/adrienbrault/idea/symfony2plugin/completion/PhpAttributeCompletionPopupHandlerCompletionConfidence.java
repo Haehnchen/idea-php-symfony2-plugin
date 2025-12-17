@@ -11,7 +11,9 @@ import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.util.ThreeState;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
+import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -31,8 +33,8 @@ public class PhpAttributeCompletionPopupHandlerCompletionConfidence {
                 return ThreeState.UNSURE;
             }
 
-            Method foundMethod = getMethod(contextElement);
-            if (foundMethod == null) {
+            // Check if we're in a valid attribute context (before method, class, or property)
+            if (!isValidAttributeContext(contextElement)) {
                 return ThreeState.UNSURE;
             }
 
@@ -48,7 +50,7 @@ public class PhpAttributeCompletionPopupHandlerCompletionConfidence {
 
     /**
      * Triggers auto-popup completion after typing '#' character in PHP files
-     * when positioned before a public method (for PHP attributes like #[Route()])
+     * when positioned before a public method, class, or property (for PHP attributes like #[Route()])
      *
      * @author Daniel Espendiller <daniel@espendiller.net>
      */
@@ -70,8 +72,8 @@ public class PhpAttributeCompletionPopupHandlerCompletionConfidence {
                 return Result.CONTINUE;
             }
 
-            Method foundMethod = getMethod(element);
-            if (foundMethod == null) {
+            // Check if we're in a valid attribute context (before method, class, or property)
+            if (!isValidAttributeContext(element)) {
                 return Result.CONTINUE;
             }
 
@@ -80,6 +82,35 @@ public class PhpAttributeCompletionPopupHandlerCompletionConfidence {
         }
     }
 
+    /**
+     * Check if we're in a valid context for attribute completion
+     * Valid contexts are: before a method, before a class, or before a property
+     */
+    private static boolean isValidAttributeContext(@NotNull PsiElement element) {
+        // Check for method
+        Method foundMethod = getMethod(element);
+        if (foundMethod != null) {
+            return true;
+        }
+
+        // Check for property
+        Field foundField = getField(element);
+        if (foundField != null) {
+            return true;
+        }
+
+        // Check for class
+        PhpClass foundClass = getClass(element);
+        if (foundClass != null) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Get method if element is before a public method
+     */
     private static @Nullable Method getMethod(@NotNull PsiElement element) {
         Method foundMethod = null;
 
@@ -92,5 +123,37 @@ public class PhpAttributeCompletionPopupHandlerCompletionConfidence {
         return foundMethod != null && foundMethod.getAccess().isPublic()
             ? foundMethod
             : null;
+    }
+
+    /**
+     * Get field if element is before a property
+     */
+    private static @Nullable Field getField(@NotNull PsiElement element) {
+        if (element.getParent() instanceof Field field) {
+            return field;
+        }
+
+        PsiElement nextSibling = PhpPsiUtil.getNextSiblingIgnoreWhitespace(element, true);
+        if (nextSibling instanceof Field field) {
+            return field;
+        }
+
+        return null;
+    }
+
+    /**
+     * Get class if element is before a class definition
+     */
+    private static @Nullable PhpClass getClass(@NotNull PsiElement element) {
+        if (element.getParent() instanceof PhpClass phpClass) {
+            return phpClass;
+        }
+
+        PsiElement nextSibling = PhpPsiUtil.getNextSiblingIgnoreWhitespace(element, true);
+        if (nextSibling instanceof PhpClass phpClass) {
+            return phpClass;
+        }
+
+        return null;
     }
 }

@@ -63,3 +63,13 @@ namespace Symfony\Component\HttpKernel\Attribute {
     {
     }
 }
+
+namespace Symfony\Component\Serializer\Attribute {
+    class Groups
+    {
+    }
+
+    class SerializedName
+    {
+    }
+}

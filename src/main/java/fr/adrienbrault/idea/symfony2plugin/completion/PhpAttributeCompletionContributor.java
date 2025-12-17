@@ -12,6 +12,7 @@ import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.PhpLanguage;
+import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
@@ -33,6 +34,8 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
     private static final String ROUTE_ATTRIBUTE_FQN = "\\Symfony\\Component\\Routing\\Attribute\\Route";
     private static final String IS_GRANTED_ATTRIBUTE_FQN = "\\Symfony\\Component\\Security\\Http\\Attribute\\IsGranted";
     private static final String CACHE_ATTRIBUTE_FQN = "\\Symfony\\Component\\HttpKernel\\Attribute\\Cache";
+    private static final String GROUPS_ATTRIBUTE_FQN = "\\Symfony\\Component\\Serializer\\Attribute\\Groups";
+    private static final String SERIALIZED_NAME_ATTRIBUTE_FQN = "\\Symfony\\Component\\Serializer\\Attribute\\SerializedName";
 
     public PhpAttributeCompletionContributor() {
         // Match any element in PHP files - we'll do more specific checking in the provider
@@ -63,47 +66,23 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            // Find the next method
-            Method method = findNextPublicMethod(position);
-            if (method == null) {
+            // Determine the target context: method, class, or property
+            AttributeContext attributeContext = determineAttributeContext(position);
+            if (attributeContext == null) {
                 return;
             }
 
-
-            // Add Route attribute completion
-            if (PhpElementsUtil.getClassInterface(project, ROUTE_ATTRIBUTE_FQN) != null) {
-                LookupElement routeLookupElement = LookupElementBuilder
-                    .create("#[Route]")
-                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
-                    .withTypeText(StringUtils.stripStart(ROUTE_ATTRIBUTE_FQN, "\\"), true)
-                    .withInsertHandler(new PhpAttributeQuotedInsertHandler(ROUTE_ATTRIBUTE_FQN))
-                    .bold();
-
-                result.addElement(routeLookupElement);
-            }
-
-            // Add IsGranted attribute completion
-            if (PhpElementsUtil.getClassInterface(project, IS_GRANTED_ATTRIBUTE_FQN) != null) {
-                LookupElement isGrantedLookupElement = LookupElementBuilder
-                    .create("#[IsGranted]")
-                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
-                    .withTypeText(StringUtils.stripStart(IS_GRANTED_ATTRIBUTE_FQN, "\\"), true)
-                    .withInsertHandler(new PhpAttributeQuotedInsertHandler(IS_GRANTED_ATTRIBUTE_FQN))
-                    .bold();
-
-                result.addElement(isGrantedLookupElement);
-            }
-
-            // Add Cache attribute completion
-            if (PhpElementsUtil.getClassInterface(project, CACHE_ATTRIBUTE_FQN) != null) {
-                LookupElement cacheLookupElement = LookupElementBuilder
-                    .create("#[Cache]")
-                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
-                    .withTypeText(StringUtils.stripStart(CACHE_ATTRIBUTE_FQN, "\\"), true)
-                    .withInsertHandler(new CacheAttributeInsertHandler(CACHE_ATTRIBUTE_FQN))
-                    .bold();
-
-                result.addElement(cacheLookupElement);
+            // Add completions based on context
+            switch (attributeContext.type) {
+                case METHOD:
+                    addMethodAttributeCompletions(project, result);
+                    break;
+                case CLASS:
+                    addClassAttributeCompletions(project, result);
+                    break;
+                case PROPERTY:
+                    addPropertyAttributeCompletions(project, result);
+                    break;
             }
 
             // Stop here - don't show other completions when typing "#" for attributes
@@ -112,14 +91,9 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
 
         /**
          * Check if we're in a context where a PHP attribute can be added
+         * This can be: before a class, before a method, or before a property
          */
         private boolean isAttributeContext(@NotNull PsiElement position) {
-            // Must be in a PHP class
-            PhpClass phpClass = PsiTreeUtil.getParentOfType(position, PhpClass.class);
-            if (phpClass == null) {
-                return false;
-            }
-
             // Check if position text contains or starts with "#"
             String positionText = position.getText();
             if (positionText != null && positionText.contains("#")) {
@@ -183,28 +157,175 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
         }
 
         /**
-         * Find the next public method after the current position
+         * Context type for attribute placement
          */
-        private Method findNextPublicMethod(@NotNull PsiElement position) {
-            // Look for parent class
-            PhpClass phpClass = PsiTreeUtil.getParentOfType(position, PhpClass.class);
-            if (phpClass == null) {
-                return null;
+        private enum AttributeContextType {
+            METHOD, CLASS, PROPERTY
+        }
+
+        /**
+         * Represents the context where an attribute should be placed
+         */
+        private static class AttributeContext {
+            AttributeContextType type;
+            PsiElement targetElement;
+
+            AttributeContext(AttributeContextType type, PsiElement targetElement) {
+                this.type = type;
+                this.targetElement = targetElement;
+            }
+        }
+
+        /**
+         * Determine what kind of element the attribute will be attached to
+         * Combines sibling-based detection for classes with iteration-based detection for properties/methods
+         */
+        private AttributeContext determineAttributeContext(@NotNull PsiElement position) {
+            // Check for class (before the class keyword) - use sibling-based detection
+            PhpClass foundClass = getClassAfterPosition(position);
+            if (foundClass != null) {
+                return new AttributeContext(AttributeContextType.CLASS, foundClass);
             }
 
-            // Get the position's offset
-            int offset = position.getTextOffset();
+            // For properties and methods, we need to search within the containing class
+            PhpClass phpClass = PsiTreeUtil.getParentOfType(position, PhpClass.class);
+            if (phpClass != null) {
+                int offset = position.getTextOffset();
 
-            // Find the next public method after this position
-            for (Method method : phpClass.getOwnMethods()) {
-                if (method.getAccess().isPublic() &&
-                    !method.isStatic() &&
-                    method.getTextOffset() > offset) {
-                    return method;
+                // Check for property first
+                for (Field field : phpClass.getOwnFields()) {
+                    if (field.getTextOffset() > offset) {
+                        return new AttributeContext(AttributeContextType.PROPERTY, field);
+                    }
+                }
+
+                // Then check for method
+                for (Method method : phpClass.getOwnMethods()) {
+                    if (method.getAccess().isPublic() && method.getTextOffset() > offset) {
+                        return new AttributeContext(AttributeContextType.METHOD, method);
+                    }
                 }
             }
 
             return null;
+        }
+
+        /**
+         * Get class if element is before a class definition
+         * Similar to PhpAttributeCompletionPopupHandlerCompletionConfidence.getClass()
+         */
+        private PhpClass getClassAfterPosition(@NotNull PsiElement element) {
+            if (element.getParent() instanceof PhpClass phpClass) {
+                return phpClass;
+            }
+
+            PsiElement nextSibling = com.jetbrains.php.lang.psi.PhpPsiUtil.getNextSiblingIgnoreWhitespace(element, true);
+            if (nextSibling instanceof PhpClass phpClass) {
+                return phpClass;
+            }
+
+            return null;
+        }
+
+
+
+        /**
+         * Add attribute completions for methods
+         */
+        private void addMethodAttributeCompletions(@NotNull Project project, @NotNull CompletionResultSet result) {
+            // Add Route attribute completion
+            if (PhpElementsUtil.getClassInterface(project, ROUTE_ATTRIBUTE_FQN) != null) {
+                LookupElement routeLookupElement = LookupElementBuilder
+                    .create("#[Route]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(ROUTE_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpAttributeQuotedInsertHandler(ROUTE_ATTRIBUTE_FQN))
+                    .bold();
+
+                result.addElement(routeLookupElement);
+            }
+
+            // Add IsGranted attribute completion
+            if (PhpElementsUtil.getClassInterface(project, IS_GRANTED_ATTRIBUTE_FQN) != null) {
+                LookupElement isGrantedLookupElement = LookupElementBuilder
+                    .create("#[IsGranted]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(IS_GRANTED_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpAttributeQuotedInsertHandler(IS_GRANTED_ATTRIBUTE_FQN))
+                    .bold();
+
+                result.addElement(isGrantedLookupElement);
+            }
+
+            // Add Cache attribute completion
+            if (PhpElementsUtil.getClassInterface(project, CACHE_ATTRIBUTE_FQN) != null) {
+                LookupElement cacheLookupElement = LookupElementBuilder
+                    .create("#[Cache]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(CACHE_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new CacheAttributeInsertHandler(CACHE_ATTRIBUTE_FQN))
+                    .bold();
+
+                result.addElement(cacheLookupElement);
+            }
+        }
+
+        /**
+         * Add attribute completions for classes
+         */
+        private void addClassAttributeCompletions(@NotNull Project project, @NotNull CompletionResultSet result) {
+            // Add Route attribute completion (for controller prefix)
+            if (PhpElementsUtil.getClassInterface(project, ROUTE_ATTRIBUTE_FQN) != null) {
+                LookupElement routeLookupElement = LookupElementBuilder
+                    .create("#[Route]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(ROUTE_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpAttributeQuotedInsertHandler(ROUTE_ATTRIBUTE_FQN))
+                    .bold();
+
+                result.addElement(routeLookupElement);
+            }
+
+            // Add IsGranted attribute completion (for class-level authorization)
+            if (PhpElementsUtil.getClassInterface(project, IS_GRANTED_ATTRIBUTE_FQN) != null) {
+                LookupElement isGrantedLookupElement = LookupElementBuilder
+                    .create("#[IsGranted]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(IS_GRANTED_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpAttributeQuotedInsertHandler(IS_GRANTED_ATTRIBUTE_FQN))
+                    .bold();
+
+                result.addElement(isGrantedLookupElement);
+            }
+        }
+
+        /**
+         * Add attribute completions for properties
+         */
+        private void addPropertyAttributeCompletions(@NotNull Project project, @NotNull CompletionResultSet result) {
+            // Add Groups attribute completion (for serialization)
+            if (PhpElementsUtil.getClassInterface(project, GROUPS_ATTRIBUTE_FQN) != null) {
+                LookupElement groupsLookupElement = LookupElementBuilder
+                    .create("#[Groups]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(GROUPS_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpAttributeArrayInsertHandler(GROUPS_ATTRIBUTE_FQN))
+                    .bold();
+
+                result.addElement(groupsLookupElement);
+            }
+
+            // Add SerializedName attribute completion
+            if (PhpElementsUtil.getClassInterface(project, SERIALIZED_NAME_ATTRIBUTE_FQN) != null) {
+                LookupElement serializedNameLookupElement = LookupElementBuilder
+                    .create("#[SerializedName]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(SERIALIZED_NAME_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpAttributeQuotedInsertHandler(SERIALIZED_NAME_ATTRIBUTE_FQN))
+                    .bold();
+
+                result.addElement(serializedNameLookupElement);
+            }
         }
     }
 
@@ -251,23 +372,12 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
             PsiDocumentManager.getInstance(project).commitDocument(document);
             PsiFile file = context.getFile();
 
-            // Find the insertion position - look for the next method
+            // Find the insertion position - look for the next element (method, property, or class)
             PsiElement elementAt = file.findElementAt(originalInsertionOffset);
             PhpClass phpClass = PsiTreeUtil.getParentOfType(elementAt, PhpClass.class);
 
-            // Find the method we're adding the attribute to
-            Method targetMethod = null;
-            if (phpClass != null) {
-                for (Method method : phpClass.getOwnMethods()) {
-                    if (method.getTextOffset() > originalInsertionOffset) {
-                        targetMethod = method;
-                        break;
-                    }
-                }
-            }
-
-            if (targetMethod == null) {
-                return; // Can't find target method
+            if (phpClass == null) {
+                return; // Not in a class context
             }
 
             // Extract class name from FQN (get the last part after the last backslash)
@@ -352,6 +462,63 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                         if (openQuoteIndex >= 0) {
                             // Position cursor right after the opening quote
                             int caretOffset = attributeStart + openQuoteIndex + 1;
+                            editor.getCaretModel().moveToOffset(caretOffset);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Insert handler that adds a PHP attribute with an array parameter
+     */
+    private static class PhpAttributeArrayInsertHandler extends BasePhpAttributeInsertHandler {
+        public PhpAttributeArrayInsertHandler(String attributeFqn) {
+            super(attributeFqn);
+        }
+
+        @Override
+        protected void insertAttributeAndPositionCursor(Editor editor, Document document, Project project, int insertionOffset, String className) {
+            PsiDocumentManager psiDocManager = PsiDocumentManager.getInstance(project);
+
+            // Insert at the cursor position where user typed "#"
+            String attributeText = "#[" + className + "([])]\n";
+            document.insertString(insertionOffset, attributeText);
+
+            // Commit and reformat
+            psiDocManager.commitDocument(document);
+            psiDocManager.doPostponedOperationsAndUnblockDocument(document);
+
+            // Reformat the added attribute
+            CodeUtil.reformatAddedAttribute(project, document, insertionOffset);
+
+            // After reformatting, position cursor inside the array: #[Groups([<caret>])]
+            // Use PSI structure to find the exact position
+            psiDocManager.commitDocument(document);
+
+            // Get fresh PSI and find the attribute we just added
+            PsiFile finalFile = psiDocManager.getPsiFile(document);
+            if (finalFile != null) {
+                // Look for element INSIDE the inserted attribute (a few chars after insertion point)
+                // This ensures we find an element within the attribute, not before it
+                PsiElement elementInsideAttribute = finalFile.findElementAt(insertionOffset + 3);
+                if (elementInsideAttribute != null) {
+                    // Find the PhpAttribute element
+                    com.jetbrains.php.lang.psi.elements.PhpAttribute phpAttribute =  PsiTreeUtil.getParentOfType(elementInsideAttribute, com.jetbrains.php.lang.psi.elements.PhpAttribute.class);
+
+                    if (phpAttribute != null) {
+                        // Search for opening bracket within the attribute's text range
+                        int attributeStart = phpAttribute.getTextRange().getStartOffset();
+                        int attributeEnd = phpAttribute.getTextRange().getEndOffset();
+                        CharSequence attributeContent = document.getCharsSequence().subSequence(attributeStart, attributeEnd);
+
+                        // Find the position after "([" - we want cursor between the brackets
+                        String contentStr = attributeContent.toString();
+                        int openBracketIndex = contentStr.indexOf("([");
+                        if (openBracketIndex >= 0) {
+                            // Position cursor right after the opening bracket: #[Groups([<caret>])]
+                            int caretOffset = attributeStart + openBracketIndex + 2;
                             editor.getCaretModel().moveToOffset(caretOffset);
                         }
                     }

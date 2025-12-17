@@ -101,4 +101,82 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
         assertTrue("Result should contain Cache use statement", result.contains("use Symfony\\Component\\HttpKernel\\Attribute\\Cache;"));
         assertTrue("Result should contain empty parentheses", result.contains("#[Cache()]"));
     }
+
+    public void testRouteAttributeCompletionOnClass() {
+        // Test that the Route attribute appears in completion at class level
+        // Using simpler test without namespace first
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\n#<caret>\nclass TestController {\n    public function index() { }\n}",
+            "#[Route]"
+        );
+    }
+
+    public void testIsGrantedAttributeCompletionOnClass() {
+        // Test that the IsGranted attribute appears in completion at class level
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\nnamespace App\\Controller;\n\n#<caret>\nclass TestController {\n    public function index() { }\n}",
+            "#[IsGranted]"
+        );
+    }
+
+    public void testNoMethodSpecificAttributesOnClass() {
+        // Test that method-specific attributes (like Cache) don't appear at class level
+        assertCompletionNotContains(PhpFileType.INSTANCE,
+            "<?php\n\nnamespace App\\Controller;\n\n#<caret>\nclass TestController {\n    public function index() { }\n}",
+            "#[Cache]"
+        );
+    }
+
+    public void testGroupsAttributeCompletionOnProperty() {
+        // Test that the Groups attribute appears in completion at property level
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\nclass User {\n    #<caret>\n    private $name;\n}",
+            "#[Groups]"
+        );
+    }
+
+    public void testSerializedNameAttributeCompletionOnProperty() {
+        // Test that the SerializedName attribute appears in completion at property level
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\nclass User {\n    #<caret>\n    private $name;\n}",
+            "#[SerializedName]"
+        );
+    }
+
+    public void testNoMethodAttributesOnProperty() {
+        // Test that method-specific attributes don't appear at property level
+        assertCompletionNotContains(PhpFileType.INSTANCE,
+            "<?php\n\nnamespace App\\Entity;\n\nclass User {\n    #<caret>\n    private $name;\n}",
+            "#[Route]", "#[Cache]"
+        );
+    }
+
+    public void testGroupsAttributeInsertionWithArray() {
+        // Test Groups attribute insertion with array syntax
+        myFixture.configureByText(PhpFileType.INSTANCE,
+            "<?php\n\n" +
+                "namespace App\\Entity;\n\n" +
+                "class User {\n" +
+                "    #<caret>\n" +
+                "    private $name;\n" +
+                "}"
+        );
+        myFixture.completeBasic();
+        
+        var items = myFixture.getLookupElements();
+        var groupsItem = java.util.Arrays.stream(items)
+            .filter(l -> "#[Groups]".equals(l.getLookupString()))
+            .findFirst()
+            .orElse(null);
+        
+        if (groupsItem != null) {
+            myFixture.getLookup().setCurrentItem(groupsItem);
+            myFixture.type('\n');
+            
+            String result = myFixture.getFile().getText();
+            
+            assertTrue("Result should contain use statement",  result.contains("use Symfony\\Component\\Serializer\\Attribute\\Groups;"));
+            assertTrue("Result should contain empty array brackets", result.contains("#[Groups([])]"));
+        }
+    }
 }
