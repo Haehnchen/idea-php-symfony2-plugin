@@ -21,6 +21,7 @@ import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
+import com.jetbrains.php.config.PhpLanguageLevel;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
@@ -390,7 +391,7 @@ public class RouteHelper {
             if(controllerServiceAction != null) {
                 return new PsiElement[] {controllerServiceAction.getMethod()};
             }
-        } else if(PhpNameUtil.isValidNamespaceFullName(controllerName, true)) {
+        } else if(PhpNameUtil.isValidNamespaceFullName(controllerName, true, PhpLanguageLevel.current(project))) {
             // FooBundle\Controller\BarController (__invoke)
             Method invoke = PhpElementsUtil.getClassMethod(project, controllerName, "__invoke");
             if(invoke != null) {

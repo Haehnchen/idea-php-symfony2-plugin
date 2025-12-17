@@ -45,6 +45,7 @@ public class RemoteWebServerUtil {
     }
 
     @Nullable
+    @SuppressWarnings("unchecked")
     public static <T> T getExtensionInstance(@Nullable Project project, @NotNull Class<T> aClass) {
         if(!STORAGE_INSTANCES.containsKey(project)) {
             return null;
@@ -59,6 +60,7 @@ public class RemoteWebServerUtil {
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     public static void collectRemoteFiles(final @NotNull Project project) {
         WebServerConfig defaultServer = findDefaultServer(project);
         if(defaultServer == null) {

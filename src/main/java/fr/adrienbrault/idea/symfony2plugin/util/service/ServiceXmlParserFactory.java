@@ -64,6 +64,7 @@ public class ServiceXmlParserFactory {
     }
 
     @Nullable
+    @SuppressWarnings("unchecked")
     synchronized public <T extends ServiceParserInterface> T parser(Class<T> serviceParser) {
         Collection<File> settingsServiceFiles = Symfony2ProjectComponent.getContainerFiles(this.project);
 

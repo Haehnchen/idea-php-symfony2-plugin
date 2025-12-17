@@ -68,6 +68,7 @@ public class HttpProfilerRequest implements ProfilerRequestInterface {
 
     @Nullable
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T getCollector(Class<T> classFactory) {
         for (Object collector : collectors) {
             if(classFactory.isAssignableFrom(collector.getClass())) {

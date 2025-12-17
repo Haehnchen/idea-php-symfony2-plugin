@@ -61,6 +61,7 @@ public class LocalProfilerRequest implements ProfilerRequestInterface {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T getCollector(Class<T> classFactory) {
         for (Object collector : collectors) {
             if(classFactory.isAssignableFrom(collector.getClass())) {

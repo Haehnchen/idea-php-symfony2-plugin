@@ -35,6 +35,7 @@ public class YamlUpdateArgumentServicesCallback implements ServiceActionUtil.Ins
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void insert(List<String> items) {
 
         YAMLValue yamlCompoundValue = argumentsKeyValue.getValue();

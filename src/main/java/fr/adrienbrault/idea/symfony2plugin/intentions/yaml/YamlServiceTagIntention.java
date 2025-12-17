@@ -45,6 +45,7 @@ public class YamlServiceTagIntention extends PsiElementBaseIntentionAction {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void invoke(@NotNull Project project, Editor editor, @NotNull PsiElement psiElement) throws IncorrectOperationException {
 
         YAMLKeyValue serviceKeyValue = YamlHelper.findServiceInContext(psiElement);

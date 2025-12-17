@@ -27,7 +27,8 @@ import java.util.Collection;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TwigPattern {
-    private static final ElementPattern[] PARAMETER_WHITE_LIST = new ElementPattern[]{
+    @SuppressWarnings("unchecked")
+    private static final ElementPattern<?>[] PARAMETER_WHITE_LIST = new ElementPattern[]{
         PlatformPatterns.psiElement(PsiWhiteSpace.class),
         PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
         PlatformPatterns.psiElement(TwigTokenTypes.NUMBER),
@@ -939,12 +940,12 @@ public class TwigPattern {
      * transchoice(2, null, 'bar')
      */
     public static ElementPattern<PsiElement> getTransDomainPattern() {
-        ElementPattern[] whitespace = {
+        ElementPattern<?>[] whitespace = {
             PlatformPatterns.psiElement(PsiWhiteSpace.class),
             PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
         };
 
-        ElementPattern[] placeholder = {
+        ElementPattern<?>[] placeholder = {
             PlatformPatterns.psiElement(PsiWhiteSpace.class),
             PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
             PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER),
@@ -1097,7 +1098,9 @@ public class TwigPattern {
             patterns.add(PlatformPatterns.psiElement(TwigTokenTypes.COMMENT_TEXT).withText(PlatformPatterns.string().matches(s)).withLanguage(TwigLanguage.INSTANCE));
         }
 
-        return PlatformPatterns.or(patterns.toArray(new ElementPattern[0]));
+        @SuppressWarnings("unchecked")
+        final ElementPattern<PsiComment>[] array = patterns.toArray(new ElementPattern[0]);
+        return PlatformPatterns.or(array);
     }
 
     /**
@@ -1574,7 +1577,7 @@ public class TwigPattern {
     @NotNull
     public static PsiElementPattern getFirstFunctionParameterAsStringPattern() {
         // string wrapped elements
-        ElementPattern[] elementPatterns = {
+        ElementPattern<?>[] elementPatterns = {
             PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
             PlatformPatterns.psiElement(PsiWhiteSpace.class),
             PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
@@ -1592,7 +1595,7 @@ public class TwigPattern {
     @NotNull
     public static PsiElementPattern getParameterAsStringPattern() {
         // string wrapped elements
-        ElementPattern[] elementPatterns = {
+        ElementPattern<?>[] elementPatterns = {
             PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
             PlatformPatterns.psiElement(PsiWhiteSpace.class),
             PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
