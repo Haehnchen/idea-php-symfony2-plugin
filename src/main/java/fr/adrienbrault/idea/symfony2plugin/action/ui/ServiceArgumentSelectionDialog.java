@@ -207,7 +207,7 @@ public class ServiceArgumentSelectionDialog extends JDialog {
         public TableCellEditor getEditor(ServiceParameter modelParameter) {
 
             Set<String> sorted = modelParameter.getPossibleServices();
-            ComboBox comboBox = new ComboBox(sorted.toArray(new String[0]), 200);
+            ComboBox<String> comboBox = new ComboBox<>(sorted.toArray(new String[0]), 200);
             comboBox.setEditable(true);
 
             return new DefaultCellEditor(comboBox);

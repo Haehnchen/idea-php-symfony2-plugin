@@ -37,7 +37,7 @@ public class TranslatorKeyExtractorDialog extends JDialog {
     private JButton buttonCancel;
     private JTextField textTranslationKey;
     private JPanel panelTableView;
-    private JComboBox comboBox1;
+    private JComboBox<String> comboBox1;
     private JCheckBox checkNavigateTo;
 
     private final ListTableModel<TranslationFileModel> listTableModel;

@@ -46,7 +46,17 @@ public class TwigPath {
         this.customPath = customPath;
     }
 
+    public static TwigPath createTwigPath(@NotNull String path, @NotNull String namespace, @NotNull TwigUtil.NamespaceType namespaceType, boolean customPath, boolean enabled) {
+        TwigPath twigPath = new TwigPath(path, namespace, namespaceType, customPath);
+        twigPath.enabled = enabled;
+        return twigPath;
+    }
+
     public static TwigPath createClone(@NotNull TwigPath twigPath) {
+        return createClone(twigPath, twigPath.isEnabled());
+    }
+
+    public static TwigPath createClone(@NotNull TwigPath twigPath, boolean enabled) {
         TwigPath newTwigPath = new TwigPath(
             twigPath.getPath(),
             twigPath.getNamespace(),
@@ -54,7 +64,7 @@ public class TwigPath {
             twigPath.isCustomPath()
         );
 
-        newTwigPath.setEnabled(twigPath.isEnabled());
+        newTwigPath.enabled = enabled;
         return newTwigPath;
     }
 

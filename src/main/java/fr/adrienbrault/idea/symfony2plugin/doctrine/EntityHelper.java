@@ -411,7 +411,7 @@ public class EntityHelper {
         PhpDocComment docComment = phpClass.getDocComment();
         if(docComment != null) {
             if(AnnotationBackportUtil.hasReference(docComment, "\\Doctrine\\ORM\\Mapping\\Entity")) {
-                Map<String, String> useImportMap = AnnotationUtil.getUseImportMap(docComment);
+                Map<String, String> useImportMap = AnnotationBackportUtil.getUseImportMap(docComment);
                 for(Field field: phpClass.getFields()) {
                     if (!field.isConstant()) {
                         if (AnnotationBackportUtil.hasReference(field.getDocComment(), ANNOTATION_FIELDS)) {

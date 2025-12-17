@@ -107,7 +107,7 @@ public class TwigSettingsForm implements Configurable {
                 for (TwigPath twigPath : sortableLookupItems) {
                     // dont use managed class here
                     // @TODO state to enabled (should not be here)
-                    TwigSettingsForm.this.modelList.addRow(TwigPath.createClone(twigPath).setEnabled(true));
+                    TwigSettingsForm.this.modelList.addRow(TwigPath.createClone(twigPath, true));
                 }
             }
         });
@@ -281,8 +281,12 @@ public class TwigSettingsForm implements Configurable {
         }
 
         public void setValue(TwigPath twigPath, Boolean value) {
-            twigPath.setEnabled(value);
-            TwigSettingsForm.this.tableView.getListTableModel().fireTableDataChanged();
+            int index = TwigSettingsForm.this.tableView.getListTableModel().getItems().indexOf(twigPath);
+            if (index >= 0) {
+                TwigPath newTwigPath = TwigPath.createClone(twigPath, value);
+                TwigSettingsForm.this.tableView.getListTableModel().removeRow(index);
+                TwigSettingsForm.this.tableView.getListTableModel().insertRow(index, newTwigPath);
+            }
         }
 
         public int getWidth(JTable table) {

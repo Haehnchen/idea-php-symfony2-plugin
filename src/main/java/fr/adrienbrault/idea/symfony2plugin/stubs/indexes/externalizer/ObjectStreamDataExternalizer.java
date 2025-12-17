@@ -32,7 +32,9 @@ public class ObjectStreamDataExternalizer<T extends Serializable> implements Dat
 
         T object = null;
         try {
-            object = (T) input.readObject();
+            @SuppressWarnings("unchecked")
+            T readObject = (T) input.readObject();
+            object = readObject;
         } catch (ClassNotFoundException | ClassCastException ignored) {
         }
 
