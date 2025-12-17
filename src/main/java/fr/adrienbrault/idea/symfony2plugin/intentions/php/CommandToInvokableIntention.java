@@ -163,7 +163,7 @@ public class CommandToInvokableIntention extends PsiElementBaseIntentionAction i
         }
 
         // check if feature exists
-        if (PhpElementsUtil.getClassInterface(project, "Symfony\\Component\\Console\\Command\\InvokableCommand") == null) {
+        if (!PhpElementsUtil.hasClassOrInterface(project, "\\Symfony\\Component\\Console\\Command\\InvokableCommand")) {
             return false;
         }
 

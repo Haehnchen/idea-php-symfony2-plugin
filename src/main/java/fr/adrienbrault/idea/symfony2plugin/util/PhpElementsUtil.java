@@ -4,6 +4,7 @@ import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.lang.ASTNode;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Ref;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PatternCondition;
@@ -12,6 +13,10 @@ import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.psi.formatter.FormatterUtil;
+import com.intellij.psi.util.CachedValue;
+import com.intellij.psi.util.CachedValueProvider;
+import com.intellij.psi.util.CachedValuesManager;
+import com.intellij.psi.util.PsiModificationTracker;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.intellij.util.Processor;
@@ -55,12 +60,18 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class PhpElementsUtil {
+
+    /**
+     * Cache for class/interface existence checks to avoid repeated PhpIndex queries
+     */
+    private static final Key<CachedValue<Map<String, Boolean>>> CLASS_EXISTS_CACHE = new Key<>("SYMFONY_PHP_CLASS_EXISTS_CACHE");
 
     /**
      * Only parameter on first index or named: "a('caret'), a(test: 'caret')"
@@ -857,6 +868,24 @@ public class PhpElementsUtil {
     static public PhpClass getClassInterface(Project project, @NotNull String className) {
         Collection<PhpClass> phpClasses = PhpIndex.getInstance(project).getAnyByFQN(className);
         return phpClasses.isEmpty() ? null : phpClasses.iterator().next();
+    }
+
+    static public boolean hasClassOrInterface(@NotNull Project project, @NotNull String classFqnName) {
+        // Get or create the cached map
+        Map<String, Boolean> cache = CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            CLASS_EXISTS_CACHE,
+            () -> CachedValueProvider.Result.create(
+                new ConcurrentHashMap<>(),
+                PsiModificationTracker.MODIFICATION_COUNT
+            ),
+            false
+        );
+
+        // Check the cache first, compute and store if missing
+        return cache.computeIfAbsent(classFqnName, fqn ->
+            !PhpIndex.getInstance(project).getAnyByFQN(fqn).isEmpty()
+        );
     }
 
     /**

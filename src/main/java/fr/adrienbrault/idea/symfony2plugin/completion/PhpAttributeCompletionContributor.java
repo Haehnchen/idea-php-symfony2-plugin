@@ -95,7 +95,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
             Collection<LookupElement> lookupElements = new ArrayList<>();
 
             // Add Route attribute completion
-            if (PhpElementsUtil.getClassInterface(project, ROUTE_ATTRIBUTE_FQN) != null) {
+            if (PhpElementsUtil.hasClassOrInterface(project, ROUTE_ATTRIBUTE_FQN)) {
                 LookupElement routeLookupElement = LookupElementBuilder
                     .create("#[Route]")
                     .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
@@ -107,7 +107,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
             }
 
             // Add IsGranted attribute completion
-            if (PhpElementsUtil.getClassInterface(project, IS_GRANTED_ATTRIBUTE_FQN) != null) {
+            if (PhpElementsUtil.hasClassOrInterface(project, IS_GRANTED_ATTRIBUTE_FQN)) {
                 LookupElement isGrantedLookupElement = LookupElementBuilder
                     .create("#[IsGranted]")
                     .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
@@ -119,7 +119,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
             }
 
             // Add Cache attribute completion
-            if (PhpElementsUtil.getClassInterface(project, CACHE_ATTRIBUTE_FQN) != null) {
+            if (PhpElementsUtil.hasClassOrInterface(project, CACHE_ATTRIBUTE_FQN)) {
                 LookupElement cacheLookupElement = LookupElementBuilder
                     .create("#[Cache]")
                     .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
@@ -137,7 +137,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
             Collection<LookupElement> lookupElements = new ArrayList<>();
 
             // Add AsTwigFilter attribute completion
-            if (PhpElementsUtil.getClassInterface(project, AS_TWIG_FILTER_ATTRIBUTE_FQN) != null) {
+            if (PhpElementsUtil.hasClassOrInterface(project, AS_TWIG_FILTER_ATTRIBUTE_FQN)) {
                 LookupElement lookupElement = LookupElementBuilder
                     .create("#[AsTwigFilter]")
                     .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
@@ -149,7 +149,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
             }
 
             // Add AsTwigFunction attribute completion
-            if (PhpElementsUtil.getClassInterface(project, AS_TWIG_FUNCTION_ATTRIBUTE_FQN) != null) {
+            if (PhpElementsUtil.hasClassOrInterface(project, AS_TWIG_FUNCTION_ATTRIBUTE_FQN)) {
                 LookupElement lookupElement = LookupElementBuilder
                     .create("#[AsTwigFunction]")
                     .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
@@ -161,7 +161,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
             }
 
             // Add AsTwigTest attribute completion
-            if (PhpElementsUtil.getClassInterface(project, AS_TWIG_TEST_ATTRIBUTE_FQN) != null) {
+            if (PhpElementsUtil.hasClassOrInterface(project, AS_TWIG_TEST_ATTRIBUTE_FQN)) {
                 LookupElement lookupElement = LookupElementBuilder
                     .create("#[AsTwigTest]")
                     .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)

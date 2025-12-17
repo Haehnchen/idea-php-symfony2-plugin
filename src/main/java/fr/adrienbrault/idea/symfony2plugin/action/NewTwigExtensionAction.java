@@ -89,7 +89,7 @@ public class NewTwigExtensionAction extends AbstractProjectDumbAwareAction {
     @NotNull
     private static String detectTemplate(@NotNull Project project) {
         // If attributes are available, use the new attribute-based template
-        if (PhpElementsUtil.getClassInterface(project, "\\Twig\\Attribute\\AsTwigFunction") != null) {
+        if (PhpElementsUtil.hasClassOrInterface(project, "\\Twig\\Attribute\\AsTwigFunction")) {
             return "twig_extension_function_attribute";
         }
 

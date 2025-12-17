@@ -66,7 +66,7 @@ public class NewFileActionUtil {
 
     public static String guessCommandTemplateType(@NotNull Project project, @NotNull String namespace) {
         // Check if InvokableCommand is available (Symfony 7.3+)
-        if (PhpElementsUtil.getClassInterface(project, "\\Symfony\\Component\\Console\\Command\\InvokableCommand") != null) {
+        if (PhpElementsUtil.hasClassOrInterface(project, "\\Symfony\\Component\\Console\\Command\\InvokableCommand")) {
             String normalizedNamespace = "\\" + org.apache.commons.lang3.StringUtils.strip(namespace, "\\") + "\\";
             Collection<PhpClass> commandClasses = PhpIndexUtil.getPhpClassInsideNamespace(project, normalizedNamespace);
 
@@ -90,7 +90,7 @@ public class NewFileActionUtil {
             }
         }
 
-        if (PhpElementsUtil.getClassInterface(project, "\\Symfony\\Component\\Console\\Attribute\\AsCommand") != null) {
+        if (PhpElementsUtil.hasClassOrInterface(project, "\\Symfony\\Component\\Console\\Attribute\\AsCommand")) {
             return "command_attributes";
         }
 
@@ -106,7 +106,7 @@ public class NewFileActionUtil {
     }
 
     public static String guessControllerTemplateType(@NotNull Project project) {
-        if (PhpElementsUtil.getClassInterface(project, "\\Symfony\\Component\\Routing\\Attribute\\Route") != null) {
+        if (PhpElementsUtil.hasClassOrInterface(project, "\\Symfony\\Component\\Routing\\Attribute\\Route")) {
             return "controller_attributes";
         }
 
