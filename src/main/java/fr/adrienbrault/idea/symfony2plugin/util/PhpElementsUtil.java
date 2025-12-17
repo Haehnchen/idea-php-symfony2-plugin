@@ -236,7 +236,7 @@ public class PhpElementsUtil {
                     continue;
                 }
 
-                keys.put(key, new Pair(arrayHashElement.getKey(), arrayHashElement.getValue()));
+                keys.put(key, new Pair<>(arrayHashElement.getKey(), arrayHashElement.getValue()));
             }
         }
 

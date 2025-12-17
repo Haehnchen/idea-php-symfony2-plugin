@@ -57,6 +57,7 @@ public class PhpStringLiteralExpressionReference extends PsiReferenceProvider {
         return new PsiReference[0];
     }
 
+    @SuppressWarnings("unchecked")
     private PsiReference[] getPsiReferenceBase(PsiElement psiElement) {
 
         try {

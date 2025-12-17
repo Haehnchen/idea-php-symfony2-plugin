@@ -31,7 +31,7 @@ public class QueryBuilderPropertyAlias {
     }
 
     public Collection<PsiElement> getPsiTargets() {
-        return field == null ? Collections.EMPTY_LIST : field.getTargets();
+        return field == null ? Collections.emptyList() : field.getTargets();
     }
 
     @Nullable

@@ -194,6 +194,7 @@ public class QueryBuilderChainProcessor {
     }
 
     @Nullable
+    @SuppressWarnings("unchecked")
     private static <T extends PsiElement> T getLastParentOfType(@Nullable PsiElement element, @NotNull Class<T> aClass) {
         if (element == null) return null;
 

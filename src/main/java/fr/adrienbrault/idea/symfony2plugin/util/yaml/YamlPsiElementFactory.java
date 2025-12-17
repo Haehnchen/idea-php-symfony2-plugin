@@ -14,6 +14,7 @@ import org.jetbrains.yaml.YAMLFileType;
  */
 public class YamlPsiElementFactory {
     @Nullable
+    @SuppressWarnings("unchecked")
     public static <T extends PsiElement> T createFromText(@NotNull Project p, final Class<T> aClass, String text) {
         final PsiElement[] ret = new PsiElement[]{null};
 

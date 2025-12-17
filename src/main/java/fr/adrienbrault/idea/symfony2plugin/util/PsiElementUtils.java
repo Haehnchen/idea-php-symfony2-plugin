@@ -158,6 +158,7 @@ public class PsiElementUtils {
     }
 
     @Nullable
+    @SuppressWarnings("unchecked")
     public static <T extends PsiElement> T getNextSiblingOfType(@Nullable PsiElement sibling, ElementPattern<PsiElement> pattern) {
         if (sibling == null) return null;
         for (PsiElement child = sibling.getNextSibling(); child != null; child = child.getNextSibling()) {
@@ -170,6 +171,7 @@ public class PsiElementUtils {
     }
 
     @NotNull
+    @SuppressWarnings("unchecked")
     public static <T extends PsiElement> Collection<T> getNextSiblingOfTypes(@Nullable PsiElement sibling, ElementPattern<PsiElement> pattern) {
         if (sibling == null) return Collections.emptySet();
 
@@ -184,6 +186,7 @@ public class PsiElementUtils {
     }
 
     @NotNull
+    @SuppressWarnings("unchecked")
     public static <T extends PsiElement> Collection<T> getNextSiblingOfTypes(@Nullable PsiElement sibling, Class<T> pattern) {
         if (sibling == null) return Collections.emptySet();
 
@@ -199,6 +202,7 @@ public class PsiElementUtils {
     }
 
     @Nullable
+    @SuppressWarnings("unchecked")
     public static <T extends PsiElement> T getPrevSiblingOfType(@Nullable PsiElement sibling, ElementPattern<T> pattern) {
         if (sibling == null) return null;
         for (PsiElement child = sibling.getPrevSibling(); child != null; child = child.getPrevSibling()) {
@@ -221,6 +225,7 @@ public class PsiElementUtils {
     }
 
     @Nullable
+    @SuppressWarnings("unchecked")
     public static <T extends PsiElement> T getChildrenOfType(@Nullable PsiElement element, ElementPattern<T> pattern) {
         if (element == null) return null;
 
@@ -235,6 +240,7 @@ public class PsiElementUtils {
     }
 
     @NotNull
+    @SuppressWarnings("unchecked")
     public static <T extends PsiElement> Collection<T> getChildrenOfTypeAsList(@Nullable PsiElement element, ElementPattern<T> pattern) {
 
         Collection<T> collection = new ArrayList<>();
@@ -353,6 +359,7 @@ public class PsiElementUtils {
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     public static <T extends PsiElement> List<T> getPrevSiblingsOfType(@Nullable PsiElement sibling, ElementPattern<T> pattern) {
 
         List<T> elements = new ArrayList<>();
