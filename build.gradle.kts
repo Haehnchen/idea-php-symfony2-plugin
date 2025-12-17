@@ -46,8 +46,8 @@ dependencies {
     }
 
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
-    testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.8.2")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
+    testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.11.4")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
