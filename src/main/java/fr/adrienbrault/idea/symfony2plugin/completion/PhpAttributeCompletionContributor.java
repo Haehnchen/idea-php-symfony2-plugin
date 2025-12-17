@@ -37,6 +37,10 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
     private static final String ROUTE_ATTRIBUTE_FQN = "\\Symfony\\Component\\Routing\\Attribute\\Route";
     private static final String IS_GRANTED_ATTRIBUTE_FQN = "\\Symfony\\Component\\Security\\Http\\Attribute\\IsGranted";
     private static final String CACHE_ATTRIBUTE_FQN = "\\Symfony\\Component\\HttpKernel\\Attribute\\Cache";
+    private static final String AS_TWIG_FILTER_ATTRIBUTE_FQN = "\\Twig\\Attribute\\AsTwigFilter";
+    private static final String AS_TWIG_FUNCTION_ATTRIBUTE_FQN = "\\Twig\\Attribute\\AsTwigFunction";
+    private static final String AS_TWIG_TEST_ATTRIBUTE_FQN = "\\Twig\\Attribute\\AsTwigTest";
+    private static final String TWIG_EXTENSION_FQN = "\\Twig\\Extension\\AbstractExtension";
 
     public PhpAttributeCompletionContributor() {
         // Match any element in PHP files - we'll do more specific checking in the provider
@@ -74,6 +78,10 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
             PhpClass containingClass = method.getContainingClass();
             if (containingClass != null && AddRouteAttributeIntention.isControllerClass(containingClass)) {
                 lookupElements.addAll(getControllerCompletions(project));
+            }
+
+            if (containingClass != null && isTwigExtensionClass(containingClass)) {
+                lookupElements.addAll(getTwigExtensionCompletions(project));
             }
 
             // Stop here - don't show other completions when typing "#" for attributes
@@ -123,6 +131,87 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
             }
 
             return lookupElements;
+        }
+
+        private Collection<LookupElement> getTwigExtensionCompletions(@NotNull Project project) {
+            Collection<LookupElement> lookupElements = new ArrayList<>();
+
+            // Add AsTwigFilter attribute completion
+            if (PhpElementsUtil.getClassInterface(project, AS_TWIG_FILTER_ATTRIBUTE_FQN) != null) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[AsTwigFilter]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(AS_TWIG_FILTER_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpAttributeInsertHandler(AS_TWIG_FILTER_ATTRIBUTE_FQN, CursorPosition.INSIDE_QUOTES))
+                    .bold();
+
+                lookupElements.add(lookupElement);
+            }
+
+            // Add AsTwigFunction attribute completion
+            if (PhpElementsUtil.getClassInterface(project, AS_TWIG_FUNCTION_ATTRIBUTE_FQN) != null) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[AsTwigFunction]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(AS_TWIG_FUNCTION_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpAttributeInsertHandler(AS_TWIG_FUNCTION_ATTRIBUTE_FQN, CursorPosition.INSIDE_QUOTES))
+                    .bold();
+
+                lookupElements.add(lookupElement);
+            }
+
+            // Add AsTwigTest attribute completion
+            if (PhpElementsUtil.getClassInterface(project, AS_TWIG_TEST_ATTRIBUTE_FQN) != null) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[AsTwigTest]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(AS_TWIG_TEST_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpAttributeInsertHandler(AS_TWIG_TEST_ATTRIBUTE_FQN, CursorPosition.INSIDE_QUOTES))
+                    .bold();
+
+                lookupElements.add(lookupElement);
+            }
+
+            return lookupElements;
+        }
+
+        /**
+         * Check if the class is a TwigExtension class.
+         * A class is considered a TwigExtension if:
+         * - Its name ends with "TwigExtension", OR
+         * - It extends AbstractExtension or implements ExtensionInterface, OR
+         * - Any other public method in the class already has an AsTwig* attribute
+         */
+        private boolean isTwigExtensionClass(@NotNull PhpClass phpClass) {
+            // Check if the class name ends with "TwigExtension"
+            if (phpClass.getName().endsWith("TwigExtension")) {
+                return true;
+            }
+
+            // Check if the class extends AbstractExtension
+            if (PhpElementsUtil.isInstanceOf(phpClass, TWIG_EXTENSION_FQN)) {
+                return true;
+            }
+
+            // Check if any other public method in the class has an AsTwig* attribute
+            for (Method ownMethod : phpClass.getOwnMethods()) {
+                if (!ownMethod.getAccess().isPublic() || ownMethod.isStatic()) {
+                    continue;
+                }
+
+                // Collect attributes once and check for any AsTwig* attribute
+                Collection<PhpAttribute> attributes = ownMethod.getAttributes();
+                for (PhpAttribute attribute : attributes) {
+                    String fqn = attribute.getFQN();
+                    if (AS_TWIG_FILTER_ATTRIBUTE_FQN.equals(fqn) ||
+                        AS_TWIG_FUNCTION_ATTRIBUTE_FQN.equals(fqn) ||
+                        AS_TWIG_TEST_ATTRIBUTE_FQN.equals(fqn)) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         /**
