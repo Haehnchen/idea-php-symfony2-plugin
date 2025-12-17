@@ -26,9 +26,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- * Provides completion for Symfony PHP attributes like #[Route()]
+ * Provides completion for Symfony PHP attributes like #[Route()] and #[AsController]
  *
- * Triggers when typing "#<caret>" before a public method
+ * Triggers when typing "#<caret>" before a public method or class
+ *
+ * Supports:
+ * - Class-level attributes: #[Route], #[AsController], #[IsGranted]
+ * - Method-level attributes: #[Route], #[IsGranted], #[Cache]
+ * - Twig extension attributes: #[AsTwigFilter], #[AsTwigFunction], #[AsTwigTest]
  *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -37,6 +42,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
     private static final String ROUTE_ATTRIBUTE_FQN = "\\Symfony\\Component\\Routing\\Attribute\\Route";
     private static final String IS_GRANTED_ATTRIBUTE_FQN = "\\Symfony\\Component\\Security\\Http\\Attribute\\IsGranted";
     private static final String CACHE_ATTRIBUTE_FQN = "\\Symfony\\Component\\HttpKernel\\Attribute\\Cache";
+    private static final String AS_CONTROLLER_ATTRIBUTE_FQN = "\\Symfony\\Component\\HttpKernel\\Attribute\\AsController";
     private static final String AS_TWIG_FILTER_ATTRIBUTE_FQN = "\\Twig\\Attribute\\AsTwigFilter";
     private static final String AS_TWIG_FUNCTION_ATTRIBUTE_FQN = "\\Twig\\Attribute\\AsTwigFunction";
     private static final String AS_TWIG_TEST_ATTRIBUTE_FQN = "\\Twig\\Attribute\\AsTwigTest";
@@ -67,21 +73,29 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            // Check if we're before a public method (using shared logic from PhpAttributeCompletionPopupHandlerCompletionConfidence)
-            Method method = PhpAttributeCompletionPopupHandlerCompletionConfidence.getMethod(position);
-            if (method == null) {
-                return;
-            }
-
             Collection<LookupElement> lookupElements = new ArrayList<>();
 
-            PhpClass containingClass = method.getContainingClass();
-            if (containingClass != null && AddRouteAttributeIntention.isControllerClass(containingClass)) {
-                lookupElements.addAll(getControllerCompletions(project));
-            }
+            // Check if we're before a public method (using shared logic from PhpAttributeCompletionPopupHandlerCompletionConfidence)
+            Method method = PhpAttributeCompletionPopupHandlerCompletionConfidence.getMethod(position);
+            if (method != null) {
+                // Method-level attribute completions
+                PhpClass containingClass = method.getContainingClass();
+                if (containingClass != null && AddRouteAttributeIntention.isControllerClass(containingClass)) {
+                    lookupElements.addAll(getControllerMethodCompletions(project));
+                }
 
-            if (containingClass != null && isTwigExtensionClass(containingClass)) {
-                lookupElements.addAll(getTwigExtensionCompletions(project));
+                if (containingClass != null && isTwigExtensionClass(containingClass)) {
+                    lookupElements.addAll(getTwigExtensionCompletions(project));
+                }
+            } else {
+                // Check if we're before a class
+                PhpClass phpClass = PhpAttributeCompletionPopupHandlerCompletionConfidence.getPhpClass(position);
+                if (phpClass != null) {
+                    // Class-level attribute completions
+                    if (AddRouteAttributeIntention.isControllerClass(phpClass)) {
+                        lookupElements.addAll(getControllerClassCompletions(project));
+                    }
+                }
             }
 
             // Stop here - don't show other completions when typing "#" for attributes
@@ -91,7 +105,10 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
             }
         }
 
-        private Collection<LookupElement> getControllerCompletions(@NotNull Project project) {
+        /**
+         * Get controller method-level attribute completions (for methods in controller classes)
+         */
+        private Collection<LookupElement> getControllerMethodCompletions(@NotNull Project project) {
             Collection<LookupElement> lookupElements = new ArrayList<>();
 
             // Add Route attribute completion
@@ -128,6 +145,51 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                     .bold();
 
                 lookupElements.add(cacheLookupElement);
+            }
+
+            return lookupElements;
+        }
+
+        /**
+         * Get controller class-level attribute completions (for controller classes)
+         */
+        private Collection<LookupElement> getControllerClassCompletions(@NotNull Project project) {
+            Collection<LookupElement> lookupElements = new ArrayList<>();
+
+            // Add Route attribute completion (for class-level route prefix)
+            if (PhpElementsUtil.hasClassOrInterface(project, ROUTE_ATTRIBUTE_FQN)) {
+                LookupElement routeLookupElement = LookupElementBuilder
+                    .create("#[Route]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(ROUTE_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpAttributeInsertHandler(ROUTE_ATTRIBUTE_FQN, CursorPosition.INSIDE_QUOTES))
+                    .bold();
+
+                lookupElements.add(routeLookupElement);
+            }
+
+            // Add AsController attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, AS_CONTROLLER_ATTRIBUTE_FQN)) {
+                LookupElement asControllerLookupElement = LookupElementBuilder
+                    .create("#[AsController]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(AS_CONTROLLER_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpAttributeInsertHandler(AS_CONTROLLER_ATTRIBUTE_FQN, CursorPosition.NONE))
+                    .bold();
+
+                lookupElements.add(asControllerLookupElement);
+            }
+
+            // Add IsGranted attribute completion (for class-level security)
+            if (PhpElementsUtil.hasClassOrInterface(project, IS_GRANTED_ATTRIBUTE_FQN)) {
+                LookupElement isGrantedLookupElement = LookupElementBuilder
+                    .create("#[IsGranted]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(IS_GRANTED_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpAttributeInsertHandler(IS_GRANTED_ATTRIBUTE_FQN, CursorPosition.INSIDE_QUOTES))
+                    .bold();
+
+                lookupElements.add(isGrantedLookupElement);
             }
 
             return lookupElements;
@@ -245,7 +307,9 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
         /** Position cursor inside quotes: #[Attribute("<caret>")] */
         INSIDE_QUOTES,
         /** Position cursor inside parentheses: #[Attribute(<caret>)] */
-        INSIDE_PARENTHESES
+        INSIDE_PARENTHESES,
+        /** No parentheses needed: #[Attribute]<caret> */
+        NONE
     }
 
     /**
@@ -261,6 +325,28 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
 
             int startOffset = context.getStartOffset();
             int tailOffset = context.getTailOffset();
+
+            // IMPORTANT: Find the target class/method BEFORE modifying the document
+            // because PSI structure might change after deletions
+            PsiFile file = context.getFile();
+            PsiElement originalElement = file.findElementAt(startOffset);
+            if (originalElement == null) {
+                return;
+            }
+
+            // Determine the target context (method or class) dynamically
+            PhpClass phpClass;
+            Method targetMethod = PhpAttributeCompletionPopupHandlerCompletionConfidence.getMethod(originalElement);
+            if (targetMethod != null) {
+                // We're in a method context
+                phpClass = targetMethod.getContainingClass();
+            } else {
+                // Try class context
+                phpClass = PhpAttributeCompletionPopupHandlerCompletionConfidence.getPhpClass(originalElement);
+                if (phpClass == null) {
+                    return;
+                }
+            }
 
             // Store the original insertion offset (where user typed "#")
             int originalInsertionOffset = startOffset;
@@ -282,28 +368,8 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                 document.deleteString(startOffset, tailOffset);
             }
 
-            // First commit to get proper PSI
+            // Commit after deletion
             PsiDocumentManager.getInstance(project).commitDocument(document);
-            PsiFile file = context.getFile();
-
-            // Find the insertion position - look for the next method
-            PsiElement elementAt = file.findElementAt(originalInsertionOffset);
-            PhpClass phpClass = PsiTreeUtil.getParentOfType(elementAt, PhpClass.class);
-
-            // Find the method we're adding the attribute to
-            Method targetMethod = null;
-            if (phpClass != null) {
-                for (Method method : phpClass.getOwnMethods()) {
-                    if (method.getTextOffset() > originalInsertionOffset) {
-                        targetMethod = method;
-                        break;
-                    }
-                }
-            }
-
-            if (targetMethod == null) {
-                return; // Can't find target method
-            }
 
             // Extract class name from FQN (get the last part after the last backslash)
             String className = attributeFqn.substring(attributeFqn.lastIndexOf('\\') + 1);
@@ -329,8 +395,27 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
             // Adjust insertion offset by the shift caused by import
             int currentInsertionOffset = originalInsertionOffset + offsetShift;
 
+            // Check if there's already a newline at the current position
+            // to avoid adding double newlines
+            CharSequence currentText = document.getCharsSequence();
+            boolean hasNewlineAfter = false;
+            if (currentInsertionOffset < currentText.length()) {
+                char nextChar = currentText.charAt(currentInsertionOffset);
+                hasNewlineAfter = (nextChar == '\n' || nextChar == '\r');
+            }
+
             // Build attribute text based on cursor position
-            String attributeText = "#[" + className + (cursorPosition == CursorPosition.INSIDE_QUOTES ? "(\"\")]\n" : "()]\n");
+            String attributeText;
+            String newline = hasNewlineAfter ? "" : "\n";
+
+            if (cursorPosition == CursorPosition.INSIDE_QUOTES) {
+                attributeText = "#[" + className + "(\"\")]" + newline;
+            } else if (cursorPosition == CursorPosition.INSIDE_PARENTHESES) {
+                attributeText = "#[" + className + "()]" + newline;
+            } else {
+                // CursorPosition.NONE - no parentheses
+                attributeText = "#[" + className + "]" + newline;
+            }
 
             // Insert at the cursor position where user typed "#"
             document.insertString(currentInsertionOffset, attributeText);
@@ -352,22 +437,27 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                 PsiElement elementInsideAttribute = finalFile.findElementAt(currentInsertionOffset + 3);
                 if (elementInsideAttribute != null) {
                     // Find the PhpAttribute element
-                    PhpAttribute phpAttribute =
-                        PsiTreeUtil.getParentOfType(elementInsideAttribute, PhpAttribute.class);
+                    PhpAttribute phpAttribute = PsiTreeUtil.getParentOfType(elementInsideAttribute, PhpAttribute.class);
 
                     if (phpAttribute != null) {
                         int attributeStart = phpAttribute.getTextRange().getStartOffset();
                         int attributeEnd = phpAttribute.getTextRange().getEndOffset();
                         CharSequence attributeContent = document.getCharsSequence().subSequence(attributeStart, attributeEnd);
 
-                        // Find cursor position based on mode
-                        String searchChar = cursorPosition == CursorPosition.INSIDE_QUOTES ? "\"" : "(";
-                        int searchIndex = attributeContent.toString().indexOf(searchChar);
+                        if (cursorPosition == CursorPosition.NONE) {
+                            // For attributes without parentheses, position cursor at the end of the line
+                            // (after the closing bracket and newline)
+                            editor.getCaretModel().moveToOffset(attributeEnd + 1);
+                        } else {
+                            // Find cursor position based on mode
+                            String searchChar = cursorPosition == CursorPosition.INSIDE_QUOTES ? "\"" : "(";
+                            int searchIndex = attributeContent.toString().indexOf(searchChar);
 
-                        if (searchIndex >= 0) {
-                            // Position cursor right after the search character
-                            int caretOffset = attributeStart + searchIndex + 1;
-                            editor.getCaretModel().moveToOffset(caretOffset);
+                            if (searchIndex >= 0) {
+                                // Position cursor right after the search character
+                                int caretOffset = attributeStart + searchIndex + 1;
+                                editor.getCaretModel().moveToOffset(caretOffset);
+                            }
                         }
                     }
                 }

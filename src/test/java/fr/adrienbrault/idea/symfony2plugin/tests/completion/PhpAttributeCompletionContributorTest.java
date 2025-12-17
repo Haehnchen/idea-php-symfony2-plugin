@@ -208,4 +208,220 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
             "#[AsTwigFilter]", "#[AsTwigFunction]", "#[AsTwigTest]"
         );
     }
+
+    // ===============================
+    // Class-level attribute tests
+    // ===============================
+
+    public void testRouteAttributeCompletionAtClassLevel() {
+        // Test that the Route attribute appears in completion for controller classes
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\n#<caret>\nclass TestController {\n    public function index() { }\n}",
+            "#[Route]"
+        );
+    }
+
+    public void testAsControllerAttributeCompletionAtClassLevel() {
+        // Test that the AsController attribute appears in completion for controller classes
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\n#<caret>\nclass TestController {\n    public function index() { }\n}",
+            "#[AsController]"
+        );
+    }
+
+    public void testBothRouteAndAsControllerAtClassLevel() {
+        // Test that both Route and AsController attributes are available at class level
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\n#<caret>\nclass MyController {\n    public function action() { }\n}",
+            "#[Route]", "#[AsController]"
+        );
+    }
+
+    public void testNoIsGrantedOrCacheAtClassLevel() {
+        // Test that IsGranted and Cache attributes are NOT available at class level (method-only)
+        assertCompletionNotContains(PhpFileType.INSTANCE,
+            "<?php\n\n#<caret>\nclass TestController {\n    public function index() { }\n}",
+            "#[IsGranted]", "#[Cache]"
+        );
+    }
+
+    public void testNoClassLevelAttributesForNonControllerClass() {
+        // Test that class-level controller attributes don't appear for non-controller classes
+        assertCompletionNotContains(PhpFileType.INSTANCE,
+            "<?php\n\n#<caret>\nclass MyService {\n    public function doSomething() { }\n}",
+            "#[Route]", "#[AsController]"
+        );
+    }
+
+    public void testMethodLevelAttributesStillWorkWithClassLevelSupport() {
+        // Test that method-level attributes still work correctly (regression test)
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\nclass TestController {\n    #<caret>\n    public function index() { }\n}",
+            "#[Route]", "#[IsGranted]", "#[Cache]"
+        );
+    }
+
+    public void testNoAsControllerAtMethodLevel() {
+        // Test that AsController is NOT available at method level (class-only)
+        assertCompletionNotContains(PhpFileType.INSTANCE,
+            "<?php\n\nclass TestController {\n    #<caret>\n    public function index() { }\n}",
+            "#[AsController]"
+        );
+    }
+
+    public void testRouteAttributeInsertionAtClassLevelWithNamespace() {
+        // Test Route attribute insertion at class level with namespace - should add use import
+        myFixture.configureByText(PhpFileType.INSTANCE,
+            "<?php\n\n" +
+                "namespace App\\Controller;\n\n" +
+                "#<caret>\n" +
+                "class TestController {\n" +
+                "    public function index() { }\n" +
+                "}"
+        );
+        myFixture.completeBasic();
+
+        var items = myFixture.getLookupElements();
+        var routeItem = java.util.Arrays.stream(items)
+            .filter(l -> "#[Route]".equals(l.getLookupString()))
+            .findFirst()
+            .orElse(null);
+
+        if (routeItem != null) {
+            myFixture.getLookup().setCurrentItem(routeItem);
+            myFixture.type('\n');
+
+            String result = myFixture.getFile().getText();
+
+            assertTrue("Result should contain Route use statement", result.contains("use Symfony\\Component\\Routing\\Attribute\\Route;"));
+            assertTrue("Result should contain quotes for route path", result.contains("#[Route(\"\")]"));
+            assertTrue("Result should have Route attribute before class", result.indexOf("#[Route") < result.indexOf("class TestController"));
+        }
+    }
+
+    public void testAsControllerAttributeInsertionAtClassLevelWithoutParentheses() {
+        // Test AsController attribute insertion at class level - should NOT have parentheses
+        myFixture.configureByText(PhpFileType.INSTANCE,
+            "<?php\n\n" +
+                "namespace App\\Controller;\n\n" +
+                "#<caret>\n" +
+                "class TestController {\n" +
+                "    public function index() { }\n" +
+                "}"
+        );
+        myFixture.completeBasic();
+
+        var items = myFixture.getLookupElements();
+        var asControllerItem = java.util.Arrays.stream(items)
+            .filter(l -> "#[AsController]".equals(l.getLookupString()))
+            .findFirst()
+            .orElse(null);
+
+        if (asControllerItem != null) {
+            myFixture.getLookup().setCurrentItem(asControllerItem);
+            myFixture.type('\n');
+
+            String result = myFixture.getFile().getText();
+
+            assertTrue("Result should contain AsController use statement", result.contains("use Symfony\\Component\\HttpKernel\\Attribute\\AsController;"));
+            assertTrue("Result should contain AsController without parentheses", result.contains("#[AsController]"));
+            assertFalse("Result should NOT contain parentheses for AsController", result.contains("#[AsController("));
+            assertTrue("Result should have AsController attribute before class", result.indexOf("#[AsController]") < result.indexOf("class TestController"));
+        }
+    }
+
+    public void testClassLevelRouteAttributeWithQuotes() {
+        // Test that class-level Route attribute insertion includes quotes (for route prefix)
+        myFixture.configureByText(PhpFileType.INSTANCE,
+            "<?php\n\n" +
+                "namespace App\\Controller;\n\n" +
+                "#<caret>\n" +
+                "class ApiController {\n" +
+                "    public function index() { }\n" +
+                "}"
+        );
+        myFixture.completeBasic();
+
+        var items = myFixture.getLookupElements();
+        var routeItem = java.util.Arrays.stream(items)
+            .filter(l -> "#[Route]".equals(l.getLookupString()))
+            .findFirst()
+            .orElse(null);
+
+        if (routeItem != null) {
+            myFixture.getLookup().setCurrentItem(routeItem);
+            myFixture.type('\n');
+
+            String result = myFixture.getFile().getText();
+
+            assertTrue("Result should contain Route use statement", result.contains("use Symfony\\Component\\Routing\\Attribute\\Route;"));
+            assertTrue("Result should contain quotes for route path at class level", result.contains("#[Route(\"\")]"));
+        }
+    }
+
+    public void testNoClassLevelCompletionWithoutHash() {
+        // Test that no class-level attributes are suggested without the # character
+        assertCompletionNotContains(PhpFileType.INSTANCE,
+            "<?php\n\n<caret>\nclass TestController {\n    public function index() { }\n}",
+            "#[Route]", "#[AsController]"
+        );
+    }
+
+    public void testNoClassLevelCompletionOutsideClass() {
+        // Test that class-level attributes don't appear outside of a class context
+        assertCompletionNotContains(PhpFileType.INSTANCE,
+            "<?php\n\n#<caret>\nfunction globalFunction() { }\n",
+            "#[Route]", "#[AsController]"
+        );
+    }
+
+    public void testClassLevelCompletionOnlyForControllerNamedClasses() {
+        // Test that class-level attributes only appear for classes named with "Controller" suffix
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\n#<caret>\nclass UserController {\n    public function show() { }\n}",
+            "#[Route]", "#[AsController]"
+        );
+    }
+
+    public void testMultipleAttributesAtClassLevel() {
+        // Test that multiple attributes can be added at class level (e.g., both Route and AsController)
+        myFixture.configureByText(PhpFileType.INSTANCE,
+            "<?php\n\n" +
+                "namespace App\\Controller;\n\n" +
+                "#<caret>\n" +
+                "class ProductController {\n" +
+                "    public function list() { }\n" +
+                "}"
+        );
+        myFixture.completeBasic();
+
+        var items = myFixture.getLookupElements();
+
+        // Check that both Route and AsController are available
+        long routeCount = java.util.Arrays.stream(items)
+            .filter(l -> "#[Route]".equals(l.getLookupString()))
+            .count();
+        long asControllerCount = java.util.Arrays.stream(items)
+            .filter(l -> "#[AsController]".equals(l.getLookupString()))
+            .count();
+
+        assertTrue("Route attribute should be available", routeCount > 0);
+        assertTrue("AsController attribute should be available", asControllerCount > 0);
+    }
+
+    public void testClassLevelCompletionWithExistingAttributes() {
+        // Test that completion works when there are already attributes on the class
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\n#[AsController]\n#<caret>\nclass FoobarController {\n    public function index() { }\n}",
+            "#[Route]"
+        );
+    }
+
+    public void testClassLevelCompletionWithMultipleExistingAttributes() {
+        // Test that completion works when there are multiple existing attributes
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\n#[AsController]\n#[Cache]\n#<caret>\nclass TestController {\n    public function test() { }\n}",
+            "#[Route]", "#[AsController]"
+        );
+    }
 }

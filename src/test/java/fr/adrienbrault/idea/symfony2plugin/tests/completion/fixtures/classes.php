@@ -62,6 +62,10 @@ namespace Symfony\Component\HttpKernel\Attribute {
     class Cache
     {
     }
+
+    class AsController
+    {
+    }
 }
 
 namespace Twig\Extension {
