@@ -16,10 +16,14 @@ import com.jetbrains.php.lang.psi.elements.PhpAttribute;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.intentions.php.AddRouteAttributeIntention;
 import fr.adrienbrault.idea.symfony2plugin.util.CodeUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * Provides completion for Symfony PHP attributes like #[Route()]
@@ -65,6 +69,23 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                 return;
             }
 
+            Collection<LookupElement> lookupElements = new ArrayList<>();
+
+            PhpClass containingClass = method.getContainingClass();
+            if (containingClass != null && AddRouteAttributeIntention.isControllerClass(containingClass)) {
+                lookupElements.addAll(getControllerCompletions(project));
+            }
+
+            // Stop here - don't show other completions when typing "#" for attributes
+            if (!lookupElements.isEmpty()) {
+                result.addAllElements(lookupElements);
+                result.stopHere();
+            }
+        }
+
+        private Collection<LookupElement> getControllerCompletions(@NotNull Project project) {
+            Collection<LookupElement> lookupElements = new ArrayList<>();
+
             // Add Route attribute completion
             if (PhpElementsUtil.getClassInterface(project, ROUTE_ATTRIBUTE_FQN) != null) {
                 LookupElement routeLookupElement = LookupElementBuilder
@@ -74,7 +95,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                     .withInsertHandler(new PhpAttributeInsertHandler(ROUTE_ATTRIBUTE_FQN, CursorPosition.INSIDE_QUOTES))
                     .bold();
 
-                result.addElement(routeLookupElement);
+                lookupElements.add(routeLookupElement);
             }
 
             // Add IsGranted attribute completion
@@ -86,7 +107,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                     .withInsertHandler(new PhpAttributeInsertHandler(IS_GRANTED_ATTRIBUTE_FQN, CursorPosition.INSIDE_QUOTES))
                     .bold();
 
-                result.addElement(isGrantedLookupElement);
+                lookupElements.add(isGrantedLookupElement);
             }
 
             // Add Cache attribute completion
@@ -98,11 +119,10 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                     .withInsertHandler(new PhpAttributeInsertHandler(CACHE_ATTRIBUTE_FQN, CursorPosition.INSIDE_PARENTHESES))
                     .bold();
 
-                result.addElement(cacheLookupElement);
+                lookupElements.add(cacheLookupElement);
             }
 
-            // Stop here - don't show other completions when typing "#" for attributes
-            result.stopHere();
+            return lookupElements;
         }
 
         /**
