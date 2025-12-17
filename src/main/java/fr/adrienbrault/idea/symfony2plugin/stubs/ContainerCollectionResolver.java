@@ -465,7 +465,7 @@ public class ContainerCollectionResolver {
                 // user input here; secure nullable values
                 String key = Entry.getKey();
                 if(key != null) {
-                    parametersMap.put(key, new ContainerParameter(key, Entry.getValue()));
+                    parametersMap.put(key, new ContainerParameter(key, Entry.getValue(), false));
                 }
             }
 

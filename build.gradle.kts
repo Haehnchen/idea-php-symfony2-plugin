@@ -84,6 +84,9 @@ tasks {
         withType<JavaCompile> {
             sourceCompatibility = it
             targetCompatibility = it
+
+            // show deprecations
+            // options.compilerArgs.addAll(listOf("-Xlint:deprecation"))
         }
         withType<KotlinCompile> {
             compilerOptions {

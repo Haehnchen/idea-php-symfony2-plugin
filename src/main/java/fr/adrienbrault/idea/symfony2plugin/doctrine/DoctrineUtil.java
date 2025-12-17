@@ -186,7 +186,7 @@ public class DoctrineUtil {
             phpClass,
             text,
             "repositoryClass",
-            aVoid -> AnnotationUtil.getUseImportMap(phpDocTag)
+            aVoid -> AnnotationBackportUtil.getUseImportMap(phpDocTag)
         );
 
         if (repositoryClass == null) {

@@ -23,8 +23,8 @@ public class MethodParameterDialog extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
-    private JComboBox comboProvider;
-    private JComboBox comboContributor;
+    private JComboBox<String> comboProvider;
+    private JComboBox<String> comboContributor;
     private JTextField textCallTo;
     private JTextField textMethodName;
     private JTextField textIndex;

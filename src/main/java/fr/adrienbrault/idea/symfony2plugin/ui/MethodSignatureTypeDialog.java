@@ -23,7 +23,7 @@ public class MethodSignatureTypeDialog extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
-    private JComboBox comboProvider;
+    private JComboBox<String> comboProvider;
     private JTextField textCallTo;
     private JTextField textMethodName;
     private JTextField textIndex;

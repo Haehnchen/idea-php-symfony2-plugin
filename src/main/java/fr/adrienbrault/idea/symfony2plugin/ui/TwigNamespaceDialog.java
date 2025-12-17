@@ -87,7 +87,7 @@ public class TwigNamespaceDialog extends JDialog {
 
         String namespacePath = this.namespacePath.getText();
 
-        TwigPath twigPath = new TwigPath(namespacePath, namespace, TwigUtil.NamespaceType.valueOf((String) this.namespaceType.getSelectedItem()), true);
+        TwigPath twigPath = TwigPath.createTwigPath(namespacePath, namespace, TwigUtil.NamespaceType.valueOf((String) this.namespaceType.getSelectedItem()), true, this.chkboxEnabled.isSelected());
         if (namespacePath.isEmpty()) {
             dispose();
             return;
@@ -106,7 +106,6 @@ public class TwigNamespaceDialog extends JDialog {
             this.tableView.setRowSelectionInterval(row, row);
         }
 
-        twigPath.setEnabled(this.chkboxEnabled.isSelected());
         dispose();
     }
 

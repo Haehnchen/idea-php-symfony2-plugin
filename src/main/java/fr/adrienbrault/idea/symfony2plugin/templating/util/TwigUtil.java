@@ -1499,10 +1499,11 @@ public class TwigUtil {
         }
 
         // disable namespace explicitly disabled by user
-        for(TwigPath twigPath: twigPaths) {
+        for(int i = 0; i < twigPaths.size(); i++) {
+            TwigPath twigPath = twigPaths.get(i);
             TwigNamespaceSetting twigNamespaceSetting = findManagedTwigNamespace(project, twigPath);
             if(twigNamespaceSetting != null) {
-                twigPath.setEnabled(false);
+                twigPaths.set(i, TwigPath.createClone(twigPath, false));
             }
         }
 
@@ -1516,7 +1517,7 @@ public class TwigUtil {
         if(twigNamespaceSettings != null) {
             for(TwigNamespaceSetting twigNamespaceSetting: twigNamespaceSettings) {
                 if(twigNamespaceSetting.isCustom()) {
-                    twigPaths.add(new TwigPath(twigNamespaceSetting.getPath(), twigNamespaceSetting.getNamespace(), twigNamespaceSetting.getNamespaceType(), true).setEnabled(twigNamespaceSetting.isEnabled()));
+                    twigPaths.add(TwigPath.createTwigPath(twigNamespaceSetting.getPath(), twigNamespaceSetting.getNamespace(), twigNamespaceSetting.getNamespaceType(), true, twigNamespaceSetting.isEnabled()));
                 }
             }
         }

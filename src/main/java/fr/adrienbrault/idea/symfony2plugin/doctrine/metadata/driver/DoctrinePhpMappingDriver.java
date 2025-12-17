@@ -76,7 +76,7 @@ public class DoctrinePhpMappingDriver implements DoctrineMappingDriverInterface 
                     // collect import context based on the class name
                     String fqn = containingClass.getFQN();
                     if (!maps.containsKey(fqn)) {
-                        maps.put(fqn, AnnotationUtil.getUseImportMap(field.getDocComment()));
+                        maps.put(fqn, AnnotationBackportUtil.getUseImportMap(field.getDocComment()));
                     }
 
                     DoctrineModelField modelField = new DoctrineModelField(field.getName());
