@@ -25,6 +25,7 @@ import java.util.List;
  *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
+@SuppressWarnings("deprecation")
 abstract public class SymfonyTempCodeInsightFixtureTestCase extends UsefulTestCase {
     private Project project;
 
@@ -83,26 +84,24 @@ abstract public class SymfonyTempCodeInsightFixtureTestCase extends UsefulTestCa
     protected VirtualFile createFile(@NotNull String file, @Nullable String content) {
         final VirtualFile[] childData = new VirtualFile[1];
 
-        ApplicationManager.getApplication().runWriteAction(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    String[] paths = file.split("/");
+        ApplicationManager.getApplication().runWriteAction(() -> {
+            try {
+                String[] paths = file.split("/");
+                VirtualFile baseDir = getProject().getBaseDir();
 
-                    if(paths.length == 0) {
-                        childData[0] = getProject().getBaseDir().createChildData(this, file);
-                    } else {
-                        childData[0] = VfsUtil.createDirectoryIfMissing(
-                            getProject().getBaseDir(),
-                            StringUtils.join(Arrays.copyOf(paths, paths.length - 1), "/")
-                        ).createChildData(this, paths[paths.length - 1]);
-                    }
-
-                    if(content != null) {
-                        childData[0].setBinaryContent(content.getBytes());
-                    }
-                } catch (IOException ignored) {
+                if(paths.length == 0) {
+                    childData[0] = baseDir.createChildData(SymfonyTempCodeInsightFixtureTestCase.this, file);
+                } else {
+                    childData[0] = VfsUtil.createDirectoryIfMissing(
+                        baseDir,
+                        StringUtils.join(Arrays.copyOf(paths, paths.length - 1), "/")
+                    ).createChildData(SymfonyTempCodeInsightFixtureTestCase.this, paths[paths.length - 1]);
                 }
+
+                if(content != null) {
+                    childData[0].setBinaryContent(content.getBytes());
+                }
+            } catch (IOException ignored) {
             }
         });
 
