@@ -12,6 +12,7 @@ import com.intellij.util.ThreeState;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -31,8 +32,8 @@ public class PhpAttributeCompletionPopupHandlerCompletionConfidence {
                 return ThreeState.UNSURE;
             }
 
-            Method foundMethod = getMethod(contextElement);
-            if (foundMethod == null) {
+            // Check if we're before a method or a class
+            if (getMethod(contextElement) == null && getPhpClass(contextElement) == null) {
                 return ThreeState.UNSURE;
             }
 
@@ -48,7 +49,7 @@ public class PhpAttributeCompletionPopupHandlerCompletionConfidence {
 
     /**
      * Triggers auto-popup completion after typing '#' character in PHP files
-     * when positioned before a public method (for PHP attributes like #[Route()])
+     * when positioned before a public method or class (for PHP attributes like #[Route()])
      *
      * @author Daniel Espendiller <daniel@espendiller.net>
      */
@@ -61,7 +62,7 @@ public class PhpAttributeCompletionPopupHandlerCompletionConfidence {
 
             // Check if we're in a class context
             int offset = editor.getCaretModel().getOffset();
-            if (!(file.findElementAt(offset - 2) instanceof PsiWhiteSpace)) {
+            if (!(file.findElementAt(offset - 2) instanceof PsiWhiteSpace) && !(file.findElementAt(offset - 1) instanceof PsiWhiteSpace)) {
                 return Result.CONTINUE;
             }
 
@@ -70,8 +71,8 @@ public class PhpAttributeCompletionPopupHandlerCompletionConfidence {
                 return Result.CONTINUE;
             }
 
-            Method foundMethod = getMethod(element);
-            if (foundMethod == null) {
+            // Check if we're before a method or a class
+            if (getMethod(element) == null && getPhpClass(element) == null) {
                 return Result.CONTINUE;
             }
 
@@ -99,5 +100,23 @@ public class PhpAttributeCompletionPopupHandlerCompletionConfidence {
         return foundMethod != null && foundMethod.getAccess().isPublic()
             ? foundMethod
             : null;
+    }
+
+    /**
+     * Finds a PhpClass associated with the given element.
+     * Returns the class if the element is a child of a class or if the next sibling is a class.
+     * Also handles cases where we're in the middle of an attribute list.
+     *
+     * @param element The PSI element to check
+     * @return The PhpClass if found, null otherwise
+     */
+    public static @Nullable PhpClass getPhpClass(@NotNull PsiElement element) {
+        if (element.getParent() instanceof PhpClass phpClass) {
+            return phpClass;
+        } else if (PhpPsiUtil.getNextSiblingIgnoreWhitespace(element, true) instanceof PhpClass phpClass) {
+            return phpClass;
+        }
+
+        return null;
     }
 }
