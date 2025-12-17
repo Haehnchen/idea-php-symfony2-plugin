@@ -5,10 +5,9 @@ fun properties(key: String) = project.findProperty(key).toString()
 
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "2.2.21"
-    id("org.jetbrains.intellij.platform") version "2.10.4"
-    id("org.jetbrains.changelog") version "1.3.1"
-    id("org.jetbrains.qodana") version "0.1.13"
+    id("org.jetbrains.kotlin.jvm") version "2.3.0"
+    id("org.jetbrains.intellij.platform") version "2.10.5"
+    id("org.jetbrains.changelog") version "2.5.0"
 }
 
 group = properties("pluginGroup")
@@ -79,14 +78,6 @@ changelog {
     groups.set(emptyList())
 }
 
-// Configure Gradle Qodana Plugin - read more: https://github.com/JetBrains/gradle-qodana-plugin
-qodana {
-    cachePath.set(projectDir.resolve(".qodana").canonicalPath)
-    reportPath.set(projectDir.resolve("build/reports/inspections").canonicalPath)
-    saveReport.set(true)
-    showReport.set(System.getenv("QODANA_SHOW_REPORT")?.toBoolean() ?: false)
-}
-
 tasks {
     // Set the JVM compatibility versions
     properties("javaVersion").let {
@@ -139,5 +130,8 @@ tasks {
         useJUnitPlatform {
             includeEngines("junit-vintage", "junit-jupiter")
         }
+
+        // Disable CDS warning about java.system.class.loader
+        jvmArgs("-Xshare:off")
     }
 }
