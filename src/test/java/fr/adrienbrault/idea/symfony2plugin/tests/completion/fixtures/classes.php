@@ -45,3 +45,21 @@ namespace App\Controller
         public function __invoke() {}
     }
 }
+
+namespace Symfony\Component\Routing\Attribute {
+    class Route
+    {
+    }
+}
+
+namespace Symfony\Component\Security\Http\Attribute {
+    class IsGranted
+    {
+    }
+}
+
+namespace Symfony\Component\HttpKernel\Attribute {
+    class Cache
+    {
+    }
+}
