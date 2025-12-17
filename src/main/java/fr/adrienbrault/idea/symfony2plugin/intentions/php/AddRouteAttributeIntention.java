@@ -131,13 +131,23 @@ public class AddRouteAttributeIntention extends PsiElementBaseIntentionAction im
         return false;
     }
 
-    private boolean isControllerClass(@NotNull PhpClass phpClass) {
-        if (PhpElementsUtil.isInstanceOf(phpClass, ABSTRACT_CONTROLLER_CLASS)) {
+    public static boolean isControllerClass(@NotNull PhpClass phpClass) {
+        if (phpClass.getName().endsWith("Controller")) {
             return true;
         }
 
         if (!phpClass.getAttributes(AS_CONTROLLER_ATTRIBUTE).isEmpty()) {
             return true;
+        }
+
+        if (PhpElementsUtil.isInstanceOf(phpClass, ABSTRACT_CONTROLLER_CLASS)) {
+            return true;
+        }
+
+        for (String routeAnnotation : RouteHelper.ROUTE_ANNOTATIONS) {
+            if (!phpClass.getAttributes(routeAnnotation).isEmpty()) {
+                return true;
+            }
         }
 
         for (Method ownMethod : phpClass.getOwnMethods()) {
@@ -149,12 +159,6 @@ public class AddRouteAttributeIntention extends PsiElementBaseIntentionAction im
                 if (!ownMethod.getAttributes(routeAnnotation).isEmpty()) {
                     return true;
                 }
-            }
-        }
-
-        for (String routeAnnotation : RouteHelper.ROUTE_ANNOTATIONS) {
-            if (!phpClass.getAttributes(routeAnnotation).isEmpty()) {
-                return true;
             }
         }
 
