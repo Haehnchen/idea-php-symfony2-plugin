@@ -8,8 +8,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiWhiteSpace;
-import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ThreeState;
+import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
@@ -72,7 +72,7 @@ public class PhpAttributeCompletionPopupHandlerCompletionConfidence {
             }
 
             // Check if we're before a method, class, or field
-            if (getMethod(element) == null && getPhpClass(element) == null && getField(element) == null) {
+            if (getMethod(element) == null && getField(element) == null && getPhpClass(element) == null) {
                 return Result.CONTINUE;
             }
 
@@ -113,8 +113,19 @@ public class PhpAttributeCompletionPopupHandlerCompletionConfidence {
     public static @Nullable PhpClass getPhpClass(@NotNull PsiElement element) {
         if (element.getParent() instanceof PhpClass phpClass) {
             return phpClass;
-        } else if (PhpPsiUtil.getNextSiblingIgnoreWhitespace(element, true) instanceof PhpClass phpClass) {
+        }
+
+        // with use statement given
+        PsiElement nextSiblingIgnoreWhitespace = PhpPsiUtil.getNextSiblingIgnoreWhitespace(element, true);
+        if (nextSiblingIgnoreWhitespace instanceof PhpClass phpClass) {
             return phpClass;
+        }
+
+        // no use statements
+        if (nextSiblingIgnoreWhitespace != null && nextSiblingIgnoreWhitespace.getNode().getElementType() == PhpElementTypes.NON_LAZY_GROUP_STATEMENT) {
+            if (nextSiblingIgnoreWhitespace.getFirstChild() instanceof PhpClass phpClass) {
+                return phpClass;
+            }
         }
 
         return null;
