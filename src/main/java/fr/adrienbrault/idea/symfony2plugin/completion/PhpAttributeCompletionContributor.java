@@ -83,8 +83,8 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
 
             Collection<LookupElement> lookupElements = new ArrayList<>();
 
-            // Check if we're before a public method (using shared logic from PhpAttributeCompletionPopupHandlerCompletionConfidence)
-            Method method = PhpAttributeCompletionPopupHandlerCompletionConfidence.getMethod(position);
+            // Check if we're before a public method (using shared scope validator)
+            Method method = PhpAttributeScopeValidator.getMethod(position);
             if (method != null) {
                 // Method-level attribute completions
                 PhpClass containingClass = method.getContainingClass();
@@ -101,7 +101,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                 }
             } else {
                 // Check if we're before a property/field
-                Field field = PhpAttributeCompletionPopupHandlerCompletionConfidence.getField(position);
+                Field field = PhpAttributeScopeValidator.getField(position);
                 if (field != null) {
                     // Property-level attribute completions
                     PhpClass containingClass = field.getContainingClass();
@@ -110,7 +110,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                     }
                 } else {
                     // Check if we're before a class
-                    PhpClass phpClass = PhpAttributeCompletionPopupHandlerCompletionConfidence.getPhpClass(position);
+                    PhpClass phpClass = PhpAttributeScopeValidator.getPhpClass(position);
                     if (phpClass != null) {
                         // Class-level attribute completions
                         if (AddRouteAttributeIntention.isControllerClass(phpClass)) {
@@ -124,11 +124,8 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                 }
             }
 
-            // Stop here - don't show other completions when typing "#" for attributes
-            if (!lookupElements.isEmpty()) {
-                result.addAllElements(lookupElements);
-                result.stopHere();
-            }
+            result.addAllElements(lookupElements);
+            result.stopHere();
         }
 
         /**
@@ -504,20 +501,20 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            // Determine the target context (method, field, or class) dynamically
+            // Determine the target context (method, field, or class) dynamically using shared scope validator
             PhpClass phpClass;
-            Method targetMethod = PhpAttributeCompletionPopupHandlerCompletionConfidence.getMethod(originalElement);
+            Method targetMethod = PhpAttributeScopeValidator.getMethod(originalElement);
             if (targetMethod != null) {
                 // We're in a method context
                 phpClass = targetMethod.getContainingClass();
             } else {
                 // Try field context
-                Field targetField = PhpAttributeCompletionPopupHandlerCompletionConfidence.getField(originalElement);
+                Field targetField = PhpAttributeScopeValidator.getField(originalElement);
                 if (targetField != null) {
                     phpClass = targetField.getContainingClass();
                 } else {
                     // Try class context
-                    phpClass = PhpAttributeCompletionPopupHandlerCompletionConfidence.getPhpClass(originalElement);
+                    phpClass = PhpAttributeScopeValidator.getPhpClass(originalElement);
                     if (phpClass == null) {
                         return;
                     }
