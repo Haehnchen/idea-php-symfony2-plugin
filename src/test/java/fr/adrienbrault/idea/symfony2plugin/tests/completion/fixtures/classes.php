@@ -87,3 +87,9 @@ namespace Twig\Attribute {
     {
     }
 }
+
+namespace Symfony\UX\TwigComponent\Attribute {
+    class AsTwigComponent
+    {
+    }
+}

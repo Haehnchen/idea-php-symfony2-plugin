@@ -17,6 +17,8 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.intentions.php.AddRouteAttributeIntention;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.UxTemplateStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.util.IndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.CodeUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -31,7 +33,7 @@ import java.util.Collection;
  * Triggers when typing "#<caret>" before a public method or class
  *
  * Supports:
- * - Class-level attributes: #[Route], #[AsController], #[IsGranted]
+ * - Class-level attributes: #[Route], #[AsController], #[IsGranted], #[AsTwigComponent]
  * - Method-level attributes: #[Route], #[IsGranted], #[Cache]
  * - Twig extension attributes: #[AsTwigFilter], #[AsTwigFunction], #[AsTwigTest]
  *
@@ -46,6 +48,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
     private static final String AS_TWIG_FILTER_ATTRIBUTE_FQN = "\\Twig\\Attribute\\AsTwigFilter";
     private static final String AS_TWIG_FUNCTION_ATTRIBUTE_FQN = "\\Twig\\Attribute\\AsTwigFunction";
     private static final String AS_TWIG_TEST_ATTRIBUTE_FQN = "\\Twig\\Attribute\\AsTwigTest";
+    private static final String AS_TWIG_COMPONENT_ATTRIBUTE_FQN = "\\Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent";
     private static final String TWIG_EXTENSION_FQN = "\\Twig\\Extension\\AbstractExtension";
 
     public PhpAttributeCompletionContributor() {
@@ -94,6 +97,10 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                     // Class-level attribute completions
                     if (AddRouteAttributeIntention.isControllerClass(phpClass)) {
                         lookupElements.addAll(getControllerClassCompletions(project));
+                    }
+
+                    if (isTwigComponentClass(project, phpClass)) {
+                        lookupElements.addAll(getTwigComponentClassCompletions(project));
                     }
                 }
             }
@@ -235,6 +242,75 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
             }
 
             return lookupElements;
+        }
+
+        /**
+         * Get Twig component class-level attribute completions (for component classes)
+         */
+        private Collection<LookupElement> getTwigComponentClassCompletions(@NotNull Project project) {
+            Collection<LookupElement> lookupElements = new ArrayList<>();
+
+            // Add AsTwigComponent attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, AS_TWIG_COMPONENT_ATTRIBUTE_FQN)) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[AsTwigComponent]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(AS_TWIG_COMPONENT_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpAttributeInsertHandler(AS_TWIG_COMPONENT_ATTRIBUTE_FQN, CursorPosition.INSIDE_QUOTES))
+                    .bold();
+
+                lookupElements.add(lookupElement);
+            }
+
+            return lookupElements;
+        }
+
+        /**
+         * Check if the class is a Twig component class.
+         * A class is considered a Twig component if:
+         * - Its namespace contains "\\Components\\" or ends with "\\Components", OR
+         * - There are existing component classes (from index) in the same namespace
+         * (e.g., App\Twig\Components\Button, Foo\Components\Form\Input)
+         */
+        private boolean isTwigComponentClass(@NotNull Project project, @NotNull PhpClass phpClass) {
+            String fqn = phpClass.getFQN();
+            if (fqn.isBlank()) {
+                return false;
+            }
+
+            fqn = StringUtils.stripStart(fqn, "\\");
+
+            int lastBackslash = fqn.lastIndexOf('\\');
+            if (lastBackslash == -1) {
+                return false; // No namespace
+            }
+
+            String namespace = fqn.substring(0, lastBackslash);
+            if (namespace.contains("\\Components\\") ||
+                namespace.endsWith("\\Components") ||
+                namespace.equals("Components")) {
+                return true;
+            }
+
+            // Check if there are any component classes in the same namespace from the index
+            //  keys are FQN class names of components with #[AsTwigComponent] attribute
+            for (String key : IndexUtil.getAllKeysForProject(UxTemplateStubIndex.KEY, project)) {
+                String componentFqn = StringUtils.stripStart(key, "\\");
+
+                // Extract namespace from the component FQN
+                int componentLastBackslash = componentFqn.lastIndexOf('\\');
+                if (componentLastBackslash == -1) {
+                    continue;
+                }
+
+                // Check if the current class's namespace matches the component namespace
+                String componentNamespace = componentFqn.substring(0, componentLastBackslash);
+                if (namespace.equals(componentNamespace)) {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /**

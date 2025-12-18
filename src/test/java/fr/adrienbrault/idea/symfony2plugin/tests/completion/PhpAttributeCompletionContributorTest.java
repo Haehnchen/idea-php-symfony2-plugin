@@ -424,4 +424,60 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
             "#[Route]", "#[AsController]"
         );
     }
+
+    // ===============================
+    // AsTwigComponent attribute tests
+    // ===============================
+
+    public void testAsTwigComponentAttributeCompletionForComponentClass() {
+        // Test that AsTwigComponent attribute appears for classes in Components namespace
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\nnamespace App\\Twig\\Components;\n\n#<caret>\nclass Button {\n}",
+            "#[AsTwigComponent]"
+        );
+    }
+
+    public void testAsTwigComponentAttributeCompletionForNestedComponentClass() {
+        // Test that AsTwigComponent attribute appears for classes in nested Components namespace
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\nnamespace Foo\\Components\\Form;\n\n#<caret>\nclass Input {\n}",
+            "#[AsTwigComponent]"
+        );
+    }
+
+    public void testNoAsTwigComponentForNonComponentClass() {
+        // Test that AsTwigComponent attribute does not appear for non-component classes
+        assertCompletionNotContains(PhpFileType.INSTANCE,
+            "<?php\n\nnamespace App\\Service;\n\n#<caret>\nclass MyService {\n}",
+            "#[AsTwigComponent]"
+        );
+    }
+
+    public void testNoAsTwigComponentAtMethodLevel() {
+        // Test that AsTwigComponent is NOT available at method level (class-only)
+        assertCompletionNotContains(PhpFileType.INSTANCE,
+            "<?php\n\nnamespace App\\Twig\\Components;\n\nclass Button {\n    #<caret>\n    public function render() { }\n}",
+            "#[AsTwigComponent]"
+        );
+    }
+
+    public void testAsTwigComponentAttributeCompletionForClassInSameNamespaceAsIndexedComponent() {
+        // Test that AsTwigComponent attribute appears for classes in the same namespace as an existing indexed component
+        // First, add a component class with the attribute to the project (this will be indexed)
+        myFixture.addFileToProject("ExistingWidget.php",
+            "<?php\n\n" +
+                "namespace App\\Custom\\Widgets;\n\n" +
+                "use Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n\n" +
+                "#[AsTwigComponent('existing_widget')]\n" +
+                "class ExistingWidget {\n" +
+                "}"
+        );
+
+        // Now check that a new class in the same namespace gets the completion
+        // (namespace doesn't contain "Components", so it should work only because of the index)
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\nnamespace App\\Custom\\Widgets;\n\n#<caret>\nclass NewWidget {\n}",
+            "#[AsTwigComponent]"
+        );
+    }
 }
