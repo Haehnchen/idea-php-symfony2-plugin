@@ -92,4 +92,16 @@ namespace Symfony\UX\TwigComponent\Attribute {
     class AsTwigComponent
     {
     }
+
+    class ExposeInTemplate
+    {
+    }
+
+    class PreMount
+    {
+    }
+
+    class PostMount
+    {
+    }
 }

@@ -480,4 +480,217 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
             "#[AsTwigComponent]"
         );
     }
+
+    // ===============================
+    // ExposeInTemplate attribute tests
+    // ===============================
+
+    public void testExposeInTemplateAttributeCompletionOnPublicMethodInAsTwigComponentClass() {
+        // Test that ExposeInTemplate attribute appears for public methods in classes with #[AsTwigComponent]
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\nuse Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n\n#[AsTwigComponent]\nclass Button {\n    #<caret>\n    public function getLabel(): string { return 'test'; }\n}",
+            "#[ExposeInTemplate]"
+        );
+    }
+
+    public void testNoExposeInTemplateOnPropertyInNonAsTwigComponentClass() {
+        // Test that ExposeInTemplate does NOT appear for properties in classes without #[AsTwigComponent]
+        assertCompletionNotContains(PhpFileType.INSTANCE,
+            "<?php\n\nclass MyService {\n    #<caret>\n    private string $property;\n}",
+            "#[ExposeInTemplate]"
+        );
+    }
+
+    public void testNoExposeInTemplateOnMethodInNonAsTwigComponentClass() {
+        // Test that ExposeInTemplate does NOT appear for methods in classes without #[AsTwigComponent]
+        assertCompletionNotContains(PhpFileType.INSTANCE,
+            "<?php\n\nclass MyService {\n    #<caret>\n    public function doSomething() { }\n}",
+            "#[ExposeInTemplate]"
+        );
+    }
+
+    public void testNoExposeInTemplateAtClassLevel() {
+        // Test that ExposeInTemplate is NOT available at class level (property/method-only)
+        assertCompletionNotContains(PhpFileType.INSTANCE,
+            "<?php\n\nuse Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n\n#<caret>\n#[AsTwigComponent]\nclass Button {\n}",
+            "#[ExposeInTemplate]"
+        );
+    }
+
+    public void testExposeInTemplateAttributeInsertionOnPublicMethod() {
+        // Test that ExposeInTemplate attribute insertion on public method includes quotes (for custom name)
+        myFixture.configureByText(PhpFileType.INSTANCE,
+            "<?php\n\n" +
+                "namespace App\\Twig\\Components;\n\n" +
+                "use Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n\n" +
+                "#[AsTwigComponent]\n" +
+                "class Card {\n" +
+                "    #<caret>\n" +
+                "    public function getTitle(): string { return 'test'; }\n" +
+                "}"
+        );
+        myFixture.completeBasic();
+
+        var items = myFixture.getLookupElements();
+        var exposeItem = java.util.Arrays.stream(items)
+            .filter(l -> "#[ExposeInTemplate]".equals(l.getLookupString()))
+            .findFirst()
+            .orElse(null);
+
+        myFixture.getLookup().setCurrentItem(exposeItem);
+        myFixture.type('\n');
+
+        String result = myFixture.getFile().getText();
+
+        assertTrue("Result should contain ExposeInTemplate use statement", result.contains("use Symfony\\UX\\TwigComponent\\Attribute\\ExposeInTemplate;"));
+        assertTrue("Result should contain quotes for method name", result.contains("#[ExposeInTemplate]"));
+    }
+
+    public void testExposeInTemplateOnPublicPropertyInAsTwigComponentClass() {
+        // Test that ExposeInTemplate appears for public properties (though they're auto-exposed)
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\nuse Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n\n#[AsTwigComponent('card')]\nclass Card {\n    #<caret>\n    public string $title;\n}",
+            "#[ExposeInTemplate]"
+        );
+    }
+
+    // ===============================
+    // PreMount and PostMount attribute tests
+    // ===============================
+
+    public void testPreMountAttributeCompletionOnPublicMethodInAsTwigComponentClass() {
+        // Test that PreMount attribute appears for public methods in classes with #[AsTwigComponent]
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\nuse Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n\n#[AsTwigComponent]\nclass Alert {\n    #<caret>\n    public function preMount(array $data): array { return $data; }\n}",
+            "#[PreMount]"
+        );
+    }
+
+    public void testPostMountAttributeCompletionOnPublicMethodInAsTwigComponentClass() {
+        // Test that PostMount attribute appears for public methods in classes with #[AsTwigComponent]
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\nuse Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n\n#[AsTwigComponent]\nclass Modal {\n    #<caret>\n    public function postMount(): void { }\n}",
+            "#[PostMount]"
+        );
+    }
+
+    public void testPreMountAndPostMountBothAvailableInAsTwigComponentClass() {
+        // Test that both PreMount and PostMount attributes are available for methods
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\nuse Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n\n#[AsTwigComponent]\nclass Form {\n    #<caret>\n    public function mount(): void { }\n}",
+            "#[PreMount]", "#[PostMount]"
+        );
+    }
+
+    public void testNoPreMountOnMethodInNonAsTwigComponentClass() {
+        // Test that PreMount does NOT appear for methods in classes without #[AsTwigComponent]
+        assertCompletionNotContains(PhpFileType.INSTANCE,
+            "<?php\n\nclass MyService {\n    #<caret>\n    public function doSomething() { }\n}",
+            "#[PreMount]"
+        );
+    }
+
+    public void testNoPostMountOnMethodInNonAsTwigComponentClass() {
+        // Test that PostMount does NOT appear for methods in classes without #[AsTwigComponent]
+        assertCompletionNotContains(PhpFileType.INSTANCE,
+            "<?php\n\nclass MyService {\n    #<caret>\n    public function doSomething() { }\n}",
+            "#[PostMount]"
+        );
+    }
+
+    public void testNoPreMountOnPropertyInAsTwigComponentClass() {
+        // Test that PreMount is NOT available on properties (method-only)
+        assertCompletionNotContains(PhpFileType.INSTANCE,
+            "<?php\n\nuse Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n\n#[AsTwigComponent]\nclass Button {\n    #<caret>\n    private string $label;\n}",
+            "#[PreMount]"
+        );
+    }
+
+    public void testNoPostMountOnPropertyInAsTwigComponentClass() {
+        // Test that PostMount is NOT available on properties (method-only)
+        assertCompletionNotContains(PhpFileType.INSTANCE,
+            "<?php\n\nuse Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n\n#[AsTwigComponent]\nclass Card {\n    #<caret>\n    private string $title;\n}",
+            "#[PostMount]"
+        );
+    }
+
+    public void testNoPreMountOrPostMountAtClassLevel() {
+        // Test that PreMount and PostMount are NOT available at class level (method-only)
+        assertCompletionNotContains(PhpFileType.INSTANCE,
+            "<?php\n\nuse Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n\n#<caret>\n#[AsTwigComponent]\nclass Widget {\n}",
+            "#[PreMount]", "#[PostMount]"
+        );
+    }
+
+    public void testPreMountAttributeInsertionOnMethodWithoutParentheses() {
+        // Test that PreMount attribute insertion does NOT include parentheses
+        myFixture.configureByText(PhpFileType.INSTANCE,
+            "<?php\n\n" +
+                "namespace App\\Twig\\Components;\n\n" +
+                "use Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n\n" +
+                "#[AsTwigComponent]\n" +
+                "class Notification {\n" +
+                "    #<caret>\n" +
+                "    public function preMount(array $data): array { return $data; }\n" +
+                "}"
+        );
+        myFixture.completeBasic();
+
+        var items = myFixture.getLookupElements();
+        var preMountItem = java.util.Arrays.stream(items)
+            .filter(l -> "#[PreMount]".equals(l.getLookupString()))
+            .findFirst()
+            .orElse(null);
+
+        if (preMountItem != null) {
+            myFixture.getLookup().setCurrentItem(preMountItem);
+            myFixture.type('\n');
+
+            String result = myFixture.getFile().getText();
+
+            assertTrue("Result should contain PreMount use statement", result.contains("use Symfony\\UX\\TwigComponent\\Attribute\\PreMount;"));
+            assertTrue("Result should contain PreMount without parentheses", result.contains("#[PreMount]"));
+            assertFalse("Result should NOT contain parentheses for PreMount", result.contains("#[PreMount("));
+        }
+    }
+
+    public void testPostMountAttributeInsertionOnMethodWithoutParentheses() {
+        // Test that PostMount attribute insertion does NOT include parentheses
+        myFixture.configureByText(PhpFileType.INSTANCE,
+            "<?php\n\n" +
+                "namespace App\\Twig\\Components;\n\n" +
+                "use Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n\n" +
+                "#[AsTwigComponent]\n" +
+                "class Dropdown {\n" +
+                "    #<caret>\n" +
+                "    public function postMount(): void { }\n" +
+                "}"
+        );
+        myFixture.completeBasic();
+
+        var items = myFixture.getLookupElements();
+        var postMountItem = java.util.Arrays.stream(items)
+            .filter(l -> "#[PostMount]".equals(l.getLookupString()))
+            .findFirst()
+            .orElse(null);
+
+        if (postMountItem != null) {
+            myFixture.getLookup().setCurrentItem(postMountItem);
+            myFixture.type('\n');
+
+            String result = myFixture.getFile().getText();
+
+            assertTrue("Result should contain PostMount use statement", result.contains("use Symfony\\UX\\TwigComponent\\Attribute\\PostMount;"));
+            assertTrue("Result should contain PostMount without parentheses", result.contains("#[PostMount]"));
+            assertFalse("Result should NOT contain parentheses for PostMount", result.contains("#[PostMount("));
+        }
+    }
+
+    public void testAllTwigComponentMethodAttributesAvailable() {
+        // Test that all Twig component method attributes are available together
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\nuse Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n\n#[AsTwigComponent('badge')]\nclass Badge {\n    #<caret>\n    public function init(): void { }\n}",
+            "#[ExposeInTemplate]", "#[PreMount]", "#[PostMount]"
+        );
+    }
 }
