@@ -8,11 +8,11 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiWhiteSpace;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ThreeState;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
-import com.jetbrains.php.lang.psi.elements.Method;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,8 +32,8 @@ public class PhpAttributeCompletionPopupHandlerCompletionConfidence {
                 return ThreeState.UNSURE;
             }
 
-            // Check if we're before a method or a class
-            if (getMethod(contextElement) == null && getPhpClass(contextElement) == null) {
+            // Check if we're before a method, class, or field
+            if (getMethod(contextElement) == null && getPhpClass(contextElement) == null && getField(contextElement) == null) {
                 return ThreeState.UNSURE;
             }
 
@@ -71,8 +71,8 @@ public class PhpAttributeCompletionPopupHandlerCompletionConfidence {
                 return Result.CONTINUE;
             }
 
-            // Check if we're before a method or a class
-            if (getMethod(element) == null && getPhpClass(element) == null) {
+            // Check if we're before a method, class, or field
+            if (getMethod(element) == null && getPhpClass(element) == null && getField(element) == null) {
                 return Result.CONTINUE;
             }
 
@@ -115,6 +115,40 @@ public class PhpAttributeCompletionPopupHandlerCompletionConfidence {
             return phpClass;
         } else if (PhpPsiUtil.getNextSiblingIgnoreWhitespace(element, true) instanceof PhpClass phpClass) {
             return phpClass;
+        }
+
+        return null;
+    }
+
+    /**
+     * Finds a Field (property) associated with the given element.
+     * Returns the field if the element is a child of a field or if the next sibling is a field.
+     *
+     * @param element The PSI element to check
+     * @return The Field if found, null otherwise
+     */
+    public static @Nullable Field getField(@NotNull PsiElement element) {
+        PsiElement nextSiblingIgnoreWhitespace = PhpPsiUtil.getNextSiblingIgnoreWhitespace(element, true);
+        if (nextSiblingIgnoreWhitespace instanceof PhpModifierList phpModifierList && phpModifierList.hasPublic()) {
+            if (phpModifierList.getNextPsiSibling() instanceof Field field) {
+                return field;
+            }
+        }
+
+        if (nextSiblingIgnoreWhitespace instanceof PhpPsiElement phpPsiElement) {
+            PhpPsiElement firstPsiChild = phpPsiElement.getFirstPsiChild();
+            if (firstPsiChild instanceof PhpModifierList phpModifierList && phpModifierList.hasPublic()) {
+                PhpPsiElement nextPsiSibling = phpModifierList.getNextPsiSibling();
+
+                if (nextPsiSibling instanceof Field field) {
+                    return field;
+                } else if(nextPsiSibling instanceof PhpFieldType phpFieldType) {
+                    PhpPsiElement nextPsiSibling1 = phpFieldType.getNextPsiSibling();
+                    if (nextPsiSibling1 instanceof Field field1) {
+                        return field1;
+                    }
+                }
+            }
         }
 
         return null;

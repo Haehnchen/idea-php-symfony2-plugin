@@ -11,6 +11,7 @@ import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.PhpLanguage;
+import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpAttribute;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
@@ -30,11 +31,12 @@ import java.util.Collection;
 /**
  * Provides completion for Symfony PHP attributes like #[Route()] and #[AsController]
  *
- * Triggers when typing "#<caret>" before a public method or class
+ * Triggers when typing "#<caret>" before a public method, class, or property
  *
  * Supports:
  * - Class-level attributes: #[Route], #[AsController], #[IsGranted], #[AsTwigComponent]
- * - Method-level attributes: #[Route], #[IsGranted], #[Cache]
+ * - Method-level attributes: #[Route], #[IsGranted], #[Cache], #[ExposeInTemplate], #[PreMount], #[PostMount]
+ * - Property-level attributes: #[ExposeInTemplate]
  * - Twig extension attributes: #[AsTwigFilter], #[AsTwigFunction], #[AsTwigTest]
  *
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -49,6 +51,9 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
     private static final String AS_TWIG_FUNCTION_ATTRIBUTE_FQN = "\\Twig\\Attribute\\AsTwigFunction";
     private static final String AS_TWIG_TEST_ATTRIBUTE_FQN = "\\Twig\\Attribute\\AsTwigTest";
     private static final String AS_TWIG_COMPONENT_ATTRIBUTE_FQN = "\\Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent";
+    private static final String EXPOSE_IN_TEMPLATE_ATTRIBUTE_FQN = "\\Symfony\\UX\\TwigComponent\\Attribute\\ExposeInTemplate";
+    private static final String PRE_MOUNT_ATTRIBUTE_FQN = "\\Symfony\\UX\\TwigComponent\\Attribute\\PreMount";
+    private static final String POST_MOUNT_ATTRIBUTE_FQN = "\\Symfony\\UX\\TwigComponent\\Attribute\\PostMount";
     private static final String TWIG_EXTENSION_FQN = "\\Twig\\Extension\\AbstractExtension";
 
     public PhpAttributeCompletionContributor() {
@@ -90,17 +95,31 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                 if (containingClass != null && isTwigExtensionClass(containingClass)) {
                     lookupElements.addAll(getTwigExtensionCompletions(project));
                 }
-            } else {
-                // Check if we're before a class
-                PhpClass phpClass = PhpAttributeCompletionPopupHandlerCompletionConfidence.getPhpClass(position);
-                if (phpClass != null) {
-                    // Class-level attribute completions
-                    if (AddRouteAttributeIntention.isControllerClass(phpClass)) {
-                        lookupElements.addAll(getControllerClassCompletions(project));
-                    }
 
-                    if (isTwigComponentClass(project, phpClass)) {
-                        lookupElements.addAll(getTwigComponentClassCompletions(project));
+                if (containingClass != null && hasAsTwigComponentAttribute(containingClass)) {
+                    lookupElements.addAll(getTwigComponentMethodCompletions(project));
+                }
+            } else {
+                // Check if we're before a property/field
+                Field field = PhpAttributeCompletionPopupHandlerCompletionConfidence.getField(position);
+                if (field != null) {
+                    // Property-level attribute completions
+                    PhpClass containingClass = field.getContainingClass();
+                    if (containingClass != null && hasAsTwigComponentAttribute(containingClass)) {
+                        lookupElements.addAll(getTwigComponentPropertyCompletions(project));
+                    }
+                } else {
+                    // Check if we're before a class
+                    PhpClass phpClass = PhpAttributeCompletionPopupHandlerCompletionConfidence.getPhpClass(position);
+                    if (phpClass != null) {
+                        // Class-level attribute completions
+                        if (AddRouteAttributeIntention.isControllerClass(phpClass)) {
+                            lookupElements.addAll(getControllerClassCompletions(project));
+                        }
+
+                        if (isTwigComponentClass(project, phpClass)) {
+                            lookupElements.addAll(getTwigComponentClassCompletions(project));
+                        }
                     }
                 }
             }
@@ -256,7 +275,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                     .create("#[AsTwigComponent]")
                     .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
                     .withTypeText(StringUtils.stripStart(AS_TWIG_COMPONENT_ATTRIBUTE_FQN, "\\"), true)
-                    .withInsertHandler(new PhpAttributeInsertHandler(AS_TWIG_COMPONENT_ATTRIBUTE_FQN, CursorPosition.INSIDE_QUOTES))
+                    .withInsertHandler(new PhpAttributeInsertHandler(AS_TWIG_COMPONENT_ATTRIBUTE_FQN, CursorPosition.NONE))
                     .bold();
 
                 lookupElements.add(lookupElement);
@@ -353,6 +372,81 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
         }
 
         /**
+         * Get attribute completions for public methods in AsTwigComponent classes
+         * Includes: ExposeInTemplate, PreMount, PostMount
+         */
+        private Collection<LookupElement> getTwigComponentMethodCompletions(@NotNull Project project) {
+            Collection<LookupElement> lookupElements = new ArrayList<>();
+
+            // Add ExposeInTemplate attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, EXPOSE_IN_TEMPLATE_ATTRIBUTE_FQN)) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[ExposeInTemplate]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(EXPOSE_IN_TEMPLATE_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpAttributeInsertHandler(EXPOSE_IN_TEMPLATE_ATTRIBUTE_FQN, CursorPosition.NONE))
+                    .bold();
+
+                lookupElements.add(lookupElement);
+            }
+
+            // Add PreMount attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, PRE_MOUNT_ATTRIBUTE_FQN)) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[PreMount]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(PRE_MOUNT_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpAttributeInsertHandler(PRE_MOUNT_ATTRIBUTE_FQN, CursorPosition.NONE))
+                    .bold();
+
+                lookupElements.add(lookupElement);
+            }
+
+            // Add PostMount attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, POST_MOUNT_ATTRIBUTE_FQN)) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[PostMount]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(POST_MOUNT_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpAttributeInsertHandler(POST_MOUNT_ATTRIBUTE_FQN, CursorPosition.NONE))
+                    .bold();
+
+                lookupElements.add(lookupElement);
+            }
+
+            return lookupElements;
+        }
+
+        /**
+         * Get attribute completions for properties in AsTwigComponent classes
+         * Includes: ExposeInTemplate
+         */
+        private Collection<LookupElement> getTwigComponentPropertyCompletions(@NotNull Project project) {
+            Collection<LookupElement> lookupElements = new ArrayList<>();
+
+            // Add ExposeInTemplate attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, EXPOSE_IN_TEMPLATE_ATTRIBUTE_FQN)) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[ExposeInTemplate]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(EXPOSE_IN_TEMPLATE_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpAttributeInsertHandler(EXPOSE_IN_TEMPLATE_ATTRIBUTE_FQN, CursorPosition.INSIDE_QUOTES))
+                    .bold();
+
+                lookupElements.add(lookupElement);
+            }
+
+            return lookupElements;
+        }
+
+        /**
+         * Check if the class has the #[AsTwigComponent] attribute
+         */
+        private boolean hasAsTwigComponentAttribute(@NotNull PhpClass phpClass) {
+            return !phpClass.getAttributes(AS_TWIG_COMPONENT_ATTRIBUTE_FQN).isEmpty();
+        }
+
+        /**
          * Check if we're in a context where typing "#" for attributes makes sense
          * (i.e., after "#" character with whitespace before it)
          */
@@ -410,39 +504,45 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            // Determine the target context (method or class) dynamically
+            // Determine the target context (method, field, or class) dynamically
             PhpClass phpClass;
             Method targetMethod = PhpAttributeCompletionPopupHandlerCompletionConfidence.getMethod(originalElement);
             if (targetMethod != null) {
                 // We're in a method context
                 phpClass = targetMethod.getContainingClass();
             } else {
-                // Try class context
-                phpClass = PhpAttributeCompletionPopupHandlerCompletionConfidence.getPhpClass(originalElement);
-                if (phpClass == null) {
-                    return;
+                // Try field context
+                Field targetField = PhpAttributeCompletionPopupHandlerCompletionConfidence.getField(originalElement);
+                if (targetField != null) {
+                    phpClass = targetField.getContainingClass();
+                } else {
+                    // Try class context
+                    phpClass = PhpAttributeCompletionPopupHandlerCompletionConfidence.getPhpClass(originalElement);
+                    if (phpClass == null) {
+                        return;
+                    }
                 }
             }
 
             // Store the original insertion offset (where user typed "#")
             int originalInsertionOffset = startOffset;
 
-            // Check if there's a "#" before the completion position
-            // If yes, we need to delete it to avoid "##[Attribute()]"
-            if (startOffset > 0) {
-                CharSequence text = document.getCharsSequence();
-                if (text.charAt(startOffset - 1) == '#') {
-                    // Delete the "#" that was typed
-                    document.deleteString(startOffset - 1, tailOffset);
-                    originalInsertionOffset = startOffset - 1;
-                } else {
-                    // Delete just the dummy identifier
-                    document.deleteString(startOffset, tailOffset);
-                }
-            } else {
-                // Delete just the dummy identifier
-                document.deleteString(startOffset, tailOffset);
+            // Find and delete the "#" before the completion position to avoid "##[Attribute()]"
+            // Check the 1-2 positions immediately before startOffset
+            CharSequence text = document.getCharsSequence();
+            int deleteStart = startOffset;
+
+            // Check startOffset - 1 and startOffset - 2 for the "#" character
+            if (startOffset > 0 && text.charAt(startOffset - 1) == '#') {
+                deleteStart = startOffset - 1;
+            } else if (startOffset > 1 && text.charAt(startOffset - 2) == '#') {
+                // Handle case where there might be a single whitespace between # and dummy identifier
+                deleteStart = startOffset - 2;
             }
+
+            // Delete from the "#" (or startOffset if no "#" found) to tailOffset
+            document.deleteString(deleteStart, tailOffset);
+            originalInsertionOffset = deleteStart;
 
             // Commit after deletion
             PsiDocumentManager.getInstance(project).commitDocument(document);
