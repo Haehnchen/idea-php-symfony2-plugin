@@ -36,6 +36,7 @@ import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.completion.QuotedInsertionLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigParameterUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
@@ -528,6 +529,15 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME),
             new IncompleteFormThemeTemplateCompletionProvider()
         );
+
+        // Named arguments for filters and functions
+        // {{ data|filter(param_name<caret>: 'value') }}
+        // {{ function(param_name<caret>: 'value') }}
+        extend(
+            CompletionType.BASIC,
+            TwigPattern.getNamedArgumentNamePattern(),
+            new TwigNamedArgumentCompletionProvider()
+        );
     }
 
     private boolean isCompletionStartingMatch(@NotNull String fullText, @NotNull CompletionParameters completionParameters, int minLength) {
@@ -577,6 +587,96 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 TwigExtension twigExtension = entry.getValue();
                 resultSet.addElement(new TwigExtensionLookupElement(project, entry.getKey(), twigExtension));
                 resultSet.addAllElements(getTypesFilters(project, entry.getKey(), entry.getValue()));
+            }
+        }
+    }
+
+    /**
+     * Provides completion for named arguments in Twig filters and functions
+     * {{ data|filter(param_name: 'value') }}
+     * {{ function(param_name: 'value') }}
+     */
+    private static class TwigNamedArgumentCompletionProvider extends CompletionProvider<CompletionParameters> {
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters parameters,
+                                     @NotNull ProcessingContext context,
+                                     @NotNull CompletionResultSet resultSet) {
+            PsiElement position = parameters.getPosition();
+            if (!Symfony2ProjectComponent.isEnabled(position)) {
+                return;
+            }
+
+            Project project = position.getProject();
+
+            // 1. Extract filter/function name
+            String functionName = TwigParameterUtil.extractFunctionOrFilterName(position);
+            if (functionName == null) {
+                return;
+            }
+
+            // 2. Determine if filter or function
+            boolean isFilter = TwigParameterUtil.isFilterContext(position);
+
+            // 3. Get TwigExtension
+            Map<String, TwigExtension> extensions = isFilter
+                ? TwigExtensionParser.getFilters(project)
+                : TwigExtensionParser.getFunctions(project);
+
+            TwigExtension extension = extensions.get(functionName);
+            if (extension == null) {
+                return;
+            }
+
+            // 4. Resolve to PHP method
+            PsiElement phpMethod = TwigExtensionParser.getExtensionTarget(project, extension);
+            if (!(phpMethod instanceof Method)) {
+                return;
+            }
+
+            Method method = (Method) phpMethod;
+            com.jetbrains.php.lang.psi.elements.Parameter[] phpParameters = method.getParameters();
+
+            // 5. Calculate offset for Twig internal parameters
+            int offset = TwigParameterUtil.calculateParameterOffset(extension, isFilter);
+
+            // 6. Get already-used parameter names
+            Set<String> usedParams = TwigParameterUtil.getUsedParameterNames(position);
+
+            // 7. Create lookup elements
+            for (int i = offset; i < phpParameters.length; i++) {
+                com.jetbrains.php.lang.psi.elements.Parameter param = phpParameters[i];
+                String paramName = param.getName();
+
+                // Skip variadic parameters
+                if (param.isVariadic()) {
+                    continue;
+                }
+
+                // Skip parameters with Twig\Environment type
+                String paramType = param.getDeclaredType().toString();
+                if (paramType.contains("\\Twig\\Environment") || paramType.contains("Twig_Environment")) {
+                    continue;
+                }
+
+                // Skip already-used parameters
+                if (usedParams.contains(paramName)) {
+                    continue;
+                }
+
+                LookupElementBuilder lookup = LookupElementBuilder
+                    .create(paramName)
+                    .withIcon(PhpIcons.PARAMETER)
+                    .withTypeText(param.getDeclaredType().toString())
+                    .withInsertHandler(new InsertHandler<LookupElement>() {
+                        @Override
+                        public void handleInsert(InsertionContext context, LookupElement item) {
+                            // Insert ": " after parameter name
+                            context.getDocument().insertString(context.getTailOffset(), ": ");
+                            context.getEditor().getCaretModel().moveToOffset(context.getTailOffset());
+                        }
+                    });
+
+                resultSet.addElement(lookup);
             }
         }
     }

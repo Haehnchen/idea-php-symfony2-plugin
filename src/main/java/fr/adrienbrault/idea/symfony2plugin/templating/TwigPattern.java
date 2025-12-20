@@ -1691,4 +1691,44 @@ public class TwigPattern {
             )
             .withLanguage(TwigLanguage.INSTANCE);
     }
+
+    /**
+     * Matches named argument identifiers in Twig filters and functions
+     * For completion: {{ value|filter(param<caret>) }}
+     * For navigation: {{ value|filter(param_name<caret>: 'value') }}
+     */
+    public static ElementPattern<PsiElement> getNamedArgumentNamePattern() {
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.IDENTIFIER)
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                ),
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.COMMA)
+                )
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    /**
+     * Matches string values after named argument colon
+     * {{ value|filter(param_name: '<caret>') }}
+     */
+    public static ElementPattern<PsiElement> getNamedArgumentValuePattern() {
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.STRING_TEXT)
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.COLON)
+            )
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
 }

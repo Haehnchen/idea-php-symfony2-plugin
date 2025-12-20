@@ -158,6 +158,13 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             targets.addAll(getControllerNameGoto(psiElement));
         }
 
+        // Named arguments in filters and functions
+        // {{ data|filter(param_name: 'value') }}
+        // {{ function(param_name: 'value') }}
+        if (TwigPattern.getNamedArgumentNamePattern().accepts(psiElement)) {
+            targets.addAll(getNamedArgumentGoTo(psiElement));
+        }
+
         // {{ parent() }}
         if (TwigPattern.getParentFunctionPattern().accepts(psiElement)) {
             targets.addAll(getParentGoto(psiElement));
@@ -625,6 +632,53 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         });
 
         return targets;
+    }
+
+    /**
+     * Navigate from named argument to PHP parameter
+     * {{ data|filter(param_name: 'value') }}
+     * {{ function(param_name: 'value') }}
+     */
+    @NotNull
+    private Collection<PsiElement> getNamedArgumentGoTo(@NotNull PsiElement psiElement) {
+        Project project = psiElement.getProject();
+
+        // 1. Extract filter/function name
+        String functionName = fr.adrienbrault.idea.symfony2plugin.templating.util.TwigParameterUtil.extractFunctionOrFilterName(psiElement);
+        if (functionName == null) {
+            return Collections.emptyList();
+        }
+
+        // 2. Determine context
+        boolean isFilter = fr.adrienbrault.idea.symfony2plugin.templating.util.TwigParameterUtil.isFilterContext(psiElement);
+
+        // 3. Get TwigExtension
+        Map<String, TwigExtension> extensions = isFilter
+            ? TwigExtensionParser.getFilters(project)
+            : TwigExtensionParser.getFunctions(project);
+
+        TwigExtension extension = extensions.get(functionName);
+        if (extension == null) {
+            return Collections.emptyList();
+        }
+
+        // 4. Get PHP method
+        PsiElement phpMethod = TwigExtensionParser.getExtensionTarget(project, extension);
+        if (!(phpMethod instanceof com.jetbrains.php.lang.psi.elements.Method)) {
+            return Collections.emptyList();
+        }
+
+        // 5. Find parameter by name
+        String paramName = psiElement.getText();
+        com.jetbrains.php.lang.psi.elements.Parameter[] parameters = ((com.jetbrains.php.lang.psi.elements.Method) phpMethod).getParameters();
+
+        for (com.jetbrains.php.lang.psi.elements.Parameter parameter : parameters) {
+            if (paramName.equals(parameter.getName())) {
+                return Collections.singletonList(parameter);
+            }
+        }
+
+        return Collections.emptyList();
     }
 
     @Nullable
