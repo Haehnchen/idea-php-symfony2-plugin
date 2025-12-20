@@ -45,6 +45,14 @@ public class RouteActionParameterIntention extends PsiElementBaseIntentionAction
             return;
         }
 
+        showParameterChooserPopup(project, editor, method);
+    }
+
+    /**
+     * Shows a popup chooser to add a parameter to the given method.
+     * This can be called from anywhere (e.g., intention actions, inlay hints, etc.)
+     */
+    public static void showParameterChooserPopup(@NotNull Project project, @NotNull Editor editor, @NotNull Method method) {
         List<String> availableFqns = getAvailableParameterFqns(method);
         if (availableFqns.isEmpty()) {
             return;

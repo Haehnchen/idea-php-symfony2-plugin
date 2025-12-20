@@ -291,6 +291,9 @@
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.form.PhpLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.util.PhpSerializerLineMarkerProvider"/>
 
+        <!-- Inlay hints for inline route actions -->
+        <codeInsight.inlayProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.RouteInlayHintsProvider"/>
+
         <gotoSymbolContributor implementation="fr.adrienbrault.idea.symfony2plugin.navigation.ServiceSymbolContributor"/>
         <gotoSymbolContributor implementation="fr.adrienbrault.idea.symfony2plugin.navigation.RouteSymbolContributor"/>
         <gotoSymbolContributor implementation="fr.adrienbrault.idea.symfony2plugin.navigation.SymfonyCommandSymbolContributor"/>

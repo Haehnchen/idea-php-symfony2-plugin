@@ -60,6 +60,7 @@ public class Settings implements PersistentStateComponent<Settings> {
     public boolean codeFoldingTwigConstant = true;
     public boolean featureTwigIcon = true;
     public boolean featureTypeProvider = true;
+    public boolean routeInlayHintsEnabled = true;
 
     public boolean featurePropertyInjection = true;
 

@@ -65,6 +65,7 @@ public class SettingsForm implements Configurable {
     private JCheckBox featureTypeProvider;
     private JCheckBox featurePropertyInjection;
     private JCheckBox dismissYamlSchemaNotification;
+    private JCheckBox routeInlayHintsEnabled;
 
     public SettingsForm(@NotNull final Project project) {
         this.project = project;
@@ -151,6 +152,7 @@ public class SettingsForm implements Configurable {
                 || !featureTypeProvider.isSelected() == getSettings().featureTypeProvider
                 || !featurePropertyInjection.isSelected() == getSettings().featurePropertyInjection
                 || !dismissYamlSchemaNotification.isSelected() == getSettings().dismissYamlSchemaNotification
+                || !routeInlayHintsEnabled.isSelected() == getSettings().routeInlayHintsEnabled
 
                 || !directoryToApp.getText().equals(getSettings().directoryToApp)
                 || !directoryToWeb.getText().equals(getSettings().directoryToWeb)
@@ -175,6 +177,7 @@ public class SettingsForm implements Configurable {
         getSettings().featureTypeProvider = featureTypeProvider.isSelected();
         getSettings().featurePropertyInjection = featurePropertyInjection.isSelected();
         getSettings().dismissYamlSchemaNotification = dismissYamlSchemaNotification.isSelected();
+        getSettings().routeInlayHintsEnabled = routeInlayHintsEnabled.isSelected();
 
         getSettings().directoryToApp = directoryToApp.getText();
         getSettings().directoryToWeb = directoryToWeb.getText();
@@ -206,6 +209,7 @@ public class SettingsForm implements Configurable {
         featureTypeProvider.setSelected(getSettings().featureTypeProvider);
         featurePropertyInjection.setSelected(getSettings().featurePropertyInjection);
         dismissYamlSchemaNotification.setSelected(getSettings().dismissYamlSchemaNotification);
+        routeInlayHintsEnabled.setSelected(getSettings().routeInlayHintsEnabled);
 
         directoryToApp.setText(getSettings().directoryToApp);
         directoryToWeb.setText(getSettings().directoryToWeb);
