@@ -61,6 +61,8 @@ public class Settings implements PersistentStateComponent<Settings> {
     public boolean featureTwigIcon = true;
     public boolean featureTypeProvider = true;
 
+    public boolean featurePropertyInjection = true;
+
     public boolean twigBundleNamespaceSupport = false;
 
     public boolean dismissEnableNotification = false;
@@ -113,3 +115,4 @@ public class Settings implements PersistentStateComponent<Settings> {
         XmlSerializerUtil.copyBean(settings, this);
     }
 }
+
