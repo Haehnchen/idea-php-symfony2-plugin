@@ -21,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -59,8 +60,10 @@ public class SettingsForm implements Configurable {
     private JButton buttonReindex;
     private JCheckBox enableSchedulerCheckBox;
     private JCheckBox featureTwigIcon;
+    private JButton buttonBuyLicense;
     private JButton buttonAutoConfigure;
     private JCheckBox featureTypeProvider;
+    private JCheckBox featurePropertyInjection;
     private JCheckBox dismissYamlSchemaNotification;
 
     public SettingsForm(@NotNull final Project project) {
@@ -70,6 +73,14 @@ public class SettingsForm implements Configurable {
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
                 IdeHelper.openUrl("https://espend.de/phpstorm/plugin/symfony");
+            }
+        });
+
+        buttonBuyLicense.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                IdeHelper.openUrl("https://plugins.jetbrains.com/plugin/7219-symfony-support/pricing");
             }
         });
 
@@ -138,6 +149,7 @@ public class SettingsForm implements Configurable {
                 || !codeFoldingTwigConstant.isSelected() == getSettings().codeFoldingTwigConstant
                 || !featureTwigIcon.isSelected() == getSettings().featureTwigIcon
                 || !featureTypeProvider.isSelected() == getSettings().featureTypeProvider
+                || !featurePropertyInjection.isSelected() == getSettings().featurePropertyInjection
                 || !dismissYamlSchemaNotification.isSelected() == getSettings().dismissYamlSchemaNotification
 
                 || !directoryToApp.getText().equals(getSettings().directoryToApp)
@@ -161,6 +173,7 @@ public class SettingsForm implements Configurable {
         getSettings().codeFoldingTwigConstant = codeFoldingTwigConstant.isSelected();
         getSettings().featureTwigIcon = featureTwigIcon.isSelected();
         getSettings().featureTypeProvider = featureTypeProvider.isSelected();
+        getSettings().featurePropertyInjection = featurePropertyInjection.isSelected();
         getSettings().dismissYamlSchemaNotification = dismissYamlSchemaNotification.isSelected();
 
         getSettings().directoryToApp = directoryToApp.getText();
@@ -191,6 +204,7 @@ public class SettingsForm implements Configurable {
         codeFoldingTwigConstant.setSelected(getSettings().codeFoldingTwigConstant);
         featureTwigIcon.setSelected(getSettings().featureTwigIcon);
         featureTypeProvider.setSelected(getSettings().featureTypeProvider);
+        featurePropertyInjection.setSelected(getSettings().featurePropertyInjection);
         dismissYamlSchemaNotification.setSelected(getSettings().dismissYamlSchemaNotification);
 
         directoryToApp.setText(getSettings().directoryToApp);
