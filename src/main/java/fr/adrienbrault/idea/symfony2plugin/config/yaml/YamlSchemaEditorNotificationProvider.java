@@ -110,16 +110,20 @@ public class YamlSchemaEditorNotificationProvider implements EditorNotificationP
         String path = virtualFile.getPath();
         String name = virtualFile.getName();
 
+        // docker-compose.yml is also having "services" in root: ignore it
+        if (name.contains("-compose")) {
+            return false;
+        }
+
         // Quick filename check
         boolean isLikelyServiceFile = name.equals("services.yaml")
-            || !name.contains("compose")
             || name.equals("services.yml")
             || path.contains("/config/services/")
             || path.contains("/config/packages/")
             || (path.contains("/config/") && name.contains("service"));
 
-        if (!isLikelyServiceFile) {
-            return false;
+        if (isLikelyServiceFile) {
+            return true;
         }
 
         // Content validation: check for "services" or "parameters" root keys
@@ -128,11 +132,11 @@ public class YamlSchemaEditorNotificationProvider implements EditorNotificationP
             return false;
         }
 
-        YAMLDocument firstDocument = documents.get(0);
-        if (firstDocument.getTopLevelValue() instanceof YAMLMapping mapping) {
+        YAMLDocument first = documents.getFirst();
+        if (first != null && first.getTopLevelValue() instanceof YAMLMapping mapping) {
             for (YAMLKeyValue keyValue : mapping.getKeyValues()) {
                 String keyText = keyValue.getKeyText();
-                if ("services".equals(keyText) || "parameters".equals(keyText)) {
+                if ("services".equals(keyText) || "parameters".equals(keyText) || "imports".equals(keyText)) {
                     return true;
                 }
             }

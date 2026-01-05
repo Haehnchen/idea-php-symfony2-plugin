@@ -139,6 +139,38 @@ public class YamlSchemaEditorNotificationProviderTest extends SymfonyLightCodeIn
     }
 
     /**
+     * Test that notification appears for files with "parameters" root key in random location
+     */
+    public void testNotificationAppearsForFileWithParametersRoot() {
+        VirtualFile file = myFixture.addFileToProject(
+            "app/data/my_app_settings.yaml",
+            "parameters:\n" +
+            "    app.locale: en\n" +
+            "    app.timezone: UTC"
+        ).getVirtualFile();
+
+        assertNotNull("Notification should appear for file with 'parameters' in root", getEditorNotificationPanel(file));
+
+        VirtualFile file1 = myFixture.addFileToProject(
+            "var/custom/loader.yaml",
+            "imports:\n" +
+                "    - { resource: services.yaml }\n" +
+                "    - { resource: parameters.yaml }"
+        ).getVirtualFile();
+
+         assertNotNull("Notification should appear for file with 'imports' in root", getEditorNotificationPanel(file1));
+
+        VirtualFile file2 = myFixture.addFileToProject(
+            "src/Resources/symfony_stuff.yaml",
+            "services:\n" +
+                "    App\\Custom\\Service:\n" +
+                "        arguments: ['@doctrine']"
+        ).getVirtualFile();
+
+        assertNotNull("Notification should appear for file with 'services' in root, even if filename and path don't match any pattern", getEditorNotificationPanel(file2));
+    }
+
+    /**
      * Helper method to get the editor notification panel for a file
      */
     private JComponent getEditorNotificationPanel(VirtualFile file) {
