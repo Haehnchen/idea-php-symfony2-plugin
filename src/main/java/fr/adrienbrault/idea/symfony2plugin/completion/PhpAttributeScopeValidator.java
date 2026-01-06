@@ -30,6 +30,7 @@ public class PhpAttributeScopeValidator {
     private static final String AS_TWIG_FILTER_ATTRIBUTE_FQN = "\\Twig\\Attribute\\AsTwigFilter";
     private static final String AS_TWIG_FUNCTION_ATTRIBUTE_FQN = "\\Twig\\Attribute\\AsTwigFunction";
     private static final String AS_TWIG_TEST_ATTRIBUTE_FQN = "\\Twig\\Attribute\\AsTwigTest";
+    private static final String DOCTRINE_ENTITY_ATTRIBUTE_FQN = "\\Doctrine\\ORM\\Mapping\\Entity";
 
     /**
      * Get next element PHP attribute context.
@@ -82,6 +83,11 @@ public class PhpAttributeScopeValidator {
                 if (hasAsTwigComponentAttribute(containingClass)) {
                     return true;
                 }
+
+                // Doctrine entity method attributes (lifecycle callbacks)
+                if (method.getAccess().isPublic() && PhpAttributeScopeValidator.isDoctrineEntityClass(containingClass)) {
+                    return true;
+                }
             }
         }
 
@@ -92,6 +98,10 @@ public class PhpAttributeScopeValidator {
             if (containingClass != null) {
                 // Property-level completions for Twig component properties
                 if (hasAsTwigComponentAttribute(containingClass)) {
+                    return true;
+                }
+
+                if (isDoctrineEntityClass(containingClass)) {
                     return true;
                 }
             }
@@ -107,6 +117,10 @@ public class PhpAttributeScopeValidator {
 
             // Class-level completions for Twig component classes
             if (isTwigComponentClass(project, phpClass)) {
+                return true;
+            }
+
+            if (isDoctrineEntityClass(phpClass)) {
                 return true;
             }
         }
@@ -191,13 +205,14 @@ public class PhpAttributeScopeValidator {
     /**
      * Finds a Field (property) associated with the given element.
      * Returns the field if the element is a child of a field or if the next sibling is a field.
+     * Note: Returns fields of any visibility (public, protected, private)
      *
      * @param element The PSI element to check
      * @return The Field if found, null otherwise
      */
     public static @Nullable Field getField(@NotNull PsiElement element) {
         PsiElement nextSiblingIgnoreWhitespace = PhpPsiUtil.getNextSiblingIgnoreWhitespace(element, true);
-        if (nextSiblingIgnoreWhitespace instanceof PhpModifierList phpModifierList && phpModifierList.hasPublic()) {
+        if (nextSiblingIgnoreWhitespace instanceof PhpModifierList phpModifierList) {
             if (phpModifierList.getNextPsiSibling() instanceof Field field) {
                 return field;
             }
@@ -205,7 +220,7 @@ public class PhpAttributeScopeValidator {
 
         if (nextSiblingIgnoreWhitespace instanceof PhpPsiElement phpPsiElement) {
             PhpPsiElement firstPsiChild = phpPsiElement.getFirstPsiChild();
-            if (firstPsiChild instanceof PhpModifierList phpModifierList && phpModifierList.hasPublic()) {
+            if (firstPsiChild instanceof PhpModifierList phpModifierList) {
                 PhpPsiElement nextPsiSibling = phpModifierList.getNextPsiSibling();
 
                 if (nextPsiSibling instanceof Field field) {
@@ -313,5 +328,19 @@ public class PhpAttributeScopeValidator {
         }
 
         return false;
+    }
+
+    public static boolean isDoctrineEntityClass(@NotNull PhpClass phpClass) {
+        // Check if the class has the #[Entity] attribute
+        if (!phpClass.getAttributes(DOCTRINE_ENTITY_ATTRIBUTE_FQN).isEmpty()) {
+            return true;
+        }
+        
+        String fqn = phpClass.getFQN();
+        if (fqn.isBlank()) {
+            return false;
+        }
+
+        return fqn.contains("\\Entity\\");
     }
 }
