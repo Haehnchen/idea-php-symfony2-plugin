@@ -11,10 +11,7 @@ import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.PhpLanguage;
-import com.jetbrains.php.lang.psi.elements.Field;
-import com.jetbrains.php.lang.psi.elements.Method;
-import com.jetbrains.php.lang.psi.elements.PhpAttribute;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.intentions.php.AddRouteAttributeIntention;
@@ -84,48 +81,46 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
             Collection<LookupElement> lookupElements = new ArrayList<>();
 
             // Check if we're before a public method (using shared scope validator)
-            Method method = PhpAttributeScopeValidator.getMethod(position);
-            if (method != null) {
+            PhpNamedElement validAttributeScope = PhpAttributeScopeValidator.getValidAttributeScope(position);
+            if (validAttributeScope instanceof Method method) {
                 // Method-level attribute completions
                 PhpClass containingClass = method.getContainingClass();
-                if (containingClass != null && AddRouteAttributeIntention.isControllerClass(containingClass)) {
-                    lookupElements.addAll(getControllerMethodCompletions(project));
-                }
+                if (containingClass != null) {
+                    if (method.getAccess().isPublic() && AddRouteAttributeIntention.isControllerClass(containingClass)) {
+                        lookupElements.addAll(getControllerMethodCompletions(project));
+                    }
 
-                if (containingClass != null && isTwigExtensionClass(containingClass)) {
-                    lookupElements.addAll(getTwigExtensionCompletions(project));
-                }
+                    if (method.getAccess().isPublic() && isTwigExtensionClass(containingClass)) {
+                        lookupElements.addAll(getTwigExtensionCompletions(project));
+                    }
 
+                    if (hasAsTwigComponentAttribute(containingClass)) {
+                        lookupElements.addAll(getTwigComponentMethodCompletions(project));
+                    }
+                }
+            } else if (validAttributeScope instanceof Field field) {
+                // Property-level attribute completions
+                PhpClass containingClass = field.getContainingClass();
                 if (containingClass != null && hasAsTwigComponentAttribute(containingClass)) {
-                    lookupElements.addAll(getTwigComponentMethodCompletions(project));
+                    lookupElements.addAll(getTwigComponentPropertyCompletions(project));
                 }
-            } else {
-                // Check if we're before a property/field
-                Field field = PhpAttributeScopeValidator.getField(position);
-                if (field != null) {
-                    // Property-level attribute completions
-                    PhpClass containingClass = field.getContainingClass();
-                    if (containingClass != null && hasAsTwigComponentAttribute(containingClass)) {
-                        lookupElements.addAll(getTwigComponentPropertyCompletions(project));
-                    }
-                } else {
-                    // Check if we're before a class
-                    PhpClass phpClass = PhpAttributeScopeValidator.getPhpClass(position);
-                    if (phpClass != null) {
-                        // Class-level attribute completions
-                        if (AddRouteAttributeIntention.isControllerClass(phpClass)) {
-                            lookupElements.addAll(getControllerClassCompletions(project));
-                        }
+            } else if (validAttributeScope instanceof PhpClass phpClass) {
+                // Class-level attribute completions
+                if (AddRouteAttributeIntention.isControllerClass(phpClass)) {
+                    lookupElements.addAll(getControllerClassCompletions(project));
+                }
 
-                        if (isTwigComponentClass(project, phpClass)) {
-                            lookupElements.addAll(getTwigComponentClassCompletions(project));
-                        }
-                    }
+                if (isTwigComponentClass(project, phpClass)) {
+                    lookupElements.addAll(getTwigComponentClassCompletions(project));
                 }
             }
 
             result.addAllElements(lookupElements);
-            result.stopHere();
+
+            // only stop if we are in our hacky scope
+            if (validAttributeScope != null) {
+                result.stopHere();
+            }
         }
 
         /**
@@ -502,27 +497,10 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
             }
 
             // Determine the target context (method, field, or class) dynamically using shared scope validator
-            PhpClass phpClass;
-            Method targetMethod = PhpAttributeScopeValidator.getMethod(originalElement);
-            if (targetMethod != null) {
-                // We're in a method context
-                phpClass = targetMethod.getContainingClass();
-            } else {
-                // Try field context
-                Field targetField = PhpAttributeScopeValidator.getField(originalElement);
-                if (targetField != null) {
-                    phpClass = targetField.getContainingClass();
-                } else {
-                    // Try class context
-                    phpClass = PhpAttributeScopeValidator.getPhpClass(originalElement);
-                    if (phpClass == null) {
-                        return;
-                    }
-                }
+            PhpNamedElement validAttributeScope = PhpAttributeScopeValidator.getValidAttributeScope(originalElement);
+            if (validAttributeScope == null) {
+                return;
             }
-
-            // Store the original insertion offset (where user typed "#")
-            int originalInsertionOffset = startOffset;
 
             // Find and delete the "#" before the completion position to avoid "##[Attribute()]"
             // Check the 1-2 positions immediately before startOffset
@@ -539,7 +517,9 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
 
             // Delete from the "#" (or startOffset if no "#" found) to tailOffset
             document.deleteString(deleteStart, tailOffset);
-            originalInsertionOffset = deleteStart;
+
+            // Store the original insertion offset (where user typed "#")
+            int originalInsertionOffset = deleteStart;
 
             // Commit after deletion
             PsiDocumentManager.getInstance(project).commitDocument(document);
@@ -551,7 +531,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
             int documentLengthBeforeImport = document.getTextLength();
 
             // Add import if necessary - this will modify the document!
-            String importedName = PhpElementsUtil.insertUseIfNecessary(phpClass, attributeFqn);
+            String importedName = PhpElementsUtil.insertUseIfNecessary(validAttributeScope, attributeFqn);
             if (importedName != null) {
                 className = importedName;
             }
