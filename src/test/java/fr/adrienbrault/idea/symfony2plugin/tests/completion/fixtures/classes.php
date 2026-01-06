@@ -38,6 +38,92 @@ namespace Doctrine\ORM
     }
 }
 
+namespace Doctrine\ORM\Mapping {
+    class Entity
+    {
+    }
+
+    class Column
+    {
+    }
+
+    class Id
+    {
+    }
+
+    class GeneratedValue
+    {
+    }
+
+    class OneToMany
+    {
+    }
+
+    class OneToOne
+    {
+    }
+
+    class ManyToOne
+    {
+    }
+
+    class ManyToMany
+    {
+    }
+
+    class JoinColumn
+    {
+    }
+
+    class Table
+    {
+    }
+
+    class UniqueConstraint
+    {
+    }
+
+    class Index
+    {
+    }
+
+    class Embeddable
+    {
+    }
+
+    class HasLifecycleCallbacks
+    {
+    }
+
+    class PostLoad
+    {
+    }
+
+    class PostPersist
+    {
+    }
+
+    class PostRemove
+    {
+    }
+
+    class PostUpdate
+    {
+    }
+
+    class PrePersist
+    {
+    }
+
+    class PreRemove
+    {
+    }
+
+    class PreUpdate
+    {
+    }
+}
+
 namespace App\Controller
 {
     class FooControllerInvoke
@@ -127,5 +213,20 @@ namespace Symfony\Component\Console\Input {
 namespace Symfony\Component\Console\Output {
     interface OutputInterface
     {
+    }
+}
+
+namespace App\Entity {
+    use Doctrine\ORM\Mapping as ORM;
+
+    #[ORM\Entity]
+    class ExistingEntity
+    {
+        #[ORM\Id]
+        #[ORM\GeneratedValue]
+        private int $id;
+
+        #[ORM\Column]
+        private string $name;
     }
 }

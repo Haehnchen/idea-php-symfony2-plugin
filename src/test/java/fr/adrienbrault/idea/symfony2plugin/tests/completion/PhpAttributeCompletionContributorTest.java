@@ -57,22 +57,21 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
                 "}"
         );
         myFixture.completeBasic();
-        
+
         var items = myFixture.getLookupElements();
         var cacheItem = java.util.Arrays.stream(items)
             .filter(l -> "#[Cache]".equals(l.getLookupString()))
             .findFirst()
             .orElse(null);
-        
-        if (cacheItem != null) {
-            myFixture.getLookup().setCurrentItem(cacheItem);
-            myFixture.type('\n');
-            
-            String result = myFixture.getFile().getText();
-            
-            assertTrue("Result should contain use statement",  result.contains("use Symfony\\Component\\HttpKernel\\Attribute\\Cache;"));
-            assertTrue("Result should contain empty parentheses", result.contains("#[Cache()]"));
-        }
+
+        myFixture.getLookup().setCurrentItem(cacheItem);
+        myFixture.type('\n');
+
+        String result = myFixture.getFile().getText();
+
+        assertTrue("Result should contain use statement", result.contains("use Symfony\\Component\\HttpKernel\\Attribute\\Cache;"));
+        assertTrue("Result should contain empty parentheses", result.contains("#[Cache()]"));
+
     }
 
     public void testCacheAttributeInsertionWithoutQuotes() {
@@ -86,7 +85,7 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
                 "}"
         );
         myFixture.completeBasic();
-        
+
         var items = myFixture.getLookupElements();
         var cacheItem = java.util.Arrays.stream(items)
             .filter(l -> "#[Cache]".equals(l.getLookupString()))
@@ -160,15 +159,13 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
             .findFirst()
             .orElse(null);
 
-        if (filterItem != null) {
-            myFixture.getLookup().setCurrentItem(filterItem);
-            myFixture.type('\n');
+        myFixture.getLookup().setCurrentItem(filterItem);
+        myFixture.type('\n');
 
-            String result = myFixture.getFile().getText();
+        String result = myFixture.getFile().getText();
 
-            assertTrue("Result should contain use statement", result.contains("use Twig\\Attribute\\AsTwigFilter;"));
-            assertTrue("Result should contain quotes for filter name", result.contains("#[AsTwigFilter(\"\")]"));
-        }
+        assertTrue("Result should contain use statement", result.contains("use Twig\\Attribute\\AsTwigFilter;"));
+        assertTrue("Result should contain quotes for filter name", result.contains("#[AsTwigFilter(\"\")]"));
     }
 
     public void testAsTwigFunctionAttributeInsertionWithQuotes() {
@@ -190,15 +187,14 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
             .findFirst()
             .orElse(null);
 
-        if (functionItem != null) {
-            myFixture.getLookup().setCurrentItem(functionItem);
-            myFixture.type('\n');
+        myFixture.getLookup().setCurrentItem(functionItem);
+        myFixture.type('\n');
 
-            String result = myFixture.getFile().getText();
+        String result = myFixture.getFile().getText();
 
-            assertTrue("Result should contain use statement", result.contains("use Twig\\Attribute\\AsTwigFunction;"));
-            assertTrue("Result should contain quotes for function name", result.contains("#[AsTwigFunction(\"\")]"));
-        }
+        assertTrue("Result should contain use statement", result.contains("use Twig\\Attribute\\AsTwigFunction;"));
+        assertTrue("Result should contain quotes for function name", result.contains("#[AsTwigFunction(\"\")]"));
+
     }
 
     public void testNoAsTwigAttributesOutsidePublicMethod() {
@@ -287,16 +283,14 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
             .findFirst()
             .orElse(null);
 
-        if (routeItem != null) {
-            myFixture.getLookup().setCurrentItem(routeItem);
-            myFixture.type('\n');
+        myFixture.getLookup().setCurrentItem(routeItem);
+        myFixture.type('\n');
 
-            String result = myFixture.getFile().getText();
+        String result = myFixture.getFile().getText();
 
-            assertTrue("Result should contain Route use statement", result.contains("use Symfony\\Component\\Routing\\Attribute\\Route;"));
-            assertTrue("Result should contain quotes for route path", result.contains("#[Route(\"\")]"));
-            assertTrue("Result should have Route attribute before class", result.indexOf("#[Route") < result.indexOf("class TestController"));
-        }
+        assertTrue("Result should contain Route use statement", result.contains("use Symfony\\Component\\Routing\\Attribute\\Route;"));
+        assertTrue("Result should contain quotes for route path", result.contains("#[Route(\"\")]"));
+        assertTrue("Result should have Route attribute before class", result.indexOf("#[Route") < result.indexOf("class TestController"));
     }
 
     public void testAsControllerAttributeInsertionAtClassLevelWithoutParentheses() {
@@ -317,17 +311,15 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
             .findFirst()
             .orElse(null);
 
-        if (asControllerItem != null) {
-            myFixture.getLookup().setCurrentItem(asControllerItem);
-            myFixture.type('\n');
+        myFixture.getLookup().setCurrentItem(asControllerItem);
+        myFixture.type('\n');
 
-            String result = myFixture.getFile().getText();
+        String result = myFixture.getFile().getText();
 
-            assertTrue("Result should contain AsController use statement", result.contains("use Symfony\\Component\\HttpKernel\\Attribute\\AsController;"));
-            assertTrue("Result should contain AsController without parentheses", result.contains("#[AsController]"));
-            assertFalse("Result should NOT contain parentheses for AsController", result.contains("#[AsController("));
-            assertTrue("Result should have AsController attribute before class", result.indexOf("#[AsController]") < result.indexOf("class TestController"));
-        }
+        assertTrue("Result should contain AsController use statement", result.contains("use Symfony\\Component\\HttpKernel\\Attribute\\AsController;"));
+        assertTrue("Result should contain AsController without parentheses", result.contains("#[AsController]"));
+        assertFalse("Result should NOT contain parentheses for AsController", result.contains("#[AsController("));
+        assertTrue("Result should have AsController attribute before class", result.indexOf("#[AsController]") < result.indexOf("class TestController"));
     }
 
     public void testClassLevelRouteAttributeWithQuotes() {
@@ -348,15 +340,13 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
             .findFirst()
             .orElse(null);
 
-        if (routeItem != null) {
-            myFixture.getLookup().setCurrentItem(routeItem);
-            myFixture.type('\n');
+        myFixture.getLookup().setCurrentItem(routeItem);
+        myFixture.type('\n');
 
-            String result = myFixture.getFile().getText();
+        String result = myFixture.getFile().getText();
 
-            assertTrue("Result should contain Route use statement", result.contains("use Symfony\\Component\\Routing\\Attribute\\Route;"));
-            assertTrue("Result should contain quotes for route path at class level", result.contains("#[Route(\"\")]"));
-        }
+        assertTrue("Result should contain Route use statement", result.contains("use Symfony\\Component\\Routing\\Attribute\\Route;"));
+        assertTrue("Result should contain quotes for route path at class level", result.contains("#[Route(\"\")]"));
     }
 
     public void testNoClassLevelCompletionWithoutHash() {
@@ -642,16 +632,14 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
             .findFirst()
             .orElse(null);
 
-        if (preMountItem != null) {
-            myFixture.getLookup().setCurrentItem(preMountItem);
-            myFixture.type('\n');
+        myFixture.getLookup().setCurrentItem(preMountItem);
+        myFixture.type('\n');
 
-            String result = myFixture.getFile().getText();
+        String result = myFixture.getFile().getText();
 
-            assertTrue("Result should contain PreMount use statement", result.contains("use Symfony\\UX\\TwigComponent\\Attribute\\PreMount;"));
-            assertTrue("Result should contain PreMount without parentheses", result.contains("#[PreMount]"));
-            assertFalse("Result should NOT contain parentheses for PreMount", result.contains("#[PreMount("));
-        }
+        assertTrue("Result should contain PreMount use statement", result.contains("use Symfony\\UX\\TwigComponent\\Attribute\\PreMount;"));
+        assertTrue("Result should contain PreMount without parentheses", result.contains("#[PreMount]"));
+        assertFalse("Result should NOT contain parentheses for PreMount", result.contains("#[PreMount("));
     }
 
     public void testPostMountAttributeInsertionOnMethodWithoutParentheses() {
@@ -674,16 +662,14 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
             .findFirst()
             .orElse(null);
 
-        if (postMountItem != null) {
-            myFixture.getLookup().setCurrentItem(postMountItem);
-            myFixture.type('\n');
+        myFixture.getLookup().setCurrentItem(postMountItem);
+        myFixture.type('\n');
 
-            String result = myFixture.getFile().getText();
+        String result = myFixture.getFile().getText();
 
-            assertTrue("Result should contain PostMount use statement", result.contains("use Symfony\\UX\\TwigComponent\\Attribute\\PostMount;"));
-            assertTrue("Result should contain PostMount without parentheses", result.contains("#[PostMount]"));
-            assertFalse("Result should NOT contain parentheses for PostMount", result.contains("#[PostMount("));
-        }
+        assertTrue("Result should contain PostMount use statement", result.contains("use Symfony\\UX\\TwigComponent\\Attribute\\PostMount;"));
+        assertTrue("Result should contain PostMount without parentheses", result.contains("#[PostMount]"));
+        assertFalse("Result should NOT contain parentheses for PostMount", result.contains("#[PostMount("));
     }
 
     public void testAllTwigComponentMethodAttributesAvailable() {
@@ -738,5 +724,393 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
             "<?php\n\nnamespace App\\Service;\n\n#<caret>\nclass MyService {\n}",
             "#[AsCommand]"
         );
+    }
+
+    public void testAllDoctrineFieldAttributesAvailable() {
+        // Test that all Doctrine field attributes are available together
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\nuse Doctrine\\ORM\\Mapping as ORM;\n\n#[ORM\\Entity]\nclass Category {\n    #<caret>\n    private string $name;\n}",
+            "#[Column]", "#[Id]", "#[GeneratedValue]",
+            "#[OneToMany]", "#[OneToOne]", "#[ManyToOne]", "#[ManyToMany]",
+            "#[JoinColumn]"
+        );
+    }
+
+    public void testNoDoctrineAttributesAtWrongScope() {
+        // Test that Doctrine attributes don't appear for non-entity classes
+        assertCompletionNotContains(PhpFileType.INSTANCE,
+            "<?php\n\nclass MyService {\n    #<caret>\n    private string $property;\n}",
+            "#[Column]", "#[Id]", "#[GeneratedValue]"
+        );
+
+        // Test that Doctrine field attributes are NOT available at method level
+        assertCompletionNotContains(PhpFileType.INSTANCE,
+            "<?php\n\nuse Doctrine\\ORM\\Mapping as ORM;\n\n#[ORM\\Entity]\nclass User {\n    #<caret>\n    public function getEmail() { }\n}",
+            "#[Column]", "#[Id]"
+        );
+
+        // Test that Doctrine field attributes are NOT available at class level
+        assertCompletionNotContains(PhpFileType.INSTANCE,
+            "<?php\n\nuse Doctrine\\ORM\\Mapping as ORM;\n\n#<caret>\n#[ORM\\Entity]\nclass Customer {\n}",
+            "#[Column]", "#[Id]", "#[GeneratedValue]"
+        );
+    }
+
+    public void testDoctrineColumnAttributeInsertionWithORMAlias() {
+        // Test that Doctrine Column attribute insertion uses the ORM alias
+        myFixture.configureByText(PhpFileType.INSTANCE,
+            "<?php\n\n" +
+                "namespace App\\Entity;\n\n" +
+                "use Doctrine\\ORM\\Mapping as ORM;\n\n" +
+                "#[ORM\\Entity]\n" +
+                "class Book {\n" +
+                "    #<caret>\n" +
+                "    private string $title;\n" +
+                "}"
+        );
+        myFixture.completeBasic();
+
+        var items = myFixture.getLookupElements();
+        var columnItem = java.util.Arrays.stream(items)
+            .filter(l -> "#[Column]".equals(l.getLookupString()))
+            .findFirst()
+            .orElse(null);
+
+        myFixture.getLookup().setCurrentItem(columnItem);
+        myFixture.type('\n');
+
+        String result = myFixture.getFile().getText();
+
+        assertTrue("Result should contain ORM alias usage", result.contains("#[ORM\\Column]"));
+        assertTrue("Result should have existing ORM import", result.contains("use Doctrine\\ORM\\Mapping as ORM;"));
+    }
+
+    public void testDoctrineAttributeInsertionWithoutParentheses() {
+        // Test that Doctrine attribute insertion does NOT include parentheses
+        myFixture.configureByText(PhpFileType.INSTANCE,
+            "<?php\n\n" +
+                "namespace App\\Entity;\n\n" +
+                "use Doctrine\\ORM\\Mapping as ORM;\n\n" +
+                "#[ORM\\Entity]\n" +
+                "class Document {\n" +
+                "    #<caret>\n" +
+                "    private int $id;\n" +
+                "}"
+        );
+        myFixture.completeBasic();
+
+        var items = myFixture.getLookupElements();
+        var idItem = java.util.Arrays.stream(items)
+            .filter(l -> "#[Id]".equals(l.getLookupString()))
+            .findFirst()
+            .orElse(null);
+
+        myFixture.getLookup().setCurrentItem(idItem);
+        myFixture.type('\n');
+
+        String result = myFixture.getFile().getText();
+
+        assertTrue("Result should contain Id attribute without parentheses", result.contains("#[ORM\\Id]"));
+        assertFalse("Result should NOT contain parentheses for Id", result.contains("#[ORM\\Id("));
+    }
+
+    public void testDoctrineAttributeCompletionWithDifferentAlias() {
+        // Test that Doctrine attribute completion respects custom alias names
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\nuse Doctrine\\ORM\\Mapping as DoctrineORM;\n\n#[DoctrineORM\\Entity]\nclass Tag {\n    #<caret>\n    private string $name;\n}",
+            "#[Column]"
+        );
+    }
+
+    public void testDoctrineAttributeCompletionForClassInEntityNamespace() {
+        // Test that Doctrine attributes appear for classes in App\Entity namespace
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\nnamespace App\\Entity;\n\nclass Product {\n    #<caret>\n    private string $name;\n}",
+            "#[Column]", "#[Id]"
+        );
+
+        // Test that Doctrine attributes appear for classes in nested Entity namespace
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\nnamespace App\\Entity\\Foobar;\n\nclass Subclass {\n    #<caret>\n    private int $value;\n}",
+            "#[Column]", "#[Id]", "#[GeneratedValue]"
+        );
+
+        // Test that Doctrine attributes appear for classes in different Entity namespaces
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\nnamespace Domain\\Entity\\User;\n\nclass Profile {\n    #<caret>\n    private string $bio;\n}",
+            "#[Column]"
+        );
+    }
+
+    public void testNoDoctrineAttributesForClassNotInEntityNamespace() {
+        // Test that Doctrine attributes don't appear for classes outside Entity namespace
+        assertCompletionNotContains(PhpFileType.INSTANCE,
+            "<?php\n\nnamespace App\\Service;\n\nclass UserService {\n    #<caret>\n    private string $property;\n}",
+            "#[Column]", "#[Id]"
+        );
+    }
+
+    public void testAllDoctrineClassAttributesAvailable() {
+        // Test that all Doctrine class attributes are available together
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\nnamespace App\\Entity;\n\n#<caret>\nclass Order {\n    private int $id;\n}",
+            "#[Entity]", "#[Table]", "#[UniqueConstraint]",
+            "#[Index]", "#[Embeddable]", "#[HasLifecycleCallbacks]"
+        );
+    }
+
+    public void testDoctrineEntityAttributeInsertionWithORMAlias() {
+        // Test that Doctrine Entity attribute insertion uses the ORM alias
+        myFixture.configureByText(PhpFileType.INSTANCE,
+            "<?php\n\n" +
+                "namespace App\\Entity;\n\n" +
+                "use Doctrine\\ORM\\Mapping as ORM;\n\n" +
+                "#<caret>\n" +
+                "class Book {\n" +
+                "    private string $title;\n" +
+                "}"
+        );
+        myFixture.completeBasic();
+
+        var items = myFixture.getLookupElements();
+        var entityItem = java.util.Arrays.stream(items)
+            .filter(l -> "#[Entity]".equals(l.getLookupString()))
+            .findFirst()
+            .orElse(null);
+
+        myFixture.getLookup().setCurrentItem(entityItem);
+        myFixture.type('\n');
+
+        String result = myFixture.getFile().getText();
+
+        assertTrue("Result should contain ORM alias usage", result.contains("#[ORM\\Entity]"));
+        assertTrue("Result should have existing ORM import", result.contains("use Doctrine\\ORM\\Mapping as ORM;"));
+
+    }
+
+    public void testDoctrineClassAttributeInsertionWithoutParentheses() {
+        // Test that Doctrine class attribute insertion does NOT include parentheses
+        myFixture.configureByText(PhpFileType.INSTANCE,
+            "<?php\n\n" +
+                "namespace App\\Entity;\n\n" +
+                "use Doctrine\\ORM\\Mapping as ORM;\n\n" +
+                "#<caret>\n" +
+                "class Document {\n" +
+                "    private int $id;\n" +
+                "}"
+        );
+        myFixture.completeBasic();
+
+        var items = myFixture.getLookupElements();
+        var entityItem = java.util.Arrays.stream(items)
+            .filter(l -> "#[Entity]".equals(l.getLookupString()))
+            .findFirst()
+            .orElse(null);
+
+        myFixture.getLookup().setCurrentItem(entityItem);
+        myFixture.type('\n');
+
+        String result = myFixture.getFile().getText();
+
+        assertTrue("Result should contain Entity attribute without parentheses", result.contains("#[ORM\\Entity]"));
+        assertFalse("Result should NOT contain parentheses for Entity", result.contains("#[ORM\\Entity("));
+    }
+
+    public void testDoctrineClassAttributeCompletionForNestedEntityNamespace() {
+        // Test that Doctrine class attributes appear for classes in nested Entity namespace
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\nnamespace App\\Entity\\Blog;\n\n#<caret>\nclass Comment {\n    private string $text;\n}",
+            "#[Entity]", "#[Table]"
+        );
+    }
+
+    public void testDoctrineClassAttributeCompletionWithExistingEntityAttribute() {
+        // Test that other Doctrine class attributes still appear when Entity is already present
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\nuse Doctrine\\ORM\\Mapping as ORM;\n\n#[ORM\\Entity]\n#<caret>\nclass Customer {\n    private string $name;\n}",
+            "#[Table]", "#[HasLifecycleCallbacks]"
+        );
+    }
+
+    public void testAllDoctrineLifecycleCallbackAttributesAvailable() {
+        // Test that all Doctrine lifecycle callback attributes are available together
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\nuse Doctrine\\ORM\\Mapping as ORM;\n\n#[ORM\\Entity]\nclass Task {\n    #<caret>\n    public function lifecycleMethod() { }\n}",
+            "#[PostLoad]", "#[PostPersist]", "#[PostRemove]", "#[PostUpdate]",
+            "#[PrePersist]", "#[PreRemove]", "#[PreUpdate]"
+        );
+    }
+
+    public void testNoDoctrineLifecycleCallbackAttributesOnNonEntityClass() {
+
+    }
+
+    public void testNoDoctrineLifecycleCallbackAttributesAtWrongScope() {
+        // Test that Doctrine lifecycle callback attributes are NOT available at class level
+        assertCompletionNotContains(PhpFileType.INSTANCE,
+            "<?php\n\nnamespace App\\Entity;\n\n#<caret>\nclass Customer {\n    public function onPrePersist() { }\n}",
+            "#[PostLoad]", "#[PrePersist]", "#[PostUpdate]"
+        );
+
+        // Test that Doctrine lifecycle callback attributes are NOT available at field level
+        assertCompletionNotContains(PhpFileType.INSTANCE,
+            "<?php\n\nnamespace App\\Entity;\n\nclass Product {\n    #<caret>\n    private string $name;\n}",
+            "#[PostLoad]", "#[PrePersist]", "#[PostUpdate]"
+        );
+
+        // Test that Doctrine lifecycle callback attributes don't appear for non-entity classes
+        assertCompletionNotContains(PhpFileType.INSTANCE,
+            "<?php\n\nnamespace App\\Service;\n\nclass MyService {\n    #<caret>\n    public function doSomething() { }\n}",
+            "#[PostLoad]", "#[PrePersist]"
+        );
+    }
+
+    public void testDoctrineLifecycleCallbackAttributeInsertionWithORMAlias() {
+        // Test that Doctrine lifecycle callback attribute insertion uses the ORM alias
+        myFixture.configureByText(PhpFileType.INSTANCE,
+            "<?php\n\n" +
+                "namespace App\\Entity;\n\n" +
+                "use Doctrine\\ORM\\Mapping as ORM;\n\n" +
+                "#[ORM\\Entity]\n" +
+                "class Book {\n" +
+                "    #<caret>\n" +
+                "    public function onPrePersist() { }\n" +
+                "}"
+        );
+        myFixture.completeBasic();
+
+        var items = myFixture.getLookupElements();
+        var prePersistItem = java.util.Arrays.stream(items)
+            .filter(l -> "#[PrePersist]".equals(l.getLookupString()))
+            .findFirst()
+            .orElse(null);
+
+        myFixture.getLookup().setCurrentItem(prePersistItem);
+        myFixture.type('\n');
+
+        String result = myFixture.getFile().getText();
+
+        assertTrue("Result should contain ORM alias usage", result.contains("#[ORM\\PrePersist]"));
+        assertTrue("Result should have existing ORM import", result.contains("use Doctrine\\ORM\\Mapping as ORM;"));
+    }
+
+    public void testDoctrineLifecycleCallbackAttributeInsertionWithoutParentheses() {
+        // Test that Doctrine lifecycle callback attribute insertion does NOT include parentheses
+        myFixture.configureByText(PhpFileType.INSTANCE,
+            "<?php\n\n" +
+                "namespace App\\Entity;\n\n" +
+                "use Doctrine\\ORM\\Mapping as ORM;\n\n" +
+                "#[ORM\\Entity]\n" +
+                "class Document {\n" +
+                "    #<caret>\n" +
+                "    public function onPostLoad() { }\n" +
+                "}"
+        );
+        myFixture.completeBasic();
+
+        var items = myFixture.getLookupElements();
+        var postLoadItem = java.util.Arrays.stream(items)
+            .filter(l -> "#[PostLoad]".equals(l.getLookupString()))
+            .findFirst()
+            .orElse(null);
+
+        myFixture.getLookup().setCurrentItem(postLoadItem);
+        myFixture.type('\n');
+
+        String result = myFixture.getFile().getText();
+
+        assertTrue("Result should contain PostLoad attribute without parentheses", result.contains("#[ORM\\PostLoad]"));
+        assertFalse("Result should NOT contain parentheses for PostLoad", result.contains("#[ORM\\PostLoad("));
+    }
+
+    public void testDoctrineAttributeUsesDirectClassImportWhenNoPatternFound() {
+        // Test that when NO pattern exists in file or namespace, direct class import should be used
+        // Use a different namespace (App\Entity\User) to avoid finding the ExistingEntity fixture
+        myFixture.configureByText(PhpFileType.INSTANCE,
+            "<?php\n\n" +
+                "namespace App\\Entity\\User;\n\n" +
+                "class BrandNewEntity {\n" +
+                "    #<caret>\n" +
+                "    private int $id;\n" +
+                "}"
+        );
+        myFixture.completeBasic();
+
+        var items = myFixture.getLookupElements();
+        var idItem = java.util.Arrays.stream(items)
+            .filter(l -> "#[Id]".equals(l.getLookupString()))
+            .findFirst()
+            .orElse(null);
+
+        myFixture.getLookup().setCurrentItem(idItem);
+        myFixture.type('\n');
+
+        String result = myFixture.getFile().getText();
+
+        // Should use direct class import without alias
+        assertTrue("Result should use direct class name", result.contains("#[Id]"));
+        assertTrue("Result should add direct class import", result.contains("use Doctrine\\ORM\\Mapping\\Id;"));
+        assertFalse("Result should NOT use namespace alias", result.contains("use Doctrine\\ORM\\Mapping as"));
+        assertFalse("Result should NOT use plain FQN", result.contains("#[\\Doctrine\\ORM\\Mapping\\Id]"));
+    }
+
+    public void testDoctrineAttributeUsesExistingAliasInCurrentFile() {
+        // Test that when the current file already has an ORM alias, it uses that alias
+        myFixture.configureByText(PhpFileType.INSTANCE,
+            "<?php\n\n" +
+                "namespace App\\Entity;\n\n" +
+                "use Doctrine\\ORM\\Mapping as ORM;\n\n" +
+                "class Product {\n" +
+                "    #<caret>\n" +
+                "    private string $name;\n" +
+                "}"
+        );
+        myFixture.completeBasic();
+
+        var items = myFixture.getLookupElements();
+        var columnItem = java.util.Arrays.stream(items)
+            .filter(l -> "#[Column]".equals(l.getLookupString()))
+            .findFirst()
+            .orElse(null);
+
+        myFixture.getLookup().setCurrentItem(columnItem);
+        myFixture.type('\n');
+
+        String result = myFixture.getFile().getText();
+
+        // Should use the existing ORM alias
+        assertTrue("Result should use ORM alias", result.contains("#[ORM\\Column]"));
+        assertTrue("Result should have existing ORM import", result.contains("use Doctrine\\ORM\\Mapping as ORM;"));
+        assertFalse("Result should NOT add direct class import", result.contains("use Doctrine\\ORM\\Mapping\\Column;"));
+    }
+
+    public void testDoctrineAttributeDiscoversAliasFromNamespaceScope() {
+        // Test that when no ORM alias in current file but another entity in namespace uses one, it discovers it
+        myFixture.configureByText(PhpFileType.INSTANCE,
+            "<?php\n\n" +
+                "namespace App\\Entity;\n\n" +
+                "class NewEntity {\n" +
+                "    #<caret>\n" +
+                "    private int $id;\n" +
+                "}"
+        );
+        myFixture.completeBasic();
+
+        var items = myFixture.getLookupElements();
+        var idItem = java.util.Arrays.stream(items)
+            .filter(l -> "#[Id]".equals(l.getLookupString()))
+            .findFirst()
+            .orElse(null);
+
+        myFixture.getLookup().setCurrentItem(idItem);
+        myFixture.type('\n');
+
+        String result = myFixture.getFile().getText();
+
+        // Should discover ORM alias from ExistingEntity in the same namespace
+        assertTrue("Result should use ORM alias discovered from namespace", result.contains("#[ORM\\Id]"));
+        assertTrue("Result should add ORM alias import", result.contains("use Doctrine\\ORM\\Mapping as ORM;"));
+        assertFalse("Result should NOT use direct class name", result.contains("#[Id]"));
+        assertFalse("Result should NOT use plain FQN", result.contains("#[\\Doctrine\\ORM\\Mapping\\Id]"));
     }
 }

@@ -7,10 +7,16 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiDocumentManager;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
+import com.jetbrains.php.codeInsight.PhpCodeInsightUtil;
 import com.jetbrains.php.lang.PhpLanguage;
+import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
@@ -20,11 +26,13 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.UxTemplateStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.util.IndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.CodeUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * Provides completion for Symfony PHP attributes like #[Route()] and #[AsController]
@@ -57,6 +65,34 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
     private static final String COMMAND_CLASS_FQN = "\\Symfony\\Component\\Console\\Command\\Command";
     private static final String INPUT_INTERFACE_FQN = "\\Symfony\\Component\\Console\\Input\\InputInterface";
     private static final String OUTPUT_INTERFACE_FQN = "\\Symfony\\Component\\Console\\Output\\OutputInterface";
+
+    // Doctrine ORM Mapping attributes - Field level
+    private static final String DOCTRINE_MAPPING_NAMESPACE = "\\Doctrine\\ORM\\Mapping";
+    private static final String DOCTRINE_COLUMN_ATTRIBUTE_FQN = "\\Doctrine\\ORM\\Mapping\\Column";
+    private static final String DOCTRINE_ID_ATTRIBUTE_FQN = "\\Doctrine\\ORM\\Mapping\\Id";
+    private static final String DOCTRINE_GENERATED_VALUE_ATTRIBUTE_FQN = "\\Doctrine\\ORM\\Mapping\\GeneratedValue";
+    private static final String DOCTRINE_ONE_TO_MANY_ATTRIBUTE_FQN = "\\Doctrine\\ORM\\Mapping\\OneToMany";
+    private static final String DOCTRINE_ONE_TO_ONE_ATTRIBUTE_FQN = "\\Doctrine\\ORM\\Mapping\\OneToOne";
+    private static final String DOCTRINE_MANY_TO_ONE_ATTRIBUTE_FQN = "\\Doctrine\\ORM\\Mapping\\ManyToOne";
+    private static final String DOCTRINE_MANY_TO_MANY_ATTRIBUTE_FQN = "\\Doctrine\\ORM\\Mapping\\ManyToMany";
+    private static final String DOCTRINE_JOIN_COLUMN_ATTRIBUTE_FQN = "\\Doctrine\\ORM\\Mapping\\JoinColumn";
+
+    // Doctrine ORM Mapping attributes - Class level
+    private static final String DOCTRINE_ENTITY_ATTRIBUTE_FQN = "\\Doctrine\\ORM\\Mapping\\Entity";
+    private static final String DOCTRINE_TABLE_ATTRIBUTE_FQN = "\\Doctrine\\ORM\\Mapping\\Table";
+    private static final String DOCTRINE_UNIQUE_CONSTRAINT_ATTRIBUTE_FQN = "\\Doctrine\\ORM\\Mapping\\UniqueConstraint";
+    private static final String DOCTRINE_INDEX_ATTRIBUTE_FQN = "\\Doctrine\\ORM\\Mapping\\Index";
+    private static final String DOCTRINE_EMBEDDABLE_ATTRIBUTE_FQN = "\\Doctrine\\ORM\\Mapping\\Embeddable";
+    private static final String DOCTRINE_HAS_LIFECYCLE_CALLBACKS_ATTRIBUTE_FQN = "\\Doctrine\\ORM\\Mapping\\HasLifecycleCallbacks";
+
+    // Doctrine ORM Mapping attributes - Method level (Lifecycle Callbacks)
+    private static final String DOCTRINE_POST_LOAD_ATTRIBUTE_FQN = "\\Doctrine\\ORM\\Mapping\\PostLoad";
+    private static final String DOCTRINE_POST_PERSIST_ATTRIBUTE_FQN = "\\Doctrine\\ORM\\Mapping\\PostPersist";
+    private static final String DOCTRINE_POST_REMOVE_ATTRIBUTE_FQN = "\\Doctrine\\ORM\\Mapping\\PostRemove";
+    private static final String DOCTRINE_POST_UPDATE_ATTRIBUTE_FQN = "\\Doctrine\\ORM\\Mapping\\PostUpdate";
+    private static final String DOCTRINE_PRE_PERSIST_ATTRIBUTE_FQN = "\\Doctrine\\ORM\\Mapping\\PrePersist";
+    private static final String DOCTRINE_PRE_REMOVE_ATTRIBUTE_FQN = "\\Doctrine\\ORM\\Mapping\\PreRemove";
+    private static final String DOCTRINE_PRE_UPDATE_ATTRIBUTE_FQN = "\\Doctrine\\ORM\\Mapping\\PreUpdate";
 
     public PhpAttributeCompletionContributor() {
         // Match any element in PHP files - we'll do more specific checking in the provider
@@ -102,12 +138,22 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                     if (hasAsTwigComponentAttribute(containingClass)) {
                         lookupElements.addAll(getTwigComponentMethodCompletions(project));
                     }
+
+                    // Doctrine entity method attributes (lifecycle callbacks)
+                    if (method.getAccess().isPublic() && PhpAttributeScopeValidator.isDoctrineEntityClass(containingClass)) {
+                        lookupElements.addAll(getDoctrineMethodAttributeCompletions(project));
+                    }
                 }
             } else if (validAttributeScope instanceof Field field) {
                 // Property-level attribute completions
                 PhpClass containingClass = field.getContainingClass();
                 if (containingClass != null && hasAsTwigComponentAttribute(containingClass)) {
                     lookupElements.addAll(getTwigComponentPropertyCompletions(project));
+                }
+
+                // Doctrine entity field attributes
+                if (containingClass != null && PhpAttributeScopeValidator.isDoctrineEntityClass(containingClass)) {
+                    lookupElements.addAll(getDoctrineFieldAttributeCompletions(project));
                 }
             } else if (validAttributeScope instanceof PhpClass phpClass) {
                 // Class-level attribute completions
@@ -121,6 +167,11 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
 
                 if (isCommandClass(phpClass)) {
                     lookupElements.addAll(getCommandClassCompletions(project));
+                }
+
+                // Doctrine entity class attributes
+                if (PhpAttributeScopeValidator.isDoctrineEntityClass(phpClass)) {
+                    lookupElements.addAll(getDoctrineClassAttributeCompletions(project));
                 }
             }
 
@@ -448,6 +499,288 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
         }
 
         /**
+         * Get attribute completions for properties in Doctrine entity classes
+         * Includes: Column, Id, GeneratedValue, OneToMany, OneToOne, ManyToOne, ManyToMany, JoinColumn
+         */
+        private Collection<LookupElement> getDoctrineFieldAttributeCompletions(@NotNull Project project) {
+            Collection<LookupElement> lookupElements = new ArrayList<>();
+
+            // Add Column attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, DOCTRINE_COLUMN_ATTRIBUTE_FQN)) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[Column]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(DOCTRINE_COLUMN_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpDoctrineAttributeInsertHandler(DOCTRINE_COLUMN_ATTRIBUTE_FQN, "Column"))
+                    .bold();
+
+                lookupElements.add(lookupElement);
+            }
+
+            // Add Id attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, DOCTRINE_ID_ATTRIBUTE_FQN)) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[Id]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(DOCTRINE_ID_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpDoctrineAttributeInsertHandler(DOCTRINE_ID_ATTRIBUTE_FQN, "Id"))
+                    .bold();
+
+                lookupElements.add(lookupElement);
+            }
+
+            // Add GeneratedValue attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, DOCTRINE_GENERATED_VALUE_ATTRIBUTE_FQN)) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[GeneratedValue]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(DOCTRINE_GENERATED_VALUE_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpDoctrineAttributeInsertHandler(DOCTRINE_GENERATED_VALUE_ATTRIBUTE_FQN, "GeneratedValue"))
+                    .bold();
+
+                lookupElements.add(lookupElement);
+            }
+
+            // Add OneToMany attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, DOCTRINE_ONE_TO_MANY_ATTRIBUTE_FQN)) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[OneToMany]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(DOCTRINE_ONE_TO_MANY_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpDoctrineAttributeInsertHandler(DOCTRINE_ONE_TO_MANY_ATTRIBUTE_FQN, "OneToMany"))
+                    .bold();
+
+                lookupElements.add(lookupElement);
+            }
+
+            // Add OneToOne attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, DOCTRINE_ONE_TO_ONE_ATTRIBUTE_FQN)) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[OneToOne]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(DOCTRINE_ONE_TO_ONE_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpDoctrineAttributeInsertHandler(DOCTRINE_ONE_TO_ONE_ATTRIBUTE_FQN, "OneToOne"))
+                    .bold();
+
+                lookupElements.add(lookupElement);
+            }
+
+            // Add ManyToOne attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, DOCTRINE_MANY_TO_ONE_ATTRIBUTE_FQN)) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[ManyToOne]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(DOCTRINE_MANY_TO_ONE_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpDoctrineAttributeInsertHandler(DOCTRINE_MANY_TO_ONE_ATTRIBUTE_FQN, "ManyToOne"))
+                    .bold();
+
+                lookupElements.add(lookupElement);
+            }
+
+            // Add ManyToMany attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, DOCTRINE_MANY_TO_MANY_ATTRIBUTE_FQN)) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[ManyToMany]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(DOCTRINE_MANY_TO_MANY_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpDoctrineAttributeInsertHandler(DOCTRINE_MANY_TO_MANY_ATTRIBUTE_FQN, "ManyToMany"))
+                    .bold();
+
+                lookupElements.add(lookupElement);
+            }
+
+            // Add JoinColumn attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, DOCTRINE_JOIN_COLUMN_ATTRIBUTE_FQN)) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[JoinColumn]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(DOCTRINE_JOIN_COLUMN_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpDoctrineAttributeInsertHandler(DOCTRINE_JOIN_COLUMN_ATTRIBUTE_FQN, "JoinColumn"))
+                    .bold();
+
+                lookupElements.add(lookupElement);
+            }
+
+            return lookupElements;
+        }
+
+        /**
+         * Get attribute completions for Doctrine entity classes
+         * Includes: Entity, Table, UniqueConstraint, Index, Embeddable, HasLifecycleCallbacks
+         */
+        private Collection<LookupElement> getDoctrineClassAttributeCompletions(@NotNull Project project) {
+            Collection<LookupElement> lookupElements = new ArrayList<>();
+
+            // Add Entity attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, DOCTRINE_ENTITY_ATTRIBUTE_FQN)) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[Entity]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(DOCTRINE_ENTITY_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpDoctrineAttributeInsertHandler(DOCTRINE_ENTITY_ATTRIBUTE_FQN, "Entity"))
+                    .bold();
+
+                lookupElements.add(lookupElement);
+            }
+
+            // Add Table attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, DOCTRINE_TABLE_ATTRIBUTE_FQN)) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[Table]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(DOCTRINE_TABLE_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpDoctrineAttributeInsertHandler(DOCTRINE_TABLE_ATTRIBUTE_FQN, "Table"))
+                    .bold();
+
+                lookupElements.add(lookupElement);
+            }
+
+            // Add UniqueConstraint attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, DOCTRINE_UNIQUE_CONSTRAINT_ATTRIBUTE_FQN)) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[UniqueConstraint]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(DOCTRINE_UNIQUE_CONSTRAINT_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpDoctrineAttributeInsertHandler(DOCTRINE_UNIQUE_CONSTRAINT_ATTRIBUTE_FQN, "UniqueConstraint"))
+                    .bold();
+
+                lookupElements.add(lookupElement);
+            }
+
+            // Add Index attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, DOCTRINE_INDEX_ATTRIBUTE_FQN)) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[Index]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(DOCTRINE_INDEX_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpDoctrineAttributeInsertHandler(DOCTRINE_INDEX_ATTRIBUTE_FQN, "Index"))
+                    .bold();
+
+                lookupElements.add(lookupElement);
+            }
+
+            // Add Embeddable attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, DOCTRINE_EMBEDDABLE_ATTRIBUTE_FQN)) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[Embeddable]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(DOCTRINE_EMBEDDABLE_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpDoctrineAttributeInsertHandler(DOCTRINE_EMBEDDABLE_ATTRIBUTE_FQN, "Embeddable"))
+                    .bold();
+
+                lookupElements.add(lookupElement);
+            }
+
+            // Add HasLifecycleCallbacks attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, DOCTRINE_HAS_LIFECYCLE_CALLBACKS_ATTRIBUTE_FQN)) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[HasLifecycleCallbacks]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(DOCTRINE_HAS_LIFECYCLE_CALLBACKS_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpDoctrineAttributeInsertHandler(DOCTRINE_HAS_LIFECYCLE_CALLBACKS_ATTRIBUTE_FQN, "HasLifecycleCallbacks"))
+                    .bold();
+
+                lookupElements.add(lookupElement);
+            }
+
+            return lookupElements;
+        }
+
+        /**
+         * Get attribute completions for public methods in Doctrine entity classes (Lifecycle Callbacks)
+         * Includes: PostLoad, PostPersist, PostRemove, PostUpdate, PrePersist, PreRemove, PreUpdate
+         */
+        private Collection<LookupElement> getDoctrineMethodAttributeCompletions(@NotNull Project project) {
+            Collection<LookupElement> lookupElements = new ArrayList<>();
+
+            // Add PostLoad attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, DOCTRINE_POST_LOAD_ATTRIBUTE_FQN)) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[PostLoad]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(DOCTRINE_POST_LOAD_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpDoctrineAttributeInsertHandler(DOCTRINE_POST_LOAD_ATTRIBUTE_FQN, "PostLoad"))
+                    .bold();
+
+                lookupElements.add(lookupElement);
+            }
+
+            // Add PostPersist attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, DOCTRINE_POST_PERSIST_ATTRIBUTE_FQN)) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[PostPersist]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(DOCTRINE_POST_PERSIST_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpDoctrineAttributeInsertHandler(DOCTRINE_POST_PERSIST_ATTRIBUTE_FQN, "PostPersist"))
+                    .bold();
+
+                lookupElements.add(lookupElement);
+            }
+
+            // Add PostRemove attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, DOCTRINE_POST_REMOVE_ATTRIBUTE_FQN)) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[PostRemove]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(DOCTRINE_POST_REMOVE_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpDoctrineAttributeInsertHandler(DOCTRINE_POST_REMOVE_ATTRIBUTE_FQN, "PostRemove"))
+                    .bold();
+
+                lookupElements.add(lookupElement);
+            }
+
+            // Add PostUpdate attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, DOCTRINE_POST_UPDATE_ATTRIBUTE_FQN)) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[PostUpdate]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(DOCTRINE_POST_UPDATE_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpDoctrineAttributeInsertHandler(DOCTRINE_POST_UPDATE_ATTRIBUTE_FQN, "PostUpdate"))
+                    .bold();
+
+                lookupElements.add(lookupElement);
+            }
+
+            // Add PrePersist attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, DOCTRINE_PRE_PERSIST_ATTRIBUTE_FQN)) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[PrePersist]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(DOCTRINE_PRE_PERSIST_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpDoctrineAttributeInsertHandler(DOCTRINE_PRE_PERSIST_ATTRIBUTE_FQN, "PrePersist"))
+                    .bold();
+
+                lookupElements.add(lookupElement);
+            }
+
+            // Add PreRemove attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, DOCTRINE_PRE_REMOVE_ATTRIBUTE_FQN)) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[PreRemove]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(DOCTRINE_PRE_REMOVE_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpDoctrineAttributeInsertHandler(DOCTRINE_PRE_REMOVE_ATTRIBUTE_FQN, "PreRemove"))
+                    .bold();
+
+                lookupElements.add(lookupElement);
+            }
+
+            // Add PreUpdate attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, DOCTRINE_PRE_UPDATE_ATTRIBUTE_FQN)) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[PreUpdate]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(DOCTRINE_PRE_UPDATE_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpDoctrineAttributeInsertHandler(DOCTRINE_PRE_UPDATE_ATTRIBUTE_FQN, "PreUpdate"))
+                    .bold();
+
+                lookupElements.add(lookupElement);
+            }
+
+            return lookupElements;
+        }
+
+        /**
          * Check if the class has the #[AsTwigComponent] attribute
          */
         private boolean hasAsTwigComponentAttribute(@NotNull PhpClass phpClass) {
@@ -528,20 +861,26 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
      * Enum to specify where the cursor should be positioned after attribute insertion
      */
     private enum CursorPosition {
-        /** Position cursor inside quotes: #[Attribute("<caret>")] */
+        /**
+         * Position cursor inside quotes: #[Attribute("<caret>")]
+         */
         INSIDE_QUOTES,
-        /** Position cursor inside parentheses: #[Attribute(<caret>)] */
+        /**
+         * Position cursor inside parentheses: #[Attribute(<caret>)]
+         */
         INSIDE_PARENTHESES,
-        /** No parentheses needed: #[Attribute]<caret> */
+        /**
+         * No parentheses needed: #[Attribute]<caret>
+         */
         NONE
     }
+
 
     /**
      * Insert handler that adds a PHP attribute
      */
     private record PhpAttributeInsertHandler(@NotNull String attributeFqn, @NotNull CursorPosition cursorPosition) implements InsertHandler<LookupElement> {
-
-    @Override
+        @Override
         public void handleInsert(@NotNull InsertionContext context, @NotNull LookupElement item) {
             Editor editor = context.getEditor();
             Document document = editor.getDocument();

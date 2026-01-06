@@ -1821,6 +1821,24 @@ public class PhpElementsUtil {
         return PhpElementsUtil.getClassInterface(method.getProject(), className);
     }
 
+    /**
+     * Inserts a use statement with an alias if the alias is not already present.
+     */
+    public static void insertUseIfNecessary(@NotNull PhpPsiElement scopeForUseOperator, @NotNull String nsClass, @Nullable String alias) {
+        if (!nsClass.startsWith("\\")) {
+            nsClass = "\\" + nsClass;
+        }
+
+        if (!PhpCodeInsightUtil.getAliasesInScope(scopeForUseOperator).containsKey(alias)) {
+            PhpAliasImporter.insertUseStatement(nsClass, alias, scopeForUseOperator);
+        }
+    }
+
+    /**
+     * Inserts a use statement if not already present and returns the short class name.
+     *
+     * @return The short class name (alias) or null if insertion failed
+     */
     @Nullable
     public static String insertUseIfNecessary(@NotNull PsiElement phpClass, @NotNull String fqnClasName) {
         if(!fqnClasName.startsWith("\\")) {
