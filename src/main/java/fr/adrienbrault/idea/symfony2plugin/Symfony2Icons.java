@@ -78,6 +78,7 @@ public class Symfony2Icons {
 
     public static final Icon SYMFONY_AI = IconLoader.getIcon("/icons/symfony_ai.png", Symfony2Icons.class);
     public static final Icon SYMFONY_AI_OPACITY = IconLoader.getIcon("/icons/symfony_ai_opacity.png", Symfony2Icons.class);
+    public static final Icon SYMFONY_ATTRIBUTE = IconLoader.getIcon("/icons/symfony_attribute.svg", Symfony2Icons.class);
 
     public static Image getImage(Icon icon) {
 
