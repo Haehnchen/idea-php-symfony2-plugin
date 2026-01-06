@@ -2,6 +2,7 @@ Changelog
 =========
 
 # Version names
+* 2026.x: PhpStorm 2025.3+
 * 2025.x: PhpStorm 2025.1+
 * 2024.x: PhpStorm 2024.1+ (no support)
 * 2023.x: PhpStorm 2023.1+ (no support)
