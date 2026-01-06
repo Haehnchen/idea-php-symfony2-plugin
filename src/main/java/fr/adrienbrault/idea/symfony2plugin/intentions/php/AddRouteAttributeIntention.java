@@ -140,14 +140,12 @@ public class AddRouteAttributeIntention extends PsiElementBaseIntentionAction im
             return true;
         }
 
-        if (PhpElementsUtil.isInstanceOf(phpClass, ABSTRACT_CONTROLLER_CLASS)) {
+        if (!phpClass.getAttributes(ROUTE_ATTRIBUTE_CLASS).isEmpty()) {
             return true;
         }
 
-        for (String routeAnnotation : RouteHelper.ROUTE_ANNOTATIONS) {
-            if (!phpClass.getAttributes(routeAnnotation).isEmpty()) {
-                return true;
-            }
+        if (PhpElementsUtil.isInstanceOf(phpClass, ABSTRACT_CONTROLLER_CLASS)) {
+            return true;
         }
 
         for (Method ownMethod : phpClass.getOwnMethods()) {
@@ -155,10 +153,8 @@ public class AddRouteAttributeIntention extends PsiElementBaseIntentionAction im
                 continue;
             }
 
-            for (String routeAnnotation : RouteHelper.ROUTE_ANNOTATIONS) {
-                if (!ownMethod.getAttributes(routeAnnotation).isEmpty()) {
-                    return true;
-                }
+            if (!ownMethod.getAttributes(ROUTE_ATTRIBUTE_CLASS).isEmpty()) {
+                return true;
             }
         }
 

@@ -2,7 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.completion;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiWhiteSpace;
+import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
@@ -32,14 +32,24 @@ public class PhpAttributeScopeValidator {
     private static final String AS_TWIG_TEST_ATTRIBUTE_FQN = "\\Twig\\Attribute\\AsTwigTest";
 
     /**
-     * Check if the element is in a valid PHP attribute context.
-     * Returns true if positioned before a class, public method, or public field.
+     * Get next element PHP attribute context.
      *
      * @param element The PSI element to check
-     * @return true if in a valid attribute scope, false otherwise
+     * @return PhpClass, Method, Field
      */
-    public static boolean isValidAttributeScope(@NotNull PsiElement element) {
-        return getMethod(element) != null || getPhpClass(element) != null || getField(element) != null;
+    @Nullable
+    public static PhpNamedElement getValidAttributeScope(@NotNull PsiElement element) {
+        Method method = getMethod(element);
+        if (method != null) {
+            return method;
+        }
+
+        PhpClass phpClass = getPhpClass(element);
+        if (phpClass != null) {
+            return phpClass;
+        }
+
+        return getField(element);
     }
 
     /**
@@ -59,12 +69,12 @@ public class PhpAttributeScopeValidator {
             PhpClass containingClass = method.getContainingClass();
             if (containingClass != null) {
                 // Method-level completions for controller methods
-                if (AddRouteAttributeIntention.isControllerClass(containingClass)) {
+                if (method.getAccess().isPublic() && AddRouteAttributeIntention.isControllerClass(containingClass)) {
                     return true;
                 }
 
                 // Method-level completions for Twig extension methods
-                if (isTwigExtensionClass(containingClass)) {
+                if (method.getAccess().isPublic() && isTwigExtensionClass(containingClass)) {
                     return true;
                 }
 
@@ -112,17 +122,13 @@ public class PhpAttributeScopeValidator {
      * @return The public method if found, null otherwise
      */
     public static @Nullable Method getMethod(@NotNull PsiElement element) {
-        Method foundMethod = null;
-
         if (element.getParent() instanceof Method method) {
-            foundMethod = method;
+            return method;
         } else if (PhpPsiUtil.getNextSiblingIgnoreWhitespace(element, true) instanceof Method method) {
-            foundMethod = method;
+            return method;
         }
 
-        return foundMethod != null && foundMethod.getAccess().isPublic()
-            ? foundMethod
-            : null;
+        return null;
     }
 
     /**
@@ -134,17 +140,45 @@ public class PhpAttributeScopeValidator {
      * @return The PhpClass if found, null otherwise
      */
     public static @Nullable PhpClass getPhpClass(@NotNull PsiElement element) {
-        if (element.getParent() instanceof PhpClass phpClass) {
-            return phpClass;
-        }
-
-        // with use statement given
+        // with a use statement given or non use or namespace:
+        // # use App;
+        // #<caret>
+        // final class Foobar
         PsiElement nextSiblingIgnoreWhitespace = PhpPsiUtil.getNextSiblingIgnoreWhitespace(element, true);
         if (nextSiblingIgnoreWhitespace instanceof PhpClass phpClass) {
             return phpClass;
         }
 
-        // no use statements
+        // #<caret>
+        // #[ORM\Table(name: 'foobar')]
+        // final class Foobar
+        if (nextSiblingIgnoreWhitespace instanceof PhpAttributesList phpAttributesList) {
+            PsiElement parent = phpAttributesList.getParent();
+            if (parent instanceof PhpClass phpClass) {
+                return phpClass;
+            }
+
+            return null;
+        }
+
+        // #[ORM\Entity]
+        // #[ORM\Table(name: 'foobar')]
+        // #<caret>
+        // final class Foobar
+        if (nextSiblingIgnoreWhitespace instanceof LeafPsiElement leafPsiElement) {
+            PsiElement parent = leafPsiElement.getParent();
+            if (parent instanceof PhpClass phpClass) {
+                return phpClass;
+            }
+        }
+
+        // special via no use statement:
+        // namespace App\Entity;
+        //
+        // #<caret>
+        // #[ORM\Entity]
+        // #[ORM\Table(name: 'foobar')]
+        // class Foobar
         if (nextSiblingIgnoreWhitespace != null && nextSiblingIgnoreWhitespace.getNode().getElementType() == PhpElementTypes.NON_LAZY_GROUP_STATEMENT) {
             if (nextSiblingIgnoreWhitespace.getFirstChild() instanceof PhpClass phpClass) {
                 return phpClass;
