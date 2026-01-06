@@ -22,6 +22,17 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2025.1.283
+* [paid] Add inspections for Doctrine lifecycle callbacks (Daniel Espendiller)
+* Improve YamlSchemaEditorNotificationProvider to handle edge cases: ignore docker-compose files, add support for "imports" root keys. (Daniel Espendiller)
+* [paid] Fix False positive in inspection ConstraintDeprecatedArray ("Deprecated array argument in Constraint constructor") [#2510](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2510) (Daniel Espendiller)
+* Add `#[ExposeInTemplate]`, `#[PreMount]`, and `#[PostMount]` attribute completions for Twig component methods and properties. (Daniel Espendiller)
+* Add `#[AsTwigComponent]` attribute completion for Twig component classes (Daniel Espendiller)
+* Add class-level attribute completion for `#[Route]`, `#[AsController]` and `#[IsGranted]` (Daniel Espendiller)
+* Add Twig attribute completions (`#[AsTwigFilter]`, `#[AsTwigFunction]`, `#[AsTwigTest]`) for TwigExtension classes. (Daniel Espendiller)
+* Enhance attribute completion add `#[Route()]`, `#[IsGranted()]`, and `#[Cache()]` suggestions to controller classes. (Daniel Espendiller)
+* Add completion and auto-popup support for PHP attributes using `#[Route()]`, handling `#` within class method scopes via a new contributor and confidence handler. (Daniel Espendiller)
+
 ## 2025.1.282
 * Refactor Symfony commands `options` and `arguments` extraction, supporting both traditional and modern approaches (Daniel Espendiller)
 * Update `#[Argument]` and `#[Option]` attributes to correct namespace during invokable command migration (Daniel Espendiller)
