@@ -12,6 +12,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.intentions.php.AddRouteAttributeIntention;
@@ -31,7 +32,7 @@ import java.util.Collection;
  * Triggers when typing "#<caret>" before a public method, class, or property
  *
  * Supports:
- * - Class-level attributes: #[Route], #[AsController], #[IsGranted], #[AsTwigComponent]
+ * - Class-level attributes: #[Route], #[AsController], #[IsGranted], #[AsTwigComponent], #[AsCommand]
  * - Method-level attributes: #[Route], #[IsGranted], #[Cache], #[ExposeInTemplate], #[PreMount], #[PostMount]
  * - Property-level attributes: #[ExposeInTemplate]
  * - Twig extension attributes: #[AsTwigFilter], #[AsTwigFunction], #[AsTwigTest]
@@ -52,6 +53,10 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
     private static final String PRE_MOUNT_ATTRIBUTE_FQN = "\\Symfony\\UX\\TwigComponent\\Attribute\\PreMount";
     private static final String POST_MOUNT_ATTRIBUTE_FQN = "\\Symfony\\UX\\TwigComponent\\Attribute\\PostMount";
     private static final String TWIG_EXTENSION_FQN = "\\Twig\\Extension\\AbstractExtension";
+    private static final String AS_COMMAND_ATTRIBUTE_FQN = "\\Symfony\\Component\\Console\\Attribute\\AsCommand";
+    private static final String COMMAND_CLASS_FQN = "\\Symfony\\Component\\Console\\Command\\Command";
+    private static final String INPUT_INTERFACE_FQN = "\\Symfony\\Component\\Console\\Input\\InputInterface";
+    private static final String OUTPUT_INTERFACE_FQN = "\\Symfony\\Component\\Console\\Output\\OutputInterface";
 
     public PhpAttributeCompletionContributor() {
         // Match any element in PHP files - we'll do more specific checking in the provider
@@ -113,6 +118,10 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                 if (isTwigComponentClass(project, phpClass)) {
                     lookupElements.addAll(getTwigComponentClassCompletions(project));
                 }
+
+                if (isCommandClass(phpClass)) {
+                    lookupElements.addAll(getCommandClassCompletions(project));
+                }
             }
 
             result.addAllElements(lookupElements);
@@ -135,8 +144,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                     .create("#[Route]")
                     .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
                     .withTypeText(StringUtils.stripStart(ROUTE_ATTRIBUTE_FQN, "\\"), true)
-                    .withInsertHandler(new PhpAttributeInsertHandler(ROUTE_ATTRIBUTE_FQN, CursorPosition.INSIDE_QUOTES))
-                    .bold();
+                    .withInsertHandler(new PhpAttributeInsertHandler(ROUTE_ATTRIBUTE_FQN, CursorPosition.INSIDE_QUOTES));
 
                 lookupElements.add(routeLookupElement);
             }
@@ -147,8 +155,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                     .create("#[IsGranted]")
                     .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
                     .withTypeText(StringUtils.stripStart(IS_GRANTED_ATTRIBUTE_FQN, "\\"), true)
-                    .withInsertHandler(new PhpAttributeInsertHandler(IS_GRANTED_ATTRIBUTE_FQN, CursorPosition.INSIDE_QUOTES))
-                    .bold();
+                    .withInsertHandler(new PhpAttributeInsertHandler(IS_GRANTED_ATTRIBUTE_FQN, CursorPosition.INSIDE_QUOTES));
 
                 lookupElements.add(isGrantedLookupElement);
             }
@@ -159,8 +166,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                     .create("#[Cache]")
                     .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
                     .withTypeText(StringUtils.stripStart(CACHE_ATTRIBUTE_FQN, "\\"), true)
-                    .withInsertHandler(new PhpAttributeInsertHandler(CACHE_ATTRIBUTE_FQN, CursorPosition.INSIDE_PARENTHESES))
-                    .bold();
+                    .withInsertHandler(new PhpAttributeInsertHandler(CACHE_ATTRIBUTE_FQN, CursorPosition.INSIDE_PARENTHESES));
 
                 lookupElements.add(cacheLookupElement);
             }
@@ -180,8 +186,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                     .create("#[Route]")
                     .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
                     .withTypeText(StringUtils.stripStart(ROUTE_ATTRIBUTE_FQN, "\\"), true)
-                    .withInsertHandler(new PhpAttributeInsertHandler(ROUTE_ATTRIBUTE_FQN, CursorPosition.INSIDE_QUOTES))
-                    .bold();
+                    .withInsertHandler(new PhpAttributeInsertHandler(ROUTE_ATTRIBUTE_FQN, CursorPosition.INSIDE_QUOTES));
 
                 lookupElements.add(routeLookupElement);
             }
@@ -192,8 +197,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                     .create("#[AsController]")
                     .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
                     .withTypeText(StringUtils.stripStart(AS_CONTROLLER_ATTRIBUTE_FQN, "\\"), true)
-                    .withInsertHandler(new PhpAttributeInsertHandler(AS_CONTROLLER_ATTRIBUTE_FQN, CursorPosition.NONE))
-                    .bold();
+                    .withInsertHandler(new PhpAttributeInsertHandler(AS_CONTROLLER_ATTRIBUTE_FQN, CursorPosition.NONE));
 
                 lookupElements.add(asControllerLookupElement);
             }
@@ -204,8 +208,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                     .create("#[IsGranted]")
                     .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
                     .withTypeText(StringUtils.stripStart(IS_GRANTED_ATTRIBUTE_FQN, "\\"), true)
-                    .withInsertHandler(new PhpAttributeInsertHandler(IS_GRANTED_ATTRIBUTE_FQN, CursorPosition.INSIDE_QUOTES))
-                    .bold();
+                    .withInsertHandler(new PhpAttributeInsertHandler(IS_GRANTED_ATTRIBUTE_FQN, CursorPosition.INSIDE_QUOTES));
 
                 lookupElements.add(isGrantedLookupElement);
             }
@@ -222,8 +225,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                     .create("#[AsTwigFilter]")
                     .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
                     .withTypeText(StringUtils.stripStart(AS_TWIG_FILTER_ATTRIBUTE_FQN, "\\"), true)
-                    .withInsertHandler(new PhpAttributeInsertHandler(AS_TWIG_FILTER_ATTRIBUTE_FQN, CursorPosition.INSIDE_QUOTES))
-                    .bold();
+                    .withInsertHandler(new PhpAttributeInsertHandler(AS_TWIG_FILTER_ATTRIBUTE_FQN, CursorPosition.INSIDE_QUOTES));
 
                 lookupElements.add(lookupElement);
             }
@@ -234,8 +236,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                     .create("#[AsTwigFunction]")
                     .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
                     .withTypeText(StringUtils.stripStart(AS_TWIG_FUNCTION_ATTRIBUTE_FQN, "\\"), true)
-                    .withInsertHandler(new PhpAttributeInsertHandler(AS_TWIG_FUNCTION_ATTRIBUTE_FQN, CursorPosition.INSIDE_QUOTES))
-                    .bold();
+                    .withInsertHandler(new PhpAttributeInsertHandler(AS_TWIG_FUNCTION_ATTRIBUTE_FQN, CursorPosition.INSIDE_QUOTES));
 
                 lookupElements.add(lookupElement);
             }
@@ -246,8 +247,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                     .create("#[AsTwigTest]")
                     .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
                     .withTypeText(StringUtils.stripStart(AS_TWIG_TEST_ATTRIBUTE_FQN, "\\"), true)
-                    .withInsertHandler(new PhpAttributeInsertHandler(AS_TWIG_TEST_ATTRIBUTE_FQN, CursorPosition.INSIDE_QUOTES))
-                    .bold();
+                    .withInsertHandler(new PhpAttributeInsertHandler(AS_TWIG_TEST_ATTRIBUTE_FQN, CursorPosition.INSIDE_QUOTES));
 
                 lookupElements.add(lookupElement);
             }
@@ -267,8 +267,27 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                     .create("#[AsTwigComponent]")
                     .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
                     .withTypeText(StringUtils.stripStart(AS_TWIG_COMPONENT_ATTRIBUTE_FQN, "\\"), true)
-                    .withInsertHandler(new PhpAttributeInsertHandler(AS_TWIG_COMPONENT_ATTRIBUTE_FQN, CursorPosition.NONE))
-                    .bold();
+                    .withInsertHandler(new PhpAttributeInsertHandler(AS_TWIG_COMPONENT_ATTRIBUTE_FQN, CursorPosition.NONE));
+
+                lookupElements.add(lookupElement);
+            }
+
+            return lookupElements;
+        }
+
+        /**
+         * Get command class-level attribute completions (for command classes)
+         */
+        private Collection<LookupElement> getCommandClassCompletions(@NotNull Project project) {
+            Collection<LookupElement> lookupElements = new ArrayList<>();
+
+            // Add AsCommand attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, AS_COMMAND_ATTRIBUTE_FQN)) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[AsCommand]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(AS_COMMAND_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpAttributeInsertHandler(AS_COMMAND_ATTRIBUTE_FQN, CursorPosition.INSIDE_QUOTES));
 
                 lookupElements.add(lookupElement);
             }
@@ -376,8 +395,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                     .create("#[ExposeInTemplate]")
                     .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
                     .withTypeText(StringUtils.stripStart(EXPOSE_IN_TEMPLATE_ATTRIBUTE_FQN, "\\"), true)
-                    .withInsertHandler(new PhpAttributeInsertHandler(EXPOSE_IN_TEMPLATE_ATTRIBUTE_FQN, CursorPosition.NONE))
-                    .bold();
+                    .withInsertHandler(new PhpAttributeInsertHandler(EXPOSE_IN_TEMPLATE_ATTRIBUTE_FQN, CursorPosition.NONE));
 
                 lookupElements.add(lookupElement);
             }
@@ -388,8 +406,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                     .create("#[PreMount]")
                     .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
                     .withTypeText(StringUtils.stripStart(PRE_MOUNT_ATTRIBUTE_FQN, "\\"), true)
-                    .withInsertHandler(new PhpAttributeInsertHandler(PRE_MOUNT_ATTRIBUTE_FQN, CursorPosition.NONE))
-                    .bold();
+                    .withInsertHandler(new PhpAttributeInsertHandler(PRE_MOUNT_ATTRIBUTE_FQN, CursorPosition.NONE));
 
                 lookupElements.add(lookupElement);
             }
@@ -400,8 +417,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                     .create("#[PostMount]")
                     .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
                     .withTypeText(StringUtils.stripStart(POST_MOUNT_ATTRIBUTE_FQN, "\\"), true)
-                    .withInsertHandler(new PhpAttributeInsertHandler(POST_MOUNT_ATTRIBUTE_FQN, CursorPosition.NONE))
-                    .bold();
+                    .withInsertHandler(new PhpAttributeInsertHandler(POST_MOUNT_ATTRIBUTE_FQN, CursorPosition.NONE));
 
                 lookupElements.add(lookupElement);
             }
@@ -423,7 +439,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                     .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
                     .withTypeText(StringUtils.stripStart(EXPOSE_IN_TEMPLATE_ATTRIBUTE_FQN, "\\"), true)
                     .withInsertHandler(new PhpAttributeInsertHandler(EXPOSE_IN_TEMPLATE_ATTRIBUTE_FQN, CursorPosition.INSIDE_QUOTES))
-                    .bold();
+;
 
                 lookupElements.add(lookupElement);
             }
@@ -436,6 +452,52 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
          */
         private boolean hasAsTwigComponentAttribute(@NotNull PhpClass phpClass) {
             return !phpClass.getAttributes(AS_TWIG_COMPONENT_ATTRIBUTE_FQN).isEmpty();
+        }
+
+        /**
+         * Check if the class is a valid command class for AsCommand attribute.
+         * A class is considered a valid command if:
+         * - Its name ends with "Command", OR
+         * - Its namespace contains "\\Command\\", OR
+         * - It extends Symfony's Command class, OR
+         * - It has an __invoke method with Input or Output interface parameters (Symfony 7.4 style)
+         */
+        private boolean isCommandClass(@NotNull PhpClass phpClass) {
+            // Check if the class name ends with "Command"
+            if (phpClass.getName().endsWith("Command")) {
+                return true;
+            }
+
+            // Check if the class is in a Command namespace
+            String fqn = phpClass.getFQN();
+            if (!fqn.isBlank() && fqn.contains("\\Command\\")) {
+                return true;
+            }
+
+            // Check if the class extends Symfony's Command class
+            if (PhpElementsUtil.isInstanceOf(phpClass, COMMAND_CLASS_FQN)) {
+                return true;
+            }
+
+            // Check if the class has an __invoke method with Input or Output interface parameters
+            Method invokeMethod = phpClass.findOwnMethodByName("__invoke");
+            if (invokeMethod != null) {
+                for (Parameter parameter : invokeMethod.getParameters()) {
+                    // Check via PhpType resolution for exact interface match
+                    PhpType type = parameter.getType();
+                    for (String typeString : type.getTypes()) {
+                        // Strip leading backslash for comparison
+                        String normalizedType = StringUtils.stripStart(typeString, "\\");
+
+                        if (normalizedType.equals(StringUtils.stripStart(INPUT_INTERFACE_FQN, "\\")) ||
+                            normalizedType.equals(StringUtils.stripStart(OUTPUT_INTERFACE_FQN, "\\"))) {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
         }
 
         /**

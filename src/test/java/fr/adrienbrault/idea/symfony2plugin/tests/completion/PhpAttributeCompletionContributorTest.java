@@ -693,4 +693,50 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
             "#[ExposeInTemplate]", "#[PreMount]", "#[PostMount]"
         );
     }
+
+    public void testAsCommandAttributeCompletionScope() {
+        // Test that AsCommand attribute appears for classes ending with "Command"
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\n#<caret>\nclass MyCommand {\n}",
+            "#[AsCommand]"
+        );
+
+        // Test that AsCommand attribute appears for classes in Command namespace
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\nnamespace App\\Command;\n\n#<caret>\nclass ImportUsers {\n}",
+            "#[AsCommand]"
+        );
+
+        // Test that AsCommand attribute appears for classes extending Symfony Command
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\nuse Symfony\\Component\\Console\\Command\\Command;\n\n#<caret>\nclass MyTask extends Command {\n}",
+            "#[AsCommand]"
+        );
+
+        // Test that AsCommand attribute appears for classes with __invoke method using InputInterface
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\nuse Symfony\\Component\\Console\\Input\\InputInterface;\n\n#<caret>\nclass ProcessData {\n    public function __invoke(InputInterface $input) { }\n}",
+            "#[AsCommand]"
+        );
+
+        // Test that AsCommand attribute appears for classes with __invoke method using OutputInterface
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\nuse Symfony\\Component\\Console\\Output\\OutputInterface;\n\n#<caret>\nclass GenerateReport {\n    public function __invoke(OutputInterface $output) { }\n}",
+            "#[AsCommand]"
+        );
+    }
+
+    public void testNoAsCommandInvalidScopes() {
+        // Test that AsCommand is NOT available at method level (class-only)
+        assertCompletionNotContains(PhpFileType.INSTANCE,
+            "<?php\n\nclass MyCommand {\n    #<caret>\n    public function execute() { }\n}",
+            "#[AsCommand]"
+        );
+
+        // Test that AsCommand attribute does not appear for non-command classes
+        assertCompletionNotContains(PhpFileType.INSTANCE,
+            "<?php\n\nnamespace App\\Service;\n\n#<caret>\nclass MyService {\n}",
+            "#[AsCommand]"
+        );
+    }
 }
