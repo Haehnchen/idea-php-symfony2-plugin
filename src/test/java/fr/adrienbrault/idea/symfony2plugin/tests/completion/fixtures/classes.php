@@ -105,3 +105,27 @@ namespace Symfony\UX\TwigComponent\Attribute {
     {
     }
 }
+
+namespace Symfony\Component\Console\Command {
+    class Command
+    {
+    }
+}
+
+namespace Symfony\Component\Console\Attribute {
+    class AsCommand
+    {
+    }
+}
+
+namespace Symfony\Component\Console\Input {
+    interface InputInterface
+    {
+    }
+}
+
+namespace Symfony\Component\Console\Output {
+    interface OutputInterface
+    {
+    }
+}
