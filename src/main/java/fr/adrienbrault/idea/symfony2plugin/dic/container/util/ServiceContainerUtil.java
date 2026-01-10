@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.dic.container.util;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.NlsSafe;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -19,6 +20,7 @@ import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
 import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpReturnInstruction;
 import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.psi.PhpFile;
+import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.refactoring.PhpNamespaceBraceConverter;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
@@ -82,6 +84,7 @@ public class ServiceContainerUtil {
     public static final String AUTOWIRE_SERVICE_CLOSURE_ATTRIBUTE_CLASS = "\\Symfony\\Component\\DependencyInjection\\Attribute\\AutowireServiceClosure";
     public static final String AUTOWIRE_CALLABLE_ATTRIBUTE_CLASS = "\\Symfony\\Component\\DependencyInjection\\Attribute\\AutowireCallable";
     public static final String AUTOWIRE_METHOD_OF_ATTRIBUTE_CLASS = "\\Symfony\\Component\\DependencyInjection\\Attribute\\AutowireMethodOf";
+    public static final String CONTAINER_CONFIGURATOR = "\\Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\ContainerConfigurator";
 
     @NotNull
     public static Collection<ServiceSerializable> getServicesInFile(@NotNull PsiFile psiFile) {
@@ -289,7 +292,46 @@ public class ServiceContainerUtil {
     }
 
     /**
-     * return static function (ContainerConfigurator $container) { ... }
+     * Extract class parameter from chained ->class() method call
+     *
+     * $services->set('id')->class(Foo::class)->tag('foo')
+     */
+    @Nullable
+    private static String getChainedClassMethodParameter(@NotNull MethodReference setMethodReference) {
+        // Walk up the tree to find chained method calls
+        // Parents of MethodReference in a chain are always MethodReference, so we can break early
+        // Also break when we find another 'set' method (different service)
+        PsiElement parent = setMethodReference.getParent();
+        while (parent instanceof MethodReference methodRef) {
+            String methodName = methodRef.getName();
+
+            // Stop if we encounter another 'set' method (different service definition)
+            if ("set".equals(methodName)) {
+                break;
+            }
+
+            if ("class".equals(methodName)) {
+                // Check if this ->class() is called on our ->set() method
+                PhpExpression classReference = methodRef.getClassReference();
+                if (classReference instanceof MethodReference && PsiTreeUtil.isAncestor(setMethodReference, classReference, false)) {
+                    // Extract the first parameter from ->class(Foo::class)
+                    PsiElement[] parameters = methodRef.getParameters();
+                    if (parameters.length >= 1) {
+                        return getStringValueIndexSafe(parameters[0]);
+                    }
+                }
+            }
+            parent = parent.getParent();
+        }
+        return null;
+    }
+
+    /**
+     * Finds methods / functions that have a valid ContainerConfigurator parameter for services
+     *
+     * Supported:
+     *  - public function loadExtension(array $config, ContainerConfigurator $container, ContainerBuilder $builder): void
+     *  - return static function (ContainerConfigurator $container) { ... }
      */
     @NotNull
     private static Collection<Function> getPhpContainerConfiguratorFunctions(@NotNull PhpFile phpFile) {
@@ -309,7 +351,8 @@ public class ServiceContainerUtil {
             PhpControlFlowUtil.processFlow(phpNamespace.getControlFlow(), new PhpInstructionProcessor() {
                 @Override
                 public boolean processReturnInstruction(PhpReturnInstruction instruction) {
-                    if (instruction.getArgument().getParent() instanceof PhpReturn phpReturn) {
+                    PsiElement argument = instruction.getArgument();
+                    if (argument != null && argument.getParent() instanceof PhpReturn phpReturn) {
                         phpReturns.add(phpReturn);
                     }
 
@@ -325,11 +368,33 @@ public class ServiceContainerUtil {
                     }
 
                     // \Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator
-                    if(parameter.getLocalType().getTypes().stream().noneMatch(s -> s.contains("\\ContainerConfigurator"))) {
+                    Set<@NlsSafe String> types = parameter.getLocalType().getTypes();
+                    if (types.stream().noneMatch(s -> s.contains(CONTAINER_CONFIGURATOR))) {
                         continue;
                     }
 
                     functions.add(function);
+                }
+            }
+        }
+
+        // Also check for methods in classes that have a ContainerConfigurator parameter
+        // Example: Bundle::loadExtension(array $config, ContainerConfigurator $container, ...)
+        for (PhpClass phpClass : PhpPsiUtil.findAllClasses(phpFile)) {
+            for (Method method : phpClass.getOwnMethods()) {
+                if (!"loadExtension".equals(method.getName())) {
+                    continue;
+                }
+
+                // ContainerConfigurator is always the second parameter (index 1) in loadExtension
+                Parameter parameter = method.getParameter(1);
+                if (parameter == null) {
+                    continue;
+                }
+
+                Set<@NlsSafe String> types = parameter.getLocalType().getTypes();
+                if (types.stream().anyMatch(s -> s.contains(CONTAINER_CONFIGURATOR))) {
+                    functions.add(method);
                 }
             }
         }
@@ -365,6 +430,15 @@ public class ServiceContainerUtil {
                         String serviceClass = getStringValueIndexSafe(parameters[1]);
                         if (StringUtils.isNotBlank(serviceClass)) {
                             keyValue.put("class", serviceClass);
+                        }
+                    }
+
+                    // Check for chained ->class() method call
+                    // $services->set('id')->class(Foo::class)
+                    if (!keyValue.containsKey("class")) {
+                        String chainedClass = getChainedClassMethodParameter(methodReference);
+                        if (StringUtils.isNotBlank(chainedClass)) {
+                            keyValue.put("class", chainedClass);
                         }
                     }
 

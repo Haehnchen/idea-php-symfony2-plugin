@@ -5,6 +5,7 @@ import com.intellij.openapi.util.Condition;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.containers.ContainerUtil;
+import com.jetbrains.php.lang.psi.PhpFile;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceSerializable;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ServiceTypeHint;
@@ -355,6 +356,76 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
 
     public void testGetTargetsForConstantForEmptyClassConstName() {
         assertEmpty(ServiceContainerUtil.getTargetsForConstant(getProject(), "\\App\\Service\\FooService::"));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil#visitFile(com.jetbrains.php.lang.psi.PhpFile, com.intellij.util.Consumer)
+     */
+    public void testVisitFileForPhpServicesWithSetAndAlias() {
+        PhpFile phpFile = (PhpFile) myFixture.configureByFile("services_set_alias.php");
+
+        Collection<String> visitedServices = new HashSet<>();
+        Collection<String> visitedClasses = new HashSet<>();
+        Collection<String> visitedAliases = new HashSet<>();
+
+        ServiceContainerUtil.visitFile(phpFile, serviceConsumer -> {
+            visitedServices.add(serviceConsumer.getServiceId());
+
+            String className = serviceConsumer.attributes().getString("class");
+            if (className != null) {
+                visitedClasses.add(serviceConsumer.getServiceId() + ":" + className);
+            }
+
+            String alias = serviceConsumer.attributes().getString("alias");
+            if (alias != null) {
+                visitedAliases.add(serviceConsumer.getServiceId() + ":" + alias);
+            }
+        });
+
+        // Test that 'set' method with class parameter is found
+        assertTrue("Service 'test.service_direct' should be visited", visitedServices.contains("test.service_direct"));
+        assertTrue("Service 'test.service_direct' should have class", visitedClasses.contains("test.service_direct:App\\Service\\TestClassA"));
+
+        // Test that 'alias' method is found
+        assertTrue("Service 'test.service_alias' should be visited", visitedServices.contains("test.service_alias"));
+        assertTrue("Service 'test.service_alias' should have alias", visitedAliases.contains("test.service_alias:foo_alias"));
+
+        // Test that 'set' with chained 'class' method is found
+        assertTrue("Service 'test.service_chained_class' should be visited", visitedServices.contains("test.service_chained_class"));
+        assertTrue("Service 'test.service_chained_class' should have class from chained method", visitedClasses.contains("test.service_chained_class:App\\Service\\TestClassB"));
+
+        // Test that chained 'set' calls create separate services with correct classes
+        assertTrue("Service 'service1' should be visited", visitedServices.contains("service1"));
+        assertTrue("Service 'service1' should have its own class", visitedClasses.contains("service1:App\\Service\\TestClassA"));
+
+        assertTrue("Service 'service2' should be visited", visitedServices.contains("service2"));
+        assertTrue("Service 'service2' should have its own class", visitedClasses.contains("service2:App\\Service\\TestClassC"));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil#visitFile(com.jetbrains.php.lang.psi.PhpFile, com.intellij.util.Consumer)
+     */
+    public void testVisitFileForPhpBundleLoadExtension() {
+        PhpFile phpFile = (PhpFile) myFixture.configureByFile("services_bundle_load_extension.php");
+
+        Collection<String> visitedServices = new HashSet<>();
+        Collection<String> visitedClasses = new HashSet<>();
+
+        ServiceContainerUtil.visitFile(phpFile, serviceConsumer -> {
+            visitedServices.add(serviceConsumer.getServiceId());
+
+            String className = serviceConsumer.attributes().getString("class");
+            if (className != null) {
+                visitedClasses.add(serviceConsumer.getServiceId() + ":" + className);
+            }
+        });
+
+        // Test that services defined in Bundle::loadExtension are found
+        assertTrue("Service 'test.bundle_service' should be visited", visitedServices.contains("test.bundle_service"));
+        assertTrue("Service 'test.bundle_service' should have class", visitedClasses.contains("test.bundle_service:App\\Service\\TestClassA"));
+
+        assertTrue("Service 'test.bundle_chained' should be visited", visitedServices.contains("test.bundle_chained"));
+        assertTrue("Service 'test.bundle_chained' should have class", visitedClasses.contains("test.bundle_chained:App\\Service\\TestClassB"));
     }
 
     private static class MyStringServiceInterfaceCondition implements Condition<ServiceInterface> {
