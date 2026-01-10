@@ -23,6 +23,15 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2025.1.284
+* [#2445](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2445) updated symfony-meta: v1.8.0 → v1.9.0 (added Validator component metadata, Console enhancements, and other improvements) (Daniel Espendiller)
+* Add support for PHP service definitions in Bundle loadExtension methods and chained class() calls [#2489](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2489) (Daniel Espendiller)
+* [#2412](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2412) Fix the double injection service bug with the feature "Full Line Completion: Complete and inject service classes via property" (Daniel Espendiller)
+* [paid] Add inspection for detecting useless empty `#[ORM\Table]` attributes including a quickfix for removal (Daniel Espendiller)
+* [paid] Add inspection to enforce using ON instead of WITH for arbitrary joins in Doctrine QueryBuilder (Daniel Espendiller)
+* Add `#[AsCommand]` attribute completion for Symfony command classes (Daniel Espendiller)
+* [paid] Add quick fixes for Doctrine lifecycle inspections (Daniel Espendiller)
+
 ## 2025.1.283
 * [paid] Add inspections for Doctrine lifecycle callbacks (Daniel Espendiller)
 * Improve YamlSchemaEditorNotificationProvider to handle edge cases: ignore docker-compose files, add support for "imports" root keys. (Daniel Espendiller)
