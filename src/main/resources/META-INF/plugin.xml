@@ -124,6 +124,7 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Settings"/>
+        <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.mcp.McpSettings"/>
 
         <postStartupActivity implementation="fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent$PostStartupActivity"/>
         <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent$ProjectCloseService"/>
@@ -173,6 +174,13 @@
                              displayName="Profiler"
                              parentId="Symfony2.SettingsForm"
                              id="Symfony.ProfilerSettingsForm"
+                             nonDefaultProject="true"
+        />
+
+        <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.ui.McpSettingsForm"
+                             displayName="MCP Tools"
+                             parentId="Symfony2.SettingsForm"
+                             id="Symfony2.McpSettingsForm"
                              nonDefaultProject="true"
         />
 
@@ -837,6 +845,7 @@
     <depends config-file="dql.xml" optional="true" >com.jetbrains.php.dql</depends>
     <depends config-file="toolbox.xml" optional="true" >de.espend.idea.php.toolbox</depends>
     <depends config-file="deployment-aware.xml" optional="true" >com.jetbrains.plugins.webDeployment</depends>
+    <depends config-file="mcp.xml" optional="true" >com.intellij.mcpServer</depends>
     <depends config-file="pay.xml">com.jetbrains.php</depends>
 
     <actions>
