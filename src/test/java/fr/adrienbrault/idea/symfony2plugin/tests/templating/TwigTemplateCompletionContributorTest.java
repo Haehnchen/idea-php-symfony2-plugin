@@ -150,4 +150,25 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ enum('App\\<caret>') }}", "{{ enum('App\\\\\\Bike\\\\FooEnum') }}", l -> "\\\\Bike\\\\FooEnum".equals(l.getLookupString()));
         assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ enum('App\\\\Bike\\\\Foo<caret>') }}", "{{ enum('App\\\\Bike\\\\FooEnum') }}", l -> "FooEnum".equals(l.getLookupString()));
     }
+
+    public void testThatEnumCasesProvidesCompletionForEnumClasses() {
+        // Test basic completion - enum should be available
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ enum_cases('<caret>') }}", "FooEnum");
+
+        // Ensure non-enum classes are NOT included
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ enum_cases('<caret>') }}", "FooConst");
+
+        // Test namespace-based completion
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ enum_cases('App\\<caret>') }}", "\\\\Bike\\\\FooEnum");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ enum_cases('App\\<caret>') }}", "\\\\Bike\\\\FooConst");
+
+        // Test sub-namespace completion
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ enum_cases('App\\\\Bike\\\\<caret>') }}", "FooEnum");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ enum_cases('App\\\\Bike\\\\<caret>') }}", "FooConst");
+
+        // Test that the insert handler properly escapes backslashes
+        assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ enum_cases('<caret>') }}", "{{ enum_cases('App\\\\Bike\\\\FooEnum') }}", l -> "FooEnum".equals(l.getLookupString()));
+        assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ enum_cases('App\\<caret>') }}", "{{ enum_cases('App\\\\\\Bike\\\\FooEnum') }}", l -> "\\\\Bike\\\\FooEnum".equals(l.getLookupString()));
+        assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ enum_cases('App\\\\Bike\\\\Foo<caret>') }}", "{{ enum_cases('App\\\\Bike\\\\FooEnum') }}", l -> "FooEnum".equals(l.getLookupString()));
+    }
 }

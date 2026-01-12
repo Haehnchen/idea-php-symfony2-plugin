@@ -169,7 +169,8 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         }
 
         // enum('App\\Config\\SomeOption')
-        if (TwigPattern.getPrintBlockOrTagFunctionPattern("enum").accepts(psiElement)) {
+        // enum_cases('App\\Config\\SomeOption')
+        if (TwigPattern.getPrintBlockOrTagFunctionPattern("enum", "enum_cases").accepts(psiElement)) {
             targets.addAll(getEnumGoto(psiElement));
         }
 
