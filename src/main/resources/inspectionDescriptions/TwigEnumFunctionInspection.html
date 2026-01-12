@@ -1,0 +1,51 @@
+<html>
+<body>
+<p>Detects invalid class references in Twig <code>enum()</code> and <code>enum_cases()</code> functions</p>
+<!-- tooltip end -->
+<p>
+    This inspection validates that class names provided to <code>enum()</code> and <code>enum_cases()</code> Twig functions:
+</p>
+<ul>
+    <li>Exist in the project</li>
+    <li>Are actually PHP <code>enum</code> types (not regular classes)</li>
+</ul>
+
+<p>
+    The inspection checks for issues in:
+</p>
+<ul>
+    <li><code>{{ enum('App\\Config\\SomeOption') }}</code></li>
+    <li><code>{{ enum_cases('App\\Config\\SomeOption') }}</code></li>
+    <li><code>{% if enum('App\\Config\\SomeOption') == 'value' %}</code></li>
+    <li><code>{% set options = enum_cases('App\\Config\\SomeOption') %}</code></li>
+</ul>
+
+<p>
+    Example Twig template:
+</p>
+<pre><code>
+{# Valid: enum class exists and is an enum type #}
+{{ enum('App\\Enum\\Status') }}
+
+{# Error: class doesn't exist #}
+{{ enum('App\\Enum\\MissingEnum') }}
+
+{# Warning: class exists but is not an enum #}
+{{ enum('App\\Entity\\User') }}
+
+{# Valid: returns all cases of the enum #}
+{% for status in enum_cases('App\\Enum\\Status') %}
+    {{ status.value }}
+{% endfor %}
+</code></pre>
+
+<p>
+    When an issue is detected:
+</p>
+<ul>
+    <li><b>Missing class</b>: The specified class cannot be found in the project</li>
+    <li><b>Not an enum</b>: The class exists but is not an enum type</li>
+</ul>
+
+</body>
+</html>
