@@ -478,6 +478,12 @@
                          language="Twig"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigExtensionDeprecatedInspection"/>
 
+        <localInspection groupPath="Symfony" shortName="TwigEnumFunctionInspection" displayName="Twig Enum Function Validation"
+                         groupName="Twig"
+                         enabledByDefault="true" level="ERROR"
+                         language="Twig"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigEnumFunctionInspection"/>
+
         <localInspection groupPath="Symfony" shortName="YamlQuotedEscapedInspection" displayName="Quoted issues"
                          groupName="Yaml"
                          enabledByDefault="true" level="WARNING"
