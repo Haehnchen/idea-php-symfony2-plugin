@@ -438,9 +438,10 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         );
 
         // {{ enum('App\\Config\\SomeOption') }}
+        // {{ enum_cases('App\\Config\\SomeOption') }}
         extend(
             CompletionType.BASIC,
-            TwigPattern.getPrintBlockOrTagFunctionPattern("enum"),
+            TwigPattern.getPrintBlockOrTagFunctionPattern("enum", "enum_cases"),
             new EnumCompletionParametersCompletionProvider()
         );
 

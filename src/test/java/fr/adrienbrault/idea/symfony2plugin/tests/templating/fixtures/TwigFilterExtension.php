@@ -5,6 +5,7 @@ namespace{
     function twig_test_even() {}
     function constant($name) {}
     function enum($name) {}
+    function enum_cases($name) {}
 
     interface Twig_ExtensionInterface {}
     interface Twig_Environment {}
@@ -47,6 +48,7 @@ class DoctrineExtension extends \Twig_Extension
             new \Twig_SimpleFunction('json_bar', 'my_json_decode'),
             new \Twig_SimpleFunction('constant', 'constant'),
             new \Twig_SimpleFunction('enum', 'enum'),
+            new \Twig_SimpleFunction('enum_cases', 'enum_cases'),
         );
     }
 

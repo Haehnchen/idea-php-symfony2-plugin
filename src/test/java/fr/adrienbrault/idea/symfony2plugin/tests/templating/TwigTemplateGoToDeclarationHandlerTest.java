@@ -262,4 +262,15 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
         // Should not navigate to non-enum classes
         assertNavigationIsEmpty(TwigFileType.INSTANCE, "{{ enum('App\\\\Bike\\\\Foo<caret>Const') }}");
     }
+
+    public void testThatEnumCasesProvidesNavigationToEnumClass() {
+        assertNavigationMatch(TwigFileType.INSTANCE, "{{ enum_cases('App\\\\Bike\\\\Foo<caret>Enum') }}", PlatformPatterns.psiElement(PhpClass.class).withName("FooEnum"));
+        assertNavigationMatch(TwigFileType.INSTANCE, "{{ enum_cases('\\\\App\\\\Bike\\\\Foo<caret>Enum') }}", PlatformPatterns.psiElement(PhpClass.class).withName("FooEnum"));
+
+        assertNavigationMatch(TwigFileType.INSTANCE, "{% if foo == enum_cases('App\\\\Bike\\\\Foo<caret>Enum') %}", PlatformPatterns.psiElement(PhpClass.class).withName("FooEnum"));
+        assertNavigationMatch(TwigFileType.INSTANCE, "{% set foo == enum_cases('\\\\App\\\\Bike\\\\Foo<caret>Enum') %}", PlatformPatterns.psiElement(PhpClass.class).withName("FooEnum"));
+
+        // Should not navigate to non-enum classes
+        assertNavigationIsEmpty(TwigFileType.INSTANCE, "{{ enum_cases('App\\\\Bike\\\\Foo<caret>Const') }}");
+    }
 }
