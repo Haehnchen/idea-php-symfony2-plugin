@@ -173,4 +173,23 @@ public class PhpAttributeIndexTest extends SymfonyLightCodeInsightFixtureTestCas
             value.get(0).equals("App\\Command\\CreateUserCommand")
         );
     }
+
+    public void testThatExcludeOnClassIsInIndex() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Service;\n" +
+            "\n" +
+            "use Symfony\\Component\\DependencyInjection\\Attribute\\Exclude;\n" +
+            "\n" +
+            "#[Exclude]\n" +
+            "class ExcludedService\n" +
+            "{\n" +
+            "}\n"
+        );
+
+        // Key: Attribute FQN, Value: [class FQN]
+        assertIndexContainsKeyWithValue(PhpAttributeIndex.KEY, "\\Symfony\\Component\\DependencyInjection\\Attribute\\Exclude", value ->
+            value.size() == 1 &&
+            value.get(0).equals("App\\Service\\ExcludedService")
+        );
+    }
 }

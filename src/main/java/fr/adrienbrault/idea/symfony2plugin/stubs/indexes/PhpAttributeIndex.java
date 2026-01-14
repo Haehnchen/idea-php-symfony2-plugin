@@ -28,6 +28,7 @@ import java.util.*;
  * Examples:
  * - AsTwigFilter: ["App\Twig\AppExtension", "formatProductNumber", "product_number_filter"]
  * - AsCommand: ["App\Command\CreateUserCommand"]
+ * - Exclude: ["App\Service\ExcludedService"]
  *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -66,7 +67,7 @@ public class PhpAttributeIndex extends FileBasedIndexExtension<String, List<Stri
 
     @Override
     public int getVersion() {
-        return 6;
+        return 7;
     }
 
     public static class PhpAttributeIndexer implements DataIndexer<String, List<String>, FileContent> {
@@ -79,6 +80,9 @@ public class PhpAttributeIndex extends FileBasedIndexExtension<String, List<Stri
 
         // Symfony console command attributes on classes
         private static final String AS_COMMAND_ATTRIBUTE = "\\Symfony\\Component\\Console\\Attribute\\AsCommand";
+
+        // Symfony dependency injection attributes on classes
+        private static final String EXCLUDE_ATTRIBUTE = "\\Symfony\\Component\\DependencyInjection\\Attribute\\Exclude";
 
         @Override
         public @NotNull Map<String, List<String>> map(@NotNull FileContent inputData) {
@@ -114,6 +118,14 @@ public class PhpAttributeIndex extends FileBasedIndexExtension<String, List<Stri
                 // Key: Attribute FQN
                 // Value: [class FQN]
                 if (AS_COMMAND_ATTRIBUTE.equals(attributeFqn)) {
+                    String classFqn = StringUtils.stripStart(phpClass.getFQN(), "\\");
+                    result.put(attributeFqn, List.of(classFqn));
+                }
+
+                // Index Exclude attribute on class
+                // Key: Attribute FQN
+                // Value: [class FQN]
+                if (EXCLUDE_ATTRIBUTE.equals(attributeFqn)) {
                     String classFqn = StringUtils.stripStart(phpClass.getFQN(), "\\");
                     result.put(attributeFqn, List.of(classFqn));
                 }
