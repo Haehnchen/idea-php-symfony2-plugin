@@ -70,6 +70,16 @@ public class McpSettingsForm implements Configurable {
             "list_profiler_requests",
             "Profiler Requests",
             "Lists the last 10 Symfony profiler requests (supports filtering by URL, hash, controller, route)"
+        ),
+        new McpToolSetting(
+            "list_symfony_forms",
+            "Symfony Forms",
+            "Lists all Symfony form types in the project"
+        ),
+        new McpToolSetting(
+            "list_symfony_form_options",
+            "Symfony Form Options",
+            "Lists all options for a specific Symfony form type"
         )
     );
 
