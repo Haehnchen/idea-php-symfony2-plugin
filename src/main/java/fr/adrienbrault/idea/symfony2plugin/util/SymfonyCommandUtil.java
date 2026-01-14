@@ -70,8 +70,10 @@ public class SymfonyCommandUtil {
         String trimmed = commandText.trim();
         return trimmed.startsWith("bin/console ") ||
             trimmed.startsWith("console ") ||
+            trimmed.startsWith("symfony console ") ||
             trimmed.equals("bin/console") ||
-            trimmed.equals("console");
+            trimmed.equals("console") ||
+            trimmed.equals("symfony console");
     }
 
     /**

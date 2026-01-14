@@ -24,15 +24,15 @@ import java.util.List;
  * Provides code completion for Symfony console command names in the integrated terminal.
  *
  * <p>This completion contributor activates when typing Symfony console commands in the terminal,
- * detecting patterns like {@code bin/console <caret>} or {@code console <caret>} and offering
- * autocompletion suggestions for available Symfony commands.</p>
+ * detecting patterns like {@code bin/console <caret>}, {@code console <caret>}, or {@code symfony console <caret>}
+ * and offering autocompletion suggestions for available Symfony commands.</p>
  *
  * <h3>Examples:</h3>
  * <pre>
  * # Terminal input                    → Completion result
  * $ bin/console <caret>               → Shows all available commands
  * $ console cac<caret>                → Filters to cache:* commands
- * $ bin/console debug:con<caret>      → Suggests debug:container, debug:config, etc.
+ * $ symfony console debug:con<caret>  → Suggests debug:container, debug:config, etc.
  * </pre>
  */
 public class CommandNameTerminalCompletionContributor extends CompletionContributor implements DumbAware {
@@ -106,11 +106,13 @@ public class CommandNameTerminalCompletionContributor extends CompletionContribu
     private String extractCompletionPrefix(String commandText) {
         String trimmed = commandText.trim();
 
-        // Remove "bin/console " or "console " prefix
+        // Remove "bin/console ", "console ", or "symfony console " prefix
         if (trimmed.startsWith("bin/console ")) {
             trimmed = trimmed.substring("bin/console ".length());
         } else if (trimmed.startsWith("console ")) {
             trimmed = trimmed.substring("console ".length());
+        } else if (trimmed.startsWith("symfony console ")) {
+            trimmed = trimmed.substring("symfony console ".length());
         } else {
             return null;
         }
