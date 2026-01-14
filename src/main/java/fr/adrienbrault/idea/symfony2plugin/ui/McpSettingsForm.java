@@ -65,6 +65,11 @@ public class McpSettingsForm implements Configurable {
             "list_twig_extensions",
             "Twig Extensions",
             "Lists all Twig extensions: filters, functions, tests, and tags (supports search and type filtering)"
+        ),
+        new McpToolSetting(
+            "list_profiler_requests",
+            "Profiler Requests",
+            "Lists the last 10 Symfony profiler requests (supports filtering by URL, hash, controller, route)"
         )
     );
 
