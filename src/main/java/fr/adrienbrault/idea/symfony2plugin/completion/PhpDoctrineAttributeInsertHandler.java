@@ -16,6 +16,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.CodeUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Map;
@@ -90,14 +91,7 @@ public record PhpDoctrineAttributeInsertHandler(@NotNull String attributeFqn, @N
         // Store document length before adding import to calculate offset shift
         int documentLengthBeforeImport = document.getTextLength();
 
-        // Determine which alias to use (or null for direct class import)
-        String importedAlias;
-        String ormAttributeAlias = getOrmAttributeAlias(phpClass);
-        if (hasDoctrineOrmAttribute(phpClass) || ormAttributeAlias != null) {
-            importedAlias = ormAttributeAlias;
-        } else {
-            importedAlias = findDoctrineOrmAliasInNamespaceScope(phpClass);
-        }
+        String importedAlias = findAliasInEntitiesScope(phpClass);
 
         PhpPsiElement scopeForUseOperator = PhpCodeInsightUtil.findScopeForUseOperator(validAttributeScope);
         if (scopeForUseOperator != null) {
@@ -170,6 +164,20 @@ public record PhpDoctrineAttributeInsertHandler(@NotNull String attributeFqn, @N
                 }
             }
         }
+    }
+
+    /**
+     * Determines the appropriate Doctrine ORM namespace alias or non to use when inserting attributes.
+     *
+     * @return The alias to use (e.g., "ORM", "DoctrineORM"), or null for direct class import
+     */
+    public static @Nullable String findAliasInEntitiesScope(PhpClass phpClass) {
+        String ormAttributeAlias = getOrmAttributeAlias(phpClass);
+        if (hasDoctrineOrmAttribute(phpClass) || ormAttributeAlias != null) {
+            return ormAttributeAlias;
+        }
+
+        return findDoctrineOrmAliasInNamespaceScope(phpClass);
     }
 
     /**
