@@ -689,17 +689,21 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
         /**
          * Get attribute completions for public methods in Doctrine entity classes (Lifecycle Callbacks)
          * Includes: PostLoad, PostPersist, PostRemove, PostUpdate, PrePersist, PreRemove, PreUpdate
+         *
+         * These attributes use a special insert handler that also adds #[HasLifecycleCallbacks]
+         * to the class if not already present.
          */
         private Collection<LookupElement> getDoctrineMethodAttributeCompletions(@NotNull Project project) {
             Collection<LookupElement> lookupElements = new ArrayList<>();
 
             // Add PostLoad attribute completion
             if (PhpElementsUtil.hasClassOrInterface(project, DOCTRINE_POST_LOAD_ATTRIBUTE_FQN)) {
+                PhpDoctrineAttributeInsertHandler baseHandler = new PhpDoctrineAttributeInsertHandler(DOCTRINE_POST_LOAD_ATTRIBUTE_FQN, "PostLoad");
                 LookupElement lookupElement = LookupElementBuilder
                     .create("#[PostLoad]")
                     .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
                     .withTypeText(StringUtils.stripStart(DOCTRINE_POST_LOAD_ATTRIBUTE_FQN, "\\"), true)
-                    .withInsertHandler(new PhpDoctrineAttributeInsertHandler(DOCTRINE_POST_LOAD_ATTRIBUTE_FQN, "PostLoad"))
+                    .withInsertHandler(new PhpDoctrineLifecycleAttributeInsertHandler(DOCTRINE_POST_LOAD_ATTRIBUTE_FQN, "PostLoad", baseHandler))
                     .bold();
 
                 lookupElements.add(lookupElement);
@@ -707,11 +711,12 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
 
             // Add PostPersist attribute completion
             if (PhpElementsUtil.hasClassOrInterface(project, DOCTRINE_POST_PERSIST_ATTRIBUTE_FQN)) {
+                PhpDoctrineAttributeInsertHandler baseHandler = new PhpDoctrineAttributeInsertHandler(DOCTRINE_POST_PERSIST_ATTRIBUTE_FQN, "PostPersist");
                 LookupElement lookupElement = LookupElementBuilder
                     .create("#[PostPersist]")
                     .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
                     .withTypeText(StringUtils.stripStart(DOCTRINE_POST_PERSIST_ATTRIBUTE_FQN, "\\"), true)
-                    .withInsertHandler(new PhpDoctrineAttributeInsertHandler(DOCTRINE_POST_PERSIST_ATTRIBUTE_FQN, "PostPersist"))
+                    .withInsertHandler(new PhpDoctrineLifecycleAttributeInsertHandler(DOCTRINE_POST_PERSIST_ATTRIBUTE_FQN, "PostPersist", baseHandler))
                     .bold();
 
                 lookupElements.add(lookupElement);
@@ -719,11 +724,12 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
 
             // Add PostRemove attribute completion
             if (PhpElementsUtil.hasClassOrInterface(project, DOCTRINE_POST_REMOVE_ATTRIBUTE_FQN)) {
+                PhpDoctrineAttributeInsertHandler baseHandler = new PhpDoctrineAttributeInsertHandler(DOCTRINE_POST_REMOVE_ATTRIBUTE_FQN, "PostRemove");
                 LookupElement lookupElement = LookupElementBuilder
                     .create("#[PostRemove]")
                     .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
                     .withTypeText(StringUtils.stripStart(DOCTRINE_POST_REMOVE_ATTRIBUTE_FQN, "\\"), true)
-                    .withInsertHandler(new PhpDoctrineAttributeInsertHandler(DOCTRINE_POST_REMOVE_ATTRIBUTE_FQN, "PostRemove"))
+                    .withInsertHandler(new PhpDoctrineLifecycleAttributeInsertHandler(DOCTRINE_POST_REMOVE_ATTRIBUTE_FQN, "PostRemove", baseHandler))
                     .bold();
 
                 lookupElements.add(lookupElement);
@@ -731,11 +737,12 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
 
             // Add PostUpdate attribute completion
             if (PhpElementsUtil.hasClassOrInterface(project, DOCTRINE_POST_UPDATE_ATTRIBUTE_FQN)) {
+                PhpDoctrineAttributeInsertHandler baseHandler = new PhpDoctrineAttributeInsertHandler(DOCTRINE_POST_UPDATE_ATTRIBUTE_FQN, "PostUpdate");
                 LookupElement lookupElement = LookupElementBuilder
                     .create("#[PostUpdate]")
                     .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
                     .withTypeText(StringUtils.stripStart(DOCTRINE_POST_UPDATE_ATTRIBUTE_FQN, "\\"), true)
-                    .withInsertHandler(new PhpDoctrineAttributeInsertHandler(DOCTRINE_POST_UPDATE_ATTRIBUTE_FQN, "PostUpdate"))
+                    .withInsertHandler(new PhpDoctrineLifecycleAttributeInsertHandler(DOCTRINE_POST_UPDATE_ATTRIBUTE_FQN, "PostUpdate", baseHandler))
                     .bold();
 
                 lookupElements.add(lookupElement);
@@ -743,11 +750,12 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
 
             // Add PrePersist attribute completion
             if (PhpElementsUtil.hasClassOrInterface(project, DOCTRINE_PRE_PERSIST_ATTRIBUTE_FQN)) {
+                PhpDoctrineAttributeInsertHandler baseHandler = new PhpDoctrineAttributeInsertHandler(DOCTRINE_PRE_PERSIST_ATTRIBUTE_FQN, "PrePersist");
                 LookupElement lookupElement = LookupElementBuilder
                     .create("#[PrePersist]")
                     .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
                     .withTypeText(StringUtils.stripStart(DOCTRINE_PRE_PERSIST_ATTRIBUTE_FQN, "\\"), true)
-                    .withInsertHandler(new PhpDoctrineAttributeInsertHandler(DOCTRINE_PRE_PERSIST_ATTRIBUTE_FQN, "PrePersist"))
+                    .withInsertHandler(new PhpDoctrineLifecycleAttributeInsertHandler(DOCTRINE_PRE_PERSIST_ATTRIBUTE_FQN, "PrePersist", baseHandler))
                     .bold();
 
                 lookupElements.add(lookupElement);
@@ -755,11 +763,12 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
 
             // Add PreRemove attribute completion
             if (PhpElementsUtil.hasClassOrInterface(project, DOCTRINE_PRE_REMOVE_ATTRIBUTE_FQN)) {
+                PhpDoctrineAttributeInsertHandler baseHandler = new PhpDoctrineAttributeInsertHandler(DOCTRINE_PRE_REMOVE_ATTRIBUTE_FQN, "PreRemove");
                 LookupElement lookupElement = LookupElementBuilder
                     .create("#[PreRemove]")
                     .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
                     .withTypeText(StringUtils.stripStart(DOCTRINE_PRE_REMOVE_ATTRIBUTE_FQN, "\\"), true)
-                    .withInsertHandler(new PhpDoctrineAttributeInsertHandler(DOCTRINE_PRE_REMOVE_ATTRIBUTE_FQN, "PreRemove"))
+                    .withInsertHandler(new PhpDoctrineLifecycleAttributeInsertHandler(DOCTRINE_PRE_REMOVE_ATTRIBUTE_FQN, "PreRemove", baseHandler))
                     .bold();
 
                 lookupElements.add(lookupElement);
@@ -767,11 +776,12 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
 
             // Add PreUpdate attribute completion
             if (PhpElementsUtil.hasClassOrInterface(project, DOCTRINE_PRE_UPDATE_ATTRIBUTE_FQN)) {
+                PhpDoctrineAttributeInsertHandler baseHandler = new PhpDoctrineAttributeInsertHandler(DOCTRINE_PRE_UPDATE_ATTRIBUTE_FQN, "PreUpdate");
                 LookupElement lookupElement = LookupElementBuilder
                     .create("#[PreUpdate]")
                     .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
                     .withTypeText(StringUtils.stripStart(DOCTRINE_PRE_UPDATE_ATTRIBUTE_FQN, "\\"), true)
-                    .withInsertHandler(new PhpDoctrineAttributeInsertHandler(DOCTRINE_PRE_UPDATE_ATTRIBUTE_FQN, "PreUpdate"))
+                    .withInsertHandler(new PhpDoctrineLifecycleAttributeInsertHandler(DOCTRINE_PRE_UPDATE_ATTRIBUTE_FQN, "PreUpdate", baseHandler))
                     .bold();
 
                 lookupElements.add(lookupElement);

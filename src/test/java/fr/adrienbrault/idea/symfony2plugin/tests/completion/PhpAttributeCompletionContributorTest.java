@@ -942,7 +942,11 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
     }
 
     public void testNoDoctrineLifecycleCallbackAttributesOnNonEntityClass() {
-
+        // Test that Doctrine lifecycle callback attributes don't appear for non-entity classes
+        assertCompletionNotContains(PhpFileType.INSTANCE,
+            "<?php\n\nnamespace App\\Service;\n\nclass MyService {\n    #<caret>\n    public function doSomething() { }\n}",
+            "#[PostLoad]", "#[PostPersist]", "#[PrePersist]"
+        );
     }
 
     public void testNoDoctrineLifecycleCallbackAttributesAtWrongScope() {
@@ -1112,5 +1116,152 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
         assertTrue("Result should add ORM alias import", result.contains("use Doctrine\\ORM\\Mapping as ORM;"));
         assertFalse("Result should NOT use direct class name", result.contains("#[Id]"));
         assertFalse("Result should NOT use plain FQN", result.contains("#[\\Doctrine\\ORM\\Mapping\\Id]"));
+    }
+
+    public void testLifecycleCallbackAddsHasLifecycleCallbacksToClassWithoutORMAlias() {
+        // Test that when inserting a lifecycle callback, #[HasLifecycleCallbacks] is added to class
+        // when no ORM alias exists (uses direct class import)
+        myFixture.configureByText(PhpFileType.INSTANCE,
+            "<?php\n\n" +
+                "namespace App\\Entity\\User;\n\n" +
+                "use Doctrine\\ORM\\Mapping\\Entity;\n\n" +
+                "#[Entity]\n" +
+                "class UserProfile {\n" +
+                "    #<caret>\n" +
+                "    public function onPrePersist() { }\n" +
+                "}"
+        );
+        myFixture.completeBasic();
+
+        var items = myFixture.getLookupElements();
+        var prePersistItem = java.util.Arrays.stream(items)
+            .filter(l -> "#[PrePersist]".equals(l.getLookupString()))
+            .findFirst()
+            .orElse(null);
+
+        myFixture.getLookup().setCurrentItem(prePersistItem);
+        myFixture.type('\n');
+
+        String result = myFixture.getFile().getText();
+
+        // Should add PrePersist attribute on method
+        assertTrue("Result should contain PrePersist attribute on method", result.contains("#[PrePersist]"));
+        // Should add HasLifecycleCallbacks on class
+        assertTrue("Result should contain HasLifecycleCallbacks on class", result.contains("#[HasLifecycleCallbacks]"));
+        // Should add HasLifecycleCallbacks import
+        assertTrue("Result should contain HasLifecycleCallbacks import", result.contains("use Doctrine\\ORM\\Mapping\\HasLifecycleCallbacks;"));
+        // HasLifecycleCallbacks should be before the class
+        int hasLifecycleCallbacksPos = result.indexOf("#[HasLifecycleCallbacks]");
+        int classPos = result.indexOf("class UserProfile");
+        assertTrue("HasLifecycleCallbacks should be before class", hasLifecycleCallbacksPos < classPos);
+    }
+
+    public void testLifecycleCallbackAddsHasLifecycleCallbacksToClassWithORMAlias() {
+        // Test that when inserting a lifecycle callback with existing ORM alias,
+        // #[HasLifecycleCallbacks] is added to class using the ORM alias
+        myFixture.configureByText(PhpFileType.INSTANCE,
+            "<?php\n\n" +
+                "namespace App\\Entity;\n\n" +
+                "use Doctrine\\ORM\\Mapping as ORM;\n\n" +
+                "#[ORM\\Entity]\n" +
+                "class Book {\n" +
+                "    #<caret>\n" +
+                "    public function onPostPersist() { }\n" +
+                "}"
+        );
+        myFixture.completeBasic();
+
+        var items = myFixture.getLookupElements();
+        var postPersistItem = java.util.Arrays.stream(items)
+            .filter(l -> "#[PostPersist]".equals(l.getLookupString()))
+            .findFirst()
+            .orElse(null);
+
+        myFixture.getLookup().setCurrentItem(postPersistItem);
+        myFixture.type('\n');
+
+        String result = myFixture.getFile().getText();
+
+        // Should add PostPersist attribute on method
+        assertTrue("Result should contain ORM\\PostPersist attribute on method", result.contains("#[ORM\\PostPersist]"));
+        // Should add HasLifecycleCallbacks on class with ORM alias
+        assertTrue("Result should contain ORM\\HasLifecycleCallbacks on class", result.contains("#[ORM\\HasLifecycleCallbacks]"));
+        // Should NOT add separate HasLifecycleCallbacks import (already have ORM alias)
+        assertFalse("Result should NOT contain separate HasLifecycleCallbacks import",
+            result.contains("use Doctrine\\ORM\\Mapping\\HasLifecycleCallbacks;"));
+        // HasLifecycleCallbacks should be before the class
+        int hasLifecycleCallbacksPos = result.indexOf("#[ORM\\HasLifecycleCallbacks]");
+        int classPos = result.indexOf("class Book");
+        assertTrue("HasLifecycleCallbacks should be before class", hasLifecycleCallbacksPos < classPos);
+    }
+
+    public void testLifecycleCallbackDoesNotDuplicateHasLifecycleCallbacks() {
+        // Test that when #[HasLifecycleCallbacks] already exists on class,
+        // inserting a lifecycle callback does NOT add it again
+        myFixture.configureByText(PhpFileType.INSTANCE,
+            "<?php\n\n" +
+                "namespace App\\Entity;\n\n" +
+                "use Doctrine\\ORM\\Mapping as ORM;\n\n" +
+                "#[ORM\\Entity]\n" +
+                "#[ORM\\HasLifecycleCallbacks]\n" +
+                "class Document {\n" +
+                "    #<caret>\n" +
+                "    public function onPreUpdate() { }\n" +
+                "}"
+        );
+        myFixture.completeBasic();
+
+        var items = myFixture.getLookupElements();
+        var preUpdateItem = java.util.Arrays.stream(items)
+            .filter(l -> "#[PreUpdate]".equals(l.getLookupString()))
+            .findFirst()
+            .orElse(null);
+
+        myFixture.getLookup().setCurrentItem(preUpdateItem);
+        myFixture.type('\n');
+
+        String result = myFixture.getFile().getText();
+
+        // Should add PreUpdate attribute on method
+        assertTrue("Result should contain ORM\\PreUpdate attribute on method", result.contains("#[ORM\\PreUpdate]"));
+
+        // Should have exactly one HasLifecycleCallbacks (no duplicate)
+        String hasLifecycleCount = java.util.regex.Pattern.compile("#\\[ORM\\\\HasLifecycleCallbacks\\]")
+            .matcher(result)
+            .results()
+            .count() + "";
+        assertEquals("Should have exactly one HasLifecycleCallbacks", "1", hasLifecycleCount);
+    }
+
+    public void testLifecycleCallbackDiscoversAliasFromNamespaceScopeForHasLifecycleCallbacks() {
+        // Test that when current file has no ORM alias but namespace has entities with it,
+        // both the lifecycle callback and HasLifecycleCallbacks use the discovered alias
+        myFixture.configureByText(PhpFileType.INSTANCE,
+            "<?php\n\n" +
+                "namespace App\\Entity;\n\n" +
+                "class NewEntity {\n" +
+                "    #<caret>\n" +
+                "    public function onPostLoad() { }\n" +
+                "}"
+        );
+        myFixture.completeBasic();
+
+        var items = myFixture.getLookupElements();
+        var postLoadItem = java.util.Arrays.stream(items)
+            .filter(l -> "#[PostLoad]".equals(l.getLookupString()))
+            .findFirst()
+            .orElse(null);
+
+        myFixture.getLookup().setCurrentItem(postLoadItem);
+        myFixture.type('\n');
+
+        String result = myFixture.getFile().getText();
+
+        // Should use ORM alias for PostLoad (discovered from namespace)
+        assertTrue("Result should use ORM alias for PostLoad", result.contains("#[ORM\\PostLoad]"));
+        // Should use ORM alias for HasLifecycleCallbacks (discovered from namespace)
+        assertTrue("Result should use ORM alias for HasLifecycleCallbacks", result.contains("#[ORM\\HasLifecycleCallbacks]"));
+        // Should add ORM alias import once
+        assertTrue("Result should add ORM alias import", result.contains("use Doctrine\\ORM\\Mapping as ORM;"));
     }
 }
