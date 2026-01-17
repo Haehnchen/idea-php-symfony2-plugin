@@ -168,4 +168,111 @@ public class StimulusControllerStubIndexTest extends SymfonyLightCodeInsightFixt
         Collection<String> allKeys = FileBasedIndex.getInstance().getAllKeys(StimulusControllerStubIndex.KEY, getProject());
         assertTrue("Index should contain 'users--list', but got: " + allKeys, allKeys.contains("users--list"));
     }
+
+    public void testThatControllersJsonIsIndexed() {
+        myFixture.addFileToProject("assets/controllers.json",
+            "{\n" +
+            "  \"controllers\": {\n" +
+            "    \"@symfony/ux-chartjs\": {\n" +
+            "      \"chart\": {\n" +
+            "        \"enabled\": true,\n" +
+            "        \"fetch\": \"eager\"\n" +
+            "      }\n" +
+            "    }\n" +
+            "  },\n" +
+            "  \"entrypoints\": []\n" +
+            "}\n"
+        );
+
+        Collection<String> allKeys = FileBasedIndex.getInstance().getAllKeys(StimulusControllerStubIndex.KEY, getProject());
+        assertTrue("Index should contain 'symfony--ux-chartjs--chart', but got: " + allKeys, allKeys.contains("symfony--ux-chartjs--chart"));
+    }
+
+    public void testThatControllersJsonWithMultipleControllersIsIndexed() {
+        myFixture.addFileToProject("assets/controllers.json",
+            "{\n" +
+            "  \"controllers\": {\n" +
+            "    \"@symfony/ux-chartjs\": {\n" +
+            "      \"chart\": {\n" +
+            "        \"enabled\": true,\n" +
+            "        \"fetch\": \"eager\"\n" +
+            "      }\n" +
+            "    },\n" +
+            "    \"@symfony/ux-dropzone\": {\n" +
+            "      \"dropzone\": {\n" +
+            "        \"enabled\": true\n" +
+            "      }\n" +
+            "    }\n" +
+            "  },\n" +
+            "  \"entrypoints\": []\n" +
+            "}\n"
+        );
+
+        Collection<String> allKeys = FileBasedIndex.getInstance().getAllKeys(StimulusControllerStubIndex.KEY, getProject());
+        assertTrue("Index should contain 'symfony--ux-chartjs--chart', but got: " + allKeys, allKeys.contains("symfony--ux-chartjs--chart"));
+        assertTrue("Index should contain 'symfony--ux-dropzone--dropzone', but got: " + allKeys, allKeys.contains("symfony--ux-dropzone--dropzone"));
+    }
+
+    public void testThatControllersJsonWithDisabledControllerIsNotIndexed() {
+        myFixture.addFileToProject("assets/controllers.json",
+            "{\n" +
+            "  \"controllers\": {\n" +
+            "    \"@symfony/ux-chartjs\": {\n" +
+            "      \"chart\": {\n" +
+            "        \"enabled\": false,\n" +
+            "        \"fetch\": \"eager\"\n" +
+            "      }\n" +
+            "    }\n" +
+            "  },\n" +
+            "  \"entrypoints\": []\n" +
+            "}\n"
+        );
+
+        assertIndexNotContains(StimulusControllerStubIndex.KEY, "symfony--ux-chartjs--chart");
+    }
+
+    public void testThatControllersJsonWithNoEnabledFieldIsIndexed() {
+        myFixture.addFileToProject("assets/controllers.json",
+            "{\n" +
+            "  \"controllers\": {\n" +
+            "    \"@symfony/ux-chartjs\": {\n" +
+            "      \"chart\": {\n" +
+            "        \"fetch\": \"eager\"\n" +
+            "      }\n" +
+            "    }\n" +
+            "  },\n" +
+            "  \"entrypoints\": []\n" +
+            "}\n"
+        );
+
+        Collection<String> allKeys = FileBasedIndex.getInstance().getAllKeys(StimulusControllerStubIndex.KEY, getProject());
+        assertTrue("Index should contain 'symfony--ux-chartjs--chart', but got: " + allKeys, allKeys.contains("symfony--ux-chartjs--chart"));
+    }
+
+    public void testThatControllersJsonAndJsFilesAreBothIndexed() {
+        myFixture.addFileToProject("assets/controllers.json",
+            "{\n" +
+            "  \"controllers\": {\n" +
+            "    \"@symfony/ux-chartjs\": {\n" +
+            "      \"chart\": {\n" +
+            "        \"enabled\": true\n" +
+            "      }\n" +
+            "    }\n" +
+            "  },\n" +
+            "  \"entrypoints\": []\n" +
+            "}\n"
+        );
+
+        myFixture.addFileToProject("assets/controllers/hello_controller.js",
+            "import { Controller } from '@hotwired/stimulus';\n" +
+            "\n" +
+            "export default class extends Controller {\n" +
+            "    connect() {}\n" +
+            "}\n"
+        );
+
+        Collection<String> allKeys = FileBasedIndex.getInstance().getAllKeys(StimulusControllerStubIndex.KEY, getProject());
+        assertTrue("Index should contain 'symfony--ux-chartjs--chart', but got: " + allKeys, allKeys.contains("symfony--ux-chartjs--chart"));
+        assertTrue("Index should contain 'hello', but got: " + allKeys, allKeys.contains("hello"));
+    }
 }

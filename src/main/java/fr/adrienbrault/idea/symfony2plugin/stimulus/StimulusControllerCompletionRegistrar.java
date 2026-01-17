@@ -1,18 +1,24 @@
 package fr.adrienbrault.idea.symfony2plugin.stimulus;
 
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiWhiteSpace;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.xml.XmlFile;
+import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.StimulusControllerStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -130,11 +136,11 @@ public class StimulusControllerCompletionRegistrar {
                 return new ArrayList<>();
             }
 
-            Collection<String> controllerNames = StimulusControllerCompletion.getAllControllerNames(getProject());
             Collection<LookupElement> items = new ArrayList<>();
 
-            for (String controllerName : controllerNames) {
-                items.add(StimulusControllerCompletion.createLookupElement(controllerName));
+            // For HTML, use normalized names (e.g., "symfony--ux-chartjs--chart")
+            for (var controller : StimulusControllerCompletion.getAllControllers(getProject()).values()) {
+                items.add(StimulusControllerCompletion.createLookupElement(controller, false));
             }
 
             return items;
@@ -143,8 +149,12 @@ public class StimulusControllerCompletionRegistrar {
         @NotNull
         @Override
         public Collection<PsiElement> getPsiTargets(@NotNull PsiElement element) {
-            // TODO: Navigate to the controller file if possible
-            return new ArrayList<>();
+            String controllerName = element.getText().trim();
+            if (controllerName.isEmpty()) {
+                return new ArrayList<>();
+            }
+
+            return getNavigationTargets(getProject(), controllerName);
         }
     }
 
@@ -164,11 +174,11 @@ public class StimulusControllerCompletionRegistrar {
                 return new ArrayList<>();
             }
 
-            Collection<String> controllerNames = StimulusControllerCompletion.getAllControllerNames(getProject());
             Collection<LookupElement> items = new ArrayList<>();
 
-            for (String controllerName : controllerNames) {
-                items.add(StimulusControllerCompletion.createLookupElement(controllerName));
+            // For Twig, use original names (e.g., "@symfony/ux-chartjs/chart")
+            for (var controller : StimulusControllerCompletion.getAllControllers(getProject()).values()) {
+                items.add(StimulusControllerCompletion.createLookupElement(controller, true));
             }
 
             return items;
@@ -177,8 +187,48 @@ public class StimulusControllerCompletionRegistrar {
         @NotNull
         @Override
         public Collection<PsiElement> getPsiTargets(@NotNull PsiElement element) {
-            // TODO: Navigate to the controller file if possible
-            return new ArrayList<>();
+            String controllerName = element.getText().trim();
+            if (controllerName.isEmpty()) {
+                return new ArrayList<>();
+            }
+
+            // For Twig, the name could be either original (@symfony/ux-chartjs/chart) or normalized (symfony--ux-chartjs--chart)
+            // We need to find the matching controller and get its normalized name for lookup
+            return getNavigationTargets(getProject(), resolveControllerName(controllerName));
         }
+
+        /**
+         * Resolve the controller name to its normalized form for index lookup.
+         * Handles both original names (@symfony/ux-chartjs/chart) and normalized names (symfony--ux-chartjs--chart).
+         */
+        @NotNull
+        private String resolveControllerName(@NotNull String controllerName) {
+            for (var controller : StimulusControllerCompletion.getAllControllers(getProject()).values()) {
+                if (controller.getTwigName().equals(controllerName) || controller.getNormalizedName().equals(controllerName)) {
+                    return controller.getNormalizedName();
+                }
+            }
+
+            // If not found in our map, try direct lookup with the provided name
+            return controllerName;
+        }
+    }
+
+    /**
+     * Get navigation targets (PsiFile) for a given controller name.
+     * The controller name should be the normalized name as stored in the index.
+     *
+     * @param normalizedKey The normalized controller name (e.g., "symfony--ux-chartjs--chart")
+     * @return Collection of PsiFile targets
+     */
+    @NotNull
+    private static Collection<PsiElement> getNavigationTargets(@NotNull Project project, @NotNull String normalizedKey) {
+        Collection<VirtualFile> containingFiles = FileBasedIndex.getInstance().getContainingFiles(
+            StimulusControllerStubIndex.KEY,
+            normalizedKey,
+            GlobalSearchScope.allScope(project)
+        );
+
+        return new ArrayList<>(PsiElementUtils.convertVirtualFilesToPsiFiles(project, containingFiles));
     }
 }
