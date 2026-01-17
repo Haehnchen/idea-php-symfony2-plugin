@@ -1,5 +1,10 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
+import com.intellij.json.JsonFileType;
+import com.intellij.json.psi.JsonFile;
+import com.intellij.json.psi.JsonObject;
+import com.intellij.json.psi.JsonProperty;
+import com.intellij.json.psi.JsonValue;
 import com.intellij.lang.ecmascript6.psi.ES6FromClause;
 import com.intellij.lang.ecmascript6.psi.ES6ImportDeclaration;
 import com.intellij.lang.javascript.JavaScriptFileType;
@@ -7,6 +12,7 @@ import com.intellij.lang.javascript.TypeScriptFileType;
 import com.intellij.lang.javascript.psi.JSFile;
 import com.intellij.lang.javascript.psi.ecmal4.JSClass;
 import com.intellij.lang.javascript.psi.ecmal4.JSReferenceListMember;
+import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
@@ -45,6 +51,12 @@ public class StimulusControllerStubIndex extends FileBasedIndexExtension<String,
         return inputData -> {
             Map<String, StimulusController> map = new HashMap<>();
 
+            // Handle controllers.json files
+            if (inputData.getPsiFile() instanceof JsonFile jsonFile) {
+                return indexControllersJson(jsonFile);
+            }
+
+            // Handle JavaScript/TypeScript controller files
             if (!(inputData.getPsiFile() instanceof JSFile jsFile)) {
                 return map;
             }
@@ -207,6 +219,121 @@ public class StimulusControllerStubIndex extends FileBasedIndexExtension<String,
         return controllerName;
     }
 
+    /**
+     * Index controllers from controllers.json file.
+     * Expected structure:
+     * {
+     *   "controllers": {
+     *     "@symfony/ux-chartjs": {
+     *       "chart": {
+     *         "enabled": true,
+     *         "fetch": "eager"
+     *       }
+     *     }
+     *   }
+     * }
+     *
+     * This will extract controller names like "@symfony/ux-chartjs/chart"
+     */
+    @NotNull
+    private Map<String, StimulusController> indexControllersJson(@NotNull JsonFile jsonFile) {
+        Map<String, StimulusController> map = new HashMap<>();
+
+        JsonObject topLevelObject = getTopLevelObject(jsonFile);
+        if (topLevelObject == null) {
+            return map;
+        }
+
+        JsonProperty controllersProperty = topLevelObject.findProperty("controllers");
+        if (controllersProperty == null) {
+            return map;
+        }
+
+        JsonValue controllersValue = controllersProperty.getValue();
+        if (!(controllersValue instanceof JsonObject controllersObject)) {
+            return map;
+        }
+
+        // Iterate through packages (e.g., "@symfony/ux-chartjs")
+        for (JsonProperty packageProperty : getPropertyList(controllersObject)) {
+            JsonValue packageValue = packageProperty.getValue();
+            if (!(packageValue instanceof JsonObject packageObject)) {
+                continue;
+            }
+
+            String packageName = packageProperty.getName();
+
+            // Iterate through controllers in this package (e.g., "chart")
+            for (JsonProperty controllerProperty : getPropertyList(packageObject)) {
+                String controllerName = controllerProperty.getName();
+                JsonValue controllerValue = controllerProperty.getValue();
+
+                if (!(controllerValue instanceof JsonObject controllerConfig)) {
+                    continue;
+                }
+
+                // Check if controller is enabled
+                JsonProperty enabledProperty = controllerConfig.findProperty("enabled");
+                if (enabledProperty != null) {
+                    JsonValue enabledValue = enabledProperty.getValue();
+                    if (enabledValue != null && "false".equals(enabledValue.getText())) {
+                        continue;
+                    }
+                }
+
+                // Build the full controller name: "@symfony/ux-chartjs/chart"
+                String fullControllerName = packageName + "/" + controllerName;
+                // Normalize to Stimulus format: "symfony--ux-chartjs--chart"
+                String normalizedName = normalizeControllerName(fullControllerName);
+
+                // Store both normalized name (for HTML) and original name (for Twig)
+                map.put(normalizedName, new StimulusController(normalizedName, fullControllerName));
+            }
+        }
+
+        return map;
+    }
+
+    /**
+     * Get all JsonProperty children from a JsonObject.
+     * The PSI API doesn't have a getProperties() method, so we need to iterate through children.
+     */
+    @NotNull
+    private List<JsonProperty> getPropertyList(@NotNull JsonObject jsonObject) {
+        List<JsonProperty> properties = new ArrayList<>();
+        for (PsiElement child : jsonObject.getChildren()) {
+            if (child instanceof JsonProperty property) {
+                properties.add(property);
+            }
+        }
+        return properties;
+    }
+
+    /**
+     * Get the top-level JSON object from a JSON file.
+     */
+    @Nullable
+    private JsonObject getTopLevelObject(@NotNull JsonFile jsonFile) {
+        PsiElement[] children = jsonFile.getChildren();
+        for (PsiElement child : children) {
+            if (child instanceof JsonObject jsonObject) {
+                return jsonObject;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Normalize a controller name from "@symfony/ux-chartjs/chart" to "symfony--ux-chartjs--chart"
+     * Removes leading @, converts / to --.
+     */
+    @NotNull
+    private String normalizeControllerName(@NotNull String name) {
+        return name
+            .replace("@", "")
+            .replace("/", "--");
+    }
+
     @Override
     public @NotNull KeyDescriptor<String> getKeyDescriptor() {
         return this.myKeyDescriptor;
@@ -219,14 +346,21 @@ public class StimulusControllerStubIndex extends FileBasedIndexExtension<String,
 
     @Override
     public int getVersion() {
-        return 1;
+        return 3;
     }
 
     @Override
     public FileBasedIndex.@NotNull InputFilter getInputFilter() {
         return file -> {
+            // Accept controllers.json files
+            FileType fileType = file.getFileType();
+
+            if (fileType == JsonFileType.INSTANCE && "controllers.json".equals(file.getName())) {
+                return true;
+            }
+
             // Only index JavaScript and TypeScript files
-            if (file.getFileType() != JavaScriptFileType.INSTANCE && file.getFileType() != TypeScriptFileType.INSTANCE) {
+            if (fileType != JavaScriptFileType.INSTANCE && fileType != TypeScriptFileType.INSTANCE) {
                 return false;
             }
 
