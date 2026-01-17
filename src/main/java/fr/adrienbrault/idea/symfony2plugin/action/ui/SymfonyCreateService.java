@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.action.ui;
 
-import com.intellij.concurrency.ThreadContext;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;
@@ -23,6 +22,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
+import fr.adrienbrault.idea.symfony2plugin.mcp.service.ServiceDefinitionGenerator;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.ClassCompletionPanelWrapper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -46,8 +46,8 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -307,18 +307,30 @@ public class SymfonyCreateService extends JDialog {
     }
 
     private String createServiceAsText(@NotNull ServiceBuilder.OutputType outputType, @NotNull PsiFile psiFile) {
-        return new ServiceBuilder(this.modelList.getItems(), psiFile, this.checkBoxSymfonyIdClass.isSelected()).build(
-            outputType,
+        // Delegate to ServiceDefinitionGenerator for consistency with MCP tools
+        ServiceDefinitionGenerator generator = new ServiceDefinitionGenerator(psiFile.getProject());
+        ServiceDefinitionGenerator.OutputType generatorOutputType = outputType == ServiceBuilder.OutputType.Yaml
+            ? ServiceDefinitionGenerator.OutputType.YAML
+            : ServiceDefinitionGenerator.OutputType.XML;
+
+        return generator.generate(
             StringUtils.stripStart(classCompletionPanelWrapper.getClassName(), "\\"),
-            textFieldServiceName.getText()
+            generatorOutputType,
+            this.checkBoxSymfonyIdClass.isSelected()
         );
     }
 
     private String createServiceAsText(@NotNull ServiceBuilder.OutputType outputType) {
-        return new ServiceBuilder(this.modelList.getItems(), this.project, this.checkBoxSymfonyIdClass.isSelected()).build(
-            outputType,
+        // Delegate to ServiceDefinitionGenerator for consistency with MCP tools
+        ServiceDefinitionGenerator generator = new ServiceDefinitionGenerator(this.project);
+        ServiceDefinitionGenerator.OutputType generatorOutputType = outputType == ServiceBuilder.OutputType.Yaml
+            ? ServiceDefinitionGenerator.OutputType.YAML
+            : ServiceDefinitionGenerator.OutputType.XML;
+
+        return generator.generate(
             StringUtils.stripStart(classCompletionPanelWrapper.getClassName(), "\\"),
-            textFieldServiceName.getText()
+            generatorOutputType,
+            this.checkBoxSymfonyIdClass.isSelected()
         );
     }
 
