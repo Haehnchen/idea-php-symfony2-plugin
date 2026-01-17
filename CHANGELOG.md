@@ -23,6 +23,21 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2026.1.285
+* Add support for Stimulus controllers from `controllers.json`, including indexing, completion, and navigation enhancements (Daniel Espendiller)
+* Add MCP toolset for generating Symfony service definitions with YAML/XML output options (Daniel Espendiller)
+* Add MCP toolsets for Symfony: Form types and form type options (Daniel Espendiller)
+* Add MCP toolset for Symfony profiler requests, including filters (Daniel Espendiller)
+* [#2488](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2488) Add Stimulus controller completion support for HTML and Twig (Daniel Espendiller)
+* Add insert handler for Doctrine lifecycle callback attributes completion, ensuring `#[HasLifecycleCallbacks]` is added to classes when necessary. (Daniel Espendiller)
+* Add completion support for Doctrine ORM attributes across classes, methods, and properties. (Daniel Espendiller)
+* Add support for "symfony console" command prefix in console utilities and code completion (Daniel Espendiller)
+* Add inspection to validate `enum` and `enum_cases` Twig functions for class existence and enum type (Daniel Espendiller)
+* Add `enum_cases` Twig function support with completion and navigation functionality (Daniel Espendiller)
+* Add code completion for Symfony console command names in the integrated terminal (Daniel Espendiller)
+* Add MCP toolsets for Symfony: Routing, Console commands, Doctrine entities, Twig extensions (Daniel Espendiller)
+* Update `JavascriptCompletionNavigationContributor` to refine handling of `STRING_LITERAL` elements for completion and navigation (Daniel Espendiller)
+
 ## 2025.1.284
 * [#2445](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2445) updated symfony-meta: v1.8.0 → v1.9.0 (added Validator component metadata, Console enhancements, and other improvements) (Daniel Espendiller)
 * Add support for PHP service definitions in Bundle loadExtension methods and chained class() calls [#2489](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2489) (Daniel Espendiller)
