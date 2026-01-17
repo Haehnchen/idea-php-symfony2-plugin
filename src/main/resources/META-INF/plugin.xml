@@ -286,6 +286,7 @@
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigBlockEmbedIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ConfigStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeIndex"/>
+        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.StimulusControllerStubIndex"/>
 
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.ServiceLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.ControllerMethodLineMarkerProvider"/>
@@ -819,6 +820,8 @@
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.security.AnnotationExpressionGotoCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.templating.webpack.WebpackEncoreGotoCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.routing.RoutingCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.stimulus.StimulusControllerCompletionRegistrar$HtmlDataControllerCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.stimulus.StimulusControllerCompletionRegistrar$StimulusTwigCompletionRegistrar"/>
 
         <TwigNamespaceExtension implementation="fr.adrienbrault.idea.symfony2plugin.templating.path.JsonFileIndexTwigNamespaces"/>
         <TwigNamespaceExtension implementation="fr.adrienbrault.idea.symfony2plugin.templating.path.ConfigAddPathTwigNamespaces"/>
