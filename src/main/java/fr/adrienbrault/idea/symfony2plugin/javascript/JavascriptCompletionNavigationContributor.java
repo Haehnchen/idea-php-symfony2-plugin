@@ -39,7 +39,7 @@ public class JavascriptCompletionNavigationContributor {
             @Override
             protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
                 PsiElement psiElement = parameters.getOriginalPosition();
-                if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement.getContext() instanceof JSLiteralExpression jsLiteral)) {
+                if (!Symfony2ProjectComponent.isEnabled(psiElement) || psiElement.getNode().getElementType() != JSTokenTypes.STRING_LITERAL || !(psiElement.getContext() instanceof JSLiteralExpression jsLiteral)) {
                     return;
                 }
 
@@ -70,13 +70,17 @@ public class JavascriptCompletionNavigationContributor {
     public static class GotoDeclaration implements GotoDeclarationHandler {
         @Override
         public PsiElement @Nullable [] getGotoDeclarationTargets(@Nullable PsiElement psiElement, int offset, Editor editor) {
-            if (PlatformPatterns.psiElement().withElementType(JSTokenTypes.STRING_LITERAL).withParent(JSPatterns.jsLiteralExpression()).accepts(psiElement)) {
-                JSLiteralExpression parent = (JSLiteralExpression) psiElement.getParent();
+            if (!Symfony2ProjectComponent.isEnabled(psiElement) || psiElement.getNode().getElementType() != JSTokenTypes.STRING_LITERAL || !(psiElement.getContext() instanceof JSLiteralExpression jsLiteralExpression)) {
+                return null;
+            }
 
-                String content = parent.getStringValue();
-                if (content != null && !content.isBlank()) {
-                    return RouteHelper.getMethodsForPathWithPlaceholderMatch(psiElement.getProject(), content);
-                }
+            if (!isAcceptedUrlPattern(jsLiteralExpression)) {
+                return null;
+            }
+
+            String content = jsLiteralExpression.getStringValue();
+            if (content != null && !content.isBlank()) {
+                return RouteHelper.getMethodsForPathWithPlaceholderMatch(psiElement.getProject(), content);
             }
 
             return new PsiElement[0];
