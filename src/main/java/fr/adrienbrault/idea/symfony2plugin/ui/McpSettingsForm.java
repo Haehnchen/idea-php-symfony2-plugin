@@ -80,6 +80,11 @@ public class McpSettingsForm implements Configurable {
             "list_symfony_form_options",
             "Symfony Form Options",
             "Lists all options for a specific Symfony form type"
+        ),
+        new McpToolSetting(
+            "generate_symfony_service_definition",
+            "Generate Service Definition",
+            "Generates YAML or XML service definitions for a given class name with autowired dependencies"
         )
     );
 

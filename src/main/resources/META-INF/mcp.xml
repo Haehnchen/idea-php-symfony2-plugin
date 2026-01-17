@@ -7,5 +7,6 @@
         <mcpServer.mcpToolset implementation="fr.adrienbrault.idea.symfony2plugin.mcp.toolset.DoctrineEntityFieldsMcpToolset" />
         <mcpServer.mcpToolset implementation="fr.adrienbrault.idea.symfony2plugin.mcp.toolset.TwigExtensionMcpToolset" />
         <mcpServer.mcpToolset implementation="fr.adrienbrault.idea.symfony2plugin.mcp.toolset.ServiceMcpToolset" />
+        <mcpServer.mcpToolset implementation="fr.adrienbrault.idea.symfony2plugin.mcp.toolset.ServiceDefinitionMcpToolset" />
     </extensions>
 </idea-plugin>
