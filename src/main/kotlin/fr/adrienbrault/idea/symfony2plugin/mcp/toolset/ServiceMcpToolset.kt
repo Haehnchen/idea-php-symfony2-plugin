@@ -5,6 +5,7 @@ package fr.adrienbrault.idea.symfony2plugin.mcp.toolset
 import com.intellij.mcpserver.McpToolset
 import com.intellij.mcpserver.annotations.McpDescription
 import com.intellij.mcpserver.annotations.McpTool
+import com.intellij.mcpserver.mcpFail
 import com.intellij.mcpserver.project
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.util.io.FileUtil
@@ -32,11 +33,6 @@ class ServiceMcpToolset : McpToolset {
     @McpDescription("""
         Locate in which lineNumber a Symfony service is defined in configuration files by service name or class name.
 
-        Parameters:
-        - identifier: The service name or class name to resolve
-          - Service name examples: 'doctrine.orm.default_entity_manager'
-          - Class name examples: '\\App\\Service\\MyService'
-
         Returns CSV format with columns: serviceName,className,filePath,lineNumber
         - serviceName: The service ID/name (from service definition)
         - className: FQN of the service class (if available)
@@ -60,13 +56,13 @@ class ServiceMcpToolset : McpToolset {
         val project = currentCoroutineContext().project
 
         if (!Symfony2ProjectComponent.isEnabled(project)) {
-            throw IllegalStateException("Symfony plugin is not enabled for this project.")
+            mcpFail("Symfony plugin is not enabled for this project.")
         }
 
         McpUtil.checkToolEnabled(project, "locate_symfony_service")
 
         if (identifier.isBlank()) {
-            throw IllegalArgumentException("identifier parameter is required.")
+            mcpFail("identifier parameter is required.")
         }
 
         return readAction {

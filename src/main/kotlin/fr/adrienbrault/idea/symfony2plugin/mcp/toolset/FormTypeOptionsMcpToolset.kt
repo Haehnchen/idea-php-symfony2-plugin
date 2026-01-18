@@ -5,6 +5,7 @@ package fr.adrienbrault.idea.symfony2plugin.mcp.toolset
 import com.intellij.mcpserver.McpToolset
 import com.intellij.mcpserver.annotations.McpDescription
 import com.intellij.mcpserver.annotations.McpTool
+import com.intellij.mcpserver.mcpFail
 import com.intellij.mcpserver.project
 import com.intellij.openapi.application.readAction
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
@@ -25,9 +26,6 @@ class FormTypeOptionsMcpToolset : McpToolset {
     @McpDescription("""
         Lists all options for a Symfony form type as CSV.
 
-        Parameters:
-        - formType: Form type name or FQN (e.g., "text", "Symfony\Component\Form\Extension\Core\Type\TextType")
-
         Returns CSV format with columns: name,type,source
         - name: Option name
         - type: Option type (DEFAULT, REQUIRED, DEFINED)
@@ -46,13 +44,13 @@ class FormTypeOptionsMcpToolset : McpToolset {
         val project = currentCoroutineContext().project
 
         if (!Symfony2ProjectComponent.isEnabled(project)) {
-            throw IllegalStateException("Symfony plugin is not enabled for this project.")
+            mcpFail("Symfony plugin is not enabled for this project.")
         }
 
         McpUtil.checkToolEnabled(project, "list_symfony_form_options")
 
         if (formType.isBlank()) {
-            throw IllegalArgumentException("formType parameter is required.")
+            mcpFail("formType parameter is required.")
         }
 
         // Normalize FQN: only add leading "\" if it's a FQN (contains backslash)
@@ -74,7 +72,7 @@ class FormTypeOptionsMcpToolset : McpToolset {
             }
 
             if (options.isEmpty()) {
-                throw IllegalArgumentException("Form type '$formType' not found or has no options.")
+                mcpFail("Form type '$formType' not found or has no options.")
             }
 
             val csv = StringBuilder("name,type,source\n")

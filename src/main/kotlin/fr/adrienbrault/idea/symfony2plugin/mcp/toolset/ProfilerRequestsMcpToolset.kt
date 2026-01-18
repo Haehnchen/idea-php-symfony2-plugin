@@ -5,6 +5,7 @@ package fr.adrienbrault.idea.symfony2plugin.mcp.toolset
 import com.intellij.mcpserver.McpToolset
 import com.intellij.mcpserver.annotations.McpDescription
 import com.intellij.mcpserver.annotations.McpTool
+import com.intellij.mcpserver.mcpFail
 import com.intellij.mcpserver.project
 import com.intellij.openapi.application.readAction
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
@@ -24,12 +25,6 @@ class ProfilerRequestsMcpToolset : McpToolset {
     @McpTool
     @McpDescription("""
         Lists the last 10 Symfony profiler requests as CSV.
-
-        Parameters (all optional, partial match, case-insensitive):
-        - url: Filter by URL (e.g., "/user" matches "/user/1", "/api/user")
-        - hash: Filter by profiler token/hash
-        - controller: Filter by controller name (e.g., "User" matches "UserController")
-        - route: Filter by route name (e.g., "user" matches "user_show", "api_user_list")
 
         Returns CSV format with columns: hash,method,url,statusCode,profilerUrl,controller,route,template,formTypes
         - hash: Profiler token/hash
@@ -59,19 +54,19 @@ class ProfilerRequestsMcpToolset : McpToolset {
         val project = currentCoroutineContext().project
 
         if (!Symfony2ProjectComponent.isEnabled(project)) {
-            throw IllegalStateException("Symfony plugin is not enabled for this project.")
+            mcpFail("Symfony plugin is not enabled for this project.")
         }
 
         McpUtil.checkToolEnabled(project, "list_profiler_requests")
 
         return readAction {
             val profilerIndex = ProfilerFactoryUtil.createIndex(project)
-                ?: throw IllegalStateException("No profiler index available. Make sure the Symfony profiler is enabled and accessible.")
+                ?: mcpFail("No profiler index available. Make sure the Symfony profiler is enabled and accessible.")
 
             val requests = profilerIndex.requests
 
             if (requests.isEmpty()) {
-                throw IllegalStateException("No profiler requests found. Make sure the Symfony profiler is enabled and has recorded requests.")
+                mcpFail("No profiler requests found. Make sure the Symfony profiler is enabled and has recorded requests.")
             }
 
             val csv = StringBuilder("hash,method,url,statusCode,profilerUrl,controller,route,template,formTypes\n")

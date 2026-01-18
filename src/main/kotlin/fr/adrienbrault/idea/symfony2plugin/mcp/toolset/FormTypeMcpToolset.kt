@@ -5,6 +5,7 @@ package fr.adrienbrault.idea.symfony2plugin.mcp.toolset
 import com.intellij.mcpserver.McpToolset
 import com.intellij.mcpserver.annotations.McpDescription
 import com.intellij.mcpserver.annotations.McpTool
+import com.intellij.mcpserver.mcpFail
 import com.intellij.mcpserver.project
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.util.io.FileUtil
@@ -40,7 +41,7 @@ class FormTypeMcpToolset : McpToolset {
         val project = currentCoroutineContext().project
 
         if (!Symfony2ProjectComponent.isEnabled(project)) {
-            throw IllegalStateException("Symfony plugin is not enabled for this project.")
+            mcpFail("Symfony plugin is not enabled for this project.")
         }
 
         McpUtil.checkToolEnabled(project, "list_symfony_forms")

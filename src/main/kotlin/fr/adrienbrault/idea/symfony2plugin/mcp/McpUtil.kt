@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.mcp
 
+import com.intellij.mcpserver.mcpFail
 import com.intellij.openapi.project.Project
 
 /**
@@ -11,17 +12,16 @@ object McpUtil {
 
     /**
      * Checks if MCP tools are globally enabled and if a specific tool is enabled.
-     * Throws IllegalStateException if disabled.
+     * Calls mcpFail if disabled.
      *
      * @param project The current project
      * @param toolId The ID of the MCP tool to check
-     * @throws IllegalStateException if MCP is disabled globally or the specific tool is disabled
      */
     fun checkToolEnabled(project: Project, toolId: String) {
         val settings = McpSettings.getInstance(project)
 
         if (!settings.mcpEnabled) {
-            throw IllegalStateException(
+            mcpFail(
                 "MCP tools are disabled for this project. " +
                 "Enable them in Settings > Languages & Frameworks > PHP > Symfony > MCP Tools"
             )
@@ -31,7 +31,7 @@ object McpUtil {
         if (toolSettings != null) {
             val toolSetting = toolSettings.find { it.toolId == toolId }
             if (toolSetting != null && !toolSetting.isEnabled) {
-                throw IllegalStateException(
+                mcpFail(
                     "The MCP tool '$toolId' is disabled for this project. " +
                     "Enable it in Settings > Languages & Frameworks > PHP > Symfony > MCP Tools"
                 )

@@ -5,6 +5,7 @@ package fr.adrienbrault.idea.symfony2plugin.mcp.toolset
 import com.intellij.mcpserver.McpToolset
 import com.intellij.mcpserver.annotations.McpDescription
 import com.intellij.mcpserver.annotations.McpTool
+import com.intellij.mcpserver.mcpFail
 import com.intellij.mcpserver.project
 import com.intellij.openapi.application.readAction
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
@@ -53,25 +54,25 @@ class ServiceDefinitionMcpToolset : McpToolset {
         val project = currentCoroutineContext().project
 
         if (!Symfony2ProjectComponent.isEnabled(project)) {
-            throw IllegalStateException("Symfony plugin is not enabled for this project.")
+            mcpFail("Symfony plugin is not enabled for this project.")
         }
 
         McpUtil.checkToolEnabled(project, "generate_symfony_service_definition")
 
         if (StringUtils.isBlank(className)) {
-            throw IllegalArgumentException("className parameter is required.")
+            mcpFail("className parameter is required.")
         }
 
         val outputType = when (format.lowercase()) {
             "xml" -> ServiceDefinitionGenerator.OutputType.XML
             "yaml", "" -> ServiceDefinitionGenerator.OutputType.YAML
-            else -> throw IllegalArgumentException("Invalid format: '$format'. Valid values are: 'yaml' or 'xml'")
+            else -> mcpFail("Invalid format: '$format'. Valid values are: 'yaml' or 'xml'")
         }
 
         return readAction {
             val generator = ServiceDefinitionGenerator(project)
             val definition = generator.generate(className, outputType, useClassNameAsId)
-                ?: throw IllegalArgumentException("Class not found: $className")
+                ?: mcpFail("Class not found: $className")
 
             definition
         }
