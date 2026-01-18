@@ -5,6 +5,7 @@ package fr.adrienbrault.idea.symfony2plugin.mcp.toolset
 import com.intellij.mcpserver.McpToolset
 import com.intellij.mcpserver.annotations.McpDescription
 import com.intellij.mcpserver.annotations.McpTool
+import com.intellij.mcpserver.mcpFail
 import com.intellij.mcpserver.project
 import com.intellij.openapi.application.readAction
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
@@ -47,13 +48,13 @@ class DoctrineEntityFieldsMcpToolset : McpToolset {
         val project = currentCoroutineContext().project
 
         if (!Symfony2ProjectComponent.isEnabled(project)) {
-            throw IllegalStateException("Symfony plugin is not enabled for this project.")
+            mcpFail("Symfony plugin is not enabled for this project.")
         }
 
         McpUtil.checkToolEnabled(project, "list_doctrine_entity_fields")
 
         if (className.isBlank()) {
-            throw IllegalArgumentException("className parameter is required.")
+            mcpFail("className parameter is required.")
         }
 
         return readAction {
@@ -61,13 +62,13 @@ class DoctrineEntityFieldsMcpToolset : McpToolset {
 
             // Resolve the class name to PhpClass
             val phpClass = PhpElementsUtil.getClassInterface(project, normalizedClassName)
-                ?: throw IllegalArgumentException("Entity '$className' not found. Make sure the class exists.")
+                ?: mcpFail("Entity '$className' not found. Make sure the class exists.")
 
             // Get model fields using EntityHelper
             val fields = EntityHelper.getModelFields(phpClass)
 
             if (fields.isEmpty()) {
-                throw IllegalArgumentException("Entity '$className' has no fields or is not a valid Doctrine entity with metadata.")
+                mcpFail("Entity '$className' has no fields or is not a valid Doctrine entity with metadata.")
             }
 
             val csv = StringBuilder("name,column,type,relation,relationType\n")

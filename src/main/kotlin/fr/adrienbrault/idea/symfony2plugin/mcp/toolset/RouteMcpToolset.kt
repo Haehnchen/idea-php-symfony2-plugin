@@ -5,6 +5,7 @@ package fr.adrienbrault.idea.symfony2plugin.mcp.toolset
 import com.intellij.mcpserver.McpToolset
 import com.intellij.mcpserver.annotations.McpDescription
 import com.intellij.mcpserver.annotations.McpTool
+import com.intellij.mcpserver.mcpFail
 import com.intellij.mcpserver.project
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.util.io.FileUtil
@@ -39,37 +40,11 @@ class RouteMcpToolset : McpToolset {
         - Provides file path to controller implementation
         - Supports partial matching for flexible searches
 
-        Parameters:
-        - routeName (optional): Filter routes by name (supports partial matching, case-insensitive)
-        - controller (optional): Filter by controller class or method (supports partial matching, case-insensitive)
-
         Returns CSV format with columns: name,controller,path,filePath
         - name: Route name
         - controller: Full controller class::method reference
         - path: URL path pattern (may contain parameters like {id})
         - filePath: Relative path to controller file from project root
-
-        Use cases:
-        1. Find which controller handles a specific route
-        2. Find all routes handled by a controller
-        3. Locate controller files for specific endpoints
-        4. Map URL paths to their implementation
-
-        Examples:
-        1. List all routes with controllers:
-           list_symfony_routes_controllers()
-
-        2. Find route by name:
-           list_symfony_routes_controllers(routeName="app_home")
-
-        3. Find all routes for a controller:
-           list_symfony_routes_controllers(controller="HomeController")
-
-        4. Search for API routes:
-           list_symfony_routes_controllers(routeName="api")
-
-        5. Find specific controller method:
-           list_symfony_routes_controllers(controller="UserController::show")
 
         Example output:
         name,controller,path,filePath
@@ -86,7 +61,7 @@ class RouteMcpToolset : McpToolset {
         val project = currentCoroutineContext().project
 
         if (!Symfony2ProjectComponent.isEnabled(project)) {
-            throw IllegalStateException("Symfony plugin is not enabled for this project.")
+            mcpFail("Symfony plugin is not enabled for this project.")
         }
 
         McpUtil.checkToolEnabled(project, "list_symfony_routes_controllers")
