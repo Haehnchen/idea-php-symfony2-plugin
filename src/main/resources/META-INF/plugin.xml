@@ -943,14 +943,13 @@
         </action>
 
         <!-- Terminal Actions -->
-        <group id="SymfonyTerminalCommands"
-               class="fr.adrienbrault.idea.symfony2plugin.action.terminal.SymfonyTerminalCommandActionGroup"
-               text="Symfony Commands"
-               description="Inject Symfony console commands into the terminal"
-               icon="SymfonyIcons.Symfony"
-               popup="true">
+        <action id="SymfonyTerminalCommands"
+                class="fr.adrienbrault.idea.symfony2plugin.action.terminal.SymfonyTerminalCommandsAction"
+                text="Symfony Commands"
+                description="Inject Symfony console commands into the terminal"
+                icon="SymfonyIcons.Symfony">
             <add-to-group group-id="TerminalToolwindowActionGroup" anchor="last"/>
-        </group>
+        </action>
 
     </actions>
 </idea-plugin>
