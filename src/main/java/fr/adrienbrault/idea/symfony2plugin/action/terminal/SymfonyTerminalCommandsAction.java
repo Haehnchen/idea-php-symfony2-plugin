@@ -76,11 +76,17 @@ public class SymfonyTerminalCommandsAction extends AnAction implements DumbAware
                     return AnAction.EMPTY_ARRAY;
                 }
 
-                List<AnAction> actions = new ArrayList<>();
+                List<SymfonyCommand> sortedCommands = new ArrayList<>();
                 for (SymfonyCommand command : commands) {
                     if (!command.getName().isEmpty()) {
-                        actions.add(new SymfonyCommandInjectAction(command));
+                        sortedCommands.add(command);
                     }
+                }
+                sortedCommands.sort((a, b) -> a.getName().compareToIgnoreCase(b.getName()));
+
+                List<AnAction> actions = new ArrayList<>();
+                for (SymfonyCommand command : sortedCommands) {
+                    actions.add(new SymfonyCommandInjectAction(command));
                 }
 
                 return actions.toArray(new AnAction[0]);
