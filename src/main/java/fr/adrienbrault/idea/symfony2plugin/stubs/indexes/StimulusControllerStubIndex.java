@@ -9,14 +9,13 @@ import com.intellij.lang.ecmascript6.psi.ES6FromClause;
 import com.intellij.lang.ecmascript6.psi.ES6ImportDeclaration;
 import com.intellij.lang.javascript.JavaScriptFileType;
 import com.intellij.lang.javascript.TypeScriptFileType;
-import com.intellij.lang.javascript.psi.JSFile;
+import com.intellij.lang.javascript.psi.*;
 import com.intellij.lang.javascript.psi.ecmal4.JSClass;
 import com.intellij.lang.javascript.psi.ecmal4.JSReferenceListMember;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
-import com.intellij.psi.PsiReference;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
@@ -61,25 +60,20 @@ public class StimulusControllerStubIndex extends FileBasedIndexExtension<String,
                 return map;
             }
 
-            String controllerName = extractControllerName(inputData.getFile());
-            if (controllerName == null) {
-                return map;
+            // Two independent indexing mechanisms:
+
+            // 1. app.register() calls in bootstrap/app files (e.g., app.register('my-controller', MyController))
+            collectRegisteredControllers(jsFile, map);
+
+            // 2. Standard controller files (*_controller.js, *-controller.ts)
+            if (hasControllerImportFromStimulus(jsFile) && hasClassExtendingController(jsFile)) {
+                String controllerName = extractControllerName(inputData.getFile());
+                if (controllerName != null) {
+                    String finalControllerName = buildNamespaceFromPath(inputData.getFile(), controllerName);
+                    map.put(finalControllerName, new StimulusController(finalControllerName));
+                }
             }
 
-            // Check if the file imports Controller from @hotwired/stimulus using AST
-            if (!hasControllerImportFromStimulus(jsFile)) {
-                return map;
-            }
-
-            // Check if the file has a class extending Controller using AST
-            if (!hasClassExtendingController(jsFile)) {
-                return map;
-            }
-
-            // Build namespace from parent folders AFTER validation
-            String finalControllerName = buildNamespaceFromPath(inputData.getFile(), controllerName);
-
-            map.put(finalControllerName, new StimulusController(finalControllerName));
             return map;
         };
     }
@@ -101,9 +95,9 @@ public class StimulusControllerStubIndex extends FileBasedIndexExtension<String,
                 if (element instanceof ES6ImportDeclaration importDecl) {
                     ES6FromClause fromClause = importDecl.getFromClause();
                     if (fromClause != null) {
-                        @Nullable PsiReference reference = fromClause.getReference();
-                        if (reference != null) {
-                            String referenceText = reference.getCanonicalText();
+                        String referenceText = fromClause.getReferenceText();
+                        if (referenceText != null) {
+                            referenceText = stripQuotes(referenceText);
                             // Check for @hotwired/stimulus or stimulus module
                             if ("@hotwired/stimulus".equals(referenceText) || "stimulus".equals(referenceText)) {
                                 // Check if Controller is in the import specifiers
@@ -122,6 +116,88 @@ public class StimulusControllerStubIndex extends FileBasedIndexExtension<String,
         });
 
         return hasImport[0];
+    }
+
+    /**
+     * Find the variable name that holds the result of startStimulusApp() call.
+     * Pattern: const app = startStimulusApp();
+     *
+     * @return The variable name (e.g., "app") or null if not found
+     */
+    @Nullable
+    private String findStimulusAppVariable(@NotNull JSFile jsFile) {
+        String[] appVarName = {null};
+
+        jsFile.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
+            @Override
+            public void visitElement(@NotNull PsiElement element) {
+                if (appVarName[0] != null) {
+                    return;
+                }
+
+                // Look for: const app = startStimulusApp()
+                if (element instanceof JSVariable variable) {
+                    JSExpression initializer = variable.getInitializer();
+                    if (initializer instanceof JSCallExpression callExpr) {
+                        JSExpression methodExpr = callExpr.getMethodExpression();
+                        if (methodExpr instanceof JSReferenceExpression refExpr) {
+                            if ("startStimulusApp".equals(refExpr.getReferenceName())) {
+                                appVarName[0] = variable.getName();
+                                return;
+                            }
+                        }
+                    }
+                }
+
+                super.visitElement(element);
+            }
+        });
+
+        return appVarName[0];
+    }
+
+    /**
+     * Collect controller names from app.register('name', Controller) calls.
+     * Only collects from the variable that holds startStimulusApp() result.
+     *
+     * Pattern: const app = startStimulusApp(); app.register('controller_name', SomeController)
+     */
+    private void collectRegisteredControllers(@NotNull JSFile jsFile, @NotNull Map<String, StimulusController> map) {
+        String appVarName = findStimulusAppVariable(jsFile);
+        if (appVarName == null) {
+            return;
+        }
+
+        jsFile.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
+            @Override
+            public void visitElement(@NotNull PsiElement element) {
+                if (element instanceof JSCallExpression callExpr) {
+                    JSExpression methodExpr = callExpr.getMethodExpression();
+                    if (methodExpr instanceof JSReferenceExpression refExpr) {
+                        // Check if it's a .register() call
+                        if ("register".equals(refExpr.getReferenceName())) {
+                            // Check if it's called on the stimulus app variable
+                            JSExpression qualifier = refExpr.getQualifier();
+                            if (qualifier instanceof JSReferenceExpression qualifierRef) {
+                                if (appVarName.equals(qualifierRef.getReferenceName())) {
+                                    JSExpression[] arguments = callExpr.getArguments();
+                                    if (arguments.length >= 2 && arguments[0] instanceof JSLiteralExpression literal) {
+                                        if (literal.isQuotedLiteral()) {
+                                            String controllerName = literal.getStringValue();
+                                            if (controllerName != null && !controllerName.isEmpty()) {
+                                                map.put(controllerName, new StimulusController(controllerName));
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                super.visitElement(element);
+            }
+        });
     }
 
     /**
@@ -179,6 +255,21 @@ public class StimulusControllerStubIndex extends FileBasedIndexExtension<String,
 
         // Convert underscores to dashes (Stimulus convention)
         return fileName.replace("_", "-");
+    }
+
+    /**
+     * Strip surrounding quotes (single or double) from a string.
+     */
+    @NotNull
+    private String stripQuotes(@NotNull String text) {
+        if (text.length() >= 2) {
+            char first = text.charAt(0);
+            char last = text.charAt(text.length() - 1);
+            if ((first == '"' && last == '"') || (first == '\'' && last == '\'')) {
+                return text.substring(1, text.length() - 1);
+            }
+        }
+        return text;
     }
 
     /**
@@ -346,7 +437,7 @@ public class StimulusControllerStubIndex extends FileBasedIndexExtension<String,
 
     @Override
     public int getVersion() {
-        return 3;
+        return 6;
     }
 
     @Override
@@ -364,9 +455,15 @@ public class StimulusControllerStubIndex extends FileBasedIndexExtension<String,
                 return false;
             }
 
-            // Only index files ending with _controller or -controller
             String name = file.getNameWithoutExtension();
-            return name.endsWith("_controller") || name.endsWith("-controller");
+
+            // Accept controller files (hello_controller.js, search-controller.ts)
+            if (name.endsWith("_controller") || name.endsWith("-controller")) {
+                return true;
+            }
+
+            // Accept common Stimulus bootstrap files that might contain app.register() calls
+            return "bootstrap".equals(name) || "app".equals(name);
         };
     }
 
