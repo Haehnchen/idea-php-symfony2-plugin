@@ -275,4 +275,85 @@ public class StimulusControllerStubIndexTest extends SymfonyLightCodeInsightFixt
         assertTrue("Index should contain 'symfony--ux-chartjs--chart', but got: " + allKeys, allKeys.contains("symfony--ux-chartjs--chart"));
         assertTrue("Index should contain 'hello', but got: " + allKeys, allKeys.contains("hello"));
     }
+
+    public void testThatAppRegisterInBootstrapIsIndexed() {
+        myFixture.addFileToProject("assets/bootstrap.js",
+            "import { startStimulusApp } from '@symfony/stimulus-bundle';\n" +
+            "import SomeController from './controllers/some_controller.js';\n" +
+            "\n" +
+            "const app = startStimulusApp();\n" +
+            "app.register('custom', SomeController);\n"
+        );
+
+        Collection<String> allKeys = FileBasedIndex.getInstance().getAllKeys(StimulusControllerStubIndex.KEY, getProject());
+        assertTrue("Index should contain 'custom', but got: " + allKeys, allKeys.contains("custom"));
+    }
+
+    public void testThatAppRegisterPreservesExactName() {
+        myFixture.addFileToProject("assets/bootstrap.js",
+            "import { startStimulusApp } from '@symfony/stimulus-bundle';\n" +
+            "import MyController from './my_controller.js';\n" +
+            "\n" +
+            "const app = startStimulusApp();\n" +
+            "app.register('my_custom_controller', MyController);\n"
+        );
+
+        Collection<String> allKeys = FileBasedIndex.getInstance().getAllKeys(StimulusControllerStubIndex.KEY, getProject());
+        assertTrue("Index should contain 'my_custom_controller' exactly as provided, but got: " + allKeys, allKeys.contains("my_custom_controller"));
+    }
+
+    public void testThatMultipleAppRegisterCallsAreIndexed() {
+        myFixture.addFileToProject("assets/bootstrap.js",
+            "import { startStimulusApp } from '@symfony/stimulus-bundle';\n" +
+            "import FirstController from './first.js';\n" +
+            "import SecondController from './second.js';\n" +
+            "\n" +
+            "const app = startStimulusApp();\n" +
+            "app.register('first', FirstController);\n" +
+            "app.register('second', SecondController);\n"
+        );
+
+        Collection<String> allKeys = FileBasedIndex.getInstance().getAllKeys(StimulusControllerStubIndex.KEY, getProject());
+        assertTrue("Index should contain 'first', but got: " + allKeys, allKeys.contains("first"));
+        assertTrue("Index should contain 'second', but got: " + allKeys, allKeys.contains("second"));
+    }
+
+    public void testThatAppRegisterInAppJsIsIndexed() {
+        myFixture.addFileToProject("assets/app.js",
+            "import { startStimulusApp } from '@symfony/stimulus-bundle';\n" +
+            "import ThirdPartyController from 'some-package';\n" +
+            "\n" +
+            "const app = startStimulusApp();\n" +
+            "app.register('third-party', ThirdPartyController);\n"
+        );
+
+        Collection<String> allKeys = FileBasedIndex.getInstance().getAllKeys(StimulusControllerStubIndex.KEY, getProject());
+        assertTrue("Index should contain 'third-party', but got: " + allKeys, allKeys.contains("third-party"));
+    }
+
+    public void testThatRegisterWithoutStimulusBundleImportIsNotIndexed() {
+        myFixture.addFileToProject("assets/bootstrap.js",
+            "import { something } from 'other-package';\n" +
+            "\n" +
+            "const app = something();\n" +
+            "app.register('should-not-index', SomeController);\n"
+        );
+
+        assertIndexNotContains(StimulusControllerStubIndex.KEY, "should-not-index");
+    }
+
+    public void testThatRegisterOnDifferentVariableIsNotIndexed() {
+        myFixture.addFileToProject("assets/bootstrap.js",
+            "import { startStimulusApp } from '@symfony/stimulus-bundle';\n" +
+            "\n" +
+            "const app = startStimulusApp();\n" +
+            "const other = somethingElse();\n" +
+            "other.register('wrong-var', SomeController);\n" +
+            "app.register('correct-var', OtherController);\n"
+        );
+
+        Collection<String> allKeys = FileBasedIndex.getInstance().getAllKeys(StimulusControllerStubIndex.KEY, getProject());
+        assertTrue("Index should contain 'correct-var', but got: " + allKeys, allKeys.contains("correct-var"));
+        assertFalse("Index should NOT contain 'wrong-var', but got: " + allKeys, allKeys.contains("wrong-var"));
+    }
 }
