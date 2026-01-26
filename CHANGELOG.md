@@ -23,6 +23,14 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2026.1.286
+* Remove unnecessary `.bold()` calls from attribute completion setup. (Daniel Espendiller)
+* Fix attribute completion isn't triggered for inside attribute list (Daniel Espendiller)
+* Fix "Slow operations are prohibited on EDT. See SlowOperations.assertSlowOperationsAreAllowed javadoc." on service generator (Daniel Espendiller)
+* Fix: Cannot invoke "java.util.Map.entrySet()" because "this.arguments" is null (Daniel Espendiller)
+* Refactor Stimulus controller indexing to support `app.register()` calls (Daniel Espendiller)
+* Migrate exception handling in MCP toolsets to use `mcpFail` for consistent error reporting. (Daniel Espendiller)
+
 ## 2026.1.285
 * Add support for Stimulus controllers from `controllers.json`, including indexing, completion, and navigation enhancements (Daniel Espendiller)
 * Add MCP toolset for generating Symfony service definitions with YAML/XML output options (Daniel Espendiller)
