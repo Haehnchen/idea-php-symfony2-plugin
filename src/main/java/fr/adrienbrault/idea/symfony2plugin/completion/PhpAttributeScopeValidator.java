@@ -14,6 +14,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
+
 /**
  * Utility class for validating PHP attribute scopes (class, method, property).
  *
@@ -215,6 +217,20 @@ public class PhpAttributeScopeValidator {
         if (nextSiblingIgnoreWhitespace instanceof PhpModifierList phpModifierList) {
             if (phpModifierList.getNextPsiSibling() instanceof Field field) {
                 return field;
+            }
+        }
+
+        // #[ORM\Column]
+        // #<caret>
+        // #[ORM\Column]
+        // private $test;
+        if (nextSiblingIgnoreWhitespace instanceof PhpAttributesList phpAttributesList) {
+            PsiElement parent = phpAttributesList.getParent();
+            if (parent instanceof PhpClassFieldsList phpClassFieldsList) {
+                Collection<@NotNull Field> fields = phpClassFieldsList.getFields();
+                if (!fields.isEmpty()) {
+                    return fields.iterator().next();
+                }
             }
         }
 
