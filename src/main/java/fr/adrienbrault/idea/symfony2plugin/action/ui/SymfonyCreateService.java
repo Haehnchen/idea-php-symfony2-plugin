@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.action.ui;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.ScrollType;
@@ -355,15 +356,17 @@ public class SymfonyCreateService extends JDialog {
         // save last selection
         Settings.getInstance(project).lastServiceGeneratorLanguage = outputType.toString().toLowerCase();
 
-        textAreaOutput.setText(createServiceAsText(outputType));
+        final ServiceBuilder.OutputType finalOutputType = outputType;
+        ReadAction.nonBlocking(() -> createServiceAsText(finalOutputType))
+            .finishOnUiThread(com.intellij.openapi.application.ModalityState.any(), text -> {
+                if (text != null) {
+                    textAreaOutput.setText(text);
+                }
+            })
+            .submit(com.intellij.util.concurrency.AppExecutorUtil.getAppExecutorService());
     }
 
     private void update() {
-        ApplicationManager.getApplication().runReadAction(new Thread(this::updateTask));
-    }
-
-    private void updateTask() {
-
         String className = classCompletionPanelWrapper.getClassName();
         if (className.startsWith("\\")) {
             className = className.substring(1);
@@ -373,47 +376,58 @@ public class SymfonyCreateService extends JDialog {
             return;
         }
 
-        textFieldServiceName.setText("");
+        final String finalClassName = className;
 
-        PhpClass phpClass = PhpElementsUtil.getClass(project, className);
-        if (phpClass == null) {
-            return;
-        }
+        ReadAction.nonBlocking(() -> {
+            PhpClass phpClass = PhpElementsUtil.getClass(project, finalClassName);
+            if (phpClass == null) {
+                return null;
+            }
 
-        textFieldServiceName.setText(ServiceUtil.getServiceNameForClass(project, className));
+            String serviceName = ServiceUtil.getServiceNameForClass(project, finalClassName);
+            List<MethodParameter.MethodModelParameter> modelParameters = new ArrayList<>();
 
-        List<MethodParameter.MethodModelParameter> modelParameters = new ArrayList<>();
-
-        for (Method method : phpClass.getMethods()) {
-            if (method.getModifier().isPublic()) {
-                Parameter[] parameters = method.getParameters();
-                for (int i = 0; i < parameters.length; i++) {
-                    Set<String> possibleServices = getPossibleServices(parameters[i]);
-                    if (!possibleServices.isEmpty()) {
-                        modelParameters.add(new MethodParameter.MethodModelParameter(method, parameters[i], i, possibleServices, getServiceName(possibleServices)));
-                    } else {
-                        modelParameters.add(new MethodParameter.MethodModelParameter(method, parameters[i], i, serviceSetComplete));
+            for (Method method : phpClass.getMethods()) {
+                if (method.getModifier().isPublic()) {
+                    Parameter[] parameters = method.getParameters();
+                    for (int i = 0; i < parameters.length; i++) {
+                        Set<String> possibleServices = getPossibleServices(parameters[i]);
+                        if (!possibleServices.isEmpty()) {
+                            modelParameters.add(new MethodParameter.MethodModelParameter(method, parameters[i], i, possibleServices, getServiceName(possibleServices)));
+                        } else {
+                            modelParameters.add(new MethodParameter.MethodModelParameter(method, parameters[i], i, serviceSetComplete));
+                        }
                     }
-
                 }
             }
 
-            method.getName();
-        }
+            modelParameters.sort(
+                Comparator
+                    .comparing(MethodParameter.MethodModelParameter::getName)
+                    .thenComparingInt(MethodParameter.MethodModelParameter::getIndex)
+            );
 
-        modelParameters.sort(
-            Comparator
-                .comparing(MethodParameter.MethodModelParameter::getName)
-                .thenComparingInt(MethodParameter.MethodModelParameter::getIndex)
-        );
+            return new UpdateResult(serviceName, modelParameters);
+        })
+        .finishOnUiThread(com.intellij.openapi.application.ModalityState.any(), result -> {
+            if (result == null) {
+                textFieldServiceName.setText("");
+                return;
+            }
 
-        while (this.modelList.getRowCount() > 0) {
-            this.modelList.removeRow(0);
-        }
+            textFieldServiceName.setText(result.serviceName);
 
-        this.modelList.addRows(modelParameters);
-        generateServiceDefinition();
+            while (this.modelList.getRowCount() > 0) {
+                this.modelList.removeRow(0);
+            }
+
+            this.modelList.addRows(result.modelParameters);
+            generateServiceDefinition();
+        })
+        .submit(com.intellij.util.concurrency.AppExecutorUtil.getAppExecutorService());
     }
+
+    private record UpdateResult(String serviceName, List<MethodParameter.MethodModelParameter> modelParameters) {}
 
     @Nullable
     private String getServiceName(Set<String> services) {
