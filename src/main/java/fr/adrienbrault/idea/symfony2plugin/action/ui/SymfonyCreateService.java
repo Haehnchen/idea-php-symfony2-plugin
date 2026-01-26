@@ -2,6 +2,9 @@ package fr.adrienbrault.idea.symfony2plugin.action.ui;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.ScrollType;
 import com.intellij.openapi.project.Project;
@@ -359,61 +362,110 @@ public class SymfonyCreateService extends JDialog {
     }
 
     private void update() {
-        ApplicationManager.getApplication().runReadAction(new Thread(this::updateTask));
+        // Get output type on EDT before starting background task
+        boolean isYaml = radioButtonOutYaml.isSelected();
+
+        new Task.Backgroundable(project, "Symfony: Generating Service Definition", false) {
+            @Override
+            public void run(@NotNull ProgressIndicator indicator) {
+                // Run slow index operations in background thread
+                UpdateTaskResult result = doBackgroundWork(isYaml);
+
+                // Update UI on EDT
+                ApplicationManager.getApplication().invokeLater(() -> updateUI(result, isYaml));
+            }
+        }.queue();
     }
 
-    private void updateTask() {
+    /**
+     * Performs slow index operations in background thread.
+     * Returns result for UI update on EDT.
+     */
+    @NotNull
+    private UpdateTaskResult doBackgroundWork(boolean isYaml) {
+        return ApplicationManager.getApplication().runReadAction((Computable<UpdateTaskResult>) () -> {
+            String className = classCompletionPanelWrapper.getClassName();
+            if (className.startsWith("\\")) {
+                className = className.substring(1);
+            }
 
-        String className = classCompletionPanelWrapper.getClassName();
-        if (className.startsWith("\\")) {
-            className = className.substring(1);
-        }
+            if (className.isEmpty()) {
+                return new UpdateTaskResult(null, null, null, null);
+            }
 
-        if (className.isEmpty()) {
-            return;
-        }
+            PhpClass phpClass = PhpElementsUtil.getClass(project, className);
+            if (phpClass == null) {
+                return new UpdateTaskResult(null, null, null, null);
+            }
 
-        textFieldServiceName.setText("");
+            String serviceName = ServiceUtil.getServiceNameForClass(project, className);
 
-        PhpClass phpClass = PhpElementsUtil.getClass(project, className);
-        if (phpClass == null) {
-            return;
-        }
+            List<MethodParameter.MethodModelParameter> modelParameters = new ArrayList<>();
 
-        textFieldServiceName.setText(ServiceUtil.getServiceNameForClass(project, className));
-
-        List<MethodParameter.MethodModelParameter> modelParameters = new ArrayList<>();
-
-        for (Method method : phpClass.getMethods()) {
-            if (method.getModifier().isPublic()) {
-                Parameter[] parameters = method.getParameters();
-                for (int i = 0; i < parameters.length; i++) {
-                    Set<String> possibleServices = getPossibleServices(parameters[i]);
-                    if (!possibleServices.isEmpty()) {
-                        modelParameters.add(new MethodParameter.MethodModelParameter(method, parameters[i], i, possibleServices, getServiceName(possibleServices)));
-                    } else {
-                        modelParameters.add(new MethodParameter.MethodModelParameter(method, parameters[i], i, serviceSetComplete));
+            for (Method method : phpClass.getMethods()) {
+                if (method.getModifier().isPublic()) {
+                    Parameter[] parameters = method.getParameters();
+                    for (int i = 0; i < parameters.length; i++) {
+                        Set<String> possibleServices = getPossibleServices(parameters[i]);
+                        if (!possibleServices.isEmpty()) {
+                            modelParameters.add(new MethodParameter.MethodModelParameter(method, parameters[i], i, possibleServices, getServiceName(possibleServices)));
+                        } else {
+                            modelParameters.add(new MethodParameter.MethodModelParameter(method, parameters[i], i, serviceSetComplete));
+                        }
                     }
-
                 }
             }
 
-            method.getName();
+            modelParameters.sort(
+                Comparator
+                    .comparing(MethodParameter.MethodModelParameter::getName)
+                    .thenComparingInt(MethodParameter.MethodModelParameter::getIndex)
+            );
+
+            // Generate service definition text in background as well
+            String serviceDefinitionText = createServiceAsText(
+                isYaml ? ServiceBuilder.OutputType.Yaml : ServiceBuilder.OutputType.XML
+            );
+
+            return new UpdateTaskResult(className, serviceName, modelParameters, serviceDefinitionText);
+        });
+    }
+
+    /**
+     * Updates UI on EDT with results from background work.
+     */
+    private void updateUI(@NotNull UpdateTaskResult result, boolean isYaml) {
+        if (result.className() == null) {
+            return;
         }
 
-        modelParameters.sort(
-            Comparator
-                .comparing(MethodParameter.MethodModelParameter::getName)
-                .thenComparingInt(MethodParameter.MethodModelParameter::getIndex)
-        );
+        textFieldServiceName.setText(result.serviceName());
 
         while (this.modelList.getRowCount() > 0) {
             this.modelList.removeRow(0);
         }
 
-        this.modelList.addRows(modelParameters);
-        generateServiceDefinition();
+        if (result.modelParameters() != null) {
+            this.modelList.addRows(result.modelParameters());
+        }
+
+        // Set the pre-generated service definition text (no index operations needed)
+        if (result.serviceDefinitionText() != null) {
+            textAreaOutput.setText(result.serviceDefinitionText());
+            // Save last selection
+            Settings.getInstance(project).lastServiceGeneratorLanguage = isYaml ? "yaml" : "xml";
+        }
     }
+
+    /**
+     * Result from background work for UI update.
+     */
+    private record UpdateTaskResult(
+        String className,
+        String serviceName,
+        List<MethodParameter.MethodModelParameter> modelParameters,
+        String serviceDefinitionText
+    ) {}
 
     @Nullable
     private String getServiceName(Set<String> services) {
