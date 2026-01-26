@@ -48,6 +48,9 @@ public class ServiceArgumentSelectionDialog extends JDialog {
         setContentPane(panel1);
         setModal(true);
 
+        // Populate model after constructor has completed and arguments are initialized
+        populateModel();
+
         generateButton.addActionListener(e -> {
             setEnabled(false);
 
@@ -90,10 +93,6 @@ public class ServiceArgumentSelectionDialog extends JDialog {
             new ServiceColumn()
         );
 
-        for (Map.Entry<String, Set<String>> entry : this.arguments.entrySet()) {
-            this.modelList.addRow(new ServiceParameter(entry.getKey(), entry.getValue()));
-        }
-
         this.tableView = new TableView<>();
         this.tableView.setModelAndUpdateColumns(this.modelList);
 
@@ -104,7 +103,16 @@ public class ServiceArgumentSelectionDialog extends JDialog {
             .disableUpDownActions()
             .createPanel()
         );
+    }
 
+    /**
+     * Populates the model with argument data.
+     * Must be called after constructor completion to ensure arguments are initialized.
+     */
+    private void populateModel() {
+        for (Map.Entry<String, Set<String>> entry : this.arguments.entrySet()) {
+            this.modelList.addRow(new ServiceParameter(entry.getKey(), entry.getValue()));
+        }
     }
 
     private static class ServiceParameter {
