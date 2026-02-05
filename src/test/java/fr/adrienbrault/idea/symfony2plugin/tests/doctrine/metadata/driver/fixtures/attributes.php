@@ -25,11 +25,23 @@ namespace Doctrine\Orm\MyTrait {
 
 namespace ORM\Foobar {
     class Egg {}
+
+    interface Countable {}
+    interface Serializable {}
+
+    enum Status: string
+    {
+        case DRAFT = 'draft';
+        case PUBLISHED = 'published';
+    }
 }
 
 namespace ORM\Attributes {
     use Doctrine\ORM\Mapping AS ORM;
     use ORM\Foobar\Egg;
+    use ORM\Foobar\Status;
+    use ORM\Foobar\Countable;
+    use ORM\Foobar\Serializable;
     use Doctrine\Orm\MyTrait\EntityTrait;
 
     #[ORM\Entity]
@@ -39,6 +51,12 @@ namespace ORM\Attributes {
 
         #[ORM\Column(type: "string", length: 32, unique: true, nullable: false)]
         private $email;
+
+        #[ORM\Column(type: "decimal", precision: 10, scale: 2, nullable: true)]
+        private string $price;
+
+        #[ORM\Column(type: "string", enumType: Status::class)]
+        private Status $status;
 
         #[ORM\OneToMany(targetEntity: Egg::class)]
         public $phonenumbers;
@@ -60,5 +78,14 @@ namespace ORM\Attributes {
 
         #[ORM\ManyToMany]
         public null|Egg $eggTargetEntity;
+
+        #[ORM\Column(type: "integer")]
+        private int|string $count;
+
+        #[ORM\Column(type: "string")]
+        private null|Egg $optionalEgg;
+
+        #[ORM\Column(type: "string")]
+        private Countable&Serializable $taggedItem;
     };
 }

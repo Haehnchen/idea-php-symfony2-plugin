@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -78,6 +79,12 @@ public class DoctrinePhpAttributeMappingDriver implements DoctrineMappingDriverI
                         if (type != null) {
                             doctrineModelField.setTypeName(type);
                         }
+
+                        // Enum type (PHP 8.1+)
+                        String enumType = PhpElementsUtil.findAttributeArgumentByNameAsClassFqn("enumType", attribute);
+                        if (enumType != null) {
+                            doctrineModelField.setEnumType("\\" + StringUtils.stripStart(enumType, "\\"));
+                        }
                     }
 
                     if (PhpElementsUtil.isEqualClassName(fqn, "\\Doctrine\\ORM\\Mapping\\OneToOne", "\\Doctrine\\ORM\\Mapping\\ManyToOne", "\\Doctrine\\ORM\\Mapping\\OneToMany", "\\Doctrine\\ORM\\Mapping\\ManyToMany")) {
@@ -112,6 +119,11 @@ public class DoctrinePhpAttributeMappingDriver implements DoctrineMappingDriverI
                 }
 
                 if (isField) {
+                    String typeString = field.getType().toString();
+                    if (StringUtils.isNotBlank(typeString)) {
+                        doctrineModelField.setPropertyTypes(Arrays.asList(typeString.split("\\|")));
+                    }
+
                     fields.add(doctrineModelField);
                 }
             }

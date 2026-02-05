@@ -30,19 +30,21 @@ class DoctrineEntityFieldsMcpToolset : McpToolset {
         Parameters:
         - className: FQN of the entity class (e.g., "App\Entity\User" or "\App\Entity\User")
 
-        Returns CSV format with columns: name,column,type,relation,relationType
+        Returns CSV format with columns: name,column,type,relation,relationType,enumType,propertyType
         - name: Field/property name
         - column: Database column name
         - type: Doctrine type (string, integer, text, etc.)
         - relation: Related entity class if this is a relation field
         - relationType: Type of relation (OneToOne, OneToMany, ManyToOne, ManyToMany)
+        - enumType: FQN of the enum class for enum fields (PHP 8.1+)
+        - propertyType: Pipe-separated PHP property types (e.g. "string", "\App\Status|null")
 
         Example output:
-        name,column,type,relation,relationType
-        id,id,integer,,
-        username,username,string,,
-        email,email,string,,
-        orders,orders,,App\Entity\Order,OneToMany
+        name,column,type,relation,relationType,enumType,propertyType
+        id,id,integer,,,,int
+        username,username,string,,,string
+        status,status,string,,,\App\Enum\Status,\App\Enum\Status
+        orders,orders,,App\Entity\Order,OneToMany,,
     """)
     suspend fun list_doctrine_entity_fields(className: String): String {
         val project = currentCoroutineContext().project
@@ -71,14 +73,16 @@ class DoctrineEntityFieldsMcpToolset : McpToolset {
                 mcpFail("Entity '$className' has no fields or is not a valid Doctrine entity with metadata.")
             }
 
-            val csv = StringBuilder("name,column,type,relation,relationType\n")
+            val csv = StringBuilder("name,column,type,relation,relationType,enumType,propertyType\n")
 
             fields.forEach { field ->
                 csv.append("${escapeCsv(field.name)},")
                 csv.append("${escapeCsv(field.column ?: "")},")
                 csv.append("${escapeCsv(field.typeName ?: "")},")
                 csv.append("${escapeCsv(field.relation ?: "")},")
-                csv.append("${escapeCsv(field.relationType ?: "")}\n")
+                csv.append("${escapeCsv(field.relationType ?: "")},")
+                csv.append("${escapeCsv(field.enumType ?: "")},")
+                csv.append("${escapeCsv(field.propertyTypes.joinToString("|"))}\n")
             }
 
             csv.toString()
