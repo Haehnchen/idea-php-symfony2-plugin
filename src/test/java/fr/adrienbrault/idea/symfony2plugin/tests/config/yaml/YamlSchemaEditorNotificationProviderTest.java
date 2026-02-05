@@ -171,6 +171,29 @@ public class YamlSchemaEditorNotificationProviderTest extends SymfonyLightCodeIn
     }
 
     /**
+     * Test that notification does NOT appear for config/packages files without services/parameters/imports root keys
+     */
+    public void testNotificationDoesNotAppearForConfigPackagesWithoutServiceContent() {
+        VirtualFile file = myFixture.addFileToProject(
+            "config/packages/doctrine.yaml",
+            "doctrine:\n" +
+                "    dbal:\n" +
+                "        url: '%env(resolve:DATABASE_URL)%'"
+        ).getVirtualFile();
+
+        assertNull("Notification should NOT appear for config/packages files without services/parameters/imports root keys", getEditorNotificationPanel(file));
+
+        VirtualFile file2 = myFixture.addFileToProject(
+            "config/packages/framework.yaml",
+            "framework:\n" +
+                "    secret: '%env(APP_SECRET)%'\n" +
+                "    http_method_override: false"
+        ).getVirtualFile();
+
+        assertNull("Notification should NOT appear for framework.yaml without services/parameters/imports root keys", getEditorNotificationPanel(file2));
+    }
+
+    /**
      * Helper method to get the editor notification panel for a file
      */
     private JComponent getEditorNotificationPanel(VirtualFile file) {
