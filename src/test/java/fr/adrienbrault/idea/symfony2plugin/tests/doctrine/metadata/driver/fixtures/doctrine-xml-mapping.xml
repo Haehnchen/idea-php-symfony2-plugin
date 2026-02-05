@@ -1,0 +1,17 @@
+<doctrine-mapping>
+
+    <entity name="Doctrine\Tests\ORM\XmlEntity" table="xml_entity">
+
+        <id name="id" type="integer" column="id"/>
+
+        <field name="name" column="user_name" type="string" />
+        <field name="status" type="string" enum-type="ORM\Foobar\Status" />
+
+        <one-to-one field="address" target-entity="Address" />
+        <one-to-many field="phonenumbers" target-entity="Phonenumber" />
+        <many-to-many field="groups" target-entity="Group" />
+        <many-to-one field="author" target-entity="Author" />
+
+    </entity>
+
+</doctrine-mapping>

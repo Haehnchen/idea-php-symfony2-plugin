@@ -172,6 +172,15 @@ public class EntityHelper {
                 doctrineModelField.setColumn(yamlColumn.getValueText());
             }
 
+            // Enum type
+            YAMLKeyValue yamlEnumType = YamlHelper.getYamlKeyValue(yamlKeyValue, "enumType");
+            if(yamlEnumType != null) {
+                String enumType = yamlEnumType.getValueText();
+                if(!enumType.isEmpty()) {
+                    doctrineModelField.setEnumType("\\" + org.apache.commons.lang3.StringUtils.stripStart(enumType, "\\"));
+                }
+            }
+
             return;
         }
 
@@ -464,6 +473,12 @@ public class EntityHelper {
             String type = xmlTag.getAttributeValue("type");
             if(org.apache.commons.lang3.StringUtils.isNotBlank(type)) {
                 field.setTypeName(type);
+            }
+
+            // Enum type
+            String enumType = xmlTag.getAttributeValue("enum-type");
+            if(org.apache.commons.lang3.StringUtils.isNotBlank(enumType)) {
+                field.setEnumType("\\" + org.apache.commons.lang3.StringUtils.stripStart(enumType, "\\"));
             }
 
             modelFields.add(field);

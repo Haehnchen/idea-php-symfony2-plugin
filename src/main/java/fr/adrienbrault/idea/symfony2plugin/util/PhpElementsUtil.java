@@ -2209,6 +2209,67 @@ public class PhpElementsUtil {
 
         return null;
     }
+
+    @Nullable
+    public static Boolean findAttributeArgumentByNameAsBoolean(@NotNull String attributeName, @NotNull PhpAttribute phpAttribute) {
+        for (PhpAttribute.PhpAttributeArgument argument : phpAttribute.getArguments()) {
+            if (!attributeName.equals(argument.getName())) {
+                continue;
+            }
+
+            PhpExpectedFunctionArgument arg = argument.getArgument();
+            if (arg != null) {
+                String value = arg.getValue();
+                if (value != null) {
+                    if ("true".equalsIgnoreCase(value.trim())) {
+                        return Boolean.TRUE;
+                    } else if ("false".equalsIgnoreCase(value.trim())) {
+                        return Boolean.FALSE;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public static Integer findAttributeArgumentByNameAsInt(@NotNull String attributeName, @NotNull PhpAttribute phpAttribute) {
+        for (PhpAttribute.PhpAttributeArgument argument : phpAttribute.getArguments()) {
+            if (!attributeName.equals(argument.getName())) {
+                continue;
+            }
+
+            PhpExpectedFunctionArgument arg = argument.getArgument();
+            if (arg != null) {
+                String value = arg.getValue();
+                if (value != null) {
+                    try {
+                        return Integer.parseInt(value.trim());
+                    } catch (NumberFormatException e) {
+                        return null;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public static String findAttributeArgumentByNameAsClassFqn(@NotNull String attributeName, @NotNull PhpAttribute phpAttribute) {
+        for (PhpAttribute.PhpAttributeArgument argument : phpAttribute.getArguments()) {
+            if (!attributeName.equals(argument.getName())) {
+                continue;
+            }
+
+            if (argument.getArgument() instanceof PhpExpectedFunctionClassConstantArgument phpExpectedFunctionClassConstantArgument) {
+                return phpExpectedFunctionClassConstantArgument.getClassFqn();
+            }
+        }
+
+        return null;
+    }
     /**
      * Visit and collect all variables in given scope
      */
