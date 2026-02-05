@@ -274,3 +274,18 @@ Since PhpStorm 2022.1, the plugin operates as "Freemium":
 2. Use `getKey()` to match method call patterns
 3. In `getType()`, return type signature with custom key
 4. In `complete()`, resolve custom key to actual type
+
+## Decompiler Tools
+
+For analyzing bundled plugins like Twig and PHP you MUST use **vineflower** and NOT **Fernflower** from IntelliJ (less quality):
+
+**vineflower**
+
+- **GitHub:** https://github.com/Vineflower/vineflower
+- **Download:** https://repo1.maven.org/maven2/org/vineflower/vineflower/1.11.2/vineflower-1.11.2.jar
+- **Local copy:** `decompiled/vineflower.jar`
+- **Usage:** `java -jar vineflower.jar input.jar output/`
+
+**Bundled Plugin JARs (for decompilation):**
+- **Location:** `~/.gradle/caches/[gradle-version]/transforms/*/transformed/com.jetbrains.[plugin]-[intellij-version]/[plugin]/lib/[plugin].jar`
+- **Example:** `~/.gradle/caches/9.3.0/transforms/*/transformed/com.jetbrains.twig-253.28294.322/twig/lib/twig.jar`
