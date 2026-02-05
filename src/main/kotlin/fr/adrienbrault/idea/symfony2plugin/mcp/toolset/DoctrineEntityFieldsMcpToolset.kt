@@ -30,19 +30,25 @@ class DoctrineEntityFieldsMcpToolset : McpToolset {
         Parameters:
         - className: FQN of the entity class (e.g., "App\Entity\User" or "\App\Entity\User")
 
-        Returns CSV format with columns: name,column,type,relation,relationType
+        Returns CSV format with columns: name,column,type,relation,relationType,nullable,unique,length,enumType,propertyType
         - name: Field/property name
         - column: Database column name
         - type: Doctrine type (string, integer, text, etc.)
         - relation: Related entity class if this is a relation field
         - relationType: Type of relation (OneToOne, OneToMany, ManyToOne, ManyToMany)
+        - nullable: Whether the field is nullable (true/false)
+        - unique: Whether the field has a unique constraint (true/false)
+        - length: Maximum length for string fields
+        - enumType: FQN of the enum class for enum fields (PHP 8.1+)
+        - propertyType: PHP property type declaration (e.g., string, int, ?User)
 
         Example output:
-        name,column,type,relation,relationType
-        id,id,integer,,
-        username,username,string,,
-        email,email,string,,
-        orders,orders,,App\Entity\Order,OneToMany
+        name,column,type,relation,relationType,nullable,unique,length,enumType,propertyType
+        id,id,integer,,,false,false,,,int
+        username,username,string,,,false,true,255,,string
+        email,email,string,,,false,true,180,,string
+        status,status,string,,,false,false,,\App\Enum\Status,Status
+        orders,orders,,App\Entity\Order,OneToMany,,,,"Collection<Order>"
     """)
     suspend fun list_doctrine_entity_fields(className: String): String {
         val project = currentCoroutineContext().project
@@ -71,14 +77,19 @@ class DoctrineEntityFieldsMcpToolset : McpToolset {
                 mcpFail("Entity '$className' has no fields or is not a valid Doctrine entity with metadata.")
             }
 
-            val csv = StringBuilder("name,column,type,relation,relationType\n")
+            val csv = StringBuilder("name,column,type,relation,relationType,nullable,unique,length,enumType,propertyType\n")
 
             fields.forEach { field ->
                 csv.append("${escapeCsv(field.name)},")
                 csv.append("${escapeCsv(field.column ?: "")},")
                 csv.append("${escapeCsv(field.typeName ?: "")},")
                 csv.append("${escapeCsv(field.relation ?: "")},")
-                csv.append("${escapeCsv(field.relationType ?: "")}\n")
+                csv.append("${escapeCsv(field.relationType ?: "")},")
+                csv.append("${escapeCsv(field.nullable?.toString() ?: "")},")
+                csv.append("${escapeCsv(field.unique?.toString() ?: "")},")
+                csv.append("${escapeCsv(field.length?.toString() ?: "")},")
+                csv.append("${escapeCsv(field.enumType ?: "")},")
+                csv.append("${escapeCsv(field.propertyType ?: "")}\n")
             }
 
             csv.toString()
