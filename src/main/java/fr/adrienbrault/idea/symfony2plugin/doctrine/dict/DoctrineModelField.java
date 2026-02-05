@@ -19,6 +19,17 @@ public class DoctrineModelField {
     private final Collection<PsiElement> targets = new ArrayList<>();
     private String column;
 
+    // Column options
+    private Boolean nullable;
+    private Boolean unique;
+    private Integer length;
+
+    // Enum type (for PHP 8.1+ backed enums)
+    private String enumType;
+
+    // PHP property type declaration
+    private String propertyType;
+
     public DoctrineModelField setTypeName(String typeName) {
         this.typeName = typeName;
         return this;
@@ -79,6 +90,56 @@ public class DoctrineModelField {
 
     public void setColumn(@Nullable String column) {
         this.column = column;
+    }
+
+    @Nullable
+    public Boolean getNullable() {
+        return nullable;
+    }
+
+    public DoctrineModelField setNullable(@Nullable Boolean nullable) {
+        this.nullable = nullable;
+        return this;
+    }
+
+    @Nullable
+    public Boolean getUnique() {
+        return unique;
+    }
+
+    public DoctrineModelField setUnique(@Nullable Boolean unique) {
+        this.unique = unique;
+        return this;
+    }
+
+    @Nullable
+    public Integer getLength() {
+        return length;
+    }
+
+    public DoctrineModelField setLength(@Nullable Integer length) {
+        this.length = length;
+        return this;
+    }
+
+    @Nullable
+    public String getEnumType() {
+        return enumType;
+    }
+
+    public DoctrineModelField setEnumType(@Nullable String enumType) {
+        this.enumType = enumType;
+        return this;
+    }
+
+    @Nullable
+    public String getPropertyType() {
+        return propertyType;
+    }
+
+    public DoctrineModelField setPropertyType(@Nullable String propertyType) {
+        this.propertyType = propertyType;
+        return this;
     }
 
 }
