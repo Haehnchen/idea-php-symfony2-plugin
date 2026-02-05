@@ -98,16 +98,14 @@ public class YamlSchemaEditorNotificationProvider implements EditorNotificationP
 
     /**
      * Determines if the given YAML file is a Symfony service configuration file
-     * by checking for "services" or "parameters" root keys
+     * by checking for "services" or "parameters" root keys in the content
      */
     private boolean isServiceConfigurationFile(@NotNull YAMLFile yamlFile) {
-        // First check filename patterns for quick filtering
         VirtualFile virtualFile = yamlFile.getVirtualFile();
         if (virtualFile == null) {
             return false;
         }
 
-        String path = virtualFile.getPath();
         String name = virtualFile.getName();
 
         // docker-compose.yml is also having "services" in root: ignore it
@@ -115,18 +113,7 @@ public class YamlSchemaEditorNotificationProvider implements EditorNotificationP
             return false;
         }
 
-        // Quick filename check
-        boolean isLikelyServiceFile = name.equals("services.yaml")
-            || name.equals("services.yml")
-            || path.contains("/config/services/")
-            || path.contains("/config/packages/")
-            || (path.contains("/config/") && name.contains("service"));
-
-        if (isLikelyServiceFile) {
-            return true;
-        }
-
-        // Content validation: check for "services" or "parameters" root keys
+        // Content validation: check for "services" or "parameters" or "imports" root keys
         List<YAMLDocument> documents = yamlFile.getDocuments();
         if (documents.isEmpty()) {
             return false;
