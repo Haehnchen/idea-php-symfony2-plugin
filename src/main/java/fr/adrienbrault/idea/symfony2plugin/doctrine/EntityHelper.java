@@ -172,6 +172,33 @@ public class EntityHelper {
                 doctrineModelField.setColumn(yamlColumn.getValueText());
             }
 
+            // Column options
+            YAMLKeyValue yamlNullable = YamlHelper.getYamlKeyValue(yamlKeyValue, "nullable");
+            if(yamlNullable != null) {
+                doctrineModelField.setNullable(Boolean.parseBoolean(yamlNullable.getValueText()));
+            }
+
+            YAMLKeyValue yamlUnique = YamlHelper.getYamlKeyValue(yamlKeyValue, "unique");
+            if(yamlUnique != null) {
+                doctrineModelField.setUnique(Boolean.parseBoolean(yamlUnique.getValueText()));
+            }
+
+            YAMLKeyValue yamlLength = YamlHelper.getYamlKeyValue(yamlKeyValue, "length");
+            if(yamlLength != null) {
+                try {
+                    doctrineModelField.setLength(Integer.parseInt(yamlLength.getValueText()));
+                } catch (NumberFormatException ignored) {}
+            }
+
+            // Enum type
+            YAMLKeyValue yamlEnumType = YamlHelper.getYamlKeyValue(yamlKeyValue, "enumType");
+            if(yamlEnumType != null) {
+                String enumType = yamlEnumType.getValueText();
+                if(enumType != null && !enumType.isEmpty()) {
+                    doctrineModelField.setEnumType("\\" + org.apache.commons.lang3.StringUtils.stripStart(enumType, "\\"));
+                }
+            }
+
             return;
         }
 
@@ -464,6 +491,30 @@ public class EntityHelper {
             String type = xmlTag.getAttributeValue("type");
             if(org.apache.commons.lang3.StringUtils.isNotBlank(type)) {
                 field.setTypeName(type);
+            }
+
+            // Column options
+            String nullable = xmlTag.getAttributeValue("nullable");
+            if(nullable != null) {
+                field.setNullable(Boolean.parseBoolean(nullable));
+            }
+
+            String unique = xmlTag.getAttributeValue("unique");
+            if(unique != null) {
+                field.setUnique(Boolean.parseBoolean(unique));
+            }
+
+            String length = xmlTag.getAttributeValue("length");
+            if(length != null) {
+                try {
+                    field.setLength(Integer.parseInt(length));
+                } catch (NumberFormatException ignored) {}
+            }
+
+            // Enum type
+            String enumType = xmlTag.getAttributeValue("enum-type");
+            if(org.apache.commons.lang3.StringUtils.isNotBlank(enumType)) {
+                field.setEnumType("\\" + org.apache.commons.lang3.StringUtils.stripStart(enumType, "\\"));
             }
 
             modelFields.add(field);

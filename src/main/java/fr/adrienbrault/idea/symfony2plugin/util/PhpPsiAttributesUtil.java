@@ -86,6 +86,36 @@ public class PhpPsiAttributesUtil {
         return null;
     }
 
+    @Nullable
+    public static Boolean getAttributeValueByNameAsBoolean(@NotNull PhpAttribute attribute, @NotNull String attributeName) {
+        PsiElement nextSibling = findAttributeByName(attribute, attributeName);
+        if (nextSibling instanceof ConstantReference constantReference) {
+            String name = constantReference.getName();
+            if ("true".equalsIgnoreCase(name)) {
+                return Boolean.TRUE;
+            } else if ("false".equalsIgnoreCase(name)) {
+                return Boolean.FALSE;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    public static Integer getAttributeValueByNameAsInteger(@NotNull PhpAttribute attribute, @NotNull String attributeName) {
+        PsiElement nextSibling = findAttributeByName(attribute, attributeName);
+        if (nextSibling != null) {
+            String text = nextSibling.getText();
+            if (text != null) {
+                try {
+                    return Integer.parseInt(text.trim());
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            }
+        }
+        return null;
+    }
+
     @NotNull
     public static Collection<String> getAttributeValueByNameAsArray(@NotNull PhpAttribute attribute, @NotNull String attributeName) {
         PsiElement nextSibling = findAttributeByName(attribute, attributeName);
