@@ -5,3 +5,5 @@ out/
 /.gradle
 /build
 /decompiled
+/.junie
+*.hprof
