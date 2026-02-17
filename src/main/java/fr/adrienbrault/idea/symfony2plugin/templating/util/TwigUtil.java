@@ -3255,6 +3255,68 @@ public class TwigUtil {
         }
     }
 
+    /**
+     * Build a map of controller FQN to templates rendered by that controller.
+     * Efficiently iterates the index only once for all controllers.
+     *
+     * @param project The project
+     * @param controllerFqns Set of controller FQNs in format "App\Controller\HomeController::method" or "ClassName.methodName"
+     * @return Map where key is the normalized scope (ClassName.methodName) and value is set of template names
+     */
+    @NotNull
+    public static Map<String, Set<String>> findTemplatesByControllers(
+        @NotNull Project project,
+        @NotNull Set<String> controllerFqns
+    ) {
+        if (controllerFqns.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        // Normalize all controller FQNs to scope format: "ClassName.methodName"
+        Set<String> targetScopes = new HashSet<>();
+        for (String fqn : controllerFqns) {
+            String normalized = StringUtils.stripStart(fqn, "\\");
+            // Convert "Class::method" to "Class.method"
+            if (normalized.contains("::")) {
+                normalized = normalized.replace("::", ".");
+            }
+            targetScopes.add(normalized);
+        }
+
+        Map<String, Set<String>> result = new HashMap<>();
+
+        // Single iteration through the index
+        FileBasedIndex index = FileBasedIndex.getInstance();
+        Collection<String> allTemplateKeys = index.getAllKeys(PhpTwigTemplateUsageStubIndex.KEY, project);
+        GlobalSearchScope scope = GlobalSearchScope.allScope(project);
+
+        for (String templateKey : allTemplateKeys) {
+            for (TemplateUsage usage : index.getValues(PhpTwigTemplateUsageStubIndex.KEY, templateKey, scope)) {
+                for (String templateScope : usage.getScopes()) {
+                    if (targetScopes.contains(templateScope)) {
+                        result.computeIfAbsent(templateScope, k -> new HashSet<>()).add(templateKey);
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Convenience method for a single controller.
+     * For multiple controllers, use findTemplatesByControllers() for better performance.
+     */
+    @NotNull
+    public static Set<String> findTemplatesByController(
+        @NotNull Project project,
+        @NotNull String controllerFqn
+    ) {
+        Map<String, Set<String>> result = findTemplatesByControllers(project, Collections.singleton(controllerFqn));
+        String normalized = StringUtils.stripStart(controllerFqn, "\\").replace("::", ".");
+        return result.getOrDefault(normalized, Collections.emptySet());
+    }
+
     public static class DomainScope {
         @NotNull
         private final String defaultDomain;
