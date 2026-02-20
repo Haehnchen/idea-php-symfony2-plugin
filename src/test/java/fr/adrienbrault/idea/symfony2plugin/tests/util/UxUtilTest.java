@@ -803,6 +803,39 @@ public class UxUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertEquals("Should only have 2 props", 2, props.size());
     }
 
+    public void testGetComponentTemplatePropDefaults() {
+        // defaults are read as written; required props (no "=") are excluded
+        assertEquals(
+            Map.of("open", "false", "variant", "'brand'", "as", "'div'"),
+            propDefaults("{%- props open = false, variant = 'brand', as = 'div' -%}")
+        );
+
+        Map<String, String> withRequired = propDefaults("{% props id, open = false %}");
+        assertEquals("false", withRequired.get("open"));
+        assertFalse("required prop without a default is excluded", withRequired.containsKey("id"));
+
+        // commas inside arrays and strings must not split props
+        Map<String, String> nested = propDefaults("{% props items = ['x', 'y'], label = 'a, b', open = false %}");
+        assertEquals("['x', 'y']", nested.get("items"));
+        assertEquals("'a, b'", nested.get("label"));
+        assertEquals("false", nested.get("open"));
+
+        // bare literals stay bare
+        assertEquals(Map.of("count", "0", "name", "null"), propDefaults("{% props count = 0, name = null %}"));
+
+        // non-literal default expression is kept verbatim
+        assertEquals("foo ~ bar", propDefaults("{% props label = foo ~ bar %}").get("label"));
+
+        // no props tag / other tags contribute nothing
+        assertTrue(propDefaults("<div>{{ foo }}</div>").isEmpty());
+        assertTrue(propDefaults("{% set foo = 'bar' %}").isEmpty());
+    }
+
+    private Map<String, String> propDefaults(@NotNull String source) {
+        TwigFile twigFile = (TwigFile) myFixture.configureByText(TwigFileType.INSTANCE, source);
+        return UxUtil.getComponentTemplatePropDefaults(twigFile);
+    }
+
     private void configureTwigNamespaceSettings(@NotNull TwigNamespaceSetting... settings) {
         Settings.getInstance(getProject()).twigNamespaces.clear();
         Settings.getInstance(getProject()).twigNamespaces.addAll(List.of(settings));
