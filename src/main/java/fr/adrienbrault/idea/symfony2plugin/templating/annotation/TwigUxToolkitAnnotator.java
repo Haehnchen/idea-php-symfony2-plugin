@@ -3,10 +3,10 @@ package fr.adrienbrault.idea.symfony2plugin.templating.annotation;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.lang.annotation.HighlightSeverity;
+import com.intellij.openapi.editor.DefaultLanguageHighlighterColors;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
-import com.jetbrains.php.lang.highlighter.PhpHighlightingData;
 import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import org.jetbrains.annotations.NotNull;
@@ -98,13 +98,13 @@ public class TwigUxToolkitAnnotator implements Annotator {
      */
     private void annotateProp(@NotNull AnnotationHolder holder, int startOffset, @NotNull Matcher matcher) {
         // Highlight @prop keyword (group 1) - like @property
-        highlightRange(holder, startOffset, matcher, 1, PhpHighlightingData.DOC_TAG);
+        highlightRange(holder, startOffset, matcher, 1, DefaultLanguageHighlighterColors.DOC_COMMENT_TAG);
 
         // Highlight property name (group 2) - like $foo in @property string $foo
-        highlightRange(holder, startOffset, matcher, 2, PhpHighlightingData.DOC_PROPERTY_IDENTIFIER);
+        highlightRange(holder, startOffset, matcher, 2, DefaultLanguageHighlighterColors.DOC_COMMENT_TAG_VALUE);
 
         // Highlight type (group 3) - like string in @property string $foo
-        highlightRange(holder, startOffset, matcher, 3, PhpHighlightingData.DOC_IDENTIFIER);
+        highlightRange(holder, startOffset, matcher, 3, DefaultLanguageHighlighterColors.CLASS_REFERENCE);
     }
 
     /**
@@ -117,10 +117,10 @@ public class TwigUxToolkitAnnotator implements Annotator {
      */
     private void annotateBlock(@NotNull AnnotationHolder holder, int startOffset, @NotNull Matcher matcher) {
         // Highlight @block keyword (group 1)
-        highlightRange(holder, startOffset, matcher, 1, PhpHighlightingData.DOC_TAG);
+        highlightRange(holder, startOffset, matcher, 1, DefaultLanguageHighlighterColors.DOC_COMMENT_TAG);
 
         // Highlight block name (group 2)
-        highlightRange(holder, startOffset, matcher, 2, PhpHighlightingData.DOC_PROPERTY_IDENTIFIER);
+        highlightRange(holder, startOffset, matcher, 2, DefaultLanguageHighlighterColors.DOC_COMMENT_TAG_VALUE);
     }
 
     /**
