@@ -230,6 +230,8 @@
         <lang.foldingBuilder language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.navigation.PhpFoldingBuilder"/>
         <lang.foldingBuilder language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.navigation.TwigFoldingBuilder"/>
 
+        <annotator language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.annotation.TwigUxToolkitAnnotator"/>
+
         <completion.contributor language="any" implementationClass="fr.adrienbrault.idea.symfony2plugin.codeInsight.completion.CompletionContributor"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.codeInsight.navigation.GotoHandler"/>
 
