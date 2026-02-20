@@ -6,6 +6,7 @@ import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpPsiAttributesUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -78,6 +79,28 @@ public class DoctrinePhpAttributeMappingDriver implements DoctrineMappingDriverI
                         if (type != null) {
                             doctrineModelField.setTypeName(type);
                         }
+
+                        // Column options (using PSI-based methods for reliable parsing)
+                        Boolean nullable = PhpPsiAttributesUtil.getAttributeValueByNameAsBoolean(attribute, "nullable");
+                        if (nullable != null) {
+                            doctrineModelField.setNullable(nullable);
+                        }
+
+                        Boolean unique = PhpPsiAttributesUtil.getAttributeValueByNameAsBoolean(attribute, "unique");
+                        if (unique != null) {
+                            doctrineModelField.setUnique(unique);
+                        }
+
+                        Integer length = PhpPsiAttributesUtil.getAttributeValueByNameAsInteger(attribute, "length");
+                        if (length != null) {
+                            doctrineModelField.setLength(length);
+                        }
+
+                        // Enum type (PHP 8.1+)
+                        String enumType = PhpElementsUtil.findAttributeArgumentByNameAsClassFqn("enumType", attribute);
+                        if (enumType != null) {
+                            doctrineModelField.setEnumType("\\" + StringUtils.stripStart(enumType, "\\"));
+                        }
                     }
 
                     if (PhpElementsUtil.isEqualClassName(fqn, "\\Doctrine\\ORM\\Mapping\\OneToOne", "\\Doctrine\\ORM\\Mapping\\ManyToOne", "\\Doctrine\\ORM\\Mapping\\OneToMany", "\\Doctrine\\ORM\\Mapping\\ManyToMany")) {
@@ -112,6 +135,12 @@ public class DoctrinePhpAttributeMappingDriver implements DoctrineMappingDriverI
                 }
 
                 if (isField) {
+                    // Extract PHP property type using PhpType which already resolves FQNs
+                    String propertyType = field.getType().toString();
+                    if (StringUtils.isNotBlank(propertyType)) {
+                        doctrineModelField.setPropertyType(propertyType);
+                    }
+
                     fields.add(doctrineModelField);
                 }
             }
