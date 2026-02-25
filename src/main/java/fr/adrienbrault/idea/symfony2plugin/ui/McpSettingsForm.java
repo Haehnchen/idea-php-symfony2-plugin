@@ -85,6 +85,11 @@ public class McpSettingsForm implements Configurable {
             "generate_symfony_service_definition",
             "Generate Service Definition",
             "Generates YAML or XML service definitions for a given class name with autowired dependencies"
+        ),
+        new McpToolSetting(
+            "list_twig_template_usages",
+            "Twig Template Usages",
+            "Lists usages of Twig templates across the project (controllers, includes, embeds, extends, imports)"
         )
     );
 
