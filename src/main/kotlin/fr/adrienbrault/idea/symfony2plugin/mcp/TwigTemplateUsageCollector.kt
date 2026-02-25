@@ -1,0 +1,128 @@
+package fr.adrienbrault.idea.symfony2plugin.mcp
+
+import com.intellij.openapi.project.Project
+import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.util.indexing.FileBasedIndex
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpTwigTemplateUsageStubIndex
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigBlockIndexExtension
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigIncludeStubIndex
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TemplateInclude.TYPE as IncludeType
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil
+import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil
+
+/**
+ * Collects Twig template usages across a project: which PHP controllers render a template,
+ * and which other Twig templates include/extend/embed/import/use/form_theme it.
+ *
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ */
+class TwigTemplateUsageCollector(private val project: Project) {
+
+    /**
+     * Collects usages of all templates matching the given input (case-insensitive).
+     *
+     * Two resolution strategies run in parallel and results are merged:
+     * 1. Partial template-name match — all index keys that contain the input string.
+     * 2. File-path resolution — the input is tried as a path relative to the project root;
+     *    if a file is found, its logical template names (via TwigUtil.getTemplateNamesForFile)
+     *    are added as exact matches.  This handles inputs like "templates/home/index.html.twig"
+     *    whose template name is just "home/index.html.twig".
+     *
+     * Returns a CSV string with columns: template,controller,twig_include,twig_embed,twig_extends,twig_import,twig_use,twig_form_theme
+     */
+    fun collect(templateFilter: String): String {
+        val index = FileBasedIndex.getInstance()
+        val scope = GlobalSearchScope.allScope(project)
+        val filterLower = templateFilter.lowercase()
+
+        // Collect all matching template names across the relevant indexes
+        val matchingTemplates = sortedSetOf<String>()
+
+        // Strategy 1: partial template-name match inside every index
+        index.getAllKeys(TwigIncludeStubIndex.KEY, project).filterTo(matchingTemplates) { it.lowercase().contains(filterLower) }
+        index.getAllKeys(TwigExtendsStubIndex.KEY, project).filterTo(matchingTemplates) { it.lowercase().contains(filterLower) }
+        index.getAllKeys(PhpTwigTemplateUsageStubIndex.KEY, project).filterTo(matchingTemplates) { it.lowercase().contains(filterLower) }
+
+        // Strategy 2: resolve input as a file path relative to the project root and add its
+        // logical template names (e.g. "templates/home/index.html.twig" → "home/index.html.twig")
+        ProjectUtil.getProjectDir(project)
+            ?.findFileByRelativePath(templateFilter)
+            ?.let { TwigUtil.getTemplateNamesForFile(project, it) }
+            ?.forEach { matchingTemplates.add(it) }
+
+        // Pre-scan {% use %} tags across all twig files for a reverse map:
+        // usedTemplateName -> set of template names that {% use %} it
+        val useReverseMap = mutableMapOf<String, MutableSet<String>>()
+        index.processValues(TwigBlockIndexExtension.KEY, "use", null, { file, templateSet ->
+            val callerName = TwigUtil.getTemplateNamesForFile(project, file).firstOrNull() ?: file.name
+            for (usedTemplate in templateSet) {
+                if (usedTemplate.lowercase().contains(filterLower)) {
+                    matchingTemplates.add(usedTemplate)
+                    useReverseMap.getOrPut(usedTemplate) { sortedSetOf() }.add(callerName)
+                }
+            }
+            true
+        }, scope)
+
+        val csv = StringBuilder("template,controller,twig_include,twig_embed,twig_extends,twig_import,twig_use,twig_form_theme\n")
+
+        for (templateName in matchingTemplates) {
+            // PHP controller usages
+            val controllers = sortedSetOf<String>()
+            for (usage in index.getValues(PhpTwigTemplateUsageStubIndex.KEY, templateName, scope)) {
+                for (fqn in usage.scopes) {
+                    // Convert "App\Controller\HomeController.index" -> "App\Controller\HomeController::index"
+                    val lastDot = fqn.lastIndexOf('.')
+                    controllers.add(if (lastDot >= 0) fqn.substring(0, lastDot) + "::" + fqn.substring(lastDot + 1) else fqn)
+                }
+            }
+
+            // Twig include / embed / import / form_theme
+            val twigIncludes = sortedSetOf<String>()
+            val twigEmbeds = sortedSetOf<String>()
+            val twigImports = sortedSetOf<String>()
+            val twigFormThemes = sortedSetOf<String>()
+
+            index.processValues(TwigIncludeStubIndex.KEY, templateName, null, { file, includeObj ->
+                val callerName = TwigUtil.getTemplateNamesForFile(project, file).firstOrNull() ?: file.name
+                when (includeObj.type) {
+                    IncludeType.INCLUDE, IncludeType.INCLUDE_FUNCTION -> twigIncludes.add(callerName)
+                    IncludeType.EMBED -> twigEmbeds.add(callerName)
+                    IncludeType.IMPORT, IncludeType.FROM -> twigImports.add(callerName)
+                    IncludeType.FORM_THEME -> twigFormThemes.add(callerName)
+                    else -> {}
+                }
+                true
+            }, scope)
+
+            // Twig extends
+            val twigExtends = sortedSetOf<String>()
+            index.processValues(TwigExtendsStubIndex.KEY, templateName, null, { file, _ ->
+                twigExtends.add(TwigUtil.getTemplateNamesForFile(project, file).firstOrNull() ?: file.name)
+                true
+            }, scope)
+
+            val twigUses = useReverseMap[templateName] ?: emptySet<String>()
+
+            csv.append("${escapeCsv(templateName)},")
+                .append("${escapeCsv(controllers.joinToString(";"))},")
+                .append("${escapeCsv(twigIncludes.joinToString(";"))},")
+                .append("${escapeCsv(twigEmbeds.joinToString(";"))},")
+                .append("${escapeCsv(twigExtends.joinToString(";"))},")
+                .append("${escapeCsv(twigImports.joinToString(";"))},")
+                .append("${escapeCsv(twigUses.joinToString(";"))},")
+                .append("${escapeCsv(twigFormThemes.joinToString(";"))}\n")
+        }
+
+        return csv.toString()
+    }
+
+    private fun escapeCsv(value: String): String {
+        return if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
+            "\"${value.replace("\"", "\"\"")}\""
+        } else {
+            value
+        }
+    }
+}
