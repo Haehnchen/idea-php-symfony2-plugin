@@ -238,6 +238,7 @@
         <completion.contributor language="any" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.command.CommandNameTerminalCompletionContributor"/>
         <completion.contributor language="any" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.command.CommandOptionTerminalCompletionContributor"/>
         <completion.contributor language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.XmlCompletionContributor"/>
+        <annotator language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.annotation.TwigVarCommentAnnotator"/>
         <completion.contributor language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor"/>
         <completion.contributor language="HTML" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.completion.TwigHtmlCompletionContributor"/>
         <completion.contributor language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlCompletionContributor"/>
