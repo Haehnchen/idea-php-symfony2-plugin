@@ -1048,26 +1048,54 @@ public class TwigPattern {
                     PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_CURL)
                 )
             )
-            .withParent(
-                PlatformPatterns.psiElement(TwigElementTypes.LITERAL).afterLeafSkipping(
-                    PlatformPatterns.or(
-                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
-                    ),
-                    PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
-                        PlatformPatterns.or(
-                            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                            PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-                            PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT),
-                            PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
-                        ),
-                        PlatformPatterns.psiElement(TwigTokenTypes.LBRACE).withParent(
-                            PlatformPatterns.psiElement().withText(PlatformPatterns.string().contains("path"))
-                        )
-                    )
+            .withParent(getPathHashLiteralPattern())
+            .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    /**
+     * {{ path('_profiler_info', {<caret>foo}) }}
+     * {{ path('_profiler_info', {<caret>foo: 'bar'}) }}
+     * {{ path('_profiler_info', {'foobar': 'foobar', <caret>foo}) }}
+     * {{ path('_profiler_info', {'foobar': 'foobar', <caret>foo: 'bar'}) }}
+     */
+    public static ElementPattern<PsiElement> getPathAfterLeafForIdentifierPattern() {
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.IDENTIFIER)
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                ),
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.COMMA),
+                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_CURL)
                 )
             )
+            .withParent(getPathHashLiteralPattern())
             .withLanguage(TwigLanguage.INSTANCE);
+    }
+
+    /**
+     * Shared parent pattern for path() hash literal: the LITERAL node that is the second argument of path()/url()
+     */
+    private static ElementPattern<PsiElement> getPathHashLiteralPattern() {
+        return PlatformPatterns.psiElement(TwigElementTypes.LITERAL).afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+            ),
+            PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT),
+                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.LBRACE).withParent(
+                    PlatformPatterns.psiElement().withText(PlatformPatterns.string().contains("path"))
+                )
+            )
+        );
     }
 
     public static ElementPattern<PsiElement> getParentFunctionPattern() {

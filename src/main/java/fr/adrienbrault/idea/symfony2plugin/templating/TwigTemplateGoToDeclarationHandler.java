@@ -61,7 +61,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             targets.addAll(TwigBlockUtil.getBlockOverwriteTargets(psiElement));
         }
 
-        if (TwigPattern.getPathAfterLeafPattern().accepts(psiElement)) {
+        if (TwigPattern.getPathAfterLeafPattern().accepts(psiElement) || TwigPattern.getPathAfterLeafForIdentifierPattern().accepts(psiElement)) {
             targets.addAll(getRouteParameterGoTo(psiElement));
         }
 

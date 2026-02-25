@@ -473,4 +473,25 @@ public class TwigPatternTest extends SymfonyLightCodeInsightFixtureTestCase {
         PsiElement elementAt2 = findElementAt(TwigFileType.INSTANCE, "{% for user in foo|tr<caret>a %}").getParent();
         assertTrue(TwigPattern.getFilterPattern().accepts(elementAt2));
     }
+
+    /**
+     * @see TwigPattern#getPathAfterLeafForIdentifierPattern
+     */
+    public void testGetPathAfterLeafForIdentifierPattern() {
+        assertTrue(TwigPattern.getPathAfterLeafForIdentifierPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ path('foo', {f<caret>oo}) }}")
+        ));
+
+        assertTrue(TwigPattern.getPathAfterLeafForIdentifierPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ path('foo', {f<caret>oo: 'bar'}) }}")
+        ));
+
+        assertTrue(TwigPattern.getPathAfterLeafForIdentifierPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ path('foo', {'bar': 'baz', f<caret>oo}) }}")
+        ));
+
+        assertTrue(TwigPattern.getPathAfterLeafForIdentifierPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{{ path('foo', {'bar': 'baz', f<caret>oo: 'qux'}) }}")
+        ));
+    }
 }
