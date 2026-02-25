@@ -373,6 +373,13 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             new PathParameterCompletionProvider()
         );
 
+        // routing parameter completion for shorthand/unquoted hash keys: {slug} or {slug: value}
+        extend(
+            CompletionType.BASIC,
+            TwigPattern.getPathAfterLeafForIdentifierPattern(),
+            new PathParameterCompletionProvider()
+        );
+
         // simulated php completion var.<foo>
         extend(
             CompletionType.BASIC,

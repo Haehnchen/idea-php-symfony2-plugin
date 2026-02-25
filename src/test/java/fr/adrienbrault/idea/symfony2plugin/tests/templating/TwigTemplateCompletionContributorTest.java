@@ -56,6 +56,15 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         assertNavigationMatch(TwigFileType.INSTANCE, "{{ path('xml_route', {'sl<caret>ug'}) }}", PlatformPatterns.psiElement());
     }
 
+    public void testCompletionForRoutingParameterWithIdentifierHash() {
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ path('xml_route', {<caret>}) }}", "slug");
+    }
+
+    public void testNavigationForRoutingParameterWithIdentifierHash() {
+        assertNavigationMatch(TwigFileType.INSTANCE, "{{ path('xml_route', {sl<caret>ug}) }}", PlatformPatterns.psiElement());
+        assertNavigationMatch(TwigFileType.INSTANCE, "{{ path('xml_route', {sl<caret>ug: 'value'}) }}", PlatformPatterns.psiElement());
+    }
+
     public void testCompletionForTwigComponent() {
         assertCompletionContains(TwigFileType.INSTANCE, "{{ component('<caret>'}) }}", "Alert");
     }
