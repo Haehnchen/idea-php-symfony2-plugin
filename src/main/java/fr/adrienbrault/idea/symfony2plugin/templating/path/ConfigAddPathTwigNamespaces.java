@@ -7,8 +7,9 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.CachedValue;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
-import com.intellij.psi.util.PsiModificationTracker;
 import fr.adrienbrault.idea.symfony2plugin.config.utils.ConfigUtil;
+import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ConfigStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtensionParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
@@ -42,7 +43,7 @@ public class ConfigAddPathTwigNamespaces implements TwigNamespaceExtension {
         Collection<Pair<String, String>> cachedValue = CachedValuesManager.getManager(project).getCachedValue(
             project,
             CACHE,
-            () -> CachedValueProvider.Result.create(getTwigPaths(project), PsiModificationTracker.MODIFICATION_COUNT),
+            () -> CachedValueProvider.Result.create(getTwigPaths(project), FileIndexCaches.getModificationTrackerForIndexId(project, ConfigStubIndex.KEY)),
             false
         );
 

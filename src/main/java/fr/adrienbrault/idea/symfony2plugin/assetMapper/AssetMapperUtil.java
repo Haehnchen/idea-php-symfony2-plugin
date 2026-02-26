@@ -12,6 +12,7 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.*;
+import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression;
 import com.jetbrains.php.lang.psi.elements.PhpReturn;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
@@ -36,7 +37,7 @@ public class AssetMapperUtil {
         return CachedValuesManager.getManager(project).getCachedValue(
             project,
             MAPPING_CACHE,
-            () -> CachedValueProvider.Result.create(getMappingFilesInner(project), PsiModificationTracker.MODIFICATION_COUNT),
+            () -> CachedValueProvider.Result.create(getMappingFilesInner(project), PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE)),
             false
         );
     }

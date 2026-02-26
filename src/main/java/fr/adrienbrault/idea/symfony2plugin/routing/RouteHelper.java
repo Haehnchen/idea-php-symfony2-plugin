@@ -10,6 +10,7 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.InvalidVirtualFileAccessException;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
@@ -22,6 +23,7 @@ import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.config.PhpLanguageLevel;
+import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
@@ -553,7 +555,7 @@ public class RouteHelper {
                     .filter(Objects::nonNull)
                     .collect(Collectors.toSet());
 
-                return CachedValueProvider.Result.create(Collections.unmodifiableSet(filesAbsolute), PsiModificationTracker.MODIFICATION_COUNT);
+                return CachedValueProvider.Result.create(Collections.unmodifiableSet(filesAbsolute), VirtualFileManager.VFS_STRUCTURE_MODIFICATIONS);
             },
             false
         );
@@ -1411,7 +1413,11 @@ public class RouteHelper {
                     }
                 }
 
-                return CachedValueProvider.Result.create(items, PsiModificationTracker.MODIFICATION_COUNT);
+                return CachedValueProvider.Result.create(
+                    items,
+                    FileIndexCaches.getModificationTrackerForIndexId(project, RoutesStubIndex.KEY),
+                    PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE)
+                );
             },
             false
         );
