@@ -2,6 +2,7 @@
 
 namespace Foo {
     class Bar {}
+    interface BarInterface {}
 }
 
 namespace FooBar
