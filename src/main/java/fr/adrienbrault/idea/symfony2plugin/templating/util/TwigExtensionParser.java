@@ -7,6 +7,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.*;
 import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
@@ -40,7 +41,7 @@ public class TwigExtensionParser  {
         return CachedValuesManager.getManager(project).getCachedValue(
             project,
             FUNCTION_CACHE,
-            () -> CachedValueProvider.Result.create(parseFunctions(project, TwigUtil.getTwigExtensionClasses(project)), PsiModificationTracker.MODIFICATION_COUNT),
+            () -> CachedValueProvider.Result.create(parseFunctions(project, TwigUtil.getTwigExtensionClasses(project)), PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE)),
             false
         );
     }
@@ -50,7 +51,7 @@ public class TwigExtensionParser  {
         return CachedValuesManager.getManager(project).getCachedValue(
             project,
             FILTERS_CACHE,
-            () -> CachedValueProvider.Result.create(parseFilters(project, TwigUtil.getTwigExtensionClasses(project)), PsiModificationTracker.MODIFICATION_COUNT),
+            () -> CachedValueProvider.Result.create(parseFilters(project, TwigUtil.getTwigExtensionClasses(project)), PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE)),
             false
         );
     }
@@ -60,7 +61,7 @@ public class TwigExtensionParser  {
         return CachedValuesManager.getManager(project).getCachedValue(
             project,
             TEST_CACHE,
-            () -> CachedValueProvider.Result.create(parseTests(project, TwigUtil.getTwigExtensionClasses(project)), PsiModificationTracker.MODIFICATION_COUNT),
+            () -> CachedValueProvider.Result.create(parseTests(project, TwigUtil.getTwigExtensionClasses(project)), PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE)),
             false
         );
     }
@@ -70,7 +71,7 @@ public class TwigExtensionParser  {
         return CachedValuesManager.getManager(project).getCachedValue(
             project,
             OPERATORS_CACHE,
-            () -> CachedValueProvider.Result.create(parseOperators(TwigUtil.getTwigExtensionClasses(project)), PsiModificationTracker.MODIFICATION_COUNT),
+            () -> CachedValueProvider.Result.create(parseOperators(TwigUtil.getTwigExtensionClasses(project)), PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE)),
             false
         );
     }

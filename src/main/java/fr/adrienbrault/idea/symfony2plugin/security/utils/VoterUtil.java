@@ -13,6 +13,7 @@ import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.*;
+import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.*;
@@ -24,6 +25,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
+import org.jetbrains.yaml.YAMLLanguage;
 import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.*;
 
@@ -56,7 +58,11 @@ public class VoterUtil {
                     }
                 });
 
-                return CachedValueProvider.Result.create(names, PsiModificationTracker.MODIFICATION_COUNT);
+                return CachedValueProvider.Result.create(
+                    names,
+                    PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE),
+                    PsiModificationTracker.getInstance(project).forLanguage(YAMLLanguage.INSTANCE)
+                );
             },
             false
         );

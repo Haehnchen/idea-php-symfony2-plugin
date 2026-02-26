@@ -10,6 +10,7 @@ import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
@@ -24,6 +25,7 @@ import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.PhpFileType;
+import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
@@ -2737,7 +2739,7 @@ public class TwigUtil {
         return CachedValuesManager.getManager(project).getCachedValue(project, SYMFONY_NAMED_TOKEN_TAGS, () -> {
             Set<String> items = new HashSet<>();
             TwigUtil.visitTokenParsers(project, pair ->items.add(pair.getFirst()));
-            return CachedValueProvider.Result.create(Collections.unmodifiableSet(items), PsiModificationTracker.MODIFICATION_COUNT);
+            return CachedValueProvider.Result.create(Collections.unmodifiableSet(items), PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE));
         }, false);
     }
     @NotNull
@@ -2768,7 +2770,7 @@ public class TwigUtil {
                 }
             });
 
-            return CachedValueProvider.Result.create(Collections.unmodifiableMap(deprecations), PsiModificationTracker.MODIFICATION_COUNT);
+            return CachedValueProvider.Result.create(Collections.unmodifiableMap(deprecations), PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE));
         }, false);
     }
 
@@ -2809,7 +2811,7 @@ public class TwigUtil {
                 }
             }
 
-            return CachedValueProvider.Result.create(Collections.unmodifiableSet(deprecatedNames), PsiModificationTracker.MODIFICATION_COUNT);
+            return CachedValueProvider.Result.create(Collections.unmodifiableSet(deprecatedNames), PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE));
         }, false);
     }
 
@@ -2850,7 +2852,7 @@ public class TwigUtil {
                 }
             }
 
-            return CachedValueProvider.Result.create(Collections.unmodifiableSet(deprecatedNames), PsiModificationTracker.MODIFICATION_COUNT);
+            return CachedValueProvider.Result.create(Collections.unmodifiableSet(deprecatedNames), PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE));
         }, false);
     }
 
@@ -3364,7 +3366,7 @@ public class TwigUtil {
         @Nullable
         @Override
         public Result<Map<String, Set<VirtualFile>>> compute() {
-            return Result.create(getTemplateMapProxy(project, includePhpFiles), PsiModificationTracker.MODIFICATION_COUNT);
+            return Result.create(getTemplateMapProxy(project, includePhpFiles), VirtualFileManager.VFS_STRUCTURE_MODIFICATIONS);
         }
     }
 

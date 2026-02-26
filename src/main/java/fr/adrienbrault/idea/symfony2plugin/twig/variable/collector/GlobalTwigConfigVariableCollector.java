@@ -8,9 +8,11 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.CachedValue;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
-import com.intellij.psi.util.PsiModificationTracker;
 import fr.adrienbrault.idea.symfony2plugin.config.utils.ConfigUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ConfigStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
@@ -45,7 +47,11 @@ public class GlobalTwigConfigVariableCollector implements TwigFileVariableCollec
         return CachedValuesManager.getManager(project).getCachedValue(
             project,
             CACHE,
-            () -> CachedValueProvider.Result.create(getGlobalsInner(project), PsiModificationTracker.MODIFICATION_COUNT),
+            () -> CachedValueProvider.Result.create(
+                getGlobalsInner(project),
+                FileIndexCaches.getModificationTrackerForIndexId(project, ConfigStubIndex.KEY),
+                FileIndexCaches.getModificationTrackerForIndexId(project, ServicesDefinitionStubIndex.KEY)
+            ),
             false
         );
     }

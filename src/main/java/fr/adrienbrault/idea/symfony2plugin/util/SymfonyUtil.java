@@ -8,6 +8,7 @@ import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.psi.util.PsiModificationTracker;
 import com.intellij.util.text.VersionComparatorUtil;
+import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
@@ -29,7 +30,7 @@ public class SymfonyUtil {
         Set<String> cache = CachedValuesManager.getManager(project).getCachedValue(
             project,
             CACHE,
-            () -> CachedValueProvider.Result.create(getVersions(project), PsiModificationTracker.MODIFICATION_COUNT),
+            () -> CachedValueProvider.Result.create(getVersions(project), PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE)),
             false
         );
 

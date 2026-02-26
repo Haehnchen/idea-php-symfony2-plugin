@@ -14,6 +14,7 @@ import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
+import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
@@ -52,7 +53,7 @@ public class EventDispatcherSubscriberUtil {
         return CachedValuesManager.getManager(project).getCachedValue(
             project,
             EVENT_SUBSCRIBERS,
-            () -> CachedValueProvider.Result.create(getSubscribedEventsProxy(project), PsiModificationTracker.MODIFICATION_COUNT),
+            () -> CachedValueProvider.Result.create(getSubscribedEventsProxy(project), PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE)),
             false
         );
     }

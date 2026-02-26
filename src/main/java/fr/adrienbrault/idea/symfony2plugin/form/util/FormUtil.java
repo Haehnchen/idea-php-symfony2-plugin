@@ -17,6 +17,7 @@ import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
 import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpAccessVariableInstruction;
 import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpReturnInstruction;
 import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpYieldInstruction;
+import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
@@ -396,7 +397,7 @@ public class FormUtil {
 
                     }
 
-                    return Result.create(items, PsiModificationTracker.MODIFICATION_COUNT);
+                    return Result.create(items, PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE));
                 }
             },
             false

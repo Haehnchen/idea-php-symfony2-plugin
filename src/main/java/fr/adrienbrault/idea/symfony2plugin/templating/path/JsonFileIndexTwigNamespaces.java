@@ -4,17 +4,14 @@ import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.util.CachedValue;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
-import com.intellij.psi.util.PsiModificationTracker;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtensionParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigConfigJson;
@@ -32,19 +29,11 @@ import java.util.Collection;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class JsonFileIndexTwigNamespaces implements TwigNamespaceExtension {
-    private static final Key<CachedValue<Collection<TwigPath>>> CACHE = new Key<>("TWIG_JSON_INDEX_CACHE");
 
     @NotNull
     @Override
     public Collection<TwigPath> getNamespaces(final @NotNull TwigNamespaceExtensionParameter parameter) {
-        Project project = parameter.getProject();
-
-        return CachedValuesManager.getManager(project).getCachedValue(
-            project,
-            CACHE,
-            () -> CachedValueProvider.Result.create(getNamespacesInner(project), PsiModificationTracker.MODIFICATION_COUNT),
-            false
-        );
+        return getNamespacesInner(parameter.getProject());
     }
 
     @NotNull
