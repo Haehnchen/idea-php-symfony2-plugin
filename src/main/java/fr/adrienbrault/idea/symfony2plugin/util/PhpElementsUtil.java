@@ -13,13 +13,14 @@ import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.psi.formatter.FormatterUtil;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.CachedValue;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
-import com.intellij.psi.util.PsiModificationTracker;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.intellij.util.Processor;
+import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpClassHierarchyUtils;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.codeInsight.PhpCodeInsightUtil;
@@ -46,12 +47,15 @@ import com.jetbrains.php.lang.psi.elements.impl.ClassConstImpl;
 import com.jetbrains.php.lang.psi.elements.impl.ConstantImpl;
 import com.jetbrains.php.lang.psi.elements.impl.PhpDefineImpl;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
+import com.jetbrains.php.lang.psi.stubs.indexes.PhpClassFqnIndex;
+import com.jetbrains.php.lang.psi.stubs.indexes.PhpInterfaceFqnIndex;
 import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionArgument;
 import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionClassConstantArgument;
 import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionScalarArgument;
 import com.jetbrains.php.phpunit.PhpUnitUtil;
 import com.jetbrains.php.refactoring.PhpAliasImporter;
 import fr.adrienbrault.idea.symfony2plugin.dic.MethodReferenceBag;
+import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.util.psi.PsiElementAssertUtil;
 import kotlin.Pair;
 import org.apache.commons.lang3.ArrayUtils;
@@ -871,21 +875,42 @@ public class PhpElementsUtil {
     }
 
     static public boolean hasClassOrInterface(@NotNull Project project, @NotNull String classFqnName) {
-        // Get or create the cached map
+        // Normalize FQN to start with backslash (index convention)
+        if (!classFqnName.startsWith("\\")) {
+            classFqnName = "\\" + classFqnName;
+        }
+
+        final String normalizedFqn = classFqnName;
+
+        // Get or create the cached map.
+        // Only invalidate when PHP class/interface definitions change,
+        // not on any PSI modification (YAML, XML, Twig, etc.).
+        // The provider lambda captures only `project` (stable per-project), so the
+        // captured context stays identical across repeated calls for the same project.
         Map<String, Boolean> cache = CachedValuesManager.getManager(project).getCachedValue(
             project,
             CLASS_EXISTS_CACHE,
             () -> CachedValueProvider.Result.create(
                 new ConcurrentHashMap<>(),
-                PsiModificationTracker.MODIFICATION_COUNT
+                FileIndexCaches.getModificationTrackerForIndexId(project, PhpClassFqnIndex.KEY),
+                FileIndexCaches.getModificationTrackerForIndexId(project, PhpInterfaceFqnIndex.KEY)
             ),
             false
         );
 
         // Check the cache first, compute and store if missing
-        return cache.computeIfAbsent(classFqnName, fqn ->
-            !PhpIndex.getInstance(project).getAnyByFQN(fqn).isEmpty()
-        );
+        return cache.computeIfAbsent(normalizedFqn, fqn -> {
+            FileBasedIndex index = FileBasedIndex.getInstance();
+            GlobalSearchScope scope = GlobalSearchScope.allScope(project);
+
+            // Check class FQN index (lightweight - no PhpClass loading)
+            if (!index.getValues(PhpClassFqnIndex.KEY, fqn, scope).isEmpty()) {
+                return true;
+            }
+
+            // Check interface FQN index (lightweight - no PhpClass loading)
+            return !index.getValues(PhpInterfaceFqnIndex.KEY, fqn, scope).isEmpty();
+        });
     }
 
     /**

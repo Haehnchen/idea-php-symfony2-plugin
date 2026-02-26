@@ -677,4 +677,34 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
         assertTrue("Should have both parameters", result.contains("int $id, Request $request"));
         assertTrue("Should preserve Route attribute", result.contains("#[Route('/foobar/{id}')]"));
     }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#hasClassOrInterface
+     */
+    public void testHasClassOrInterfaceWithExistingClass() {
+        assertTrue(PhpElementsUtil.hasClassOrInterface(getProject(), "\\Foo\\Bar"));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#hasClassOrInterface
+     */
+    public void testHasClassOrInterfaceWithExistingInterface() {
+        assertTrue(PhpElementsUtil.hasClassOrInterface(getProject(), "\\Foo\\BarInterface"));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#hasClassOrInterface
+     */
+    public void testHasClassOrInterfaceWithNonExistentFqn() {
+        assertFalse(PhpElementsUtil.hasClassOrInterface(getProject(), "\\Foo\\NonExistent"));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#hasClassOrInterface
+     */
+    public void testHasClassOrInterfaceNormalizesLeadingBackslash() {
+        assertTrue("FQN without leading backslash should match", PhpElementsUtil.hasClassOrInterface(getProject(), "Foo\\Bar"));
+        assertTrue("FQN with leading backslash should match", PhpElementsUtil.hasClassOrInterface(getProject(), "\\Foo\\Bar"));
+        assertTrue("Interface without leading backslash should match", PhpElementsUtil.hasClassOrInterface(getProject(), "Foo\\BarInterface"));
+    }
 }
