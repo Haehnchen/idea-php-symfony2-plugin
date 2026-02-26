@@ -19,6 +19,7 @@ import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileViewProvider;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHtmlCompletionUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
 import org.jetbrains.annotations.NotNull;
@@ -31,6 +32,33 @@ import java.util.List;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TwigComponentHtmlTagExtensions {
+    @Nullable
+    private static XmlTag findParentComponentTag(@NotNull XmlTag tag) {
+        XmlTag parentTag = tag.getParentTag();
+        while (parentTag != null) {
+            if (isTwigComponentTag(parentTag)) {
+                return parentTag;
+            }
+
+            parentTag = parentTag.getParentTag();
+        }
+
+        return null;
+    }
+
+    private static boolean isTwigComponentTag(@NotNull XmlTag tag) {
+        if (TwigHtmlCompletionUtil.isTwigBlockTag(tag)) {
+            return false;
+        }
+
+        String name = tag.getName();
+        if (name.startsWith("twig:")) {
+            return true;
+        }
+
+        return "twig".equals(tag.getNamespacePrefix());
+    }
+
     public static class TwigTemplateTagNameProvider implements XmlTagNameProvider {
         @Override
         public void addTagNameVariants(List<LookupElement> elements, @NotNull XmlTag tag, String prefix) {
@@ -46,6 +74,14 @@ public class TwigComponentHtmlTagExtensions {
 
             for (String twigComponentName : UxUtil.getTwigComponentNames(tag.getProject())) {
                 elements.add(LookupElementBuilder.create("twig:" + twigComponentName).withIcon(Symfony2Icons.SYMFONY));
+            }
+
+            if (findParentComponentTag(tag) != null) {
+                elements.add(
+                    LookupElementBuilder.create("twig:block")
+                        .withIcon(Symfony2Icons.SYMFONY)
+                        .withTypeText("Block", true)
+                );
             }
         }
     }
@@ -67,13 +103,24 @@ public class TwigComponentHtmlTagExtensions {
 
         @Override
         public @Nullable SchemaPrefix getPrefixDeclaration(XmlTag context, String namespacePrefix) {
-            if (namespacePrefix.equals("twig") && context instanceof HtmlTag && context.getName().startsWith("twig")) {
-                return new NullableParentShouldOverwriteSchemaPrefix(
-                    context.getProject(),
-                    context.getContainingFile(),
-                    new TextRange(0, 4),
-                    "twig"
-                );
+            if (namespacePrefix.equals("twig") && context instanceof HtmlTag htmlTag) {
+                if (isTwigComponentTag(htmlTag)) {
+                    return new NullableParentShouldOverwriteSchemaPrefix(
+                        context.getProject(),
+                        context.getContainingFile(),
+                        new TextRange(0, 4),
+                        "twig"
+                    );
+                }
+
+                if (TwigHtmlCompletionUtil.isTwigBlockTag(htmlTag) && findParentComponentTag(htmlTag) != null) {
+                    return new NullableParentShouldOverwriteSchemaPrefix(
+                        context.getProject(),
+                        context.getContainingFile(),
+                        new TextRange(0, 4),
+                        "twig"
+                    );
+                }
             }
 
             return null;
@@ -113,8 +160,12 @@ public class TwigComponentHtmlTagExtensions {
             if (inspectionId.equals("HtmlUnknownTag") && element instanceof XmlToken xmlToken && element.getNode().getElementType() == XmlTokenType.XML_NAME) {
                 String text = xmlToken.getText();
 
-                return text.startsWith("twig:")
-                    && UxUtil.getTwigComponentNames(element.getProject()).contains(text.substring(5));
+                if (text.startsWith("twig:")
+                    && UxUtil.hasTwigComponentName(element.getProject(), text.substring(5))) {
+                    return true;
+                }
+
+                return "twig:block".equals(text);
             }
 
             return false;

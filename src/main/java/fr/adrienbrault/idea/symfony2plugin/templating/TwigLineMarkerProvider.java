@@ -455,4 +455,5 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             return PsiElementUtils.convertVirtualFilesToPsiFiles(project, TwigUtil.getTemplatesExtendingFile(project, virtualFile));
         }
     }
+
 }
