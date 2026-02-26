@@ -52,4 +52,5 @@ public class TwigHtmlCompletionContributorTest extends SymfonyLightCodeInsightFi
             "{{ 'foo'|trans(null, 'symfony') }}<input value=\"{{ 'symfony_foobar'|trans({}, 'symfony') }}\">"
         );
     }
+
 }

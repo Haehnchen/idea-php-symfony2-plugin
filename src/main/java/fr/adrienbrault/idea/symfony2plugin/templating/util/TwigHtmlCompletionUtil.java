@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.templating.util;
 import com.intellij.patterns.*;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.html.HtmlTag;
+import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlText;
 import com.intellij.psi.xml.XmlTokenType;
 import com.intellij.util.ProcessingContext;
@@ -142,5 +143,39 @@ public class TwigHtmlCompletionUtil {
      */
     public static PsiElementPattern.Capture<PsiElement> getTwigNamespacePattern() {
         return PlatformPatterns.psiElement().withElementType(XmlTokenType.XML_NAME).with(HTML_TAG_TWIG_COMPONENT_PREFIX);
+    }
+
+    /**
+     * <twig:block name="<caret>">
+     */
+    public static PsiElementPattern.Capture<PsiElement> getTwigBlockNameAttributePattern() {
+        return PlatformPatterns.psiElement()
+            .withParent(
+                XmlPatterns.xmlAttributeValue()
+                    .withParent(
+                        XmlPatterns.xmlAttribute("name")
+                            .withParent(
+                                XmlPatterns.xmlTag().with(new PatternCondition<>("twig:block") {
+                                    @Override
+                                    public boolean accepts(@NotNull XmlTag xmlTag, ProcessingContext context) {
+                                        return isTwigBlockTag(xmlTag);
+                                    }
+                                })
+                            )
+                    )
+            ).inFile(XmlPatterns.psiFile()
+                .withName(XmlPatterns
+                    .string().endsWith(".twig")
+                )
+            );
+    }
+
+    public static boolean isTwigBlockTag(@NotNull XmlTag tag) {
+        String name = tag.getName();
+        if ("twig:block".equals(name)) {
+            return true;
+        }
+
+        return "block".equals(name) && "twig".equals(tag.getNamespacePrefix());
     }
 }

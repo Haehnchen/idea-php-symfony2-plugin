@@ -171,6 +171,16 @@ public class UxUtil {
         return getAllComponentNames(project).stream().map(TwigComponent::name).collect(Collectors.toSet());
     }
 
+    @Nullable
+    public static String resolveTwigComponentName(@NotNull Project project, @NotNull String name) {
+        Set<String> names = getTwigComponentNames(project);
+        return names.contains(name) ? name : null;
+    }
+
+    public static boolean hasTwigComponentName(@NotNull Project project, @NotNull String name) {
+        return resolveTwigComponentName(project, name) != null;
+    }
+
     @NotNull
     private static Set<String> getAnonymousTemplateDirectories(@NotNull Project project) {
         Set<String> list = new HashSet<>();
@@ -314,17 +324,45 @@ public class UxUtil {
                 if ((entry.twigComponentNamespace.namePrefix() == null || component.startsWith(entry.twigComponentNamespace.namePrefix() + ":"))) {
                     String strip = StringUtils.strip(entry.twigComponentNamespace.templateDirectory(), "/");
                     String template = strip + "/" + component.replace(":", "/") + ".html.twig";
-                    virtualFiles.addAll(TwigUtil.getTemplateFiles(project, template));
+                    addTemplateFilesWithFallback(project, template, virtualFiles);
                 }
             } else {
                 for (String directory : getAnonymousTemplateDirectories(project)) {
                     String templateName = StringUtils.strip(directory, "/") + "/" + component.replace(":", "/") + ".html.twig";
-                    virtualFiles.addAll(TwigUtil.getTemplateFiles(project, templateName));
+                    addTemplateFilesWithFallback(project, templateName, virtualFiles);
                 }
             }
         }
 
         return PsiElementUtils.convertVirtualFilesToPsiFiles(project, virtualFiles);
+    }
+
+    private static void addTemplateFilesWithFallback(@NotNull Project project, @NotNull String templateName, @NotNull Collection<VirtualFile> virtualFiles) {
+        virtualFiles.addAll(TwigUtil.getTemplateFiles(project, templateName));
+        if (!virtualFiles.isEmpty()) {
+            return;
+        }
+
+        VirtualFile baseDir = ProjectUtil.getProjectDir(project);
+        if (baseDir == null) {
+            return;
+        }
+
+        VirtualFile templatesDir = VfsUtil.findRelativeFile(baseDir, "templates");
+        if (templatesDir != null) {
+            VirtualFile virtualFile = VfsUtil.findRelativeFile(templatesDir, templateName.split("/"));
+            if (virtualFile != null) {
+                virtualFiles.add(virtualFile);
+            }
+        }
+
+        VirtualFile appViewsDir = VfsUtil.findRelativeFile(baseDir, "app", "Resources", "views");
+        if (appViewsDir != null) {
+            VirtualFile virtualFile = VfsUtil.findRelativeFile(appViewsDir, templateName.split("/"));
+            if (virtualFile != null) {
+                virtualFiles.add(virtualFile);
+            }
+        }
     }
 
     @NotNull
