@@ -8,6 +8,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
 import com.intellij.psi.util.*;
+import com.jetbrains.php.lang.PhpLanguage;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
@@ -238,7 +239,7 @@ public class DoctrineUtil {
                         }
                     }
 
-                    return CachedValueProvider.Result.create(Collections.unmodifiableMap(items), PsiModificationTracker.MODIFICATION_COUNT);
+                    return CachedValueProvider.Result.create(Collections.unmodifiableMap(items), PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE));
                 }
             },
             false

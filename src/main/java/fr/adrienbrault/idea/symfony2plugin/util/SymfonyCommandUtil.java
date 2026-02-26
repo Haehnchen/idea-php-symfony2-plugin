@@ -56,7 +56,7 @@ public class SymfonyCommandUtil {
                     }
                 }
 
-                return CachedValueProvider.Result.create(symfonyCommands, PsiModificationTracker.MODIFICATION_COUNT);
+                return CachedValueProvider.Result.create(symfonyCommands, PsiModificationTracker.getInstance(project).forLanguage(com.jetbrains.php.lang.PhpLanguage.INSTANCE));
             },
             false
         );
