@@ -3366,7 +3366,20 @@ public class TwigUtil {
         @Nullable
         @Override
         public Result<Map<String, Set<VirtualFile>>> compute() {
-            return Result.create(getTemplateMapProxy(project, includePhpFiles), VirtualFileManager.VFS_STRUCTURE_MODIFICATIONS);
+            Map<String, Set<VirtualFile>> templateMapProxy = getTemplateMapProxy(project, includePhpFiles);
+
+            Set<String> files = new HashSet<>();
+            for (Set<VirtualFile> virtualFiles : templateMapProxy.values()) {
+                for (VirtualFile virtualFile : virtualFiles) {
+                    files.add(virtualFile.getPath());
+                }
+            }
+
+            return Result.create(
+                templateMapProxy,
+                VirtualFileManager.VFS_STRUCTURE_MODIFICATIONS,
+                new AbsoluteFileModificationTracker(files)
+            );
         }
     }
 

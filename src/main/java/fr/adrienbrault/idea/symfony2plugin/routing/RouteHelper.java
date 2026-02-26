@@ -555,7 +555,11 @@ public class RouteHelper {
                     .filter(Objects::nonNull)
                     .collect(Collectors.toSet());
 
-                return CachedValueProvider.Result.create(Collections.unmodifiableSet(filesAbsolute), VirtualFileManager.VFS_STRUCTURE_MODIFICATIONS);
+                return CachedValueProvider.Result.create(
+                    Collections.unmodifiableSet(filesAbsolute),
+                    new AbsoluteFileModificationTracker(filesAbsolute),
+                    VirtualFileManager.VFS_STRUCTURE_MODIFICATIONS
+                );
             },
             false
         );
