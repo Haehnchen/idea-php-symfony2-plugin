@@ -607,7 +607,7 @@ public class ServiceUtil {
         return CachedValuesManager.getManager(project).getCachedValue(
             project,
             KERNEL_PARAMETER_CACHE,
-            () -> CachedValueProvider.Result.create(getParameterParametersInner(project), PsiModificationTracker.MODIFICATION_COUNT),
+            () -> CachedValueProvider.Result.create(getParameterParametersInner(project), PsiModificationTracker.getInstance(project).forLanguage(com.jetbrains.php.lang.PhpLanguage.INSTANCE)),
             false
         );
     }

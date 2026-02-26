@@ -34,7 +34,7 @@ public class ConfigUtil {
         return CachedValuesManager.getManager(project).getCachedValue(
             project,
             TREE_SIGNATURE_CACHE,
-            () -> CachedValueProvider.Result.create(visitTreeSignatures(project), PsiModificationTracker.MODIFICATION_COUNT),
+            () -> CachedValueProvider.Result.create(visitTreeSignatures(project), PsiModificationTracker.getInstance(project).forLanguage(com.jetbrains.php.lang.PhpLanguage.INSTANCE)),
             false
         );
     }
