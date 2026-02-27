@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
 import com.intellij.patterns.*;
+import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.html.HtmlTag;
 import com.intellij.psi.xml.XmlTag;
@@ -167,6 +168,27 @@ public class TwigHtmlCompletionUtil {
                 .withName(XmlPatterns
                     .string().endsWith(".twig")
                 )
+            );
+    }
+
+    /**
+     * Matches when inside a twig: component body (not twig:block).
+     * <pre>
+     * {@code <twig:Alert><caret></twig:Alert>}
+     * </pre>
+     * This triggers completion for inserting {@code <twig:block name="..."></twig:block>} tags.
+     */
+    public static PsiElementPattern.Capture<PsiElement> getTwigComponentBodyPattern() {
+        return PlatformPatterns.psiElement()
+            .inside(XmlPatterns.xmlTag().with(new PatternCondition<>("inside twig: component") {
+                @Override
+                public boolean accepts(@NotNull XmlTag xmlTag, ProcessingContext context) {
+                    String name = xmlTag.getName();
+                    return name.startsWith("twig:") && !"twig:block".equals(name);
+                }
+            }))
+            .inFile(XmlPatterns.psiFile()
+                .withName(XmlPatterns.string().endsWith(".twig"))
             );
     }
 

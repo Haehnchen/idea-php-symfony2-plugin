@@ -5,12 +5,10 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.ElementPattern;
-import com.intellij.patterns.PatternCondition;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
@@ -29,13 +27,7 @@ import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -250,10 +242,84 @@ public class TwigHtmlCompletionContributor extends CompletionContributor {
             }
         );
 
+        // <twig:Alert><caret></twig:Alert>
+        // Provides <twig:block name="..."></twig:block> completion for blocks in the component template
+        extend(
+            CompletionType.BASIC,
+            TwigHtmlCompletionUtil.getTwigComponentBodyPattern(),
+            new CompletionProvider<>() {
+                @Override
+                protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
+                    // Try original position first, fallback to position
+                    PsiElement position = parameters.getOriginalPosition();
+                    if (position == null) {
+                        position = parameters.getPosition();
+                    }
+
+                    if (position == null || !Symfony2ProjectComponent.isEnabled(position)) {
+                        return;
+                    }
+
+                    // Find the twig: component tag by walking up the tree
+                    XmlTag componentTag = null;
+                    XmlTag parentTag = PsiTreeUtil.getParentOfType(position, XmlTag.class);
+                    while (parentTag != null) {
+                        String name = parentTag.getName();
+                        if (name.startsWith("twig:") && !"twig:block".equals(name)) {
+                            componentTag = parentTag;
+                            break;
+                        }
+                        parentTag = parentTag.getParentTag();
+                    }
+
+                    if (componentTag == null) {
+                        return;
+                    }
+
+                    String tagName = componentTag.getName();
+                    String rawComponentName = tagName.substring(5);
+                    String componentName = UxUtil.resolveTwigComponentName(position.getProject(), rawComponentName);
+                    if (componentName == null) {
+                        return;
+                    }
+
+                    Map<VirtualFile, PsiFile> templateFiles = new HashMap<>();
+                    List<VirtualFile> virtualFiles = new ArrayList<>();
+                    for (PsiFile templateFile : UxUtil.getComponentTemplates(position.getProject(), componentName)) {
+                        VirtualFile virtualFile = templateFile.getVirtualFile();
+                        if (virtualFile != null) {
+                            templateFiles.put(virtualFile, templateFile);
+                            virtualFiles.add(virtualFile);
+                        }
+                    }
+
+                    if (virtualFiles.isEmpty()) {
+                        return;
+                    }
+
+                    Map<VirtualFile, Collection<String>> blocks = TwigUtil.getBlockNamesForFiles(position.getProject(), virtualFiles);
+                    Set<String> seen = new HashSet<>();
+
+                    for (Map.Entry<VirtualFile, Collection<String>> entry : blocks.entrySet()) {
+                        PsiFile templateFile = templateFiles.get(entry.getKey());
+                        String typeText = templateFile != null ? templateFile.getName() : null;
+
+                        for (String blockName : entry.getValue()) {
+                            if (!seen.add(blockName)) {
+                                continue;
+                            }
+
+                            resultSet.addElement(new TwigComponentBlockLookupElement(blockName, typeText));
+                        }
+                    }
+                }
+            }
+        );
+
         // "<twig:Alert m<caret> :<caret>"
         extend(
             CompletionType.BASIC,
-            PlatformPatterns.psiElement().withParent(PlatformPatterns.psiElement(XmlAttribute.class).withParent(PlatformPatterns.psiElement(XmlTag.class).with(new PatternCondition<>("starting with 'twig:'") {
+            PlatformPatterns.psiElement().withParent(PlatformPatterns.psiElement(com.intellij.psi.xml.XmlAttribute.class).withParent(PlatformPatterns.psiElement(XmlTag.class).with(new com.intellij.patterns.PatternCondition<>("starting with 'twig:'") {
                 @Override
                 public boolean accepts(@NotNull XmlTag xmlTag, ProcessingContext context) {
                     return xmlTag.getName().startsWith("twig:");
