@@ -646,11 +646,59 @@ public class ServiceUtil {
                             parameters.addAll(PhpElementsUtil.getArrayCreationKeys((ArrayCreationExpression) parameter));
                         }
                     }
+                } else if(phpReturnArgument instanceof BinaryExpression binaryExpression) {
+                    // Symfony 6.4+: return [...] + (condition ? ['key' => value] : [])
+                    // The + operator is used for array union
+
+                    extractArrayKeysFromBinaryExpression(binaryExpression, parameters);
                 }
             }
         }
 
         return parameters;
+    }
+
+    /**
+     * Extracts array keys from a BinaryExpression, typically used for array union (+) operator.
+     * Handles patterns like: return [...] + (condition ? ['key' => value] : [])
+     */
+    private static void extractArrayKeysFromBinaryExpression(@NotNull BinaryExpression binaryExpression, @NotNull Collection<String> parameters) {
+        // Process left operand
+        extractArrayKeysFromExpression(binaryExpression.getLeftOperand(), parameters);
+
+        // Process right operand
+        extractArrayKeysFromExpression(binaryExpression.getRightOperand(), parameters);
+    }
+
+    /**
+     * Extracts array keys from various expression types (arrays, ternary, parenthesized, binary).
+     */
+    private static void extractArrayKeysFromExpression(@Nullable PsiElement expression, @NotNull Collection<String> parameters) {
+        if (expression == null) {
+            return;
+        }
+
+        if (expression instanceof ArrayCreationExpression) {
+            parameters.addAll(PhpElementsUtil.getArrayCreationKeys((ArrayCreationExpression) expression));
+        } else if (expression instanceof BinaryExpression) {
+            // Nested binary expression: [...] + [...] + [...]
+            extractArrayKeysFromBinaryExpression((BinaryExpression) expression, parameters);
+        } else if (expression instanceof TernaryExpression) {
+            // Ternary: condition ? ['key' => value] : []
+            extractArrayKeysFromTernaryExpression((TernaryExpression) expression, parameters);
+        } else if (expression instanceof ParenthesizedExpression) {
+            // Unwrap parenthesized expression: (condition ? [...] : [])
+            extractArrayKeysFromExpression(((ParenthesizedExpression) expression).getArgument(), parameters);
+        }
+    }
+
+    /**
+     * Extracts array keys from a TernaryExpression.
+     * Handles patterns like: condition ? ['key' => value] : []
+     */
+    private static void extractArrayKeysFromTernaryExpression(@NotNull TernaryExpression ternaryExpression, @NotNull Collection<String> parameters) {
+        extractArrayKeysFromExpression(ternaryExpression.getTrueVariant(), parameters);
+        extractArrayKeysFromExpression(ternaryExpression.getFalseVariant(), parameters);
     }
 
     /**

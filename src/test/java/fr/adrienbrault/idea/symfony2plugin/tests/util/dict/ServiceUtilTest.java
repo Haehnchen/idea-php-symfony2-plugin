@@ -83,6 +83,24 @@ public class ServiceUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         );
     }
 
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil#getParameterParameters
+     */
+    public void testGetParameterParametersModernSymfony() {
+        myFixture.copyFileToProject("kernel_parameter.php");
+
+        // Symfony 6.4/7.x style with short array syntax and + operator for array union
+        assertContainsElements(
+            ServiceUtil.getParameterParameters(getProject()),
+            // Direct array keys
+            "kernel.project_dir", "kernel.environment", "kernel.runtime_environment", "kernel.debug",
+            "kernel.build_dir", "kernel.cache_dir", "kernel.logs_dir", "kernel.bundles",
+            "kernel.bundles_metadata", "kernel.charset", "kernel.container_class",
+            // From the + operator with ternary expression
+            "kernel.share_dir"
+        );
+    }
+
     private static class MyNameContainerServiceCondition implements Condition<ContainerService> {
 
         @NotNull
