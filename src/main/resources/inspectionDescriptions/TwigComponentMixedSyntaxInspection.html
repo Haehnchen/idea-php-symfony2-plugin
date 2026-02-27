@@ -1,0 +1,39 @@
+<html>
+<body>
+<p>Detects mixing of Twig block syntax and HTML component syntax in Symfony UX Twig Components</p>
+<!-- tooltip end -->
+<p>
+    When using Symfony UX Twig Components, you cannot mix the two component syntaxes.
+    If the outer component uses HTML syntax (<code>&lt;twig:ComponentName&gt;</code>), inner blocks
+    must also use HTML syntax (<code>&lt;twig:block name="..."&gt;</code>), not Twig block tags.
+</p>
+
+<p>Invalid (mixed syntax):</p>
+<pre><code>
+&lt;twig:Card&gt;
+    {% block footer %}
+        content
+    {% endblock %}
+&lt;/twig:Card&gt;
+</code></pre>
+
+<p>Valid (consistent HTML syntax):</p>
+<pre><code>
+&lt;twig:Card&gt;
+    &lt;twig:block name="footer"&gt;
+        content
+    &lt;/twig:block&gt;
+&lt;/twig:Card&gt;
+</code></pre>
+
+<p>Valid (consistent Twig syntax):</p>
+<pre><code>
+{% component 'Card' %}
+    {% block footer %}
+        content
+    {% endblock %}
+{% endcomponent %}
+</code></pre>
+
+</body>
+</html>
