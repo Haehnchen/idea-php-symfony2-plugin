@@ -17,6 +17,8 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.presentation.java.SymbolPresentationUtil;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.ConstantFunction;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIcons;
@@ -25,9 +27,11 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.elements.TwigElementTypes;
+import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.RelatedPopupGotoLineMarker;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigComponentUsageStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigIncludeStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
@@ -67,7 +71,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             // controller
             if(psiElement instanceof TwigFile twigFile) {
                 attachController(twigFile, results);
-                attachUxComponent(twigFile, results);
+                attachUxComponentTargets(twigFile, results);
 
                 // find foreign file references tags like:
                 // include, embed, source, from, import, ...
@@ -137,16 +141,21 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         result.add(builder.createLineMarkerInfo(twigFile));
     }
 
-    private void attachUxComponent(@NotNull TwigFile twigFile, @NotNull Collection<? super RelatedItemLineMarkerInfo<?>> result) {
+    private void attachUxComponentTargets(@NotNull TwigFile twigFile, @NotNull Collection<? super RelatedItemLineMarkerInfo<?>> result) {
         Collection<PhpClass> uxComponentsClasses = UxUtil.getComponentClassesForTemplateFile(twigFile.getProject(), twigFile);
 
-        if (!uxComponentsClasses.isEmpty()) {
-            NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.SYMFONY)
-                .setTargets(uxComponentsClasses)
-                .setTooltipText("Navigate to UX Component");
-
-            result.add(builder.createLineMarkerInfo(twigFile));
+        // Fast pre-check before creating lazy targets:
+        // if neither direct class mapping nor indexed usages exist we skip the file-level marker.
+        if (uxComponentsClasses.isEmpty() && !UxUtil.hasComponentUsages(twigFile)) {
+            return;
         }
+
+        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.SYMFONY)
+            .setTargets(NotNullLazyValue.lazy(new UxComponentTemplateTargets(twigFile)))
+            .setTooltipText("Navigate to UX Component")
+            .setCellRenderer(UxComponentTargetsPsiElementListCellRenderer::new);
+
+        result.add(builder.createLineMarkerInfo(twigFile));
     }
 
     @Nullable
@@ -375,6 +384,73 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         }
     }
 
+    public static class UxComponentTargetsPsiElementListCellRenderer extends PsiElementListCellRenderer<PsiElement> {
+        @Override
+        public String getElementText(PsiElement psiElement) {
+            if (psiElement instanceof PhpClass) {
+                return StringUtils.abbreviate(SymbolPresentationUtil.getSymbolPresentableText(psiElement), 50);
+            }
+
+            String componentName = getComponentName(psiElement);
+            if (componentName != null) {
+                return componentName;
+            }
+
+            return StringUtils.abbreviate(SymbolPresentationUtil.getSymbolPresentableText(psiElement), 50);
+        }
+
+        @Nullable
+        @Override
+        protected String getContainerText(PsiElement psiElement, String s) {
+            if (!(psiElement instanceof PhpClass) && getComponentName(psiElement) != null) {
+                PsiFile containingFile = psiElement.getContainingFile();
+                if (containingFile != null) {
+                    String relativePath = VfsUtil.getRelativePath(containingFile.getVirtualFile(), ProjectUtil.getProjectDir(psiElement), '/');
+                    if (relativePath != null) {
+                        return relativePath;
+                    }
+                }
+            }
+
+            return SymbolPresentationUtil.getSymbolContainerText(psiElement);
+        }
+
+        @Override
+        protected int getIconFlags() {
+            return Iconable.ICON_FLAG_VISIBILITY;
+        }
+
+        @Nullable
+        private static String getComponentName(@NotNull PsiElement psiElement) {
+            if (psiElement instanceof XmlTag xmlTag) {
+                String name = xmlTag.getName();
+                if (name.startsWith("twig:")) {
+                    return name.substring(5);
+                }
+
+                if ("twig".equals(xmlTag.getNamespacePrefix())) {
+                    return name;
+                }
+            }
+
+            if (TwigPattern.getComponentPattern().accepts(psiElement) || TwigPattern.getArgumentAfterTagNamePattern("component").accepts(psiElement)) {
+                String componentName = PsiElementUtils.trimQuote(psiElement.getText());
+                return StringUtils.isBlank(componentName) ? null : componentName;
+            }
+
+            PsiElement previousVisibleLeaf = PsiTreeUtil.prevVisibleLeaf(psiElement);
+            if (previousVisibleLeaf != null && previousVisibleLeaf.getNode() != null && previousVisibleLeaf.getNode().getElementType() == TwigTokenTypes.TAG_NAME &&
+                "component".equals(previousVisibleLeaf.getText()) &&
+                psiElement.getParent() != null && psiElement.getParent().getNode() != null &&
+                psiElement.getParent().getNode().getElementType() == TwigElementTypes.TAG) {
+                String componentName = PsiElementUtils.trimQuote(psiElement.getText());
+                return StringUtils.isBlank(componentName) ? null : componentName;
+            }
+
+            return null;
+        }
+    }
+
     private record MyTemplateIncludeLazyValue(@NotNull TwigFile twigFile, @NotNull Collection<String> templateNames) implements Supplier<Collection<? extends PsiElement>> {
         @Override
         public Collection<? extends PsiElement> get() {
@@ -453,6 +529,61 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         @Override
         public Collection<? extends PsiElement> get() {
             return PsiElementUtils.convertVirtualFilesToPsiFiles(project, TwigUtil.getTemplatesExtendingFile(project, virtualFile));
+        }
+    }
+
+    private record UxComponentTemplateTargets(@NotNull TwigFile twigFile) implements Supplier<Collection<? extends PsiElement>> {
+        @Override
+        public Collection<? extends PsiElement> get() {
+            Project project = twigFile.getProject();
+            VirtualFile currentFile = twigFile.getVirtualFile();
+
+            // Collect direct UX component class targets first.
+            Set<PsiElement> targets = new LinkedHashSet<>(UxUtil.getComponentClassesForTemplateFile(project, twigFile));
+            if (currentFile == null) {
+                return targets;
+            }
+
+            Set<String> normalizedComponentNames = new HashSet<>();
+            for (String componentName : UxUtil.getTemplateComponentNames(twigFile)) {
+                String normalized = TwigComponentUsageStubIndex.normalizeComponentName(componentName);
+                if (normalized != null) {
+                    normalizedComponentNames.add(normalized);
+                }
+            }
+
+            if (normalizedComponentNames.isEmpty()) {
+                return targets;
+            }
+
+            Set<VirtualFile> files = new HashSet<>();
+            for (String normalizedComponentName : normalizedComponentNames) {
+                // TwigComponentUsageStubIndex stores component usages in Twig files:
+                // {{ component('Foo') }} and <twig:Foo>.
+                files.addAll(FileBasedIndex.getInstance().getContainingFiles(
+                    TwigComponentUsageStubIndex.KEY,
+                    normalizedComponentName,
+                    GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), TwigFileType.INSTANCE)
+                ));
+            }
+
+            files.remove(currentFile);
+
+            for (VirtualFile file : files) {
+                PsiFile psiFile = PsiManager.getInstance(project).findFile(file);
+                if (!(psiFile instanceof TwigFile twigFile)) {
+                    continue;
+                }
+
+                Collection<PsiElement> fileTargets = TwigComponentUsageStubIndex.getComponentUsages(twigFile, normalizedComponentNames);
+                if (!fileTargets.isEmpty()) {
+                    targets.addAll(fileTargets);
+                } else {
+                    targets.add(twigFile);
+                }
+            }
+
+            return targets;
         }
     }
 

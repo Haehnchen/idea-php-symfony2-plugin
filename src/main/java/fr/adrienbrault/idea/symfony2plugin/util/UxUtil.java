@@ -15,11 +15,14 @@ import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.twig.TwigFile;
+import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.ConfigIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.UxComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ConfigStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigComponentUsageStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.UxTemplateStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.util.IndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
@@ -335,6 +338,67 @@ public class UxUtil {
         }
 
         return PsiElementUtils.convertVirtualFilesToPsiFiles(project, virtualFiles);
+    }
+
+    @NotNull
+    public static Set<String> getTemplateComponentNames(@NotNull TwigFile twigFile) {
+        Project project = twigFile.getProject();
+        Set<String> names = new HashSet<>();
+
+        VirtualFile currentFile = twigFile.getVirtualFile();
+        if (currentFile == null) {
+            return names;
+        }
+
+        for (TwigComponent component : getAllComponentNames(project)) {
+            if (component.name().isBlank() || names.contains(component.name())) {
+                continue;
+            }
+
+            for (PsiFile template : getComponentTemplates(project, component.name())) {
+                VirtualFile virtualFile = template.getVirtualFile();
+                if (virtualFile != null && virtualFile.equals(currentFile)) {
+                    names.add(component.name());
+                    break;
+                }
+            }
+        }
+
+        return names;
+    }
+
+    public static boolean hasComponentUsages(@NotNull TwigFile twigFile) {
+        Project project = twigFile.getProject();
+        Collection<String> componentNames = getTemplateComponentNames(twigFile);
+        VirtualFile excludeFile = twigFile.getVirtualFile();
+
+        Set<String> normalizedComponentNames = new HashSet<>();
+        for (String componentName : componentNames) {
+            String normalized = TwigComponentUsageStubIndex.normalizeComponentName(componentName);
+            if (normalized != null) {
+                normalizedComponentNames.add(normalized);
+            }
+        }
+
+        if (normalizedComponentNames.isEmpty()) {
+            return false;
+        }
+
+        for (String componentName : normalizedComponentNames) {
+            Collection<VirtualFile> containingFiles = FileBasedIndex.getInstance().getContainingFiles(
+                TwigComponentUsageStubIndex.KEY,
+                componentName,
+                GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), TwigFileType.INSTANCE)
+            );
+
+            for (VirtualFile containingFile : containingFiles) {
+                if (excludeFile == null || !excludeFile.equals(containingFile)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private static void addTemplateFilesWithFallback(@NotNull Project project, @NotNull String templateName, @NotNull Collection<VirtualFile> virtualFiles) {
