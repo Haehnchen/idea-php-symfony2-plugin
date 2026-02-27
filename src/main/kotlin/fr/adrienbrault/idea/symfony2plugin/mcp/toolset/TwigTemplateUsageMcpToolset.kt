@@ -23,9 +23,10 @@ class TwigTemplateUsageMcpToolset : McpToolset {
 
     @McpTool
     @McpDescription("""
-        Lists usages of Twig templates. Accepts a partial template name or a project-relative file path (e.g. "templates/home/index.html.twig" → resolves to template name "home/index.html.twig").
+        Lists usages of Twig templates. Accepts a partial template name or a project-relative file path (e.g. "templates/home/index.html.twig" → resolves to relative template "home/index.html.twig").
 
         CSV columns (values semicolon-separated): template,controller,twig_include,twig_embed,twig_extends,twig_import,twig_use,twig_form_theme,twig_component
+        - template: logical template name (e.g. "home/index.html.twig")
         - controller: PHP methods via render()/renderView()/@Template/#[Template]
         - twig_include: {% include %} / {{ include() }}
         - twig_embed: {% embed %}
@@ -37,8 +38,8 @@ class TwigTemplateUsageMcpToolset : McpToolset {
 
         Example:
         template,controller,twig_include,twig_embed,twig_extends,twig_import,twig_use,twig_form_theme,twig_component
-        partials/nav.html.twig,App\Controller\BaseController::index,layouts/base.html.twig,,,,,,,
-        layouts/base.html.twig,,,,,pages/home.html.twig;pages/about.html.twig,,,,
+        partials/nav.html.twig,App\Controller\BaseController::index,templates/layouts/base.html.twig,,,,,,,
+        layouts/base.html.twig,,,,,templates/pages/home.html.twig;templates/pages/about.html.twig,,,,
     """)
     suspend fun list_twig_template_usages(
         @McpDescription("Partial template name or project-relative file path")

@@ -42,13 +42,11 @@ class TwigTemplateUsageCollector(private val project: Project) {
         val scope = GlobalSearchScope.allScope(project)
         val filterLower = templateFilter.lowercase()
 
-        // Collect all matching template names across the relevant indexes
+        // Collect all matching template names using the internal template map
         val matchingTemplates = sortedSetOf<String>()
 
-        // Strategy 1: partial template-name match inside every index
-        index.getAllKeys(TwigIncludeStubIndex.KEY, project).filterTo(matchingTemplates) { it.lowercase().contains(filterLower) }
-        index.getAllKeys(TwigExtendsStubIndex.KEY, project).filterTo(matchingTemplates) { it.lowercase().contains(filterLower) }
-        index.getAllKeys(PhpTwigTemplateUsageStubIndex.KEY, project).filterTo(matchingTemplates) { it.lowercase().contains(filterLower) }
+        // Strategy 1: partial template-name match using internal template map
+        TwigUtil.getTemplateMap(project).keys.filterTo(matchingTemplates) { it.lowercase().contains(filterLower) }
 
         // Strategy 2: resolve input as a file path relative to the project root and add its
         // logical template names (e.g. "templates/home/index.html.twig" → "home/index.html.twig")
@@ -58,14 +56,14 @@ class TwigTemplateUsageCollector(private val project: Project) {
             ?.forEach { matchingTemplates.add(it) }
 
         // Pre-scan {% use %} tags across all twig files for a reverse map:
-        // usedTemplateName -> set of template names that {% use %} it
+        // usedTemplateName -> set of file paths that {% use %} it
         val useReverseMap = mutableMapOf<String, MutableSet<String>>()
         index.processValues(TwigBlockIndexExtension.KEY, "use", null, { file, templateSet ->
-            val callerName = TwigUtil.getTemplateNamesForFile(project, file).firstOrNull() ?: file.name
+            val callerPath = VfsExUtil.getRelativeProjectPath(project, file) ?: return@processValues true
             for (usedTemplate in templateSet) {
                 if (usedTemplate.lowercase().contains(filterLower)) {
                     matchingTemplates.add(usedTemplate)
-                    useReverseMap.getOrPut(usedTemplate) { sortedSetOf() }.add(callerName)
+                    useReverseMap.getOrPut(usedTemplate) { sortedSetOf() }.add(callerPath)
                 }
             }
             true
@@ -91,12 +89,12 @@ class TwigTemplateUsageCollector(private val project: Project) {
             val twigFormThemes = sortedSetOf<String>()
 
             index.processValues(TwigIncludeStubIndex.KEY, templateName, null, { file, includeObj ->
-                val callerName = TwigUtil.getTemplateNamesForFile(project, file).firstOrNull() ?: file.name
+                val callerPath = VfsExUtil.getRelativeProjectPath(project, file) ?: return@processValues true
                 when (includeObj.type) {
-                    IncludeType.INCLUDE, IncludeType.INCLUDE_FUNCTION -> twigIncludes.add(callerName)
-                    IncludeType.EMBED -> twigEmbeds.add(callerName)
-                    IncludeType.IMPORT, IncludeType.FROM -> twigImports.add(callerName)
-                    IncludeType.FORM_THEME -> twigFormThemes.add(callerName)
+                    IncludeType.INCLUDE, IncludeType.INCLUDE_FUNCTION -> twigIncludes.add(callerPath)
+                    IncludeType.EMBED -> twigEmbeds.add(callerPath)
+                    IncludeType.IMPORT, IncludeType.FROM -> twigImports.add(callerPath)
+                    IncludeType.FORM_THEME -> twigFormThemes.add(callerPath)
                     else -> {}
                 }
                 true
@@ -105,7 +103,8 @@ class TwigTemplateUsageCollector(private val project: Project) {
             // Twig extends
             val twigExtends = sortedSetOf<String>()
             index.processValues(TwigExtendsStubIndex.KEY, templateName, null, { file, _ ->
-                twigExtends.add(TwigUtil.getTemplateNamesForFile(project, file).firstOrNull() ?: file.name)
+                val callerPath = VfsExUtil.getRelativeProjectPath(project, file) ?: return@processValues true
+                twigExtends.add(callerPath)
                 true
             }, scope)
 
