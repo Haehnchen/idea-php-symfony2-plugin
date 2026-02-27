@@ -488,6 +488,18 @@
                          language="Twig"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigEnumFunctionInspection"/>
 
+        <localInspection groupPath="Symfony" shortName="TwigComponentMixedSyntaxInspection" displayName="Twig Component Mixed Syntax"
+                         groupName="Twig"
+                         enabledByDefault="true" level="ERROR"
+                         language="Twig"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigComponentMixedSyntaxInspection"/>
+
+        <localInspection groupPath="Symfony" shortName="TwigComponentSelfMacroImportInspection" displayName="Twig Component _self Macro Import"
+                         groupName="Twig"
+                         enabledByDefault="true" level="ERROR"
+                         language="Twig"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigComponentSelfMacroImportInspection"/>
+
         <localInspection groupPath="Symfony" shortName="YamlQuotedEscapedInspection" displayName="Quoted issues"
                          groupName="Yaml"
                          enabledByDefault="true" level="WARNING"

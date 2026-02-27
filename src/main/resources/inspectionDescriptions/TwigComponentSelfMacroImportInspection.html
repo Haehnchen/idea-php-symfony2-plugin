@@ -1,0 +1,37 @@
+<html>
+<body>
+<p>Detects invalid <code>{% from _self import ... %}</code> usage inside Symfony UX Twig Components</p>
+<!-- tooltip end -->
+<p>
+    Inside a Twig component context (<code>&lt;twig:Component&gt;</code> or
+    <code>{% component 'Name' %}</code>), <code>_self</code> does not refer to the current
+    template. Macro imports via <code>_self</code> will silently fail at runtime.
+    Use the full template path instead.
+</p>
+
+<p>Invalid:</p>
+<pre><code>
+{% macro message_formatter(message) %}
+    &lt;strong&gt;{{ message }}&lt;/strong&gt;
+{% endmacro %}
+
+&lt;twig:Alert&gt;
+    {% from _self import message_formatter %}
+    {{ message_formatter('Hello') }}
+&lt;/twig:Alert&gt;
+</code></pre>
+
+<p>Valid:</p>
+<pre><code>
+{% macro message_formatter(message) %}
+    &lt;strong&gt;{{ message }}&lt;/strong&gt;
+{% endmacro %}
+
+&lt;twig:Alert&gt;
+    {% from 'path/to/this/template.html.twig' import message_formatter %}
+    {{ message_formatter('Hello') }}
+&lt;/twig:Alert&gt;
+</code></pre>
+
+</body>
+</html>
