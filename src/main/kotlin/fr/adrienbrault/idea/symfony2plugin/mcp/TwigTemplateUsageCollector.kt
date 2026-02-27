@@ -3,13 +3,19 @@ package fr.adrienbrault.idea.symfony2plugin.mcp
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.util.indexing.FileBasedIndex
+import com.intellij.psi.PsiManager
+import com.jetbrains.twig.TwigFile
+import com.jetbrains.twig.TwigFileType
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpTwigTemplateUsageStubIndex
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigBlockIndexExtension
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigComponentUsageStubIndex
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigIncludeStubIndex
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TemplateInclude.TYPE as IncludeType
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil
+import fr.adrienbrault.idea.symfony2plugin.util.UxUtil
+import fr.adrienbrault.idea.symfony2plugin.util.VfsExUtil
 
 /**
  * Collects Twig template usages across a project: which PHP controllers render a template,
@@ -65,7 +71,7 @@ class TwigTemplateUsageCollector(private val project: Project) {
             true
         }, scope)
 
-        val csv = StringBuilder("template,controller,twig_include,twig_embed,twig_extends,twig_import,twig_use,twig_form_theme\n")
+        val csv = StringBuilder("template,controller,twig_include,twig_embed,twig_extends,twig_import,twig_use,twig_form_theme,twig_component\n")
 
         for (templateName in matchingTemplates) {
             // PHP controller usages
@@ -105,6 +111,25 @@ class TwigTemplateUsageCollector(private val project: Project) {
 
             val twigUses = useReverseMap[templateName] ?: emptySet<String>()
 
+            // Twig component usages: template → file → component names → files using the component
+            val twigComponents = sortedSetOf<String>()
+            val componentScope = GlobalSearchScope.getScopeRestrictedByFileTypes(GlobalSearchScope.allScope(project), TwigFileType.INSTANCE)
+            for (virtualFile in TwigUtil.getTemplateFiles(project, templateName)) {
+                val psiFile = PsiManager.getInstance(project).findFile(virtualFile)
+                if (psiFile !is TwigFile) continue
+
+                for (componentName in UxUtil.getTemplateComponentNames(psiFile)) {
+                    val normalized = TwigComponentUsageStubIndex.normalizeComponentName(componentName) ?: continue
+                    for (usageFile in index.getContainingFiles(TwigComponentUsageStubIndex.KEY, normalized, componentScope)) {
+                        if (usageFile == virtualFile) continue
+                        val relativePath = VfsExUtil.getRelativeProjectPath(project, usageFile)
+                        if (relativePath != null) {
+                            twigComponents.add(relativePath)
+                        }
+                    }
+                }
+            }
+
             csv.append("${escapeCsv(templateName)},")
                 .append("${escapeCsv(controllers.joinToString(";"))},")
                 .append("${escapeCsv(twigIncludes.joinToString(";"))},")
@@ -112,7 +137,8 @@ class TwigTemplateUsageCollector(private val project: Project) {
                 .append("${escapeCsv(twigExtends.joinToString(";"))},")
                 .append("${escapeCsv(twigImports.joinToString(";"))},")
                 .append("${escapeCsv(twigUses.joinToString(";"))},")
-                .append("${escapeCsv(twigFormThemes.joinToString(";"))}\n")
+                .append("${escapeCsv(twigFormThemes.joinToString(";"))},")
+                .append("${escapeCsv(twigComponents.joinToString(";"))}\n")
         }
 
         return csv.toString()
