@@ -90,6 +90,11 @@ public class McpSettingsForm implements Configurable {
             "list_twig_template_usages",
             "Twig Template Usages",
             "Lists usages of Twig templates across the project (controllers, includes, embeds, extends, imports)"
+        ),
+        new McpToolSetting(
+            "list_twig_components",
+            "Twig Components",
+            "Lists Symfony UX Twig components with partial-name search, template paths, syntax snippets, props, and blocks"
         )
     );
 
