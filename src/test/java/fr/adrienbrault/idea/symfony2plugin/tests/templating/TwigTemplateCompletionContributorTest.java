@@ -31,6 +31,35 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         assertCompletionContains(TwigFileType.INSTANCE, "{# bar F<caret> #}", "Foobar");
     }
 
+    public void testThatTypesTagProvidesClassCompletion() {
+        assertCompletionContains(TwigFileType.INSTANCE, "{% types { bar: 'F<caret>' } %}", "Foobar");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% types { bar: 'MyFoo\\Ca<caret>' } %}", "Car\\Bike\\Foobar");
+    }
+
+    public void testThatTypesTagProvidesClassCompletionWithOptionalMarker() {
+        assertCompletionContains(TwigFileType.INSTANCE, "{% types { bar?: 'F<caret>' } %}", "Foobar");
+    }
+
+    public void testThatTypesTagProvidesClassCompletionMultipleVariables() {
+        assertCompletionContains(TwigFileType.INSTANCE, "{% types { foo: 'DateTime', bar: 'F<caret>' } %}", "Foobar");
+    }
+
+    public void testThatTypesTagProvidesIncompleteIfStatementCompletion() {
+        assertCompletionContains(TwigFileType.INSTANCE, "\n" +
+                "{% types { foobar: '\\\\Foo\\\\Template\\\\Foobar' } %}\n" +
+                "{% if<caret> %}\n",
+            "if foobar.ready", "if foobar.readyStatus"
+        );
+    }
+
+    public void testThatTypesTagProvidesIncompleteForStatementCompletion() {
+        assertCompletionContains(TwigFileType.INSTANCE, "\n" +
+                "{% types { foobar: '\\\\Foo\\\\Template\\\\Foobar' } %}\n" +
+                "{% fo<caret> %}\n",
+            "for myfoo in foobar.myfoos", "for date in foobar.dates", "for item in foobar.items"
+        );
+    }
+
     public void testThatConstantProvidesCompletionForClassConstant() {
         assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('<caret>') }}", "CONST_FOO");
         assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('<caret>') }}", "FooConst::CAR", "FooEnum::FOOBAR");

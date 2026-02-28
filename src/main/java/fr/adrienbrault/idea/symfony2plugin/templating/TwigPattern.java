@@ -10,6 +10,7 @@ import com.intellij.psi.PsiErrorElement;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.tree.TokenSet;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
@@ -17,6 +18,7 @@ import com.jetbrains.twig.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -1129,6 +1131,35 @@ public class TwigPattern {
         @SuppressWarnings("unchecked")
         final ElementPattern<PsiComment>[] array = patterns.toArray(new ElementPattern[0]);
         return PlatformPatterns.or(array);
+    }
+
+    /**
+     * {% types { foo: '<caret>' } %}
+     * {% types { foo?: '<caret>' } %}
+     */
+    @NotNull
+    public static ElementPattern<PsiElement> getTypesTagTypeStringPattern() {
+        return PlatformPatterns
+            .psiElement(TwigTokenTypes.STRING_TEXT)
+            .with(new PatternCondition<>("types tag") {
+                @Override
+                public boolean accepts(@NotNull PsiElement element, ProcessingContext context) {
+                    // Find the TAG element at any parent level
+                    for (PsiElement parent = element.getParent(); parent != null; parent = parent.getParent()) {
+                        if (parent instanceof TwigCompositeElement && parent.getNode().getElementType() == TwigElementTypes.TAG) {
+                            PsiElement firstChild = parent.getFirstChild();
+                            if (firstChild != null) {
+                                PsiElement tagName = PsiElementUtils.getNextSiblingAndSkip(firstChild, TwigTokenTypes.TAG_NAME);
+                                if (tagName != null && "types".equals(tagName.getText())) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                    return false;
+                }
+            })
+            .withLanguage(TwigLanguage.INSTANCE);
     }
 
     /**

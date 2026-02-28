@@ -403,6 +403,14 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             new TypeDocClassCompletionParametersCompletionProvider()
         );
 
+        // {% types { foo: '<caret>' } %}
+        // {% types { foo?: '<caret>' } %}
+        extend(
+            CompletionType.BASIC,
+            TwigPattern.getTypesTagTypeStringPattern(),
+            new TypesTagClassCompletionProvider()
+        );
+
         // {# @Container Foo:Bar #}
         extend(
             CompletionType.BASIC,
@@ -1551,6 +1559,51 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 CompletionResultSet completionResultSet = result.withPrefixMatcher(substring);
                 PhpClassCompletionProvider phpClassCompletionProvider = new PhpClassCompletionProvider();
                 phpClassCompletionProvider.addCompletions(parameters, context, completionResultSet);
+            }
+        }
+    }
+
+    /**
+     * {% types { foo: '<caret>' } %}
+     * {% types { foo?: '<caret>' } %}
+     */
+    private static class TypesTagClassCompletionProvider extends CompletionProvider<CompletionParameters> {
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
+            PsiElement position = parameters.getPosition();
+            if (!Symfony2ProjectComponent.isEnabled(position)) {
+                return;
+            }
+
+            String prefix = result.getPrefixMatcher().getPrefix();
+
+            // Handle the escaped backslash prefix in Twig type strings
+            // User types: 'App\Foo' which becomes 'App\\Foo' in Twig
+            if (prefix.contains("\\")) {
+                int lastSlash = prefix.lastIndexOf("\\");
+                String namespace = "\\" + StringUtils.stripStart(prefix.substring(0, lastSlash + 1), "\\");
+
+                if (namespace.length() > 1) {
+                    String afterLastSlash = prefix.substring(lastSlash + 1);
+                    CompletionResultSet namespaceResult = result.withPrefixMatcher(afterLastSlash);
+                    Project project = position.getProject();
+
+                    Collection<PhpClass> classes = PhpIndexUtil.getPhpClassInsideNamespace(project, namespace);
+                    for (PhpClass phpClass : classes) {
+                        String fqn = phpClass.getFQN();
+                        String withoutNamespace = fqn.substring(namespace.length());
+                        namespaceResult.addElement(
+                            LookupElementBuilder.create(withoutNamespace)
+                                .withIcon(phpClass.getIcon())
+                                .withTailText(" [" + StringUtils.stripStart(fqn, "\\") + "]", true)
+                                .withInsertHandler(new TwigEscapedSlashInsertHandler())
+                        );
+                    }
+                }
+            } else {
+                CompletionResultSet classResult = result.withPrefixMatcher(prefix);
+                PhpClassCompletionProvider phpClassCompletionProvider = new PhpClassCompletionProvider();
+                phpClassCompletionProvider.addCompletions(parameters, context, classResult);
             }
         }
     }

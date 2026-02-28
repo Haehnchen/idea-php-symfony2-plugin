@@ -179,6 +179,11 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             targets.addAll(getVarClassGoto(psiElement));
         }
 
+        // {% types { user: '\Foo' } %}
+        if (TwigPattern.getTypesTagTypeStringPattern().accepts(psiElement)) {
+            targets.addAll(getTypesTagClassGoto(psiElement));
+        }
+
         // {# @see Foo.html.twig #}
         // {# @see \Class #}
         if (TwigPattern.getTwigDocSeePattern().accepts(psiElement)) {
@@ -424,6 +429,35 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         }
 
         return Collections.emptyList();
+    }
+
+    /**
+     * Extract class from {% types %} tag
+     *
+     * {% types { user: '\AppBundle\Entity\Foo' } %}
+     * {% types { user?: '\AppBundle\Entity\Foo[]' } %}
+     */
+    @NotNull
+    private Collection<PhpClass> getTypesTagClassGoto(@NotNull PsiElement psiElement) {
+        String typeString = psiElement.getText();
+
+        if (StringUtils.isBlank(typeString)) {
+            return Collections.emptyList();
+        }
+
+        // Remove quotes and unescape backslashes
+        String className = PsiElementUtils.trimQuote(typeString);
+        if (StringUtils.isBlank(className)) {
+            return Collections.emptyList();
+        }
+
+        // Unescape double backslashes: \\App\\User -> \App\User
+        className = className.replace("\\\\", "\\");
+
+        // Strip array notation: Foo[] -> Foo
+        className = StringUtils.stripEnd(className, "[]");
+
+        return PhpElementsUtil.getClassesInterface(psiElement.getProject(), className);
     }
 
     @NotNull
