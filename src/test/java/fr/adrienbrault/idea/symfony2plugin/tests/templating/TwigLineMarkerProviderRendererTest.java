@@ -58,4 +58,32 @@ public class TwigLineMarkerProviderRendererTest extends SymfonyLightCodeInsightF
         TwigLineMarkerProvider.UxComponentTargetsPsiElementListCellRenderer renderer = new TwigLineMarkerProvider.UxComponentTargetsPsiElementListCellRenderer();
         assertEquals("Banner", renderer.getElementText(componentElement));
     }
+
+    public void testRendersNestedComponentNameWithTagSyntax() {
+        PsiFile file = myFixture.configureByText(TwigFileType.INSTANCE, "<twig:Alert:Html:Foo_Bar_1 />");
+
+        XmlTag xmlTag = null;
+        for (PsiFile psiFile : file.getViewProvider().getAllFiles()) {
+            xmlTag = PsiTreeUtil.findChildOfType(psiFile, XmlTag.class);
+            if (xmlTag != null) {
+                break;
+            }
+        }
+
+        assertNotNull(xmlTag);
+
+        TwigLineMarkerProvider.UxComponentTargetsPsiElementListCellRenderer renderer = new TwigLineMarkerProvider.UxComponentTargetsPsiElementListCellRenderer();
+        assertEquals("Alert:Html:Foo_Bar_1", renderer.getElementText(xmlTag));
+    }
+
+    public void testRendersNestedComponentNameWithFunctionSyntax() {
+        PsiFile file = myFixture.configureByText(TwigFileType.INSTANCE, "{{ component('Alert:Html:Foo_Bar_1') }}");
+        PsiElement stringElement = java.util.Arrays.stream(PsiTreeUtil.collectElements(file, TwigPattern.getComponentPattern()::accepts))
+            .findFirst()
+            .orElse(null);
+        assertNotNull(stringElement);
+
+        TwigLineMarkerProvider.UxComponentTargetsPsiElementListCellRenderer renderer = new TwigLineMarkerProvider.UxComponentTargetsPsiElementListCellRenderer();
+        assertEquals("Alert:Html:Foo_Bar_1", renderer.getElementText(stringElement));
+    }
 }
