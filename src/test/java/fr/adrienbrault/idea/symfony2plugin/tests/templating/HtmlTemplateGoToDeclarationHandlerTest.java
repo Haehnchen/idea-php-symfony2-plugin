@@ -39,6 +39,17 @@ public class HtmlTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
         );
     }
 
+    public void testNavigationForAnonymousDirectoryIndexComponent() {
+        myFixture.copyFileToProject("ide-twig.json", "ide-twig.json");
+        myFixture.addFileToProject("templates/components/Nav/index.html.twig", "<nav></nav>");
+
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "<twig:Na<caret>v />",
+            PlatformPatterns.psiElement(TwigFile.class)
+        );
+    }
+
     /**
      * Test that navigation to {% props %} works when using component template directly.
      */

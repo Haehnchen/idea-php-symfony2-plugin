@@ -69,6 +69,15 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         assertCompletionContains(TwigFileType.INSTANCE, "{{ component('<caret>'}) }}", "Alert");
     }
 
+    public void testCompletionForAnonymousIndexComponent() {
+        myFixture.copyFileToProject("ide-twig.json", "ide-twig.json");
+        myFixture.addFileToProject("templates/components/Nav/index.html.twig", "<nav></nav>");
+        myFixture.addFileToProject("templates/components/Nav/Item.html.twig", "<li></li>");
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ component('<caret>'}) }}", "Nav", "Nav:Item");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ component('<caret>'}) }}", "Nav:index");
+    }
+
     public void testInsertHandlerForTwigFunctionWithStringParameter() {
         assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ a_test<caret> }}", "{{ a_test('') }}");
         assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ b_test<caret> }}", "{{ b_test('') }}");
