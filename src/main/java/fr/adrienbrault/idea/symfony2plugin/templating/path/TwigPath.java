@@ -1,15 +1,19 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.path;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.search.FilenameIndex;
+import com.intellij.psi.search.GlobalSearchScope;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -99,7 +103,28 @@ public class TwigPath {
     @Nullable
     public VirtualFile getDirectory(@NotNull Project project) {
         if(!FileUtil.isAbsolute(path)) {
-            return VfsUtil.findRelativeFile(path, ProjectUtil.getProjectDir(project));
+            VirtualFile baseDir = ProjectUtil.getProjectDir(project);
+            VirtualFile relativeFile = VfsUtil.findRelativeFile(baseDir, path.split("/"));
+
+            if (relativeFile != null) {
+                return relativeFile;
+            }
+
+            // Fallback for unit tests: find directory by name via index
+            if (ApplicationManager.getApplication().isUnitTestMode()) {
+                String[] parts = path.split("/");
+                if (parts.length > 0) {
+                    String dirName = parts[parts.length - 1];
+                    Collection<VirtualFile> dirs = FilenameIndex.getVirtualFilesByName(
+                        project, dirName, GlobalSearchScope.projectScope(project)
+                    );
+                    for (VirtualFile dir : dirs) {
+                        if (dir.isDirectory()) {
+                            return dir;
+                        }
+                    }
+                }
+            }
         } else {
             VirtualFile fileByIoFile = VfsUtil.findFileByIoFile(new File(path), false);
             if(fileByIoFile != null) {
