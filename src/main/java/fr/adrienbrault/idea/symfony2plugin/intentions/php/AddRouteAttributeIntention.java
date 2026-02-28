@@ -3,12 +3,11 @@ package fr.adrienbrault.idea.symfony2plugin.intentions.php;
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Iconable;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.IncorrectOperationException;
 import com.jetbrains.php.lang.psi.elements.Method;
@@ -132,6 +131,10 @@ public class AddRouteAttributeIntention extends PsiElementBaseIntentionAction im
     }
 
     public static boolean isControllerClass(@NotNull PhpClass phpClass) {
+        if (DumbService.isDumb(phpClass.getProject())) {
+            return false;
+        }
+
         if (phpClass.getName().endsWith("Controller")) {
             return true;
         }

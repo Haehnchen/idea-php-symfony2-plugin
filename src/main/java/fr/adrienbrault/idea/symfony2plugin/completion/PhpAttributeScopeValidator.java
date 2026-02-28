@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.completion;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
@@ -66,6 +67,10 @@ public class PhpAttributeScopeValidator {
      * @return true if we should provide attribute completions, false otherwise
      */
     public static boolean shouldProvideAttributeCompletions(@NotNull PsiElement element, @NotNull Project project) {
+        if (DumbService.isDumb(project)) {
+            return false;
+        }
+
         // Check if we're before a public method
         Method method = getMethod(element);
         if (method != null) {
