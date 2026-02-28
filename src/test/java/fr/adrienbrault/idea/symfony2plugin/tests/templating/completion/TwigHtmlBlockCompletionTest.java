@@ -6,10 +6,6 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see fr.adrienbrault.idea.symfony2plugin.templating.completion.TwigHtmlCompletionContributor
- *
- * Note: Block completion inside component tags requires full project integration
- * with proper VFS and indexing. Light tests don't support the template resolution
- * needed for this feature. Test manually with a real Symfony UX project.
  */
 public class TwigHtmlBlockCompletionTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
@@ -32,19 +28,53 @@ public class TwigHtmlBlockCompletionTest extends SymfonyLightCodeInsightFixtureT
         return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/completion/fixtures";
     }
 
-    /**
-     * Test that twig:block name attribute completion triggers inside component.
-     * Note: Full block name resolution requires template indexing which light tests don't support.
-     */
-    public void testBlockNameAttributePatternMatches() {
-        // Verify the pattern for <twig:block name="<caret>"> matches
-        // Actual block names (message, actions) require full template indexing
-        myFixture.configureByText(TwigFileType.INSTANCE,
-            "<twig:Alert><twig:block name=\"<caret>\"></twig:block></twig:Alert>");
-        myFixture.completeBasic();
+    public void testBlockTagCompletionInsideComponentRoot() {
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "<twig:Alert><caret></twig:Alert>",
+            "twig:block name=\"message\"",
+            "twig:block name=\"actions\""
+        );
+    }
 
-        // In light tests, block names won't be resolved from templates
-        // This test verifies the pattern matches and completion is triggered
-        // Real projects will show actual block names from component templates
+    public void testBlockTagCompletionInsideComponentRootWhenTypingTagName() {
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "<twig:Alert><t<caret></twig:Alert>",
+            "twig:block name=\"message\"",
+            "twig:block name=\"actions\""
+        );
+    }
+
+    public void testBlockTagCompletionNotInsideBlockNameAttribute() {
+        assertCompletionNotContains(
+            TwigFileType.INSTANCE,
+            "<twig:Alert><twig:block name=\"<caret>\"></twig:block></twig:Alert>",
+            "twig:block name=\"message\"",
+            "twig:block name=\"actions\""
+        );
+
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "<twig:Alert><twig:block name=\"<caret>\"></twig:block></twig:Alert>",
+            "message",
+            "actions"
+        );
+    }
+
+    public void testBlockTagCompletionNotInsideNestedTag() {
+        assertCompletionNotContains(
+            TwigFileType.INSTANCE,
+            "<twig:Alert><div><caret></div></twig:Alert>",
+            "twig:block name=\"message\"",
+            "twig:block name=\"actions\""
+        );
+
+        assertCompletionNotContains(
+            TwigFileType.INSTANCE,
+            "<twig:Alert><div><t<caret></div></twig:Alert>",
+            "twig:block name=\"message\"",
+            "twig:block name=\"actions\""
+        );
     }
 }
