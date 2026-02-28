@@ -4,11 +4,13 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.*;
 import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
+import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeIndexUtil;
@@ -31,6 +33,12 @@ public class TwigExtensionParser  {
     private static final Key<CachedValue<Map<String, TwigExtension>>> TEST_CACHE = new Key<>("TWIG_EXTENSIONS_TEST");
     private static final Key<CachedValue<Map<String, TwigExtension>>> FILTERS_CACHE = new Key<>("TWIG_EXTENSIONS_FILTERS");
     private static final Key<CachedValue<Map<String, TwigExtension>>> OPERATORS_CACHE = new Key<>("TWIG_EXTENSIONS_OPERATORS");
+
+    // Per-file caches for each extension type
+    private static final Key<CachedValue<Map<String, TwigExtension>>> FILE_FILTERS_CACHE = new Key<>("TWIG_FILE_FILTERS");
+    private static final Key<CachedValue<Map<String, TwigExtension>>> FILE_FUNCTIONS_CACHE = new Key<>("TWIG_FILE_FUNCTIONS");
+    private static final Key<CachedValue<Map<String, TwigExtension>>> FILE_TESTS_CACHE = new Key<>("TWIG_FILE_TESTS");
+    private static final Key<CachedValue<Map<String, TwigExtension>>> FILE_OPERATORS_CACHE = new Key<>("TWIG_FILE_OPERATORS");
 
     public enum TwigExtensionType {
         FUNCTION_METHOD, FUNCTION_NODE, SIMPLE_FUNCTION, FILTER, SIMPLE_TEST, OPERATOR
@@ -71,7 +79,7 @@ public class TwigExtensionParser  {
         return CachedValuesManager.getManager(project).getCachedValue(
             project,
             OPERATORS_CACHE,
-            () -> CachedValueProvider.Result.create(parseOperators(TwigUtil.getTwigExtensionClasses(project)), PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE)),
+            () -> CachedValueProvider.Result.create(parseOperators(project, TwigUtil.getTwigExtensionClasses(project)), PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE)),
             false
         );
     }
@@ -80,22 +88,38 @@ public class TwigExtensionParser  {
     private static Map<String, TwigExtension> parseFilters(@NotNull Project project, @NotNull Collection<PhpClass> phpClasses) {
         Map<String, TwigExtension> extensions = new HashMap<>();
 
+        // Collect unique files
+        Set<PsiFile> files = new HashSet<>();
         for (PhpClass phpClass : phpClasses) {
-            Method method = phpClass.findMethodByName("getFilters");
-            if (method != null) {
-                final PhpClass containingClass = method.getContainingClass();
-                if (containingClass == null) {
-                    continue;
-                }
-
-                for (NewExpression newExpression : PhpElementsUtil.collectNewExpressionsInsideControlFlow(method)) {
-                    TwigFilterVisitor.visitNewExpression(newExpression, method, extensions, containingClass);
-                }
+            PsiFile file = phpClass.getContainingFile();
+            if (file instanceof PhpFile) {
+                files.add(file);
             }
         }
 
+        // Parse each file (cached per file for filters only)
+        for (PsiFile file : files) {
+            Map<String, TwigExtension> fileExtensions = CachedValuesManager.getCachedValue(file, FILE_FILTERS_CACHE, () -> {
+                Map<String, TwigExtension> result = new HashMap<>();
+                // Resolve classes fresh from file inside cache provider
+                for (PhpClass phpClass : PhpPsiUtil.findAllClasses((PhpFile) file)) {
+                    Method method = phpClass.findMethodByName("getFilters");
+                    if (method != null) {
+                        PhpClass containingClass = method.getContainingClass();
+                        if (containingClass != null) {
+                            for (NewExpression newExpression : PhpElementsUtil.collectNewExpressionsInsideControlFlow(method)) {
+                                TwigFilterVisitor.visitNewExpression(newExpression, method, result, containingClass);
+                            }
+                        }
+                    }
+                }
+                return CachedValueProvider.Result.create(result, file);
+            });
+
+            extensions.putAll(fileExtensions);
+        }
+
         // Process AsTwigFilter attributes from index
-        // Index stores: [class FQN, method name, filter name]
         for (List<String> data : PhpAttributeIndexUtil.getAttributeData(project, "\\Twig\\Attribute\\AsTwigFilter")) {
             if (data.size() >= 3) {
                 String filterName = data.get(2);
@@ -111,22 +135,38 @@ public class TwigExtensionParser  {
     private static Map<String, TwigExtension> parseFunctions(@NotNull Project project, @NotNull Collection<PhpClass> phpClasses) {
         Map<String, TwigExtension> extensions = new HashMap<>();
 
+        // Collect unique files
+        Set<PsiFile> files = new HashSet<>();
         for (PhpClass phpClass : phpClasses) {
-            Method method = phpClass.findMethodByName("getFunctions");
-            if (method != null) {
-                final PhpClass containingClass = method.getContainingClass();
-                if (containingClass == null) {
-                    continue;
-                }
-
-                for (NewExpression newExpression : PhpElementsUtil.collectNewExpressionsInsideControlFlow(method)) {
-                    TwigFunctionVisitor.visitNewExpression(newExpression, method, extensions, containingClass);
-                }
+            PsiFile file = phpClass.getContainingFile();
+            if (file instanceof PhpFile) {
+                files.add(file);
             }
         }
 
+        // Parse each file (cached per file for functions only)
+        for (PsiFile file : files) {
+            Map<String, TwigExtension> fileExtensions = CachedValuesManager.getCachedValue(file, FILE_FUNCTIONS_CACHE, () -> {
+                Map<String, TwigExtension> result = new HashMap<>();
+                // Resolve classes fresh from file inside cache provider
+                for (PhpClass phpClass : PhpPsiUtil.findAllClasses((PhpFile) file)) {
+                    Method method = phpClass.findMethodByName("getFunctions");
+                    if (method != null) {
+                        PhpClass containingClass = method.getContainingClass();
+                        if (containingClass != null) {
+                            for (NewExpression newExpression : PhpElementsUtil.collectNewExpressionsInsideControlFlow(method)) {
+                                TwigFunctionVisitor.visitNewExpression(newExpression, method, result, containingClass);
+                            }
+                        }
+                    }
+                }
+                return CachedValueProvider.Result.create(result, file);
+            });
+
+            extensions.putAll(fileExtensions);
+        }
+
         // Process AsTwigFunction attributes from index
-        // Index stores: [class FQN, method name, function name]
         for (List<String> data : PhpAttributeIndexUtil.getAttributeData(project, "\\Twig\\Attribute\\AsTwigFunction")) {
             if (data.size() >= 3) {
                 String functionName = data.get(2);
@@ -142,17 +182,35 @@ public class TwigExtensionParser  {
     private static Map<String, TwigExtension> parseTests(@NotNull Project project, @NotNull Collection<PhpClass> phpClasses) {
         Map<String, TwigExtension> extensions = new HashMap<>();
 
+        // Collect unique files
+        Set<PsiFile> files = new HashSet<>();
         for (PhpClass phpClass : phpClasses) {
-            Method method = phpClass.findMethodByName("getTests");
-            if (method != null) {
-                for (NewExpression newExpression : PhpElementsUtil.collectNewExpressionsInsideControlFlow(method)) {
-                    TwigSimpleTestVisitor.visitNewExpression(newExpression, extensions);
-                }
+            PsiFile file = phpClass.getContainingFile();
+            if (file instanceof PhpFile) {
+                files.add(file);
             }
         }
 
+        // Parse each file (cached per file for tests only)
+        for (PsiFile file : files) {
+            Map<String, TwigExtension> fileExtensions = CachedValuesManager.getCachedValue(file, FILE_TESTS_CACHE, () -> {
+                Map<String, TwigExtension> result = new HashMap<>();
+                // Resolve classes fresh from file inside cache provider
+                for (PhpClass phpClass : PhpPsiUtil.findAllClasses((PhpFile) file)) {
+                    Method method = phpClass.findMethodByName("getTests");
+                    if (method != null) {
+                        for (NewExpression newExpression : PhpElementsUtil.collectNewExpressionsInsideControlFlow(method)) {
+                            TwigSimpleTestVisitor.visitNewExpression(newExpression, result);
+                        }
+                    }
+                }
+                return CachedValueProvider.Result.create(result, file);
+            });
+
+            extensions.putAll(fileExtensions);
+        }
+
         // Process AsTwigTest attributes from index
-        // Index stores: [class FQN, method name, test name]
         for (List<String> data : PhpAttributeIndexUtil.getAttributeData(project, "\\Twig\\Attribute\\AsTwigTest")) {
             if (data.size() >= 3) {
                 String testName = data.get(2);
@@ -165,14 +223,33 @@ public class TwigExtensionParser  {
     }
 
     @NotNull
-    private static Map<String, TwigExtension> parseOperators(@NotNull Collection<PhpClass> phpClasses) {
+    private static Map<String, TwigExtension> parseOperators(@NotNull Project project, @NotNull Collection<PhpClass> phpClasses) {
         Map<String, TwigExtension> extensions = new HashMap<>();
 
+        // Collect unique files
+        Set<PsiFile> files = new HashSet<>();
         for (PhpClass phpClass : phpClasses) {
-            Method method = phpClass.findMethodByName("getOperators");
-            if (method != null) {
-                parseOperators(method, extensions);
+            PsiFile file = phpClass.getContainingFile();
+            if (file instanceof PhpFile) {
+                files.add(file);
             }
+        }
+
+        // Parse each file (cached per file for operators only)
+        for (PsiFile file : files) {
+            Map<String, TwigExtension> fileExtensions = CachedValuesManager.getCachedValue(file, FILE_OPERATORS_CACHE, () -> {
+                Map<String, TwigExtension> result = new HashMap<>();
+                // Resolve classes fresh from file inside cache provider
+                for (PhpClass phpClass : PhpPsiUtil.findAllClasses((PhpFile) file)) {
+                    Method method = phpClass.findMethodByName("getOperators");
+                    if (method != null) {
+                        parseOperators(method, result);
+                    }
+                }
+                return CachedValueProvider.Result.create(result, file);
+            });
+
+            extensions.putAll(fileExtensions);
         }
 
         return Collections.unmodifiableMap(extensions);
