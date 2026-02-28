@@ -78,6 +78,19 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
         assertNavigationMatch(TwigFileType.INSTANCE, "{# bar \\Date<caret>Time[] #}", PlatformPatterns.psiElement(PhpClass.class));
     }
 
+    public void testTypesTagClassGoto() {
+        assertNavigationMatch(TwigFileType.INSTANCE, "{% types { bar: '\\Date<caret>Time' } %}", PlatformPatterns.psiElement(PhpClass.class));
+        assertNavigationMatch(TwigFileType.INSTANCE, "{% types { bar: '\\Date<caret>Time[]' } %}", PlatformPatterns.psiElement(PhpClass.class));
+    }
+
+    public void testTypesTagClassGotoWithOptionalMarker() {
+        assertNavigationMatch(TwigFileType.INSTANCE, "{% types { bar?: '\\Date<caret>Time' } %}", PlatformPatterns.psiElement(PhpClass.class));
+    }
+
+    public void testTypesTagClassGotoMultipleVariables() {
+        assertNavigationMatch(TwigFileType.INSTANCE, "{% types { foo: 'DateTime', bar: '\\Date<caret>Time' } %}", PlatformPatterns.psiElement(PhpClass.class));
+    }
+
     public void testSeeTagGoto() {
         assertNavigationMatch(TwigFileType.INSTANCE, "{# @see \\Date<caret>Time #}", PlatformPatterns.psiElement(PhpClass.class));
         assertNavigationMatch(TwigFileType.INSTANCE, "{# @see Date<caret>Time #}", PlatformPatterns.psiElement(PhpClass.class));
