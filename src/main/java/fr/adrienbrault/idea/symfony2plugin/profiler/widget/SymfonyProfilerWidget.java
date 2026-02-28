@@ -20,6 +20,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -50,56 +52,61 @@ public class SymfonyProfilerWidget extends EditorBasedStatusBarPopup {
     }
 
     //constructs the actions for the widget popup
-    private DefaultActionGroup getActions(){
-        DefaultActionGroup actionGroup = new DefaultActionGroup("Symfony.Profiler", false);
-
+    private DefaultActionGroup getActions() {
         ProfilerIndexInterface index = ProfilerFactoryUtil.createIndex(getProject());
         if(index == null) {
-            return actionGroup;
+            return new DefaultActionGroup("Symfony.Profiler", false);
         }
 
-        List<ProfilerRequestInterface> requests = index.getRequests();
+        return buildActions(getProject(), index, index.getRequests());
+    }
 
-        Collection<AnAction> urlActions = new ArrayList<>();
-        Collection<AnAction> mailActions = new ArrayList<>();
+    static DefaultActionGroup buildActions(@NotNull Project project, @NotNull ProfilerIndexInterface index, @NotNull Collection<ProfilerRequestInterface> requests) {
+        DefaultActionGroup actionGroup = new DefaultActionGroup("Symfony.Profiler", false);
 
-        Map<String, AnAction> knownFormTypes = new HashMap<>();
-        Map<String, AnAction> knownController = new HashMap<>();
-        Map<String, AnAction> knownRoutes = new HashMap<>();
-        Map<String, AnAction> knownTemplates = new HashMap<>();
+        Collection<AnAction> urlActions = new ConcurrentLinkedQueue<>();
+        Collection<AnAction> mailActions = new ConcurrentLinkedQueue<>();
+
+        Map<String, AnAction> knownFormTypes = new ConcurrentHashMap<>();
+        Map<String, AnAction> knownController = new ConcurrentHashMap<>();
+        Map<String, AnAction> knownRoutes = new ConcurrentHashMap<>();
+        Map<String, AnAction> knownTemplates = new ConcurrentHashMap<>();
 
         requests.parallelStream().forEach(profilerRequest -> {
             urlActions.add(new SymfonyProfilerWidgetActions.UrlAction(index, profilerRequest));
             DefaultDataCollectorInterface collector = profilerRequest.getCollector(DefaultDataCollectorInterface.class);
             if (collector != null) {
                 String route = collector.getRoute();
-                if (route != null && !knownRoutes.containsKey(route)) {
-                    knownRoutes.put(route, new SymfonyProfilerWidgetActions.RouteAction(getProject(), route));
+                if (route != null) {
+                    knownRoutes.putIfAbsent(route, new SymfonyProfilerWidgetActions.RouteAction(project, route));
                 }
 
                 String template = collector.getTemplate();
-                if (template != null && !knownTemplates.containsKey(template)) {
-                    knownTemplates.put(template, new SymfonyProfilerWidgetActions.TemplateAction(getProject(), template));
+                if (template != null) {
+                    knownTemplates.putIfAbsent(template, new SymfonyProfilerWidgetActions.TemplateAction(project, template));
                 }
 
                 String controller = collector.getController();
-                if (controller != null && !knownController.containsKey(controller)) {
-                    knownController.put(controller, new SymfonyProfilerWidgetActions.MethodAction(getProject(), controller));
+                if (controller != null) {
+                    knownController.putIfAbsent(controller, new SymfonyProfilerWidgetActions.MethodAction(project, controller));
                 }
 
-                for (String formType : collector.getFormTypes()) {
-                    if (knownFormTypes.containsKey(formType)) {
-                        continue;
-                    }
+                Collection<String> formTypes = collector.getFormTypes();
+                if (formTypes != null) {
+                    for (String formType : formTypes) {
+                        if (formType == null || knownFormTypes.containsKey(formType)) {
+                            continue;
+                        }
 
-                    knownFormTypes.put(formType, new SymfonyProfilerWidgetActions.FormTypeAction(getProject(), formType));
+                        knownFormTypes.putIfAbsent(formType, new SymfonyProfilerWidgetActions.FormTypeAction(project, formType));
+                    }
                 }
             }
             MailCollectorInterface collectorMail = profilerRequest.getCollector(MailCollectorInterface.class);
             if (collectorMail != null) {
                 for (MailMessage message : collectorMail.getMessages()) {
                     String title = message.title();
-                    if (title.isBlank()) {
+                    if (title != null && !title.isBlank()) {
                         mailActions.add(new SymfonyProfilerWidgetActions.UrlAction(index, profilerRequest, message.panel())
                             .withIcon(Symfony2Icons.MAIL)
                             .withText(String.format("(%s) %s", profilerRequest.getHash(), StringUtils.abbreviate(title, 40))));
