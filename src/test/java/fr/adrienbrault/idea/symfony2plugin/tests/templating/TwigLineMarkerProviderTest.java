@@ -4,13 +4,14 @@ import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.daemon.LineMarkerProviders;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiRecursiveElementVisitor;
-import com.jetbrains.twig.TwigFile;
-import com.jetbrains.twig.TwigFileType;
-import fr.adrienbrault.idea.symfony2plugin.templating.TwigLineMarkerProvider;
+import com.jetbrains.php.lang.PhpFileType;
+import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.twig.TwigLanguage;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
@@ -171,6 +172,216 @@ public class TwigLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTe
 
         // Should have include line marker
         assertFalse("Should have include line marker", lineMarkers.isEmpty());
+    }
+
+    /**
+     * Test that controller line marker is attached to templates rendered by controllers.
+     * When $this->render('template.html.twig') is called, the template should have
+     * a line marker allowing navigation to the controller method.
+     */
+    public void testControllerRenderLineMarker() {
+        // Create a controller that renders a template
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Controller;\n" +
+            "\n" +
+            "class HomeController\n" +
+            "{\n" +
+            "    public function index()\n" +
+            "    {\n" +
+            "        return $this->render('home/index.html.twig');\n" +
+            "    }\n" +
+            "}\n"
+        );
+
+        // Create the template that is rendered
+        PsiFile templateFile = myFixture.addFileToProject(
+            "templates/home/index.html.twig",
+            "{% extends 'base.html.twig' %}\n" +
+            "{% block content %}Home{% endblock %}"
+        );
+
+        List<PsiElement> elements = collectPsiElementsRecursive(templateFile);
+        Collection<LineMarkerInfo<?>> lineMarkers = collectLineMarkers(elements);
+
+        // Should have a line marker for controller navigation
+        assertFalse("Should have controller line marker", lineMarkers.isEmpty());
+    }
+
+    /**
+     * Test that controller line marker works with renderView().
+     */
+    public void testControllerRenderViewLineMarker() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Controller;\n" +
+            "\n" +
+            "class PageController\n" +
+            "{\n" +
+            "    public function show()\n" +
+            "    {\n" +
+            "        $content = $this->renderView('page/show.html.twig');\n" +
+            "    }\n" +
+            "}\n"
+        );
+
+        PsiFile templateFile = myFixture.addFileToProject(
+            "templates/page/show.html.twig",
+            "<div>Page content</div>"
+        );
+
+        List<PsiElement> elements = collectPsiElementsRecursive(templateFile);
+        Collection<LineMarkerInfo<?>> lineMarkers = collectLineMarkers(elements);
+
+        assertFalse("Should have controller line marker for renderView", lineMarkers.isEmpty());
+    }
+
+    /**
+     * Test that controller line marker works with @Template annotation.
+     */
+    public void testTemplateAnnotationLineMarker() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Controller;\n" +
+            "\n" +
+            "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;\n" +
+            "\n" +
+            "class ArticleController\n" +
+            "{\n" +
+            "    /**\n" +
+            "     * @Template(\"article/list.html.twig\")\n" +
+            "     */\n" +
+            "    public function listAction()\n" +
+            "    {\n" +
+            "    }\n" +
+            "}\n"
+        );
+
+        PsiFile templateFile = myFixture.addFileToProject(
+            "templates/article/list.html.twig",
+            "{% for article in articles %}{{ article.title }}{% endfor %}"
+        );
+
+        List<PsiElement> elements = collectPsiElementsRecursive(templateFile);
+        Collection<LineMarkerInfo<?>> lineMarkers = collectLineMarkers(elements);
+
+        assertFalse("Should have controller line marker for @Template annotation", lineMarkers.isEmpty());
+    }
+
+    /**
+     * Test that controller line marker works with #[Template] PHP 8 attribute.
+     */
+    public void testTemplateAttributeLineMarker() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Controller;\n" +
+            "\n" +
+            "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;\n" +
+            "\n" +
+            "class ProductController\n" +
+            "{\n" +
+            "    #[Template('product/detail.html.twig')]\n" +
+            "    public function detailAction()\n" +
+            "    {\n" +
+            "    }\n" +
+            "}\n"
+        );
+
+        PsiFile templateFile = myFixture.addFileToProject(
+            "templates/product/detail.html.twig",
+            "<h1>{{ product.name }}</h1>"
+        );
+
+        List<PsiElement> elements = collectPsiElementsRecursive(templateFile);
+        Collection<LineMarkerInfo<?>> lineMarkers = collectLineMarkers(elements);
+
+        assertFalse("Should have controller line marker for #[Template] attribute", lineMarkers.isEmpty());
+    }
+
+    /**
+     * Test that controller line marker works with @Template() using guessing.
+     */
+    public void testTemplateAnnotationGuessingLineMarker() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Controller;\n" +
+            "\n" +
+            "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;\n" +
+            "\n" +
+            "class UserController\n" +
+            "{\n" +
+            "    /**\n" +
+            "     * @Template()\n" +
+            "     */\n" +
+            "    public function profileAction()\n" +
+            "    {\n" +
+            "    }\n" +
+            "}\n"
+        );
+
+        // Template should be guessed as user/profile.html.twig
+        PsiFile templateFile = myFixture.addFileToProject(
+            "templates/user/profile.html.twig",
+            "<div>User Profile</div>"
+        );
+
+        List<PsiElement> elements = collectPsiElementsRecursive(templateFile);
+        Collection<LineMarkerInfo<?>> lineMarkers = collectLineMarkers(elements);
+
+        assertFalse("Should have controller line marker for guessed template", lineMarkers.isEmpty());
+    }
+
+    /**
+     * Test that controller line marker navigates to the correct method target.
+     */
+    public void testControllerLineMarkerNavigatesToMethod() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Controller;\n" +
+            "\n" +
+            "class DashboardController\n" +
+            "{\n" +
+            "    public function index()\n" +
+            "    {\n" +
+            "        return $this->render('dashboard/index.html.twig');\n" +
+            "    }\n" +
+            "}\n"
+        );
+
+        PsiFile templateFile = myFixture.addFileToProject(
+            "templates/dashboard/index.html.twig",
+            "<h1>Dashboard</h1>"
+        );
+
+        assertLineMarker(templateFile, new LineMarker.TargetAcceptsPattern(
+            "Navigate to controller",
+            PlatformPatterns.psiElement(Method.class).withName("index")
+        ));
+    }
+
+    /**
+     * Test that @Template annotation line marker navigates to controller method.
+     */
+    public void testTemplateAnnotationLineMarkerNavigatesToMethod() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Controller;\n" +
+            "\n" +
+            "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;\n" +
+            "\n" +
+            "class NewsController\n" +
+            "{\n" +
+            "    /**\n" +
+            "     * @Template(\"news/latest.html.twig\")\n" +
+            "     */\n" +
+            "    public function latestAction()\n" +
+            "    {\n" +
+            "    }\n" +
+            "}\n"
+        );
+
+        PsiFile templateFile = myFixture.addFileToProject(
+            "templates/news/latest.html.twig",
+            "{% for news in newsItems %}{{ news.title }}{% endfor %}"
+        );
+
+        assertLineMarker(templateFile, new LineMarker.TargetAcceptsPattern(
+            "Navigate to controller",
+            PlatformPatterns.psiElement(Method.class).withName("latestAction")
+        ));
     }
 
     @NotNull
