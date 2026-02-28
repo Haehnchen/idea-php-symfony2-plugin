@@ -9,7 +9,9 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.psi.xml.XmlTokenType;
 import com.intellij.util.Consumer;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
@@ -276,6 +278,37 @@ public class TwigHtmlCompletionContributor extends CompletionContributor {
 
                     if (componentTag == null) {
                         return;
+                    }
+
+                    // Only offer block tag insertion at root level of the component body:
+                    // - <twig:Alert><caret></twig:Alert>
+                    // - <twig:Alert><t<caret></twig:Alert>
+                    // Not inside nested tag content/attributes (eg: <twig:block name="<caret>">)
+                    XmlTag innerMostTag = PsiTreeUtil.getParentOfType(position, XmlTag.class, false);
+                    if (innerMostTag == null) {
+                        return;
+                    }
+
+                    if (PsiTreeUtil.getParentOfType(position, XmlAttribute.class, false) != null) {
+                        return;
+                    }
+
+                    if (!componentTag.equals(innerMostTag)) {
+                        XmlTag parent = innerMostTag.getParentTag();
+                        if (!componentTag.equals(parent)) {
+                            return;
+                        }
+
+                        // Allow only direct child tag-name typing like "<t<caret>" at component root.
+                        if (position.getNode().getElementType() != XmlTokenType.XML_NAME) {
+                            return;
+                        }
+                    }
+
+                    String prefix = resultSet.getPrefixMatcher().getPrefix();
+                    int lastTagStart = prefix.lastIndexOf('<');
+                    if (lastTagStart >= 0) {
+                        resultSet = resultSet.withPrefixMatcher(prefix.substring(lastTagStart + 1));
                     }
 
                     String tagName = componentTag.getName();
