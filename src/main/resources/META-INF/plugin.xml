@@ -32,6 +32,15 @@
     <li>(Optional) For <b>XLIFF translations</b> key navigation install <a href="https://plugins.jetbrains.com/plugin/13673">Localization</a> or add "*.xlf" / "*.xliff" to XML "Editor" -> "File Types"</li>
 </ul>
 
+<h2>AI / MCP Integration</h2>
+<p>This plugin extends <b>IntelliJ/PhpStorm built-in MCP server</b> enabling intelligent code assistance with Symfony project context.</p>
+
+<p><b>Setup:</b></p>
+<ol>
+    <li>Enable the built-in MCP server in IntelliJ/PhpStorm: <b>Settings → Tools → Model Context Protocol → Enable MCP Server</b></li>
+    <li>Configure your AI assistant (e.g., Claude Code) to connect to the IntelliJ MCP server</li>
+</ol>
+
 <h2>Features</h2>
 
 <h3>Dependency Injection Container</h3>
