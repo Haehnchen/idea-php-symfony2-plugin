@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.templating.completion;
 
 import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -50,6 +51,60 @@ public class TwigHtmlCompletionContributorTest extends SymfonyLightCodeInsightFi
             "test.html.twig",
             "{{ 'foo'|trans(null, 'symfony') }}<input value=\"symfony_foobar<caret>\">",
             "{{ 'foo'|trans(null, 'symfony') }}<input value=\"{{ 'symfony_foobar'|trans({}, 'symfony') }}\">"
+        );
+    }
+
+    /**
+     * Test that prop completion pattern works for twig component tags.
+     */
+    public void testThatPropCompletionPatternWorksForTwigComponentTag() {
+        myFixture.copyFileToProject("twig_component.yaml", "config/packages/twig_component.yaml");
+        myFixture.copyFileToProject("ide-twig.json", "ide-twig.json");
+        myFixture.copyFileToProject("PropsAlert.html.twig", "templates/components/PropsAlert.html.twig");
+
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "<twig:PropsAlert ic<caret> />",
+            "icon"
+        );
+        assertCompletionNotContains(
+            TwigFileType.INSTANCE,
+            "<twig:PropsAlert ic<caret> />",
+            "type", "message"
+        );
+    }
+
+    /**
+     * Test that prop completion provides template props from {% props %} definitions.
+     */
+    public void testThatPropCompletionProvidesTemplatePropsForTwigComponentTag() {
+        // Setup configuration files
+        myFixture.copyFileToProject("twig_component.yaml", "config/packages/twig_component.yaml");
+        myFixture.copyFileToProject("ide-twig.json", "ide-twig.json");
+        myFixture.copyFileToProject("PropsAlert.html.twig", "templates/components/PropsAlert.html.twig");
+
+        // Test completion for props in twig component tag attribute position
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "<twig:PropsAlert <caret> />",
+            "icon", "type", "message"
+        );
+    }
+
+    /**
+     * Test that prop completion works with colon prefix for named blocks.
+     */
+    public void testThatPropCompletionProvidesColonPrefixedProps() {
+        // Setup configuration files
+        myFixture.copyFileToProject("twig_component.yaml", "config/packages/twig_component.yaml");
+        myFixture.copyFileToProject("ide-twig.json", "ide-twig.json");
+        myFixture.copyFileToProject("PropsAlert.html.twig", "templates/components/PropsAlert.html.twig");
+
+        // Test completion with colon prefix
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "<twig:PropsAlert :<caret> />",
+            ":icon", ":type", ":message"
         );
     }
 

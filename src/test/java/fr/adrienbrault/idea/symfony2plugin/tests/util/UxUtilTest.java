@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.util;
 
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
@@ -15,6 +16,7 @@ import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.TwigComponentNamespace;
+import kotlin.Pair;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -284,5 +286,100 @@ public class UxUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         List<String> props4 = new ArrayList<>();
         UxUtil.visitComponentTemplateProps(twigFile4, pair -> props4.add(pair.getFirst()));
         assertContainsElements(props4, "icon_foobar_4");
+    }
+
+    /**
+     * Test that visitComponentTemplateProps returns PsiElements that can be navigated to.
+     */
+    public void testVisitComponentTemplatePropsReturnsPsiElements() {
+        TwigFile twigFile = (TwigFile) myFixture.configureByText(
+            TwigFileType.INSTANCE,
+            "{% props icon, type %}"
+        );
+
+        List<Pair<String, PsiElement>> propPairs = new ArrayList<>();
+        UxUtil.visitComponentTemplateProps(twigFile, propPairs::add);
+
+        assertEquals("Should have 2 props", 2, propPairs.size());
+
+        for (Pair<String, PsiElement> pair : propPairs) {
+            assertNotNull("Prop name should not be null", pair.getFirst());
+            assertNotNull("Prop PsiElement should not be null", pair.getSecond());
+            assertTrue("Prop name should not be blank", !pair.getFirst().isBlank());
+        }
+
+        // Verify prop names
+        List<String> propNames = propPairs.stream().map(Pair::getFirst).collect(Collectors.toList());
+        assertContainsElements(propNames, "icon", "type");
+    }
+
+    /**
+     * Test that visitComponentTemplateProps handles complex prop names.
+     */
+    public void testVisitComponentTemplatePropsWithComplexNames() {
+        TwigFile twigFile = (TwigFile) myFixture.configureByText(
+            TwigFileType.INSTANCE,
+            "{% props icon_type, messageText, is_active, data_id %}"
+        );
+
+        List<String> props = new ArrayList<>();
+        UxUtil.visitComponentTemplateProps(twigFile, pair -> props.add(pair.getFirst()));
+
+        assertContainsElements(props, "icon_type", "messageText", "is_active", "data_id");
+        assertEquals("Should have 4 props", 4, props.size());
+    }
+
+    /**
+     * Test that visitComponentTemplateProps handles props with various default values.
+     */
+    public void testVisitComponentTemplatePropsWithVariousDefaults() {
+        // Test with null default
+        TwigFile twigFile1 = (TwigFile) myFixture.configureByText(
+            TwigFileType.INSTANCE,
+            "{% props icon = null %}"
+        );
+
+        List<String> props1 = new ArrayList<>();
+        UxUtil.visitComponentTemplateProps(twigFile1, pair -> props1.add(pair.getFirst()));
+        assertContainsElements(props1, "icon");
+
+        // Test with numeric default
+        TwigFile twigFile2 = (TwigFile) myFixture.configureByText(
+            TwigFileType.INSTANCE,
+            "{% props count = 0 %}"
+        );
+
+        List<String> props2 = new ArrayList<>();
+        UxUtil.visitComponentTemplateProps(twigFile2, pair -> props2.add(pair.getFirst()));
+        assertContainsElements(props2, "count");
+
+        // Test with boolean default
+        TwigFile twigFile3 = (TwigFile) myFixture.configureByText(
+            TwigFileType.INSTANCE,
+            "{% props enabled = true %}"
+        );
+
+        List<String> props3 = new ArrayList<>();
+        UxUtil.visitComponentTemplateProps(twigFile3, pair -> props3.add(pair.getFirst()));
+        assertContainsElements(props3, "enabled");
+    }
+
+    /**
+     * Test that visitComponentTemplateProps ignores non-props tags.
+     */
+    public void testVisitComponentTemplatePropsIgnoresOtherTags() {
+        TwigFile twigFile = (TwigFile) myFixture.configureByText(
+            TwigFileType.INSTANCE,
+            "{% set foo = 'bar' %}\n" +
+            "{% props icon, type %}\n" +
+            "{% if icon %}{{ icon }}{% endif %}"
+        );
+
+        List<String> props = new ArrayList<>();
+        UxUtil.visitComponentTemplateProps(twigFile, pair -> props.add(pair.getFirst()));
+
+        // Should only find props, not other variables
+        assertContainsElements(props, "icon", "type");
+        assertEquals("Should only have 2 props", 2, props.size());
     }
 }

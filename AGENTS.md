@@ -56,6 +56,12 @@ The codebase is organized into **28 major packages** under `src/main/java/fr/adr
 
 Test files use dummy fixtures via `myFixture.addFileToProject()` to simulate Symfony project structures.
 
+### Unit Test VFS Limitations
+
+- Light tests use in-memory VFS (`temp://` protocol) - standard path resolution doesn't work
+- `TwigPath.getDirectory()` has a fallback using `FilenameIndex.getVirtualFilesByName()` to find directories by name
+- For template path tests: copy fixtures first so they're available to the index
+
 ## Freemium Model
 
 - All features in the GitHub repository are free

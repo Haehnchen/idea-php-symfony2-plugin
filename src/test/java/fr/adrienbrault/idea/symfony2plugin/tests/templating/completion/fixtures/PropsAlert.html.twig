@@ -1,0 +1,5 @@
+{% props icon, type, message = 'Default message' %}
+<div class="alert alert-{{ type }}">
+    {% if icon %}<i class="icon-{{ icon }}"></i>{% endif %}
+    {{ message }}
+</div>
