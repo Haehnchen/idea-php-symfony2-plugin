@@ -10,11 +10,13 @@ import com.intellij.mcpserver.project
 import com.intellij.openapi.application.readAction
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
 import fr.adrienbrault.idea.symfony2plugin.mcp.McpUtil
-import fr.adrienbrault.idea.symfony2plugin.mcp.TwigComponentCollector
+import fr.adrienbrault.idea.symfony2plugin.mcp.collector.TwigComponentCollector
 import kotlinx.coroutines.currentCoroutineContext
 
 /**
  * MCP toolset for Symfony UX Twig components.
+ *
+ * @author Daniel Espendiller <daniel@espendiller.net>
  */
 class TwigComponentMcpToolset : McpToolset {
 

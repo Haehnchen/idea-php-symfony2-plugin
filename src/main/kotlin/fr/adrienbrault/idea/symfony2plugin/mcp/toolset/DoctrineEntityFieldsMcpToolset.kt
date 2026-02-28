@@ -9,11 +9,9 @@ import com.intellij.mcpserver.mcpFail
 import com.intellij.mcpserver.project
 import com.intellij.openapi.application.readAction
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
-import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper
+import fr.adrienbrault.idea.symfony2plugin.mcp.collector.DoctrineEntityFieldsCollector
 import fr.adrienbrault.idea.symfony2plugin.mcp.McpUtil
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil
 import kotlinx.coroutines.currentCoroutineContext
-import org.apache.commons.lang3.StringUtils
 
 /**
  * MCP toolset for Doctrine entity field information.
@@ -60,40 +58,7 @@ class DoctrineEntityFieldsMcpToolset : McpToolset {
         }
 
         return readAction {
-            val normalizedClassName = StringUtils.stripStart(className, "\\")
-
-            // Resolve the class name to PhpClass
-            val phpClass = PhpElementsUtil.getClassInterface(project, normalizedClassName)
-                ?: mcpFail("Entity '$className' not found. Make sure the class exists.")
-
-            // Get model fields using EntityHelper
-            val fields = EntityHelper.getModelFields(phpClass)
-
-            if (fields.isEmpty()) {
-                mcpFail("Entity '$className' has no fields or is not a valid Doctrine entity with metadata.")
-            }
-
-            val csv = StringBuilder("name,column,type,relation,relationType,enumType,propertyType\n")
-
-            fields.forEach { field ->
-                csv.append("${escapeCsv(field.name)},")
-                csv.append("${escapeCsv(field.column ?: "")},")
-                csv.append("${escapeCsv(field.typeName ?: "")},")
-                csv.append("${escapeCsv(field.relation ?: "")},")
-                csv.append("${escapeCsv(field.relationType ?: "")},")
-                csv.append("${escapeCsv(field.enumType ?: "")},")
-                csv.append("${escapeCsv(field.propertyTypes.joinToString("|"))}\n")
-            }
-
-            csv.toString()
-        }
-    }
-
-    private fun escapeCsv(value: String): String {
-        return if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
-            "\"${value.replace("\"", "\"\"")}\""
-        } else {
-            value
+            DoctrineEntityFieldsCollector(project).collect(className)
         }
     }
 }

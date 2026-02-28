@@ -10,8 +10,7 @@ import com.intellij.mcpserver.project
 import com.intellij.openapi.application.readAction
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
 import fr.adrienbrault.idea.symfony2plugin.mcp.McpUtil
-import fr.adrienbrault.idea.symfony2plugin.profiler.collector.DefaultDataCollectorInterface
-import fr.adrienbrault.idea.symfony2plugin.profiler.factory.ProfilerFactoryUtil
+import fr.adrienbrault.idea.symfony2plugin.mcp.collector.SymfonyProfilerRequestsCollector
 import kotlinx.coroutines.currentCoroutineContext
 
 /**
@@ -44,10 +43,13 @@ class ProfilerRequestsMcpToolset : McpToolset {
     suspend fun list_profiler_requests(
         @McpDescription("Optional: Filter by URL (supports partial matching, case-insensitive)")
         url: String? = null,
+
         @McpDescription("Optional: Filter by profiler token/hash (supports partial matching, case-insensitive)")
         hash: String? = null,
+
         @McpDescription("Optional: Filter by controller class or method (supports partial matching, case-insensitive)")
         controller: String? = null,
+
         @McpDescription("Optional: Filter by route name (supports partial matching, case-insensitive)")
         route: String? = null
     ): String {
@@ -60,56 +62,7 @@ class ProfilerRequestsMcpToolset : McpToolset {
         McpUtil.checkToolEnabled(project, "list_profiler_requests")
 
         return readAction {
-            val profilerIndex = ProfilerFactoryUtil.createIndex(project)
-                ?: mcpFail("No profiler index available. Make sure the Symfony profiler is enabled and accessible.")
-
-            val requests = profilerIndex.requests
-
-            if (requests.isEmpty()) {
-                mcpFail("No profiler requests found. Make sure the Symfony profiler is enabled and has recorded requests.")
-            }
-
-            val csv = StringBuilder("hash,method,url,statusCode,profilerUrl,controller,route,template,formTypes\n")
-
-            var count = 0
-            for (request in requests) {
-                if (count >= 10) break
-
-                val collector = request.getCollector(DefaultDataCollectorInterface::class.java)
-
-                val controllerValue = collector?.controller ?: ""
-                val routeValue = collector?.route ?: ""
-                val template = collector?.template ?: ""
-                val formTypes = collector?.formTypes?.joinToString("|") ?: ""
-
-                // Apply filters (all optional, partial match, case-insensitive)
-                if (url != null && !request.url.contains(url, ignoreCase = true)) continue
-                if (hash != null && !request.hash.contains(hash, ignoreCase = true)) continue
-                if (controller != null && !controllerValue.contains(controller, ignoreCase = true)) continue
-                if (route != null && !routeValue.contains(route, ignoreCase = true)) continue
-
-                csv.append("${escapeCsv(request.hash)},")
-                csv.append("${escapeCsv(request.method ?: "")},")
-                csv.append("${escapeCsv(request.url)},")
-                csv.append("${request.statusCode},")
-                csv.append("${escapeCsv(request.profilerUrl)},")
-                csv.append("${escapeCsv(controllerValue)},")
-                csv.append("${escapeCsv(routeValue)},")
-                csv.append("${escapeCsv(template)},")
-                csv.append("${escapeCsv(formTypes)}\n")
-
-                count++
-            }
-
-            csv.toString()
-        }
-    }
-
-    private fun escapeCsv(value: String): String {
-        return if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
-            "\"${value.replace("\"", "\"\"")}\""
-        } else {
-            value
+            SymfonyProfilerRequestsCollector(project).collect(url, hash, controller, route)
         }
     }
 }

@@ -8,12 +8,9 @@ import com.intellij.mcpserver.annotations.McpTool
 import com.intellij.mcpserver.mcpFail
 import com.intellij.mcpserver.project
 import com.intellij.openapi.application.readAction
-import com.intellij.openapi.util.io.FileUtil
-import com.intellij.openapi.vfs.VfsUtil
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
-import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper
+import fr.adrienbrault.idea.symfony2plugin.mcp.collector.DoctrineEntityCollector
 import fr.adrienbrault.idea.symfony2plugin.mcp.McpUtil
-import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil
 import kotlinx.coroutines.currentCoroutineContext
 
 /**
@@ -46,33 +43,7 @@ class DoctrineEntityMcpToolset : McpToolset {
         McpUtil.checkToolEnabled(project, "list_doctrine_entities")
 
         return readAction {
-            val entities = EntityHelper.getModelClasses(project)
-            val projectDir = ProjectUtil.getProjectDir(project)
-
-            val csv = StringBuilder("className,filePath\n")
-
-            entities.forEach { entity ->
-                val phpClass = entity.phpClass
-
-                val filePath = phpClass.containingFile?.virtualFile?.let { virtualFile ->
-                    projectDir?.let { dir ->
-                        VfsUtil.getRelativePath(virtualFile, dir, '/')
-                            ?: FileUtil.getRelativePath(dir.path, virtualFile.path, '/')
-                    }
-                } ?: ""
-
-                csv.append("${escapeCsv(phpClass.fqn)},${escapeCsv(filePath)}\n")
-            }
-
-            csv.toString()
-        }
-    }
-
-    private fun escapeCsv(value: String): String {
-        return if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
-            "\"${value.replace("\"", "\"\"")}\""
-        } else {
-            value
+            DoctrineEntityCollector(project).collect()
         }
     }
 }

@@ -8,13 +8,9 @@ import com.intellij.mcpserver.annotations.McpTool
 import com.intellij.mcpserver.mcpFail
 import com.intellij.mcpserver.project
 import com.intellij.openapi.application.readAction
-import com.intellij.openapi.util.io.FileUtil
-import com.intellij.openapi.vfs.VfsUtil
-import com.jetbrains.php.PhpIndex
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
 import fr.adrienbrault.idea.symfony2plugin.mcp.McpUtil
-import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil
-import fr.adrienbrault.idea.symfony2plugin.util.SymfonyCommandUtil
+import fr.adrienbrault.idea.symfony2plugin.mcp.collector.SymfonyCommandCollector
 import kotlinx.coroutines.currentCoroutineContext
 
 /**
@@ -48,35 +44,7 @@ class CommandMcpToolset : McpToolset {
         McpUtil.checkToolEnabled(project, "list_symfony_commands")
 
         return readAction {
-            val commands = SymfonyCommandUtil.getCommands(project)
-            val phpIndex = PhpIndex.getInstance(project)
-            val projectDir = ProjectUtil.getProjectDir(project)
-
-            val csv = StringBuilder("name,className,filePath\n")
-
-            commands.forEach { command ->
-                val filePath = phpIndex.getClassesByFQN(command.fqn).firstOrNull()
-                    ?.containingFile
-                    ?.virtualFile
-                    ?.let { virtualFile ->
-                        projectDir?.let { dir ->
-                            VfsUtil.getRelativePath(virtualFile, dir, '/')
-                                ?: FileUtil.getRelativePath(dir.path, virtualFile.path, '/')
-                        }
-                    } ?: ""
-
-                csv.append("${escapeCsv(command.name)},${escapeCsv(command.fqn)},${escapeCsv(filePath)}\n")
-            }
-
-            csv.toString()
-        }
-    }
-
-    private fun escapeCsv(value: String): String {
-        return if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
-            "\"${value.replace("\"", "\"\"")}\""
-        } else {
-            value
+            SymfonyCommandCollector(project).collect()
         }
     }
 }

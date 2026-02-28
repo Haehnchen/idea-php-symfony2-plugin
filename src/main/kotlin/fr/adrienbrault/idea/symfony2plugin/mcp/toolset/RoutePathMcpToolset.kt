@@ -8,13 +8,9 @@ import com.intellij.mcpserver.annotations.McpTool
 import com.intellij.mcpserver.mcpFail
 import com.intellij.mcpserver.project
 import com.intellij.openapi.application.readAction
-import com.intellij.openapi.util.io.FileUtil
-import com.intellij.openapi.vfs.VfsUtil
-import com.jetbrains.php.PhpIndex
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
 import fr.adrienbrault.idea.symfony2plugin.mcp.McpUtil
-import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper
-import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil
+import fr.adrienbrault.idea.symfony2plugin.mcp.collector.SymfonyRoutePathCollector
 import kotlinx.coroutines.currentCoroutineContext
 
 /**
@@ -57,42 +53,7 @@ class RoutePathMcpToolset : McpToolset {
         McpUtil.checkToolEnabled(project, "match_symfony_url_to_route")
 
         return readAction {
-            val matches = RouteHelper.getMethodsForPathWithPlaceholderMatchRoutes(project, urlPath)
-            val phpIndex = PhpIndex.getInstance(project)
-            val projectDir = ProjectUtil.getProjectDir(project)
-
-            val csv = StringBuilder("name,controller,path,filePath\n")
-
-            matches.forEach { (route, _) ->
-                val controllerClass = route.controller?.let { ctrl ->
-                    if (ctrl.contains("::")) ctrl.substringBefore("::") else ctrl
-                }
-
-                val filePath = controllerClass?.let { className ->
-                    val fqn = if (className.startsWith("\\")) className else "\\$className"
-                    phpIndex.getClassesByFQN(fqn).firstOrNull()
-                        ?.containingFile
-                        ?.virtualFile
-                        ?.let { virtualFile ->
-                            projectDir?.let { dir ->
-                                VfsUtil.getRelativePath(virtualFile, dir, '/')
-                                    ?: FileUtil.getRelativePath(dir.path, virtualFile.path, '/')
-                            }
-                        }
-                } ?: ""
-
-                csv.append("${escapeCsv(route.name)},${escapeCsv(route.controller ?: "")},${escapeCsv(route.path ?: "")},${escapeCsv(filePath)}\n")
-            }
-
-            csv.toString()
-        }
-    }
-
-    private fun escapeCsv(value: String): String {
-        return if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
-            "\"${value.replace("\"", "\"\"")}\""
-        } else {
-            value
+            SymfonyRoutePathCollector(project).collect(urlPath)
         }
     }
 }

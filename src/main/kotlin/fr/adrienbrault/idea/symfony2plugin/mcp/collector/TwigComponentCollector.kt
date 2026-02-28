@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.mcp
+package fr.adrienbrault.idea.symfony2plugin.mcp.collector
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
