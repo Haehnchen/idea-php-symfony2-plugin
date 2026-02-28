@@ -27,4 +27,17 @@ public class TwigComponentUsageStubIndexTest extends SymfonyLightCodeInsightFixt
 
         assertIndex(TwigComponentUsageStubIndex.KEY, true, "foo_var");
     }
+
+    public void testThatNestedComponentNamesAreIndexedAcrossAllSyntaxes() {
+        myFixture.configureByText(TwigFileType.INSTANCE, "" +
+            "{{ component('Alert:Html:Foo_Bar_1') }}\n" +
+            "{% component 'Alert:Html:Foo_Bar_1' with { title: 'Hello' } %}{% endcomponent %}\n" +
+            "<twig:Alert:Html:Foo_Bar_1 title=\"Hello\" />\n" +
+            "<twig:block name=\"headline\"></twig:block>\n"
+        );
+
+        assertIndexContains(TwigComponentUsageStubIndex.KEY, "Alert:Html:Foo_Bar_1");
+        assertIndexContainsKeyWithValue(TwigComponentUsageStubIndex.KEY, "Alert:Html:Foo_Bar_1", value -> value.contains("function"));
+        assertIndexContainsKeyWithValue(TwigComponentUsageStubIndex.KEY, "Alert:Html:Foo_Bar_1", value -> value.contains("tag"));
+    }
 }

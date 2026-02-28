@@ -177,4 +177,66 @@ public class UxUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertFalse(map.containsKey("notPrivateMethod"));
         assertFalse(map.containsKey("notExposedPublicMethod"));
     }
+
+    public void testGetComponentTemplatesForNestedComponentNames() {
+        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Twig\\Components;\n" +
+            "\n" +
+            "use Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n" +
+            "\n" +
+            "#[AsTwigComponent('Alert:Html:Foo_Bar_1')]\n" +
+            "class AlertHtmlFooBar1 {}\n" +
+            "#[AsTwigComponent('UI:Form:Input_Text_Field')]\n" +
+            "class UiFormInputTextField {}\n"
+        );
+
+        PhpClass phpClass1 = PsiTreeUtil.collectElementsOfType(psiFile, PhpClass.class).stream()
+            .filter(p -> p.getFQN().equals("\\App\\Twig\\Components\\AlertHtmlFooBar1"))
+            .findFirst().get();
+        PhpClass phpClass2 = PsiTreeUtil.collectElementsOfType(psiFile, PhpClass.class).stream()
+            .filter(p -> p.getFQN().equals("\\App\\Twig\\Components\\UiFormInputTextField"))
+            .findFirst().get();
+
+        // Nested component names with colons should be converted to path with slashes
+        // Alert:Html:Foo_Bar_1 -> components/Alert/Html/Foo_Bar_1.html.twig
+        assertContainsElements(UxUtil.getComponentTemplatesForPhpClass(phpClass1), "components/Alert/Html/Foo_Bar_1.html.twig");
+        assertContainsElements(UxUtil.getComponentTemplatesForPhpClass(phpClass2), "components/UI/Form/Input_Text_Field.html.twig");
+    }
+
+    public void testGetAllComponentNamesIncludesNestedComponents() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Twig\\Components;\n" +
+            "\n" +
+            "use Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n" +
+            "use Symfony\\UX\\LiveComponent\\Attribute\\AsLiveComponent;\n" +
+            "\n" +
+            "#[AsTwigComponent('Alert:Html:Foo_Bar_1')]\n" +
+            "class AlertHtmlFooBar1 {}\n" +
+            "#[AsTwigComponent('UI:Form:Input')]\n" +
+            "class UiFormInput {}\n" +
+            "#[AsLiveComponent('Button:Primary:Icon')]\n" +
+            "class ButtonPrimaryIcon {}\n"
+        );
+
+        Set<String> componentNames = UxUtil.getAllComponentNames(getProject()).stream()
+            .map(UxUtil.TwigComponent::name)
+            .collect(Collectors.toSet());
+
+        assertContainsElements(componentNames, "Alert:Html:Foo_Bar_1", "UI:Form:Input", "Button:Primary:Icon");
+    }
+
+    public void testGetTwigComponentPhpClassesForNestedComponentName() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Twig\\Components;\n" +
+            "\n" +
+            "use Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n" +
+            "\n" +
+            "#[AsTwigComponent('Alert:Html:Foo_Bar_1')]\n" +
+            "class AlertHtmlFooBar1 {}\n"
+        );
+
+        Set<PhpClass> twigComponentNameTargets = UxUtil.getTwigComponentPhpClasses(getProject(), "Alert:Html:Foo_Bar_1");
+        assertTrue(twigComponentNameTargets.stream()
+            .anyMatch(phpClass -> "\\App\\Twig\\Components\\AlertHtmlFooBar1".equals(phpClass.getFQN())));
+    }
 }
