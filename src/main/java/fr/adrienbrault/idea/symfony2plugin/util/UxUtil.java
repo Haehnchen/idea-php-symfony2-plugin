@@ -2,12 +2,16 @@ package fr.adrienbrault.idea.symfony2plugin.util;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.lang.ASTNode;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileVisitor;
+import com.intellij.patterns.PlatformPatterns;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.formatter.FormatterUtil;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.CachedValue;
 import com.intellij.psi.util.CachedValueProvider;
@@ -17,6 +21,9 @@ import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
+import com.jetbrains.twig.TwigTokenTypes;
+import com.jetbrains.twig.elements.TwigCompositeElement;
+import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.ConfigIndex;
@@ -533,6 +540,52 @@ public class UxUtil {
             if (method.getAccess().isPublic() && !method.getAttributes(ATTRIBUTE_EXPOSE_IN_TEMPLATE).isEmpty()) {
                 for (String name : getExposeName(method)) {
                     consumer.accept(new Pair<>(name, method));
+                }
+            }
+        }
+    }
+
+    public static void visitComponentTemplateProps(@NotNull Project project, @NotNull String componentName, @NotNull Consumer<Pair<String, PsiElement>> consumer) {
+        for (PsiFile componentTemplate : getComponentTemplates(project, componentName)) {
+            if (componentTemplate instanceof TwigFile twigFile) {
+                visitComponentTemplateProps(twigFile, consumer);
+            }
+        }
+    }
+
+    public static void visitComponentTemplateProps(@NotNull TwigFile twigFile, @NotNull Consumer<Pair<String, PsiElement>> consumer) {
+        for (PsiElement element : twigFile.getChildren()) {
+            if (element instanceof TwigCompositeElement && element.getNode().getElementType() == TwigElementTypes.TAG) {
+                PsiElement firstChild1 = element.getFirstChild();
+                if (firstChild1 == null) {
+                    continue;
+                }
+
+                PsiElement tagName = PsiElementUtils.getNextSiblingAndSkip(firstChild1, TwigTokenTypes.TAG_NAME);
+                if (tagName == null) {
+                    continue;
+                }
+
+                ASTNode nextNonWhitespaceLeaf = FormatterUtil.getNextNonWhitespaceLeaf(tagName.getNode());
+                if (nextNonWhitespaceLeaf == null || nextNonWhitespaceLeaf.getElementType() != TwigTokenTypes.IDENTIFIER) {
+                    continue;
+                }
+
+                String text = nextNonWhitespaceLeaf.getText();
+                if (!text.isBlank()) {
+                    consumer.accept(new Pair<>(text, nextNonWhitespaceLeaf.getPsi()));
+                }
+
+                for (PsiElement commaPsi : PsiElementUtils.getChildrenOfTypeAsList(element, PlatformPatterns.psiElement().withElementType(TwigTokenTypes.COMMA))) {
+                    ASTNode propName = FormatterUtil.getNextNonWhitespaceLeaf(commaPsi.getNode());
+                    if (propName == null || propName.getElementType() != TwigTokenTypes.IDENTIFIER) {
+                        continue;
+                    }
+
+                    String propText = propName.getText();
+                    if (!propText.isBlank()) {
+                        consumer.accept(new Pair<>(propText, propName.getPsi()));
+                    }
                 }
             }
         }

@@ -92,14 +92,22 @@ public class HtmlTemplateGoToDeclarationHandler implements GotoDeclarationHandle
                 if (parent.getParent() instanceof HtmlTag htmlTag && htmlTag.getName().startsWith("twig:")) {
                     String text = psiElement.getText();
                     Project project = psiElement.getProject();
+                    String componentName = htmlTag.getName().substring(5);
 
-                    for (PhpClass phpClass : UxUtil.getTwigComponentPhpClasses(project, htmlTag.getName().substring(5))) {
+                    for (PhpClass phpClass : UxUtil.getTwigComponentPhpClasses(project, componentName)) {
                         UxUtil.visitComponentVariables(phpClass, pair -> {
                             if (pair.getFirst().equals(StringUtils.stripStart(text, ":"))) {
                                 targets.add(pair.getSecond());
                             }
                         });
                     }
+
+                    // Navigate to {% props %} definitions in component templates
+                    UxUtil.visitComponentTemplateProps(project, componentName, pair -> {
+                        if (pair.getFirst().equals(StringUtils.stripStart(text, ":"))) {
+                            targets.add(pair.getSecond());
+                        }
+                    });
                 };
             }
         }

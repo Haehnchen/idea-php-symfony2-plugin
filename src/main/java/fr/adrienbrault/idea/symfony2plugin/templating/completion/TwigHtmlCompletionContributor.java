@@ -10,6 +10,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.util.Consumer;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
@@ -25,6 +26,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
+import kotlin.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -362,6 +364,22 @@ public class TwigHtmlCompletionContributor extends CompletionContributor {
                             resultSet.addElement(element2);
                         });
                     }
+
+                    // Add completion for {% props %} defined in component templates
+                    String componentName = name.substring(5);
+                    UxUtil.visitComponentTemplateProps(position.getProject(), componentName, (Consumer<Pair<String, PsiElement>>) pair -> {
+                        LookupElementBuilder element1 = LookupElementBuilder
+                            .create(pair.getFirst())
+                            .withIcon(Symfony2Icons.SYMFONY);
+
+                        resultSet.addElement(element1);
+
+                        LookupElementBuilder element2 = LookupElementBuilder
+                            .create(":" + pair.getFirst())
+                            .withIcon(Symfony2Icons.SYMFONY);
+
+                        resultSet.addElement(element2);
+                    });
                 }
             }
         );

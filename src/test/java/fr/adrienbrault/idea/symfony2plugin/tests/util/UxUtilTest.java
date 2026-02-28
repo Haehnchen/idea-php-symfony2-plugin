@@ -10,12 +10,16 @@ import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
+import com.jetbrains.twig.TwigFile;
+import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.TwigComponentNamespace;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -238,5 +242,47 @@ public class UxUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         Set<PhpClass> twigComponentNameTargets = UxUtil.getTwigComponentPhpClasses(getProject(), "Alert:Html:Foo_Bar_1");
         assertTrue(twigComponentNameTargets.stream()
             .anyMatch(phpClass -> "\\App\\Twig\\Components\\AlertHtmlFooBar1".equals(phpClass.getFQN())));
+    }
+
+    public void testVisitComponentTemplateProps() {
+        // Test: props with defaults
+        TwigFile twigFile = (TwigFile) myFixture.configureByText(
+            TwigFileType.INSTANCE,
+            "{% props icon = null, type = 'primary' %}"
+        );
+
+        List<String> props = new ArrayList<>();
+        UxUtil.visitComponentTemplateProps(twigFile, pair -> props.add(pair.getFirst()));
+        assertContainsElements(props, "icon", "type");
+
+        // Test: multiple props without defaults
+        TwigFile twigFile2 = (TwigFile) myFixture.configureByText(
+            TwigFileType.INSTANCE,
+            "{% props icon_foobar, icon_foobar2 %}"
+        );
+
+        List<String> props2 = new ArrayList<>();
+        UxUtil.visitComponentTemplateProps(twigFile2, pair -> props2.add(pair.getFirst()));
+        assertContainsElements(props2, "icon_foobar", "icon_foobar2");
+
+        // Test: single prop with underscore
+        TwigFile twigFile3 = (TwigFile) myFixture.configureByText(
+            TwigFileType.INSTANCE,
+            "{% props icon_foobar_2 %}"
+        );
+
+        List<String> props3 = new ArrayList<>();
+        UxUtil.visitComponentTemplateProps(twigFile3, pair -> props3.add(pair.getFirst()));
+        assertContainsElements(props3, "icon_foobar_2");
+
+        // Test: prop with string default
+        TwigFile twigFile4 = (TwigFile) myFixture.configureByText(
+            TwigFileType.INSTANCE,
+            "{% props icon_foobar_4 = 'aaa' %}"
+        );
+
+        List<String> props4 = new ArrayList<>();
+        UxUtil.visitComponentTemplateProps(twigFile4, pair -> props4.add(pair.getFirst()));
+        assertContainsElements(props4, "icon_foobar_4");
     }
 }
