@@ -8,12 +8,9 @@ import com.intellij.mcpserver.annotations.McpTool
 import com.intellij.mcpserver.mcpFail
 import com.intellij.mcpserver.project
 import com.intellij.openapi.application.readAction
-import com.jetbrains.php.PhpIndex
-import com.jetbrains.php.lang.psi.elements.Function
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
 import fr.adrienbrault.idea.symfony2plugin.mcp.McpUtil
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil
+import fr.adrienbrault.idea.symfony2plugin.mcp.collector.TwigExtensionCollector
 import kotlinx.coroutines.currentCoroutineContext
 
 /**
@@ -65,94 +62,7 @@ class TwigExtensionMcpToolset : McpToolset {
         McpUtil.checkToolEnabled(project, "list_twig_extensions")
 
         return readAction {
-            val phpIndex = PhpIndex.getInstance(project)
-            val csv = StringBuilder("extension_type,name,className,methodName,parameters\n")
-
-            val searchLower = search?.lowercase()
-
-            // Collect filters
-            if (includeFilters) {
-                val filters = TwigExtensionParser.getFilters(project)
-                filters.forEach { (name, extension) ->
-                    if (searchLower == null || name.lowercase().contains(searchLower)) {
-                        val (className, methodName, parameters) = parseExtensionSignature(extension.signature, phpIndex)
-                        val paramsStr = parameters?.joinToString(",") ?: ""
-                        csv.append("filter,${escapeCsv(name)},${escapeCsv(className ?: "")},${escapeCsv(methodName ?: "")},${escapeCsv(paramsStr)}\n")
-                    }
-                }
-            }
-
-            // Collect functions
-            if (includeFunctions) {
-                val functions = TwigExtensionParser.getFunctions(project)
-                functions.forEach { (name, extension) ->
-                    if (searchLower == null || name.lowercase().contains(searchLower)) {
-                        val (className, methodName, parameters) = parseExtensionSignature(extension.signature, phpIndex)
-                        val paramsStr = parameters?.joinToString(",") ?: ""
-                        csv.append("function,${escapeCsv(name)},${escapeCsv(className ?: "")},${escapeCsv(methodName ?: "")},${escapeCsv(paramsStr)}\n")
-                    }
-                }
-            }
-
-            // Collect tests
-            if (includeTests) {
-                val tests = TwigExtensionParser.getSimpleTest(project)
-                tests.forEach { (name, extension) ->
-                    if (searchLower == null || name.lowercase().contains(searchLower)) {
-                        val (className, methodName, parameters) = parseExtensionSignature(extension.signature, phpIndex)
-                        val paramsStr = parameters?.joinToString(",") ?: ""
-                        csv.append("test,${escapeCsv(name)},${escapeCsv(className ?: "")},${escapeCsv(methodName ?: "")},${escapeCsv(paramsStr)}\n")
-                    }
-                }
-            }
-
-            // Collect tags
-            if (includeTags) {
-                val tags = TwigUtil.getNamedTokenParserTags(project)
-                tags.forEach { name ->
-                    if (searchLower == null || name.lowercase().contains(searchLower)) {
-                        csv.append("tag,${escapeCsv(name)},,,\n")
-                    }
-                }
-            }
-
-            csv.toString()
-        }
-    }
-
-    private fun parseExtensionSignature(
-        signature: String?,
-        phpIndex: PhpIndex
-    ): Triple<String?, String?, List<String>?> {
-        if (signature == null) {
-            return Triple(null, null, null)
-        }
-
-        val classAndMethod = signature.removePrefix("#M#C").removePrefix("#M#M")
-        val parts = classAndMethod.split(".")
-
-        val className = if (parts.size >= 2) parts[0] else null
-        val methodName = if (parts.size >= 2) parts[1] else null
-
-        val parameters = try {
-            val phpNamedElements = phpIndex.getBySignature(signature)
-            val function = phpNamedElements.firstOrNull() as? Function
-            function?.parameters
-                ?.filter { !it.name.startsWith("_") }
-                ?.map { it.name }
-                ?.takeIf { it.isNotEmpty() }
-        } catch (e: Exception) {
-            null
-        }
-
-        return Triple(className, methodName, parameters)
-    }
-
-    private fun escapeCsv(value: String): String {
-        return if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
-            "\"${value.replace("\"", "\"\"")}\""
-        } else {
-            value
+            TwigExtensionCollector(project).collect(search, includeFilters, includeFunctions, includeTests, includeTags)
         }
     }
 }

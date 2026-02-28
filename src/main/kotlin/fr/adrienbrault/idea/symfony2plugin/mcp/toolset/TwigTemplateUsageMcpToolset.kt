@@ -10,7 +10,7 @@ import com.intellij.mcpserver.project
 import com.intellij.openapi.application.readAction
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
 import fr.adrienbrault.idea.symfony2plugin.mcp.McpUtil
-import fr.adrienbrault.idea.symfony2plugin.mcp.TwigTemplateUsageCollector
+import fr.adrienbrault.idea.symfony2plugin.mcp.collector.TwigTemplateUsageCollector
 import kotlinx.coroutines.currentCoroutineContext
 
 /**

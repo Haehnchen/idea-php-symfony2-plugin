@@ -1,6 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.mcp;
 
-import fr.adrienbrault.idea.symfony2plugin.mcp.TwigComponentCollector;
+import fr.adrienbrault.idea.symfony2plugin.mcp.collector.TwigComponentCollector;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**

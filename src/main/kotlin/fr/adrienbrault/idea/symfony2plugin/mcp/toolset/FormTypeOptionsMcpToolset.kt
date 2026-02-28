@@ -9,9 +9,8 @@ import com.intellij.mcpserver.mcpFail
 import com.intellij.mcpserver.project
 import com.intellij.openapi.application.readAction
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
-import fr.adrienbrault.idea.symfony2plugin.form.dict.FormOption
-import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil
 import fr.adrienbrault.idea.symfony2plugin.mcp.McpUtil
+import fr.adrienbrault.idea.symfony2plugin.mcp.collector.SymfonyFormTypeOptionsCollector
 import kotlinx.coroutines.currentCoroutineContext
 
 /**
@@ -53,46 +52,8 @@ class FormTypeOptionsMcpToolset : McpToolset {
             mcpFail("formType parameter is required.")
         }
 
-        // Normalize FQN: only add leading "\" if it's a FQN (contains backslash)
-        val normalizedFormType = if (formType.contains("\\")) {
-            "\\" + formType.trimStart('\\')
-        } else {
-            formType
-        }
-
         return readAction {
-            val options = mutableMapOf<String, FormOption>()
-
-            FormOptionsUtil.visitFormOptions(project, normalizedFormType) { _, option, formClass, optionEnum ->
-                if (!options.containsKey(option)) {
-                    options[option] = FormOption(option, formClass, optionEnum, formClass.phpClass)
-                } else {
-                    options[option]?.addOptionEnum(optionEnum)
-                }
-            }
-
-            if (options.isEmpty()) {
-                mcpFail("Form type '$formType' not found or has no options.")
-            }
-
-            val csv = StringBuilder("name,type,source\n")
-
-            options.forEach { (name, formOption) ->
-                val types = formOption.optionEnum.joinToString("|") { it.name }
-                val source = formOption.formClass.phpClass.fqn
-
-                csv.append("${escapeCsv(name)},${escapeCsv(types)},${escapeCsv(source)}\n")
-            }
-
-            csv.toString()
-        }
-    }
-
-    private fun escapeCsv(value: String): String {
-        return if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
-            "\"${value.replace("\"", "\"\"")}\""
-        } else {
-            value
+            SymfonyFormTypeOptionsCollector(project).collect(formType)
         }
     }
 }

@@ -8,12 +8,9 @@ import com.intellij.mcpserver.annotations.McpTool
 import com.intellij.mcpserver.mcpFail
 import com.intellij.mcpserver.project
 import com.intellij.openapi.application.readAction
-import com.intellij.openapi.util.io.FileUtil
-import com.intellij.openapi.vfs.VfsUtil
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
-import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil
 import fr.adrienbrault.idea.symfony2plugin.mcp.McpUtil
-import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil
+import fr.adrienbrault.idea.symfony2plugin.mcp.collector.SymfonyFormTypeCollector
 import kotlinx.coroutines.currentCoroutineContext
 
 /**
@@ -47,34 +44,7 @@ class FormTypeMcpToolset : McpToolset {
         McpUtil.checkToolEnabled(project, "list_symfony_forms")
 
         return readAction {
-            val collector = FormUtil.FormTypeCollector(project).collect()
-            val formTypes = collector.formTypesMap
-            val projectDir = ProjectUtil.getProjectDir(project)
-
-            val csv = StringBuilder("name,className,filePath\n")
-
-            formTypes.forEach { (name, formTypeClass) ->
-                val phpClass = formTypeClass.getPhpClass(project)
-
-                val filePath = phpClass?.containingFile?.virtualFile?.let { virtualFile ->
-                    projectDir?.let { dir ->
-                        VfsUtil.getRelativePath(virtualFile, dir, '/')
-                            ?: FileUtil.getRelativePath(dir.path, virtualFile.path, '/')
-                    }
-                } ?: ""
-
-                csv.append("${escapeCsv(name)},${escapeCsv(formTypeClass.phpClassName)},${escapeCsv(filePath)}\n")
-            }
-
-            csv.toString()
-        }
-    }
-
-    private fun escapeCsv(value: String): String {
-        return if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
-            "\"${value.replace("\"", "\"\"")}\""
-        } else {
-            value
+            SymfonyFormTypeCollector(project).collect()
         }
     }
 }
