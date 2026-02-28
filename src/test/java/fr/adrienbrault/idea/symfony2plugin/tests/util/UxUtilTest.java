@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.util;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.PhpFileType;
@@ -244,6 +245,47 @@ public class UxUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         Set<PhpClass> twigComponentNameTargets = UxUtil.getTwigComponentPhpClasses(getProject(), "Alert:Html:Foo_Bar_1");
         assertTrue(twigComponentNameTargets.stream()
             .anyMatch(phpClass -> "\\App\\Twig\\Components\\AlertHtmlFooBar1".equals(phpClass.getFQN())));
+    }
+
+    public void testAnonymousIndexTemplateProvidesDirectoryComponentName() {
+        myFixture.copyFileToProject("twig_component.yaml");
+        myFixture.copyFileToProject("ide-twig.json", "ide-twig.json");
+        PsiFile navIndexFile = myFixture.addFileToProject("templates/components/Nav/index.html.twig", "<nav></nav>");
+        PsiFile navItemFile = myFixture.addFileToProject("templates/components/Nav/Item.html.twig", "<li></li>");
+
+        Set<String> componentNames = UxUtil.getAllComponentNames(getProject()).stream()
+            .map(UxUtil.TwigComponent::name)
+            .collect(Collectors.toSet());
+
+        assertContainsElements(componentNames, "Nav", "Nav:Item");
+        assertFalse(componentNames.contains("Nav:index"));
+
+        assertContainsElements(UxUtil.getTwigComponentNames(getProject()), "Nav", "Nav:Item");
+        assertEquals("Nav", UxUtil.resolveTwigComponentName(getProject(), "Nav"));
+        assertNull(UxUtil.resolveTwigComponentName(getProject(), "Nav:index"));
+        assertTrue(UxUtil.hasTwigComponentName(getProject(), "Nav"));
+        assertFalse(UxUtil.hasTwigComponentName(getProject(), "Nav:index"));
+
+        assertTrue(UxUtil.getComponentTemplates(getProject(), "Nav").stream()
+            .map(psiFile -> psiFile.getVirtualFile() != null ? psiFile.getVirtualFile().getPath() : "")
+            .anyMatch(path -> path.endsWith("/templates/components/Nav/index.html.twig")));
+
+        assertTrue(UxUtil.getComponentTemplates(getProject(), "Nav:Item").stream()
+            .map(psiFile -> psiFile.getVirtualFile() != null ? psiFile.getVirtualFile().getPath() : "")
+            .anyMatch(path -> path.endsWith("/templates/components/Nav/Item.html.twig")));
+
+        PsiFile navIndexPsi = PsiManager.getInstance(getProject()).findFile(navIndexFile.getVirtualFile());
+        assertNotNull(navIndexPsi);
+        assertTrue(navIndexPsi instanceof TwigFile);
+        Set<String> navIndexNames = UxUtil.getTemplateComponentNames((TwigFile) navIndexPsi);
+        assertContainsElements(navIndexNames, "Nav");
+        assertFalse(navIndexNames.contains("Nav:index"));
+
+        PsiFile navItemPsi = PsiManager.getInstance(getProject()).findFile(navItemFile.getVirtualFile());
+        assertNotNull(navItemPsi);
+        assertTrue(navItemPsi instanceof TwigFile);
+        Set<String> navItemNames = UxUtil.getTemplateComponentNames((TwigFile) navItemPsi);
+        assertContainsElements(navItemNames, "Nav:Item");
     }
 
     public void testVisitComponentTemplateProps() {

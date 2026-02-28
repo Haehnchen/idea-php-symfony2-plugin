@@ -289,10 +289,9 @@ public class UxUtil {
                             return super.visitFile(file);
                         }
 
-                        // replace ".html.twig" maybe also other formats
-                        String replace = relativePath.replace("/", ":").replaceAll("((\\.html|\\.json)*\\.twig)$", "");
-                        if (!names.containsKey(replace)) {
-                            names.put(replace, new TwigComponent(replace, null, null));
+                        String componentName = getAnonymousComponentNameFromRelativePath(relativePath);
+                        if (componentName != null && !names.containsKey(componentName)) {
+                            names.put(componentName, new TwigComponent(componentName, null, null));
                         }
 
                         return super.visitFile(file);
@@ -340,11 +339,37 @@ public class UxUtil {
                 for (String directory : getAnonymousTemplateDirectories(project)) {
                     String templateName = StringUtils.strip(directory, "/") + "/" + component.replace(":", "/") + ".html.twig";
                     addTemplateFilesWithFallback(project, templateName, virtualFiles);
+
+                    // Symfony UX 2.32: components/Foo/index.html.twig => <twig:Foo>
+                    String indexTemplateName = StringUtils.strip(directory, "/") + "/" + component.replace(":", "/") + "/index.html.twig";
+                    addTemplateFilesWithFallback(project, indexTemplateName, virtualFiles);
                 }
             }
         }
 
         return PsiElementUtils.convertVirtualFilesToPsiFiles(project, virtualFiles);
+    }
+
+    @Nullable
+    private static String getAnonymousComponentNameFromRelativePath(@NotNull String relativePath) {
+        // Normalize Twig template names to component names (e.g. "Nav/index.html.twig" -> "Nav:index")
+        String normalized = relativePath.replace("/", ":").replaceAll("(\\.html)?\\.twig$", "");
+        if (normalized.isBlank()) {
+            return null;
+        }
+
+        // Symfony UX 2.32:
+        // components/Nav/index.html.twig => "Nav"
+        // components/Nav/Sub/index.html.twig => "Nav:Sub"
+        if ("index".equals(normalized)) {
+            return null;
+        }
+
+        if (normalized.endsWith(":index")) {
+            return normalized.substring(0, normalized.length() - 6);
+        }
+
+        return normalized;
     }
 
     @NotNull
