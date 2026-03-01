@@ -23,6 +23,33 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2026.1.288
+* Introduce per-file caching for event subscribers, DQL functions, form types, Twig extensions, and kernel parameters. (Daniel Espendiller)
+* Add support for `{% types %}` Twig tag: class completion, navigation, and tests. (Daniel Espendiller)
+* Add MCP tool `list_twig_components` for Symfony UX Twig components, including partial-name search and CSV output with props, blocks, and syntax snippets (Daniel Espendiller)
+* [#2519](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2519) Add Twig anonymous components support via directories => `ComponentName/index.html.twig` (Daniel Espendiller)
+* Cache Twig extension parsing results per file to improve performance and avoid redundant computations. (Daniel Espendiller)
+* Move ux props completion to public code (Daniel Espendiller)
+* Refactor `PsiModificationTracker` usage to specify `PhpLanguage` for improved caching accuracy (Daniel Espendiller)
+* Use `Concurrent` collections and simplify `putIfAbsent` logic in Symfony Profiler widget. (Daniel Espendiller)
+* Extend mcp `list_doctrine_entity_fields` to include additional Doctrine field attributes (enumType, propertyType) (Daniel Espendiller)
+* Add checks to prevent attribute completions and intentions during dumb mode (Daniel Espendiller)
+* Add Twig block completion support for component templates and provide `<twig:block>` insertion logic (Daniel Espendiller)</twig:block>
+* Add error inspection for Twig component: mixed block syntax and `_self` macro import (Daniel Espendiller)
+* Add dark theme Symfony icons for linemarkers and other UI elements (Daniel Espendiller)
+* Support Symfony 6.4/7.x/8.x array union syntax in `ServiceUtil` parameter extraction (Daniel Espendiller)
+* Add usage-based linemarker / mcp for Twig component templates with lazy target resolution and related indexing changes (Daniel Espendiller)
+* Fix Symfony New Service actions showing outside project view context (Daniel Espendiller)
+* Optimize `hasClassOrInterface` lookup by leveraging lightweight FQN indexes (class and interface) (Daniel Espendiller)
+* Add twig block completion and line markers for component templates (Daniel Espendiller)
+* Support shorthand and unquoted hash key completions for `path()` in Twig templates (Daniel Espendiller)
+
+## 2026.1.287
+* Add MCP toolset for analyzing Twig template usage across projects (Daniel Espendiller)
+* Add `TwigVarCommentAnnotator` for highlighting `@var` annotations in Twig templates (Daniel Espendiller)
+* Add twig template rendering usages to controller / route mcp (Daniel Espendiller)
+* Simplify service configuration file detection and improve root key validation (Daniel Espendiller)
+
 ## 2026.1.286
 * Remove unnecessary `.bold()` calls from attribute completion setup. (Daniel Espendiller)
 * Fix attribute completion isn't triggered for inside attribute list (Daniel Espendiller)
