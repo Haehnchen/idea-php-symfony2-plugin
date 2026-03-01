@@ -22,6 +22,8 @@ import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.lang.psi.PhpFile;
+import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
 import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.DefaultServiceNameStrategy;
@@ -128,6 +130,9 @@ public class ServiceUtil {
      * Cache kernel.root_dir of Kernel class
      */
     private static final Key<CachedValue<Collection<String>>> KERNEL_PARAMETER_CACHE = new Key<>("KERNEL_PARAMETER_CACHE");
+
+    // Per-file cache for kernel parameter extraction
+    private static final Key<CachedValue<Collection<String>>> FILE_KERNEL_PARAMETER_CACHE = new Key<>("FILE_KERNEL_PARAMETER_CACHE");
 
     /**
      * Linemarker types for service declarations
@@ -621,38 +626,59 @@ public class ServiceUtil {
             addAll(PhpIndexUtil.getAllSubclasses(project, "Symfony\\Component\\HttpKernel\\Kernel"));
         }};
 
+        // Collect unique files for per-file caching
+        Set<PsiFile> files = new HashSet<>();
         for (PhpClass phpClass : phpClasses) {
-            Method method = phpClass.findMethodByName("getKernelParameters");
-            if(method == null) {
-                continue;
+            PsiFile file = phpClass.getContainingFile();
+            if (file instanceof PhpFile) {
+                files.add(file);
             }
+        }
 
-            // search for all return values and try to extract array keys
-            for (PsiElement phpReturnArgument: PhpElementsUtil.collectPhpReturnArgumentsInsideControlFlow(method)) {
-                if(phpReturnArgument instanceof ArrayCreationExpression) {
-                    // return ['foobar' => 'foo']
+        // Parse each file (cached per file)
+        for (PsiFile file : files) {
+            Collection<String> fileParameters = CachedValuesManager.getCachedValue(file, FILE_KERNEL_PARAMETER_CACHE, () -> {
+                Collection<String> result = new HashSet<>();
+                // Resolve classes fresh from file inside cache provider
+                for (PhpClass phpClass : PhpPsiUtil.findAllClasses((PhpFile) file)) {
+                    // Only process classes that extend Kernel
+                    if (!PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\HttpKernel\\Kernel")) {
+                        continue;
+                    }
 
-                    parameters.addAll(PhpElementsUtil.getArrayCreationKeys((ArrayCreationExpression) phpReturnArgument));
-                } else if(phpReturnArgument instanceof FunctionReference functionReference && (
-                    "array_merge".equalsIgnoreCase(functionReference.getName()) ||
-                    "array_merge_recursive".equalsIgnoreCase(functionReference.getName()) ||
-                    "array_replace".equalsIgnoreCase(functionReference.getName())
-                )) {
-                    // return array_merge(['foobar' => 'foo'])
-                    // return array_merge($foobar, ['foobar' => 'foo'])
+                    Method method = phpClass.findMethodByName("getKernelParameters");
+                    if (method == null) {
+                        continue;
+                    }
 
-                    for (PsiElement parameter : ((FunctionReference) phpReturnArgument).getParameters()) {
-                        if(parameter instanceof ArrayCreationExpression) {
-                            parameters.addAll(PhpElementsUtil.getArrayCreationKeys((ArrayCreationExpression) parameter));
+                    // search for all return values and try to extract array keys
+                    for (PsiElement phpReturnArgument : PhpElementsUtil.collectPhpReturnArgumentsInsideControlFlow(method)) {
+                        if (phpReturnArgument instanceof ArrayCreationExpression) {
+                            // return ['foobar' => 'foo']
+                            result.addAll(PhpElementsUtil.getArrayCreationKeys((ArrayCreationExpression) phpReturnArgument));
+                        } else if (phpReturnArgument instanceof FunctionReference functionReference && (
+                            "array_merge".equalsIgnoreCase(functionReference.getName()) ||
+                            "array_merge_recursive".equalsIgnoreCase(functionReference.getName()) ||
+                            "array_replace".equalsIgnoreCase(functionReference.getName())
+                        )) {
+                            // return array_merge(['foobar' => 'foo'])
+                            // return array_merge($foobar, ['foobar' => 'foo'])
+                            for (PsiElement param : functionReference.getParameters()) {
+                                if (param instanceof ArrayCreationExpression) {
+                                    result.addAll(PhpElementsUtil.getArrayCreationKeys((ArrayCreationExpression) param));
+                                }
+                            }
+                        } else if (phpReturnArgument instanceof BinaryExpression binaryExpression) {
+                            // Symfony 6.4+: return [...] + (condition ? ['key' => value] : [])
+                            // The + operator is used for array union
+                            extractArrayKeysFromBinaryExpression(binaryExpression, result);
                         }
                     }
-                } else if(phpReturnArgument instanceof BinaryExpression binaryExpression) {
-                    // Symfony 6.4+: return [...] + (condition ? ['key' => value] : [])
-                    // The + operator is used for array union
-
-                    extractArrayKeysFromBinaryExpression(binaryExpression, parameters);
                 }
-            }
+                return CachedValueProvider.Result.create(result, file);
+            });
+
+            parameters.addAll(fileParameters);
         }
 
         return parameters;

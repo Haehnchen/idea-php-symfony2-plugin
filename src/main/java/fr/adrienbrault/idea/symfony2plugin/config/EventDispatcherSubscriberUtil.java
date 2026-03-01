@@ -7,6 +7,7 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.*;
 import com.intellij.psi.xml.XmlAttribute;
@@ -17,6 +18,7 @@ import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.PhpFile;
+import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.config.dic.EventDispatcherSubscribedEvent;
@@ -48,6 +50,9 @@ public class EventDispatcherSubscriberUtil {
     private static final Key<CachedValue<Collection<EventDispatcherSubscribedEvent>>> EVENT_SUBSCRIBERS = new Key<>("SYMFONY_EVENT_SUBSCRIBERS");
     private static final Key<CachedValue<Set<String>>> EVENT_ANNOTATIONS = new Key<>("SYMFONY_EVENT_ANNOTATIONS");
 
+    // Per-file cache for event subscriber extraction
+    private static final Key<CachedValue<Collection<EventDispatcherSubscribedEvent>>> FILE_EVENT_SUBSCRIBERS = new Key<>("FILE_EVENT_SUBSCRIBERS");
+
     @NotNull
     public static Collection<EventDispatcherSubscribedEvent> getSubscribedEvents(final @NotNull Project project) {
         return CachedValuesManager.getManager(project).getCachedValue(
@@ -63,18 +68,47 @@ public class EventDispatcherSubscriberUtil {
         Collection<EventDispatcherSubscribedEvent> events = new ArrayList<>();
 
         // http://symfony.com/doc/current/components/event_dispatcher/introduction.html
-        for (PhpClass phpClass: PhpIndexUtil.getAllSubclasses(project, "\\Symfony\\Component\\EventDispatcher\\EventSubscriberInterface")) {
+        Collection<PhpClass> phpClasses = PhpIndexUtil.getAllSubclasses(project, "\\Symfony\\Component\\EventDispatcher\\EventSubscriberInterface");
+
+        // Collect unique files for per-file caching
+        Set<PsiFile> files = new HashSet<>();
+        for (PhpClass phpClass : phpClasses) {
             if (PhpElementsUtil.isTestClass(phpClass)) {
                 continue;
             }
-
-            Method method = phpClass.findMethodByName("getSubscribedEvents");
-            if (method != null) {
-                PhpReturn phpReturn = PsiTreeUtil.findChildOfType(method, PhpReturn.class);
-                if (phpReturn != null) {
-                    attachSubscriberEventNames(events, phpClass, phpReturn);
-                }
+            PsiFile file = phpClass.getContainingFile();
+            if (file instanceof PhpFile) {
+                files.add(file);
             }
+        }
+
+        // Parse each file (cached per file)
+        for (PsiFile file : files) {
+            Collection<EventDispatcherSubscribedEvent> fileEvents = CachedValuesManager.getCachedValue(file, FILE_EVENT_SUBSCRIBERS, () -> {
+                Collection<EventDispatcherSubscribedEvent> result = new ArrayList<>();
+                // Resolve classes fresh from file inside cache provider
+                for (PhpClass phpClass : PhpPsiUtil.findAllClasses((PhpFile) file)) {
+                    // Only process classes that implement EventSubscriberInterface
+                    if (!PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\EventDispatcher\\EventSubscriberInterface")) {
+                        continue;
+                    }
+
+                    if (PhpElementsUtil.isTestClass(phpClass)) {
+                        continue;
+                    }
+
+                    Method method = phpClass.findMethodByName("getSubscribedEvents");
+                    if (method != null) {
+                        PhpReturn phpReturn = PsiTreeUtil.findChildOfType(method, PhpReturn.class);
+                        if (phpReturn != null) {
+                            attachSubscriberEventNames(result, phpClass, phpReturn);
+                        }
+                    }
+                }
+                return CachedValueProvider.Result.create(result, file);
+            });
+
+            events.addAll(fileEvents);
         }
 
        return events;

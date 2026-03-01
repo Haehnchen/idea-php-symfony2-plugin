@@ -103,6 +103,12 @@ public class TwigExtensionParser  {
                 Map<String, TwigExtension> result = new HashMap<>();
                 // Resolve classes fresh from file inside cache provider
                 for (PhpClass phpClass : PhpPsiUtil.findAllClasses((PhpFile) file)) {
+                    // Only process classes that implement Twig ExtensionInterface
+                    if (!PhpElementsUtil.isInstanceOf(phpClass, "\\Twig\\Extension\\ExtensionInterface") &&
+                        !PhpElementsUtil.isInstanceOf(phpClass, "\\Twig_ExtensionInterface")) {
+                        continue;
+                    }
+
                     Method method = phpClass.findMethodByName("getFilters");
                     if (method != null) {
                         PhpClass containingClass = method.getContainingClass();
@@ -150,6 +156,12 @@ public class TwigExtensionParser  {
                 Map<String, TwigExtension> result = new HashMap<>();
                 // Resolve classes fresh from file inside cache provider
                 for (PhpClass phpClass : PhpPsiUtil.findAllClasses((PhpFile) file)) {
+                    // Only process classes that implement Twig ExtensionInterface
+                    if (!PhpElementsUtil.isInstanceOf(phpClass, "\\Twig\\Extension\\ExtensionInterface") &&
+                        !PhpElementsUtil.isInstanceOf(phpClass, "\\Twig_ExtensionInterface")) {
+                        continue;
+                    }
+
                     Method method = phpClass.findMethodByName("getFunctions");
                     if (method != null) {
                         PhpClass containingClass = method.getContainingClass();
@@ -197,6 +209,12 @@ public class TwigExtensionParser  {
                 Map<String, TwigExtension> result = new HashMap<>();
                 // Resolve classes fresh from file inside cache provider
                 for (PhpClass phpClass : PhpPsiUtil.findAllClasses((PhpFile) file)) {
+                    // Only process classes that implement Twig ExtensionInterface
+                    if (!PhpElementsUtil.isInstanceOf(phpClass, "\\Twig\\Extension\\ExtensionInterface") &&
+                        !PhpElementsUtil.isInstanceOf(phpClass, "\\Twig_ExtensionInterface")) {
+                        continue;
+                    }
+
                     Method method = phpClass.findMethodByName("getTests");
                     if (method != null) {
                         for (NewExpression newExpression : PhpElementsUtil.collectNewExpressionsInsideControlFlow(method)) {
@@ -241,6 +259,12 @@ public class TwigExtensionParser  {
                 Map<String, TwigExtension> result = new HashMap<>();
                 // Resolve classes fresh from file inside cache provider
                 for (PhpClass phpClass : PhpPsiUtil.findAllClasses((PhpFile) file)) {
+                    // Only process classes that implement Twig ExtensionInterface
+                    if (!PhpElementsUtil.isInstanceOf(phpClass, "\\Twig\\Extension\\ExtensionInterface") &&
+                        !PhpElementsUtil.isInstanceOf(phpClass, "\\Twig_ExtensionInterface")) {
+                        continue;
+                    }
+
                     Method method = phpClass.findMethodByName("getOperators");
                     if (method != null) {
                         parseOperators(method, result);

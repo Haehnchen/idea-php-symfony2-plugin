@@ -6,6 +6,7 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.impl.source.xml.XmlDocumentImpl;
 import com.intellij.psi.util.*;
 import com.intellij.psi.xml.XmlAttribute;
@@ -19,6 +20,7 @@ import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpReturnInstructi
 import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpYieldInstruction;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
+import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
@@ -51,6 +53,9 @@ import java.util.stream.Collectors;
  */
 public class FormUtil {
     private static final Key<CachedValue<Collection<String[]>>> FORM_EXTENSION_TYPES = new Key<>("SYMFONY_FORM_EXTENSION_TYPES");
+
+    // Per-file cache for form type extraction
+    private static final Key<CachedValue<Collection<String[]>>> FILE_FORM_TYPES = new Key<>("FILE_FORM_TYPES");
 
     final public static String ABSTRACT_FORM_INTERFACE = "\\Symfony\\Component\\Form\\FormTypeInterface";
     final public static String FORM_EXTENSION_INTERFACE = "\\Symfony\\Component\\Form\\FormTypeExtensionInterface";
@@ -383,18 +388,46 @@ public class FormUtil {
                 public @NotNull Result<Collection<String[]>> compute() {
                     Collection<String[]> items = new ArrayList<>();
 
-                    for (PhpClass phpClass : PhpIndexUtil.getAllSubclasses(project, ABSTRACT_FORM_INTERFACE)) {
+                    Collection<PhpClass> phpClasses = PhpIndexUtil.getAllSubclasses(project, ABSTRACT_FORM_INTERFACE);
+
+                    // Collect unique files for per-file caching
+                    Set<PsiFile> files = new HashSet<>();
+                    for (PhpClass phpClass : phpClasses) {
                         if (!isValidFormPhpClass(phpClass)) {
                             continue;
                         }
-
-                        String name = FormUtil.getFormNameOfPhpClass(phpClass);
-                        if (name == null) {
-                            continue;
+                        PsiFile file = phpClass.getContainingFile();
+                        if (file instanceof PhpFile) {
+                            files.add(file);
                         }
+                    }
 
-                        items.add(new String[]{name, phpClass.getFQN()});
+                    // Parse each file (cached per file)
+                    for (PsiFile file : files) {
+                        Collection<String[]> fileItems = CachedValuesManager.getCachedValue(file, FILE_FORM_TYPES, () -> {
+                            Collection<String[]> result = new ArrayList<>();
+                            // Resolve classes fresh from file inside cache provider
+                            for (PhpClass phpClass : PhpPsiUtil.findAllClasses((PhpFile) file)) {
+                                // Only process classes that implement FormTypeInterface
+                                if (!PhpElementsUtil.isInstanceOf(phpClass, ABSTRACT_FORM_INTERFACE)) {
+                                    continue;
+                                }
 
+                                if (!isValidFormPhpClass(phpClass)) {
+                                    continue;
+                                }
+
+                                String name = FormUtil.getFormNameOfPhpClass(phpClass);
+                                if (name == null) {
+                                    continue;
+                                }
+
+                                result.add(new String[]{name, phpClass.getFQN()});
+                            }
+                            return CachedValueProvider.Result.create(result, file);
+                        });
+
+                        items.addAll(fileItems);
                     }
 
                     return Result.create(items, PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE));
