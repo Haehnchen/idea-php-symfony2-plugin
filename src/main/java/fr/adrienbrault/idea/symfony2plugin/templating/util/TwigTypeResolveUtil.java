@@ -661,6 +661,26 @@ public class TwigTypeResolveUtil {
         return isPropertyShortcutMethod(method.getName());
     }
 
+    /**
+     * Checks if a method is accessible as a Twig property/method.
+     * Methods are accessible if they are:
+     * - public
+     * - not starting with "set" (setters are not exposed in Twig)
+     * - not starting with "__" (magic methods)
+     *
+     * @param method The method to check
+     * @return true if the method is accessible in Twig templates
+     */
+    public static boolean isTwigAccessibleMethod(@NotNull Method method) {
+        // Early exit on non-public - avoids getName() call for most methods
+        if (!method.getModifier().isPublic()) {
+            return false;
+        }
+
+        String name = method.getName();
+        return !name.startsWith("set") && !name.startsWith("__");
+    }
+
     public static boolean isPropertyShortcutMethod(String methodName) {
         for (String shortcut: PROPERTY_SHORTCUTS) {
             if (methodName.startsWith(shortcut) && methodName.length() > shortcut.length()) {

@@ -10,5 +10,6 @@
         <mcpServer.mcpToolset implementation="fr.adrienbrault.idea.symfony2plugin.mcp.toolset.ServiceDefinitionMcpToolset" />
         <mcpServer.mcpToolset implementation="fr.adrienbrault.idea.symfony2plugin.mcp.toolset.TwigTemplateUsageMcpToolset" />
         <mcpServer.mcpToolset implementation="fr.adrienbrault.idea.symfony2plugin.mcp.toolset.TwigComponentMcpToolset" />
+        <mcpServer.mcpToolset implementation="fr.adrienbrault.idea.symfony2plugin.mcp.toolset.TwigTemplateVariablesMcpToolset" />
     </extensions>
 </idea-plugin>

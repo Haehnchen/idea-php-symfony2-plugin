@@ -714,7 +714,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 if(twigTypeContainer.getPhpNamedElement() instanceof PhpClass) {
 
                     for(Method method: ((PhpClass) twigTypeContainer.getPhpNamedElement()).getMethods()) {
-                        if(!(!method.getModifier().isPublic() || method.getName().startsWith("set") || method.getName().startsWith("__"))) {
+                        if(TwigTypeResolveUtil.isTwigAccessibleMethod(method)) {
                             resultSet.addElement(new PhpTwigMethodLookupElement(method));
                         }
                     }
@@ -1785,7 +1785,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
             for (PhpClass phpClass : PhpElementsUtil.getClassFromPhpTypeSet(project, entry.getValue().getTypes())) {
                 for(Method method: phpClass.getMethods()) {
-                    if(!(!method.getModifier().isPublic() || method.getName().startsWith("set") || method.getName().startsWith("__"))) {
+                    if(TwigTypeResolveUtil.isTwigAccessibleMethod(method)) {
                         if (filter.test(PhpIndex.getInstance(project).completeType(project, method.getType(), new HashSet<>()))) {
                             String propertyShortcutMethodName = TwigTypeResolveUtil.getPropertyShortcutMethodName(method);
                             arrays.put(entry.getKey() + "." + propertyShortcutMethodName, Pair.create(propertyShortcutMethodName, new PhpTwigMethodLookupElement(method)));
