@@ -21,7 +21,7 @@ public class TwigTemplateUsageCollectorTest extends SymfonyLightCodeInsightFixtu
         String result = new TwigTemplateUsageCollector(getProject()).collect("nonexistent");
 
         assertTrue("Should have CSV header", result.startsWith(
-            "template,controller,twig_include,twig_embed,twig_extends,twig_import,twig_use,twig_form_theme,twig_component"
+            "template,controller,twig_include,twig_embed,twig_extends,twig_import,twig_use,twig_form_theme,twig_component,route_name,route_path"
         ));
     }
 
@@ -29,13 +29,13 @@ public class TwigTemplateUsageCollectorTest extends SymfonyLightCodeInsightFixtu
         String result = new TwigTemplateUsageCollector(getProject()).collect("nonexistent/template.html.twig");
 
         assertEquals(
-            "template,controller,twig_include,twig_embed,twig_extends,twig_import,twig_use,twig_form_theme,twig_component\n",
+            "template,controller,twig_include,twig_embed,twig_extends,twig_import,twig_use,twig_form_theme,twig_component,route_name,route_path\n",
             result
         );
     }
 
     /**
-     * PHP controller rendering base.html.twig appears in the controller column (col 1).
+     * PHP controller rendering base.html.twig appears in the controller column.
      */
     public void testControllerUsageFullLine() {
         myFixture.addFileToProject("templates/base.html.twig", "");
@@ -54,7 +54,27 @@ public class TwigTemplateUsageCollectorTest extends SymfonyLightCodeInsightFixtu
     }
 
     /**
-     * {% extends 'base.html.twig' %} populates the twig_extends column (col 4).
+     * Controller with a #[Route] attribute populates the route_name and route_path columns.
+     */
+    public void testControllerRouteColumns() {
+        myFixture.addFileToProject("templates/base.html.twig", "");
+        myFixture.addFileToProject("src/Controller/HomeController.php",
+            "<?php\nnamespace App\\Controller;\n" +
+            "use Symfony\\Component\\Routing\\Attribute\\Route;\n" +
+            "class HomeController {\n" +
+            "    #[Route('/home', name: 'app_home')]\n" +
+            "    public function index() { $this->render('base.html.twig'); }\n" +
+            "}\n"
+        );
+
+        String result = new TwigTemplateUsageCollector(getProject()).collect("base.html.twig");
+
+        assertTrue("Route name expected:\n" + result, result.contains("app_home"));
+        assertTrue("Route path expected:\n" + result, result.contains("/home"));
+    }
+
+    /**
+     * {% extends 'base.html.twig' %} populates the twig_extends column.
      */
     public void testTwigExtendsFullLine() {
         myFixture.addFileToProject("templates/base.html.twig", "");
@@ -62,14 +82,12 @@ public class TwigTemplateUsageCollectorTest extends SymfonyLightCodeInsightFixtu
 
         String result = new TwigTemplateUsageCollector(getProject()).collect("base.html.twig");
 
-        // "base.html.twig,,,," = template + 3 empty (ctrl,incl,emb) + sep before extends
         assertTrue("Unexpected CSV:\n" + result, result.contains("base.html.twig,,,,"));
-        // path ends with ",,,,\n" = extends path + 4 empty (import,use,form_theme,component)
-        assertTrue("Unexpected CSV:\n" + result, result.contains("templates/child.html.twig,,,,\n"));
+        assertTrue("Unexpected CSV:\n" + result, result.contains("templates/child.html.twig,,,,,,\n"));
     }
 
     /**
-     * {% include 'base.html.twig' %} populates the twig_include column (col 2).
+     * {% include 'base.html.twig' %} populates the twig_include column.
      */
     public void testTwigIncludeFullLine() {
         myFixture.addFileToProject("templates/base.html.twig", "");
@@ -77,12 +95,11 @@ public class TwigTemplateUsageCollectorTest extends SymfonyLightCodeInsightFixtu
 
         String result = new TwigTemplateUsageCollector(getProject()).collect("base.html.twig");
 
-        // path ends with ",,,,,,\n" = include path + 6 empty (emb,ext,imp,use,form,comp)
-        assertTrue("Unexpected CSV:\n" + result, result.contains("templates/page.html.twig,,,,,,\n"));
+        assertTrue("Unexpected CSV:\n" + result, result.contains("templates/page.html.twig,,,,,,,,\n"));
     }
 
     /**
-     * {% embed 'base.html.twig' %} populates the twig_embed column (col 3).
+     * {% embed 'base.html.twig' %} populates the twig_embed column.
      */
     public void testTwigEmbedFullLine() {
         myFixture.addFileToProject("templates/base.html.twig", "");
@@ -90,12 +107,11 @@ public class TwigTemplateUsageCollectorTest extends SymfonyLightCodeInsightFixtu
 
         String result = new TwigTemplateUsageCollector(getProject()).collect("base.html.twig");
 
-        // path ends with ",,,,,\n" = embed path + 5 empty (ext,imp,use,form,comp)
-        assertTrue("Unexpected CSV:\n" + result, result.contains("templates/embed_page.html.twig,,,,,\n"));
+        assertTrue("Unexpected CSV:\n" + result, result.contains("templates/embed_page.html.twig,,,,,,,\n"));
     }
 
     /**
-     * {% import 'base.html.twig' as macros %} populates the twig_import column (col 5).
+     * {% import 'base.html.twig' as macros %} populates the twig_import column.
      */
     public void testTwigImportFullLine() {
         myFixture.addFileToProject("templates/base.html.twig", "");
@@ -103,12 +119,11 @@ public class TwigTemplateUsageCollectorTest extends SymfonyLightCodeInsightFixtu
 
         String result = new TwigTemplateUsageCollector(getProject()).collect("base.html.twig");
 
-        // path ends with ",,,\n" = import path + 3 empty (use,form_theme,component)
-        assertTrue("Unexpected CSV:\n" + result, result.contains("templates/import_page.html.twig,,,\n"));
+        assertTrue("Unexpected CSV:\n" + result, result.contains("templates/import_page.html.twig,,,,,\n"));
     }
 
     /**
-     * {% form_theme form with 'base.html.twig' %} populates the twig_form_theme column (col 7).
+     * {% form_theme form with 'base.html.twig' %} populates the twig_form_theme column.
      */
     public void testTwigFormThemeFullLine() {
         myFixture.addFileToProject("templates/base.html.twig", "");
@@ -116,8 +131,7 @@ public class TwigTemplateUsageCollectorTest extends SymfonyLightCodeInsightFixtu
 
         String result = new TwigTemplateUsageCollector(getProject()).collect("base.html.twig");
 
-        // path ends with ",\n" = form_theme path + 1 empty (component)
-        assertTrue("Unexpected CSV:\n" + result, result.contains("templates/form_theme.html.twig,\n"));
+        assertTrue("Unexpected CSV:\n" + result, result.contains("templates/form_theme.html.twig,,,\n"));
     }
 
     /**
@@ -140,12 +154,9 @@ public class TwigTemplateUsageCollectorTest extends SymfonyLightCodeInsightFixtu
 
         String result = new TwigTemplateUsageCollector(getProject()).collect("base.html.twig");
 
-        // The combined row starts with "template,controller," — controller is present
         assertTrue("Unexpected CSV:\n" + result, result.contains(
             "base.html.twig,App\\Controller\\HomeController::index,"
         ));
-        // Each relationship path appears in the single row; match the stable suffix+trailing-sep
-        // (paths have an env-specific prefix such as "/src/", so we match the suffix only)
         assertTrue("Unexpected CSV:\n" + result, result.contains("templates/page.html.twig,"));
         assertTrue("Unexpected CSV:\n" + result, result.contains("templates/embed_page.html.twig,"));
         assertTrue("Unexpected CSV:\n" + result, result.contains("templates/child.html.twig,"));

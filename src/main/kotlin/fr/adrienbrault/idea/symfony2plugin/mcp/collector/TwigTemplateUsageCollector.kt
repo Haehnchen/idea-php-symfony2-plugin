@@ -6,6 +6,7 @@ import com.intellij.util.indexing.FileBasedIndex
 import com.intellij.psi.PsiManager
 import com.jetbrains.twig.TwigFile
 import com.jetbrains.twig.TwigFileType
+import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpTwigTemplateUsageStubIndex
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigBlockIndexExtension
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigComponentUsageStubIndex
@@ -69,7 +70,14 @@ class TwigTemplateUsageCollector(private val project: Project) {
             true
         }, scope)
 
-        val csv = StringBuilder("template,controller,twig_include,twig_embed,twig_extends,twig_import,twig_use,twig_form_theme,twig_component\n")
+        // Build reverse map: controller FQN ("App\Controller\Foo::bar") -> sorted list of (routeName, routePath)
+        val controllerToRoutes = mutableMapOf<String, MutableList<Pair<String, String>>>()
+        for ((routeName, route) in RouteHelper.getAllRoutes(project)) {
+            val ctrl = route.controller ?: continue
+            controllerToRoutes.getOrPut(ctrl) { mutableListOf() }.add(Pair(routeName, route.path ?: ""))
+        }
+
+        val csv = StringBuilder("template,controller,twig_include,twig_embed,twig_extends,twig_import,twig_use,twig_form_theme,twig_component,route_name,route_path\n")
 
         for (templateName in matchingTemplates) {
             // PHP controller usages
@@ -129,6 +137,12 @@ class TwigTemplateUsageCollector(private val project: Project) {
                 }
             }
 
+            // Collect route names and paths for all controllers in this row (ordered by controller, then route name)
+            val routeEntries = controllers
+                .flatMap { ctrl -> controllerToRoutes[ctrl]?.sortedBy { it.first } ?: emptyList() }
+            val routeNames = routeEntries.joinToString(";") { it.first }
+            val routePaths = routeEntries.joinToString(";") { it.second }
+
             csv.append("${escapeCsv(templateName)},")
                 .append("${escapeCsv(controllers.joinToString(";"))},")
                 .append("${escapeCsv(twigIncludes.joinToString(";"))},")
@@ -137,7 +151,9 @@ class TwigTemplateUsageCollector(private val project: Project) {
                 .append("${escapeCsv(twigImports.joinToString(";"))},")
                 .append("${escapeCsv(twigUses.joinToString(";"))},")
                 .append("${escapeCsv(twigFormThemes.joinToString(";"))},")
-                .append("${escapeCsv(twigComponents.joinToString(";"))}\n")
+                .append("${escapeCsv(twigComponents.joinToString(";"))},")
+                .append("${escapeCsv(routeNames)},")
+                .append("${escapeCsv(routePaths)}\n")
         }
 
         return csv.toString()
