@@ -25,7 +25,7 @@ class TwigTemplateUsageMcpToolset : McpToolset {
     @McpDescription("""
         Lists usages of Twig templates. Accepts a partial template name or a project-relative file path (e.g. "templates/home/index.html.twig" → resolves to relative template "home/index.html.twig").
 
-        CSV columns (values semicolon-separated): template,controller,twig_include,twig_embed,twig_extends,twig_import,twig_use,twig_form_theme,twig_component
+        CSV columns (values semicolon-separated): template,controller,twig_include,twig_embed,twig_extends,twig_import,twig_use,twig_form_theme,twig_component,route_name,route_path
         - template: logical template name (e.g. "home/index.html.twig")
         - controller: PHP methods via render()/renderView()/@Template/#[Template]
         - twig_include: {% include %} / {{ include() }}
@@ -35,10 +35,12 @@ class TwigTemplateUsageMcpToolset : McpToolset {
         - twig_use: {% use %}
         - twig_form_theme: {% form_theme %}
         - twig_component: {{ component('X') }} / {% component X %} / <twig:X>
+        - route_name: Symfony route name(s) for controller action(s) in the controller column
+        - route_path: Symfony route path(s) for controller action(s) in the controller column
 
         Example:
-        template,controller,twig_include,twig_embed,twig_extends,twig_import,twig_use,twig_form_theme,twig_component
-        partials/nav.html.twig,App\Controller\BaseController::index,templates/layouts/base.html.twig,,,,,,,
+        template,controller,twig_include,twig_embed,twig_extends,twig_import,twig_use,twig_form_theme,twig_component,route_name,route_path
+        partials/nav.html.twig,App\Controller\BaseController::index,templates/layouts/base.html.twig,,,,,,,app_base_index,/
         layouts/base.html.twig,,,,,templates/pages/home.html.twig;templates/pages/about.html.twig,,,,
     """)
     suspend fun list_twig_template_usages(
