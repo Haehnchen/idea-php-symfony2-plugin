@@ -51,6 +51,9 @@ public class DoctrineUtil {
 
     private static final Key<CachedValue<Map<String, String>>> DOCTRINE_QUERY_BUILDER_NODE_FUNCTIONS = new Key<>("DOCTRINE_QUERY_BUILDER_NODE_FUNCTIONS");
 
+    // Per-file cache for DQL function extraction
+    private static final Key<CachedValue<Map<String, String>>> FILE_DOCTRINE_FUNCTIONS = new Key<>("FILE_DOCTRINE_FUNCTIONS");
+
     /**
      * Index metadata file with its class and repository.
      * As of often class stay in static only context
@@ -216,27 +219,53 @@ public class DoctrineUtil {
                 public @NotNull Result<Map<String, String>> compute() {
                     Map<String, String> items = new HashMap<>();
 
-                    for (PhpClass phpClass : PhpIndex.getInstance(project).getClassesByFQN("\\Doctrine\\ORM\\Query\\Parser")) {
-                        for (Field ownField : phpClass.getOwnFields()) {
-                            ownField.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
-                                @Override
-                                public void visitElement(@NotNull PsiElement element) {
-                                    if (element instanceof ArrayHashElement arrayHashElement) {
-                                        if (arrayHashElement.getKey() instanceof StringLiteralExpression stringLiteralExpression && arrayHashElement.getValue() instanceof ClassConstantReference classConstantReference) {
-                                            String contents = stringLiteralExpression.getContents();
-                                            if (StringUtils.isNotBlank(contents) && classConstantReference.getClassReference() instanceof ClassReference classReference) {
-                                                String fqn = classReference.getFQN();
-                                                if (StringUtils.isNotBlank(fqn) && fqn.toLowerCase().contains("\\Doctrine\\ORM\\Query\\Functions".toLowerCase()) || PhpElementsUtil.isInstanceOf(element.getProject(), fqn, "\\Doctrine\\ORM\\Query\\AST\\Functions\\FunctionNode")) {
-                                                    items.put(contents, fqn);
+                    Collection<PhpClass> phpClasses = PhpIndex.getInstance(project).getClassesByFQN("\\Doctrine\\ORM\\Query\\Parser");
+
+                    // Collect unique files for per-file caching
+                    Set<PsiFile> files = new HashSet<>();
+                    for (PhpClass phpClass : phpClasses) {
+                        PsiFile file = phpClass.getContainingFile();
+                        if (file instanceof PhpFile) {
+                            files.add(file);
+                        }
+                    }
+
+                    // Parse each file (cached per file)
+                    for (PsiFile file : files) {
+                        Map<String, String> fileItems = CachedValuesManager.getCachedValue(file, FILE_DOCTRINE_FUNCTIONS, () -> {
+                            Map<String, String> result = new HashMap<>();
+                            // Resolve classes fresh from file inside cache provider
+                            for (PhpClass phpClass : PhpPsiUtil.findAllClasses((PhpFile) file)) {
+                                // Only process the Parser class
+                                if (!"\\Doctrine\\ORM\\Query\\Parser".equals(phpClass.getFQN())) {
+                                    continue;
+                                }
+
+                                for (Field ownField : phpClass.getOwnFields()) {
+                                    ownField.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
+                                        @Override
+                                        public void visitElement(@NotNull PsiElement element) {
+                                            if (element instanceof ArrayHashElement arrayHashElement) {
+                                                if (arrayHashElement.getKey() instanceof StringLiteralExpression stringLiteralExpression && arrayHashElement.getValue() instanceof ClassConstantReference classConstantReference) {
+                                                    String contents = stringLiteralExpression.getContents();
+                                                    if (StringUtils.isNotBlank(contents) && classConstantReference.getClassReference() instanceof ClassReference classReference) {
+                                                        String fqn = classReference.getFQN();
+                                                        if (StringUtils.isNotBlank(fqn) && fqn.toLowerCase().contains("\\Doctrine\\ORM\\Query\\Functions".toLowerCase()) || PhpElementsUtil.isInstanceOf(element.getProject(), fqn, "\\Doctrine\\ORM\\Query\\AST\\Functions\\FunctionNode")) {
+                                                            result.put(contents, fqn);
+                                                        }
+                                                    }
                                                 }
                                             }
-                                        }
-                                    }
 
-                                    super.visitElement(element);
+                                            super.visitElement(element);
+                                        }
+                                    });
                                 }
-                            });
-                        }
+                            }
+                            return CachedValueProvider.Result.create(result, file);
+                        });
+
+                        items.putAll(fileItems);
                     }
 
                     return CachedValueProvider.Result.create(Collections.unmodifiableMap(items), PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE));
