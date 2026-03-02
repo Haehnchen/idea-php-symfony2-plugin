@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.dic;
 
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementResolveResult;
@@ -35,6 +36,10 @@ abstract public class AbstractServiceReference extends PsiPolyVariantReferenceBa
 
     @Override
     public ResolveResult @NotNull [] multiResolve(boolean incompleteCode) {
+        if (DumbService.isDumb(getElement().getProject())) {
+            return ResolveResult.EMPTY_ARRAY;
+        }
+
         var definitions = ServiceIndexUtil.findServiceDefinitions(
             getElement().getProject(),
             serviceId
@@ -62,6 +67,9 @@ abstract public class AbstractServiceReference extends PsiPolyVariantReferenceBa
     @NotNull
     @Override
     public Object[] getVariants() {
+        if (DumbService.isDumb(getElement().getProject())) {
+            return new Object[0];
+        }
 
         ContainerCollectionResolver.ServiceCollector collector = ContainerCollectionResolver
             .ServiceCollector.create(getElement().getProject());
