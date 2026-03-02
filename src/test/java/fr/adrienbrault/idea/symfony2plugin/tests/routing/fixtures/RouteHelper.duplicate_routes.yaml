@@ -1,0 +1,9 @@
+app_export:
+    path: /v1/activities/export
+    controller: App\Controller\ActivityController::export
+    methods: [POST]
+
+'App\Controller\ActivityController::export':
+    path: /v1/activities/export
+    controller: App\Controller\ActivityController::export
+    methods: [POST]

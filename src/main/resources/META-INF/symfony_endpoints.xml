@@ -1,0 +1,5 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <microservices.endpointsProvider implementation="fr.adrienbrault.idea.symfony2plugin.integrations.endpoints.SymfonyEndpointProvider"/>
+    </extensions>
+</idea-plugin>

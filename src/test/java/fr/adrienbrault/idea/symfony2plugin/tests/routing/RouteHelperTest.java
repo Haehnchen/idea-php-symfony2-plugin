@@ -241,6 +241,21 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
+     * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#getAllRoutesUnique
+     */
+    public void testGetAllRoutesUnique_prefersNamedRouteOverFqcnDuplicate() {
+        myFixture.copyFileToProject("RouteHelper.duplicate_routes.yaml");
+
+        Map<String, Route> allRoutes = RouteHelper.getAllRoutes(getProject());
+        assertNotNull("Raw routes should contain the FQCN route key", allRoutes.get("App\\Controller\\ActivityController::export"));
+        assertNotNull("Raw routes should contain the named route key", allRoutes.get("app_export"));
+
+        Map<String, Route> uniqueRoutes = RouteHelper.getAllRoutesUnique(getProject());
+        assertNotNull("Unique routes should keep named route", uniqueRoutes.get("app_export"));
+        assertNull("Unique routes should drop duplicate FQCN route", uniqueRoutes.get("App\\Controller\\ActivityController::export"));
+    }
+
+    /**
      * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#getRoutesLookupElements
      */
     public void testGetRoutesLookupElements() {

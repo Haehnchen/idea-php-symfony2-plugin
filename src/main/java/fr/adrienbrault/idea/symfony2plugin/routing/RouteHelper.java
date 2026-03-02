@@ -76,6 +76,7 @@ public class RouteHelper {
     };
 
     private static final Key<CachedValue<Map<String, Route>>> ROUTE_CACHE = new Key<>("SYMFONY:ROUTE_CACHE");
+    private static final Key<CachedValue<Map<String, Route>>> ROUTE_UNIQUE_CACHE = new Key<>("SYMFONY:ROUTE_UNIQUE_CACHE");
     private static final Key<CachedValue<Set<String>>> ROUTE_CONTROLLER_RESOLVED_CACHE = new Key<>("ROUTE_CONTROLLER_RESOLVED_CACHE");
 
     private static final Key<CachedValue<Map<String, Route>>> SYMFONY_COMPILED_CACHE_ROUTES = new Key<>("SYMFONY_COMPILED_CACHE_ROUTES");
@@ -1466,6 +1467,72 @@ public class RouteHelper {
             },
             false
         );
+    }
+
+    /**
+     * Returns routes deduplicated by path + controller identity.
+     * If both a named route and an FQCN-style route name point to the same endpoint, the named route wins.
+     */
+    @NotNull
+    public static Map<String, Route> getAllRoutesUnique(final @NotNull Project project) {
+        return CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            ROUTE_UNIQUE_CACHE,
+            () -> {
+                Map<String, Route> routes = deduplicateRoutesPreferNamed(RouteHelper.getAllRoutes(project));
+
+                return CachedValueProvider.Result.create(
+                    Collections.unmodifiableMap(routes),
+                    FileIndexCaches.getModificationTrackerForIndexId(project, RoutesStubIndex.KEY), // index
+                    new CompiledRoutePathFilesModificationTracker(project), // compiled
+                    new AbsoluteFileModificationTracker(getCompiledRouteFiles(project)) // compiled
+                );
+            },
+            false
+        );
+    }
+
+    @NotNull
+    private static Map<String, Route> deduplicateRoutesPreferNamed(@NotNull Map<String, Route> routes) {
+        Map<String, Route> deduplicated = new LinkedHashMap<>();
+        Map<String, String> identityToRouteName = new HashMap<>();
+
+        for (Map.Entry<String, Route> entry : routes.entrySet()) {
+            String routeName = entry.getKey();
+            Route route = entry.getValue();
+            String routeIdentity = getRouteIdentity(routeName, route);
+
+            String existingRouteName = identityToRouteName.get(routeIdentity);
+            if (existingRouteName == null) {
+                identityToRouteName.put(routeIdentity, routeName);
+                deduplicated.put(routeName, route);
+                continue;
+            }
+
+            if (isFqcnRouteName(existingRouteName) && !isFqcnRouteName(routeName)) {
+                deduplicated.remove(existingRouteName);
+                deduplicated.put(routeName, route);
+                identityToRouteName.put(routeIdentity, routeName);
+            }
+        }
+
+        return deduplicated;
+    }
+
+    @NotNull
+    private static String getRouteIdentity(@NotNull String routeName, @NotNull Route route) {
+        String path = StringUtils.trimToEmpty(route.getPath());
+        String controller = StringUtils.trimToEmpty(route.getController());
+
+        if (path.isEmpty() && controller.isEmpty()) {
+            return "name:" + routeName;
+        }
+
+        return "path:" + path + "|controller:" + controller;
+    }
+
+    private static boolean isFqcnRouteName(@NotNull String routeName) {
+        return routeName.contains("\\");
     }
 
     @NotNull
