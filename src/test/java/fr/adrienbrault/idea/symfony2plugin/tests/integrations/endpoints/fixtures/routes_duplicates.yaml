@@ -1,0 +1,4 @@
+'App\Controller\UserController::list':
+    path: /users
+    controller: App\Controller\UserController::list
+    methods: [GET, POST]

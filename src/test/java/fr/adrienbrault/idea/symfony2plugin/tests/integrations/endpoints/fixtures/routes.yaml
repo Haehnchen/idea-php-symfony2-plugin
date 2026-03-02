@@ -1,0 +1,27 @@
+app_home:
+    path: /
+    controller: App\Controller\HomeController::index
+    methods: [GET]
+
+app_user_list:
+    path: /users
+    controller: App\Controller\UserController::list
+    methods: [GET, POST]
+
+app_user_show:
+    path: /users/{id}
+    controller: App\Controller\UserController::show
+    methods: [GET]
+
+api_products_list:
+    path: /api/products
+    controller: App\Controller\Api\ProductController::list
+    methods: [GET]
+
+_wdt:
+    path: /_wdt/{token}
+    controller: web_profiler.controller.profiler::toolbarAction
+
+_profiler:
+    path: /_profiler/{token}
+    controller: web_profiler.controller.profiler::panelAction
