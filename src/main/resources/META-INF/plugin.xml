@@ -789,6 +789,9 @@
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.TwigExtensionToAttributeIntention</className>
             <category>Symfony</category>
         </intentionAction>
+
+        <referencesSearch implementation="fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigTemplateReferencesSearchExecutor"/>
+        <usageTypeProvider implementation="fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigTemplateUsageTypeProvider"/>
     </extensions>
 
     <extensionPoints>

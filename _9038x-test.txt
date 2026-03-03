@@ -1,0 +1,3 @@
+https://github.com/valkyrie-language/valkyrie-intellij
+https://github.com/valkyrie-language/valkyrie-intellij/blob/db849d51bebd27f367fe6bc6bc7b664a53100349/src/main/resources/META-INF/plugin.xml#L219
+https://github.com/search?q=repo%253Avalkyrie-language%252Fvalkyrie-intellij+ValkyrieUsageTargetProvider
