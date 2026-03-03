@@ -23,6 +23,17 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2026.1.289
+* Implements ReferencesSearch executor and UsageTypeProvider to enable Find Usages for Twig templates, with results grouped by semantic type (extends, include, embed, component, controller, etc.). (Daniel Espendiller)
+* Add MCP toolset for listing Twig template variables with types and properties (Daniel Espendiller)
+* Update Twig implements file icons (Daniel Espendiller)
+* Remove default resolution for TwigPsiReference in `getTypeGoto` due to "irrelevant" targets. (Daniel Espendiller)
+* Add dumb mode handling to AbstractServiceReference: resolve variants safely during indexing (Daniel Espendiller)
+* [paid] Add quick-fix for replacing `BinaryFileResponse` with `$this->file()` in Symfony controllers, including inspection and unit tests (Daniel Espendiller)
+* Integrate Symfony routes with IntelliJ Endpoints tool window: add route grouping, navigation, and filtering. (Daniel Espendiller)
+* Twig icon provider now supports both: {% include 'template.html.twig' %} and {{ include('template.html.twig') }} (Daniel Espendiller)
+* Extend `list_twig_template_usages` MCP tool to include Symfony route names and paths (Daniel Espendiller)
+
 ## 2026.1.288
 * Introduce per-file caching for event subscribers, DQL functions, form types, Twig extensions, and kernel parameters. (Daniel Espendiller)
 * Add support for `{% types %}` Twig tag: class completion, navigation, and tests. (Daniel Espendiller)
