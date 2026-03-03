@@ -506,10 +506,13 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
     @NotNull
     public static Collection<PsiElement> getTypeGoto(@NotNull PsiElement psiElement) {
         Collection<PsiElement> targetPsiElements = new HashSet<>();
-        if (psiElement.getParent() instanceof TwigPsiReference) {
-            PsiElement defaultResult = ((TwigPsiReference) psiElement.getParent()).resolve();
-            if (defaultResult != null && defaultResult != psiElement.getParent()) return Collections.singleton(defaultResult);
-        }
+
+        // Twig extension is given more uselessly then useful targets, so drop this core contribution
+        //if (psiElement.getParent() instanceof TwigPsiReference) {
+        //    PsiElement defaultResult = ((TwigPsiReference) psiElement.getParent()).resolve();
+        //    if (defaultResult != null && defaultResult != psiElement.getParent()) return Collections.singleton(defaultResult);
+        //}
+
         // class, class.method, class.method.method
         // click on first item is our class name
         Collection<String> beforeLeaf = TwigTypeResolveUtil.formatPsiTypeName(psiElement);
