@@ -1,17 +1,21 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating;
 
 import com.intellij.patterns.PlatformPatterns;
+import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.twig.TwigFileType;
-import com.jetbrains.twig.elements.TwigBlockTag;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
+import fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateGoToDeclarationHandler;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
+import java.util.Collection;
+import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -89,6 +93,26 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
 
     public void testTypesTagClassGotoMultipleVariables() {
         assertNavigationMatch(TwigFileType.INSTANCE, "{% types { foo: 'DateTime', bar: '\\Date<caret>Time' } %}", PlatformPatterns.psiElement(PhpClass.class));
+    }
+
+    public void testTypeGotoIgnoresCoreTwigReferenceResolutionForPropertyAccess() {
+        myFixture.configureByText(
+            TwigFileType.INSTANCE,
+            "{# @var date2 \\Foo\\Template\\Foobar #}\n" +
+                "{{ date2.foobar }}\n" +
+                "{{ date2.foo<caret>bar }}\n"
+        );
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        Collection<PsiElement> typeGoto = TwigTemplateGoToDeclarationHandler.getTypeGoto(psiElement);
+
+        Set<String> methodNames = typeGoto.stream()
+            .filter(Method.class::isInstance)
+            .map(Method.class::cast)
+            .map(Method::getName)
+            .collect(Collectors.toSet());
+
+        assertContainsElements(methodNames, "getFoobar");
     }
 
     public void testSeeTagGoto() {
