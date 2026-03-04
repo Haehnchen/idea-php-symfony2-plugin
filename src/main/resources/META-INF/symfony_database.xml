@@ -1,5 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
 <idea-plugin>
     <actions>
+        <action id="Symfony.AddApplicationDatabaseConnections"
+                class="fr.adrienbrault.idea.symfony2plugin.integrations.database.action.AddApplicationDatabaseConnectionsAction"
+                text="Add Symfony Application Database..."
+                description="Add database connections from Symfony configuration">
+            <add-to-group group-id="DatabaseView.AddDataSourceGroup" anchor="first"/>
+        </action>
         <action id="fr.adrienbrault.idea.symfony2plugin.Navigation.FromTableToDoctrineEntity"
                 text="Go To Related Doctrine Entity"
                 description="Navigate to corresponding Doctrine Entity related to this table"
