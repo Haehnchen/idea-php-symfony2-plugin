@@ -9,7 +9,6 @@ import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.psi.util.PsiModificationTracker;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionScalarArgument;
-import fr.adrienbrault.idea.symfony2plugin.dic.command.SymfonyCommandTestRunLineMarkerProvider;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyCommand;
 import org.apache.commons.lang3.StringUtils;
@@ -39,7 +38,7 @@ public class SymfonyCommandUtil {
                         continue;
                     }
 
-                    for (String commandName : SymfonyCommandTestRunLineMarkerProvider.getCommandNameFromClass(phpClass)) {
+                    for (String commandName : getCommandNameFromClass(phpClass)) {
                         symfonyCommands.put(commandName, phpClass.getFQN());
                     }
                 }
@@ -50,8 +49,7 @@ public class SymfonyCommandUtil {
                         continue;
                     }
 
-                    // Extract command names from the class (using existing method)
-                    for (String commandName : SymfonyCommandTestRunLineMarkerProvider.getCommandNameFromClass(phpClass)) {
+                    for (String commandName : getCommandNameFromClass(phpClass)) {
                         symfonyCommands.put(commandName, phpClass.getFQN());
                     }
                 }
@@ -458,6 +456,64 @@ public class SymfonyCommandUtil {
         }
 
         return null;
+    }
+
+    /**
+     * Extracts console command names from a PHP class. Detection priority:
+     * <ul>
+     *   <li>{@code #[AsCommand(name: '...')]} attribute including aliases (Symfony 5.4+, also 7.3+ without extends Command)</li>
+     *   <li>{@code protected static $defaultName} property with pipe-separated aliases (Symfony 3.4+)</li>
+     *   <li>{@code configure()} method with {@code $this->setName('...')} call (Symfony 2.0+)</li>
+     * </ul>
+     */
+    @NotNull
+    public static List<String> getCommandNameFromClass(@NotNull PhpClass phpClass) {
+        // #[AsCommand] attribute - works for both styles (with and without extends Command)
+        for (PhpAttribute attribute : phpClass.getAttributes("\\Symfony\\Component\\Console\\Attribute\\AsCommand")) {
+            String name = PhpPsiAttributesUtil.getAttributeValueByNameAsStringWithDefaultParameterFallback(attribute, "name");
+            List<String> names = new ArrayList<>();
+
+            if (name != null) {
+                names.add(name);
+            }
+
+            names.addAll(PhpPsiAttributesUtil.getAttributeValueByNameAsArray(attribute, "aliases"));
+
+            if (!names.isEmpty()) {
+                return names;
+            }
+        }
+
+        // Only for classic commands (extends Command)
+        if (PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Console\\Command\\Command")) {
+            Field defaultName = phpClass.findFieldByName("defaultName", false);
+            if (defaultName != null) {
+                PsiElement defaultValue = defaultName.getDefaultValue();
+                if (defaultValue != null) {
+                    String stringValue = PhpElementsUtil.getStringValue(defaultValue);
+                    if (stringValue != null) {
+                        return List.of(stringValue.split("\\|"));
+                    }
+                }
+            }
+
+            Method method = phpClass.findOwnMethodByName("configure");
+            if (method != null) {
+                for (MethodReference methodReference : PhpElementsUtil.collectMethodReferencesInsideControlFlow(method, "setName")) {
+                    PsiElement psiMethodParameter = PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 0);
+                    if (psiMethodParameter == null) {
+                        continue;
+                    }
+
+                    String stringValue = PhpElementsUtil.getStringValue(psiMethodParameter);
+                    if (stringValue != null) {
+                        return Collections.singletonList(stringValue);
+                    }
+                }
+            }
+        }
+
+        return Collections.emptyList();
     }
 
     public record CommandOption(

@@ -5,19 +5,12 @@ import com.intellij.execution.PsiLocation;
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.actions.LazyRunConfigurationProducer;
 import com.intellij.execution.configurations.ConfigurationFactory;
-import com.intellij.execution.configurations.ConfigurationType;
-import com.intellij.execution.configurations.RunConfiguration;
-import com.intellij.openapi.project.DumbAware;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Ref;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.run.PhpRunConfigurationFactoryBase;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import org.jetbrains.annotations.Nls;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyCommandUtil;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
 import java.util.List;
 
 /**
@@ -28,79 +21,57 @@ public class SymfonyCommandRunConfigurationProducer extends LazyRunConfiguration
     @NotNull
     @Override
     public ConfigurationFactory getConfigurationFactory() {
-        return new PhpScrip().getConfigurationFactories()[0];
+        return SymfonyCommandRunConfigurationType.getInstance().getFactory();
     }
 
     @Override
     protected boolean setupConfigurationFromContext(@NotNull SymfonyCommandRunConfiguration configuration, @NotNull ConfigurationContext context, @NotNull Ref<PsiElement> sourceElement) {
-        Location location = context.getLocation();
-        if (location instanceof PsiLocation) {
-            PhpClass phpClass = SymfonyCommandTestRunLineMarkerProvider.getCommandContext(location.getPsiElement());
-            if (phpClass != null) {
-                List<String> commandNameFromClass = SymfonyCommandTestRunLineMarkerProvider.getCommandNameFromClass(phpClass);
-                if (!commandNameFromClass.isEmpty()) {
-                    // first name; on alias
-                    String commandName = commandNameFromClass.iterator().next();
-                    configuration.setCommandName(commandName);
-                    configuration.setName(commandName);
-                    return true;
-                }
-            }
+        Location<?> location = context.getLocation();
+        if (!(location instanceof PsiLocation)) {
+            return false;
         }
 
-        return false;
+        PhpClass phpClass = SymfonyCommandTestRunLineMarkerProvider.getCommandContext(location.getPsiElement());
+        if (phpClass == null) {
+            return false;
+        }
+
+        List<String> commandNames = SymfonyCommandUtil.getCommandNameFromClass(phpClass);
+        if (commandNames.isEmpty()) {
+            return false;
+        }
+
+        String commandName = commandNames.get(0);
+        configuration.setCommandName(commandName);
+        configuration.setName(commandName);
+
+        if (SymfonyCommandTestRunLineMarkerProvider.isSymfonyCliAvailable()) {
+            configuration.setExecutionMode(SymfonyCommandRunConfiguration.ExecutionMode.SYMFONY_CLI);
+        } else {
+            configuration.setExecutionMode(SymfonyCommandRunConfiguration.ExecutionMode.PHP_INTERPRETER);
+        }
+
+        return true;
     }
 
     @Override
     public boolean isConfigurationFromContext(@NotNull SymfonyCommandRunConfiguration configuration, @NotNull ConfigurationContext context) {
-        Location location = context.getLocation();
-        if (location instanceof PsiLocation) {
-            PhpClass phpClass = SymfonyCommandTestRunLineMarkerProvider.getCommandContext(location.getPsiElement());
-            if (phpClass != null) {
-                return !SymfonyCommandTestRunLineMarkerProvider.getCommandNameFromClass(phpClass).isEmpty();
-            }
+        Location<?> location = context.getLocation();
+        if (!(location instanceof PsiLocation)) {
+            return false;
         }
 
-        return false;
-    }
-
-    private static final class PhpScrip implements ConfigurationType, DumbAware {
-        private final ConfigurationFactory myFactory = new PhpRunConfigurationFactoryBase(this, "Symfony Command") {
-            @NotNull
-            public RunConfiguration createTemplateConfiguration(@NotNull Project project) {
-                return new SymfonyCommandRunConfiguration(project, this, "Symfony Command");
-            }
-
-            @NotNull
-            public String getName() {
-                return "Symfony Command";
-            }
-        };
-
-        public PhpScrip() {
+        PhpClass phpClass = SymfonyCommandTestRunLineMarkerProvider.getCommandContext(location.getPsiElement());
+        if (phpClass == null) {
+            return false;
         }
 
-        @Override
-        public @NotNull @Nls(capitalization = Nls.Capitalization.Title) String getDisplayName() {
-            return "Symfony Command";
+        List<String> commandNames = SymfonyCommandUtil.getCommandNameFromClass(phpClass);
+        if (commandNames.isEmpty()) {
+            return false;
         }
 
-        @Override
-        public @Nls(capitalization = Nls.Capitalization.Sentence) String getConfigurationTypeDescription() {
-            return "Symfony Command";
-        }
-
-        public Icon getIcon() {
-            return Symfony2Icons.SYMFONY;
-        }
-
-        public ConfigurationFactory[] getConfigurationFactories() {
-            return new ConfigurationFactory[]{this.myFactory};
-        }
-
-        @NotNull
-        public String getId() {
-            return "symfony.command";
-        }
+        String commandName = configuration.getCommandName();
+        return commandNames.contains(commandName);
     }
 }

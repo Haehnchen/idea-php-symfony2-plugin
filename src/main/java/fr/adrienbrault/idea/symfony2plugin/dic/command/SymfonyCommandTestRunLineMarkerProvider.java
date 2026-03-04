@@ -1,22 +1,23 @@
 package fr.adrienbrault.idea.symfony2plugin.dic.command;
 
-import com.intellij.execution.actions.BaseRunConfigurationAction;
-import com.intellij.execution.actions.RunContextAction;
-import com.intellij.execution.executors.DefaultRunExecutor;
+import com.intellij.execution.lineMarker.ExecutorAction;
 import com.intellij.execution.lineMarker.RunLineMarkerContributor;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
+import com.intellij.util.EnvironmentUtil;
 import com.intellij.util.ObjectUtils;
 import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpPsiAttributesUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyCommandUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,15 +29,44 @@ public class SymfonyCommandTestRunLineMarkerProvider extends RunLineMarkerContri
     @Override
     public @Nullable Info getInfo(@NotNull PsiElement leaf) {
         PhpClass phpClass = getCommandContext(leaf);
-        if (phpClass != null) {
-            List<String> commandNameFromClass = getCommandNameFromClass(phpClass);
-            if (!commandNameFromClass.isEmpty()) {
-                BaseRunConfigurationAction baseRunConfigurationAction = new RunContextAction(DefaultRunExecutor.getRunExecutorInstance());
-                return new Info(AllIcons.RunConfigurations.TestState.Run, new AnAction[]{baseRunConfigurationAction}, (psiElement) -> "Run Command");
-            }
+        if (phpClass == null) {
+            return null;
         }
 
-        return null;
+        List<String> commandNames = SymfonyCommandUtil.getCommandNameFromClass(phpClass);
+        if (commandNames.isEmpty()) {
+            return null;
+        }
+
+        String commandName = commandNames.get(0);
+        List<AnAction> actions = new ArrayList<>();
+
+        Collections.addAll(actions, ExecutorAction.getActions());
+
+        Project project = leaf.getProject();
+        VirtualFile projectDir = ProjectUtil.getProjectDir(project);
+
+        if (projectDir.findFileByRelativePath("bin/console") != null) {
+            actions.add(new SymfonyCommandRunAction(
+                SymfonyCommandRunConfiguration.ExecutionMode.PHP_INTERPRETER,
+                "Run '" + commandName + "' with bin/console",
+                AllIcons.RunConfigurations.TestState.Run
+            ));
+        }
+
+        if (isSymfonyCliAvailable()) {
+            actions.add(new SymfonyCommandRunAction(
+                SymfonyCommandRunConfiguration.ExecutionMode.SYMFONY_CLI,
+                "Run '" + commandName + "' with Symfony CLI",
+                AllIcons.RunConfigurations.TestState.Run
+            ));
+        }
+
+        return new Info(
+            AllIcons.RunConfigurations.TestState.Run,
+            actions.toArray(AnAction.EMPTY_ARRAY),
+            psiElement -> "Run Symfony Command"
+        );
     }
 
     @Nullable
@@ -53,61 +83,19 @@ public class SymfonyCommandTestRunLineMarkerProvider extends RunLineMarkerContri
         return null;
     }
 
-    @NotNull
-    public static List<String> getCommandNameFromClass(@NotNull PhpClass phpClass) {
-        if (PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Console\\Command\\Command")) {
-            // lazy naming:
-            // protected static $defaultName = 'app:create-user'
-            Field defaultName = phpClass.findFieldByName("defaultName", false);
-            if (defaultName != null) {
-                PsiElement defaultValue = defaultName.getDefaultValue();
-                if (defaultValue != null) {
-                    String stringValue = PhpElementsUtil.getStringValue(defaultValue);
+    public static boolean isSymfonyCliAvailable() {
+        String path = EnvironmentUtil.getValue("PATH");
+        if (path == null) {
+            return false;
+        }
 
-                    return stringValue != null
-                        ? List.of(stringValue.split("\\|"))
-                        : Collections.emptyList();
-                }
-            }
-
-            // php attributes:
-            // #[AsCommand('app:create-user')]
-            // #[AsCommand(name: 'app:create-user')]
-            for (PhpAttribute attribute : phpClass.getAttributes("\\Symfony\\Component\\Console\\Attribute\\AsCommand")) {
-                String name = PhpPsiAttributesUtil.getAttributeValueByNameAsStringWithDefaultParameterFallback(attribute, "name");
-                List<String> names = new ArrayList<>();
-
-                if (name != null) {
-                    names.add(name);
-                }
-
-                names.addAll(PhpPsiAttributesUtil.getAttributeValueByNameAsArray(attribute, "aliases"));
-
-                return names;
-            }
-
-            // @TODO: provide tag resolving here
-            // - { name: 'console.command', command: 'app:sunshine' }
-
-            // old style
-            Method method = phpClass.findOwnMethodByName("configure");
-            if(method != null) {
-                for (MethodReference methodReference: PhpElementsUtil.collectMethodReferencesInsideControlFlow(method, "setName")) {
-                    PsiElement psiMethodParameter = PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 0);
-                    if(psiMethodParameter == null) {
-                        continue;
-                    }
-
-                    String stringValue = PhpElementsUtil.getStringValue(psiMethodParameter);
-                    if(stringValue == null) {
-                        continue;
-                    }
-
-                    return Collections.singletonList(stringValue);
-                }
+        for (String dir : path.split(File.pathSeparator)) {
+            File file = new File(dir, "symfony");
+            if (file.isFile() && file.canExecute()) {
+                return true;
             }
         }
 
-        return Collections.emptyList();
+        return false;
     }
 }
