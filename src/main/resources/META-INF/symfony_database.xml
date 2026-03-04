@@ -1,0 +1,10 @@
+<idea-plugin>
+    <actions>
+        <action id="fr.adrienbrault.idea.symfony2plugin.Navigation.FromTableToDoctrineEntity"
+                text="Go To Related Doctrine Entity"
+                description="Navigate to corresponding Doctrine Entity related to this table"
+                class="fr.adrienbrault.idea.symfony2plugin.integrations.database.actions.NavigateToDoctrineEntityFromDbTableAction">
+            <add-to-group group-id="DatabaseView.Navigation.Actions" anchor="before" relative-to-action="Jdbc.OpenEditor.DDL"/>
+        </action>
+    </actions>
+</idea-plugin>

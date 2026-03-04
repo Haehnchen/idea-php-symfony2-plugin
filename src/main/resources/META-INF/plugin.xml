@@ -885,6 +885,7 @@
     <depends config-file="deployment-aware.xml" optional="true" >com.jetbrains.plugins.webDeployment</depends>
     <depends config-file="mcp.xml" optional="true" >com.intellij.mcpServer</depends>
     <depends config-file="symfony_endpoints.xml" optional="true">com.intellij.microservices.ui</depends>
+    <depends config-file="symfony_database.xml" optional="true">com.intellij.database</depends>
     <depends config-file="pay.xml">com.jetbrains.php</depends>
 
     <actions>
