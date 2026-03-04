@@ -1,0 +1,6 @@
+Entity\YamlMappedUser:
+  type: entity
+  table: yaml_users
+  id:
+    id:
+      type: integer
