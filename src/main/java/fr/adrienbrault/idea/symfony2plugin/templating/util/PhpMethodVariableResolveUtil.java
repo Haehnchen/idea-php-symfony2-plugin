@@ -116,7 +116,20 @@ public class PhpMethodVariableResolveUtil {
     }
 
     /**
-     *  search for variables which are possible accessible inside rendered twig template
+     * Search for PSI elements that can hold Twig template variables in the current method scope.
+     *
+     * Sources:
+     * <pre>
+     *   - direct return values: return ['foo' => $bar] / return $templateVars
+     *   - render-like calls discovered by {@link #visitRenderTemplateFunctions(Function, Consumer)}
+     * </pre>
+     *
+     * For render-like calls, the variables argument index depends on the method signature and is
+     * resolved via {@link #getTemplateParameterIndex(FunctionReference)}:
+     * <pre>
+     *   - render/renderView/stream: index 1
+     *   - renderBlock/renderBlockView: index 2
+     * </pre>
      */
     @NotNull
     private static List<PsiElement> collectPossibleTemplateArrays(@NotNull Function method) {
@@ -148,13 +161,36 @@ public class PhpMethodVariableResolveUtil {
         });
 
         for(FunctionReference methodReference : references) {
-            PsiElement templateParameter = PsiElementUtils.getMethodParameterPsiElementAt((methodReference).getParameterList(), 1);
+            PsiElement templateParameter = PsiElementUtils.getMethodParameterPsiElementAt(
+                methodReference.getParameterList(),
+                getTemplateParameterIndex(methodReference)
+            );
             if(templateParameter != null) {
                 collectedTemplateVariables.add(templateParameter);
             }
         }
 
         return collectedTemplateVariables;
+    }
+
+    /**
+     * Resolve the argument index that contains template variables for a render-like call.
+     *
+     * <pre>
+     *   render(string $view, array $parameters = [])
+     *   renderView(string $view, array $parameters = [])
+     *   stream(string $view, array $parameters = [])
+     *   renderBlock(string $view, string $block, array $parameters = [])
+     *   renderBlockView(string $view, string $block, array $parameters = [])
+     * </pre>
+     */
+    private static int getTemplateParameterIndex(@NotNull FunctionReference methodReference) {
+        String methodName = methodReference.getName();
+        if (methodName != null && ("renderBlock".equalsIgnoreCase(methodName) || "renderBlockView".equalsIgnoreCase(methodName))) {
+            return 2;
+        }
+
+        return 1;
     }
 
 
