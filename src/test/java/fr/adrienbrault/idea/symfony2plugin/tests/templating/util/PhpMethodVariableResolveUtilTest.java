@@ -201,4 +201,36 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
 
         assertFalse(vars.containsKey("foobar"));
     }
+
+    /**
+     * @see PhpMethodVariableResolveUtil#collectMethodVariables
+     */
+    public void testCollectMethodVariablesForRenderBlock() {
+        Function function = PhpPsiElementFactory.createFunction(getProject(), "function foobar() {\n" +
+            "$myVar = new \\MyVars\\MyVar();\n" +
+            "$x->renderBlock('foo.html.twig', 'content', ['foobar' => $myVar]);\n" +
+            "\n" +
+            "}"
+        );
+
+        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(function);
+
+        assertContainsElements(vars.keySet(), "foobar");
+    }
+
+    /**
+     * @see PhpMethodVariableResolveUtil#collectMethodVariables
+     */
+    public void testCollectMethodVariablesForRenderBlockView() {
+        Function function = PhpPsiElementFactory.createFunction(getProject(), "function foobar() {\n" +
+            "$myVar = new \\MyVars\\MyVar();\n" +
+            "$x->renderBlockView('foo.html.twig', 'content', ['foobar' => $myVar]);\n" +
+            "\n" +
+            "}"
+        );
+
+        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(function);
+
+        assertContainsElements(vars.keySet(), "foobar");
+    }
 }
