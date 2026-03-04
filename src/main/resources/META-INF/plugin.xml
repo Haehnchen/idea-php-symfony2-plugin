@@ -346,8 +346,9 @@
 
         <editorNotificationProvider implementation="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlSchemaEditorNotificationProvider"/>
 
-        <runLineMarkerContributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.command.SymfonyCommandTestRunLineMarkerProvider"/>
+        <configurationType implementation="fr.adrienbrault.idea.symfony2plugin.dic.command.SymfonyCommandRunConfigurationType"/>
         <runConfigurationProducer implementation="fr.adrienbrault.idea.symfony2plugin.dic.command.SymfonyCommandRunConfigurationProducer"/>
+        <runLineMarkerContributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.command.SymfonyCommandTestRunLineMarkerProvider"/>
 
         <localInspection groupPath="Symfony" shortName="PhpRouteMissingInspection" displayName="Route Missing"
                          groupName="Route"
