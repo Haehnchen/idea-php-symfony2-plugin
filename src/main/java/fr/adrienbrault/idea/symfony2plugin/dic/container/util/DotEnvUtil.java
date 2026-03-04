@@ -27,6 +27,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.io.InputStream;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -63,6 +64,73 @@ public class DotEnvUtil {
         }
 
         return DotEnvUtil.getEnvironmentVariableTargets(project, parameterName);
+    }
+
+    /**
+     * Get environment variable keys with their values from .env files.
+     * Only reads .env files (not docker-compose or Dockerfile) since those
+     * rarely contain DATABASE_URL style connection strings with actual values.
+     */
+    @NotNull
+    public static Map<String, String> getEnvironmentVariablesWithValues(@NotNull Project project) {
+        Map<String, String> variables = new HashMap<>();
+
+        for (VirtualFile virtualFile : collectDotEnvFiles(project)) {
+            try (InputStream inputStream = virtualFile.getInputStream()) {
+                String content = new String(inputStream.readAllBytes(), virtualFile.getCharset());
+                parseDotEnvContent(content, variables);
+            } catch (Throwable ignored) {
+            }
+        }
+
+        return variables;
+    }
+
+    @NotNull
+    private static Set<VirtualFile> collectDotEnvFiles(@NotNull Project project) {
+        Set<VirtualFile> files = new HashSet<>(
+            FilenameIndex.getAllFilesByExt(project, "env", GlobalSearchScope.allScope(project))
+        );
+
+        for (String name : new String[]{".env", ".env.dist", ".env.test", ".env.local"}) {
+            files.addAll(FilenameIndex.getVirtualFilesByName(name, GlobalSearchScope.allScope(project)));
+        }
+
+        VirtualFile projectDir = VfsUtil.findRelativeFile(ProjectUtil.getProjectDir(project));
+        if (projectDir != null) {
+            for (VirtualFile child : projectDir.getChildren()) {
+                if (child.getName().startsWith(".env")) {
+                    files.add(child);
+                }
+            }
+        }
+
+        return files;
+    }
+
+    /**
+     * Parse .env file content into key/value pairs.
+     * Handles double-quoted and single-quoted values by stripping the surrounding quotes.
+     * Unlike Java's Properties.load(), this correctly handles values like:
+     *   DATABASE_URL="postgresql://user:pass@host/db"
+     */
+    private static void parseDotEnvContent(@NotNull String content, @NotNull Map<String, String> variables) {
+        // KEY=VALUE, KEY="VALUE", KEY='VALUE' — optional export prefix, inline comments ignored
+        Pattern pattern = Pattern.compile(
+            "^\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*=\\s*(['\"]?)(.*?)\\2\\s*(?:#.*)?$",
+            Pattern.MULTILINE
+        );
+        Matcher matcher = pattern.matcher(content);
+        while (matcher.find()) {
+            String key = matcher.group(1);
+            String quote = matcher.group(2);
+            String value = matcher.group(3);
+            // For unquoted values, trim trailing whitespace (which may precede an inline comment)
+            if (quote.isEmpty()) {
+                value = value.trim();
+            }
+            variables.put(key, value);
+        }
     }
 
     @NotNull
@@ -103,26 +171,7 @@ public class DotEnvUtil {
     }
 
     private static void visitEnvironment(@NotNull Project project, @NotNull Consumer<Pair<String, PsiElement>> consumer) {
-        Set<VirtualFile> files = new HashSet<>(
-            FilenameIndex.getAllFilesByExt(project, "env", GlobalSearchScope.allScope(project))
-        );
-
-        // try to find some env's ;)
-        for (String file : new String[]{".env", ".env.dist", ".env.test", ".env.local"}) {
-            files.addAll(FilenameIndex.getVirtualFilesByName(file, GlobalSearchScope.allScope(project)));
-        }
-
-        // search root directory for all ".env*" files
-        VirtualFile projectDir = VfsUtil.findRelativeFile(ProjectUtil.getProjectDir(project));
-        if (projectDir != null) {
-            for (VirtualFile child : projectDir.getChildren()) {
-                if (child.getName().startsWith(".env")) {
-                    files.add(child);
-                }
-            }
-        }
-
-        for (VirtualFile virtualFile : files) {
+        for (VirtualFile virtualFile : collectDotEnvFiles(project)) {
             PsiFile file = PsiManager.getInstance(project).findFile(virtualFile);
             if (file == null) {
                 continue;

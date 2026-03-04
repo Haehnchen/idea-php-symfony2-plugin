@@ -4,6 +4,8 @@ import com.intellij.psi.PsiFile;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.DotEnvUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
+import java.util.Map;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -14,6 +16,7 @@ public class DotEnvUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         myFixture.copyFileToProject("env.env");
         myFixture.copyFileToProject("docker-compose.yml");
         myFixture.copyFileToProject("Dockerfile");
+        myFixture.copyFileToProject(".env");
     }
 
     public String getTestDataPath() {
@@ -30,6 +33,31 @@ public class DotEnvUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
             .filter(psiElement -> psiElement instanceof PsiFile && "env.env".equals(((PsiFile) psiElement).getName()))
             .count()
         );
+    }
+
+    public void testGetEnvironmentVariablesWithValuesDoubleQuoted() {
+        Map<String, String> vars = DotEnvUtil.getEnvironmentVariablesWithValues(getProject());
+        assertEquals("postgresql://app:secret@127.0.0.1:5432/mydb?serverVersion=16", vars.get("DATABASE_URL"));
+    }
+
+    public void testGetEnvironmentVariablesWithValuesPlain() {
+        Map<String, String> vars = DotEnvUtil.getEnvironmentVariablesWithValues(getProject());
+        assertEquals("plain_value", vars.get("PLAIN_VAR"));
+    }
+
+    public void testGetEnvironmentVariablesWithValuesSingleQuoted() {
+        Map<String, String> vars = DotEnvUtil.getEnvironmentVariablesWithValues(getProject());
+        assertEquals("single", vars.get("SINGLE_QUOTED"));
+    }
+
+    public void testGetEnvironmentVariablesWithValuesInlineCommentStripped() {
+        Map<String, String> vars = DotEnvUtil.getEnvironmentVariablesWithValues(getProject());
+        assertEquals("value", vars.get("COMMENTED"));
+    }
+
+    public void testGetEnvironmentVariablesWithValuesWhitespaceAroundEquals() {
+        Map<String, String> vars = DotEnvUtil.getEnvironmentVariablesWithValues(getProject());
+        assertEquals("whitespace_value", vars.get("WHITESPACE_KEY"));
     }
 
     public void testGetEnvironmentVariableTargetsForParameter() {
