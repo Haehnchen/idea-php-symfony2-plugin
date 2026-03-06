@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.dic.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
@@ -49,14 +50,16 @@ public class YamlXmlServiceInstanceInspection extends LocalInspectionTool {
         @Nullable
         private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
 
+        private ElementPattern<PsiElement> insideServicesPattern;
+
         private MyPsiElementVisitor(@NotNull ProblemsHolder holder) {
             this.holder = holder;
         }
 
         @Override
-        public void visitElement(PsiElement psiElement) {
+        public void visitElement(@NotNull PsiElement psiElement) {
             // only match inside service definitions
-            if(YamlHelper.isStringValue(psiElement) && YamlElementPatternHelper.getInsideKeyValue("services").accepts(psiElement)) {
+            if(YamlHelper.isStringValue(psiElement) && getInsideServicesPattern().accepts(psiElement)) {
                 visitConstructor(psiElement);
                 visitCall(psiElement);
             }
@@ -108,6 +111,10 @@ public class YamlXmlServiceInstanceInspection extends LocalInspectionTool {
 
         private ContainerCollectionResolver.LazyServiceCollector getLazyServiceCollector(@NotNull Project project) {
             return this.lazyServiceCollector == null ? this.lazyServiceCollector = new ContainerCollectionResolver.LazyServiceCollector(project) : this.lazyServiceCollector;
+        }
+
+        private ElementPattern<PsiElement> getInsideServicesPattern() {
+            return insideServicesPattern != null ? insideServicesPattern : (insideServicesPattern = YamlElementPatternHelper.getInsideKeyValue("services"));
         }
     }
 

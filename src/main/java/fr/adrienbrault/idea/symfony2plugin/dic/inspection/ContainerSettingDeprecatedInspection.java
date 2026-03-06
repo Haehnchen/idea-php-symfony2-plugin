@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.dic.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
@@ -19,22 +20,36 @@ import org.jetbrains.yaml.psi.YAMLKeyValue;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class ContainerSettingDeprecatedInspection {
+
     public static class ContainerSettingDeprecatedInspectionYaml extends LocalInspectionTool {
         public @NotNull PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
             if (!Symfony2ProjectComponent.isEnabled(holder.getProject())) {
                 return super.buildVisitor(holder, isOnTheFly);
             }
 
-            return new PsiElementVisitor() {
-                @Override
-                public void visitElement(@NotNull PsiElement element) {
-                    if (element instanceof YAMLKeyValue) {
-                        registerYmlRoutePatternProblem(holder, (YAMLKeyValue) element);
-                    }
+            return new MyYamlPsiElementVisitor(holder);
+        }
 
-                    super.visitElement(element);
+        private static class MyYamlPsiElementVisitor extends PsiElementVisitor {
+            @NotNull private final ProblemsHolder holder;
+            private ElementPattern<PsiElement> insideServiceKeyPattern;
+
+            MyYamlPsiElementVisitor(@NotNull ProblemsHolder holder) {
+                this.holder = holder;
+            }
+
+            @Override
+            public void visitElement(@NotNull PsiElement element) {
+                if (element instanceof YAMLKeyValue) {
+                    registerYmlRoutePatternProblem(holder, (YAMLKeyValue) element, getInsideServiceKeyPattern());
                 }
-            };
+
+                super.visitElement(element);
+            }
+
+            private ElementPattern<PsiElement> getInsideServiceKeyPattern() {
+                return insideServiceKeyPattern != null ? insideServiceKeyPattern : (insideServiceKeyPattern = YamlElementPatternHelper.getInsideServiceKeyPattern());
+            }
         }
     }
 
@@ -57,9 +72,9 @@ public class ContainerSettingDeprecatedInspection {
         }
     }
 
-    private static void registerYmlRoutePatternProblem(@NotNull ProblemsHolder holder, @NotNull YAMLKeyValue element) {
+    private static void registerYmlRoutePatternProblem(@NotNull ProblemsHolder holder, @NotNull YAMLKeyValue element, @NotNull ElementPattern<PsiElement> insideServiceKeyPattern) {
         String s = PsiElementUtils.trimQuote(element.getKeyText());
-        if (("factory_class".equals(s) || "factory_method".equals(s) || "factory_service".equals(s)) && YamlElementPatternHelper.getInsideServiceKeyPattern().accepts(element)) {
+        if (("factory_class".equals(s) || "factory_method".equals(s) || "factory_service".equals(s)) && insideServiceKeyPattern.accepts(element)) {
             // services:
             //   foo:
             //      factory_*:

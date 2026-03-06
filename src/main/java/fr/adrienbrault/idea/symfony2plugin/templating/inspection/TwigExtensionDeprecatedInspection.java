@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.templating.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
@@ -33,100 +34,125 @@ public class TwigExtensionDeprecatedInspection extends LocalInspectionTool {
             return super.buildVisitor(holder, isOnTheFly);
         }
 
-        return new PsiElementVisitor() {
-            Map<String, String> namedDeprecatedTokenParserTags = null;
-            Set<String> deprecatedFilters = null;
-            Set<String> deprecatedFunctions = null;
+        return new MyPsiElementVisitor(holder);
+    }
 
-            @Override
-            public void visitElement(@NotNull PsiElement element) {
-                // {% tag %}
-                if (element.getNode().getElementType() == TwigTokenTypes.TAG_NAME) {
-                    visitTagTokenName(element);
-                }
+    private static class MyPsiElementVisitor extends PsiElementVisitor {
+        @NotNull
+        private final ProblemsHolder holder;
 
-                // {{ value|filter }}
-                // {% apply filter %}
-                if (TwigPattern.getFilterPattern().accepts(element) || TwigPattern.getApplyFilterPattern().accepts(element)) {
-                    visitFilter(element);
-                }
+        private ElementPattern<?> filterPattern;
+        private ElementPattern<?> applyFilterPattern;
+        private ElementPattern<?> printBlockFunctionPattern;
 
-                // {{ function() }}
-                if (TwigPattern.getPrintBlockFunctionPattern().accepts(element)) {
-                    visitFunction(element);
-                }
+        Map<String, String> namedDeprecatedTokenParserTags = null;
+        Set<String> deprecatedFilters = null;
+        Set<String> deprecatedFunctions = null;
 
-                super.visitElement(element);
+        MyPsiElementVisitor(@NotNull ProblemsHolder holder) {
+            this.holder = holder;
+        }
+
+        @Override
+        public void visitElement(@NotNull PsiElement element) {
+            // {% tag %}
+            if (element.getNode().getElementType() == TwigTokenTypes.TAG_NAME) {
+                visitTagTokenName(element);
             }
 
-            private void visitTagTokenName(PsiElement element) {
-                String tagName = element.getText();
-
-                if (StringUtils.isBlank(tagName)) {
-                    return;
-                }
-
-                // {% endspaceless % }
-                if (tagName.length() > 3 && tagName.startsWith("end")) {
-                    tagName = tagName.substring(3);
-                }
-
-                if (namedDeprecatedTokenParserTags == null) {
-                    namedDeprecatedTokenParserTags = TwigUtil.getNamedDeprecatedTokenParserTags(element.getProject());
-                }
-
-                if (namedDeprecatedTokenParserTags.containsKey(tagName)) {
-                    String descriptionTemplate = namedDeprecatedTokenParserTags.get(tagName);
-
-                    // "Deprecated" highlight is not visible, so we are going here for weak warning
-                    // WEAK_WARNING would be match; but not really visible
-                    holder.registerProblem(
-                        element.getParent(),
-                        descriptionTemplate != null ? descriptionTemplate : "Deprecated Twig tag",
-                        ProblemHighlightType.GENERIC_ERROR_OR_WARNING
-                    );
-                }
+            // {{ value|filter }}
+            // {% apply filter %}
+            if (getFilterPattern().accepts(element) || getApplyFilterPattern().accepts(element)) {
+                visitFilter(element);
             }
 
-            private void visitFilter(PsiElement element) {
-                String filterName = element.getText();
-
-                if (StringUtils.isBlank(filterName)) {
-                    return;
-                }
-
-                if (deprecatedFilters == null) {
-                    deprecatedFilters = TwigUtil.getDeprecatedFilters(element.getProject());
-                }
-
-                if (deprecatedFilters.contains(filterName)) {
-                    holder.registerProblem(
-                        element,
-                        "Deprecated Twig filter",
-                        ProblemHighlightType.GENERIC_ERROR_OR_WARNING
-                    );
-                }
+            // {{ function() }}
+            if (getPrintBlockFunctionPattern().accepts(element)) {
+                visitFunction(element);
             }
 
-            private void visitFunction(PsiElement element) {
-                String functionName = element.getText();
+            super.visitElement(element);
+        }
 
-                if (StringUtils.isBlank(functionName)) {
-                    return;
-                }
+        private void visitTagTokenName(PsiElement element) {
+            String tagName = element.getText();
 
-                if (deprecatedFunctions == null) {
-                    deprecatedFunctions = TwigUtil.getDeprecatedFunctions(element.getProject());
-                }
-
-                if (deprecatedFunctions.contains(functionName)) {
-                    holder.registerProblem(
-                        element,
-                        "Deprecated Twig function",
-                        ProblemHighlightType.GENERIC_ERROR_OR_WARNING
-                    );
-                }
+            if (StringUtils.isBlank(tagName)) {
+                return;
             }
-        };
+
+            // {% endspaceless % }
+            if (tagName.length() > 3 && tagName.startsWith("end")) {
+                tagName = tagName.substring(3);
+            }
+
+            if (namedDeprecatedTokenParserTags == null) {
+                namedDeprecatedTokenParserTags = TwigUtil.getNamedDeprecatedTokenParserTags(element.getProject());
+            }
+
+            if (namedDeprecatedTokenParserTags.containsKey(tagName)) {
+                String descriptionTemplate = namedDeprecatedTokenParserTags.get(tagName);
+
+                // "Deprecated" highlight is not visible, so we are going here for weak warning
+                // WEAK_WARNING would be match; but not really visible
+                holder.registerProblem(
+                    element.getParent(),
+                    descriptionTemplate != null ? descriptionTemplate : "Deprecated Twig tag",
+                    ProblemHighlightType.GENERIC_ERROR_OR_WARNING
+                );
+            }
+        }
+
+        private void visitFilter(PsiElement element) {
+            String filterName = element.getText();
+
+            if (StringUtils.isBlank(filterName)) {
+                return;
+            }
+
+            if (deprecatedFilters == null) {
+                deprecatedFilters = TwigUtil.getDeprecatedFilters(element.getProject());
+            }
+
+            if (deprecatedFilters.contains(filterName)) {
+                holder.registerProblem(
+                    element,
+                    "Deprecated Twig filter",
+                    ProblemHighlightType.GENERIC_ERROR_OR_WARNING
+                );
+            }
+        }
+
+        private void visitFunction(PsiElement element) {
+            String functionName = element.getText();
+
+            if (StringUtils.isBlank(functionName)) {
+                return;
+            }
+
+            if (deprecatedFunctions == null) {
+                deprecatedFunctions = TwigUtil.getDeprecatedFunctions(element.getProject());
+            }
+
+            if (deprecatedFunctions.contains(functionName)) {
+                holder.registerProblem(
+                    element,
+                    "Deprecated Twig function",
+                    ProblemHighlightType.GENERIC_ERROR_OR_WARNING
+                );
+            }
+        }
+
+        private ElementPattern<?> getFilterPattern() {
+            return filterPattern != null ? filterPattern : (filterPattern = TwigPattern.getFilterPattern());
+        }
+
+        private ElementPattern<?> getApplyFilterPattern() {
+            return applyFilterPattern != null ? applyFilterPattern : (applyFilterPattern = TwigPattern.getApplyFilterPattern());
+        }
+
+        private ElementPattern<?> getPrintBlockFunctionPattern() {
+            return printBlockFunctionPattern != null ? printBlockFunctionPattern : (printBlockFunctionPattern = TwigPattern.getPrintBlockFunctionPattern());
+        }
     }
 }

@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.dic.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
@@ -36,30 +37,59 @@ public class YamlClassInspection extends LocalInspectionTool {
             return super.buildVisitor(holder, isOnTheFly);
         }
 
-        return new PsiElementVisitor() {
-            @Override
-            public void visitElement(PsiElement psiElement) {
-                if ((YamlElementPatternHelper.getSingleLineScalarKey("class", "factory_class").accepts(psiElement) || YamlElementPatternHelper.getParameterClassPattern().accepts(psiElement)) && YamlElementPatternHelper.getInsideServiceKeyPattern().accepts(psiElement)) {
-                    // foobar.foo:
-                    //   class: Foobar\Foo
-                    invoke(psiElement, holder);
-                } else if (psiElement.getNode().getElementType() == YAMLTokenTypes.SCALAR_KEY && YamlElementPatternHelper.getServiceIdKeyValuePattern().accepts(psiElement.getParent())) {
-                    // Foobar\Foo: ~
-                    String text = PsiElementUtils.getText(psiElement);
-                    if (StringUtils.isNotBlank(text) && YamlHelper.isClassServiceId(text) && text.contains("\\")) {
-                        PsiElement yamlKeyValue = psiElement.getParent();
-                        if (yamlKeyValue instanceof YAMLKeyValue && YamlHelper.getYamlKeyValue((YAMLKeyValue) yamlKeyValue, "resource") == null && YamlHelper.getYamlKeyValue((YAMLKeyValue) yamlKeyValue, "exclude") == null) {
-                            invoke(psiElement, holder);
-                        }
-                    }
-                }
-
-                super.visitElement(psiElement);
-            }
-        };
+        return new MyPsiElementVisitor(holder);
     }
 
-    private void invoke(@NotNull final PsiElement psiElement, @NotNull ProblemsHolder holder) {
+    private static class MyPsiElementVisitor extends PsiElementVisitor {
+        @NotNull private final ProblemsHolder holder;
+
+        private ElementPattern<?> singleLineClassPattern;
+        private ElementPattern<?> parameterClassPattern;
+        private ElementPattern<?> insideServiceKeyPattern;
+        private ElementPattern<?> serviceIdKeyValuePattern;
+
+        MyPsiElementVisitor(@NotNull ProblemsHolder holder) {
+            this.holder = holder;
+        }
+
+        @Override
+        public void visitElement(PsiElement psiElement) {
+            if ((getSingleLineClassPattern().accepts(psiElement) || getParameterClassPattern().accepts(psiElement)) && getInsideServiceKeyPattern().accepts(psiElement)) {
+                // foobar.foo:
+                //   class: Foobar\Foo
+                invoke(psiElement, holder);
+            } else if (psiElement.getNode().getElementType() == YAMLTokenTypes.SCALAR_KEY && getServiceIdKeyValuePattern().accepts(psiElement.getParent())) {
+                // Foobar\Foo: ~
+                String text = PsiElementUtils.getText(psiElement);
+                if (StringUtils.isNotBlank(text) && YamlHelper.isClassServiceId(text) && text.contains("\\")) {
+                    PsiElement yamlKeyValue = psiElement.getParent();
+                    if (yamlKeyValue instanceof YAMLKeyValue && YamlHelper.getYamlKeyValue((YAMLKeyValue) yamlKeyValue, "resource") == null && YamlHelper.getYamlKeyValue((YAMLKeyValue) yamlKeyValue, "exclude") == null) {
+                        invoke(psiElement, holder);
+                    }
+                }
+            }
+
+            super.visitElement(psiElement);
+        }
+
+        private ElementPattern<?> getSingleLineClassPattern() {
+            return singleLineClassPattern != null ? singleLineClassPattern : (singleLineClassPattern = YamlElementPatternHelper.getSingleLineScalarKey("class", "factory_class"));
+        }
+
+        private ElementPattern<?> getParameterClassPattern() {
+            return parameterClassPattern != null ? parameterClassPattern : (parameterClassPattern = YamlElementPatternHelper.getParameterClassPattern());
+        }
+
+        private ElementPattern<?> getInsideServiceKeyPattern() {
+            return insideServiceKeyPattern != null ? insideServiceKeyPattern : (insideServiceKeyPattern = YamlElementPatternHelper.getInsideServiceKeyPattern());
+        }
+
+        private ElementPattern<?> getServiceIdKeyValuePattern() {
+            return serviceIdKeyValuePattern != null ? serviceIdKeyValuePattern : (serviceIdKeyValuePattern = YamlElementPatternHelper.getServiceIdKeyValuePattern());
+        }
+    }
+
+    private static void invoke(@NotNull final PsiElement psiElement, @NotNull ProblemsHolder holder) {
         String className = PsiElementUtils.getText(psiElement);
 
         Project project = holder.getProject();

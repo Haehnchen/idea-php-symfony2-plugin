@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.templating;
 
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
@@ -67,6 +68,10 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         Map<VirtualFile, FileImplementsLazyLoader> implementsMap = new HashMap<>();
         FileOverwritesLazyLoader fileOverwritesLazyLoader = null;
 
+        var blockTagPattern = TwigPattern.getBlockTagPattern();
+        var blockFunctionPattern = TwigPattern.getPrintBlockOrTagFunctionPattern("block");
+        var formFunctionPattern = TwigPattern.getLeafFunctionPattern("form_start", "form", "form_end", "form_rest");
+
         for(PsiElement psiElement: psiElements) {
             // controller
             if(psiElement instanceof TwigFile twigFile) {
@@ -90,7 +95,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
                 if(overwrites != null) {
                     results.add(overwrites);
                 }
-            } else if (TwigPattern.getBlockTagPattern().accepts(psiElement) || TwigPattern.getPrintBlockOrTagFunctionPattern("block").accepts(psiElement)) {
+            } else if (blockTagPattern.accepts(psiElement) || blockFunctionPattern.accepts(psiElement)) {
                 // blocks: {% block 'foobar' %}, {{ block('foobar') }}
 
                 VirtualFile virtualFile = psiElement.getContainingFile().getVirtualFile();
@@ -111,7 +116,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
                 if(lineOverwrites != null) {
                     results.add(lineOverwrites);
                 }
-            } else if(TwigPattern.getLeafFunctionPattern("form_start", "form", "form_end", "form_rest").accepts(psiElement)) {
+            } else if(formFunctionPattern.accepts(psiElement)) {
                 PsiElement parent = psiElement.getParent();
 
                 LineMarkerInfo<?> lineOverwrites = attachFormType(parent);
@@ -385,6 +390,9 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
     }
 
     public static class UxComponentTargetsPsiElementListCellRenderer extends PsiElementListCellRenderer<PsiElement> {
+        private ElementPattern<PsiElement> componentPattern;
+        private ElementPattern<PsiElement> argumentAfterTagPattern;
+
         @Override
         public String getElementText(PsiElement psiElement) {
             if (psiElement instanceof PhpClass) {
@@ -421,7 +429,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         }
 
         @Nullable
-        private static String getComponentName(@NotNull PsiElement psiElement) {
+        private String getComponentName(@NotNull PsiElement psiElement) {
             if (psiElement instanceof XmlTag xmlTag) {
                 String name = xmlTag.getName();
                 if (name.startsWith("twig:")) {
@@ -433,7 +441,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
                 }
             }
 
-            if (TwigPattern.getComponentPattern().accepts(psiElement) || TwigPattern.getArgumentAfterTagNamePattern("component").accepts(psiElement)) {
+            if (getComponentPattern().accepts(psiElement) || getArgumentAfterTagPattern().accepts(psiElement)) {
                 String componentName = PsiElementUtils.trimQuote(psiElement.getText());
                 return StringUtils.isBlank(componentName) ? null : componentName;
             }
@@ -448,6 +456,14 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             }
 
             return null;
+        }
+
+        private ElementPattern<PsiElement> getComponentPattern() {
+            return componentPattern != null ? componentPattern : (componentPattern = TwigPattern.getComponentPattern());
+        }
+
+        private ElementPattern<PsiElement> getArgumentAfterTagPattern() {
+            return argumentAfterTagPattern != null ? argumentAfterTagPattern : (argumentAfterTagPattern = TwigPattern.getArgumentAfterTagNamePattern("component"));
         }
     }
 

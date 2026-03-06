@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.templating.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
@@ -34,51 +35,66 @@ public class TwigEnumFunctionInspection extends LocalInspectionTool {
             return super.buildVisitor(holder, isOnTheFly);
         }
 
-        return new PsiElementVisitor() {
-            @Override
-            public void visitElement(@NotNull PsiElement element) {
-                // Fast pre-filter: only STRING_TEXT elements can be enum/enum_cases arguments
-                if (element instanceof LeafPsiElement && element.getNode() == null || element.getNode().getElementType() != TwigTokenTypes.STRING_TEXT) {
-                    super.visitElement(element);
-                    return;
-                }
+        return new MyPsiElementVisitor(holder);
+    }
 
-                // enum('App\Config\SomeOption')
-                // enum_cases('App\Config\SomeOption')
-                if (TwigPattern.getPrintBlockOrTagFunctionPattern("enum", "enum_cases").accepts(element)) {
-                    visitEnumFunction(element);
-                }
+    private static class MyPsiElementVisitor extends PsiElementVisitor {
+        @NotNull
+        private final ProblemsHolder holder;
 
+        private ElementPattern<?> enumFunctionPattern;
+
+        MyPsiElementVisitor(@NotNull ProblemsHolder holder) {
+            this.holder = holder;
+        }
+
+        @Override
+        public void visitElement(@NotNull PsiElement element) {
+            // Fast pre-filter: only STRING_TEXT elements can be enum/enum_cases arguments
+            if (element instanceof LeafPsiElement && element.getNode() == null || element.getNode().getElementType() != TwigTokenTypes.STRING_TEXT) {
                 super.visitElement(element);
+                return;
             }
 
-            private void visitEnumFunction(PsiElement element) {
-                String contents = element.getText();
-                if (StringUtils.isBlank(contents)) {
-                    return;
-                }
-
-                // Unescape backslashes: 'App\\Bike\\FooEnum' => 'App\Bike\FooEnum'
-                String className = contents.replace("\\\\", "\\");
-
-                PhpClass phpClass = PhpElementsUtil.getClassInterface(element.getProject(), className);
-
-                if (phpClass == null) {
-                    // Class doesn't exist
-                    holder.registerProblem(
-                        element,
-                        "Missing class: " + className,
-                        ProblemHighlightType.WARNING
-                    );
-                } else if (!phpClass.isEnum()) {
-                    // Class exists but is not an enum
-                    holder.registerProblem(
-                        element,
-                        "Class '" + phpClass.getName() + "' is not an enum",
-                        ProblemHighlightType.WARNING
-                    );
-                }
+            // enum('App\Config\SomeOption')
+            // enum_cases('App\Config\SomeOption')
+            if (getEnumFunctionPattern().accepts(element)) {
+                visitEnumFunction(element);
             }
-        };
+
+            super.visitElement(element);
+        }
+
+        private void visitEnumFunction(PsiElement element) {
+            String contents = element.getText();
+            if (StringUtils.isBlank(contents)) {
+                return;
+            }
+
+            // Unescape backslashes: 'App\\Bike\\FooEnum' => 'App\Bike\FooEnum'
+            String className = contents.replace("\\\\", "\\");
+
+            PhpClass phpClass = PhpElementsUtil.getClassInterface(element.getProject(), className);
+
+            if (phpClass == null) {
+                // Class doesn't exist
+                holder.registerProblem(
+                    element,
+                    "Missing class: " + className,
+                    ProblemHighlightType.WARNING
+                );
+            } else if (!phpClass.isEnum()) {
+                // Class exists but is not an enum
+                holder.registerProblem(
+                    element,
+                    "Class '" + phpClass.getName() + "' is not an enum",
+                    ProblemHighlightType.WARNING
+                );
+            }
+        }
+
+        private ElementPattern<?> getEnumFunctionPattern() {
+            return enumFunctionPattern != null ? enumFunctionPattern : (enumFunctionPattern = TwigPattern.getPrintBlockOrTagFunctionPattern("enum", "enum_cases"));
+        }
     }
 }

@@ -48,9 +48,12 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
         }
 
         LazyDecoratedParentServiceValues lazyDecoratedParentServiceValues = null;
+        var xmlTagNameLeafPattern = XmlHelper.getXmlTagNameLeafStartPattern();
+        var serviceIdPattern = getServiceIdPattern();
+        var prototypeNamespacePattern = getPrototypeNamespacePattern();
 
         for (PsiElement psiElement : psiElements) {
-            if(!XmlHelper.getXmlTagNameLeafStartPattern().accepts(psiElement)) {
+            if(!xmlTagNameLeafPattern.accepts(psiElement)) {
                 continue;
             }
 
@@ -59,7 +62,7 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
                 continue;
             }
 
-            if (getServiceIdPattern().accepts(xmlTag)) {
+            if (serviceIdPattern.accepts(xmlTag)) {
                 if(lazyDecoratedParentServiceValues == null) {
                     lazyDecoratedParentServiceValues = new LazyDecoratedParentServiceValues(project);
                 }
@@ -70,7 +73,7 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
                 continue;
             }
 
-            if (getPrototypeNamespacePattern().accepts(xmlTag)) {
+            if (prototypeNamespacePattern.accepts(xmlTag)) {
                 String namespace = ((XmlTag) xmlTag).getAttributeValue("namespace");
                 if (StringUtils.isBlank(namespace)) {
                     continue;

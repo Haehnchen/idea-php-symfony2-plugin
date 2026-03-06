@@ -35,13 +35,14 @@ public class PhpLineMarkerProvider implements LineMarkerProvider {
 
     @Override
     public void collectSlowLineMarkers(@NotNull List<? extends PsiElement> psiElements, @NotNull Collection<? super LineMarkerInfo<?>> lineMarkerInfos) {
-        if(psiElements.isEmpty() || !Symfony2ProjectComponent.isEnabled(psiElements.get(0))) {
+        if(psiElements.isEmpty() || !Symfony2ProjectComponent.isEnabled(psiElements.getFirst())) {
             return;
         }
 
-        Project project = psiElements.get(0).getProject();
+        Project project = psiElements.getFirst().getProject();
+        var classNamePattern = PhpElementsUtil.getClassNamePattern();
         for (PsiElement psiElement : psiElements) {
-            if (PhpElementsUtil.getClassNamePattern().accepts(psiElement)) {
+            if (classNamePattern.accepts(psiElement)) {
                 attachFormDataClass(lineMarkerInfos, psiElement);
                 attachPhpClassToFormDataClass(project, lineMarkerInfos, psiElement);
             }

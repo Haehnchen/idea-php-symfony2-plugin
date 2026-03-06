@@ -43,7 +43,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
         }
 
         LazyDecoratedParentServiceValues lazyDecoratedServices = null;
-
+        var serviceIdKeyValuePattern = YamlElementPatternHelper.getServiceIdKeyValuePattern();
 
         for (PsiElement psiElement : psiElements) {
             if(psiElement.getNode().getElementType() != YAMLTokenTypes.SCALAR_KEY) {
@@ -51,7 +51,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
             }
 
             PsiElement yamlKeyValue = psiElement.getParent();
-            if(!(yamlKeyValue instanceof YAMLKeyValue) || !YamlElementPatternHelper.getServiceIdKeyValuePattern().accepts(yamlKeyValue)) {
+            if(!(yamlKeyValue instanceof YAMLKeyValue) || !serviceIdKeyValuePattern.accepts(yamlKeyValue)) {
                 continue;
             }
 

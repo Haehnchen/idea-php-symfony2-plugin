@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.codeInspection.service;
 
 import com.intellij.codeInspection.LocalInspectionTool;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.openapi.util.NotNullLazyValue;
@@ -38,17 +39,28 @@ public class TaggedExtendsInterfaceClassInspection {
                 return super.buildVisitor(holder, isOnTheFly);
             }
 
-            return new PsiElementVisitor() {
-                private NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> serviceCollector;
+            return new MyYamlPsiElementVisitor(holder);
+        }
 
-                @Override
-                public void visitElement(@NotNull PsiElement element) {
-                    visitYamlElement(element, holder);
-                    super.visitElement(element);
-                }
+        private static class MyYamlPsiElementVisitor extends PsiElementVisitor {
+            @NotNull private final ProblemsHolder holder;
+            private NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> serviceCollector;
 
-                private void visitYamlElement(@NotNull PsiElement psiElement, @NotNull ProblemsHolder holder) {
-                    if (YamlElementPatternHelper.getSingleLineScalarKey("class").accepts(psiElement)) {
+            private ElementPattern<?> singleLineClassPattern;
+            private ElementPattern<?> serviceIdKeyValuePattern;
+
+            MyYamlPsiElementVisitor(@NotNull ProblemsHolder holder) {
+                this.holder = holder;
+            }
+
+            @Override
+            public void visitElement(@NotNull PsiElement element) {
+                visitYamlElement(element, holder);
+                super.visitElement(element);
+            }
+
+            private void visitYamlElement(@NotNull PsiElement psiElement, @NotNull ProblemsHolder holder) {
+                    if (getSingleLineClassPattern().accepts(psiElement)) {
 
                         // class: '\Foo'
                         String text = PsiElementUtils.trimQuote(psiElement.getText());
@@ -74,7 +86,7 @@ public class TaggedExtendsInterfaceClassInspection {
                                 }
                             }
                         }
-                    } else if (psiElement.getNode().getElementType() == YAMLTokenTypes.SCALAR_KEY && YamlElementPatternHelper.getServiceIdKeyValuePattern().accepts(psiElement.getParent())) {
+                    } else if (psiElement.getNode().getElementType() == YAMLTokenTypes.SCALAR_KEY && getServiceIdKeyValuePattern().accepts(psiElement.getParent())) {
                         // Foobar\Foo: ~
                         String text = PsiElementUtils.getText(psiElement);
                         if (StringUtils.isNotBlank(text) && YamlHelper.isClassServiceId(text) && text.contains("\\")) {
@@ -89,56 +101,79 @@ public class TaggedExtendsInterfaceClassInspection {
                     }
                 }
 
-                private NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> createLazyServiceCollector() {
-                    if (this.serviceCollector == null) {
-                        this.serviceCollector = NotNullLazyValue.lazy(() -> new ContainerCollectionResolver.LazyServiceCollector(holder.getProject()));
-                    }
-
-                    return this.serviceCollector;
+            private NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> createLazyServiceCollector() {
+                if (this.serviceCollector == null) {
+                    this.serviceCollector = NotNullLazyValue.lazy(() -> new ContainerCollectionResolver.LazyServiceCollector(holder.getProject()));
                 }
-            };
+
+                return this.serviceCollector;
+            }
+
+            private ElementPattern<?> getSingleLineClassPattern() {
+                return singleLineClassPattern != null ? singleLineClassPattern : (singleLineClassPattern = YamlElementPatternHelper.getSingleLineScalarKey("class"));
+            }
+
+            private ElementPattern<?> getServiceIdKeyValuePattern() {
+                return serviceIdKeyValuePattern != null ? serviceIdKeyValuePattern : (serviceIdKeyValuePattern = YamlElementPatternHelper.getServiceIdKeyValuePattern());
+            }
         }
     }
 
     public static class TaggedExtendsInterfaceClassInspectionXml extends LocalInspectionTool {
-        private NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> serviceCollector;
-
         public @NotNull PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
             if (!Symfony2ProjectComponent.isEnabled(holder.getProject())) {
                 return super.buildVisitor(holder, isOnTheFly);
             }
 
-            return new PsiElementVisitor() {
-                private NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> serviceCollector;
+            return new MyXmlPsiElementVisitor(holder);
+        }
 
-                @Override
-                public void visitElement(@NotNull PsiElement element) {
-                    visitXmlElement(element, holder);
-                    super.visitElement(element);
-                }
+        private static class MyXmlPsiElementVisitor extends PsiElementVisitor {
+            @NotNull private final ProblemsHolder holder;
+            private NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> serviceCollector;
 
-                private void visitXmlElement(@NotNull PsiElement element, @NotNull ProblemsHolder holder) {
-                    String className = getClassNameFromServiceDefinition(element);
-                    if (className != null) {
-                        XmlTag parentOfType = PsiTreeUtil.getParentOfType(element, XmlTag.class);
-                        if (parentOfType != null) {
-                            // attach problems to string value only
-                            PsiElement[] psiElements = element.getChildren();
-                            if (psiElements.length > 2) {
-                                registerTaggedProblems(psiElements[1], FormUtil.getTags(parentOfType), className, holder, createLazyServiceCollector());
-                            }
+            private ElementPattern<?> xmlServiceClassAttrPattern;
+            private ElementPattern<?> xmlServiceIdAttrPattern;
+
+            MyXmlPsiElementVisitor(@NotNull ProblemsHolder holder) {
+                this.holder = holder;
+            }
+
+            @Override
+            public void visitElement(@NotNull PsiElement element) {
+                visitXmlElement(element, holder);
+                super.visitElement(element);
+            }
+
+            private void visitXmlElement(@NotNull PsiElement element, @NotNull ProblemsHolder holder) {
+                String className = getClassNameFromServiceDefinition(element, getXmlServiceClassAttrPattern(), getXmlServiceIdAttrPattern());
+                if (className != null) {
+                    XmlTag parentOfType = PsiTreeUtil.getParentOfType(element, XmlTag.class);
+                    if (parentOfType != null) {
+                        // attach problems to string value only
+                        PsiElement[] psiElements = element.getChildren();
+                        if (psiElements.length > 2) {
+                            registerTaggedProblems(psiElements[1], FormUtil.getTags(parentOfType), className, holder, createLazyServiceCollector());
                         }
                     }
                 }
+            }
 
-                private NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> createLazyServiceCollector() {
-                    if (this.serviceCollector == null) {
-                        this.serviceCollector = NotNullLazyValue.lazy(() -> new ContainerCollectionResolver.LazyServiceCollector(holder.getProject()));
-                    }
-
-                    return this.serviceCollector;
+            private NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> createLazyServiceCollector() {
+                if (this.serviceCollector == null) {
+                    this.serviceCollector = NotNullLazyValue.lazy(() -> new ContainerCollectionResolver.LazyServiceCollector(holder.getProject()));
                 }
-            };
+
+                return this.serviceCollector;
+            }
+
+            private ElementPattern<?> getXmlServiceClassAttrPattern() {
+                return xmlServiceClassAttrPattern != null ? xmlServiceClassAttrPattern : (xmlServiceClassAttrPattern = XmlHelper.getServiceClassAttributeWithIdPattern());
+            }
+
+            private ElementPattern<?> getXmlServiceIdAttrPattern() {
+                return xmlServiceIdAttrPattern != null ? xmlServiceIdAttrPattern : (xmlServiceIdAttrPattern = XmlHelper.getServiceIdAttributePattern());
+            }
         }
     }
 
@@ -188,14 +223,14 @@ public class TaggedExtendsInterfaceClassInspection {
      * <service id="Foo\\Bar" />
      */
     @Nullable
-    private static String getClassNameFromServiceDefinition(@NotNull PsiElement element) {
-        if (XmlHelper.getServiceClassAttributeWithIdPattern().accepts(element)) {
+    private static String getClassNameFromServiceDefinition(@NotNull PsiElement element, @NotNull ElementPattern<?> xmlServiceClassAttrPattern, @NotNull ElementPattern<?> xmlServiceIdAttrPattern) {
+        if (xmlServiceClassAttrPattern.accepts(element)) {
             // <service class="Foo\\Bar" id="required_attribute">
             String text = PsiElementUtils.trimQuote(element.getText());
             if (StringUtils.isNotBlank(text)) {
                 return text;
             }
-        } else if (XmlHelper.getServiceIdAttributePattern().accepts(element)) {
+        } else if (xmlServiceIdAttrPattern.accepts(element)) {
             // <service id="Foo\\Bar" />
             String text = PsiElementUtils.trimQuote(element.getText());
             if (StringUtils.isNotBlank(text) && YamlHelper.isClassServiceId(text) && text.contains("\\")) {

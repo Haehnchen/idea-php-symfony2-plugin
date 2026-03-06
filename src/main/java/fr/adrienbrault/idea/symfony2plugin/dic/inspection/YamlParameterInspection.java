@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.dic.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
@@ -31,13 +32,16 @@ public class YamlParameterInspection extends LocalInspectionTool {
         private final @NotNull ProblemsHolder holder;
         private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
 
+        private ElementPattern<PsiElement> serviceParameterPattern;
+        private ElementPattern<PsiElement> insideServiceKeyPattern;
+
         public ParameterVisitor(@NotNull ProblemsHolder holder) {
             this.holder = holder;
         }
 
         @Override
         public void visitElement(@NotNull PsiElement psiElement) {
-            if(YamlElementPatternHelper.getServiceParameterDefinition().accepts(psiElement) && YamlElementPatternHelper.getInsideServiceKeyPattern().accepts(psiElement)) {
+            if(getServiceParameterPattern().accepts(psiElement) && getInsideServiceKeyPattern().accepts(psiElement)) {
                 if (this.lazyServiceCollector == null) {
                     this.lazyServiceCollector = new ContainerCollectionResolver.LazyServiceCollector(holder.getProject());
                 }
@@ -65,6 +69,14 @@ public class YamlParameterInspection extends LocalInspectionTool {
             if (!ContainerCollectionResolver.hasParameterName(lazyServiceCollector, parameterName)) {
                 holder.registerProblem(psiElement, "Symfony: Missing Parameter", ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
             }
+        }
+
+        private ElementPattern<PsiElement> getServiceParameterPattern() {
+            return serviceParameterPattern != null ? serviceParameterPattern : (serviceParameterPattern = YamlElementPatternHelper.getServiceParameterDefinition());
+        }
+
+        private ElementPattern<PsiElement> getInsideServiceKeyPattern() {
+            return insideServiceKeyPattern != null ? insideServiceKeyPattern : (insideServiceKeyPattern = YamlElementPatternHelper.getInsideServiceKeyPattern());
         }
     }
 }

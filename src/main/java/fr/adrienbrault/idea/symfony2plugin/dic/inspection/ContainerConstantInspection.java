@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.dic.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.openapi.project.Project;
@@ -49,13 +50,26 @@ public class ContainerConstantInspection extends LocalInspectionTool {
                 return super.buildVisitor(holder, isOnTheFly);
             }
 
-            return new PsiElementVisitor() {
-                @Override
-                public void visitElement(@NotNull PsiElement element) {
-                    visitXmlElement(element, holder);
-                    super.visitElement(element);
-                }
-            };
+            return new MyXmlPsiElementVisitor(holder);
+        }
+
+        private static class MyXmlPsiElementVisitor extends PsiElementVisitor {
+            @NotNull private final ProblemsHolder holder;
+            private ElementPattern<PsiElement> xmlConstantPattern;
+
+            MyXmlPsiElementVisitor(@NotNull ProblemsHolder holder) {
+                this.holder = holder;
+            }
+
+            @Override
+            public void visitElement(@NotNull PsiElement element) {
+                visitXmlElement(element, holder, getXmlConstantPattern());
+                super.visitElement(element);
+            }
+
+            private ElementPattern<PsiElement> getXmlConstantPattern() {
+                return xmlConstantPattern != null ? xmlConstantPattern : (xmlConstantPattern = XmlHelper.getArgumentValueWithTypePattern("constant"));
+            }
         }
     }
 
@@ -69,8 +83,8 @@ public class ContainerConstantInspection extends LocalInspectionTool {
         }
     }
 
-    private static void visitXmlElement(@NotNull PsiElement psiElement, @NotNull ProblemsHolder holder) {
-        if(!XmlHelper.getArgumentValueWithTypePattern("constant").accepts(psiElement)) {
+    private static void visitXmlElement(@NotNull PsiElement psiElement, @NotNull ProblemsHolder holder, @NotNull ElementPattern<PsiElement> xmlConstantPattern) {
+        if(!xmlConstantPattern.accepts(psiElement)) {
             return;
         }
 

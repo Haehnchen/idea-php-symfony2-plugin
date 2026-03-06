@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.templating.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemsHolder;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -31,28 +32,48 @@ public class TwigAssetsTagMissingInspection extends LocalInspectionTool {
             return super.buildVisitor(holder, isOnTheFly);
         }
 
-        return new PsiElementVisitor() {
-            @Override
-            public void visitElement(PsiElement element) {
-                if(TwigPattern.getAutocompletableAssetTag("stylesheets").accepts(element) && TwigUtil.isValidStringWithoutInterpolatedOrConcat(element)) {
-
-                    String templateName = element.getText();
-                    if (!isKnownAssetFileOrFolder(element, templateName, TwigUtil.CSS_FILES_EXTENSIONS)) {
-                        holder.registerProblem(element, "Missing asset");
-                    }
-                } else if (TwigPattern.getAutocompletableAssetTag("javascripts").accepts(element) && TwigUtil.isValidStringWithoutInterpolatedOrConcat(element)) {
-                    String templateName = element.getText();
-                    if (!isKnownAssetFileOrFolder(element, templateName, TwigUtil.JS_FILES_EXTENSIONS)) {
-                        holder.registerProblem(element, "Missing asset");
-                    }
-                }
-
-                super.visitElement(element);
-            }
-        };
+        return new MyPsiElementVisitor(holder);
     }
 
-    private boolean isKnownAssetFileOrFolder(PsiElement element, String templateName, String... fileTypes) {
+    private static class MyPsiElementVisitor extends PsiElementVisitor {
+        @NotNull
+        private final ProblemsHolder holder;
+
+        private ElementPattern<?> stylesheetsPattern;
+        private ElementPattern<?> javascriptsPattern;
+
+        MyPsiElementVisitor(@NotNull ProblemsHolder holder) {
+            this.holder = holder;
+        }
+
+        @Override
+        public void visitElement(PsiElement element) {
+            if(getStylesheetsPattern().accepts(element) && TwigUtil.isValidStringWithoutInterpolatedOrConcat(element)) {
+
+                String templateName = element.getText();
+                if (!isKnownAssetFileOrFolder(element, templateName, TwigUtil.CSS_FILES_EXTENSIONS)) {
+                    holder.registerProblem(element, "Missing asset");
+                }
+            } else if (getJavascriptsPattern().accepts(element) && TwigUtil.isValidStringWithoutInterpolatedOrConcat(element)) {
+                String templateName = element.getText();
+                if (!isKnownAssetFileOrFolder(element, templateName, TwigUtil.JS_FILES_EXTENSIONS)) {
+                    holder.registerProblem(element, "Missing asset");
+                }
+            }
+
+            super.visitElement(element);
+        }
+
+        private ElementPattern<?> getStylesheetsPattern() {
+            return stylesheetsPattern != null ? stylesheetsPattern : (stylesheetsPattern = TwigPattern.getAutocompletableAssetTag("stylesheets"));
+        }
+
+        private ElementPattern<?> getJavascriptsPattern() {
+            return javascriptsPattern != null ? javascriptsPattern : (javascriptsPattern = TwigPattern.getAutocompletableAssetTag("javascripts"));
+        }
+    }
+
+    private static boolean isKnownAssetFileOrFolder(PsiElement element, String templateName, String... fileTypes) {
         // custom assets
         if(templateName.startsWith("@") && templateName.length() > 1) {
             TwigNamedAssetsServiceParser twigPathServiceParser = ServiceXmlParserFactory.getInstance(element.getProject(), TwigNamedAssetsServiceParser.class);

@@ -60,17 +60,22 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        Project project = psiElements.get(0).getProject();
+        Project project = psiElements.getFirst().getProject();
         if(!Symfony2ProjectComponent.isEnabled(project)) {
             return;
         }
 
+        var methodReturnPattern = PhpElementsUtil.getMethodReturnPattern();
+        var classNamePattern = PhpElementsUtil.getClassNamePattern();
+        var classMethodNamePattern = PhpElementsUtil.getClassMethodNamePattern();
+        var constraintMessagePattern = ConstraintMessageGotoCompletionRegistrar.getConstraintPropertyMessagePattern();
+
         for(PsiElement psiElement: psiElements) {
-            if(PhpElementsUtil.getMethodReturnPattern().accepts(psiElement)) {
+            if(methodReturnPattern.accepts(psiElement)) {
                 this.formNameMarker(psiElement, results);
             }
 
-            if(PhpElementsUtil.getClassNamePattern().accepts(psiElement)) {
+            if(classNamePattern.accepts(psiElement)) {
                 this.classNameMarker(project, psiElement, results);
                 this.entityClassMarker(project, psiElement, results);
                 this.repositoryClassMarker(project, psiElement, results);
@@ -78,12 +83,12 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
                 this.constraintValidatorClassMarker(project, psiElement, results);
             }
 
-            if(PhpElementsUtil.getClassMethodNamePattern().accepts(psiElement)) {
+            if(classMethodNamePattern.accepts(psiElement)) {
                 this.autowireConstructorMarker(project, psiElement, results);
             }
 
             // public $message = 'This value should not be blank.';
-            if (ConstraintMessageGotoCompletionRegistrar.getConstraintPropertyMessagePattern().accepts(psiElement)) {
+            if (constraintMessagePattern.accepts(psiElement)) {
                 this.constraintMessagePropertyMarker(psiElement, results);
             }
         }

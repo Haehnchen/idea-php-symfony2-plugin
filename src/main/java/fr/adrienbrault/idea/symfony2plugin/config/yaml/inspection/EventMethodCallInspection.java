@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.config.yaml.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
@@ -41,7 +42,6 @@ import java.util.stream.Collectors;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class EventMethodCallInspection extends LocalInspectionTool {
-
     @NotNull
     @Override
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
@@ -49,98 +49,132 @@ public class EventMethodCallInspection extends LocalInspectionTool {
             return super.buildVisitor(holder, isOnTheFly);
         }
 
-        return new PsiElementVisitor() {
-            private NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> serviceCollector;
-
-            @Override
-            public void visitElement(@NotNull PsiElement element) {
-                Language language = element.getLanguage();
-
-                if (language == YAMLLanguage.INSTANCE) {
-                    if (this.serviceCollector == null) {
-                        this.serviceCollector = NotNullLazyValue.lazy(() -> new ContainerCollectionResolver.LazyServiceCollector(holder.getProject()));
-                    }
-
-                    visitYmlElement(element, holder, this.serviceCollector);
-                } else if (language == XMLLanguage.INSTANCE) {
-                    if (this.serviceCollector == null) {
-                        this.serviceCollector = NotNullLazyValue.lazy(() -> new ContainerCollectionResolver.LazyServiceCollector(holder.getProject()));
-                    }
-
-                    visitXmlElement(element, holder, this.serviceCollector);
-                } else if (language == PhpLanguage.INSTANCE) {
-                    if (element instanceof StringLiteralExpression stringLiteralExpression) {
-                        visitPhpElement(stringLiteralExpression, holder);
-                    }
-                }
-
-                super.visitElement(element);
-            }
-        };
+        return new MyPsiElementVisitor(holder);
     }
 
-    public void visitXmlElement(@NotNull PsiElement element, @NotNull final ProblemsHolder holder, @NotNull NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> collector) {
-        boolean isSupportedTag = XmlHelper.getTagAttributePattern("tag", "method").inside(XmlHelper.getInsideTagPattern("services")).inFile(XmlHelper.getXmlFilePattern()).accepts(element)
-            || XmlHelper.getTagAttributePattern("call", "method").inside(XmlHelper.getInsideTagPattern("services")).inFile(XmlHelper.getXmlFilePattern()).accepts(element);
+    private static class MyPsiElementVisitor extends PsiElementVisitor {
+        @NotNull private final ProblemsHolder holder;
+        private NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> serviceCollector;
 
-        if (isSupportedTag) {
-            // attach to text child only
-            PsiElement[] psiElements = element.getChildren();
-            if (psiElements.length < 2) {
+        private ElementPattern<?> yamlTagsMethodPattern;
+        private ElementPattern<PsiElement> yamlTextPattern;
+        private ElementPattern<PsiElement> yamlScalarDstringPattern;
+        private ElementPattern<?> yamlInsideCallsPattern;
+        private ElementPattern<?> xmlTagMethodPattern;
+        private ElementPattern<?> xmlCallMethodPattern;
+
+        MyPsiElementVisitor(@NotNull ProblemsHolder holder) {
+            this.holder = holder;
+        }
+
+        @Override
+        public void visitElement(@NotNull PsiElement element) {
+            Language language = element.getLanguage();
+
+            if (language == YAMLLanguage.INSTANCE) {
+                if (this.serviceCollector == null) {
+                    this.serviceCollector = NotNullLazyValue.lazy(() -> new ContainerCollectionResolver.LazyServiceCollector(holder.getProject()));
+                }
+
+                visitYmlElement(element, holder, this.serviceCollector);
+            } else if (language == XMLLanguage.INSTANCE) {
+                if (this.serviceCollector == null) {
+                    this.serviceCollector = NotNullLazyValue.lazy(() -> new ContainerCollectionResolver.LazyServiceCollector(holder.getProject()));
+                }
+
+                visitXmlElement(element, holder, this.serviceCollector);
+            } else if (language == PhpLanguage.INSTANCE) {
+                if (element instanceof StringLiteralExpression stringLiteralExpression) {
+                    visitPhpElement(stringLiteralExpression, holder);
+                }
+            }
+
+            super.visitElement(element);
+        }
+
+        private void visitXmlElement(@NotNull PsiElement element, @NotNull final ProblemsHolder holder, @NotNull NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> collector) {
+            boolean isSupportedTag = getXmlTagMethodPattern().accepts(element)
+                || getXmlCallMethodPattern().accepts(element);
+
+            if (isSupportedTag) {
+                // attach to text child only
+                PsiElement[] psiElements = element.getChildren();
+                if (psiElements.length < 2) {
+                    return;
+                }
+
+                String serviceClassValue = XmlHelper.getServiceDefinitionClass(element);
+                if (StringUtils.isNotBlank(serviceClassValue)) {
+                    registerMethodProblem(psiElements[1], holder, serviceClassValue, collector);
+                }
+            }
+        }
+
+        private void visitYamlMethodTagKey(@NotNull final PsiElement psiElement, @NotNull ProblemsHolder holder, @NotNull NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> collector) {
+            String methodName = PsiElementUtils.trimQuote(psiElement.getText());
+            if(StringUtils.isBlank(methodName)) {
                 return;
             }
 
-            String serviceClassValue = XmlHelper.getServiceDefinitionClass(element);
-            if (StringUtils.isNotBlank(serviceClassValue)) {
-                registerMethodProblem(psiElements[1], holder, serviceClassValue, collector);
+            String classValue = YamlHelper.getServiceDefinitionClassFromTagMethod(psiElement);
+            if(classValue == null) {
+                return;
             }
 
-        }
-    }
-
-    private void visitYamlMethodTagKey(@NotNull final PsiElement psiElement, @NotNull ProblemsHolder holder, @NotNull NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> collector) {
-
-        String methodName = PsiElementUtils.trimQuote(psiElement.getText());
-        if(StringUtils.isBlank(methodName)) {
-            return;
+            registerMethodProblem(psiElement, holder, classValue, collector);
         }
 
-        String classValue = YamlHelper.getServiceDefinitionClassFromTagMethod(psiElement);
-        if(classValue == null) {
-            return;
-        }
+        private void visitYmlElement(@NotNull final PsiElement psiElement, @NotNull ProblemsHolder holder, @NotNull NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> collector) {
+            if(getYamlTagsMethodPattern().accepts(psiElement)) {
+                visitYamlMethodTagKey(psiElement, holder, collector);
+            }
 
-        registerMethodProblem(psiElement, holder, classValue, collector);
-    }
-
-    private void visitYmlElement(@NotNull final PsiElement psiElement, @NotNull ProblemsHolder holder, @NotNull NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> collector) {
-        if(StandardPatterns.and(
-            YamlElementPatternHelper.getInsideKeyValue("tags"),
-            YamlElementPatternHelper.getSingleLineScalarKey("method")
-        ).accepts(psiElement)) {
-            visitYamlMethodTagKey(psiElement, holder, collector);
-        }
-
-        if((PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).accepts(psiElement)
-            || PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_DSTRING).accepts(psiElement)))
-        {
-            visitYamlMethod(psiElement, holder, collector);
-        }
-    }
-
-    private void visitYamlMethod(@NotNull PsiElement psiElement, @NotNull ProblemsHolder holder, @NotNull NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> collector) {
-        if(YamlElementPatternHelper.getInsideKeyValue("calls").accepts(psiElement)) {
-            PsiElement parent = psiElement.getParent();
-            if ((parent instanceof YAMLScalar)) {
-                YamlHelper.visitServiceCall((YAMLScalar) parent, s ->
-                    registerMethodProblem(psiElement, holder, YamlHelper.trimSpecialSyntaxServiceName(s), collector)
-                );
+            if(getYamlTextPattern().accepts(psiElement) || getYamlScalarDstringPattern().accepts(psiElement)) {
+                visitYamlMethod(psiElement, holder, collector);
             }
         }
-    }
 
-    private void registerMethodProblem(final @NotNull PsiElement psiElement, @NotNull ProblemsHolder holder, @NotNull String classKeyValue, @NotNull NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> collector) {
-        registerMethodProblem(psiElement, holder, ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), classKeyValue, collector.get()));
+        private void visitYamlMethod(@NotNull PsiElement psiElement, @NotNull ProblemsHolder holder, @NotNull NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> collector) {
+            if(getYamlInsideCallsPattern().accepts(psiElement)) {
+                PsiElement parent = psiElement.getParent();
+                if ((parent instanceof YAMLScalar)) {
+                    YamlHelper.visitServiceCall((YAMLScalar) parent, s ->
+                        registerMethodProblem(psiElement, holder, YamlHelper.trimSpecialSyntaxServiceName(s), collector)
+                    );
+                }
+            }
+        }
+
+        private static void registerMethodProblem(final @NotNull PsiElement psiElement, @NotNull ProblemsHolder holder, @NotNull String classKeyValue, @NotNull NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> collector) {
+            EventMethodCallInspection.registerMethodProblem(psiElement, holder, ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), classKeyValue, collector.get()));
+        }
+
+        private ElementPattern<?> getYamlTagsMethodPattern() {
+            return yamlTagsMethodPattern != null ? yamlTagsMethodPattern : (yamlTagsMethodPattern = StandardPatterns.and(
+                YamlElementPatternHelper.getInsideKeyValue("tags"),
+                YamlElementPatternHelper.getSingleLineScalarKey("method")
+            ));
+        }
+
+        private ElementPattern<PsiElement> getYamlTextPattern() {
+            return yamlTextPattern != null ? yamlTextPattern : (yamlTextPattern = PlatformPatterns.psiElement(YAMLTokenTypes.TEXT));
+        }
+
+        private ElementPattern<PsiElement> getYamlScalarDstringPattern() {
+            return yamlScalarDstringPattern != null ? yamlScalarDstringPattern : (yamlScalarDstringPattern = PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_DSTRING));
+        }
+
+        private ElementPattern<?> getYamlInsideCallsPattern() {
+            return yamlInsideCallsPattern != null ? yamlInsideCallsPattern : (yamlInsideCallsPattern = YamlElementPatternHelper.getInsideKeyValue("calls"));
+        }
+
+        private ElementPattern<?> getXmlTagMethodPattern() {
+            return xmlTagMethodPattern != null ? xmlTagMethodPattern : (xmlTagMethodPattern = XmlHelper.getTagAttributePattern("tag", "method").inside(XmlHelper.getInsideTagPattern("services")).inFile(XmlHelper.getXmlFilePattern()));
+        }
+
+        private ElementPattern<?> getXmlCallMethodPattern() {
+            return xmlCallMethodPattern != null ? xmlCallMethodPattern : (xmlCallMethodPattern = XmlHelper.getTagAttributePattern("call", "method").inside(XmlHelper.getInsideTagPattern("services")).inFile(XmlHelper.getXmlFilePattern()));
+        }
     }
 
     private static void registerMethodProblem(final @NotNull PsiElement psiElement, @NotNull ProblemsHolder holder, @Nullable PhpClass phpClass) {

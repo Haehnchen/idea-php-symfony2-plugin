@@ -32,8 +32,10 @@ public class PhpSerializerLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
+        var classNamePattern = PhpElementsUtil.getClassNamePattern();
+
         for(PsiElement psiElement : psiElements) {
-            if (psiElement.getNode().getElementType() == PhpTokenTypes.IDENTIFIER && PhpElementsUtil.getClassNamePattern().accepts(psiElement)) {
+            if (psiElement.getNode().getElementType() == PhpTokenTypes.IDENTIFIER && classNamePattern.accepts(psiElement)) {
                 attachSerializerActions(lineMarkerInfos, psiElement);
             }
         }

@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.routing.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
@@ -24,22 +25,35 @@ public class PhpRouteMissingInspection extends LocalInspectionTool {
             return super.buildVisitor(holder, isOnTheFly);
         }
 
-        return new PsiElementVisitor() {
-            @Override
-            public void visitElement(@NotNull PsiElement element) {
-                if(PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern().accepts(element)) {
-                    String contents = PhpElementsUtil.getStringValue(element);
-                    if(StringUtils.isNotBlank(contents)) {
-                        invoke(contents, element, holder);
-                    }
-                }
-
-                super.visitElement(element);
-            }
-        };
+        return new MyPsiElementVisitor(holder);
     }
 
-    private void invoke(@NotNull String routeName, @NotNull final PsiElement element, @NotNull ProblemsHolder holder) {
+    private static class MyPsiElementVisitor extends PsiElementVisitor {
+        @NotNull private final ProblemsHolder holder;
+        private ElementPattern<?> methodWithFirstStringPattern;
+
+        MyPsiElementVisitor(@NotNull ProblemsHolder holder) {
+            this.holder = holder;
+        }
+
+        @Override
+        public void visitElement(@NotNull PsiElement element) {
+            if(getMethodWithFirstStringPattern().accepts(element)) {
+                String contents = PhpElementsUtil.getStringValue(element);
+                if(StringUtils.isNotBlank(contents)) {
+                    invoke(contents, element, holder);
+                }
+            }
+
+            super.visitElement(element);
+        }
+
+        private ElementPattern<?> getMethodWithFirstStringPattern() {
+            return methodWithFirstStringPattern != null ? methodWithFirstStringPattern : (methodWithFirstStringPattern = PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern());
+        }
+    }
+
+    private static void invoke(@NotNull String routeName, @NotNull final PsiElement element, @NotNull ProblemsHolder holder) {
         MethodMatcher.MethodMatchParameter methodMatchParameter = new MethodMatcher.StringParameterMatcher(element, 0)
             .withSignature(PhpRouteReferenceContributor.GENERATOR_SIGNATURES)
             .match();

@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.codeInspection.service;
 
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.psi.PsiElement;
@@ -36,40 +37,52 @@ public class ServiceDeprecatedClassesInspection {
                 return super.buildVisitor(holder, isOnTheFly);
             }
 
-            return new PsiElementVisitor() {
-                private NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> serviceCollector;
+            return new MyYamlPsiElementVisitor(holder);
+        }
 
-                @Override
-                public void visitElement(@NotNull PsiElement element) {
-                    visitYamlElement(element, holder);
-                    super.visitElement(element);
-                }
+        private static class MyYamlPsiElementVisitor extends PsiElementVisitor {
+            @NotNull private final ProblemsHolder holder;
+            private NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> serviceCollector;
+            private ElementPattern<?> singleLineClassPattern;
 
-                private void visitYamlElement(@NotNull PsiElement element, @NotNull ProblemsHolder holder) {
-                    if (YamlElementPatternHelper.getSingleLineScalarKey("class").accepts(element)) {
-                        // class: '\Foo'
-                        String text = PsiElementUtils.trimQuote(element.getText());
-                        if (StringUtils.isNotBlank(text)) {
-                            ProblemRegistrar.attachDeprecatedProblem(element, text, holder, createLazyServiceCollector());
-                        }
-                    } else if (element.getNode().getElementType() == YAMLTokenTypes.TEXT) {
-                        // @service
-                        String text = element.getText();
-                        if (StringUtils.isNotBlank(text) && text.startsWith("@")) {
-                            ProblemRegistrar.attachDeprecatedProblem(element, text.substring(1), holder, createLazyServiceCollector());
-                            ProblemRegistrar.attachServiceDeprecatedProblem(element, text.substring(1), holder, createLazyServiceCollector());
-                        }
+            MyYamlPsiElementVisitor(@NotNull ProblemsHolder holder) {
+                this.holder = holder;
+            }
+
+            @Override
+            public void visitElement(@NotNull PsiElement element) {
+                visitYamlElement(element, holder);
+                super.visitElement(element);
+            }
+
+            private void visitYamlElement(@NotNull PsiElement element, @NotNull ProblemsHolder holder) {
+                if (getSingleLineClassPattern().accepts(element)) {
+                    // class: '\Foo'
+                    String text = PsiElementUtils.trimQuote(element.getText());
+                    if (StringUtils.isNotBlank(text)) {
+                        ProblemRegistrar.attachDeprecatedProblem(element, text, holder, createLazyServiceCollector());
+                    }
+                } else if (element.getNode().getElementType() == YAMLTokenTypes.TEXT) {
+                    // @service
+                    String text = element.getText();
+                    if (StringUtils.isNotBlank(text) && text.startsWith("@")) {
+                        ProblemRegistrar.attachDeprecatedProblem(element, text.substring(1), holder, createLazyServiceCollector());
+                        ProblemRegistrar.attachServiceDeprecatedProblem(element, text.substring(1), holder, createLazyServiceCollector());
                     }
                 }
+            }
 
-                private NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> createLazyServiceCollector() {
-                    if (this.serviceCollector == null) {
-                        this.serviceCollector = NotNullLazyValue.lazy(() -> new ContainerCollectionResolver.LazyServiceCollector(holder.getProject()));
-                    }
-
-                    return this.serviceCollector;
+            private NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> createLazyServiceCollector() {
+                if (this.serviceCollector == null) {
+                    this.serviceCollector = NotNullLazyValue.lazy(() -> new ContainerCollectionResolver.LazyServiceCollector(holder.getProject()));
                 }
-            };
+
+                return this.serviceCollector;
+            }
+
+            private ElementPattern<?> getSingleLineClassPattern() {
+                return singleLineClassPattern != null ? singleLineClassPattern : (singleLineClassPattern = YamlElementPatternHelper.getSingleLineScalarKey("class"));
+            }
         }
     }
 
@@ -79,43 +92,59 @@ public class ServiceDeprecatedClassesInspection {
                 return super.buildVisitor(holder, isOnTheFly);
             }
 
-            return new PsiElementVisitor() {
-                private NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> serviceCollector;
+            return new MyXmlPsiElementVisitor(holder);
+        }
 
-                @Override
-                public void visitElement(@NotNull PsiElement element) {
-                    visitXmlElement(element, holder);
-                    super.visitElement(element);
-                }
+        private static class MyXmlPsiElementVisitor extends PsiElementVisitor {
+            @NotNull private final ProblemsHolder holder;
+            private NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> serviceCollector;
+            private ElementPattern<?> argumentServiceIdPattern;
+            private ElementPattern<?> serviceClassAttributePattern;
 
+            MyXmlPsiElementVisitor(@NotNull ProblemsHolder holder) {
+                this.holder = holder;
+            }
 
-                private void visitXmlElement(@NotNull PsiElement element, @NotNull ProblemsHolder holder) {
-                    boolean serviceArgumentAccepted = XmlHelper.getArgumentServiceIdPattern().accepts(element);
+            @Override
+            public void visitElement(@NotNull PsiElement element) {
+                visitXmlElement(element, holder);
+                super.visitElement(element);
+            }
 
-                    if (serviceArgumentAccepted || XmlHelper.getServiceClassAttributeWithIdPattern().accepts(element)) {
-                        String text = PsiElementUtils.trimQuote(element.getText());
-                        PsiElement[] psiElements = element.getChildren();
+            private void visitXmlElement(@NotNull PsiElement element, @NotNull ProblemsHolder holder) {
+                boolean serviceArgumentAccepted = getArgumentServiceIdPattern().accepts(element);
 
-                        // we need to attach to child because else strike out equal and quote char
-                        if (StringUtils.isNotBlank(text) && psiElements.length > 2) {
-                            ProblemRegistrar.attachDeprecatedProblem(psiElements[1], text, holder, createLazyServiceCollector());
+                if (serviceArgumentAccepted || getServiceClassAttributePattern().accepts(element)) {
+                    String text = PsiElementUtils.trimQuote(element.getText());
+                    PsiElement[] psiElements = element.getChildren();
 
-                            // check service arguments for "deprecated" defs
-                            if (serviceArgumentAccepted) {
-                                ProblemRegistrar.attachServiceDeprecatedProblem(psiElements[1], text, holder, createLazyServiceCollector());
-                            }
+                    // we need to attach to child because else strike out equal and quote char
+                    if (StringUtils.isNotBlank(text) && psiElements.length > 2) {
+                        ProblemRegistrar.attachDeprecatedProblem(psiElements[1], text, holder, createLazyServiceCollector());
+
+                        // check service arguments for "deprecated" defs
+                        if (serviceArgumentAccepted) {
+                            ProblemRegistrar.attachServiceDeprecatedProblem(psiElements[1], text, holder, createLazyServiceCollector());
                         }
                     }
                 }
+            }
 
-                private NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> createLazyServiceCollector() {
-                    if (this.serviceCollector == null) {
-                        this.serviceCollector = NotNullLazyValue.lazy(() -> new ContainerCollectionResolver.LazyServiceCollector(holder.getProject()));
-                    }
-
-                    return this.serviceCollector;
+            private NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> createLazyServiceCollector() {
+                if (this.serviceCollector == null) {
+                    this.serviceCollector = NotNullLazyValue.lazy(() -> new ContainerCollectionResolver.LazyServiceCollector(holder.getProject()));
                 }
-            };
+
+                return this.serviceCollector;
+            }
+
+            private ElementPattern<?> getArgumentServiceIdPattern() {
+                return argumentServiceIdPattern != null ? argumentServiceIdPattern : (argumentServiceIdPattern = XmlHelper.getArgumentServiceIdPattern());
+            }
+
+            private ElementPattern<?> getServiceClassAttributePattern() {
+                return serviceClassAttributePattern != null ? serviceClassAttributePattern : (serviceClassAttributePattern = XmlHelper.getServiceClassAttributeWithIdPattern());
+            }
         }
     }
 
@@ -125,52 +154,64 @@ public class ServiceDeprecatedClassesInspection {
                 return super.buildVisitor(holder, isOnTheFly);
             }
 
-            return new PsiElementVisitor() {
-                private NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> serviceCollector;
+            return new MyPhpPsiElementVisitor(holder);
+        }
 
-                @Override
-                public void visitElement(@NotNull PsiElement element) {
-                    if (element instanceof StringLiteralExpression stringLiteralExpression) {
-                        visitPhpElement(stringLiteralExpression, holder);
-                    }
+        private static class MyPhpPsiElementVisitor extends PsiElementVisitor {
+            @NotNull private final ProblemsHolder holder;
+            private NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> serviceCollector;
+            private ElementPattern<?> autowireServicePattern;
 
-                    super.visitElement(element);
+            MyPhpPsiElementVisitor(@NotNull ProblemsHolder holder) {
+                this.holder = holder;
+            }
+
+            @Override
+            public void visitElement(@NotNull PsiElement element) {
+                if (element instanceof StringLiteralExpression stringLiteralExpression) {
+                    visitPhpElement(stringLiteralExpression, holder);
                 }
 
-                private void visitPhpElement(@NotNull StringLiteralExpression psiElement, @NotNull ProblemsHolder holder) {
-                    // #[Autowire(service: 'foobar')]
-                    PsiElement leafText = PsiElementUtils.getTextLeafElementFromStringLiteralExpression(psiElement);
+                super.visitElement(element);
+            }
 
-                    if (leafText != null && PhpElementsUtil.getAttributeNamedArgumentStringPattern(ServiceContainerUtil.AUTOWIRE_ATTRIBUTE_CLASS, "service").accepts(leafText)) {
-                        String contents = psiElement.getContents();
-                        if (StringUtils.isNotBlank(contents)) {
-                            ProblemRegistrar.attachDeprecatedProblem(psiElement, contents, holder, createLazyServiceCollector());
-                            ProblemRegistrar.attachServiceDeprecatedProblem(psiElement, contents, holder, createLazyServiceCollector());
-                        }
+            private void visitPhpElement(@NotNull StringLiteralExpression psiElement, @NotNull ProblemsHolder holder) {
+                // #[Autowire(service: 'foobar')]
+                PsiElement leafText = PsiElementUtils.getTextLeafElementFromStringLiteralExpression(psiElement);
 
-                        return;
-                    }
-
-                    MethodReference methodReference = PsiElementUtils.getMethodReferenceWithFirstStringParameter(psiElement);
-                    if (methodReference == null || !PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, ServiceContainerUtil.SERVICE_GET_SIGNATURES)) {
-                        return;
-                    }
-
+                if (leafText != null && getAutowireServicePattern().accepts(leafText)) {
                     String contents = psiElement.getContents();
                     if (StringUtils.isNotBlank(contents)) {
                         ProblemRegistrar.attachDeprecatedProblem(psiElement, contents, holder, createLazyServiceCollector());
                         ProblemRegistrar.attachServiceDeprecatedProblem(psiElement, contents, holder, createLazyServiceCollector());
                     }
+
+                    return;
                 }
 
-                private NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> createLazyServiceCollector() {
-                    if (this.serviceCollector == null) {
-                        this.serviceCollector = NotNullLazyValue.lazy(() -> new ContainerCollectionResolver.LazyServiceCollector(holder.getProject()));
-                    }
-
-                    return this.serviceCollector;
+                MethodReference methodReference = PsiElementUtils.getMethodReferenceWithFirstStringParameter(psiElement);
+                if (methodReference == null || !PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, ServiceContainerUtil.SERVICE_GET_SIGNATURES)) {
+                    return;
                 }
-            };
+
+                String contents = psiElement.getContents();
+                if (StringUtils.isNotBlank(contents)) {
+                    ProblemRegistrar.attachDeprecatedProblem(psiElement, contents, holder, createLazyServiceCollector());
+                    ProblemRegistrar.attachServiceDeprecatedProblem(psiElement, contents, holder, createLazyServiceCollector());
+                }
+            }
+
+            private NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> createLazyServiceCollector() {
+                if (this.serviceCollector == null) {
+                    this.serviceCollector = NotNullLazyValue.lazy(() -> new ContainerCollectionResolver.LazyServiceCollector(holder.getProject()));
+                }
+
+                return this.serviceCollector;
+            }
+
+            private ElementPattern<?> getAutowireServicePattern() {
+                return autowireServicePattern != null ? autowireServicePattern : (autowireServicePattern = PhpElementsUtil.getAttributeNamedArgumentStringPattern(ServiceContainerUtil.AUTOWIRE_ATTRIBUTE_CLASS, "service"));
+            }
         }
     }
 

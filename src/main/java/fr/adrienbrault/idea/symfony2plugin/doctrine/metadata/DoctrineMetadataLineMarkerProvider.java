@@ -48,13 +48,17 @@ public class DoctrineMetadataLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
+        var xmlTargetDocumentPattern = DoctrineMetadataPattern.getXmlTargetDocumentClass();
+        var xmlTargetEntityPattern = DoctrineMetadataPattern.getXmlTargetEntityClass();
+        var embeddableNamePattern = DoctrineMetadataPattern.getEmbeddableNameClassPattern();
+
         for(PsiElement psiElement: psiElements) {
             if(psiElement.getNode().getElementType() != XmlTokenType.XML_ATTRIBUTE_VALUE_TOKEN) {
                 continue;
             }
 
             PsiElement xmlAttributeValue = psiElement.getParent();
-            if(xmlAttributeValue instanceof XmlAttributeValue && (DoctrineMetadataPattern.getXmlTargetDocumentClass().accepts(xmlAttributeValue) || DoctrineMetadataPattern.getXmlTargetEntityClass().accepts(xmlAttributeValue) || DoctrineMetadataPattern.getEmbeddableNameClassPattern().accepts(xmlAttributeValue))) {
+            if(xmlAttributeValue instanceof XmlAttributeValue && (xmlTargetDocumentPattern.accepts(xmlAttributeValue) || xmlTargetEntityPattern.accepts(xmlAttributeValue) || embeddableNamePattern.accepts(xmlAttributeValue))) {
                 attachXmlRelationMarker(psiElement, (XmlAttributeValue) xmlAttributeValue, results);
             }
         }

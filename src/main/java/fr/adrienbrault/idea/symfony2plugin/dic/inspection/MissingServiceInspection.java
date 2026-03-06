@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.dic.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
@@ -32,52 +33,66 @@ public class MissingServiceInspection {
                 return super.buildVisitor(holder, isOnTheFly);
             }
 
-            return new PsiElementVisitor() {
-                private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
-
-                @Override
-                public void visitElement(@NotNull PsiElement element) {
-                    if(element.getLanguage() == PhpLanguage.INSTANCE && element instanceof StringLiteralExpression) {
-                        // PHP
-                        MethodReference methodReference = PsiElementUtils.getMethodReferenceWithFirstStringParameter((StringLiteralExpression) element);
-                        if (methodReference != null && PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, ServiceContainerUtil.SERVICE_GET_SIGNATURES)) {
-                            String serviceName = PhpElementsUtil.getFirstArgumentStringValue(methodReference);
-                            if (StringUtils.isNotBlank(serviceName) && !hasService(serviceName)) {
-                                holder.registerProblem(element, INSPECTION_MESSAGE, ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
-                            }
-                        }
-
-                        // #[Autowire(service: 'foobar')]
-                        PsiElement leafText = PsiElementUtils.getTextLeafElementFromStringLiteralExpression((StringLiteralExpression) element);
-
-                        boolean isAttributeLeaf = leafText != null && (
-                            PhpElementsUtil.getAttributeNamedArgumentStringPattern(ServiceContainerUtil.AUTOWIRE_ATTRIBUTE_CLASS, "service").accepts(leafText)
-                                || PhpElementsUtil.getFirstAttributeStringPattern(ServiceContainerUtil.DECORATOR_ATTRIBUTE_CLASS).accepts(leafText)
-                        );
-
-                        if (isAttributeLeaf) {
-                            String serviceName = ((StringLiteralExpression) element).getContents();
-                            if (StringUtils.isNotBlank(serviceName) && !hasService(serviceName)) {
-                                holder.registerProblem(element, INSPECTION_MESSAGE, ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
-                            }
-                        }
-
-                    }
-
-                    super.visitElement(element);
-                }
-
-                private boolean hasService(@NotNull String serviceName) {
-                    if (this.lazyServiceCollector == null) {
-                        this.lazyServiceCollector = new ContainerCollectionResolver.LazyServiceCollector(holder.getProject());
-                    }
-
-                    return ContainerCollectionResolver.hasServiceName(lazyServiceCollector, serviceName);
-                }
-            };
-
+            return new MyPhpPsiElementVisitor(holder);
         }
 
+        private static class MyPhpPsiElementVisitor extends PsiElementVisitor {
+            @NotNull private final ProblemsHolder holder;
+            private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
+            private ElementPattern<?> autowireServicePattern;
+            private ElementPattern<?> decoratorAttributePattern;
+
+            MyPhpPsiElementVisitor(@NotNull ProblemsHolder holder) {
+                this.holder = holder;
+            }
+
+            @Override
+            public void visitElement(@NotNull PsiElement element) {
+                if(element.getLanguage() == PhpLanguage.INSTANCE && element instanceof StringLiteralExpression) {
+                    // PHP
+                    MethodReference methodReference = PsiElementUtils.getMethodReferenceWithFirstStringParameter((StringLiteralExpression) element);
+                    if (methodReference != null && PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, ServiceContainerUtil.SERVICE_GET_SIGNATURES)) {
+                        String serviceName = PhpElementsUtil.getFirstArgumentStringValue(methodReference);
+                        if (StringUtils.isNotBlank(serviceName) && !hasService(serviceName)) {
+                            holder.registerProblem(element, INSPECTION_MESSAGE, ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
+                        }
+                    }
+
+                    // #[Autowire(service: 'foobar')]
+                    PsiElement leafText = PsiElementUtils.getTextLeafElementFromStringLiteralExpression((StringLiteralExpression) element);
+
+                    boolean isAttributeLeaf = leafText != null && (
+                        getAutowireServicePattern().accepts(leafText)
+                            || getDecoratorAttributePattern().accepts(leafText)
+                    );
+
+                    if (isAttributeLeaf) {
+                        String serviceName = ((StringLiteralExpression) element).getContents();
+                        if (StringUtils.isNotBlank(serviceName) && !hasService(serviceName)) {
+                            holder.registerProblem(element, INSPECTION_MESSAGE, ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
+                        }
+                    }
+                }
+
+                super.visitElement(element);
+            }
+
+            private boolean hasService(@NotNull String serviceName) {
+                if (this.lazyServiceCollector == null) {
+                    this.lazyServiceCollector = new ContainerCollectionResolver.LazyServiceCollector(holder.getProject());
+                }
+
+                return ContainerCollectionResolver.hasServiceName(lazyServiceCollector, serviceName);
+            }
+
+            private ElementPattern<?> getAutowireServicePattern() {
+                return autowireServicePattern != null ? autowireServicePattern : (autowireServicePattern = PhpElementsUtil.getAttributeNamedArgumentStringPattern(ServiceContainerUtil.AUTOWIRE_ATTRIBUTE_CLASS, "service"));
+            }
+
+            private ElementPattern<?> getDecoratorAttributePattern() {
+                return decoratorAttributePattern != null ? decoratorAttributePattern : (decoratorAttributePattern = PhpElementsUtil.getFirstAttributeStringPattern(ServiceContainerUtil.DECORATOR_ATTRIBUTE_CLASS));
+            }
+        }
     }
 
 
@@ -88,31 +103,48 @@ public class MissingServiceInspection {
                 return super.buildVisitor(holder, isOnTheFly);
             }
 
-            return new PsiElementVisitor() {
-                private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
+            return new MyYamlPsiElementVisitor(holder);
+        }
 
-                @Override
-                public void visitElement(@NotNull PsiElement element) {
-                    if (YamlElementPatternHelper.getServiceDefinition().accepts(element) && YamlElementPatternHelper.getInsideServiceKeyPattern().accepts(element)) {
-                        String serviceName = YamlHelper.trimSpecialSyntaxServiceName(PsiElementUtils.getText(element));
+        private static class MyYamlPsiElementVisitor extends PsiElementVisitor {
+            @NotNull private final ProblemsHolder holder;
+            private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
+            private ElementPattern<?> serviceDefinitionPattern;
+            private ElementPattern<?> insideServiceKeyPattern;
 
-                        // dont mark "@", "@?", "@@" escaping and expressions
-                        if (serviceName.length() > 2 && !serviceName.startsWith("=") && !serviceName.startsWith("@") && !hasService(serviceName)) {
-                            holder.registerProblem(element, INSPECTION_MESSAGE, ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
-                        }
+            MyYamlPsiElementVisitor(@NotNull ProblemsHolder holder) {
+                this.holder = holder;
+            }
+
+            @Override
+            public void visitElement(@NotNull PsiElement element) {
+                if (getServiceDefinitionPattern().accepts(element) && getInsideServiceKeyPattern().accepts(element)) {
+                    String serviceName = YamlHelper.trimSpecialSyntaxServiceName(PsiElementUtils.getText(element));
+
+                    // dont mark "@", "@?", "@@" escaping and expressions
+                    if (serviceName.length() > 2 && !serviceName.startsWith("=") && !serviceName.startsWith("@") && !hasService(serviceName)) {
+                        holder.registerProblem(element, INSPECTION_MESSAGE, ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
                     }
-
-                    super.visitElement(element);
                 }
 
-                private boolean hasService(@NotNull String serviceName) {
-                    if (this.lazyServiceCollector == null) {
-                        this.lazyServiceCollector = new ContainerCollectionResolver.LazyServiceCollector(holder.getProject());
-                    }
+                super.visitElement(element);
+            }
 
-                    return ContainerCollectionResolver.hasServiceName(lazyServiceCollector, serviceName);
+            private boolean hasService(@NotNull String serviceName) {
+                if (this.lazyServiceCollector == null) {
+                    this.lazyServiceCollector = new ContainerCollectionResolver.LazyServiceCollector(holder.getProject());
                 }
-            };
+
+                return ContainerCollectionResolver.hasServiceName(lazyServiceCollector, serviceName);
+            }
+
+            private ElementPattern<?> getServiceDefinitionPattern() {
+                return serviceDefinitionPattern != null ? serviceDefinitionPattern : (serviceDefinitionPattern = YamlElementPatternHelper.getServiceDefinition());
+            }
+
+            private ElementPattern<?> getInsideServiceKeyPattern() {
+                return insideServiceKeyPattern != null ? insideServiceKeyPattern : (insideServiceKeyPattern = YamlElementPatternHelper.getInsideServiceKeyPattern());
+            }
         }
     }
 }

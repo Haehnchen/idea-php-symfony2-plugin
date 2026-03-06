@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
@@ -31,9 +32,10 @@ public class TwigVariablePathInspection extends LocalInspectionTool {
     }
 
     private static class MyPsiElementVisitor extends PsiElementVisitor {
-
         @NotNull
         private final ProblemsHolder holder;
+
+        private ElementPattern<PsiElement> typeCompletionPattern;
 
         MyPsiElementVisitor(@NotNull ProblemsHolder holder) {
             this.holder = holder;
@@ -41,7 +43,7 @@ public class TwigVariablePathInspection extends LocalInspectionTool {
 
         @Override
         public void visitElement(PsiElement element) {
-            if(TwigPattern.getTypeCompletionPattern().accepts(element)) {
+            if(getTypeCompletionPattern().accepts(element)) {
                 visit(element);
             }
             super.visitElement(element);
@@ -82,6 +84,10 @@ public class TwigVariablePathInspection extends LocalInspectionTool {
                 PhpElementsUtil.isInstanceOf((PhpClass) phpNamedElement, "ArrayAccess") ||
                 PhpElementsUtil.isInstanceOf((PhpClass) phpNamedElement, "Iterator")
             );
+        }
+
+        private ElementPattern<PsiElement> getTypeCompletionPattern() {
+            return typeCompletionPattern != null ? typeCompletionPattern : (typeCompletionPattern = TwigPattern.getTypeCompletionPattern());
         }
     }
 }

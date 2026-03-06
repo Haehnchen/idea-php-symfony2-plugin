@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.dic.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
@@ -25,21 +26,34 @@ public class ServiceNamedArgumentExistsInspection extends LocalInspectionTool {
             return super.buildVisitor(holder, isOnTheFly);
         }
 
-        return new PsiElementVisitor() {
-            @Override
-            public void visitElement(@NotNull PsiElement element) {
-                if (YamlElementPatternHelper.getNamedArgumentPattern().accepts(element)) {
-                    if (isSupportedDefinition(element) && ServiceContainerUtil.hasMissingYamlNamedArgumentForInspection(element, new ContainerCollectionResolver.LazyServiceCollector(holder.getProject()))) {
-                        holder.registerProblem(element, INSPECTION_MESSAGE, ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
-                    }
-                }
-
-                super.visitElement(element);
-            }
-        };
+        return new MyPsiElementVisitor(holder);
     }
 
-    private boolean isSupportedDefinition(@NotNull PsiElement element) {
+    private static class MyPsiElementVisitor extends PsiElementVisitor {
+        @NotNull private final ProblemsHolder holder;
+        private ElementPattern<?> namedArgumentPattern;
+
+        MyPsiElementVisitor(@NotNull ProblemsHolder holder) {
+            this.holder = holder;
+        }
+
+        @Override
+        public void visitElement(@NotNull PsiElement element) {
+            if (getNamedArgumentPattern().accepts(element)) {
+                if (isSupportedDefinition(element) && ServiceContainerUtil.hasMissingYamlNamedArgumentForInspection(element, new ContainerCollectionResolver.LazyServiceCollector(holder.getProject()))) {
+                    holder.registerProblem(element, INSPECTION_MESSAGE, ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
+                }
+            }
+
+            super.visitElement(element);
+        }
+
+        private ElementPattern<?> getNamedArgumentPattern() {
+            return namedArgumentPattern != null ? namedArgumentPattern : (namedArgumentPattern = YamlElementPatternHelper.getNamedArgumentPattern());
+        }
+    }
+
+    private static boolean isSupportedDefinition(@NotNull PsiElement element) {
         PsiElement context = element.getContext();
 
         if (context instanceof YAMLKeyValue) {
