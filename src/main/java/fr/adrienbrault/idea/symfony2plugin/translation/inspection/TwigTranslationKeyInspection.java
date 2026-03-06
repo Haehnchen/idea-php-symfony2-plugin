@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.translation.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
@@ -31,13 +32,15 @@ public class TwigTranslationKeyInspection extends LocalInspectionTool {
     private static class MyTranslationKeyPsiElementVisitor extends PsiElementVisitor {
         private final ProblemsHolder holder;
 
+        private ElementPattern<PsiElement> translationKeyPattern;
+
         MyTranslationKeyPsiElementVisitor(ProblemsHolder holder) {
             this.holder = holder;
         }
 
         @Override
         public void visitElement(PsiElement psiElement) {
-            if(!TwigPattern.getTranslationKeyPattern("trans", "transchoice").accepts(psiElement)) {
+            if(!getTranslationKeyPattern().accepts(psiElement)) {
                 super.visitElement(psiElement);
                 return;
             }
@@ -64,6 +67,10 @@ public class TwigTranslationKeyInspection extends LocalInspectionTool {
             );
 
             super.visitElement(psiElement);
+        }
+
+        private ElementPattern<PsiElement> getTranslationKeyPattern() {
+            return translationKeyPattern != null ? translationKeyPattern : (translationKeyPattern = TwigPattern.getTranslationKeyPattern("trans", "transchoice"));
         }
     }
 }

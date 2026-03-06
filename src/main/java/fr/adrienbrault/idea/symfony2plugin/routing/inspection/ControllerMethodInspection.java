@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.routing.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemsHolder;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -28,19 +29,32 @@ public class ControllerMethodInspection {
                 return super.buildVisitor(holder, isOnTheFly);
             }
 
-            return new PsiElementVisitor() {
-                @Override
-                public void visitElement(@NotNull PsiElement element) {
-                    if (YamlElementPatternHelper.getSingleLineScalarKey("_controller", "controller").accepts(element)) {
-                        String text = PsiElementUtils.trimQuote(element.getText());
-                        if (StringUtils.isNotBlank(text)) {
-                            InspectionUtil.inspectController(element, text, holder, new YamlLazyRouteName(element));
-                        }
-                    }
+            return new MyYamlPsiElementVisitor(holder);
+        }
 
-                    super.visitElement(element);
+        private static class MyYamlPsiElementVisitor extends PsiElementVisitor {
+            @NotNull private final ProblemsHolder holder;
+            private ElementPattern<?> controllerScalarPattern;
+
+            MyYamlPsiElementVisitor(@NotNull ProblemsHolder holder) {
+                this.holder = holder;
+            }
+
+            @Override
+            public void visitElement(@NotNull PsiElement element) {
+                if (getControllerScalarPattern().accepts(element)) {
+                    String text = PsiElementUtils.trimQuote(element.getText());
+                    if (StringUtils.isNotBlank(text)) {
+                        InspectionUtil.inspectController(element, text, holder, new YamlLazyRouteName(element));
+                    }
                 }
-            };
+
+                super.visitElement(element);
+            }
+
+            private ElementPattern<?> getControllerScalarPattern() {
+                return controllerScalarPattern != null ? controllerScalarPattern : (controllerScalarPattern = YamlElementPatternHelper.getSingleLineScalarKey("_controller", "controller"));
+            }
         }
     }
 
@@ -50,19 +64,32 @@ public class ControllerMethodInspection {
                 return super.buildVisitor(holder, isOnTheFly);
             }
 
-            return new PsiElementVisitor() {
-                @Override
-                public void visitElement(@NotNull PsiElement element) {
-                    if(XmlHelper.getRouteControllerPattern().accepts(element)) {
-                        String text = PsiElementUtils.trimQuote(element.getText());
-                        if(StringUtils.isNotBlank(text)) {
-                            InspectionUtil.inspectController(element, text, holder, new XmlLazyRouteName(element));
-                        }
-                    }
+            return new MyXmlPsiElementVisitor(holder);
+        }
 
-                    super.visitElement(element);
+        private static class MyXmlPsiElementVisitor extends PsiElementVisitor {
+            @NotNull private final ProblemsHolder holder;
+            private ElementPattern<?> routeControllerPattern;
+
+            MyXmlPsiElementVisitor(@NotNull ProblemsHolder holder) {
+                this.holder = holder;
+            }
+
+            @Override
+            public void visitElement(@NotNull PsiElement element) {
+                if(getRouteControllerPattern().accepts(element)) {
+                    String text = PsiElementUtils.trimQuote(element.getText());
+                    if(StringUtils.isNotBlank(text)) {
+                        InspectionUtil.inspectController(element, text, holder, new XmlLazyRouteName(element));
+                    }
                 }
-            };
+
+                super.visitElement(element);
+            }
+
+            private ElementPattern<?> getRouteControllerPattern() {
+                return routeControllerPattern != null ? routeControllerPattern : (routeControllerPattern = XmlHelper.getRouteControllerPattern());
+            }
         }
     }
 

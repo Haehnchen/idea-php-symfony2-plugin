@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.dic.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
@@ -31,25 +32,37 @@ public class XmlServiceInstanceInspection extends LocalInspectionTool {
             return super.buildVisitor(holder, isOnTheFly);
         }
 
-        return new PsiElementVisitor() {
-            private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
-
-            @Override
-            public void visitElement(@NotNull PsiElement psiElement) {
-                if(XmlHelper.getArgumentServiceIdPattern().accepts(psiElement)) {
-                    if (this.lazyServiceCollector == null) {
-                        this.lazyServiceCollector = new ContainerCollectionResolver.LazyServiceCollector(holder.getProject());
-                    }
-
-                    annotateServiceInstance(psiElement, holder, this.lazyServiceCollector);
-                }
-
-                super.visitElement(psiElement);
-            }
-        };
+        return new MyPsiElementVisitor(holder);
     }
 
-    private void annotateServiceInstance(@NotNull PsiElement psiElement, @NotNull ProblemsHolder holder, @NotNull ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector) {
+    private static class MyPsiElementVisitor extends PsiElementVisitor {
+        @NotNull private final ProblemsHolder holder;
+        private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
+        private ElementPattern<?> argumentServiceIdPattern;
+
+        MyPsiElementVisitor(@NotNull ProblemsHolder holder) {
+            this.holder = holder;
+        }
+
+        @Override
+        public void visitElement(@NotNull PsiElement psiElement) {
+            if(getArgumentServiceIdPattern().accepts(psiElement)) {
+                if (this.lazyServiceCollector == null) {
+                    this.lazyServiceCollector = new ContainerCollectionResolver.LazyServiceCollector(holder.getProject());
+                }
+
+                annotateServiceInstance(psiElement, holder, this.lazyServiceCollector);
+            }
+
+            super.visitElement(psiElement);
+        }
+
+        private ElementPattern<?> getArgumentServiceIdPattern() {
+            return argumentServiceIdPattern != null ? argumentServiceIdPattern : (argumentServiceIdPattern = XmlHelper.getArgumentServiceIdPattern());
+        }
+    }
+
+    private static void annotateServiceInstance(@NotNull PsiElement psiElement, @NotNull ProblemsHolder holder, @NotNull ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector) {
         // search for parent service definition
         XmlTag currentXmlTag = PsiTreeUtil.getParentOfType(psiElement, XmlTag.class);
         XmlTag parentXmlTag = PsiTreeUtil.getParentOfType(currentXmlTag, XmlTag.class);
@@ -106,7 +119,7 @@ public class XmlServiceInstanceInspection extends LocalInspectionTool {
         }
     }
 
-    private void attachMethodInstances(@NotNull PsiElement target, @NotNull String serviceName, @NotNull Method method, int parameterIndex, @NotNull ProblemsHolder holder, ContainerCollectionResolver.@NotNull LazyServiceCollector lazyServiceCollector) {
+    private static void attachMethodInstances(@NotNull PsiElement target, @NotNull String serviceName, @NotNull Method method, int parameterIndex, @NotNull ProblemsHolder holder, ContainerCollectionResolver.@NotNull LazyServiceCollector lazyServiceCollector) {
         Parameter[] constructorParameter = method.getParameters();
         if(parameterIndex >= constructorParameter.length) {
             return;

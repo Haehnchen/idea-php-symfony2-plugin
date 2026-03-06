@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.routing.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemsHolder;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -21,19 +22,32 @@ public class TwigRouteMissingInspection extends LocalInspectionTool {
             return super.buildVisitor(holder, isOnTheFly);
         }
 
-        return new PsiElementVisitor() {
-            @Override
-            public void visitElement(@NotNull PsiElement element) {
-                if(TwigPattern.getAutocompletableRoutePattern().accepts(element) && TwigUtil.isValidStringWithoutInterpolatedOrConcat(element)) {
-                    invoke(element, holder);
-                }
-
-                super.visitElement(element);
-            }
-        };
+        return new MyPsiElementVisitor(holder);
     }
 
-    private void invoke(@NotNull final PsiElement element, @NotNull ProblemsHolder holder) {
+    private static class MyPsiElementVisitor extends PsiElementVisitor {
+        @NotNull private final ProblemsHolder holder;
+        private ElementPattern<?> autocompletableRoutePattern;
+
+        MyPsiElementVisitor(@NotNull ProblemsHolder holder) {
+            this.holder = holder;
+        }
+
+        @Override
+        public void visitElement(@NotNull PsiElement element) {
+            if(getAutocompletableRoutePattern().accepts(element) && TwigUtil.isValidStringWithoutInterpolatedOrConcat(element)) {
+                invoke(element, holder);
+            }
+
+            super.visitElement(element);
+        }
+
+        private ElementPattern<?> getAutocompletableRoutePattern() {
+            return autocompletableRoutePattern != null ? autocompletableRoutePattern : (autocompletableRoutePattern = TwigPattern.getAutocompletableRoutePattern());
+        }
+    }
+
+    private static void invoke(@NotNull final PsiElement element, @NotNull ProblemsHolder holder) {
         String text = element.getText();
         if (StringUtils.isBlank(text)) {
             return;

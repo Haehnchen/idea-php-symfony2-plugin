@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
@@ -26,8 +27,9 @@ public class TwigAssetMissingInspection extends LocalInspectionTool {
     }
 
     private static class MyPsiElementVisitor extends PsiElementVisitor {
-
         private final ProblemsHolder holder;
+
+        private ElementPattern<PsiElement> assetPattern;
 
         MyPsiElementVisitor(ProblemsHolder holder) {
             this.holder = holder;
@@ -35,7 +37,7 @@ public class TwigAssetMissingInspection extends LocalInspectionTool {
 
         @Override
         public void visitElement(PsiElement element) {
-            if(TwigPattern.getAutocompletableAssetPattern().accepts(element) && TwigUtil.isValidStringWithoutInterpolatedOrConcat(element)) {
+            if(getAssetPattern().accepts(element) && TwigUtil.isValidStringWithoutInterpolatedOrConcat(element)) {
                 invoke(element, holder);
             }
 
@@ -50,6 +52,10 @@ public class TwigAssetMissingInspection extends LocalInspectionTool {
             }
 
             holder.registerProblem(element, "Missing asset");
+        }
+
+        private ElementPattern<PsiElement> getAssetPattern() {
+            return assetPattern != null ? assetPattern : (assetPattern = TwigPattern.getAutocompletableAssetPattern());
         }
     }
 }

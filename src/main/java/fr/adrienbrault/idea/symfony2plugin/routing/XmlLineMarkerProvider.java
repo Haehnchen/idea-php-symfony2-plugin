@@ -37,10 +37,14 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
+        var xmlTagNameLeafPattern = XmlHelper.getXmlTagNameLeafStartPattern();
+        var routeTagPattern = Pattern.getRouteTag();
+        var routeImportPattern = Pattern.getRouteImport();
+
         for(PsiElement psiElement: psiElements) {
-            if(XmlHelper.getXmlTagNameLeafStartPattern().accepts(psiElement)) {
-                attachRouteActions(psiElement, lineMarkerInfos);
-                attachRouteImport(psiElement, lineMarkerInfos);
+            if(xmlTagNameLeafPattern.accepts(psiElement)) {
+                attachRouteActions(psiElement, lineMarkerInfos, routeTagPattern);
+                attachRouteImport(psiElement, lineMarkerInfos, routeImportPattern);
 
 
 
@@ -54,9 +58,9 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
 
     }
 
-    private void attachRouteActions(@NotNull PsiElement psiElement, @NotNull Collection<? super LineMarkerInfo<?>> lineMarkerInfos) {
+    private void attachRouteActions(@NotNull PsiElement psiElement, @NotNull Collection<? super LineMarkerInfo<?>> lineMarkerInfos, @NotNull XmlTagPattern.Capture routeTagPattern) {
         PsiElement xmlTag = psiElement.getParent();
-        if(!(xmlTag instanceof XmlTag) || !Pattern.getRouteTag().accepts(xmlTag)) {
+        if(!(xmlTag instanceof XmlTag) || !routeTagPattern.accepts(xmlTag)) {
             return;
         }
 
@@ -73,9 +77,9 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
         }
     }
 
-    private void attachRouteImport(@NotNull PsiElement psiElement, @NotNull Collection<? super LineMarkerInfo<?>> lineMarkerInfos) {
+    private void attachRouteImport(@NotNull PsiElement psiElement, @NotNull Collection<? super LineMarkerInfo<?>> lineMarkerInfos, @NotNull XmlTagPattern.Capture routeImportPattern) {
         PsiElement xmlTag = psiElement.getParent();
-        if(!(xmlTag instanceof XmlTag) || !Pattern.getRouteImport().accepts(xmlTag)) {
+        if(!(xmlTag instanceof XmlTag) || !routeImportPattern.accepts(xmlTag)) {
             return;
         }
 
@@ -105,18 +109,19 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
     }
 
     private static class Pattern {
-
-        public static XmlTagPattern.Capture getRouteTag() {
+        // Matches <route> elements directly inside a <routes> container in XML routing files
+        static XmlTagPattern.Capture getRouteTag() {
             return XmlPatterns.xmlTag().withName("route").withParent(
                 XmlPatterns.xmlTag().withName("routes")
             ).inFile(XmlHelper.getXmlFilePattern());
         }
 
-        public static XmlTagPattern.Capture getRouteImport() {
+        // Matches <import> elements directly inside a <routes> container in XML routing files
+        static XmlTagPattern.Capture getRouteImport() {
             return XmlPatterns.xmlTag().withName("import").withParent(
                 XmlPatterns.xmlTag().withName("routes")
             ).inFile(XmlHelper.getXmlFilePattern());
         }
     }
-
 }
+

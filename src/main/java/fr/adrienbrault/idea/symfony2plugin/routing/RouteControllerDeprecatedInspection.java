@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.routing;
 
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
@@ -30,22 +31,37 @@ public class RouteControllerDeprecatedInspection {
                 return super.buildVisitor(holder, isOnTheFly);
             }
 
-            return new PsiElementVisitor() {
-                @Override
-                public void visitElement(@NotNull PsiElement element) {
-                    if (XmlHelper.getRouteControllerPattern().accepts(element)) {
-                        PsiElement parent = element.getParent();
-                        if (parent != null) {
-                            String text = RouteXmlReferenceContributor.getControllerText(parent);
-                            if(text != null) {
-                                hasDeprecatedActionOrClass(project, element, text, holder);
-                            }
+            return new MyXmlPsiElementVisitor(project, holder);
+        }
+
+        private static class MyXmlPsiElementVisitor extends PsiElementVisitor {
+            @NotNull private final Project project;
+            @NotNull private final ProblemsHolder holder;
+            private ElementPattern<?> routeControllerPattern;
+
+            MyXmlPsiElementVisitor(@NotNull Project project, @NotNull ProblemsHolder holder) {
+                this.project = project;
+                this.holder = holder;
+            }
+
+            @Override
+            public void visitElement(@NotNull PsiElement element) {
+                if (getRouteControllerPattern().accepts(element)) {
+                    PsiElement parent = element.getParent();
+                    if (parent != null) {
+                        String text = RouteXmlReferenceContributor.getControllerText(parent);
+                        if(text != null) {
+                            hasDeprecatedActionOrClass(project, element, text, holder);
                         }
                     }
-
-                    super.visitElement(element);
                 }
-            };
+
+                super.visitElement(element);
+            }
+
+            private ElementPattern<?> getRouteControllerPattern() {
+                return routeControllerPattern != null ? routeControllerPattern : (routeControllerPattern = XmlHelper.getRouteControllerPattern());
+            }
         }
     }
 
@@ -57,19 +73,34 @@ public class RouteControllerDeprecatedInspection {
                 return super.buildVisitor(holder, isOnTheFly);
             }
 
-            return new PsiElementVisitor() {
-                @Override
-                public void visitElement(@NotNull PsiElement element) {
-                    if(YamlElementPatternHelper.getSingleLineScalarKey("_controller", "controller").accepts(element)) {
-                        String text = PsiElementUtils.trimQuote(element.getText());
-                        if (StringUtils.isNotBlank(text)) {
-                            hasDeprecatedActionOrClass(project, element, text, holder);
-                        }
-                    }
+            return new MyYamlPsiElementVisitor(project, holder);
+        }
 
-                    super.visitElement(element);
+        private static class MyYamlPsiElementVisitor extends PsiElementVisitor {
+            @NotNull private final Project project;
+            @NotNull private final ProblemsHolder holder;
+            private ElementPattern<?> controllerScalarPattern;
+
+            MyYamlPsiElementVisitor(@NotNull Project project, @NotNull ProblemsHolder holder) {
+                this.project = project;
+                this.holder = holder;
+            }
+
+            @Override
+            public void visitElement(@NotNull PsiElement element) {
+                if(getControllerScalarPattern().accepts(element)) {
+                    String text = PsiElementUtils.trimQuote(element.getText());
+                    if (StringUtils.isNotBlank(text)) {
+                        hasDeprecatedActionOrClass(project, element, text, holder);
+                    }
                 }
-            };
+
+                super.visitElement(element);
+            }
+
+            private ElementPattern<?> getControllerScalarPattern() {
+                return controllerScalarPattern != null ? controllerScalarPattern : (controllerScalarPattern = YamlElementPatternHelper.getSingleLineScalarKey("_controller", "controller"));
+            }
         }
     }
 

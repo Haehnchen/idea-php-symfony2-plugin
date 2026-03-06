@@ -46,9 +46,10 @@ public class ConfigLineMarkerProvider implements LineMarkerProvider {
         }
 
         LazyConfigTreeSignatures function = null;
+        var rootConfigKeyPattern = YamlElementPatternHelper.getRootConfigKeyPattern();
 
         for (PsiElement psiElement : psiElements) {
-            if(psiElement.getNode().getElementType() == YAMLTokenTypes.SCALAR_KEY && YamlElementPatternHelper.getRootConfigKeyPattern().accepts(psiElement)) {
+            if(psiElement.getNode().getElementType() == YAMLTokenTypes.SCALAR_KEY && rootConfigKeyPattern.accepts(psiElement)) {
                 if(function == null) {
                     function = new LazyConfigTreeSignatures(project);
                 }

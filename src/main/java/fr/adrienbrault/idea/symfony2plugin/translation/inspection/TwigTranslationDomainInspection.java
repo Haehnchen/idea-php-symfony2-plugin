@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.translation.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.patterns.PlatformPatterns;
@@ -38,13 +39,15 @@ public class TwigTranslationDomainInspection extends LocalInspectionTool {
     private static class MyTranslationDomainPsiElementVisitor extends PsiElementVisitor {
         private final ProblemsHolder holder;
 
+        private ElementPattern<PsiElement> transDomainPattern;
+
         MyTranslationDomainPsiElementVisitor(ProblemsHolder holder) {
             this.holder = holder;
         }
 
         @Override
         public void visitElement(@NotNull PsiElement psiElement) {
-            if(!TwigPattern.getTransDomainPattern().accepts(psiElement)) {
+            if(!getTransDomainPattern().accepts(psiElement)) {
                 return;
             }
 
@@ -75,6 +78,10 @@ public class TwigTranslationDomainInspection extends LocalInspectionTool {
             }
 
             super.visitElement(psiElement);
+        }
+
+        private ElementPattern<PsiElement> getTransDomainPattern() {
+            return transDomainPattern != null ? transDomainPattern : (transDomainPattern = TwigPattern.getTransDomainPattern());
         }
     }
 }
