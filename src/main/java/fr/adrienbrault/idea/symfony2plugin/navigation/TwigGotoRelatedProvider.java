@@ -92,9 +92,11 @@ public class TwigGotoRelatedProvider extends GotoRelatedProvider {
             }
 
             // "include" and other file tags
+            TwigUtil.TemplateIncludePatterns patterns = new TwigUtil.TemplateIncludePatterns();
+
             TwigTagWithFileReference twigTagWithFileReference = PsiTreeUtil.getParentOfType(psiElement, TwigTagWithFileReference.class);
             if (twigTagWithFileReference != null) {
-                visitFileReferenceElement(project, gotoRelatedItems, twigTagWithFileReference);
+                visitFileReferenceElement(project, gotoRelatedItems, twigTagWithFileReference, patterns);
             }
 
             // "embed" tag
@@ -102,7 +104,7 @@ public class TwigGotoRelatedProvider extends GotoRelatedProvider {
             if (parentOfType1 != null) {
                 PsiElement embedTag = PsiElementUtils.getChildrenOfType(parentOfType1, PlatformPatterns.psiElement().withElementType(TwigElementTypes.EMBED_TAG));
                 if (embedTag != null) {
-                    visitFileReferenceElement(project, gotoRelatedItems, embedTag);
+                    visitFileReferenceElement(project, gotoRelatedItems, embedTag, patterns);
                 }
             }
         }
@@ -110,11 +112,11 @@ public class TwigGotoRelatedProvider extends GotoRelatedProvider {
         return gotoRelatedItems;
     }
 
-    private void visitFileReferenceElement(@NotNull Project project, @NotNull List<GotoRelatedItem> gotoRelatedItems, @NotNull PsiElement psiElement) {
+    private void visitFileReferenceElement(@NotNull Project project, @NotNull List<GotoRelatedItem> gotoRelatedItems, @NotNull PsiElement psiElement, @NotNull TwigUtil.TemplateIncludePatterns patterns) {
         TwigUtil.visitTemplateIncludes(psiElement, templateInclude -> {
             for (PsiFile templatePsiElement : TwigUtil.getTemplatePsiElements(project, templateInclude.getTemplateName())) {
                 gotoRelatedItems.add(new RelatedPopupGotoLineMarker.PopupGotoRelatedItem(templatePsiElement, templateInclude.getType().toString().toLowerCase()).withIcon(Symfony2Icons.TWIG_BLOCK_OVERWRITE, Symfony2Icons.TWIG_BLOCK_OVERWRITE));
             }
-        });
+        }, patterns);
     }
 }

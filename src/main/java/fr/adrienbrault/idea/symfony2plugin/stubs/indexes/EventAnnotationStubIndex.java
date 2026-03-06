@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
+import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -55,6 +56,9 @@ public class EventAnnotationStubIndex extends FileBasedIndexExtension<String, Di
                 return map;
             }
 
+            ElementPattern<PsiElement> phpDocAttributeListPattern = PlatformPatterns.psiElement(PhpDocElementTypes.phpDocAttributeList);
+            ElementPattern<PsiElement> phpDocStringPattern = PlatformPatterns.psiElement(PhpDocElementTypes.phpDocString);
+
             for (PhpNamedElement topLevelElement : ((PhpFile) psiFile).getTopLevelDefs().values()) {
                 if (topLevelElement instanceof PhpClass clazz) {
                     for (Field ownField : clazz.getOwnFields()) {
@@ -62,7 +66,7 @@ public class EventAnnotationStubIndex extends FileBasedIndexExtension<String, Di
                         if (docComment != null) {
                             PhpDocUtil.processTagElementsByPredicate(
                                 docComment,
-                                phpDocTag -> visitPhpDocTag(phpDocTag, map),
+                                phpDocTag -> visitPhpDocTag(phpDocTag, map, phpDocAttributeListPattern, phpDocStringPattern),
                                 phpDocTag -> true
                             );
                         }
@@ -104,7 +108,7 @@ public class EventAnnotationStubIndex extends FileBasedIndexExtension<String, Di
         return 2;
     }
 
-    private void visitPhpDocTag(@NotNull PhpDocTag element, @NotNull Map<String, DispatcherEvent> map) {
+    private void visitPhpDocTag(@NotNull PhpDocTag element, @NotNull Map<String, DispatcherEvent> map, @NotNull ElementPattern<PsiElement> phpDocAttributeListPattern, @NotNull ElementPattern<PsiElement> phpDocStringPattern) {
         String name = StringUtils.stripStart(element.getName(), "@");
         if(!"Event".equalsIgnoreCase(name)) {
             return;
@@ -136,14 +140,14 @@ public class EventAnnotationStubIndex extends FileBasedIndexExtension<String, Di
 
         map.put(contents, new DispatcherEvent(
             fqn,
-            findClassInstance(phpDocComment, element))
+            findClassInstance(phpDocComment, element, phpDocAttributeListPattern, phpDocStringPattern))
         );
     }
 
-    private String findClassInstance(@NotNull PhpDocComment phpDocComment, @NotNull PhpDocTag phpDocTag) {
-        PsiElement phpDocAttributeList = PsiElementUtils.getChildrenOfType(phpDocTag, PlatformPatterns.psiElement(PhpDocElementTypes.phpDocAttributeList));
+    private String findClassInstance(@NotNull PhpDocComment phpDocComment, @NotNull PhpDocTag phpDocTag, @NotNull ElementPattern<PsiElement> phpDocAttributeListPattern, @NotNull ElementPattern<PsiElement> phpDocStringPattern) {
+        PsiElement phpDocAttributeList = PsiElementUtils.getChildrenOfType(phpDocTag, phpDocAttributeListPattern);
         if(phpDocAttributeList instanceof PhpPsiElement) {
-            PsiElement childrenOfType = PsiElementUtils.getChildrenOfType(phpDocAttributeList, PlatformPatterns.psiElement(PhpDocElementTypes.phpDocString));
+            PsiElement childrenOfType = PsiElementUtils.getChildrenOfType(phpDocAttributeList, phpDocStringPattern);
             if(childrenOfType instanceof StringLiteralExpression) {
                 String contents = StringUtils.stripStart(((StringLiteralExpression) childrenOfType).getContents(), "\\");
                 if(StringUtils.isNotBlank(contents) && contents.length() < 350) {

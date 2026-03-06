@@ -1791,6 +1791,9 @@ public class TwigUtil {
 
         Collection<TwigBlock> block = new ArrayList<>();
 
+        ElementPattern<PsiElement> blockTagPattern = TwigPattern.getBlockTagPattern();
+        ElementPattern<PsiElement> blockFunctionPattern = TwigPattern.getPrintBlockOrTagFunctionPattern("block");
+
         for (PsiElement psiElement : blocks) {
             final PsiElement[] target = new PsiElement[1];
 
@@ -1799,7 +1802,7 @@ public class TwigUtil {
                 psiElement.acceptChildren(new PsiRecursiveElementVisitor() {
                     @Override
                     public void visitElement(PsiElement element) {
-                        if(target[0] == null && TwigPattern.getBlockTagPattern().accepts(element)) {
+                        if(target[0] == null && blockTagPattern.accepts(element)) {
                             target[0] = element;
                         }
                         super.visitElement(element);
@@ -1811,7 +1814,7 @@ public class TwigUtil {
                 psiElement.acceptChildren(new PsiRecursiveElementVisitor() {
                     @Override
                     public void visitElement(PsiElement element) {
-                        if(target[0] == null && TwigPattern.getPrintBlockOrTagFunctionPattern("block").accepts(element)) {
+                        if(target[0] == null && blockFunctionPattern.accepts(element)) {
                             target[0] = element;
                         }
                         super.visitElement(element);
@@ -2412,10 +2415,23 @@ public class TwigUtil {
         return blocks;
     }
 
+    public static class TemplateIncludePatterns {
+        final ElementPattern<PsiElement> importTag = TwigPattern.getTagNameParameterPattern(TwigElementTypes.IMPORT_TAG, "import");
+        final ElementPattern<PsiElement> fromTag = TwigPattern.getTagNameParameterPattern(TwigElementTypes.IMPORT_TAG, "from");
+        final ElementPattern<PsiElement> includeSource = TwigPattern.getPrintBlockOrTagFunctionPattern("include", "source");
+        final ElementPattern<PsiElement> embed = TwigPattern.getEmbedPattern();
+        final ElementPattern<PsiElement> tagName = PlatformPatterns.psiElement().withElementType(TwigTokenTypes.TAG_NAME);
+        final ElementPattern<PsiElement> withKeyword = PlatformPatterns.psiElement().withElementType(TwigTokenTypes.IDENTIFIER).withText("with");
+    }
+
     /**
      * Visit all possible Twig include file pattern
      */
     public static void visitTemplateIncludes(@NotNull PsiElement psiElement, @NotNull Consumer<TemplateInclude> consumer) {
+        visitTemplateIncludes(psiElement, consumer, new TemplateIncludePatterns());
+    }
+
+    public static void visitTemplateIncludes(@NotNull PsiElement psiElement, @NotNull Consumer<TemplateInclude> consumer, @NotNull TemplateIncludePatterns patterns) {
         if(psiElement instanceof TwigTagWithFileReference) {
             // {% include %}
             if(psiElement.getNode().getElementType() == TwigElementTypes.INCLUDE_TAG) {
@@ -2427,7 +2443,7 @@ public class TwigUtil {
             }
 
             // {% import "foo.html.twig"
-            PsiElement importTag = PsiElementUtils.getChildrenOfType(psiElement, TwigPattern.getTagNameParameterPattern(TwigElementTypes.IMPORT_TAG, "import"));
+            PsiElement importTag = PsiElementUtils.getChildrenOfType(psiElement, patterns.importTag);
             if(importTag != null) {
                 String templateName = importTag.getText();
                 if(StringUtils.isNotBlank(templateName)) {
@@ -2436,7 +2452,7 @@ public class TwigUtil {
             }
 
             // {% from 'forms.html' import ... %}
-            PsiElement fromTag = PsiElementUtils.getChildrenOfType(psiElement, TwigPattern.getTagNameParameterPattern(TwigElementTypes.IMPORT_TAG, "from"));
+            PsiElement fromTag = PsiElementUtils.getChildrenOfType(psiElement, patterns.fromTag);
             if(fromTag != null) {
                 String templateName = fromTag.getText();
                 if(StringUtils.isNotBlank(templateName)) {
@@ -2446,7 +2462,7 @@ public class TwigUtil {
         } else if(psiElement instanceof TwigCompositeElement) {
             // {{ include() }}
             // {{ source() }}
-            PsiElement includeTag = PsiElementUtils.getChildrenOfType(psiElement, TwigPattern.getPrintBlockOrTagFunctionPattern("include", "source"));
+            PsiElement includeTag = PsiElementUtils.getChildrenOfType(psiElement, patterns.includeSource);
             if(includeTag != null) {
                 String templateName = includeTag.getText();
                 if(StringUtils.isNotBlank(templateName)) {
@@ -2455,7 +2471,7 @@ public class TwigUtil {
             }
 
             // {% embed "foo.html.twig"
-            PsiElement embedTag = PsiElementUtils.getChildrenOfType(psiElement, TwigPattern.getEmbedPattern());
+            PsiElement embedTag = PsiElementUtils.getChildrenOfType(psiElement, patterns.embed);
             if(embedTag != null) {
                 String templateName = embedTag.getText();
                 if(StringUtils.isNotBlank(templateName)) {
@@ -2464,7 +2480,7 @@ public class TwigUtil {
             }
 
             if(psiElement.getNode().getElementType() == TwigElementTypes.TAG) {
-                PsiElement tagElement = PsiElementUtils.getChildrenOfType(psiElement, PlatformPatterns.psiElement().withElementType(TwigTokenTypes.TAG_NAME));
+                PsiElement tagElement = PsiElementUtils.getChildrenOfType(psiElement, patterns.tagName);
                 if(tagElement != null) {
                     String text = tagElement.getText();
                     if("form_theme".equals(text)) {
@@ -2481,7 +2497,7 @@ public class TwigUtil {
                         }
 
                         // {% form_theme form.child with ['form/fields_child.html.twig'] %}
-                        PsiElement withElement = PsiElementUtils.getNextSiblingOfType(tagElement, PlatformPatterns.psiElement().withElementType(TwigTokenTypes.IDENTIFIER).withText("with"));
+                        PsiElement withElement = PsiElementUtils.getNextSiblingOfType(tagElement, patterns.withKeyword);
                         if(withElement != null) {
                             // find LITERAL "[", "{"
                             for (TwigArrayLiteral twigArrayLiteral : PsiElementUtils.getNextSiblingOfTypes(tagElement, TwigArrayLiteral.class)) {
@@ -2508,8 +2524,10 @@ public class TwigUtil {
      * Visit all possible Twig include file pattern
      */
     public static void visitTemplateIncludes(@NotNull TwigFile twigFile, @NotNull Consumer<TemplateInclude> consumer) {
+        TemplateIncludePatterns patterns = new TemplateIncludePatterns();
+
         PsiTreeUtil.collectElements(twigFile, psiElement -> {
-            visitTemplateIncludes(psiElement, consumer);
+            visitTemplateIncludes(psiElement, consumer, patterns);
             return true;
         });
     }
@@ -2550,8 +2568,9 @@ public class TwigUtil {
             psiElement.getNode().getElementType() == TwigElementTypes.MACRO_TAG
         );
 
+        ElementPattern<PsiElement> rbracePattern = PlatformPatterns.psiElement().withElementType(TwigTokenTypes.RBRACE);
         for (PsiElement psiElement : psiElements) {
-            Pair<String, String> macro = getTwigMacroNameAndParameter(psiElement);
+            Pair<String, String> macro = getTwigMacroNameAndParameter(psiElement, rbracePattern);
             if(macro == null) {
                 continue;
             }
@@ -2568,6 +2587,11 @@ public class TwigUtil {
      */
     @Nullable
     public static Pair<String, String> getTwigMacroNameAndParameter(@NotNull PsiElement psiElement) {
+        return getTwigMacroNameAndParameter(psiElement, PlatformPatterns.psiElement().withElementType(TwigTokenTypes.RBRACE));
+    }
+
+    @Nullable
+    public static Pair<String, String> getTwigMacroNameAndParameter(@NotNull PsiElement psiElement, @NotNull ElementPattern<PsiElement> rbracePattern) {
         PsiElement firstChild = psiElement.getFirstChild();
         if(firstChild == null) {
             return null;
@@ -2584,8 +2608,7 @@ public class TwigUtil {
         PsiElement nextSiblingAndSkip = PsiElementUtils.getNextSiblingAndSkip(macroNamePsi, TwigTokenTypes.LBRACE);
         if(nextSiblingAndSkip != null) {
             PsiElement nextSiblingOfType = PsiElementUtils
-                .getNextSiblingOfType(nextSiblingAndSkip, PlatformPatterns.psiElement()
-                    .withElementType(TwigTokenTypes.RBRACE));
+                .getNextSiblingOfType(nextSiblingAndSkip, rbracePattern);
 
             if(nextSiblingOfType != null) {
                 parameter = psiElement.getContainingFile().getText().substring(
@@ -3243,8 +3266,9 @@ public class TwigUtil {
         });
 
         // find parameter: controller("foobar::action")
+        ElementPattern<PsiElement> controllerPattern = TwigPattern.getPrintBlockOrTagFunctionPattern("controller");
         for (PsiElement functionCall: psiElements) {
-            PsiElement includeTag = PsiElementUtils.getChildrenOfType(functionCall, TwigPattern.getPrintBlockOrTagFunctionPattern("controller"));
+            PsiElement includeTag = PsiElementUtils.getChildrenOfType(functionCall, controllerPattern);
             if(includeTag != null) {
                 String controllerName = includeTag.getText();
                 if(StringUtils.isNotBlank(controllerName)) {
