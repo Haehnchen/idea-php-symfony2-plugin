@@ -336,6 +336,8 @@
         <codeInsight.parameterNameHints language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.ServiceArgumentParameterHintsProvider"/>
         <codeInsight.parameterNameHints language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.ServiceArgumentParameterHintsProvider"/>
 
+        <codeInsight.inlayProvider language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.inlay.TwigVariablesInlayHintsProvider"/>
+
         <multiHostInjector implementation="fr.adrienbrault.idea.symfony2plugin.lang.ParameterLanguageInjector"/>
         <iconProvider implementation="fr.adrienbrault.idea.symfony2plugin.twig.icon.TwigIconProvider"/>
 
