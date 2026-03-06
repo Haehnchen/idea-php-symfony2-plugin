@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor;
 
+import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -40,6 +41,9 @@ public class AnnotationRouteElementVisitor {
     @NotNull
     private final Consumer<Pair<String, PsiElement>> consumer;
 
+    @Nullable
+    private ElementPattern<PsiElement> phpDocAttributeListPattern;
+
     public AnnotationRouteElementVisitor(@NotNull Consumer<Pair<String, PsiElement>> consumer) {
         this.consumer = consumer;
         this.map = new HashMap<>();
@@ -77,16 +81,12 @@ public class AnnotationRouteElementVisitor {
             return;
         }
 
-        // init file imports
-        if(this.fileImports == null) {
-            this.fileImports = AnnotationBackportUtil.getUseImportMap(phpDocTag);
-        }
-
-        if(this.fileImports.isEmpty()) {
+        Map<String, String> fileImports = getFileImports(phpDocTag);
+        if(fileImports.isEmpty()) {
             return;
         }
 
-        String annotationFqnName = AnnotationBackportUtil.getClassNameReference(phpDocTag, this.fileImports);
+        String annotationFqnName = AnnotationBackportUtil.getClassNameReference(phpDocTag, fileImports);
         if(annotationFqnName == null || !RouteHelper.isRouteClassAnnotation(annotationFqnName)) {
             return;
         }
@@ -114,7 +114,7 @@ public class AnnotationRouteElementVisitor {
             }
 
             // extract method path @Route("/foo") => "/foo"
-            PsiElement phpDocAttributeList = PsiElementUtils.getChildrenOfType(phpDocTag, PlatformPatterns.psiElement(PhpDocElementTypes.phpDocAttributeList));
+            PsiElement phpDocAttributeList = PsiElementUtils.getChildrenOfType(phpDocTag, getPhpDocAttributeListPattern());
             if (phpDocAttributeList != null) {
                 PhpPsiElement firstPsiChild = ((PhpPsiElement) phpDocAttributeList).getFirstPsiChild();
                 if(firstPsiChild instanceof StringLiteralExpression) {
@@ -228,7 +228,7 @@ public class AnnotationRouteElementVisitor {
         }
 
         for (PhpDocTag docTag : PsiTreeUtil.getChildrenOfTypeAsList(docComment, PhpDocTag.class)) {
-            String annotationFqnName = AnnotationBackportUtil.getClassNameReference(docTag, this.fileImports);
+            String annotationFqnName = AnnotationBackportUtil.getClassNameReference(docTag, getFileImports(docTag));
 
             // check @Route or alias
             if(annotationFqnName == null || !RouteHelper.isRouteClassAnnotation(annotationFqnName)) {
@@ -254,7 +254,7 @@ public class AnnotationRouteElementVisitor {
         PsiElement methodTag = ContainerUtil.find(phpDoc.getChildren(), psiElement ->
             psiElement instanceof PhpDocTag &&
                 "\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Method".equals(
-                    AnnotationBackportUtil.getClassNameReference((PhpDocTag) psiElement, fileImports)
+                    AnnotationBackportUtil.getClassNameReference((PhpDocTag) psiElement, getFileImports((PhpDocTag) psiElement))
                 )
         );
 
@@ -280,6 +280,17 @@ public class AnnotationRouteElementVisitor {
         if(!methods.isEmpty()) {
             route.setMethods(methods);
         }
+    }
+
+
+    @NotNull
+    private ElementPattern<PsiElement> getPhpDocAttributeListPattern() {
+        return phpDocAttributeListPattern != null ? phpDocAttributeListPattern : (phpDocAttributeListPattern = PlatformPatterns.psiElement(PhpDocElementTypes.phpDocAttributeList));
+    }
+
+    @NotNull
+    private Map<String, String> getFileImports(@NotNull PhpDocTag phpDocTag) {
+        return fileImports != null ? fileImports : (fileImports = AnnotationBackportUtil.getUseImportMap(phpDocTag));
     }
 
     /**
@@ -333,7 +344,7 @@ public class AnnotationRouteElementVisitor {
 
         PhpDocComment docComment = phpClass.getDocComment();
         for (PhpDocTag docTag : PsiTreeUtil.getChildrenOfTypeAsList(docComment, PhpDocTag.class)) {
-            String classNameReference = AnnotationBackportUtil.getClassNameReference(docTag, this.fileImports);
+            String classNameReference = AnnotationBackportUtil.getClassNameReference(docTag, getFileImports(docTag));
             if(classNameReference == null) {
                 continue;
             }
@@ -342,7 +353,7 @@ public class AnnotationRouteElementVisitor {
                 continue;
             }
 
-            PsiElement docAttr = PsiElementUtils.getChildrenOfType(docTag, PlatformPatterns.psiElement(PhpDocElementTypes.phpDocAttributeList));
+            PsiElement docAttr = PsiElementUtils.getChildrenOfType(docTag, getPhpDocAttributeListPattern());
             if(!(docAttr instanceof PhpPsiElement)) {
                 continue;
             }

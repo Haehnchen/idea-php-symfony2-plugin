@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
+import com.intellij.patterns.ElementPattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
@@ -59,6 +60,7 @@ public class TwigBlockIndexExtension extends FileBasedIndexExtension<String, Set
                     }
                 }
 
+                ElementPattern<PsiElement> twigTagUseNamePattern = TwigPattern.getTwigTagUseNamePattern();
                 for(PsiElement psiElement : PsiTreeUtil.getChildrenOfAnyType(psiFile, TwigExtendsTag.class, TwigCompositeElement.class)) {
                     if(psiElement instanceof TwigCompositeElement) {
                         // {% use 'foo.html.twig' %}
@@ -66,7 +68,7 @@ public class TwigBlockIndexExtension extends FileBasedIndexExtension<String, Set
                             psiElement.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
                                 @Override
                                 public void visitElement(PsiElement element) {
-                                    if(TwigPattern.getTwigTagUseNamePattern().accepts(element) && PsiElementUtils.getParentOfType(element, TwigElementTypes.EMBED_STATEMENT) == null) {
+                                    if(twigTagUseNamePattern.accepts(element) && PsiElementUtils.getParentOfType(element, TwigElementTypes.EMBED_STATEMENT) == null) {
                                         String templateName = TwigUtil.normalizeTemplateName(PsiElementUtils.trimQuote(element.getText()));
                                         if(templateName.length() < 255 && StringUtils.isNotBlank(templateName)) {
                                             blocks.putIfAbsent("use", new HashSet<>());

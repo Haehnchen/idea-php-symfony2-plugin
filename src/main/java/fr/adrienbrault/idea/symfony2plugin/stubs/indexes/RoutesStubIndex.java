@@ -83,8 +83,9 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, StubIndexed
                     return map;
                 }
 
+                AnnotationRouteElementVisitor visitor = new AnnotationRouteElementVisitor(map);
                 for (PhpClass phpClass : PhpPsiUtil.findAllClasses((PhpFile) psiFile)) {
-                    new AnnotationRouteElementVisitor(map).visitFile(phpClass);
+                    visitor.visitFile(phpClass);
                 }
             }
 

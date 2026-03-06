@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
+import com.intellij.patterns.ElementPattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiRecursiveElementVisitor;
@@ -137,10 +138,11 @@ public class TwigComponentUsageStubIndex extends FileBasedIndexExtension<String,
     private static Collection<Usage> getComponentUsages(@NotNull TwigFile twigFile) {
         Set<Usage> usages = new LinkedHashSet<>();
 
+        ElementPattern<PsiElement> componentPattern = TwigPattern.getComponentPattern();
         twigFile.acceptChildren(new PsiRecursiveElementVisitor() {
             @Override
             public void visitElement(@NotNull PsiElement element) {
-                if (TwigPattern.getComponentPattern().accepts(element)) {
+                if (componentPattern.accepts(element)) {
                     String componentName = PsiElementUtils.trimQuote(element.getText());
                     if (StringUtils.isNotBlank(componentName)) {
                         usages.add(new Usage(componentName, element, UsageType.FUNCTION));
