@@ -23,6 +23,17 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2026.1.290
+* Refactor `isServiceController` for stricter validation and performance; add `ServiceRouteContainer` caching to reduce recomputation. (Daniel Espendiller)
+* Refactor `ElementPattern` instantiation: reuse preconstructed patterns to reduce object allocation indexing. (Daniel Espendiller)
+* Add Twig Template Variables Inlay: outline interactive inlay hint features like variable tree view, code insertion (print/if/foreach), and file-level hints rendered by controllers. (Daniel Espendiller)
+* Many `ElementPattern` objects are being built dynamically inside PSI element iterations (loops). This causes unnecessary object allocation and GC pressure because pattern building involves creating multiple nested objects on every iteration. (Daniel Espendiller)
+* Optimize element pattern handling in `TwigPathReplacementInspection` by introducing lazy initialization and refactoring pattern retrieval methods. ([#37](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/37)) (Daniel Espendiller)
+* Integrate Symfony database configuration with IntelliJ Database tools: add connection parsing from `.env` (Daniel Espendiller)
+* Integrate database navigation: add Doctrine entity table name resolver and "Go to Related Doctrine Entity" action. Include tests and update plugin dependencies. (Daniel Espendiller)
+* Fix Twig renderBlock/renderBlockView parameter index detection (use arg 2) + add regression tests (Daniel Espendiller)
+* Symfony Command Runner: align with PhpStorm Composer patterns (Daniel Espendiller)
+
 ## 2026.1.289
 * Implements ReferencesSearch executor and UsageTypeProvider to enable Find Usages for Twig templates, with results grouped by semantic type (extends, include, embed, component, controller, etc.). (Daniel Espendiller)
 * Add MCP toolset for listing Twig template variables with types and properties (Daniel Espendiller)
