@@ -1,6 +1,11 @@
 package fr.adrienbrault.idea.symfony2plugin.routing.dic;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Key;
+import com.intellij.psi.util.CachedValue;
+import com.intellij.psi.util.CachedValueProvider;
+import com.intellij.psi.util.CachedValuesManager;
+import com.intellij.psi.util.PsiModificationTracker;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
@@ -16,6 +21,8 @@ import java.util.*;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class ServiceRouteContainer  {
+
+    private static final Key<CachedValue<ServiceRouteContainer>> SERVICE_ROUTE_CONTAINER_CACHE = new Key<>("SYMFONY_SERVICE_ROUTE_CONTAINER_CACHE");
 
     private final Collection<Route> routes;
     private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
@@ -92,13 +99,28 @@ public class ServiceRouteContainer  {
         return this.lazyServiceCollector == null ? this.lazyServiceCollector = new ContainerCollectionResolver.LazyServiceCollector(project) : this.lazyServiceCollector;
     }
 
+    @NotNull
+    public static ServiceRouteContainer build(@NotNull Project project) {
+        return CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            SERVICE_ROUTE_CONTAINER_CACHE,
+            () -> {
+                ServiceRouteContainer container = buildUncached(project, RouteHelper.getAllRoutes(project));
+                return CachedValueProvider.Result.create(
+                    container,
+                    PsiModificationTracker.MODIFICATION_COUNT
+                );
+            },
+            false
+        );
+    }
+
     /**
      * Build container which stores all service routes
      *
      * @param routes Unfiltered routes
      */
-    @NotNull
-    public static ServiceRouteContainer build(@NotNull Project project, @NotNull Map<String, Route> routes) {
+    private static ServiceRouteContainer buildUncached(@NotNull Project project, @NotNull Map<String, Route> routes) {
         Collection<Route> serviceRoutes = new ArrayList<>();
 
         ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector = null;

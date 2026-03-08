@@ -146,7 +146,7 @@ public class ControllerIndex {
         ContainerCollectionResolver.LazyServiceCollector collector = new ContainerCollectionResolver.LazyServiceCollector(project);
 
         Collection<ControllerAction> actions = new ArrayList<>();
-        for (String serviceName : ServiceRouteContainer.build(project, routes).getServiceNames()) {
+        for (String serviceName : ServiceRouteContainer.build(project).getServiceNames()) {
             PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(project, serviceName, collector);
             if(phpClass == null) {
                 continue;
