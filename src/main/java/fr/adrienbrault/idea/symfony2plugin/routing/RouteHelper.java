@@ -1228,8 +1228,34 @@ public class RouteHelper {
         return null;
     }
 
+    /**
+     * Determines whether the given shortcut name represents a service controller.
+     * A valid service controller format must consist of exactly two parts separated by a single colon (":"),
+     * or a double colon ("::") with no additional colons present.
+     *
+     * Performance hot path
+     */
     public static boolean isServiceController(@NotNull String shortcutName) {
-        return shortcutName.contains(":") && shortcutName.replace("::", ":").split(":").length == 2;
+        // After normalizing "::" to ":", must have exactly 2 parts
+        // Valid: "service:method", "service::method"
+        // Invalid: "service", "a:b:c"
+        int len = shortcutName.length();
+        if (len < 3) return false; // minimum is "a:b"
+
+        int firstColon = shortcutName.indexOf(':');
+        if (firstColon <= 0) return false;
+
+        // Check if it's "::" (double colon) - valid single separator
+        if (firstColon + 1 < len && shortcutName.charAt(firstColon + 1) == ':') {
+            // Double colon case: "service::method"
+            // After the "::" there should be no more colons
+            int afterDouble = firstColon + 2;
+            return afterDouble < len && shortcutName.indexOf(':', afterDouble) < 0;
+        }
+
+        // Single colon case: "service:method"
+        // After the ":" there should be no more colons
+        return firstColon + 1 < len && shortcutName.indexOf(':', firstColon + 1) < 0;
     }
 
     public static boolean isServiceControllerInvoke(@NotNull String shortcutName) {
@@ -1256,7 +1282,7 @@ public class RouteHelper {
         }
 
         // search for services
-        routes.addAll(ServiceRouteContainer.build(project, allRoutes).getMethodMatches(method));
+        routes.addAll(ServiceRouteContainer.build(project).getMethodMatches(method));
 
         return routes;
     }
