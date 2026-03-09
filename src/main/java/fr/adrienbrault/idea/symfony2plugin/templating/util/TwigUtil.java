@@ -942,17 +942,20 @@ public class TwigUtil {
     }
 
     /**
-     * Collect function scopes to search for Twig variable of given template names: "foo.html.twig"
+     * Collect function scopes (controller methods/functions) that are indexed as rendering the given Twig templates.
+     *
+     * @param templateNames normalized template names; usually the result of {@link #getTemplateNamesForFile(PsiFile)}
+     *                      (for example: "foo.html.twig", "@App/foo.html.twig", "App:Foo:bar.html.twig")
      */
     @NotNull
-    public static Set<Function> getTwigFileMethodUsageOnIndex(@NotNull Project project, @NotNull Collection<String> keys) {
-        if(keys.isEmpty()) {
+    public static Set<Function> getTwigFileMethodUsageOnIndex(@NotNull Project project, @NotNull Collection<String> templateNames) {
+        if(templateNames.isEmpty()) {
             return Collections.emptySet();
         }
 
         final Set<String> fqn = new HashSet<>();
-        for(String key: keys) {
-            for (TemplateUsage usage : FileBasedIndex.getInstance().getValues(PhpTwigTemplateUsageStubIndex.KEY, key, GlobalSearchScope.allScope(project))) {
+        for(String templateName: templateNames) {
+            for (TemplateUsage usage : FileBasedIndex.getInstance().getValues(PhpTwigTemplateUsageStubIndex.KEY, templateName, GlobalSearchScope.allScope(project))) {
                 fqn.addAll(usage.getScopes());
             }
         }

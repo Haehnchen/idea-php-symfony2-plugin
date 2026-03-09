@@ -1,7 +1,11 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.twig.icon;
 
+import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.ui.LayeredIcon;
+import com.intellij.util.indexing.FileBasedIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigIncludeStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.twig.icon.TwigIconProvider;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
@@ -43,6 +47,8 @@ public class TwigIconProviderTest extends SymfonyLightCodeInsightFixtureTestCase
             "<div>Partial content</div>"
         );
 
+        assertIndexContains(TwigIncludeStubIndex.KEY, "partial.html.twig");
+
         // Get the icon from the provider
         Icon icon = getIconFromProvider(partialFile);
 
@@ -66,6 +72,8 @@ public class TwigIconProviderTest extends SymfonyLightCodeInsightFixtureTestCase
             "templates/partial_func.html.twig",
             "<div>Partial content</div>"
         );
+
+        assertIndexContains(TwigIncludeStubIndex.KEY, "partial_func.html.twig");
 
         // Get the icon from the provider
         Icon icon = getIconFromProvider(partialFile);
@@ -91,6 +99,8 @@ public class TwigIconProviderTest extends SymfonyLightCodeInsightFixtureTestCase
             "<div>Source content</div>"
         );
 
+        assertIndexContains(TwigIncludeStubIndex.KEY, "source_test.html.twig");
+
         // Get the icon from the provider
         Icon icon = getIconFromProvider(sourceFile);
 
@@ -105,7 +115,7 @@ public class TwigIconProviderTest extends SymfonyLightCodeInsightFixtureTestCase
     public void testStandaloneTemplateDoesNotShowImplementsBadge() {
         // Create a standalone template that is not included by any other
         PsiFile standaloneFile = myFixture.addFileToProject(
-            "templates/standalone.html.twig",
+            "templates/_icon_provider_unique_standalone_template.html.twig",
             "<div>Standalone content</div>"
         );
 
@@ -131,6 +141,9 @@ public class TwigIconProviderTest extends SymfonyLightCodeInsightFixtureTestCase
             "templates/child.html.twig",
             "{% extends 'base.html.twig' %}\n{% block content %}Child{% endblock %}"
         );
+
+        assertIndexContains(TwigExtendsStubIndex.KEY, "base.html.twig");
+        assertTwigFileHasExtendsIndexEntry(childFile);
 
         // Get the icon from the provider
         Icon icon = getIconFromProvider(childFile);
@@ -162,6 +175,10 @@ public class TwigIconProviderTest extends SymfonyLightCodeInsightFixtureTestCase
             "{% extends 'layout.html.twig' %}\n{% block content %}Content{% endblock %}"
         );
 
+        assertIndexContains(TwigExtendsStubIndex.KEY, "layout.html.twig");
+        assertIndexContains(TwigIncludeStubIndex.KEY, "child_layout.html.twig");
+        assertTwigFileHasExtendsIndexEntry(childFile);
+
         // Get the icon from the provider
         Icon icon = getIconFromProvider(childFile);
 
@@ -174,7 +191,16 @@ public class TwigIconProviderTest extends SymfonyLightCodeInsightFixtureTestCase
      * Get icon from TwigIconProvider for the given PsiFile.
      */
     private Icon getIconFromProvider(@NotNull PsiFile psiFile) {
+        PsiDocumentManager.getInstance(getProject()).commitAllDocuments();
         TwigIconProvider provider = new TwigIconProvider();
         return provider.getIcon(psiFile, 0);
+    }
+
+    private void assertTwigFileHasExtendsIndexEntry(@NotNull PsiFile psiFile) {
+        assertNotNull(psiFile.getVirtualFile());
+        assertFalse(
+            "Twig extends index should contain entry for file: " + psiFile.getName(),
+            FileBasedIndex.getInstance().getFileData(TwigExtendsStubIndex.KEY, psiFile.getVirtualFile(), getProject()).isEmpty()
+        );
     }
 }
