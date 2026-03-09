@@ -1,9 +1,11 @@
 package fr.adrienbrault.idea.symfony2plugin.util;
 
-import com.intellij.codeInsight.completion.PrefixMatcher;
 import com.intellij.openapi.project.Project;
+import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.stubs.indexes.PhpClassFqnIndex;
+import com.jetbrains.php.lang.psi.stubs.indexes.PhpInterfaceFqnIndex;
 import com.jetbrains.php.util.PhpContractUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -13,7 +15,6 @@ import java.util.*;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class PhpIndexUtil {
-
     /**
      * Collect PhpClass which are inside current namespace and in sub-namespaces
      *
@@ -23,7 +24,7 @@ public class PhpIndexUtil {
      */
     @NotNull
     public static Collection<PhpClass> getPhpClassInsideNamespace(@NotNull Project project, @NotNull String namespaceName) {
-        return getPhpClassInsideNamespace(PhpIndex.getInstance(project), namespaceName, false);
+        return getPhpClassInsideNamespace(project, PhpIndex.getInstance(project), namespaceName, false);
     }
 
     /**
@@ -35,7 +36,7 @@ public class PhpIndexUtil {
      */
     @NotNull
     public static Collection<PhpClass> getPhpClassInsideNamespace(@NotNull Project project, @NotNull String namespaceName, boolean excludeInterfaces) {
-        return getPhpClassInsideNamespace(PhpIndex.getInstance(project), namespaceName, excludeInterfaces);
+        return getPhpClassInsideNamespace(project, PhpIndex.getInstance(project), namespaceName, excludeInterfaces);
     }
 
     public static Collection<PhpClass> getAllSubclasses(@NotNull Project project, @NotNull String clazz) {
@@ -51,12 +52,24 @@ public class PhpIndexUtil {
 
 
     @NotNull
-    private static Collection<PhpClass> getPhpClassInsideNamespace(@NotNull PhpIndex phpIndex, @NotNull String namespaceName, boolean excludeInterfaces) {
+    private static Collection<PhpClass> getPhpClassInsideNamespace(@NotNull Project project, @NotNull PhpIndex phpIndex, @NotNull String namespaceName, boolean excludeInterfaces) {
         PhpContractUtil.assertFqn(namespaceName);
+        Set<String> classes = new HashSet<>();
 
-        Collection<String> classes = new HashSet<>(phpIndex.getAllClassFqns(new MyPrefixMatcher(namespaceName)));
+        FileBasedIndex.getInstance().processAllKeys(PhpClassFqnIndex.KEY, fqn -> {
+            if (fqn.startsWith(namespaceName)) {
+                classes.add(fqn);
+            }
+            return true;
+        }, project);
+
         if (!excludeInterfaces) {
-            classes.addAll(phpIndex.getAllInterfacesFqns(new MyPrefixMatcher(namespaceName)));
+            FileBasedIndex.getInstance().processAllKeys(PhpInterfaceFqnIndex.KEY, fqn -> {
+                if (fqn.startsWith(namespaceName)) {
+                    classes.add(fqn);
+                }
+                return true;
+            }, project);
         }
 
         Collection<PhpClass> clazzes = new HashSet<>();
@@ -74,24 +87,5 @@ public class PhpIndexUtil {
         }
 
         return !PhpIndex.getInstance(project).getChildNamespacesByParentName(namespaceName + "\\").isEmpty();
-    }
-
-    private static class MyPrefixMatcher extends PrefixMatcher {
-        private final String namespaceName;
-
-        public MyPrefixMatcher(@NotNull String namespaceName) {
-            super(namespaceName);
-            this.namespaceName = namespaceName;
-        }
-
-        @Override
-        public boolean prefixMatches(@NotNull String name) {
-            return name.startsWith(namespaceName);
-        }
-
-        @Override
-        public @NotNull PrefixMatcher cloneWithPrefix(@NotNull String prefix) {
-            return new MyPrefixMatcher(prefix);
-        }
     }
 }
