@@ -22,7 +22,7 @@ class SymfonyMcpToolsProvider : McpToolsProvider {
         val settings = McpApplicationSettings.getInstance()
 
         // If MCP is globally disabled, return no tools
-        if (!settings.isMcpEnabled) {
+        if (!settings.mcpEnabled) {
             return emptyList()
         }
 
