@@ -351,6 +351,8 @@
         <configurationType implementation="fr.adrienbrault.idea.symfony2plugin.dic.command.SymfonyCommandRunConfigurationType"/>
         <runConfigurationProducer implementation="fr.adrienbrault.idea.symfony2plugin.dic.command.SymfonyCommandRunConfigurationProducer"/>
         <runLineMarkerContributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.command.SymfonyCommandTestRunLineMarkerProvider"/>
+        <runAnything.executionProvider implementation="fr.adrienbrault.idea.symfony2plugin.runAnything.SymfonyConsoleRunAnythingProvider"
+                                       order="before runAnythingCommandExecutionProvider"/>
 
         <localInspection groupPath="Symfony" shortName="PhpRouteMissingInspection" displayName="Route Missing"
                          groupName="Route"
