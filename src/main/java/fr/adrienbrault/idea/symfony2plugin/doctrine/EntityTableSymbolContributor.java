@@ -27,8 +27,8 @@ public class EntityTableSymbolContributor implements ChooseByNameContributorEx {
             return;
         }
 
-        for (Pair<String, PsiElement> table : DoctrineMetadataUtil.getTables(project)) {
-            processor.process(table.getFirst());
+        for (String tableName : DoctrineMetadataUtil.getTableNames(project)) {
+            processor.process(tableName);
         }
     }
 
