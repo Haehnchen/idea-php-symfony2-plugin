@@ -24,7 +24,7 @@ object McpUtil {
     fun checkToolEnabled(project: Project, toolId: String) {
         // Check application-level master enable
         val appSettings = McpApplicationSettings.getInstance()
-        if (!appSettings.isMcpEnabled) {
+        if (!appSettings.mcpEnabled) {
             mcpFail(
                 "MCP tools are globally disabled. " +
                 "Enable them in Settings > Languages & Frameworks > PHP > Symfony > MCP Tools"
@@ -35,8 +35,8 @@ object McpUtil {
         val settings = McpSettings.getInstance(project)
         val toolSettings = settings.mcpToolSettings
         if (toolSettings != null) {
-            val toolSetting = toolSettings.find { it.toolId == toolId }
-            if (toolSetting != null && !toolSetting.isEnabled) {
+            val toolSetting = toolSettings.find { it.getToolId() == toolId }
+            if (toolSetting != null && !toolSetting.isEnabled()) {
                 mcpFail(
                     "The MCP tool '$toolId' is disabled for this project. " +
                     "Enable it in Settings > Languages & Frameworks > PHP > Symfony > MCP Tools"
