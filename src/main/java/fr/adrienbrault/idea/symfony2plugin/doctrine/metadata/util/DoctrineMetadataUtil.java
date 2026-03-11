@@ -13,10 +13,13 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.CachedValue;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
+import com.intellij.psi.util.PsiModificationTracker;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.indexing.FileBasedIndex;
+import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import org.jetbrains.yaml.YAMLLanguage;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelInterface;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineManagerEnum;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
@@ -41,6 +44,7 @@ import java.util.regex.Pattern;
 public class DoctrineMetadataUtil {
 
     private static final Key<CachedValue<Set<String>>> CLASS_KEYS = new Key<>("CLASS_KEYS");
+    private static final Key<CachedValue<Set<String>>> DOCTRINE_TABLE_NAMES_CACHE = new Key<>("DOCTRINE_TABLE_NAMES_CACHE");
 
     private static final DoctrineMappingDriverInterface[] MAPPING_DRIVERS = new DoctrineMappingDriverInterface[] {
         new DoctrinePhpMappingDriver(),
@@ -183,6 +187,33 @@ public class DoctrineMetadataUtil {
         }
 
         return models;
+    }
+
+    /**
+     * Returns a cached set of all Doctrine table names.
+     */
+    @NotNull
+    public static Set<String> getTableNames(@NotNull Project project) {
+        return CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            DOCTRINE_TABLE_NAMES_CACHE,
+            () -> CachedValueProvider.Result.create(
+                getTableNamesInner(project),
+                PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE),
+                PsiModificationTracker.getInstance(project).forLanguage(YAMLLanguage.INSTANCE),
+                PsiModificationTracker.getInstance(project).forLanguage(XMLLanguage.INSTANCE)
+            ),
+            false
+        );
+    }
+
+    @NotNull
+    private static Set<String> getTableNamesInner(@NotNull Project project) {
+        Set<String> tableNames = new HashSet<>();
+        for (Pair<String, PsiElement> pair : getTables(project)) {
+            tableNames.add(pair.getFirst());
+        }
+        return tableNames;
     }
 
     @NotNull
