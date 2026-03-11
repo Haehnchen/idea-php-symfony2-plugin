@@ -203,8 +203,8 @@ public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegi
         public Collection<LookupElement> getLookupElements() {
             Collection<LookupElement> elements = new ArrayList<>();
 
-            for (Pair<String, PsiElement> pair : DoctrineMetadataUtil.getTables(getProject())) {
-                elements.add(LookupElementBuilder.create(pair.getFirst()).withIcon(Symfony2Icons.DOCTRINE));
+            for (String tableName : DoctrineMetadataUtil.getTableNames(getProject())) {
+                elements.add(LookupElementBuilder.create(tableName).withIcon(Symfony2Icons.DOCTRINE));
             }
 
             return elements;
