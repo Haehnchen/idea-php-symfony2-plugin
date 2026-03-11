@@ -1,13 +1,18 @@
 package fr.adrienbrault.idea.symfony2plugin.ui;
 
+import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
+import com.intellij.openapi.options.ShowSettingsUtil;
+import com.intellij.openapi.options.ex.Settings;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.BooleanTableCellRenderer;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.TableView;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
+import fr.adrienbrault.idea.symfony2plugin.mcp.McpApplicationSettings;
 import fr.adrienbrault.idea.symfony2plugin.mcp.McpSettings;
 import fr.adrienbrault.idea.symfony2plugin.mcp.McpToolSetting;
 import org.jetbrains.annotations.Nls;
@@ -17,84 +22,96 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
- * Configuration form for MCP (Model Context Protocol) tools
+ * Configuration form for MCP (Model Context Protocol) tools.
+ * Combines both global visibility (application-level) and project-level settings.
  *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class McpSettingsForm implements Configurable {
 
     private JCheckBox mcpEnabledCheckBox;
-    private TableView<McpToolSetting> tableView;
+    private TableView<ToolSettingItem> tableView;
     private final Project project;
     private boolean changed = false;
-    private ListTableModel<McpToolSetting> modelList;
+    private ListTableModel<ToolSettingItem> modelList;
 
-    // Define all available MCP tools with their metadata
-    private static final List<McpToolSetting> DEFAULT_MCP_TOOLS = Arrays.asList(
-        new McpToolSetting(
+    // All available MCP tools with their metadata
+    private static final List<ToolSettingItem> DEFAULT_MCP_TOOLS = List.of(
+        new ToolSettingItem(
             "list_symfony_routes_controllers",
             "Symfony Routes with Controllers",
-            "Lists all routes with their controller mappings and file paths (supports filtering by route name or controller)"
+            "Lists all routes with their controller mappings, file paths, and template usages"
         ),
-        new McpToolSetting(
+        new ToolSettingItem(
             "match_symfony_url_to_route",
             "Match Symfony URL to Route",
             "Matches a plain request URL to Symfony routes using reverse pattern matching"
         ),
-        new McpToolSetting(
+        new ToolSettingItem(
             "list_symfony_commands",
             "Symfony Commands",
             "Lists all Symfony console commands available in the project"
         ),
-        new McpToolSetting(
+        new ToolSettingItem(
             "list_doctrine_entities",
             "Doctrine Entities",
             "Lists all Doctrine ORM entities in the project"
         ),
-        new McpToolSetting(
+        new ToolSettingItem(
             "list_doctrine_entity_fields",
             "Doctrine Entity Fields",
             "Lists all fields of a specific Doctrine entity including relations"
         ),
-        new McpToolSetting(
+        new ToolSettingItem(
             "list_twig_extensions",
             "Twig Extensions",
-            "Lists all Twig extensions: filters, functions, tests, and tags (supports search and type filtering)"
+            "Lists all Twig extensions: filters, functions, tests, and tags"
         ),
-        new McpToolSetting(
+        new ToolSettingItem(
             "list_profiler_requests",
             "Profiler Requests",
-            "Lists the last 10 Symfony profiler requests (supports filtering by URL, hash, controller, route)"
+            "Lists the last 10 Symfony profiler requests"
         ),
-        new McpToolSetting(
+        new ToolSettingItem(
             "list_symfony_forms",
             "Symfony Forms",
             "Lists all Symfony form types in the project"
         ),
-        new McpToolSetting(
+        new ToolSettingItem(
             "list_symfony_form_options",
             "Symfony Form Options",
             "Lists all options for a specific Symfony form type"
         ),
-        new McpToolSetting(
+        new ToolSettingItem(
             "generate_symfony_service_definition",
             "Generate Service Definition",
-            "Generates YAML or XML service definitions for a given class name with autowired dependencies"
+            "Generates YAML or XML service definitions for a given class name"
         ),
-        new McpToolSetting(
+        new ToolSettingItem(
             "list_twig_template_usages",
             "Twig Template Usages",
-            "Lists usages of Twig templates across the project (controllers, includes, embeds, extends, imports)"
+            "Lists usages of Twig templates across the project"
         ),
-        new McpToolSetting(
+        new ToolSettingItem(
             "list_twig_components",
             "Twig Components",
-            "Lists Symfony UX Twig components with partial-name search, template paths, syntax snippets, props, and blocks"
+            "Lists Symfony UX Twig components"
+        ),
+        new ToolSettingItem(
+            "list_twig_template_variables",
+            "Twig Template Variables",
+            "Lists variables available in Twig templates"
+        ),
+        new ToolSettingItem(
+            "locate_symfony_service",
+            "Locate Symfony Service",
+            "Locates a Symfony service by ID or class name"
         )
     );
 
@@ -117,37 +134,80 @@ public class McpSettingsForm implements Configurable {
     @Nullable
     @Override
     public JComponent createComponent() {
-        // Initialize main panel
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setMinimumSize(new Dimension(200, 200));
-        mainPanel.setPreferredSize(new Dimension(600, 400));
+        mainPanel.setPreferredSize(new Dimension(700, 400));
 
         // Create top panel with checkbox and description
         JPanel topPanel = new JPanel(new BorderLayout());
 
-        // Master enable/disable checkbox (on top left)
-        mcpEnabledCheckBox = new JCheckBox("Enable MCP Tools");
+        // Master enable/disable checkbox (on top left) - now global setting
+        mcpEnabledCheckBox = new JCheckBox("Enable MCP Tools globally");
         mcpEnabledCheckBox.addActionListener(e -> {
             changed = true;
             updateTableEnabledState();
         });
         topPanel.add(mcpEnabledCheckBox, BorderLayout.NORTH);
 
-        // Description text (below checkbox)
-        JTextArea descriptionTextArea = new JTextArea(
-            "MCP (Model Context Protocol) tools provide programmatic access to Symfony project information " +
-                "for AI assistants and other tools. Enable or disable individual tools below.",
-            3, 40
-        );
-        descriptionTextArea.setEditable(false);
-        descriptionTextArea.setLineWrap(true);
-        descriptionTextArea.setWrapStyleWord(true);
-        descriptionTextArea.setBackground(mainPanel.getBackground());
-        descriptionTextArea.setFont(UIManager.getFont("Label.font"));
-        descriptionTextArea.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
-        descriptionTextArea.setMinimumSize(new Dimension(0, 0));
-        topPanel.add(descriptionTextArea, BorderLayout.CENTER);
+        // Description text with hints
+        JPanel descriptionPanel = new JPanel();
+        descriptionPanel.setLayout(new BoxLayout(descriptionPanel, BoxLayout.Y_AXIS));
+        descriptionPanel.setOpaque(false);
+        descriptionPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
+        // Hint styling
+        Font smallFont = UIManager.getFont("Label.font").deriveFont(Math.max(UIManager.getFont("Label.font").getSize() - 2f, 10f));
+        Color hintColor = UIManager.getColor("Label.disabledForeground");
+        if (hintColor == null) {
+            hintColor = JBColor.GRAY;
+        }
+
+        // Description lines
+        descriptionPanel.add(createHintLabel("MCP tools provide programmatic access to Symfony project information.", smallFont, hintColor));
+
+        JLabel projectLabel = createHintLabel("Project: tool state for this project (does not change visibility).", smallFont, hintColor);
+        projectLabel.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
+        descriptionPanel.add(projectLabel);
+
+        JLabel globalLabel = createHintLabel("Global: tool visibility to the MCP server (application-wide).", smallFont, hintColor);
+        globalLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
+        descriptionPanel.add(globalLabel);
+
+        // Restart hint with clickable link to MCP server settings
+        JPanel restartHintPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        restartHintPanel.setOpaque(false);
+        restartHintPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        restartHintPanel.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0));
+
+        JLabel restartHintPrefix = createHintLabel("⚠ Changing global settings requires restarting the IDE or ", smallFont, hintColor);
+        restartHintPanel.add(restartHintPrefix);
+
+        JLabel mcpSettingsLink = new JLabel("re-enabling the MCP server");
+        mcpSettingsLink.setFont(smallFont);
+        mcpSettingsLink.setForeground(UIManager.getColor("link.foreground") != null ? UIManager.getColor("link.foreground") : new JBColor(new Color(0x2470B3), new Color(0x589DF6)));
+        mcpSettingsLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        mcpSettingsLink.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Navigate within the currently open Settings dialog instead of opening a new one
+                DataContext dataContext = com.intellij.ide.DataManager.getInstance().getDataContext(mcpSettingsLink);
+                Settings settings = Settings.KEY.getData(dataContext);
+                if (settings != null) {
+                    Configurable configurable = settings.find("com.intellij.mcpserver.settings");
+                    if (configurable != null) {
+                        settings.select(configurable);
+                    }
+                }
+            }
+        });
+        restartHintPanel.add(mcpSettingsLink);
+
+        JLabel restartHintSuffix = createHintLabel(" to take effect.", smallFont, hintColor);
+        restartHintPanel.add(restartHintSuffix);
+
+        descriptionPanel.add(restartHintPanel);
+
+        topPanel.add(descriptionPanel, BorderLayout.CENTER);
         topPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
         mainPanel.add(topPanel, BorderLayout.NORTH);
 
@@ -155,10 +215,12 @@ public class McpSettingsForm implements Configurable {
         this.tableView = new TableView<>();
         this.tableView.setMinimumSize(new Dimension(0, 0));
 
+        // Columns: Tool Name, Description, Project, Global (Global is last)
         this.modelList = new ListTableModel<>(
             new ToolNameColumn(),
             new DescriptionColumn(),
-            new EnabledColumn()
+            new ProjectEnabledColumn(),
+            new GlobalVisibleColumn()
         );
 
         this.attachItems();
@@ -179,45 +241,31 @@ public class McpSettingsForm implements Configurable {
     }
 
     private void attachItems() {
-        McpSettings settings = getSettings();
+        McpSettings projectSettings = getProjectSettings();
+        McpApplicationSettings appSettings = getApplicationSettings();
 
-        // Get existing settings or initialize with defaults
-        List<McpToolSetting> existingSettings = settings.mcpToolSettings;
+        for (ToolSettingItem defaultTool : DEFAULT_MCP_TOOLS) {
+            // Get application-level visibility (global)
+            boolean globallyVisible = appSettings.isToolGloballyVisible(defaultTool.toolId);
 
-        if (existingSettings == null || existingSettings.isEmpty()) {
-            // Initialize with all default tools
-            for (McpToolSetting defaultTool : DEFAULT_MCP_TOOLS) {
-                this.modelList.addRow(new McpToolSetting(
-                    defaultTool.getToolId(),
-                    defaultTool.getToolName(),
-                    defaultTool.getDescription(),
-                    true
-                ));
-            }
-        } else {
-            // Load existing settings, but ensure all default tools are present
-            List<String> existingToolIds = new ArrayList<>();
-            for (McpToolSetting setting : existingSettings) {
-                existingToolIds.add(setting.getToolId());
-                this.modelList.addRow(new McpToolSetting(
-                    setting.getToolId(),
-                    setting.getToolName(),
-                    setting.getDescription(),
-                    setting.isEnabled()
-                ));
-            }
-
-            // Add any new tools that weren't in the saved settings
-            for (McpToolSetting defaultTool : DEFAULT_MCP_TOOLS) {
-                if (!existingToolIds.contains(defaultTool.getToolId())) {
-                    this.modelList.addRow(new McpToolSetting(
-                        defaultTool.getToolId(),
-                        defaultTool.getToolName(),
-                        defaultTool.getDescription(),
-                        true
-                    ));
+            // Get project-level enabled status
+            boolean projectEnabled = true;
+            if (projectSettings.mcpToolSettings != null) {
+                for (McpToolSetting setting : projectSettings.mcpToolSettings) {
+                    if (setting.getToolId().equals(defaultTool.toolId)) {
+                        projectEnabled = setting.isEnabled();
+                        break;
+                    }
                 }
             }
+
+            this.modelList.addRow(new ToolSettingItem(
+                defaultTool.toolId,
+                defaultTool.toolName,
+                defaultTool.description,
+                globallyVisible,
+                projectEnabled
+            ));
         }
     }
 
@@ -228,24 +276,33 @@ public class McpSettingsForm implements Configurable {
 
     @Override
     public boolean isModified() {
-        return this.changed || getSettings().mcpEnabled != mcpEnabledCheckBox.isSelected();
+        McpApplicationSettings appSettings = getApplicationSettings();
+        return this.changed || appSettings.mcpEnabled != mcpEnabledCheckBox.isSelected();
     }
 
     @Override
     public void apply() throws ConfigurationException {
-        List<McpToolSetting> toolSettings = new ArrayList<>();
+        McpSettings projectSettings = getProjectSettings();
+        McpApplicationSettings appSettings = getApplicationSettings();
 
-        for (McpToolSetting tool : this.tableView.getListTableModel().getItems()) {
+        // Save application-level master enable setting
+        appSettings.mcpEnabled = mcpEnabledCheckBox.isSelected();
+
+        // Save project-level settings and global visibility for each tool
+        List<McpToolSetting> toolSettings = new ArrayList<>();
+        for (ToolSettingItem item : this.tableView.getListTableModel().getItems()) {
             toolSettings.add(new McpToolSetting(
-                tool.getToolId(),
-                tool.getToolName(),
-                tool.getDescription(),
-                tool.isEnabled()
+                item.toolId,
+                item.toolName,
+                item.description,
+                item.projectEnabled
             ));
+
+            // Save application-level visibility
+            appSettings.setToolGloballyVisible(item.toolId, item.globallyVisible);
         }
 
-        getSettings().mcpEnabled = mcpEnabledCheckBox.isSelected();
-        getSettings().mcpToolSettings = toolSettings;
+        projectSettings.mcpToolSettings = toolSettings;
         this.changed = false;
     }
 
@@ -258,7 +315,8 @@ public class McpSettingsForm implements Configurable {
     }
 
     private void updateUIFromSettings() {
-        this.mcpEnabledCheckBox.setSelected(getSettings().mcpEnabled);
+        McpApplicationSettings appSettings = getApplicationSettings();
+        this.mcpEnabledCheckBox.setSelected(appSettings.mcpEnabled);
         updateTableEnabledState();
     }
 
@@ -273,20 +331,56 @@ public class McpSettingsForm implements Configurable {
         this.resetList();
     }
 
-    private McpSettings getSettings() {
+    private McpSettings getProjectSettings() {
         return McpSettings.getInstance(this.project);
     }
 
+    private McpApplicationSettings getApplicationSettings() {
+        return McpApplicationSettings.getInstance();
+    }
+
+    /**
+     * Creates a hint label with smaller, greyish text
+     */
+    private static JLabel createHintLabel(String text, Font font, Color color) {
+        JLabel label = new JLabel(text);
+        label.setFont(font);
+        label.setForeground(color);
+        label.setAlignmentX(Component.LEFT_ALIGNMENT);
+        return label;
+    }
+
+    // Data class for table items
+    private static class ToolSettingItem {
+        final String toolId;
+        final String toolName;
+        final String description;
+        boolean globallyVisible;
+        boolean projectEnabled;
+
+        ToolSettingItem(String toolId, String toolName, String description) {
+            this(toolId, toolName, description, true, true);
+        }
+
+        ToolSettingItem(String toolId, String toolName, String description, boolean globallyVisible, boolean projectEnabled) {
+            this.toolId = toolId;
+            this.toolName = toolName;
+            this.description = description;
+            this.globallyVisible = globallyVisible;
+            this.projectEnabled = projectEnabled;
+        }
+    }
+
     // Column definitions
-    private static class ToolNameColumn extends ColumnInfo<McpToolSetting, String> {
+    private static class ToolNameColumn extends ColumnInfo<ToolSettingItem, String> {
         public ToolNameColumn() {
             super("Tool Name");
         }
 
         @Nullable
         @Override
-        public String valueOf(McpToolSetting setting) {
-            return setting.getToolName();
+        public String valueOf(ToolSettingItem item) {
+            return item.toolName;
         }
 
         @Override
@@ -295,35 +389,35 @@ public class McpSettingsForm implements Configurable {
         }
     }
 
-    private static class DescriptionColumn extends ColumnInfo<McpToolSetting, String> {
+    private static class DescriptionColumn extends ColumnInfo<ToolSettingItem, String> {
         public DescriptionColumn() {
             super("Description");
         }
 
         @Nullable
         @Override
-        public String valueOf(McpToolSetting setting) {
-            return setting.getDescription();
+        public String valueOf(ToolSettingItem item) {
+            return item.description;
         }
     }
 
-    private static class EnabledColumn extends ColumnInfo<McpToolSetting, Boolean> {
-        public EnabledColumn() {
-            super("Enabled");
+    private static class ProjectEnabledColumn extends ColumnInfo<ToolSettingItem, Boolean> {
+        public ProjectEnabledColumn() {
+            super("Project");
         }
 
         @Override
-        public Boolean valueOf(McpToolSetting setting) {
-            return setting.isEnabled();
+        public Boolean valueOf(ToolSettingItem item) {
+            return item.projectEnabled;
         }
 
         @Override
-        public void setValue(McpToolSetting setting, Boolean value) {
-            setting.setEnabled(value);
+        public void setValue(ToolSettingItem item, Boolean value) {
+            item.projectEnabled = value;
         }
 
         @Override
-        public boolean isCellEditable(McpToolSetting setting) {
+        public boolean isCellEditable(ToolSettingItem item) {
             return true;
         }
 
@@ -334,12 +428,49 @@ public class McpSettingsForm implements Configurable {
 
         @Override
         public int getWidth(JTable table) {
-            return 80;
+            return 60;
         }
 
         @Nullable
         @Override
-        public TableCellRenderer getRenderer(McpToolSetting setting) {
+        public TableCellRenderer getRenderer(ToolSettingItem item) {
+            return new BooleanTableCellRenderer();
+        }
+    }
+
+    private static class GlobalVisibleColumn extends ColumnInfo<ToolSettingItem, Boolean> {
+        public GlobalVisibleColumn() {
+            super("Global");
+        }
+
+        @Override
+        public Boolean valueOf(ToolSettingItem item) {
+            return item.globallyVisible;
+        }
+
+        @Override
+        public void setValue(ToolSettingItem item, Boolean value) {
+            item.globallyVisible = value;
+        }
+
+        @Override
+        public boolean isCellEditable(ToolSettingItem item) {
+            return true;
+        }
+
+        @Override
+        public Class<?> getColumnClass() {
+            return Boolean.class;
+        }
+
+        @Override
+        public int getWidth(JTable table) {
+            return 60;
+        }
+
+        @Nullable
+        @Override
+        public TableCellRenderer getRenderer(ToolSettingItem item) {
             return new BooleanTableCellRenderer();
         }
     }

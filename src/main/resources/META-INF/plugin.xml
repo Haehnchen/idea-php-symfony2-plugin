@@ -135,6 +135,9 @@
         <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Settings"/>
         <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.mcp.McpSettings"/>
 
+        <!-- MCP Application-level settings (global tool visibility) - used by project settings form -->
+        <applicationService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.mcp.McpApplicationSettings"/>
+
         <postStartupActivity implementation="fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent$PostStartupActivity"/>
         <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent$ProjectCloseService"/>
 

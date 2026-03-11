@@ -1,15 +1,10 @@
 <idea-plugin>
     <extensions defaultExtensionNs="com.intellij">
-        <mcpServer.mcpToolset implementation="fr.adrienbrault.idea.symfony2plugin.mcp.toolset.RouteMcpToolset" />
-        <mcpServer.mcpToolset implementation="fr.adrienbrault.idea.symfony2plugin.mcp.toolset.RoutePathMcpToolset" />
-        <mcpServer.mcpToolset implementation="fr.adrienbrault.idea.symfony2plugin.mcp.toolset.CommandMcpToolset" />
-        <mcpServer.mcpToolset implementation="fr.adrienbrault.idea.symfony2plugin.mcp.toolset.DoctrineEntityMcpToolset" />
-        <mcpServer.mcpToolset implementation="fr.adrienbrault.idea.symfony2plugin.mcp.toolset.DoctrineEntityFieldsMcpToolset" />
-        <mcpServer.mcpToolset implementation="fr.adrienbrault.idea.symfony2plugin.mcp.toolset.TwigExtensionMcpToolset" />
-        <mcpServer.mcpToolset implementation="fr.adrienbrault.idea.symfony2plugin.mcp.toolset.ServiceMcpToolset" />
-        <mcpServer.mcpToolset implementation="fr.adrienbrault.idea.symfony2plugin.mcp.toolset.ServiceDefinitionMcpToolset" />
-        <mcpServer.mcpToolset implementation="fr.adrienbrault.idea.symfony2plugin.mcp.toolset.TwigTemplateUsageMcpToolset" />
-        <mcpServer.mcpToolset implementation="fr.adrienbrault.idea.symfony2plugin.mcp.toolset.TwigComponentMcpToolset" />
-        <mcpServer.mcpToolset implementation="fr.adrienbrault.idea.symfony2plugin.mcp.toolset.TwigTemplateVariablesMcpToolset" />
+        <!--
+            MCP Tools Provider - registers tools dynamically based on application-level settings.
+            Tools disabled in application settings are completely hidden from the MCP server.
+            Individual mcpToolset registrations are no longer needed as the provider handles all tools.
+        -->
+        <mcpServer.mcpToolsProvider implementation="fr.adrienbrault.idea.symfony2plugin.mcp.SymfonyMcpToolsProvider"/>
     </extensions>
 </idea-plugin>

@@ -15,6 +15,9 @@ import java.util.List;
  * Per-project settings for MCP (Model Context Protocol) tools configuration.
  * This is stored separately from main Symfony plugin settings.
  *
+ * Note: Global MCP enable/disable is in McpApplicationSettings (application-level).
+ * This class only contains per-project tool settings.
+ *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 @State(
@@ -26,12 +29,7 @@ import java.util.List;
 public class McpSettings implements PersistentStateComponent<McpSettings> {
 
     /**
-     * Enable/disable all MCP (Model Context Protocol) tools
-     */
-    public boolean mcpEnabled = true;
-
-    /**
-     * Configuration for individual MCP tools
+     * Configuration for individual MCP tools (per-project)
      */
     @Nullable
     public List<McpToolSetting> mcpToolSettings = new ArrayList<>();
