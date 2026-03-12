@@ -18,8 +18,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -37,8 +35,6 @@ public class DoctrinePhpMappingDriver implements DoctrineMappingDriverInterface 
         DoctrineMetadataModel model = new DoctrineMetadataModel(fields);
 
         for (PhpClass phpClass : PhpElementsUtil.getClassesInterface(args.getProject(), args.getClassName())) {
-            // remove duplicate code
-            // @TODO: fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper.getModelFields()
             PhpDocComment docComment = phpClass.getDocComment();
             if(docComment == null) {
                 continue;
@@ -48,12 +44,11 @@ public class DoctrinePhpMappingDriver implements DoctrineMappingDriverInterface 
             // @TODO: external split
             if(AnnotationBackportUtil.hasReference(docComment, "\\Doctrine\\ORM\\Mapping\\Entity", "\\TYPO3\\Flow\\Annotations\\Entity")) {
 
-                // @TODO: reuse annotations plugin
                 PhpDocTag phpDocTag = AnnotationBackportUtil.getReference(docComment, "\\Doctrine\\ORM\\Mapping\\Table");
                 if(phpDocTag != null) {
-                    Matcher matcher = Pattern.compile("name[\\s]*=[\\s]*[\"|']([\\w_\\\\]+)[\"|']").matcher(phpDocTag.getText());
-                    if (matcher.find()) {
-                        model.setTable(matcher.group(1));
+                    String tableName = AnnotationUtil.getPropertyValue(phpDocTag, "name");
+                    if(tableName != null) {
+                        model.setTable(tableName);
                     }
                 }
 

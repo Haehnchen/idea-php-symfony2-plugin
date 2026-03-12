@@ -7,3 +7,4 @@ out/
 /decompiled
 /.junie
 *.hprof
+.mcp.json

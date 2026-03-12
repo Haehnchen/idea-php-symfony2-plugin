@@ -92,6 +92,11 @@ public class DoctrineMetadataUtil {
         return null;
     }
 
+    /**
+     * Find Doctrine metadata files (YAML, XML, PHP) for the given entity class.
+     *
+     * @param className fully qualified class name, with or without leading backslash
+     */
     @NotNull
     public static Collection<VirtualFile> findMetadataFiles(@NotNull Project project, @NotNull String className) {
         className = StringUtils.stripStart(className, "\\");
@@ -104,6 +109,12 @@ public class DoctrineMetadataUtil {
 
         return virtualFiles;
     }
+
+    /**
+     * Find Doctrine metadata files for the entity that uses the given repository class.
+     *
+     * @param phpClass the repository PhpClass
+     */
     @NotNull
     public static Collection<VirtualFile> findMetadataForRepositoryClass(@NotNull PhpClass phpClass) {
         return findMetadataForRepositoryClass(
@@ -118,6 +129,11 @@ public class DoctrineMetadataUtil {
         DOCTRINE_REPOSITORY_CACHE = new Key<>("DOCTRINE_REPOSITORY_CACHE");
     }
 
+    /**
+     * Find Doctrine metadata files for the entity that references the given repository class name.
+     *
+     * @param repositoryClass fully qualified repository class name without leading backslash
+     */
     @NotNull
     public static Collection<VirtualFile> findMetadataForRepositoryClass(final @NotNull Project project, @NotNull String repositoryClass) {
         Map<String, Collection<String>> cache = CachedValuesManager.getManager(project).getCachedValue(
@@ -279,9 +295,11 @@ public class DoctrineMetadataUtil {
         return null;
     }
 
+    /**
+     * @param className fully qualified class name (preferred), with or without leading backslash
+     */
     @Nullable
     public static DoctrineMetadataModel getModelFields(@NotNull Project project, @NotNull String className) {
-
         for (VirtualFile file : findMetadataFiles(project, className)) {
             PsiFile psiFile = PsiManager.getInstance(project).findFile(file);
             if(psiFile == null) {
