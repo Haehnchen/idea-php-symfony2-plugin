@@ -11,6 +11,7 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
+import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
@@ -44,6 +45,8 @@ public class MethodParameterDialog extends JDialog {
     public MethodParameterDialog(Project project, TableView<MethodParameterSetting> tableView) {
         this.tableView = tableView;
         this.project = project;
+
+        createUIComponents();
 
         comboContributor.setRenderer(new ComboBoxRenderer());
         comboProvider.setRenderer(new ComboBoxRenderer());
@@ -121,6 +124,43 @@ public class MethodParameterDialog extends JDialog {
             this.comboContributor.setSelectedItem(methodParameterSetting.getContributorName());
         }
 
+    }
+
+    private void createUIComponents() {
+        contentPane = new JPanel(new BorderLayout(0, 5));
+        contentPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        textCallTo = new JTextField(20);
+        textMethodName = new JTextField(20);
+        textIndex = new JTextField(20);
+        comboProvider = new JComboBox<>();
+        comboContributor = new JComboBox<>();
+        textContributorData = new JTextField(20);
+
+        JPanel fieldsPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(2, 2, 2, 2);
+        gbc.anchor = GridBagConstraints.WEST;
+
+        String[] labels = {"CallTo", "Method", "Index", "Provider", "Contributor", "ContributorData"};
+        JComponent[] fields = {textCallTo, textMethodName, textIndex, comboProvider, comboContributor, textContributorData};
+
+        for (int i = 0; i < labels.length; i++) {
+            gbc.gridx = 0; gbc.gridy = i; gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0;
+            fieldsPanel.add(new JLabel(labels[i]), gbc);
+            gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
+            fieldsPanel.add(fields[i], gbc);
+        }
+
+        buttonOK = new JButton("OK");
+        buttonCancel = new JButton("Cancel");
+
+        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
+        buttonsPanel.add(buttonOK);
+        buttonsPanel.add(buttonCancel);
+
+        contentPane.add(fieldsPanel, BorderLayout.CENTER);
+        contentPane.add(buttonsPanel, BorderLayout.SOUTH);
     }
 
     private void onOK() {

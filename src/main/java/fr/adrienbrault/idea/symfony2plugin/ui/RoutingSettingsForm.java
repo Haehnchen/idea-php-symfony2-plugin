@@ -26,6 +26,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -37,15 +38,14 @@ import java.util.List;
 public class RoutingSettingsForm implements Configurable {
 
     private JPanel panel1;
-    private JPanel listviewPanel;
     private JButton buttonReset;
-    private JTextPane ifYouApplicationDoesTextPane;
     private final TableView<RoutingFile> tableView;
     private final Project project;
     private boolean changed = false;
     private final ListTableModel<RoutingFile> modelList;
 
     public RoutingSettingsForm(@NotNull Project project) {
+        createUIComponents();
 
         this.project = project;
         this.tableView = new TableView<>();
@@ -75,6 +75,41 @@ public class RoutingSettingsForm implements Configurable {
 
             }
         });
+    }
+
+    private void createUIComponents() {
+        panel1 = new JPanel(new BorderLayout());
+
+        Font smallFont = UIManager.getFont("Label.font").deriveFont(Math.max(UIManager.getFont("Label.font").getSize() - 2f, 10f));
+        Color hintColor = UIManager.getColor("Label.disabledForeground");
+        if (hintColor == null) {
+            hintColor = com.intellij.ui.JBColor.GRAY;
+        }
+
+        JLabel titleLabel = new JLabel("Add PHP Routing");
+        buttonReset = new JButton("Reset To Default");
+
+        JLabel hintLabel = new JLabel("If your application does not support guessing the value for compiled route files, you can add custom ones.");
+        hintLabel.setFont(smallFont);
+        hintLabel.setForeground(hintColor);
+
+        JLabel hintLabel2 = new JLabel("Examples: var/cache/dev/[appDevUrlGenerator.php, UrlGenerator.php, url_generating_routes.php]");
+        hintLabel2.setFont(smallFont);
+        hintLabel2.setForeground(hintColor);
+
+        JPanel northPanel = new JPanel(new BorderLayout(4, 2));
+        northPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
+        JPanel titleRow = new JPanel(new BorderLayout());
+        titleRow.add(titleLabel, BorderLayout.CENTER);
+        titleRow.add(buttonReset, BorderLayout.EAST);
+        JPanel hintPanel = new JPanel();
+        hintPanel.setLayout(new BoxLayout(hintPanel, BoxLayout.Y_AXIS));
+        hintPanel.add(hintLabel);
+        hintPanel.add(hintLabel2);
+        northPanel.add(titleRow, BorderLayout.NORTH);
+        northPanel.add(hintPanel, BorderLayout.CENTER);
+
+        panel1.add(northPanel, BorderLayout.NORTH);
     }
 
     private void initList() {

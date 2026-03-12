@@ -17,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import java.awt.*;
 import java.awt.event.*;
 
 /**
@@ -48,6 +49,7 @@ public class TwigNamespaceDialog extends JDialog {
         this.tableView = tableView;
         this.project = project;
 
+        createUIComponents();
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
@@ -70,6 +72,52 @@ public class TwigNamespaceDialog extends JDialog {
         });
 
         contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+    }
+
+    private void createUIComponents() {
+        contentPane = new JPanel(new BorderLayout(0, 5));
+        contentPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
+        // Form fields
+        name = new JTextField(20);
+        namespacePath = new TextFieldWithBrowseButton();
+        namespaceType = new JComboBox<>(new String[]{"ADD_PATH", "BUNDLE"});
+        chkboxEnabled = new JCheckBox("Enabled");
+        chkboxEnabled.setSelected(true);
+
+        JPanel fieldsPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(2, 2, 2, 2);
+        gbc.anchor = GridBagConstraints.WEST;
+
+        gbc.gridx = 0; gbc.gridy = 0; gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0;
+        fieldsPanel.add(new JLabel("Namespace"), gbc);
+        gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
+        fieldsPanel.add(name, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 1; gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0;
+        fieldsPanel.add(new JLabel("Project-Path"), gbc);
+        gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
+        fieldsPanel.add(namespacePath, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 2; gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0;
+        fieldsPanel.add(new JLabel("Type"), gbc);
+        gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
+        fieldsPanel.add(namespaceType, gbc);
+
+        gbc.gridx = 1; gbc.gridy = 3; gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0;
+        fieldsPanel.add(chkboxEnabled, gbc);
+
+        // Buttons
+        buttonOK = new JButton("OK");
+        buttonCancel = new JButton("Cancel");
+
+        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
+        buttonsPanel.add(buttonOK);
+        buttonsPanel.add(buttonCancel);
+
+        contentPane.add(fieldsPanel, BorderLayout.CENTER);
+        contentPane.add(buttonsPanel, BorderLayout.SOUTH);
     }
 
     private void setOkState() {

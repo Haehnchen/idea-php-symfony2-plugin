@@ -45,6 +45,7 @@ public class ServiceArgumentSelectionDialog extends JDialog {
 
     public void init() {
 
+        createUIComponents();
         setContentPane(panel1);
         setModal(true);
 
@@ -83,9 +84,10 @@ public class ServiceArgumentSelectionDialog extends JDialog {
     }
 
     private void createUIComponents() {
-        mainPanel = new JPanel();
+        generateButton = new JButton("Generate");
+        closeButton = new JButton("Close");
 
-        mainPanel.setLayout(new GridLayout(0, 1));
+        mainPanel = new JPanel(new GridLayout(0, 1));
 
         this.modelList = new ListTableModel<>(
             new IconColumn(),
@@ -103,6 +105,15 @@ public class ServiceArgumentSelectionDialog extends JDialog {
             .disableUpDownActions()
             .createPanel()
         );
+
+        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
+        buttonsPanel.add(closeButton);
+        buttonsPanel.add(generateButton);
+
+        panel1 = new JPanel(new BorderLayout(0, 5));
+        panel1.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        panel1.add(mainPanel, BorderLayout.CENTER);
+        panel1.add(buttonsPanel, BorderLayout.SOUTH);
     }
 
     /**

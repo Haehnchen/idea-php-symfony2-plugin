@@ -103,6 +103,7 @@ public class SymfonyCreateService extends JDialog {
 
     public void init() {
 
+        createUIComponents();
         setContentPane(panel1);
         setModal(true);
 
@@ -229,6 +230,75 @@ public class SymfonyCreateService extends JDialog {
             this.buttonInsert.setVisible(false);
         }
 
+    }
+
+    private void createUIComponents() {
+        // Components
+        generateButton = new JButton("Generate");
+        buttonCopy = new JButton("To Clipboard");
+        closeButton = new JButton("Close");
+        buttonSettings = new JButton("Settings");
+        buttonInsert = new JButton("Insert");
+        radioButtonOutXml = new JRadioButton("XML");
+        radioButtonOutYaml = new JRadioButton("Yaml");
+        textFieldServiceName = new JTextField(20);
+        checkBoxSymfonyIdClass = new JCheckBox("Class as id (Symfony 3.3)");
+        textAreaOutput = new JTextArea(7, 40);
+        textAreaOutput.setEditable(false);
+        textAreaOutput.setFont(new Font("Courier New", Font.PLAIN, textAreaOutput.getFont().getSize()));
+        textAreaOutput.setLineWrap(true);
+        panelFoo = new JPanel(new GridBagLayout());
+        tableViewPanel = new JPanel(new BorderLayout());
+
+        ButtonGroup outputGroup = new ButtonGroup();
+        outputGroup.add(radioButtonOutYaml);
+        outputGroup.add(radioButtonOutXml);
+
+        // North: Class label + panelFoo + Generate button
+        JPanel northPanel = new JPanel(new BorderLayout(4, 0));
+        northPanel.add(new JLabel("Class:"), BorderLayout.WEST);
+        northPanel.add(panelFoo, BorderLayout.CENTER);
+        northPanel.add(generateButton, BorderLayout.EAST);
+
+        // South options: service name + yaml/xml radios + checkbox
+        JPanel serviceNameRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        serviceNameRow.add(textFieldServiceName);
+        serviceNameRow.add(radioButtonOutYaml);
+        serviceNameRow.add(radioButtonOutXml);
+
+        JPanel optionsPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 0; gbc.anchor = GridBagConstraints.WEST; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
+        optionsPanel.add(checkBoxSymfonyIdClass, gbc);
+        gbc.gridy = 1;
+        optionsPanel.add(serviceNameRow, gbc);
+        gbc.gridy = 2; gbc.fill = GridBagConstraints.BOTH; gbc.weighty = 1.0;
+        optionsPanel.add(new JScrollPane(textAreaOutput), gbc);
+
+        // Center section: table + options
+        JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.add(tableViewPanel, BorderLayout.CENTER);
+        centerPanel.add(optionsPanel, BorderLayout.SOUTH);
+
+        // Bottom buttons
+        JPanel buttonsPanel = new JPanel(new BorderLayout());
+        JPanel leftButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 5));
+        leftButtons.add(buttonSettings);
+        JPanel rightButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 5));
+        rightButtons.add(closeButton);
+        rightButtons.add(buttonCopy);
+        rightButtons.add(buttonInsert);
+        buttonsPanel.add(leftButtons, BorderLayout.WEST);
+        buttonsPanel.add(rightButtons, BorderLayout.EAST);
+
+        content = new JPanel(new BorderLayout());
+        content.add(northPanel, BorderLayout.NORTH);
+        content.add(centerPanel, BorderLayout.CENTER);
+        content.add(buttonsPanel, BorderLayout.SOUTH);
+
+        panel1 = new JPanel(new BorderLayout());
+        panel1.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        panel1.add(content, BorderLayout.CENTER);
     }
 
     private void initClassName() {

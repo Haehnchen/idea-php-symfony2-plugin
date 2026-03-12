@@ -79,6 +79,22 @@ public class TwigSettingsForm implements Configurable {
     @Nullable
     @Override
     public JComponent createComponent() {
+        panel1 = new JPanel(new BorderLayout());
+        panelTableView = new JPanel(new BorderLayout());
+        panel1.add(panelTableView, BorderLayout.CENTER);
+
+        chkTwigBundleNamespaceSupport = new JCheckBox("Support Bundle Namespaces");
+        chkTwigBundleNamespaceSupport.setSelected(true);
+        chkTwigBundleNamespaceSupport.setToolTipText("Example: Foobar:Bar:Foo.html.twig (for older Symfony Versions)");
+        buttonJsonExample = new JButton("JSON Example");
+        resetToDefault = new JButton("Reset To Default");
+
+        JPanel northPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        northPanel.add(new JLabel("Manage Twig Namespaces"));
+        northPanel.add(chkTwigBundleNamespaceSupport);
+        northPanel.add(buttonJsonExample);
+        northPanel.add(resetToDefault);
+        panel1.add(northPanel, BorderLayout.NORTH);
 
         this.tableView = new TableView<>();
         this.modelList = new ListTableModel<>(

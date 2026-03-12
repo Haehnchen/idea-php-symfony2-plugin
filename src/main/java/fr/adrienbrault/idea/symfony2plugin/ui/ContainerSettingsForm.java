@@ -27,6 +27,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -38,7 +39,6 @@ import java.util.List;
 public class ContainerSettingsForm implements Configurable {
 
     private JPanel panel1;
-    private JPanel listviewPanel;
     private JButton buttonReset;
     private final TableView<ContainerFile> tableView;
     private final Project project;
@@ -47,6 +47,7 @@ public class ContainerSettingsForm implements Configurable {
 
 
     public ContainerSettingsForm(@NotNull Project project) {
+        createUIComponents();
 
         this.project = project;
         this.tableView = new TableView<>();
@@ -78,6 +79,17 @@ public class ContainerSettingsForm implements Configurable {
 
             }
         });
+    }
+
+    private void createUIComponents() {
+        panel1 = new JPanel(new BorderLayout());
+
+        JPanel northPanel = new JPanel(new BorderLayout());
+        northPanel.add(new JLabel("Add additional Symfony xml container files"), BorderLayout.CENTER);
+        buttonReset = new JButton("Reset To Default");
+        northPanel.add(buttonReset, BorderLayout.EAST);
+
+        panel1.add(northPanel, BorderLayout.NORTH);
     }
 
     private void fillContainerList() {
