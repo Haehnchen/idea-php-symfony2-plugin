@@ -11,6 +11,10 @@ import com.intellij.openapi.ui.TextBrowseFolderListener;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.ui.TitledSeparator;
+import com.intellij.ui.components.JBLabel;
+import com.intellij.util.ui.JBUI;
+import com.intellij.util.ui.UIUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.util.IndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
@@ -40,11 +44,9 @@ public class SettingsForm implements Configurable {
     private JCheckBox pluginEnabled;
 
     private JButton directoryToWebReset;
-    private JLabel directoryToWebLabel;
     private TextFieldWithBrowseButton directoryToWeb;
 
     private JButton directoryToAppReset;
-    private JLabel directoryToAppLabel;
     private TextFieldWithBrowseButton directoryToApp;
     private JButton pathToTranslationRootTextFieldReset;
     private TextFieldWithBrowseButton pathToTranslationRootTextField;
@@ -68,6 +70,7 @@ public class SettingsForm implements Configurable {
 
     public SettingsForm(@NotNull final Project project) {
         this.project = project;
+        createUIComponents();
         buttonHelp.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -83,7 +86,6 @@ public class SettingsForm implements Configurable {
                 IdeHelper.openUrl("https://plugins.jetbrains.com/plugin/7219-symfony-support/pricing");
             }
         });
-
     }
 
     @Nls
@@ -96,6 +98,33 @@ public class SettingsForm implements Configurable {
     @Override
     public String getHelpTopic() {
         return null;
+    }
+
+    private void createUIComponents() {
+        pluginEnabled = new JCheckBox("Enable Plugin for this Project");
+        buttonHelp = new JButton("Open Help Page");
+        buttonAutoConfigure = new JButton("Autoconfigure");
+        buttonBuyLicense = new JButton("Buy License");
+        buttonReindex = new JButton("Clear Index");
+
+        pathToTranslationRootTextField = new TextFieldWithBrowseButton();
+        pathToTranslationRootTextFieldReset = new JButton("Default");
+        directoryToWeb = new TextFieldWithBrowseButton();
+        directoryToWebReset = new JButton("Default");
+        directoryToApp = new TextFieldWithBrowseButton();
+        directoryToAppReset = new JButton("Default");
+
+        enableSchedulerCheckBox = new JCheckBox("Enable Remote File Scheduler");
+        codeFoldingPhpRoute = new JCheckBox("Route (PHP)");
+        codeFoldingPhpModel = new JCheckBox("Repository Entity (PHP)");
+        codeFoldingPhpTemplate = new JCheckBox("Template (PHP)");
+        codeFoldingTwigRoute = new JCheckBox("Route (Twig)");
+        codeFoldingTwigTemplate = new JCheckBox("Template (Twig)");
+        codeFoldingTwigConstant = new JCheckBox("Constant (Twig)");
+        featureTwigIcon = new JCheckBox("Twig Icon Decoration");
+        dismissYamlSchemaNotification = new JCheckBox("Dismiss YAML Schema Notification");
+        featurePropertyInjection = new JCheckBox("Service Property Injection");
+        featureTypeProvider = new JCheckBox("Type Provider");
     }
 
     public JComponent createComponent() {
@@ -123,15 +152,182 @@ public class SettingsForm implements Configurable {
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
                 List<String> list = IdeHelper.enablePluginAndConfigure(project).stream().map(s -> "- " + s).toList();
-
                 getSettings().pluginEnabled = true;
                 updateUIFromSettings();
-
                 JOptionPane.showMessageDialog(panel1, "Plugin activated and configured with:\n" + StringUtils.join(list, "\n"), "Symfony Plugin", JOptionPane.PLAIN_MESSAGE);
             }
         });
 
+        JPanel content = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1.0;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        gbc.insets = JBUI.emptyInsets();
+        int row = 0;
+
+        // ── General ──────────────────────────────────────────────────────────
+        gbc.gridy = row++;
+        content.add(new TitledSeparator("General"), gbc);
+
+        gbc.gridy = row++;
+        gbc.insets = JBUI.insets(4, 8, 0, 0);
+        content.add(createCheckWithHint(pluginEnabled,
+            "Activates all Symfony-specific features for this project. Requires an IDE restart."), gbc);
+
+        gbc.gridy = row++;
+        gbc.insets = JBUI.insets(8, 8, 4, 0);
+        JPanel actionBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        actionBar.add(buttonAutoConfigure);
+        actionBar.add(buttonHelp);
+        actionBar.add(buttonReindex);
+        actionBar.add(buttonBuyLicense);
+        content.add(actionBar, gbc);
+
+        // ── Paths ─────────────────────────────────────────────────────────────
+        gbc.gridy = row++;
+        gbc.insets = JBUI.insetsTop(12);
+        content.add(new TitledSeparator("Paths"), gbc);
+
+        gbc.gridy = row++;
+        gbc.insets = JBUI.insets(6, 8, 0, 0);
+        content.add(createFieldWithHint("Translation Root Path", pathToTranslationRootTextField, pathToTranslationRootTextFieldReset,
+            "Root directory for translation files (e.g. translations/)"), gbc);
+
+        gbc.gridy = row++;
+        gbc.insets = JBUI.insets(8, 8, 0, 0);
+        content.add(createFieldWithHint("Web Directory", directoryToWeb, directoryToWebReset,
+            "Public web root directory, used to resolve asset paths (e.g. public/ or web/)"), gbc);
+
+        // ── Features ──────────────────────────────────────────────────────────
+        gbc.gridy = row++;
+        gbc.insets = JBUI.insetsTop(12);
+        content.add(new TitledSeparator("Features"), gbc);
+
+        Object[][] featureItems = {
+            {featureTwigIcon,                "Overlay Twig file icons with a badge indicating usage: extends, include, controller, ..."},
+            {dismissYamlSchemaNotification,  "Suppress the banner suggesting to add a YAML schema hint for out-of-box Symfony service completion"},
+            {featurePropertyInjection,       "Autocomplete properties in service and auto injection class via constructor"},
+            {featureTypeProvider,            "Resolve return types for container calls like ContainerInterface::get() and EntityManager::find()"},
+        };
+        for (Object[] item : featureItems) {
+            gbc.gridy = row++;
+            gbc.insets = JBUI.insets(4, 8, 0, 0);
+            content.add(createCheckWithHint((JCheckBox) item[0], (String) item[1]), gbc);
+        }
+
+        // ── Code Folding ──────────────────────────────────────────────────────
+        gbc.gridy = row++;
+        gbc.insets = JBUI.insetsTop(12);
+        content.add(new TitledSeparator("Code Folding"), gbc);
+
+        Object[][] foldingItems = {
+            {codeFoldingPhpRoute,    "Route name strings in PHP files to a short label"},
+            {codeFoldingPhpModel,    "Doctrine entity repository class names in PHP"},
+            {codeFoldingPhpTemplate, "Template paths in PHP render() calls"},
+            {codeFoldingTwigRoute,   "Route name strings in Twig templates to url"},
+            {codeFoldingTwigTemplate,"Template paths in Twig include and extends tags"},
+            {codeFoldingTwigConstant,"Fold PHP constant / enums references in Twig"},
+        };
+        for (Object[] item : foldingItems) {
+            gbc.gridy = row++;
+            gbc.insets = JBUI.insets(4, 8, 0, 0);
+            content.add(createCheckWithHint((JCheckBox) item[0], (String) item[1]), gbc);
+        }
+
+        // ── Legacy ────────────────────────────────────────────────────────────
+        gbc.gridy = row++;
+        gbc.insets = JBUI.insetsTop(12);
+        content.add(new TitledSeparator("Legacy"), gbc);
+
+        gbc.gridy = row++;
+        gbc.insets = JBUI.insets(6, 8, 0, 0);
+        content.add(createFieldWithHint("App Directory", directoryToApp, directoryToAppReset,
+            "Legacy Symfony 2/3 app/ directory containing config, cache, and logs"), gbc);
+
+        gbc.gridy = row++;
+        gbc.insets = JBUI.insets(4, 8, 0, 0);
+        content.add(createCheckWithHint(enableSchedulerCheckBox,
+            "Periodically sync remote deployment files (requires Web Deployment plugin; reopen project after change)"), gbc);
+
+        // Filler
+        gbc.gridy = row;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weighty = 1.0;
+        gbc.insets = JBUI.emptyInsets();
+        content.add(Box.createVerticalGlue(), gbc);
+
+        panel1 = new JPanel(new BorderLayout());
+        panel1.add(content, BorderLayout.CENTER);
+
         return panel1;
+    }
+
+    private JPanel createCheckWithHint(JCheckBox checkBox, String hint) {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setOpaque(false);
+        GridBagConstraints c = new GridBagConstraints();
+
+        // Row 0: checkbox spans full width
+        c.gridx = 0; c.gridy = 0; c.gridwidth = 2;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 1.0;
+        c.insets = JBUI.emptyInsets();
+        panel.add(checkBox, c);
+
+        // Row 1 col 0: strut sized to checkbox icon+gap so hint aligns with label text
+        c.gridwidth = 1; c.gridy = 1;
+        c.gridx = 0; c.fill = GridBagConstraints.NONE; c.weightx = 0;
+        c.insets = JBUI.emptyInsets();
+        panel.add(Box.createHorizontalStrut(JBUI.scale(26)), c);
+
+        // Row 1 col 1: hint label flush-left with checkbox text
+        JBLabel hintLabel = new JBLabel(hint, UIUtil.ComponentStyle.SMALL, UIUtil.FontColor.BRIGHTER);
+        c.gridx = 1; c.fill = GridBagConstraints.HORIZONTAL; c.weightx = 1.0;
+        c.insets = JBUI.insetsTop(1);
+        panel.add(hintLabel, c);
+
+        return panel;
+    }
+
+    private JPanel createFieldWithHint(String label, JComponent field, @Nullable JButton resetBtn, String hint) {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setOpaque(false);
+        GridBagConstraints c = new GridBagConstraints();
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.anchor = GridBagConstraints.WEST;
+
+        // Row 0: label on its own line
+        c.gridx = 0; c.gridy = 0;
+        c.fill = GridBagConstraints.NONE; c.weightx = 0;
+        c.insets = JBUI.insetsBottom(2);
+        panel.add(new JLabel(label), c);
+
+        // Row 1: input field + reset button — field stretches full width
+        JPanel inputRow = new JPanel(new GridBagLayout());
+        inputRow.setOpaque(false);
+        GridBagConstraints ic = new GridBagConstraints();
+        ic.gridx = 0; ic.gridy = 0; ic.fill = GridBagConstraints.HORIZONTAL; ic.weightx = 1.0;
+        ic.insets = JBUI.emptyInsets();
+        inputRow.add(field, ic);
+        if (resetBtn != null) {
+            ic.gridx = 1; ic.fill = GridBagConstraints.NONE; ic.weightx = 0;
+            ic.insets = JBUI.insetsLeft(4);
+            inputRow.add(resetBtn, ic);
+        }
+        c.gridy = 1; c.fill = GridBagConstraints.HORIZONTAL; c.weightx = 1.0;
+        c.insets = JBUI.emptyInsets();
+        panel.add(inputRow, c);
+
+        // Row 2: hint flush-left below the input
+        JBLabel hintLabel = new JBLabel(hint, UIUtil.ComponentStyle.SMALL, UIUtil.FontColor.BRIGHTER);
+        c.gridy = 2; c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = JBUI.insetsTop(2);
+        panel.add(hintLabel, c);
+
+        return panel;
     }
 
     @Override
@@ -159,7 +355,6 @@ public class SettingsForm implements Configurable {
 
     @Override
     public void apply() throws ConfigurationException {
-
         getSettings().pluginEnabled = pluginEnabled.isSelected();
 
         getSettings().pathToTranslation = pathToTranslationRootTextField.getText();
@@ -190,7 +385,6 @@ public class SettingsForm implements Configurable {
     }
 
     private void updateUIFromSettings() {
-
         pluginEnabled.setSelected(getSettings().pluginEnabled);
 
         pathToTranslationRootTextField.setText(getSettings().pathToTranslation);
@@ -223,7 +417,7 @@ public class SettingsForm implements Configurable {
                 );
 
                 if (null == selectedFile) {
-                    return; // Ignore but keep the previous path
+                    return;
                 }
 
                 String path = VfsUtil.getRelativePath(selectedFile, projectDirectory, '/');

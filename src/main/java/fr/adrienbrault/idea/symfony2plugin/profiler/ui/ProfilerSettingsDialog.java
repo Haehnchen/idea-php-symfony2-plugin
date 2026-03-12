@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 
 /**
@@ -32,6 +33,8 @@ public class ProfilerSettingsDialog implements Configurable {
     private JPanel mainPanel;
     private JTextField textLocalProfilerUrl;
     private TextFieldWithBrowseButton textLocalProfilerCsvPath;
+    private Component[] localComponents;
+    private Component[] httpComponents;
 
     public ProfilerSettingsDialog(@NotNull Project project) {
         this.project = project;
@@ -52,9 +55,99 @@ public class ProfilerSettingsDialog implements Configurable {
     @Nullable
     @Override
     public JComponent createComponent() {
+        textHttpProfilerUrl = new JTextField(20);
+        textLocalProfilerUrl = new JTextField(20);
+        textLocalProfilerCsvPath = new TextFieldWithBrowseButton();
+        radioDefaultProfiler = new JRadioButton("Default Profiler");
+        radioLocalProfiler = new JRadioButton("Local Profiler");
+        radioHttpProfiler = new JRadioButton("HTTP Profiler");
+
+        ButtonGroup group = new ButtonGroup();
+        group.add(radioDefaultProfiler);
+        group.add(radioLocalProfiler);
+        group.add(radioHttpProfiler);
+
         textLocalProfilerCsvPath.addBrowseFolderListener(createBrowseFolderListener(textLocalProfilerCsvPath.getTextField(), FileChooserDescriptorFactory.createSingleFolderDescriptor()));
 
+        Font smallFont = UIManager.getFont("Label.font").deriveFont(Math.max(UIManager.getFont("Label.font").getSize() - 2f, 10f));
+        Color hintColor = UIManager.getColor("Label.disabledForeground");
+        if (hintColor == null) {
+            hintColor = com.intellij.ui.JBColor.GRAY;
+        }
+
+        // Build rows that will be shown/hidden per radio selection
+        JLabel defaultHint = hint("Extract index.csv from container configuration", smallFont, hintColor);
+
+        JPanel localCsvRow = fieldRow("CSV File", textLocalProfilerCsvPath);
+        JLabel localCsvHint = hint("Location: var/cache/dev/index.csv", smallFont, hintColor);
+        JPanel localUrlRow = fieldRow("Base url", textLocalProfilerUrl);
+        JLabel localUrlHint = hint("Overwrite base url: http://127.0.0.1:8080, http://127.0.0.1/app_dev.php", smallFont, hintColor);
+
+        JPanel httpUrlRow = fieldRow("Base url", textHttpProfilerUrl);
+        JLabel httpUrlHint = hint("Profiler url without \"_profiler\": http://127.0.0.1:8080", smallFont, hintColor);
+
+        localComponents = new Component[]{localCsvRow, localCsvHint, localUrlRow, localUrlHint};
+        httpComponents = new Component[]{httpUrlRow, httpUrlHint};
+
+        radioDefaultProfiler.addActionListener(e -> updateVisibility());
+        radioLocalProfiler.addActionListener(e -> updateVisibility());
+        radioHttpProfiler.addActionListener(e -> updateVisibility());
+
+        mainPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.weightx = 1.0; gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.NORTHWEST; gbc.weighty = 0;
+        gbc.insets = new Insets(1, 0, 1, 0);
+
+        int row = 0;
+        gbc.gridy = row++; mainPanel.add(radioDefaultProfiler, gbc);
+        gbc.gridy = row++; mainPanel.add(defaultHint, gbc);
+        gbc.insets = new Insets(6, 0, 1, 0);
+        gbc.gridy = row++; mainPanel.add(radioLocalProfiler, gbc);
+        gbc.insets = new Insets(1, 0, 1, 0);
+        gbc.gridy = row++; mainPanel.add(localCsvRow, gbc);
+        gbc.gridy = row++; mainPanel.add(localCsvHint, gbc);
+        gbc.gridy = row++; mainPanel.add(localUrlRow, gbc);
+        gbc.gridy = row++; mainPanel.add(localUrlHint, gbc);
+        gbc.insets = new Insets(6, 0, 1, 0);
+        gbc.gridy = row++; mainPanel.add(radioHttpProfiler, gbc);
+        gbc.insets = new Insets(1, 0, 1, 0);
+        gbc.gridy = row++; mainPanel.add(httpUrlRow, gbc);
+        gbc.gridy = row++; mainPanel.add(httpUrlHint, gbc);
+
+        // filler to push everything up
+        gbc.gridy = row; gbc.weighty = 1.0; gbc.fill = GridBagConstraints.VERTICAL;
+        mainPanel.add(Box.createVerticalGlue(), gbc);
+
+        // initial visibility matches default radio
+        setVisible(localComponents, false);
+        setVisible(httpComponents, false);
+
         return mainPanel;
+    }
+
+    private static void setVisible(Component[] components, boolean visible) {
+        for (Component c : components) c.setVisible(visible);
+    }
+
+    private static JPanel fieldRow(String labelText, JComponent field) {
+        JPanel row = new JPanel(new GridBagLayout());
+        row.setOpaque(false);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.anchor = GridBagConstraints.WEST; gbc.insets = new Insets(0, 20, 0, 6);
+        gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0; gbc.fill = GridBagConstraints.NONE;
+        row.add(new JLabel(labelText), gbc);
+        gbc.gridx = 1; gbc.weightx = 1.0; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.insets = new Insets(0, 0, 0, 0);
+        row.add(field, gbc);
+        return row;
+    }
+
+    private static JLabel hint(String text, Font font, Color color) {
+        JLabel label = new JLabel(text);
+        label.setFont(font);
+        label.setForeground(color);
+        label.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0));
+        return label;
     }
 
     @Override
@@ -95,13 +188,19 @@ public class ProfilerSettingsDialog implements Configurable {
         textHttpProfilerUrl.setText(setting.profilerHttpUrl);
 
         updateDefaultRadio();
+        if (localComponents != null) updateVisibility();
     }
 
     private void updateDefaultRadio() {
-        // set default if non profiler selected
         if (!radioLocalProfiler.isSelected() && !radioHttpProfiler.isSelected()) {
             radioDefaultProfiler.setSelected(true);
         }
+    }
+
+    private void updateVisibility() {
+        setVisible(localComponents, radioLocalProfiler.isSelected());
+        setVisible(httpComponents, radioHttpProfiler.isSelected());
+        if (mainPanel != null) mainPanel.revalidate();
     }
 
     private TextBrowseFolderListener createBrowseFolderListener(final JTextField textField, final FileChooserDescriptor fileChooserDescriptor) {

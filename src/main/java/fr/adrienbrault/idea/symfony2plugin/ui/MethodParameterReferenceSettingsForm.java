@@ -36,6 +36,7 @@ public class MethodParameterReferenceSettingsForm implements Configurable {
 
     public MethodParameterReferenceSettingsForm(Project project) {
         this.project = project;
+        createUIComponents();
 
         this.tableView = new TableView<>();
         this.modelList = new ListTableModel<>(
@@ -60,6 +61,18 @@ public class MethodParameterReferenceSettingsForm implements Configurable {
             }
         });
 
+    }
+
+    private void createUIComponents() {
+        panel1 = new JPanel(new BorderLayout());
+        panelConfigTableView = new JPanel(new BorderLayout());
+        panel1.add(panelConfigTableView, BorderLayout.CENTER);
+
+        JPanel northPanel = new JPanel(new BorderLayout());
+        northPanel.add(new JLabel("Provides Completion and Goto for method parameter"), BorderLayout.CENTER);
+        buttonHelp = new JButton("Help");
+        northPanel.add(buttonHelp, BorderLayout.EAST);
+        panel1.add(northPanel, BorderLayout.NORTH);
     }
 
     private void attachItems() {
