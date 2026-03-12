@@ -1,6 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.util;
 
 import com.intellij.openapi.util.SimpleModificationTracker;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -17,12 +19,16 @@ public class AbsoluteFileModificationTracker extends SimpleModificationTracker {
     public AbsoluteFileModificationTracker(@NotNull Collection<String> files) {
         this.files = files;
     }
+
     @Override
     public long getModificationCount() {
+        // Uses VirtualFile.getTimeStamp() - cached in VFS, no filesystem I/O
         long hash = this.files.stream()
             .sorted()
-            .map(File::new)
-            .mapToLong(value -> value.exists() ? value.lastModified() : 0)
+            .mapToLong(path -> {
+                VirtualFile vf = VfsUtil.findFileByIoFile(new File(path), false);
+                return vf != null && vf.exists() ? vf.getTimeStamp() : 0;
+            })
             .sum();
 
         if (hash != this.last) {

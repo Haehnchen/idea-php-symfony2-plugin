@@ -25,32 +25,51 @@ public class ServiceRouteContainer  {
     private static final Key<CachedValue<ServiceRouteContainer>> SERVICE_ROUTE_CONTAINER_CACHE = new Key<>("SYMFONY_SERVICE_ROUTE_CONTAINER_CACHE");
 
     private final Collection<Route> routes;
+    // Lazily built index: method name -> matching route entries. Null until first use.
+    private Map<String, List<RouteEntry>> routesByMethodName;
     private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
 
     private final Map<String, PhpClass> serviceCache = new HashMap<>();
+
+    // Holds the pre-split controller parts alongside the Route to avoid re-splitting on every lookup.
+    private record RouteEntry(String serviceId, String methodName, Route route) {}
 
     private ServiceRouteContainer(@NotNull Collection<Route> routes) {
         this.routes = routes;
     }
 
-    public Set<String> getServiceNames() {
-
-        Set<String> services = new HashSet<>();
-
-        for (Route route : this.routes) {
-
-            String controller = route.getController();
-            if(controller == null) {
-                continue;
-            }
-
-            String[] split = controller.split(":");
-            if(split.length > 1) {
-                services.add(split[0]);
-            }
-
+    /**
+     * Builds the method-name index on the first call and caches it for subsequent calls.
+     * Splitting is done here once with indexOf instead of split() to avoid repeated array allocations.
+     */
+    private Map<String, List<RouteEntry>> getRoutesByMethodName() {
+        if (routesByMethodName != null) {
+            return routesByMethodName;
         }
 
+        Map<String, List<RouteEntry>> index = new HashMap<>();
+        for (Route route : routes) {
+            String controller = route.getController();
+            if (controller == null) continue;
+            // controller format: "service_id:methodName"
+            int colon = controller.indexOf(':');
+            if (colon > 0 && colon < controller.length() - 1) {
+                String serviceId = controller.substring(0, colon);
+                String methodName = controller.substring(colon + 1);
+                index.computeIfAbsent(methodName, k -> new ArrayList<>()).add(new RouteEntry(serviceId, methodName, route));
+            }
+        }
+
+        return routesByMethodName  = index;
+    }
+
+    public Set<String> getServiceNames() {
+        Set<String> services = new HashSet<>();
+        for (List<RouteEntry> entries : getRoutesByMethodName().values()) {
+            for (RouteEntry entry : entries) {
+                services.add(entry.serviceId());
+            }
+        }
         return services;
     }
 
@@ -61,33 +80,25 @@ public class ServiceRouteContainer  {
             return Collections.emptyList();
         }
 
+        // Fast path: no routes registered for this method name at all
+        List<RouteEntry> candidates = getRoutesByMethodName().get(method.getName());
+        if (candidates == null) {
+            return Collections.emptyList();
+        }
+
         String classFqn = StringUtils.stripStart(originClass.getFQN(), "\\");
 
         Collection<Route> routes = new ArrayList<>();
-        for (Route route : this.routes) {
-
-            String serviceRoute = route.getController();
-            if(serviceRoute == null) {
-                continue;
-            }
-
-            // if controller matches:
-            // service_id:methodName
-            String[] split = serviceRoute.split(":");
-            if(split.length != 2 || !split[1].equals(method.getName())) {
-                continue;
-            }
-
+        for (RouteEntry entry : candidates) {
             // cache PhpClass resolve
-            if(!serviceCache.containsKey(split[0])) {
-                serviceCache.put(split[0], ServiceUtil.getResolvedClassDefinition(method.getProject(), split[0], getLazyServiceCollector(method.getProject())));
+            if(!serviceCache.containsKey(entry.serviceId())) {
+                serviceCache.put(entry.serviceId(), ServiceUtil.getResolvedClassDefinition(method.getProject(), entry.serviceId(), getLazyServiceCollector(method.getProject())));
             }
 
-            PhpClass phpClass = serviceCache.get(split[0]);
+            PhpClass phpClass = serviceCache.get(entry.serviceId());
             if(phpClass != null && classFqn.equals(phpClass.getPresentableFQN())) {
-                Method targetMethod = phpClass.findMethodByName(split[1]);
-                if(targetMethod != null) {
-                    routes.add(route);
+                if(phpClass.findMethodByName(entry.methodName()) != null) {
+                    routes.add(entry.route());
                 }
             }
         }

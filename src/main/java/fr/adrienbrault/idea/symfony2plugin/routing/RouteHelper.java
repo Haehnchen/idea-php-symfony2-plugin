@@ -60,6 +60,7 @@ import org.jetbrains.yaml.psi.*;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -251,11 +252,12 @@ public class RouteHelper {
      */
     @NotNull
     public static Collection<Route> getRoutesForPathWithPlaceholderMatch(@NotNull Project project, @NotNull String searchPath) {
+        ConcurrentHashMap<String, Pattern> patternCache = new ConcurrentHashMap<>();
         return new ArrayList<>(RouteHelper.getAllRoutes(project).values())
             .parallelStream()
             .filter(Objects::nonNull)
             .map(route -> {
-                if (isReverseRoutePatternMatch(route, searchPath)) {
+                if (isReverseRoutePatternMatch(route, searchPath, patternCache)) {
                     return route;
                 }
                 return null;
@@ -272,12 +274,13 @@ public class RouteHelper {
      * - "ar/12/foo" => "/car/{edit}/foobar"
      */
     public static boolean hasRoutesForPathWithPlaceholderMatch(@NotNull Project project, @NotNull String searchPath) {
+        ConcurrentHashMap<String, Pattern> patternCache = new ConcurrentHashMap<>();
         return RouteHelper.getAllRoutes(project).values()
             .parallelStream()
-            .anyMatch(route -> isReverseRoutePatternMatch(route, searchPath));
+            .anyMatch(route -> isReverseRoutePatternMatch(route, searchPath, patternCache));
     }
 
-    private static boolean isReverseRoutePatternMatch(@NotNull Route route, @NotNull String searchPath) {
+    private static boolean isReverseRoutePatternMatch(@NotNull Route route, @NotNull String searchPath, @NotNull ConcurrentHashMap<String, Pattern> patternCache) {
         String routePath = route.getPath();
         if (routePath == null) {
             return false;
@@ -319,8 +322,8 @@ public class RouteHelper {
 
             // user input
             try {
-                Matcher matcher = Pattern.compile(regex).matcher(searchPath);
-                if (matcher.matches()) {
+                Pattern pattern = patternCache.computeIfAbsent(regex, Pattern::compile);
+                if (pattern.matcher(searchPath).matches()) {
                     return true;
                 }
             } catch (Exception ignored) {

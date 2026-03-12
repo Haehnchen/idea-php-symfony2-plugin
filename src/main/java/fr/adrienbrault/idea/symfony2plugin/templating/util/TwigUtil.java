@@ -1639,14 +1639,14 @@ public class TwigUtil {
     }
 
     public static Collection<PsiElement> getTwigMacroTargets(final Project project, final String name) {
-
         final Collection<PsiElement> targets = new ArrayList<>();
+        ElementPattern<PsiElement> twigMacroNameKnownPattern = TwigPattern.getTwigMacroNameKnownPattern(name);
 
         FileBasedIndex.getInstance().getFilesWithKey(TwigMacroFunctionStubIndex.KEY, new HashSet<>(Collections.singletonList(name)), virtualFile -> {
             PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
             if (psiFile != null) {
                 PsiTreeUtil.processElements(psiFile, psiElement -> {
-                    if (TwigPattern.getTwigMacroNameKnownPattern(name).accepts(psiElement)) {
+                    if (twigMacroNameKnownPattern.accepts(psiElement)) {
                         targets.add(psiElement);
                     }
 

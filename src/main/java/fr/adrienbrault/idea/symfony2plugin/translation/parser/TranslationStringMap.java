@@ -1,7 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.translation.parser;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.io.StreamUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
@@ -10,16 +9,13 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -28,22 +24,13 @@ public class TranslationStringMap {
     @NotNull
     private final Map<String, Set<String>> domainMap;
 
-    private TranslationStringMap() {
-        this.domainMap = new ConcurrentHashMap<>();
+    private TranslationStringMap(@NotNull Map<String, Set<String>> domainMap) {
+        this.domainMap = domainMap;
     }
 
     @Nullable
     public Set<String> getDomainMap(@NotNull String domainKey) {
-        if(!domainMap.containsKey(domainKey)) {
-            return null;
-        }
-
         return domainMap.get(domainKey);
-    }
-
-    private void addString(@NotNull String domain, @NotNull String stringId) {
-        domainMap.putIfAbsent(domain, new HashSet<>());
-        domainMap.get(domain).add(stringId);
     }
 
     @NotNull
@@ -51,86 +38,108 @@ public class TranslationStringMap {
         return domainMap.keySet();
     }
 
-    private void addDomain(@NotNull String domain) {
-        domainMap.putIfAbsent(domain, new HashSet<>());
+    public static boolean isCatalogueFile(@NotNull String filename) {
+        return filename.startsWith("catalogue") && filename.endsWith(".php");
     }
 
     @NotNull
     public static TranslationStringMap createEmpty() {
-        return new TranslationStringMap();
+        return new TranslationStringMap(Map.of());
     }
 
     @NotNull
-    public static TranslationStringMap create(@NotNull Project project, @NotNull Collection<File> paths) {
-       TranslationStringMap translationStringMap = new TranslationStringMap();
+    public static TranslationStringMap create(@NotNull Project project, @NotNull Collection<File> translationDirectories) {
+        List<FileData> perFileData = new ArrayList<>();
 
-        for (File path : paths) {
-            File[] files = path.listFiles((directory, s) -> s.startsWith("catalogue") && s.endsWith("php"));
-            if(null == files) {
+        for (File path : translationDirectories) {
+            File[] files = path.listFiles((directory, s) -> isCatalogueFile(s));
+            if (files == null) {
                 continue;
             }
 
-            for (final File fileEntry : files) {
-                translationStringMap.parse(project, fileEntry);
+            for (File fileEntry : files) {
+                VirtualFile virtualFile = VfsUtil.findFileByIoFile(fileEntry, false);
+                if (virtualFile != null) {
+                    perFileData.add(FileData.parse(project, virtualFile));
+                } else {
+                    Symfony2ProjectComponent.getLogger().info("VfsUtil missing translation: " + fileEntry.getPath());
+                }
             }
         }
 
-        return translationStringMap;
+        return merge(perFileData);
     }
 
-    private void parse(@NotNull Project project, @NotNull File file) {
-        VirtualFile virtualFile = VfsUtil.findFileByIoFile(file, false);
-        if (virtualFile == null) {
-            Symfony2ProjectComponent.getLogger().info("VfsUtil missing translation: " + file.getPath());
-            return;
+    @NotNull
+    private static TranslationStringMap merge(@NotNull Collection<FileData> perFileData) {
+        Map<String, Set<String>> merged = new HashMap<>();
+
+        for (FileData fileData : perFileData) {
+            fileData.domainMap().forEach((domain, keys) -> merged.computeIfAbsent(domain, k -> new HashSet<>()).addAll(keys));
         }
 
-        parse(project, virtualFile);
+        Map<String, Set<String>> result = new HashMap<>(merged.size());
+        merged.forEach((k, v) -> result.put(k, Set.copyOf(v)));
+
+        return new TranslationStringMap(Map.copyOf(result));
     }
 
-    public void parse(@NotNull Project project, @NotNull VirtualFile virtualFile) {
-        PsiFile psiFile;
-        try {
-            byte[] bytes = StreamUtil.readBytes(virtualFile.getInputStream());
-            String content = new String(bytes, StandardCharsets.UTF_8);
-            psiFile = PhpPsiElementFactory.createPsiFileFromText(project, content);
-        } catch (IOException e) {
-            return;
-        }
+    /**
+     * Immutable parsed data for a single catalogue file.
+     * The unit of per-file caching: parse once per VirtualFile, then merge via {@link #merge}.
+     */
+    private record FileData(@NotNull Map<String, Set<String>> domainMap) {
+        @NotNull
+        public static FileData parse(@NotNull Project project, @NotNull VirtualFile virtualFile) {
+            PsiFile psiFile;
+            try {
+                String content = VfsUtil.loadText(virtualFile);
+                psiFile = PhpPsiElementFactory.createPsiFileFromText(project, content);
+            } catch (IOException e) {
+                return empty();
+            }
 
-        if (psiFile == null) {
-            return;
-        }
+            if (psiFile == null) {
+                return empty();
+            }
 
-        Symfony2ProjectComponent.getLogger().info("update translations: " + virtualFile.getPath());
+            Symfony2ProjectComponent.getLogger().info("update translations: " + virtualFile.getPath());
 
-        Collection<NewExpression> messageCatalogues = PsiTreeUtil.collectElementsOfType(psiFile, NewExpression.class);
-        for (NewExpression newExpression: messageCatalogues) {
-            boolean isMessageCatalogueConstructor = false;
-            for (PhpClass phpClass : PhpElementsUtil.getNewExpressionPhpClasses(newExpression)) {
-                if (PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Translation\\MessageCatalogue") || PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Translation\\MessageCatalogueInterface")) {
-                    isMessageCatalogueConstructor = true;
-                    break;
+            // local mutable accumulator — never escapes this method
+            Map<String, Set<String>> data = new HashMap<>();
+
+            for (NewExpression newExpression : PsiTreeUtil.collectElementsOfType(psiFile, NewExpression.class)) {
+                ClassReference classReference = newExpression.getClassReference();
+                if (classReference == null) {
+                    continue;
+                }
+                if ("\\Symfony\\Component\\Translation\\MessageCatalogue".equals(classReference.getFQN())) {
+                    collectMessages(newExpression, data);
                 }
             }
 
-            if (isMessageCatalogueConstructor) {
-                this.getTranslationMessages(newExpression);
+            Map<String, Set<String>> result = new HashMap<>(data.size());
+            data.forEach((k, v) -> result.put(k, Set.copyOf(v)));
+            return new FileData(Map.copyOf(result));
+        }
+
+        @NotNull
+        static FileData empty() {
+            return new FileData(Map.of());
+        }
+
+        private static void collectMessages(@NotNull NewExpression newExpression, @NotNull Map<String, Set<String>> data) {
+            PsiElement[] parameters = newExpression.getParameters();
+            if (parameters.length < 2 || !(parameters[1] instanceof ArrayCreationExpression)) {
+                return;
             }
-        }
-    }
 
-    private void getTranslationMessages(@NotNull NewExpression newExpression) {
-        // first parameter hold our huge translation arrays
-        PsiElement[] parameters = newExpression.getParameters();
-        if(parameters.length < 2 || !(parameters[1] instanceof ArrayCreationExpression)) {
-            return;
-        }
+            for (ArrayHashElement arrayHashElement : PsiTreeUtil.getChildrenOfTypeAsList(parameters[1], ArrayHashElement.class)) {
+                PhpPsiElement arrayKey = arrayHashElement.getKey();
+                if (!(arrayKey instanceof StringLiteralExpression)) {
+                    continue;
+                }
 
-        Collection<ArrayHashElement> domainArrays = PsiTreeUtil.getChildrenOfTypeAsList(parameters[1], ArrayHashElement.class);
-        for(ArrayHashElement arrayHashElement: domainArrays) {
-            PhpPsiElement arrayKey = arrayHashElement.getKey();
-            if(arrayKey instanceof StringLiteralExpression) {
                 String transDomain = ((StringLiteralExpression) arrayKey).getContents();
                 if (StringUtils.isBlank(transDomain)) {
                     continue;
@@ -144,26 +153,22 @@ public class TranslationStringMap {
                     continue;
                 }
 
-                addDomain(transDomain);
+                data.putIfAbsent(transDomain, new HashSet<>());
 
-                // parse translation keys
                 PhpPsiElement arrayValue = arrayHashElement.getValue();
-                if(arrayValue instanceof ArrayCreationExpression) {
-                    getTransKeys(transDomain, (ArrayCreationExpression) arrayValue);
+                if (arrayValue instanceof ArrayCreationExpression) {
+                    collectKeys(transDomain, (ArrayCreationExpression) arrayValue, data);
+                }
+            }
+        }
+
+        private static void collectKeys(@NotNull String domain, @NotNull ArrayCreationExpression translationArray, @NotNull Map<String, Set<String>> data) {
+            for (ArrayHashElement arrayHashElement : PsiTreeUtil.getChildrenOfTypeAsList(translationArray, ArrayHashElement.class)) {
+                PhpPsiElement translationKey = arrayHashElement.getKey();
+                if (translationKey instanceof StringLiteralExpression) {
+                    data.computeIfAbsent(domain, k -> new HashSet<>()).add(((StringLiteralExpression) translationKey).getContents());
                 }
             }
         }
     }
-
-    private void getTransKeys(@NotNull String domain, @NotNull ArrayCreationExpression translationArray) {
-        Collection<ArrayHashElement> test = PsiTreeUtil.getChildrenOfTypeAsList(translationArray, ArrayHashElement.class);
-        for (ArrayHashElement arrayHashElement: test) {
-            PhpPsiElement translationKey = arrayHashElement.getKey();
-            if (translationKey instanceof StringLiteralExpression) {
-                String transKey = ((StringLiteralExpression) translationKey).getContents();
-                addString(domain, transKey);
-            }
-        }
-    }
 }
-

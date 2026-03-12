@@ -29,7 +29,6 @@ import java.util.Collection;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TwigPattern {
-    @SuppressWarnings("unchecked")
     private static final ElementPattern<?>[] PARAMETER_WHITE_LIST = new ElementPattern[]{
         PlatformPatterns.psiElement(PsiWhiteSpace.class),
         PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
@@ -87,6 +86,632 @@ public class TwigPattern {
         }
     };
 
+    // -----------------------------------------------------------------------
+    // Cached patterns - declared in dependency order
+    // -----------------------------------------------------------------------
+
+    /**
+     * Provide a workaround for getting a FUNCTION scope as it not consistent in all Twig elements
+     *
+     * {% if asset('') %}
+     * {{ asset('') }}
+     */
+    private static final ElementPattern<PsiElement> FUNCTION_CALL_SCOPE_PATTERN = PlatformPatterns.or(
+        // old and inconsistently implementations of FUNCTION_CALL:
+        // eg {% if asset('') %} does not provide a FUNCTION_CALL whereas a print block does
+        PlatformPatterns.psiElement(TwigElementTypes.PRINT_BLOCK),
+        PlatformPatterns.psiElement(TwigElementTypes.TAG),
+        PlatformPatterns.psiElement(TwigElementTypes.IF_TAG),
+        PlatformPatterns.psiElement(TwigElementTypes.SET_TAG),
+        PlatformPatterns.psiElement(TwigElementTypes.ELSE_TAG),
+        PlatformPatterns.psiElement(TwigElementTypes.ELSEIF_TAG),
+        PlatformPatterns.psiElement(TwigElementTypes.FOR_TAG),
+
+        // PhpStorm 2017.3.2: {{ asset('') }}
+        PlatformPatterns.psiElement(TwigElementTypes.FUNCTION_CALL)
+    );
+
+    /**
+     * Shared parent pattern for path() hash literal: the LITERAL node that is the second argument of path()/url()
+     */
+    private static final ElementPattern<PsiElement> PATH_HASH_LITERAL_PATTERN = PlatformPatterns.psiElement(TwigElementTypes.LITERAL).afterLeafSkipping(
+        PlatformPatterns.or(
+            PlatformPatterns.psiElement(PsiWhiteSpace.class),
+            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+        ),
+        PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT),
+                PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+            ),
+            PlatformPatterns.psiElement(TwigTokenTypes.LBRACE).withParent(
+                PlatformPatterns.psiElement().withText(PlatformPatterns.string().contains("path"))
+            )
+        )
+    );
+
+    /** {{ 'test'|<caret> }} */
+    private static final ElementPattern<PsiElement> FILTER_AS_IDENTIFIER_PATTERN = PlatformPatterns.psiElement()
+        .afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+            ),
+            PlatformPatterns.psiElement().withElementType(TwigTokenTypes.FILTER)
+        )
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    /**
+     * Since PhpStorm 2024.1 value can be nested inside TwigVariableReference element
+     *
+     * {% for user in users|de<caret> %}
+     */
+    private static final ElementPattern<PsiElement> FILTER_AS_VARIABLE_REFERENCE_PATTERN = PlatformPatterns.psiElement()
+        .withParent(PlatformPatterns.psiElement(TwigVariableReference.class).afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+            ),
+            PlatformPatterns.psiElement().withElementType(TwigTokenTypes.FILTER)
+        ))
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    private static final ElementPattern<PsiElement> CACHED_INCLUDE_TAG_ARRAY_PATTERN = PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
+        .withParent(
+            PlatformPatterns.psiElement(TwigElementTypes.INCLUDE_TAG)
+        )
+        .afterLeafSkipping(
+            STRING_WRAP_PATTERN,
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(TwigTokenTypes.COMMA),
+                PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_SQ)
+            )
+        )
+        .beforeLeafSkipping(
+            STRING_WRAP_PATTERN,
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(TwigTokenTypes.COMMA),
+                PlatformPatterns.psiElement(TwigTokenTypes.RBRACE_SQ)
+            )
+        )
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    /** Check for {{ include('|')  }}, {% include('|') %} */
+    private static final ElementPattern<PsiElement> CACHED_PRINT_BLOCK_OR_TAG_FUNCTION_PATTERN = PlatformPatterns
+        .psiElement(TwigTokenTypes.STRING_TEXT)
+        .withParent(FUNCTION_CALL_SCOPE_PATTERN)
+        .afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+            ),
+            PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER)
+        )
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    private static final ElementPattern<PsiElement> CACHED_FUNCTION_STRING_PARAMETER_PATTERN = PlatformPatterns
+        .psiElement(TwigTokenTypes.STRING_TEXT)
+        .afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+            ),
+            PlatformPatterns.or(PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER))
+        )
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    private static final ElementPattern<PsiElement> CACHED_AFTER_IS_TOKEN_PATTERN = PlatformPatterns
+        .psiElement()
+        .afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+            ),
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(TwigTokenTypes.IS),
+                PlatformPatterns.psiElement(TwigTokenTypes.NOT)
+            )
+        )
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    private static final ElementPattern<PsiElement> CACHED_AFTER_IS_TOKEN_WITH_ONE_IDENTIFIER_LEAF_PATTERN = PlatformPatterns
+        .psiElement()
+        .withParent(PlatformPatterns
+            .psiElement()
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).afterLeafSkipping(PlatformPatterns.psiElement(PsiWhiteSpace.class), PlatformPatterns.or(
+                    PlatformPatterns.psiElement(TwigTokenTypes.IS),
+                    PlatformPatterns.psiElement(TwigTokenTypes.NOT)
+                ))
+            ))
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    private static final ElementPattern<PsiElement> CACHED_AFTER_IS_TOKEN_TEXT_PATTERN = PlatformPatterns.or(
+        PlatformPatterns.psiElement(TwigTokenTypes.IS),
+        PlatformPatterns.psiElement(TwigTokenTypes.NOT)
+    );
+
+    private static final ElementPattern<PsiElement> CACHED_AFTER_OPERATOR_PATTERN = PlatformPatterns
+        .psiElement(TwigTokenTypes.IDENTIFIER)
+        .inside(PlatformPatterns.psiElement(TwigElementTypes.IF_TAG))
+        .andNot(PlatformPatterns.psiElement().inside(PlatformPatterns.psiElement(TwigElementTypes.FIELD_REFERENCE)))
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    private static final ElementPattern<PsiElement> CACHED_TAG_TOKEN_PARSER_PATTERN = PlatformPatterns
+        .psiElement()
+        .afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+            ),
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(TwigTokenTypes.STATEMENT_BLOCK_START),
+                PlatformPatterns.psiElement(PsiErrorElement.class)
+            )
+        )
+        .beforeLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+            ),
+            PlatformPatterns.psiElement(TwigTokenTypes.STATEMENT_BLOCK_END)
+        )
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    private static final ElementPattern<PsiElement> CACHED_TAG_TOKEN_BLOCK_PATTERN = PlatformPatterns
+        .psiElement(TwigTokenTypes.TAG_NAME)
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    private static final ElementPattern<PsiElement> CACHED_EMBED_PATTERN = getTagNameParameterPattern(TwigElementTypes.EMBED_TAG, "embed");
+
+    private static final ElementPattern<PsiElement> CACHED_PRINT_BLOCK_FUNCTION_PATTERN = PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER)
+        .inside(PlatformPatterns.or(
+            PlatformPatterns.psiElement(TwigPsiReference.class),
+            PlatformPatterns.psiElement(TwigElementTypes.FUNCTION_CALL),
+            PlatformPatterns.psiElement(TwigElementTypes.METHOD_CALL)
+        ))
+        .inside(FUNCTION_CALL_SCOPE_PATTERN)
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    /** "{{ _self.input('password', '', 'password') }}" */
+    private static final ElementPattern<PsiElement> CACHED_SELF_MACRO_FUNCTION_PATTERN = PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).with(PhpElementsUtil.EMPTY_PREVIOUS_LEAF)
+        .inside(PlatformPatterns.psiElement(TwigElementTypes.FUNCTION_CALL)
+            .afterLeaf(PlatformPatterns.psiElement(TwigTokenTypes.DOT).afterLeaf(PlatformPatterns.psiElement(TwigTokenTypes.RESERVED_ID)))
+        )
+        .inside(FUNCTION_CALL_SCOPE_PATTERN)
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    /** {{ _self.input() }} */
+    private static final ElementPattern<PsiElement> CACHED_SELF_MACRO_IDENTIFIER_PATTERN = PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).afterLeaf(
+        PlatformPatterns.psiElement(TwigTokenTypes.DOT)
+            .afterLeaf(PlatformPatterns.psiElement(TwigTokenTypes.RESERVED_ID))
+        )
+        .inside(FUNCTION_CALL_SCOPE_PATTERN)
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    /** {{ form(foo) }}, {{ foo }}, {% if foo %} — NOT: {{ foo.bar }}, {{ 'foo.bar' }} */
+    private static final ElementPattern<PsiElement> CACHED_COMPLETABLE_PATTERN = PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER)
+        .inside(PlatformPatterns.psiElement(TwigElementTypes.VARIABLE_REFERENCE))
+        .andNot(
+            PlatformPatterns.psiElement().inside(PlatformPatterns.psiElement(TwigElementTypes.FIELD_REFERENCE))
+        ).inside(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(TwigElementTypes.PRINT_BLOCK),
+                PlatformPatterns.psiElement(TwigElementTypes.SET_TAG),
+                PlatformPatterns.psiElement(TwigElementTypes.IF_TAG)
+            )
+        )
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    private static final ElementPattern<PsiElement> CACHED_BLOCK_TAG_PATTERN = PlatformPatterns.or(
+        // {% block "foo" %}
+        PlatformPatterns
+        .psiElement(TwigTokenTypes.STRING_TEXT)
+        .afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+            ),
+            PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME)
+        )
+        .withParent(
+            PlatformPatterns.psiElement(TwigBlockTag.class)
+        )
+        .withLanguage(TwigLanguage.INSTANCE),
+
+        // {% block foo %}
+        PlatformPatterns
+            .psiElement(TwigTokenTypes.IDENTIFIER)
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME)
+            )
+            .withParent(
+                PlatformPatterns.psiElement(TwigBlockTag.class)
+            )
+            .withLanguage(TwigLanguage.INSTANCE)
+    );
+
+    private static final ElementPattern<PsiElement> CACHED_FILTER_TAG_PATTERN = PlatformPatterns
+        .psiElement(TwigTokenTypes.IDENTIFIER)
+        .afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+            ),
+            PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME)
+        )
+        .withParent(
+            PlatformPatterns.psiElement(TwigElementTypes.FILTER_TAG)
+        )
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    private static final ElementPattern<PsiElement> CACHED_TRANS_DEFAULT_DOMAIN_PATTERN = getArgumentAfterTagNamePattern("trans_default_domain");
+
+    private static final ElementPattern<PsiElement> CACHED_PATH_AFTER_LEAF_PATTERN = PlatformPatterns
+        .psiElement(TwigTokenTypes.STRING_TEXT)
+        .afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+            ),
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(TwigTokenTypes.COMMA),
+                PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_CURL)
+            )
+        )
+        .withParent(PATH_HASH_LITERAL_PATTERN)
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    private static final ElementPattern<PsiElement> CACHED_PATH_AFTER_LEAF_FOR_IDENTIFIER_PATTERN = PlatformPatterns
+        .psiElement(TwigTokenTypes.IDENTIFIER)
+        .afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+            ),
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(TwigTokenTypes.COMMA),
+                PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_CURL)
+            )
+        )
+        .withParent(PATH_HASH_LITERAL_PATTERN)
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    private static final ElementPattern<PsiElement> CACHED_PARENT_FUNCTION_PATTERN = PlatformPatterns
+        .psiElement(TwigTokenTypes.IDENTIFIER)
+        .withText("parent")
+        .beforeLeaf(
+            PlatformPatterns.psiElement(TwigTokenTypes.LBRACE)
+        )
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    private static final ElementPattern<PsiElement> CACHED_TYPE_COMPLETION_PATTERN = PlatformPatterns
+        .psiElement(TwigTokenTypes.IDENTIFIER)
+        .afterLeaf(PlatformPatterns.psiElement(TwigTokenTypes.DOT))
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    private static final ElementPattern<PsiElement> CACHED_AUTOCOMPLETABLE_ROUTE_PATTERN = PlatformPatterns
+        .psiElement(TwigTokenTypes.STRING_TEXT)
+        .afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+            ),
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("path"),
+                PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("url")
+            )
+        )
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    private static final ElementPattern<PsiElement> CACHED_COMPONENT_PATTERN = PlatformPatterns
+        .psiElement(TwigTokenTypes.STRING_TEXT)
+        .afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+            ),
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("component")
+            )
+        )
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    private static final ElementPattern<PsiElement> CACHED_AUTOCOMPLETABLE_ASSET_PATTERN = PlatformPatterns
+        .psiElement(TwigTokenTypes.STRING_TEXT)
+        .afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+            ),
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("asset"),
+                PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("absolute_url")
+            )
+        )
+        .beforeLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+            ),
+            PlatformPatterns.psiElement(TwigTokenTypes.RBRACE)
+        )
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    private static final ElementPattern<PsiElement> CACHED_TEMPLATE_FILE_REFERENCE_TAG_PATTERN = getTemplateFileReferenceTagPattern("extends", "from", "include", "use", "import", "embed");
+
+    private static final ElementPattern<PsiElement> CACHED_TEMPLATE_IMPORT_FILE_REFERENCE_TAG_PATTERN = PlatformPatterns
+        .psiElement()
+        .withParent(
+            PlatformPatterns.psiElement(TwigElementTypes.VARIABLE_REFERENCE).andNot(PlatformPatterns.psiElement().afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.AS_KEYWORD)
+            )).withParent(
+                PlatformPatterns.psiElement(TwigElementTypes.IMPORT_TAG)
+            )
+        )
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    private static final ElementPattern<PsiElement> CACHED_APPLY_FILTER_PATTERN = PlatformPatterns
+        .psiElement(TwigTokenTypes.IDENTIFIER)
+        .afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+            ),
+            PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).with(new PatternCondition<>("aa") {
+                @Override
+                public boolean accepts(@NotNull PsiElement psiElement, ProcessingContext processingContext) {
+                    return "apply".equalsIgnoreCase(psiElement.getText());
+                }
+            })
+        )
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    private static final ElementPattern<PsiElement> CACHED_FOR_TAG_IN_VARIABLE_PATTERN = PlatformPatterns.psiElement().afterLeafSkipping(
+        PlatformPatterns.or(
+            PlatformPatterns.psiElement(PsiWhiteSpace.class),
+            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+        ),
+        PlatformPatterns.psiElement(TwigTokenTypes.IN).withLanguage(TwigLanguage.INSTANCE));
+
+    private static final ElementPattern<PsiElement> CACHED_FOR_TAG_IN_VARIABLE_REFERENCE_PATTERN = PlatformPatterns.psiElement().withElementType(TokenSet.create(TwigElementTypes.VARIABLE_REFERENCE,
+            TwigElementTypes.FIELD_REFERENCE)).afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+            ),
+            PlatformPatterns.psiElement(TwigTokenTypes.IN)
+        )
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    private static final ElementPattern<PsiElement> CACHED_FOR_TAG_VARIABLE_PATTERN = PlatformPatterns.psiElement().withElementType(TokenSet.create(TwigElementTypes.VARIABLE_REFERENCE,
+            TwigElementTypes.FIELD_REFERENCE)).beforeLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+            ),
+            PlatformPatterns.psiElement(TwigTokenTypes.IN)
+        )
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    private static final ElementPattern<PsiElement> CACHED_IF_VARIABLE_PATTERN = PlatformPatterns.psiElement().withElementType(TokenSet.create(TwigElementTypes.VARIABLE_REFERENCE,
+            TwigElementTypes.FIELD_REFERENCE)).afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+            ),
+            PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText(
+                PlatformPatterns.string().oneOfIgnoreCase("if")
+            )
+        )
+        .withParent(
+            PlatformPatterns.psiElement(TwigElementTypes.IF_TAG)
+        )
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    private static final ElementPattern<PsiElement> CACHED_IF_CONDITION_VARIABLE_PATTERN = PlatformPatterns.psiElement().withElementType(TokenSet.create(TwigElementTypes.VARIABLE_REFERENCE,
+            TwigElementTypes.FIELD_REFERENCE)).afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+            ),
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(TwigTokenTypes.LE),
+                PlatformPatterns.psiElement(TwigTokenTypes.LT),
+                PlatformPatterns.psiElement(TwigTokenTypes.GE),
+                PlatformPatterns.psiElement(TwigTokenTypes.GT),
+                PlatformPatterns.psiElement(TwigTokenTypes.EQ_EQ),
+                PlatformPatterns.psiElement(TwigTokenTypes.NOT_EQ)
+            )
+        )
+        .withParent(
+            PlatformPatterns.psiElement(TwigElementTypes.IF_TAG)
+        )
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    private static final ElementPattern<PsiElement> CACHED_TWI_TAG_USE_NAME_PATTERN = PlatformPatterns
+        .psiElement(TwigTokenTypes.STRING_TEXT)
+        .withParent(PlatformPatterns.psiElement(TwigElementTypes.TAG))
+        .afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+            ),
+            PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText("use")
+        )
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    private static final ElementPattern<PsiElement> CACHED_SET_VARIABLE_PATTERN = PlatformPatterns.psiElement().withElementType(TokenSet.create(TwigElementTypes.VARIABLE_REFERENCE,
+            TwigElementTypes.FIELD_REFERENCE)).afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+            ),
+            PlatformPatterns.psiElement(TwigTokenTypes.EQ)
+        )
+        .withParent(
+            PlatformPatterns.psiElement(TwigElementTypes.SET_TAG)
+        )
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    private static final ElementPattern<PsiElement> CACHED_INCLUDE_ONLY_PATTERN = PlatformPatterns
+        .psiElement(TwigTokenTypes.IDENTIFIER).withText("only")
+        .beforeLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+            ),
+            PlatformPatterns.psiElement(TwigTokenTypes.STATEMENT_BLOCK_END)
+        )
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    private static final ElementPattern<PsiElement> CACHED_FROM_TEMPLATE_ELEMENT_PATTERN = PlatformPatterns.or(
+        PlatformPatterns
+            .psiElement(TwigTokenTypes.STRING_TEXT)
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText(PlatformPatterns.string().oneOf("from"))
+            )
+            .withLanguage(TwigLanguage.INSTANCE),
+        PlatformPatterns
+            .psiElement(TwigTokenTypes.RESERVED_ID)
+            .afterLeafSkipping(
+                PlatformPatterns.or(
+                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+                ),
+                PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText(PlatformPatterns.string().oneOf("from"))
+            )
+            .withLanguage(TwigLanguage.INSTANCE)
+    );
+
+    private static final PsiElementPattern CACHED_FIRST_FUNCTION_PARAMETER_AS_STRING_PATTERN;
+    static {
+        ElementPattern<?>[] elementPatterns = {
+            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+            PlatformPatterns.psiElement(PsiWhiteSpace.class),
+            PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+            PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+        };
+        CACHED_FIRST_FUNCTION_PARAMETER_AS_STRING_PATTERN = PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
+            .beforeLeafSkipping(PlatformPatterns.or(elementPatterns), PlatformPatterns.psiElement(TwigTokenTypes.COMMA))
+            .afterLeafSkipping(PlatformPatterns.or(elementPatterns), PlatformPatterns.psiElement(TwigTokenTypes.LBRACE));
+    }
+
+    private static final PsiElementPattern CACHED_PARAMETER_AS_STRING_PATTERN;
+    static {
+        ElementPattern<?>[] elementPatterns = {
+            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+            PlatformPatterns.psiElement(PsiWhiteSpace.class),
+            PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+            PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+        };
+        CACHED_PARAMETER_AS_STRING_PATTERN = PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
+            .beforeLeafSkipping(PlatformPatterns.or(elementPatterns), PlatformPatterns.or(PlatformPatterns.psiElement(TwigTokenTypes.COMMA), PlatformPatterns.psiElement(TwigTokenTypes.RBRACE)))
+            .afterLeafSkipping(PlatformPatterns.or(elementPatterns), PlatformPatterns.psiElement(TwigTokenTypes.COMMA));
+    }
+
+    private static final PsiElementPattern.Capture<PsiElement> CACHED_FORM_THEME_FILE_TAG_PATTERN = PlatformPatterns
+        .psiElement(TwigTokenTypes.STRING_TEXT)
+        .withParent(PlatformPatterns.psiElement().withText(PlatformPatterns.string().matches("\\{%\\s+form_theme.*")))
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    private static final ElementPattern<PsiElement> CACHED_GUARD_TYPE_PATTERN = PlatformPatterns
+        .psiElement(TwigTokenTypes.IDENTIFIER)
+        .afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+            ),
+            PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText("guard")
+        )
+        .withParent(
+            PlatformPatterns.psiElement(TwigElementTypes.TAG)
+        )
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    private static final ElementPattern<PsiElement> CACHED_GUARD_CALLABLE_PATTERN = PlatformPatterns
+        .psiElement(TwigTokenTypes.IDENTIFIER)
+        .afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+            ),
+            PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(
+                PlatformPatterns.string().oneOf("function", "filter", "test")
+            )
+        )
+        .withParent(
+            PlatformPatterns.psiElement(TwigElementTypes.TAG)
+        )
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    private static final ElementPattern<PsiElement> CACHED_TWI_DOC_SEE_PATTERN = PlatformPatterns.or(
+        PlatformPatterns.psiElement(TwigTokenTypes.COMMENT_TEXT).withText(PlatformPatterns.string().matches(DOC_SEE_REGEX)).withLanguage(TwigLanguage.INSTANCE),
+        PlatformPatterns.psiElement(TwigTokenTypes.COMMENT_TEXT).withText(PlatformPatterns.string().matches(TwigUtil.DOC_SEE_REGEX_WITHOUT_SEE)).withLanguage(TwigLanguage.INSTANCE)
+    );
+
+    // Depends on CACHED_FOR_TAG_IN_VARIABLE_PATTERN etc.
+    private static final ElementPattern<PsiElement> CACHED_VARIABLE_TYPE_PATTERN = PlatformPatterns.or(
+        CACHED_FOR_TAG_IN_VARIABLE_PATTERN,
+        CACHED_FOR_TAG_IN_VARIABLE_REFERENCE_PATTERN,
+        CACHED_IF_VARIABLE_PATTERN,
+        CACHED_IF_CONDITION_VARIABLE_PATTERN,
+        CACHED_SET_VARIABLE_PATTERN
+    );
+
+    // Depends on FILTER_AS_* patterns
+    private static final ElementPattern<PsiElement> CACHED_FILTER_PATTERN = PlatformPatterns.or(
+        FILTER_AS_IDENTIFIER_PATTERN,
+        FILTER_AS_VARIABLE_REFERENCE_PATTERN
+    );
+
+    // -----------------------------------------------------------------------
+    // Public API
+    // -----------------------------------------------------------------------
+
     /**
      * {% trans with {'%name%': 'Fabien'} from "app" %}
      * {% transchoice count with {'%name%': 'Fabien'} from "app" %}
@@ -133,26 +758,7 @@ public class TwigPattern {
      * {% include ['', ~ '', ''] %}
      */
     public static ElementPattern<PsiElement> getIncludeTagArrayPattern() {
-        return PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
-            .withParent(
-                PlatformPatterns.psiElement(TwigElementTypes.INCLUDE_TAG)
-            )
-            .afterLeafSkipping(
-                STRING_WRAP_PATTERN,
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(TwigTokenTypes.COMMA),
-                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_SQ)
-                )
-            )
-            .beforeLeafSkipping(
-                STRING_WRAP_PATTERN,
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(TwigTokenTypes.COMMA),
-                    PlatformPatterns.psiElement(TwigTokenTypes.RBRACE_SQ)
-                )
-            )
-            .withLanguage(TwigLanguage.INSTANCE);
-
+        return CACHED_INCLUDE_TAG_ARRAY_PATTERN;
     }
 
     /**
@@ -210,22 +816,7 @@ public class TwigPattern {
      * Check for {{ include('|')  }}, {% include('|') %}
      */
     public static ElementPattern<PsiElement> getPrintBlockOrTagFunctionPattern() {
-        return PlatformPatterns
-            .psiElement(TwigTokenTypes.STRING_TEXT)
-            .withParent(
-                getFunctionCallScopePattern()
-            )
-            .afterLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
-                ),
-                PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER)
-            )
-            .withLanguage(TwigLanguage.INSTANCE);
+        return CACHED_PRINT_BLOCK_OR_TAG_FUNCTION_PATTERN;
     }
 
     /**
@@ -266,19 +857,7 @@ public class TwigPattern {
      * {% apply date('<caret>') %}foobar{% endapply %}
      */
     public static ElementPattern<PsiElement> getFunctionStringParameterPattern() {
-        return PlatformPatterns
-            .psiElement(TwigTokenTypes.STRING_TEXT)
-            .afterLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
-                ),
-                PlatformPatterns.or(PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER))
-            )
-            .withLanguage(TwigLanguage.INSTANCE);
+        return CACHED_FUNCTION_STRING_PARAMETER_PATTERN;
     }
 
     /**
@@ -641,50 +1220,21 @@ public class TwigPattern {
      * Check for {% if foo is "foo" %}
      */
     public static ElementPattern<PsiElement> getAfterIsTokenPattern() {
-        return PlatformPatterns
-            .psiElement()
-            .afterLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
-                ),
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(TwigTokenTypes.IS),
-                    PlatformPatterns.psiElement(TwigTokenTypes.NOT)
-                )
-            )
-            .withLanguage(TwigLanguage.INSTANCE);
+        return CACHED_AFTER_IS_TOKEN_PATTERN;
     }
 
     /**
      * Check for {% if foo is "foo foo" %}
      */
     public static ElementPattern<PsiElement> getAfterIsTokenWithOneIdentifierLeafPattern() {
-        return PlatformPatterns
-            .psiElement()
-            .withParent(PlatformPatterns
-                .psiElement()
-                .afterLeafSkipping(
-                    PlatformPatterns.or(
-                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
-                    ),
-                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).afterLeafSkipping(PlatformPatterns.psiElement(PsiWhiteSpace.class), PlatformPatterns.or(
-                        PlatformPatterns.psiElement(TwigTokenTypes.IS),
-                        PlatformPatterns.psiElement(TwigTokenTypes.NOT)
-                    ))
-                ))
-            .withLanguage(TwigLanguage.INSTANCE);
+        return CACHED_AFTER_IS_TOKEN_WITH_ONE_IDENTIFIER_LEAF_PATTERN;
     }
 
     /**
      * Extract text {% if foo is "foo foo" %}
      */
     public static ElementPattern<PsiElement> getAfterIsTokenTextPattern() {
-        return PlatformPatterns.or(
-            PlatformPatterns.psiElement(TwigTokenTypes.IS),
-            PlatformPatterns.psiElement(TwigTokenTypes.NOT)
-        );
+        return CACHED_AFTER_IS_TOKEN_TEXT_PATTERN;
     }
 
     /**
@@ -694,11 +1244,7 @@ public class TwigPattern {
      * {% if 'foo.bar' <carpet> %}
      */
     public static ElementPattern<PsiElement> getAfterOperatorPattern() {
-        return PlatformPatterns
-            .psiElement(TwigTokenTypes.IDENTIFIER)
-            .inside(PlatformPatterns.psiElement(TwigElementTypes.IF_TAG))
-            .andNot(PlatformPatterns.psiElement().inside(PlatformPatterns.psiElement(TwigElementTypes.FIELD_REFERENCE)))
-            .withLanguage(TwigLanguage.INSTANCE);
+        return CACHED_AFTER_OPERATOR_PATTERN;
     }
 
     /**
@@ -708,26 +1254,7 @@ public class TwigPattern {
      * {% <caret> %}
      */
     public static ElementPattern<PsiElement> getTagTokenParserPattern() {
-        return PlatformPatterns
-            .psiElement()
-            .afterLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
-                ),
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(TwigTokenTypes.STATEMENT_BLOCK_START),
-                    PlatformPatterns.psiElement(PsiErrorElement.class)
-                )
-            )
-            .beforeLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
-                ),
-                PlatformPatterns.psiElement(TwigTokenTypes.STATEMENT_BLOCK_END)
-            )
-            .withLanguage(TwigLanguage.INSTANCE);
+        return CACHED_TAG_TOKEN_PARSER_PATTERN;
     }
 
     /**
@@ -737,9 +1264,7 @@ public class TwigPattern {
      * {% fo<caret>obar 'foo' %}
      */
     public static ElementPattern<PsiElement> getTagTokenBlockPattern() {
-        return PlatformPatterns
-            .psiElement(TwigTokenTypes.TAG_NAME)
-            .withLanguage(TwigLanguage.INSTANCE);
+        return CACHED_TAG_TOKEN_BLOCK_PATTERN;
     }
 
     /**
@@ -767,42 +1292,25 @@ public class TwigPattern {
      * {% embed "vertical_boxes_skeleton.twig" %}
      */
     public static ElementPattern<PsiElement> getEmbedPattern() {
-        return getTagNameParameterPattern(TwigElementTypes.EMBED_TAG, "embed");
+        return CACHED_EMBED_PATTERN;
     }
 
     public static ElementPattern<PsiElement> getPrintBlockFunctionPattern() {
-      return PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER)
-          .inside(PlatformPatterns.or(
-              PlatformPatterns.psiElement(TwigPsiReference.class),
-              PlatformPatterns.psiElement(TwigElementTypes.FUNCTION_CALL),
-              PlatformPatterns.psiElement(TwigElementTypes.METHOD_CALL)
-          ))
-          .inside(getFunctionCallScopePattern())
-          .withLanguage(TwigLanguage.INSTANCE);
+        return CACHED_PRINT_BLOCK_FUNCTION_PATTERN;
     }
 
     /**
      * "{{ _self.input('password', '', 'password') }}"
      */
     public static ElementPattern<PsiElement> getSelfMacroFunctionPattern() {
-        return PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).with(PhpElementsUtil.EMPTY_PREVIOUS_LEAF)
-            .inside(PlatformPatterns.psiElement(TwigElementTypes.FUNCTION_CALL)
-                .afterLeaf(PlatformPatterns.psiElement(TwigTokenTypes.DOT).afterLeaf(PlatformPatterns.psiElement(TwigTokenTypes.RESERVED_ID)))
-            )
-            .inside(getFunctionCallScopePattern())
-            .withLanguage(TwigLanguage.INSTANCE);
+        return CACHED_SELF_MACRO_FUNCTION_PATTERN;
     }
 
     /**
      * {{ _self.input() }}
      */
     public static ElementPattern<PsiElement> getSelfMacroIdentifierPattern() {
-        return PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).afterLeaf(
-            PlatformPatterns.psiElement(TwigTokenTypes.DOT)
-                .afterLeaf(PlatformPatterns.psiElement(TwigTokenTypes.RESERVED_ID))
-            )
-            .inside(getFunctionCallScopePattern())
-            .withLanguage(TwigLanguage.INSTANCE);
+        return CACHED_SELF_MACRO_IDENTIFIER_PATTERN;
     }
 
     public static ElementPattern<PsiElement> getLeafFunctionPattern(@NotNull String ...functionName) {
@@ -828,20 +1336,7 @@ public class TwigPattern {
      */
     @NotNull
     private static ElementPattern<PsiElement> getFunctionCallScopePattern() {
-        return PlatformPatterns.or(
-            // old and inconsistently implementations of FUNCTION_CALL:
-            // eg {% if asset('') %} does not provide a FUNCTION_CALL whereas a print block does
-            PlatformPatterns.psiElement(TwigElementTypes.PRINT_BLOCK),
-            PlatformPatterns.psiElement(TwigElementTypes.TAG),
-            PlatformPatterns.psiElement(TwigElementTypes.IF_TAG),
-            PlatformPatterns.psiElement(TwigElementTypes.SET_TAG),
-            PlatformPatterns.psiElement(TwigElementTypes.ELSE_TAG),
-            PlatformPatterns.psiElement(TwigElementTypes.ELSEIF_TAG),
-            PlatformPatterns.psiElement(TwigElementTypes.FOR_TAG),
-
-            // PhpStorm 2017.3.2: {{ asset('') }}
-            PlatformPatterns.psiElement(TwigElementTypes.FUNCTION_CALL)
-        );
+        return FUNCTION_CALL_SCOPE_PATTERN;
     }
 
     /**
@@ -849,18 +1344,7 @@ public class TwigPattern {
      * NOT: {{ foo.bar }}, {{ 'foo.bar' }}
      */
     public static ElementPattern<PsiElement> getCompletablePattern() {
-        return  PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER)
-            .inside(PlatformPatterns.psiElement(TwigElementTypes.VARIABLE_REFERENCE))
-            .andNot(
-                PlatformPatterns.psiElement().inside(PlatformPatterns.psiElement(TwigElementTypes.FIELD_REFERENCE))
-            ).inside(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(TwigElementTypes.PRINT_BLOCK),
-                    PlatformPatterns.psiElement(TwigElementTypes.SET_TAG),
-                    PlatformPatterns.psiElement(TwigElementTypes.IF_TAG)
-                )
-            )
-            .withLanguage(TwigLanguage.INSTANCE);
+        return CACHED_COMPLETABLE_PATTERN;
     }
 
     /**
@@ -869,61 +1353,14 @@ public class TwigPattern {
      * {% block foo %}
      */
     public static ElementPattern<PsiElement> getBlockTagPattern() {
-        return PlatformPatterns.or(
-
-            // {% block "foo" %}
-            PlatformPatterns
-            .psiElement(TwigTokenTypes.STRING_TEXT)
-            .afterLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
-                ),
-                PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME)
-            )
-            .withParent(
-                PlatformPatterns.psiElement(TwigBlockTag.class)
-            )
-            .withLanguage(TwigLanguage.INSTANCE),
-
-            // {% block foo %}
-            PlatformPatterns
-                .psiElement(TwigTokenTypes.IDENTIFIER)
-                .afterLeafSkipping(
-                    PlatformPatterns.or(
-                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
-                    ),
-                    PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME)
-                )
-                .withParent(
-                    PlatformPatterns.psiElement(TwigBlockTag.class)
-                )
-                .withLanguage(TwigLanguage.INSTANCE)
-        );
+        return CACHED_BLOCK_TAG_PATTERN;
     }
 
     /**
      * {% filter foo %}
      */
     public static ElementPattern<PsiElement> getFilterTagPattern() {
-        return
-            PlatformPatterns
-                .psiElement(TwigTokenTypes.IDENTIFIER)
-                .afterLeafSkipping(
-                    PlatformPatterns.or(
-                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
-                    ),
-                    PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME)
-                )
-                .withParent(
-                    PlatformPatterns.psiElement(TwigElementTypes.FILTER_TAG)
-                )
-                .withLanguage(TwigLanguage.INSTANCE)
-            ;
+        return CACHED_FILTER_TAG_PATTERN;
     }
 
     /**
@@ -933,7 +1370,7 @@ public class TwigPattern {
      * {% trans_default_domain <carpet> %}
      */
     public static ElementPattern<PsiElement> getTransDefaultDomainPattern() {
-        return getArgumentAfterTagNamePattern("trans_default_domain");
+        return CACHED_TRANS_DEFAULT_DOMAIN_PATTERN;
     }
 
     /**
@@ -1036,22 +1473,7 @@ public class TwigPattern {
      * {{ path('_profiler_info', {'foobar': 'foobar', '<caret>'}) }}
      */
     public static ElementPattern<PsiElement> getPathAfterLeafPattern() {
-        return PlatformPatterns
-            .psiElement(TwigTokenTypes.STRING_TEXT)
-            .afterLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
-                ),
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(TwigTokenTypes.COMMA),
-                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_CURL)
-                )
-            )
-            .withParent(getPathHashLiteralPattern())
-            .withLanguage(TwigLanguage.INSTANCE);
+        return CACHED_PATH_AFTER_LEAF_PATTERN;
     }
 
     /**
@@ -1061,53 +1483,18 @@ public class TwigPattern {
      * {{ path('_profiler_info', {'foobar': 'foobar', <caret>foo: 'bar'}) }}
      */
     public static ElementPattern<PsiElement> getPathAfterLeafForIdentifierPattern() {
-        return PlatformPatterns
-            .psiElement(TwigTokenTypes.IDENTIFIER)
-            .afterLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
-                ),
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(TwigTokenTypes.COMMA),
-                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE_CURL)
-                )
-            )
-            .withParent(getPathHashLiteralPattern())
-            .withLanguage(TwigLanguage.INSTANCE);
+        return CACHED_PATH_AFTER_LEAF_FOR_IDENTIFIER_PATTERN;
     }
 
     /**
      * Shared parent pattern for path() hash literal: the LITERAL node that is the second argument of path()/url()
      */
     private static ElementPattern<PsiElement> getPathHashLiteralPattern() {
-        return PlatformPatterns.psiElement(TwigElementTypes.LITERAL).afterLeafSkipping(
-            PlatformPatterns.or(
-                PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
-            ),
-            PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT),
-                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
-                ),
-                PlatformPatterns.psiElement(TwigTokenTypes.LBRACE).withParent(
-                    PlatformPatterns.psiElement().withText(PlatformPatterns.string().contains("path"))
-                )
-            )
-        );
+        return PATH_HASH_LITERAL_PATTERN;
     }
 
     public static ElementPattern<PsiElement> getParentFunctionPattern() {
-        return PlatformPatterns
-            .psiElement(TwigTokenTypes.IDENTIFIER)
-            .withText("parent")
-            .beforeLeaf(
-                PlatformPatterns.psiElement(TwigTokenTypes.LBRACE)
-            )
-            .withLanguage(TwigLanguage.INSTANCE);
+        return CACHED_PARENT_FUNCTION_PATTERN;
     }
 
     /**
@@ -1115,10 +1502,7 @@ public class TwigPattern {
      * {{ foo.fo<caret>o() }}
      */
     public static ElementPattern<PsiElement> getTypeCompletionPattern() {
-        return PlatformPatterns
-            .psiElement(TwigTokenTypes.IDENTIFIER)
-            .afterLeaf(PlatformPatterns.psiElement(TwigTokenTypes.DOT))
-            .withLanguage(TwigLanguage.INSTANCE);
+        return CACHED_TYPE_COMPLETION_PATTERN;
     }
 
     public static ElementPattern<PsiComment> getTwigTypeDocBlockPattern() {
@@ -1169,51 +1553,18 @@ public class TwigPattern {
      */
     @NotNull
     public static ElementPattern<PsiElement> getTwigDocSeePattern() {
-        return PlatformPatterns.or(
-            PlatformPatterns.psiElement(TwigTokenTypes.COMMENT_TEXT).withText(PlatformPatterns.string().matches(DOC_SEE_REGEX)).withLanguage(TwigLanguage.INSTANCE),
-            PlatformPatterns.psiElement(TwigTokenTypes.COMMENT_TEXT).withText(PlatformPatterns.string().matches(TwigUtil.DOC_SEE_REGEX_WITHOUT_SEE)).withLanguage(TwigLanguage.INSTANCE)
-        );
+        return CACHED_TWI_DOC_SEE_PATTERN;
     }
 
     public static ElementPattern<PsiElement> getAutocompletableRoutePattern() {
-        return PlatformPatterns
-            .psiElement(TwigTokenTypes.STRING_TEXT)
-            .afterLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
-                ),
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("path"),
-                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("url")
-                )
-            )
-            .withLanguage(TwigLanguage.INSTANCE)
-        ;
+        return CACHED_AUTOCOMPLETABLE_ROUTE_PATTERN;
     }
 
     /**
      * "{{ component('<caret>'}) }}"
      */
     public static ElementPattern<PsiElement> getComponentPattern() {
-        return PlatformPatterns
-            .psiElement(TwigTokenTypes.STRING_TEXT)
-            .afterLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
-                ),
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("component")
-                )
-            )
-            .withLanguage(TwigLanguage.INSTANCE);
+        return CACHED_COMPONENT_PATTERN;
     }
 
     /**
@@ -1222,30 +1573,7 @@ public class TwigPattern {
      *  {{ absolute_url("<caret>") }}
      */
     public static ElementPattern<PsiElement> getAutocompletableAssetPattern() {
-        return PlatformPatterns
-            .psiElement(TwigTokenTypes.STRING_TEXT)
-            .afterLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
-                ),
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("asset"),
-                    PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("absolute_url")
-                )
-            )
-            .beforeLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
-                ),
-                PlatformPatterns.psiElement(TwigTokenTypes.RBRACE)
-            )
-            .withLanguage(TwigLanguage.INSTANCE)
-        ;
+        return CACHED_AUTOCOMPLETABLE_ASSET_PATTERN;
     }
 
     /**
@@ -1330,42 +1658,15 @@ public class TwigPattern {
     }
 
     public static ElementPattern<PsiElement> getTemplateFileReferenceTagPattern() {
-        return getTemplateFileReferenceTagPattern("extends", "from", "include", "use", "import", "embed");
+        return CACHED_TEMPLATE_FILE_REFERENCE_TAG_PATTERN;
     }
 
     public static ElementPattern<PsiElement> getTemplateImportFileReferenceTagPattern() {
-
-        // first: {% from '<xxx>' import foo, <|>  %}
-        // second: {% from '<xxx>' import <|>  %}
-        // and not: {% from '<xxx>' import foo as <|>  %}
-
-        return PlatformPatterns
-            .psiElement()
-            .withParent(
-                PlatformPatterns.psiElement(TwigElementTypes.VARIABLE_REFERENCE).andNot(PlatformPatterns.psiElement().afterLeafSkipping(
-                    PlatformPatterns.or(
-                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
-                    ),
-                    PlatformPatterns.psiElement(TwigTokenTypes.AS_KEYWORD)
-                )).withParent(
-                    PlatformPatterns.psiElement(TwigElementTypes.IMPORT_TAG)
-                )
-            )
-            .withLanguage(TwigLanguage.INSTANCE);
+        return CACHED_TEMPLATE_IMPORT_FILE_REFERENCE_TAG_PATTERN;
     }
 
     public static ElementPattern<PsiElement> getForTagVariablePattern() {
-        // {% for "user"  %}
-
-        return captureVariableOrField().beforeLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
-                ),
-                PlatformPatterns.psiElement(TwigTokenTypes.IN)
-            )
-            .withLanguage(TwigLanguage.INSTANCE);
+        return CACHED_FOR_TAG_VARIABLE_PATTERN;
     }
 
     /**
@@ -1373,63 +1674,14 @@ public class TwigPattern {
      * {% for user in users|de<caret> %}
      */
     public static ElementPattern<PsiElement> getFilterPattern() {
-        return PlatformPatterns.or(
-            getFilterAsIdentifierPattern(),
-            getFilterAsVariableReferencePattern()
-        );
-    }
-
-    /**
-     * {{ 'test'|<caret> }}
-     */
-    private static ElementPattern<PsiElement> getFilterAsIdentifierPattern() {
-        return PlatformPatterns.psiElement()
-            .afterLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
-                ),
-                PlatformPatterns.psiElement().withElementType(TwigTokenTypes.FILTER)
-            )
-            .withLanguage(TwigLanguage.INSTANCE);
-    }
-
-    /**
-     * Since PhpStorm 2024.1 value can be nested inside TwigVariableReference element
-     *
-     * {% for user in users|de<caret> %}
-     */
-    private static ElementPattern<PsiElement> getFilterAsVariableReferencePattern() {
-        return PlatformPatterns.psiElement()
-            .withParent(PlatformPatterns.psiElement(TwigVariableReference.class).afterLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
-                ),
-                PlatformPatterns.psiElement().withElementType(TwigTokenTypes.FILTER)
-            ))
-            .withLanguage(TwigLanguage.INSTANCE);
+        return CACHED_FILTER_PATTERN;
     }
 
     /**
      * {% apply <caret> %}foobar{% endapply %}
      */
     public static ElementPattern<PsiElement> getApplyFilterPattern() {
-        return PlatformPatterns
-            .psiElement(TwigTokenTypes.IDENTIFIER)
-            .afterLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
-                ),
-                PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).with(new PatternCondition<>("aa") {
-                    @Override
-                    public boolean accepts(@NotNull PsiElement psiElement, ProcessingContext processingContext) {
-                        return "apply".equalsIgnoreCase(psiElement.getText());
-                    }
-                })
-            )
-            .withLanguage(TwigLanguage.INSTANCE);
+        return CACHED_APPLY_FILTER_PATTERN;
     }
 
     /**
@@ -1441,94 +1693,18 @@ public class TwigPattern {
   }
 
     public static ElementPattern<PsiElement> getForTagInVariableReferencePattern() {
-        // {% for user in test %}
-        // {% for user in test.test %}
-        return captureVariableOrField().afterLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
-                ),
-                PlatformPatterns.psiElement(TwigTokenTypes.IN)
-            )
-            .withLanguage(TwigLanguage.INSTANCE);
+        return CACHED_FOR_TAG_IN_VARIABLE_REFERENCE_PATTERN;
     }
 
     public static ElementPattern<PsiElement> getForTagInVariablePattern() {
         // {% for key, user in "users" %}
         // {% for user in "users" %}
         // {% for user in "users"|slice(0, 10) %}
-        return PlatformPatterns.psiElement().afterLeafSkipping(
-            PlatformPatterns.or(
-                PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
-            ),
-            PlatformPatterns.psiElement(TwigTokenTypes.IN).withLanguage(TwigLanguage.INSTANCE));
-    }
-
-    public static ElementPattern<PsiElement> getIfVariablePattern() {
-
-        // {% if "var" %}
-
-        return captureVariableOrField().afterLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
-                ),
-                PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText(
-                    PlatformPatterns.string().oneOfIgnoreCase("if")
-                )
-            )
-            .withParent(
-                PlatformPatterns.psiElement(TwigElementTypes.IF_TAG)
-            )
-            .withLanguage(TwigLanguage.INSTANCE);
-    }
-
-    public static ElementPattern<PsiElement> getIfConditionVariablePattern() {
-
-        // {% if var < "var1" %}
-        // {% if var == "var1" %}
-        // and so on
-
-        return captureVariableOrField().afterLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
-                ),
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(TwigTokenTypes.LE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.LT),
-                    PlatformPatterns.psiElement(TwigTokenTypes.GE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.GT),
-                    PlatformPatterns.psiElement(TwigTokenTypes.EQ_EQ),
-                    PlatformPatterns.psiElement(TwigTokenTypes.NOT_EQ)
-                )
-            )
-            .withParent(
-                PlatformPatterns.psiElement(TwigElementTypes.IF_TAG)
-            )
-            .withLanguage(TwigLanguage.INSTANCE);
+        return CACHED_FOR_TAG_IN_VARIABLE_PATTERN;
     }
 
     public static ElementPattern<PsiElement> getTwigTagUseNamePattern() {
-
-        // {% use '<foo>' %}
-
-        return PlatformPatterns
-            .psiElement(TwigTokenTypes.STRING_TEXT)
-            .withParent(PlatformPatterns.psiElement(
-                TwigElementTypes.TAG
-            ))
-            .afterLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-                    PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
-                ),
-                PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText("use")
-            )
-            .withLanguage(TwigLanguage.INSTANCE);
+        return CACHED_TWI_TAG_USE_NAME_PATTERN;
     }
 
     public static ElementPattern<PsiElement> getTwigMacroNameKnownPattern(String macroName) {
@@ -1551,39 +1727,14 @@ public class TwigPattern {
     }
 
     public static ElementPattern<PsiElement> getSetVariablePattern() {
-
-        // {% set count1 = "var" %}
-
-        return captureVariableOrField().afterLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
-                ),
-                PlatformPatterns.psiElement(TwigTokenTypes.EQ)
-            )
-            .withParent(
-                PlatformPatterns.psiElement(TwigElementTypes.SET_TAG)
-            )
-            .withLanguage(TwigLanguage.INSTANCE);
+        return CACHED_SET_VARIABLE_PATTERN;
     }
 
     /**
      * {% include 'foo.html.twig' {'foo': 'foo'} only %}
      */
     public static ElementPattern<PsiElement> getIncludeOnlyPattern() {
-
-        // {% set count1 = "var" %}
-
-        return PlatformPatterns
-            .psiElement(TwigTokenTypes.IDENTIFIER).withText("only")
-            .beforeLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
-                ),
-                PlatformPatterns.psiElement(TwigTokenTypes.STATEMENT_BLOCK_END)
-            )
-            .withLanguage(TwigLanguage.INSTANCE);
+        return CACHED_INCLUDE_ONLY_PATTERN;
     }
 
     /**
@@ -1591,43 +1742,11 @@ public class TwigPattern {
      * {% from 'template_name' import foo %}
      */
     public static ElementPattern<PsiElement> getFromTemplateElementPattern() {
-        return PlatformPatterns.or(
-            PlatformPatterns
-                .psiElement(TwigTokenTypes.STRING_TEXT)
-                .afterLeafSkipping(
-                    PlatformPatterns.or(
-                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                        PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-                        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
-                    ),
-                    PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText(PlatformPatterns.string().oneOf("from"))
-                )
-                .withLanguage(TwigLanguage.INSTANCE),
-            PlatformPatterns
-                .psiElement(TwigTokenTypes.RESERVED_ID)
-                .afterLeafSkipping(
-                    PlatformPatterns.or(
-                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                        PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-                        PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
-                    ),
-                    PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText(PlatformPatterns.string().oneOf("from"))
-                )
-                .withLanguage(TwigLanguage.INSTANCE)
-        );
-
+        return CACHED_FROM_TEMPLATE_ELEMENT_PATTERN;
     }
 
     public static ElementPattern<PsiElement> getVariableTypePattern() {
-        return PlatformPatterns.or(
-            getForTagInVariablePattern(),
-            getForTagInVariableReferencePattern(),
-            getIfVariablePattern(),
-            getIfConditionVariablePattern(),
-            getSetVariablePattern()
-        );
+        return CACHED_VARIABLE_TYPE_PATTERN;
     }
 
     /**
@@ -1635,17 +1754,7 @@ public class TwigPattern {
      */
     @NotNull
     public static PsiElementPattern getFirstFunctionParameterAsStringPattern() {
-        // string wrapped elements
-        ElementPattern<?>[] elementPatterns = {
-            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-            PlatformPatterns.psiElement(PsiWhiteSpace.class),
-            PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-            PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
-        };
-
-        return PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
-            .beforeLeafSkipping(PlatformPatterns.or(elementPatterns), PlatformPatterns.psiElement(TwigTokenTypes.COMMA))
-            .afterLeafSkipping(PlatformPatterns.or(elementPatterns), PlatformPatterns.psiElement(TwigTokenTypes.LBRACE));
+        return CACHED_FIRST_FUNCTION_PARAMETER_AS_STRING_PATTERN;
     }
 
     /**
@@ -1653,17 +1762,7 @@ public class TwigPattern {
      */
     @NotNull
     public static PsiElementPattern getParameterAsStringPattern() {
-        // string wrapped elements
-        ElementPattern<?>[] elementPatterns = {
-            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-            PlatformPatterns.psiElement(PsiWhiteSpace.class),
-            PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-            PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
-        };
-
-        return PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
-            .beforeLeafSkipping(PlatformPatterns.or(elementPatterns), PlatformPatterns.or(PlatformPatterns.psiElement(TwigTokenTypes.COMMA), PlatformPatterns.psiElement(TwigTokenTypes.RBRACE)))
-            .afterLeafSkipping(PlatformPatterns.or(elementPatterns), PlatformPatterns.psiElement(TwigTokenTypes.COMMA));
+        return CACHED_PARAMETER_AS_STRING_PATTERN;
     }
 
     public static PsiElementPattern.Capture<PsiComment> getTwigDocBlockMatchPattern(@NotNull String pattern) {
@@ -1676,10 +1775,7 @@ public class TwigPattern {
      * {% form_theme form 'foobar.html.twig' %}
      */
     public static PsiElementPattern.Capture<PsiElement> getFormThemeFileTagPattern() {
-        return PlatformPatterns
-            .psiElement(TwigTokenTypes.STRING_TEXT)
-            .withParent(PlatformPatterns.psiElement().withText(PlatformPatterns.string().matches("\\{%\\s+form_theme.*")))
-            .withLanguage(TwigLanguage.INSTANCE);
+        return CACHED_FORM_THEME_FILE_TAG_PATTERN;
     }
 
     /**
@@ -1711,19 +1807,7 @@ public class TwigPattern {
      * Pattern for the type keyword after "guard" tag name
      */
     public static ElementPattern<PsiElement> getGuardTypePattern() {
-        return PlatformPatterns
-            .psiElement(TwigTokenTypes.IDENTIFIER)
-            .afterLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
-                ),
-                PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withText("guard")
-            )
-            .withParent(
-                PlatformPatterns.psiElement(TwigElementTypes.TAG)
-            )
-            .withLanguage(TwigLanguage.INSTANCE);
+        return CACHED_GUARD_TYPE_PATTERN;
     }
 
     /**
@@ -1734,20 +1818,6 @@ public class TwigPattern {
      * Pattern for the callable name after "guard" type keyword
      */
     public static ElementPattern<PsiElement> getGuardCallablePattern() {
-        return PlatformPatterns
-            .psiElement(TwigTokenTypes.IDENTIFIER)
-            .afterLeafSkipping(
-                PlatformPatterns.or(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
-                ),
-                PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(
-                    PlatformPatterns.string().oneOf("function", "filter", "test")
-                )
-            )
-            .withParent(
-                PlatformPatterns.psiElement(TwigElementTypes.TAG)
-            )
-            .withLanguage(TwigLanguage.INSTANCE);
+        return CACHED_GUARD_CALLABLE_PATTERN;
     }
 }

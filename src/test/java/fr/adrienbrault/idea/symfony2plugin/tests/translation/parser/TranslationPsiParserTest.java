@@ -1,10 +1,10 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.translation.parser;
 
-import com.intellij.openapi.vfs.VirtualFile;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
 
-import java.util.Collections;
+import java.io.File;
+import java.util.List;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -20,10 +20,7 @@ public class TranslationPsiParserTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public void testCompiledTranslationParser() {
-        VirtualFile virtualFile = myFixture.copyFileToProject("catalogue.af.X7ow_p+.php");
-
-        TranslationStringMap translationStringMap = TranslationStringMap.create(getProject(), Collections.emptyList());
-        translationStringMap.parse(getProject(), virtualFile);
+        TranslationStringMap translationStringMap = TranslationStringMap.create(getProject(), List.of(new File(getTestDataPath())));
 
         assertTrue(!translationStringMap.getDomainMap("security").isEmpty());
 
