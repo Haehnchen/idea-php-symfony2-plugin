@@ -23,6 +23,14 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2026.1.291
+* Refactor TwigSettingsForm: improve Twig namespace loading, enhance threading with atomic and non-blocking operations, and optimize UI resource disposal. (Daniel Espendiller)
+* Refactor settings and UI initialization to use plain java (Daniel Espendiller)
+* Refactor translation index and parser to improve caching, structure, and performance; replace file-based I/O with VirtualFile for efficiency; optimize route pattern matching with caching; add tests for translation handling. (Daniel Espendiller)
+* Add "Run Anything" provider for Symfony console commands (Daniel Espendiller)
+* Add global MCP tool management: introduce application-level settings for enabling/disabling tools and unify visibility control across projects and the MCP server. (Daniel Espendiller)
+* [paid] Add detection for `SqlSelectStatement` joins using "WITH". (Daniel Espendiller)
+
 ## 2026.1.290
 * Refactor `isServiceController` for stricter validation and performance; add `ServiceRouteContainer` caching to reduce recomputation. (Daniel Espendiller)
 * Refactor `ElementPattern` instantiation: reuse preconstructed patterns to reduce object allocation indexing. (Daniel Espendiller)
