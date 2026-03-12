@@ -12,12 +12,10 @@ import com.intellij.psi.util.*;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.Function;
-import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocParamTag;
 import com.jetbrains.php.lang.psi.elements.*;
-import de.espend.idea.php.annotation.util.AnnotationUtil;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.DocumentNamespacesParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
@@ -260,10 +258,7 @@ public class EntityHelper {
     }
 
     @NotNull
-    public static PsiElement[] getModelFieldTargets(@NotNull PhpClass phpClass,@NotNull String fieldName) {
-
-        Collection<PsiElement> psiElements = new ArrayList<>();
-
+    public static PsiElement[] getModelFieldTargets(@NotNull PhpClass phpClass, @NotNull String fieldName) {
         DoctrineMetadataModel modelFields = DoctrineMetadataUtil.getModelFields(phpClass.getProject(), phpClass.getPresentableFQN());
         if(modelFields != null) {
             for (DoctrineModelField field : modelFields.getFields()) {
@@ -273,167 +268,24 @@ public class EntityHelper {
             }
         }
 
-        // @TODO: deprecated
-        PsiFile psiFile = EntityHelper.getModelConfigFile(phpClass);
-
-        if(psiFile instanceof YAMLFile) {
-            // @TODO: migrate to getEntityFields()
-            YAMLValue topLevelValue = ((YAMLFile) psiFile).getDocuments().get(0).getTopLevelValue();
-            if(topLevelValue instanceof YAMLMapping) {
-                Collection<YAMLKeyValue> keyValues = ((YAMLMapping) topLevelValue).getKeyValues();
-                if(!keyValues.isEmpty()) {
-                    for(YAMLKeyValue yamlKeyValue: EntityHelper.getYamlModelFieldKeyValues(keyValues.iterator().next()).values()) {
-                        ContainerUtil.addIfNotNull(psiElements, YamlHelper.getYamlKeyValue(yamlKeyValue, "name"));
-                    }
-                }
-            }
-        }
-
-        if(psiFile instanceof XmlFile) {
-            for (DoctrineModelField field : getEntityFields((XmlFile) psiFile)) {
-                if(field.getName().equals(fieldName)) {
-                    psiElements.addAll(field.getTargets());
-                }
-            }
-        }
-
-        // provide fallback on annotations
-        // @TODO: better detect annotation switch; yaml and annotation are valid; need deps on annotation plugin
-        PhpDocComment docComment = phpClass.getDocComment();
-        if(docComment != null) {
-            if(docComment.getText().contains("Entity") || docComment.getText().contains("@ORM") || docComment.getText().contains("repositoryClass")) {
-                for(Field field: phpClass.getFields()) {
-                    if(!field.isConstant() && fieldName.equals(field.getName())) {
-                        psiElements.add(field);
-                    }
-                }
-            }
-        }
-
+        // Fallback: getter method
         String methodName = "get" + StringUtils.camelize(fieldName.toLowerCase(), false);
         Method method = phpClass.findMethodByName(methodName);
         if(method != null) {
-            psiElements.add(method);
+            return new PsiElement[]{method};
         }
 
-        return psiElements.toArray(new PsiElement[0]);
-
-    }
-
-    @Nullable
-    private static PsiFile getEntityMetadataFile(@NotNull Project project, @NotNull SymfonyBundle symfonyBundleUtil, @NotNull String className, @NotNull String modelShortcut) {
-
-        for(String s: new String[] {"yml", "yaml", "xml"}) {
-
-            String entityFile = "Resources/config/doctrine/" + className + String.format(".%s.%s", modelShortcut, s);
-            VirtualFile virtualFile = symfonyBundleUtil.getRelative(entityFile);
-            if(virtualFile != null) {
-                PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
-                if(psiFile != null) {
-                    return psiFile;
-                }
-            }
-
-        }
-
-        return null;
-    }
-
-    @Nullable
-    public static PsiFile getModelConfigFile(@NotNull PhpClass phpClass) {
-
-        // new code
-        String presentableFQN = phpClass.getPresentableFQN();
-        Collection<VirtualFile> metadataFiles = DoctrineMetadataUtil.findMetadataFiles(phpClass.getProject(), presentableFQN);
-        if(!metadataFiles.isEmpty()) {
-            PsiFile file = PsiManager.getInstance(phpClass.getProject()).findFile(metadataFiles.iterator().next());
-            if(file != null) {
-                return file;
-            }
-        }
-
-        // @TODO: deprecated code
-        SymfonyBundle symfonyBundle = new SymfonyBundleUtil(phpClass.getProject()).getContainingBundle(phpClass);
-        if(symfonyBundle != null) {
-            for(String modelShortcut: new String[] {"orm", "mongodb", "couchdb"}) {
-                String className = phpClass.getName();
-
-                int n = presentableFQN.indexOf("\\Entity\\");
-                if(n > 0) {
-                    className = presentableFQN.substring(n + 8).replace("\\", ".");
-                }
-
-                PsiFile entityMetadataFile = getEntityMetadataFile(phpClass.getProject(), symfonyBundle, className, modelShortcut);
-                if(entityMetadataFile != null) {
-                    return entityMetadataFile;
-                }
-
-            }
-        }
-
-        return null;
+        return PsiElement.EMPTY_ARRAY;
     }
 
     @NotNull
     public static Collection<DoctrineModelField> getModelFields(@NotNull PhpClass phpClass) {
-
-        // new code
         String presentableFQN = phpClass.getPresentableFQN();
         DoctrineMetadataModel fields = DoctrineMetadataUtil.getModelFields(phpClass.getProject(), presentableFQN);
         if(fields != null) {
             return fields.getFields();
         }
-
-        // @TODO: old deprecated code
-        PsiFile psiFile = getModelConfigFile(phpClass);
-        if (psiFile == null) {
-            return Collections.emptyList();
-        }
-
-        if (psiFile instanceof YAMLFile) {
-            List<DoctrineModelField> modelFields = new ArrayList<>();
-
-            PsiElement yamlDocument = psiFile.getFirstChild();
-            if(yamlDocument instanceof YAMLDocument) {
-                PsiElement arrayKeyValue = yamlDocument.getFirstChild();
-                if(arrayKeyValue instanceof YAMLKeyValue) {
-
-                    // first line is class name; check of we are right
-                    String className = YamlHelper.getYamlKeyName(((YAMLKeyValue) arrayKeyValue));
-                    if(PhpElementsUtil.isEqualClassName(phpClass, className)) {
-                        modelFields.addAll(getModelFieldsSet((YAMLKeyValue) arrayKeyValue));
-                    }
-
-                }
-            }
-
-            return modelFields;
-        }
-
-        if(psiFile instanceof XmlFile) {
-            return getEntityFields((XmlFile) psiFile);
-        }
-
-        // provide fallback on annotations
-        List<DoctrineModelField> modelFields = new ArrayList<>();
-
-        PhpDocComment docComment = phpClass.getDocComment();
-        if(docComment != null) {
-            if(AnnotationBackportUtil.hasReference(docComment, "\\Doctrine\\ORM\\Mapping\\Entity")) {
-                Map<String, String> useImportMap = AnnotationBackportUtil.getUseImportMap(docComment);
-                for(Field field: phpClass.getFields()) {
-                    if (!field.isConstant()) {
-                        if (AnnotationBackportUtil.hasReference(field.getDocComment(), ANNOTATION_FIELDS)) {
-                            DoctrineModelField modelField = new DoctrineModelField(field.getName());
-                            attachAnnotationInformation(phpClass, field, modelField.addTarget(field), useImportMap);
-                            modelFields.add(modelField);
-                        }
-                    }
-                }
-            }
-        }
-
-        return modelFields;
+        return Collections.emptyList();
     }
 
     @NotNull
@@ -633,6 +485,11 @@ public class EntityHelper {
         return null;
     }
 
+    /**
+     * Resolve navigation targets for a Doctrine entity: its repository class, the entity class itself, and any metadata files.
+     *
+     * @param entityName fully qualified class name or bundle shortcut (e.g. "App\Entity\Foo" or "AppBundle:Foo")
+     */
     public static PsiElement[] getModelPsiTargets(Project project, @NotNull String entityName) {
         List<PsiElement> results = new ArrayList<>();
 
@@ -641,17 +498,20 @@ public class EntityHelper {
             results.add(phpClass);
         }
 
-        // search any php model file
         PhpClass entity = EntityHelper.resolveShortcutName(project, entityName);
         if(entity != null) {
             results.add(entity);
 
-            // find model config eg ClassName.orm.yml
-            PsiFile psiFile = EntityHelper.getModelConfigFile(entity);
-            if(psiFile != null) {
-                results.add(psiFile);
+            Collection<VirtualFile> metadataFiles = DoctrineMetadataUtil.findMetadataFiles(
+                project,
+                org.apache.commons.lang3.StringUtils.stripStart(entity.getPresentableFQN(), "\\")
+            );
+            for (VirtualFile metadataFile : metadataFiles) {
+                PsiFile psiFile = PsiManager.getInstance(project).findFile(metadataFile);
+                if(psiFile != null) {
+                    results.add(psiFile);
+                }
             }
-
         }
 
         return results.toArray(new PsiElement[0]);

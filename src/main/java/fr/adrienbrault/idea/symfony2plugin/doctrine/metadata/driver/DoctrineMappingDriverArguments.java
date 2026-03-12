@@ -17,12 +17,15 @@ public class DoctrineMappingDriverArguments {
     private final PsiFile psiFile;
 
     @NotNull
-    private final String className;
+    private final String fqnClass;
 
-    public DoctrineMappingDriverArguments(@NotNull Project project, @NotNull PsiFile psiFile, @NotNull String className) {
+    /**
+     * @param fqnClass fully qualified entity class name; leading backslash is added if missing
+     */
+    public DoctrineMappingDriverArguments(@NotNull Project project, @NotNull PsiFile psiFile, @NotNull String fqnClass) {
         this.project = project;
         this.psiFile = psiFile;
-        this.className = className;
+        this.fqnClass = fqnClass.startsWith("\\") ? fqnClass : "\\" + fqnClass;
     }
 
     @NotNull
@@ -35,29 +38,24 @@ public class DoctrineMappingDriverArguments {
         return psiFile;
     }
 
+    /**
+     * @return fully qualified entity class name with leading backslash
+     */
     @NotNull
     public String getClassName() {
-        return className;
+        return fqnClass;
     }
 
-    public boolean isEqualClass(@Nullable String className) {
-        if(className == null) {
+    public boolean isEqualClass(@Nullable String fqnClass) {
+        if (fqnClass == null) {
             return false;
         }
 
-        if(this.className.equals(className)) {
-            return true;
+        // normalize the incoming class name to also have a leading backslash before comparing
+        if (!fqnClass.startsWith("\\")) {
+            fqnClass = "\\" + fqnClass;
         }
 
-        String myClass = this.className;
-        if(myClass.startsWith("\\")) {
-            myClass = myClass.substring(1);
-        }
-
-        if(className.startsWith("\\")) {
-            className = myClass.substring(1);
-        }
-
-        return className.equals(myClass);
+        return this.fqnClass.equals(fqnClass);
     }
 }
