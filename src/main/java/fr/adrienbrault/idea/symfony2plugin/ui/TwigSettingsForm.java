@@ -1,10 +1,13 @@
 package fr.adrienbrault.idea.symfony2plugin.ui;
 
+import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.impl.DefaultProject;
+import com.intellij.util.concurrency.AppExecutorUtil;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.TableView;
 import com.intellij.util.ui.ColumnInfo;
@@ -24,6 +27,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -31,36 +35,62 @@ import java.util.List;
 public class TwigSettingsForm implements Configurable {
 
     private JPanel panel1;
-    private JPanel panelTableView;
-    private JButton resetToDefault;
-    private JButton buttonJsonExample;
     private JCheckBox chkTwigBundleNamespaceSupport;
     private TableView<TwigPath> tableView;
     private final Project project;
     private boolean changed = false;
     private ListTableModel<TwigPath> modelList;
+    private final AtomicInteger reloadRequestId = new AtomicInteger();
+    private volatile boolean disposed = false;
 
     public TwigSettingsForm(@NotNull Project project) {
         this.project = project;
     }
 
     private void attachItems() {
+        reloadTwigPaths(true, false);
+    }
+
+    private void reloadTwigPaths(boolean includeSettings, boolean forceEnableAll) {
         if (this.project instanceof DefaultProject) {
             return;
         }
 
-        if (DumbService.getInstance(project).isDumb()) {
-            this.tableView.getEmptyText().setText("Not available while indexing. Please re-open this screen when ready.");
+        this.resetList();
 
+        if (DumbService.getInstance(project).isDumb()) {
+            this.tableView.getEmptyText().setText("Loading after indexing completes...");
+        } else {
+            this.tableView.getEmptyText().setText("Loading Twig namespaces...");
+        }
+
+        int requestId = this.reloadRequestId.incrementAndGet();
+
+        ReadAction
+            .nonBlocking(() -> {
+                List<TwigPath> sortableLookupItems = new ArrayList<>(TwigUtil.getTwigNamespaces(this.project, includeSettings));
+                sortableLookupItems.sort(new TwigUtil.TwigPathNamespaceComparator());
+                return sortableLookupItems;
+            })
+            .inSmartMode(this.project)
+            .expireWhen(() -> this.disposed || this.project.isDisposed() || requestId != this.reloadRequestId.get())
+            .finishOnUiThread(ModalityState.any(), twigPaths -> this.applyTwigPaths(requestId, twigPaths, forceEnableAll))
+            .submit(AppExecutorUtil.getAppExecutorService());
+    }
+
+    private void applyTwigPaths(int requestId, @NotNull List<TwigPath> twigPaths, boolean forceEnableAll) {
+        if (this.disposed || this.project.isDisposed() || requestId != this.reloadRequestId.get()) {
             return;
         }
 
-        List<TwigPath> sortableLookupItems = new ArrayList<>(TwigUtil.getTwigNamespaces(this.project, true));
-        sortableLookupItems.sort(new TwigUtil.TwigPathNamespaceComparator());
+        this.resetList();
 
-        for (TwigPath twigPath : sortableLookupItems) {
-            // dont use managed class here
-            this.modelList.addRow(TwigPath.createClone(twigPath));
+        for (TwigPath twigPath : twigPaths) {
+            this.modelList.addRow(forceEnableAll ? TwigPath.createClone(twigPath, true) : TwigPath.createClone(twigPath));
+        }
+
+        if (twigPaths.isEmpty()) {
+            this.tableView.getEmptyText().setText("No Twig namespaces found.");
         }
     }
 
@@ -79,15 +109,16 @@ public class TwigSettingsForm implements Configurable {
     @Nullable
     @Override
     public JComponent createComponent() {
+        this.disposed = false;
         panel1 = new JPanel(new BorderLayout());
-        panelTableView = new JPanel(new BorderLayout());
+        JPanel panelTableView = new JPanel(new BorderLayout());
         panel1.add(panelTableView, BorderLayout.CENTER);
 
         chkTwigBundleNamespaceSupport = new JCheckBox("Support Bundle Namespaces");
         chkTwigBundleNamespaceSupport.setSelected(true);
         chkTwigBundleNamespaceSupport.setToolTipText("Example: Foobar:Bar:Foo.html.twig (for older Symfony Versions)");
-        buttonJsonExample = new JButton("JSON Example");
-        resetToDefault = new JButton("Reset To Default");
+        JButton buttonJsonExample = new JButton("JSON Example");
+        JButton resetToDefault = new JButton("Reset To Default");
 
         JPanel northPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         northPanel.add(new JLabel("Manage Twig Namespaces"));
@@ -115,16 +146,7 @@ public class TwigSettingsForm implements Configurable {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                TwigSettingsForm.this.resetList();
-
-                List<TwigPath> sortableLookupItems = new ArrayList<>(TwigUtil.getTwigNamespaces(TwigSettingsForm.this.project, false));
-                sortableLookupItems.sort(new TwigUtil.TwigPathNamespaceComparator());
-
-                for (TwigPath twigPath : sortableLookupItems) {
-                    // dont use managed class here
-                    // @TODO state to enabled (should not be here)
-                    TwigSettingsForm.this.modelList.addRow(TwigPath.createClone(twigPath, true));
-                }
+                TwigSettingsForm.this.reloadTwigPaths(false, true);
             }
         });
 
@@ -159,7 +181,7 @@ public class TwigSettingsForm implements Configurable {
         tablePanel.disableUpAction();
         tablePanel.disableDownAction();
 
-        this.panelTableView.add(tablePanel.createPanel());
+        panelTableView.add(tablePanel.createPanel());
 
         buttonJsonExample.addActionListener(e -> TwigJsonExampleDialog.open(TwigSettingsForm.this.panel1));
 
@@ -202,7 +224,6 @@ public class TwigSettingsForm implements Configurable {
 
     @Override
     public void reset() {
-        this.resetList();
         this.attachItems();
         this.updateUIFromSettings();
         this.changed = false;
@@ -214,6 +235,8 @@ public class TwigSettingsForm implements Configurable {
 
     @Override
     public void disposeUIResources() {
+        this.disposed = true;
+        this.reloadRequestId.incrementAndGet();
         this.resetList();
     }
 
@@ -281,7 +304,7 @@ public class TwigSettingsForm implements Configurable {
             return true;
         }
 
-        public Class getColumnClass() {
+        public Class<?> getColumnClass() {
             return Boolean.class;
         }
     }
