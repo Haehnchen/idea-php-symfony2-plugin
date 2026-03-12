@@ -216,9 +216,28 @@ public class TranslationIndex {
 
         @Override
         public long getModificationCount() {
+            // Check both directory timestamps (for add/remove) and catalogue file timestamps (for content changes).
+            // VirtualFile.getTimeStamp() is cached in VFS - no filesystem I/O.
             long hash = getTranslationRoot(this.project)
                 .stream()
-                .mapToLong(File::lastModified)
+                .mapToLong(file -> {
+                    VirtualFile dir = VfsUtil.findFileByIoFile(file, false);
+                    if (dir == null || !dir.exists()) {
+                        return 0;
+                    }
+
+                    // directory timestamp covers structural changes (add/remove files)
+                    long dirHash = dir.getTimeStamp();
+
+                    // catalogue file timestamps cover content changes within existing files
+                    for (VirtualFile child : dir.getChildren()) {
+                        if (!child.isDirectory() && TranslationStringMap.isCatalogueFile(child.getName())) {
+                            dirHash += child.getTimeStamp();
+                        }
+                    }
+
+                    return dirHash;
+                })
                 .sum();
 
             if (hash != this.last) {

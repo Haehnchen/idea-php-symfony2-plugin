@@ -7,6 +7,9 @@ import fr.adrienbrault.idea.symfony2plugin.extension.CompiledServiceBuilderArgum
 import fr.adrienbrault.idea.symfony2plugin.extension.CompiledServiceBuilderFactory;
 import org.jetbrains.annotations.Nullable;
 
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -40,11 +43,13 @@ public class ServiceXmlParserFactory {
         }
 
         for(File serviceFile: serviceFiles) {
-            if(serviceFile.exists()) {
+            // Use VFS instead of File I/O - VirtualFile.getTimeStamp() is cached
+            VirtualFile vf = VfsUtil.findFileByIoFile(serviceFile, false);
+            if(vf != null && vf.exists()) {
                 if(!this.serviceFiles.containsKey(serviceFile.getAbsolutePath())) {
                     return true;
                 }
-                if(!this.serviceFiles.get(serviceFile.getAbsolutePath()).equals(serviceFile.lastModified())) {
+                if(!this.serviceFiles.get(serviceFile.getAbsolutePath()).equals(vf.getTimeStamp())) {
                     return true;
                 }
             } else {
@@ -94,7 +99,9 @@ public class ServiceXmlParserFactory {
 
             this.serviceFiles = new HashMap<>();
             for(File settingsServiceFile: settingsServiceFiles) {
-                if(!settingsServiceFile.exists()) {
+                // Use VFS instead of File I/O - VirtualFile.getTimeStamp() is cached
+                VirtualFile vf = VfsUtil.findFileByIoFile(settingsServiceFile, false);
+                if(vf == null || !vf.exists()) {
                     continue;
                 }
 
@@ -104,7 +111,7 @@ public class ServiceXmlParserFactory {
                     continue;
                 }
 
-                serviceFiles.put(settingsServiceFile.getAbsolutePath(), settingsServiceFile.lastModified());
+                serviceFiles.put(settingsServiceFile.getAbsolutePath(), vf.getTimeStamp());
             }
         }
 

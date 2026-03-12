@@ -23,6 +23,8 @@ public class ContainerService {
     private boolean isPrivate = false;
     private boolean isWeak = false;
     private Set<String> classVariants = Collections.emptySet();
+    @Nullable
+    private Set<String> cachedClassNames;
 
     public ContainerService(@NotNull ServiceInterface service, @Nullable String classResolved) {
         this.service = new MemoryReducedCollectionService(service);
@@ -62,10 +64,15 @@ public class ContainerService {
         }
 
         this.classVariants.add(className);
+        this.cachedClassNames = null;
     }
 
     @NotNull
     public Set<String> getClassNames() {
+        if (cachedClassNames != null) {
+            return cachedClassNames;
+        }
+
         Set<String> variants = new HashSet<>();
 
         if(className != null) {
@@ -74,7 +81,7 @@ public class ContainerService {
 
         variants.addAll(classVariants);
 
-        return variants;
+        return cachedClassNames = Collections.unmodifiableSet(variants);
     }
 
     public boolean isWeak() {
