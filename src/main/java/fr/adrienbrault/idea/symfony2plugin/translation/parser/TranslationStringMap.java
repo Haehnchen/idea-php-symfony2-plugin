@@ -8,14 +8,17 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.*;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import gnu.trove.THashSet;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -49,23 +52,20 @@ public class TranslationStringMap {
 
     @NotNull
     public static TranslationStringMap create(@NotNull Project project, @NotNull Collection<File> translationDirectories) {
-        List<FileData> perFileData = new ArrayList<>();
-
-        for (File path : translationDirectories) {
-            File[] files = path.listFiles((directory, s) -> isCatalogueFile(s));
-            if (files == null) {
-                continue;
-            }
-
-            for (File fileEntry : files) {
+        List<FileData> perFileData = translationDirectories.stream()
+            .flatMap((Function<File, Stream<File>>) path -> {
+                File[] files = path.listFiles((directory, s) -> isCatalogueFile(s));
+                return files != null ? Arrays.stream(files) : Stream.empty();
+            })
+            .parallel()
+            .map(fileEntry -> {
                 VirtualFile virtualFile = VfsUtil.findFileByIoFile(fileEntry, false);
                 if (virtualFile != null) {
-                    perFileData.add(FileData.parse(project, virtualFile));
-                } else {
-                    Symfony2ProjectComponent.getLogger().info("VfsUtil missing translation: " + fileEntry.getPath());
+                    return FileData.parse(project, virtualFile);
                 }
-            }
-        }
+                return FileData.empty();
+            })
+            .toList();
 
         return merge(perFileData);
     }
@@ -75,7 +75,7 @@ public class TranslationStringMap {
         Map<String, Set<String>> merged = new HashMap<>();
 
         for (FileData fileData : perFileData) {
-            fileData.domainMap().forEach((domain, keys) -> merged.computeIfAbsent(domain, k -> new HashSet<>()).addAll(keys));
+            fileData.domainMap().forEach((domain, keys) -> merged.computeIfAbsent(domain, k -> new THashSet<>()).addAll(keys));
         }
 
         Map<String, Set<String>> result = new HashMap<>(merged.size());
@@ -102,8 +102,6 @@ public class TranslationStringMap {
             if (psiFile == null) {
                 return empty();
             }
-
-            Symfony2ProjectComponent.getLogger().info("update translations: " + virtualFile.getPath());
 
             // local mutable accumulator — never escapes this method
             Map<String, Set<String>> data = new HashMap<>();
@@ -153,7 +151,7 @@ public class TranslationStringMap {
                     continue;
                 }
 
-                data.putIfAbsent(transDomain, new HashSet<>());
+                data.putIfAbsent(transDomain, new THashSet<>());
 
                 PhpPsiElement arrayValue = arrayHashElement.getValue();
                 if (arrayValue instanceof ArrayCreationExpression) {
@@ -166,7 +164,7 @@ public class TranslationStringMap {
             for (ArrayHashElement arrayHashElement : PsiTreeUtil.getChildrenOfTypeAsList(translationArray, ArrayHashElement.class)) {
                 PhpPsiElement translationKey = arrayHashElement.getKey();
                 if (translationKey instanceof StringLiteralExpression) {
-                    data.computeIfAbsent(domain, k -> new HashSet<>()).add(((StringLiteralExpression) translationKey).getContents());
+                    data.computeIfAbsent(domain, k -> new THashSet<>()).add(((StringLiteralExpression) translationKey).getContents());
                 }
             }
         }
