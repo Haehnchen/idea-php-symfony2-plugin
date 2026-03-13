@@ -48,10 +48,10 @@ public class DoctrineMetadataUtil {
     private static final Key<CachedValue<Collection<Pair<String, String>>>> DOCTRINE_TABLES_CACHE = new Key<>("DOCTRINE_TABLES_CACHE");
 
     private static final DoctrineMappingDriverInterface[] MAPPING_DRIVERS = new DoctrineMappingDriverInterface[] {
-        new DoctrinePhpMappingDriver(),
-        new DoctrinePhpAttributeMappingDriver(),
-        new DoctrineXmlMappingDriver(),
-        new DoctrineYamlMappingDriver(),
+        new DoctrinePhpMappingDriver(), // cross-file content, no simple cache
+        new DoctrinePhpAttributeMappingDriver(), // cross-file content, no simple cache
+        new DoctrineMappingDriverFileCacheDecorator(new DoctrineXmlMappingDriver()),
+        new DoctrineMappingDriverFileCacheDecorator(new DoctrineYamlMappingDriver()),
     };
 
     @NotNull
