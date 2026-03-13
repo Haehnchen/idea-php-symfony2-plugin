@@ -9,6 +9,7 @@ import com.intellij.ide.actions.runAnything.items.RunAnythingItem
 import com.intellij.ide.actions.runAnything.items.RunAnythingItemBase
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
+import com.intellij.openapi.application.ReadAction
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
 import fr.adrienbrault.idea.symfony2plugin.dic.command.SymfonyCommandRunConfiguration
@@ -35,8 +36,10 @@ class SymfonyConsoleRunAnythingProvider : RunAnythingProviderBase<SymfonyCommand
 
         val lowerPattern = pattern.lowercase().trim()
 
-        return SymfonyCommandUtil.getCommands(project!!)
-            .filter { it.name.lowercase().contains(lowerPattern) }
+        return ReadAction.compute<Collection<SymfonyCommand>, RuntimeException> {
+            SymfonyCommandUtil.getCommands(project!!)
+                .filter { it.name.lowercase().contains(lowerPattern) }
+        }
     }
 
     override fun execute(dataContext: DataContext, value: SymfonyCommand) {
