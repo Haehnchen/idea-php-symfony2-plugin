@@ -8,6 +8,7 @@ import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigBlockUtil;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
@@ -16,7 +17,6 @@ import com.intellij.psi.xml.XmlTokenType;
 import com.jetbrains.php.PhpIcons;
 import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHtmlCompletionUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
@@ -164,21 +164,7 @@ public class TwigHtmlLineMarkerProvider implements LineMarkerProvider {
     private record TwigComponentBlockTargetsLazyValue(@NotNull Project project, @NotNull String componentName, @NotNull String blockName) implements Supplier<Collection<? extends PsiElement>> {
         @Override
         public Collection<? extends PsiElement> get() {
-            Collection<PsiElement> targets = new ArrayList<>();
-
-            for (PsiFile templateFile : UxUtil.getComponentTemplates(project, componentName)) {
-                if (!(templateFile instanceof TwigFile twigFile)) {
-                    continue;
-                }
-
-                for (TwigBlock block : TwigUtil.getBlocksInFile(twigFile)) {
-                    if (blockName.equals(block.getName())) {
-                        targets.add(block.getTarget());
-                    }
-                }
-            }
-
-            return targets;
+            return TwigBlockUtil.getComponentBlockTargets(project, componentName, blockName);
         }
     }
 }

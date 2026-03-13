@@ -13,13 +13,11 @@ import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlToken;
 import com.intellij.psi.xml.XmlTokenType;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
-import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigHtmlCompletionUtil;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigBlockUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -127,15 +125,7 @@ public class HtmlTemplateGoToDeclarationHandler implements GotoDeclarationHandle
                         if (!blockName.isBlank()) {
                             String componentName = getParentComponentName(xmlTag);
                             if (componentName != null) {
-                                for (PsiFile templateFile : UxUtil.getComponentTemplates(psiElement.getProject(), componentName)) {
-                                    if (templateFile instanceof TwigFile twigFile) {
-                                        for (TwigBlock block : TwigUtil.getBlocksInFile(twigFile)) {
-                                            if (blockName.equals(block.getName())) {
-                                                targets.add(block.getTarget());
-                                            }
-                                        }
-                                    }
-                                }
+                                targets.addAll(TwigBlockUtil.getComponentBlockTargets(psiElement.getProject(), componentName, blockName));
                             }
                         }
                     }
