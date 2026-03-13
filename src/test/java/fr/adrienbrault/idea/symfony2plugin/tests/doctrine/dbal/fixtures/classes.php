@@ -24,3 +24,8 @@ namespace Doctrine\DBAL
         public function update();
     }
 }
+
+namespace Doctrine\Tests\ORM\Mapping
+{
+    class XmlUser {}
+}

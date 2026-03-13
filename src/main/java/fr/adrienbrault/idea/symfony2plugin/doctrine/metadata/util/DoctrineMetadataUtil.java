@@ -5,6 +5,7 @@ import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -13,13 +14,13 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.CachedValue;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
-import com.intellij.psi.util.PsiModificationTracker;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.indexing.FileBasedIndex;
-import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import org.jetbrains.yaml.YAMLLanguage;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelSerializable;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelInterface;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineManagerEnum;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
@@ -44,7 +45,7 @@ import java.util.regex.Pattern;
 public class DoctrineMetadataUtil {
 
     private static final Key<CachedValue<Set<String>>> CLASS_KEYS = new Key<>("CLASS_KEYS");
-    private static final Key<CachedValue<Set<String>>> DOCTRINE_TABLE_NAMES_CACHE = new Key<>("DOCTRINE_TABLE_NAMES_CACHE");
+    private static final Key<CachedValue<Collection<Pair<String, String>>>> DOCTRINE_TABLES_CACHE = new Key<>("DOCTRINE_TABLES_CACHE");
 
     private static final DoctrineMappingDriverInterface[] MAPPING_DRIVERS = new DoctrineMappingDriverInterface[] {
         new DoctrinePhpMappingDriver(),
@@ -206,64 +207,78 @@ public class DoctrineMetadataUtil {
     }
 
     /**
-     * Returns a cached set of all Doctrine table names.
+     * Returns cached pairs of (tableName, classFqn) from the Doctrine metadata index.
      */
     @NotNull
-    public static Set<String> getTableNames(@NotNull Project project) {
+    public static Collection<Pair<String, String>> getTables(@NotNull Project project) {
         return CachedValuesManager.getManager(project).getCachedValue(
             project,
-            DOCTRINE_TABLE_NAMES_CACHE,
-            () -> CachedValueProvider.Result.create(
-                getTableNamesInner(project),
-                PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE),
-                PsiModificationTracker.getInstance(project).forLanguage(YAMLLanguage.INSTANCE),
-                PsiModificationTracker.getInstance(project).forLanguage(XMLLanguage.INSTANCE)
-            ),
+            DOCTRINE_TABLES_CACHE,
+            () -> {
+                Collection<Pair<String, String>> pairs = new ArrayList<>();
+                FileBasedIndex.getInstance().processAllKeys(DoctrineMetadataFileStubIndex.KEY, key -> {
+                    for (DoctrineModelSerializable model : FileBasedIndex.getInstance().getValues(DoctrineMetadataFileStubIndex.KEY, key, GlobalSearchScope.allScope(project))) {
+                        String tableName = model.getTableName();
+                        if (tableName != null) {
+                            pairs.add(new Pair<>(tableName, model.getClassName()));
+                        }
+                    }
+                    return true;
+                }, project);
+                return CachedValueProvider.Result.create(pairs, FileIndexCaches.getModificationTrackerForIndexId(project, DoctrineMetadataFileStubIndex.KEY));
+            },
             false
         );
     }
 
+    /**
+     * Find Doctrine entity PHP classes for the given database table name.
+     * Checks explicit table name mappings from the index, then guessing from the class.
+     */
     @NotNull
-    private static Set<String> getTableNamesInner(@NotNull Project project) {
-        Set<String> tableNames = new HashSet<>();
-        for (Pair<String, PsiElement> pair : getTables(project)) {
-            tableNames.add(pair.getFirst());
+    public static Collection<PhpClass> findEntityByTableName(@NotNull Project project, @NotNull String tableName) {
+        String normalizedTableName = tableName.trim().toLowerCase();
+        Collection<PhpClass> navigatables = new HashSet<>();
+
+        // First: use the index for explicit table name mappings (fast, cached)
+        for (Pair<String, String> pair : getTables(project)) {
+            if (!pair.getFirst().trim().toLowerCase().equals(normalizedTableName)) {
+                continue;
+            }
+
+            PhpClass phpClass = PhpElementsUtil.getClassInterface(project, pair.getSecond());
+            if (phpClass == null) {
+                continue;
+            }
+
+            navigatables.add(phpClass);
         }
-        return tableNames;
-    }
 
-    @NotNull
-    public static Collection<Pair<String, PsiElement>> getTables(@NotNull Project project) {
+        if (!navigatables.isEmpty()) {
+            return new ArrayList<>(navigatables);
+        }
 
-        Collection<Pair<String, PsiElement>> pair = new ArrayList<>();
+        // Fallback: guess table name from class short name (snake_case + optional plural)
+        for (DoctrineModel model : EntityHelper.getModelClasses(project)) {
+            PhpClass phpClass = model.getPhpClass();
 
-        for (String key : FileIndexCaches.getIndexKeysCache(project, CLASS_KEYS, DoctrineMetadataFileStubIndex.KEY)) {
-            for (VirtualFile virtualFile : FileBasedIndex.getInstance().getContainingFiles(DoctrineMetadataFileStubIndex.KEY, key, GlobalSearchScope.allScope(project))) {
-                PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
-                if(psiFile == null) {
-                    continue;
-                }
+            String shortName = phpClass.getName();
+            if (shortName.isBlank()) {
+                continue;
+            }
 
-                DoctrineMappingDriverArguments arguments = new DoctrineMappingDriverArguments(project, psiFile, key);
+            String singular = fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(shortName);
+            if (singular.isBlank()) {
+                continue;
+            }
 
-                for (DoctrineMappingDriverInterface mappingDriver : MAPPING_DRIVERS) {
-                    DoctrineMetadataModel metadata = mappingDriver.getMetadata(arguments);
-                    if(metadata == null) {
-                        continue;
-                    }
-
-                    String table = metadata.getTable();
-                    if(table == null) {
-                        continue;
-                    }
-
-                    // @TODO: add target
-                    pair.add(new Pair<>(table, psiFile));
-                }
+            String plural = StringUtil.pluralize(singular);
+            if (singular.equalsIgnoreCase(normalizedTableName) || plural.equalsIgnoreCase(normalizedTableName)) {
+                navigatables.add(phpClass);
             }
         }
 
-        return pair;
+        return new ArrayList<>(navigatables);
     }
 
     @Nullable

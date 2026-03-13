@@ -4,7 +4,6 @@ import com.intellij.navigation.ChooseByNameContributorEx;
 import com.intellij.navigation.NavigationItem;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.Processor;
 import com.intellij.util.indexing.FindSymbolParameters;
@@ -12,7 +11,9 @@ import com.intellij.util.indexing.IdFilter;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.navigation.NavigationItemExStateless;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,8 +28,8 @@ public class EntityTableSymbolContributor implements ChooseByNameContributorEx {
             return;
         }
 
-        for (String tableName : DoctrineMetadataUtil.getTableNames(project)) {
-            processor.process(tableName);
+        for (Pair<String, String> pair : DoctrineMetadataUtil.getTables(project)) {
+            processor.process(pair.getFirst());
         }
     }
 
@@ -39,9 +40,12 @@ public class EntityTableSymbolContributor implements ChooseByNameContributorEx {
             return;
         }
 
-        for (Pair<String, PsiElement> table : DoctrineMetadataUtil.getTables(project)) {
+        for (Pair<String, String> table : DoctrineMetadataUtil.getTables(project)) {
             if (name.equals(table.getFirst())) {
-                processor.process(NavigationItemExStateless.create(table.getSecond(), table.getFirst(), Symfony2Icons.DOCTRINE, "Entity Table", false));
+                PhpClass phpClass = PhpElementsUtil.getClassInterface(project, table.getSecond());
+                if (phpClass != null) {
+                    processor.process(NavigationItemExStateless.create(phpClass, table.getFirst(), Symfony2Icons.DOCTRINE, "Entity Table", false));
+                }
             }
         }
     }

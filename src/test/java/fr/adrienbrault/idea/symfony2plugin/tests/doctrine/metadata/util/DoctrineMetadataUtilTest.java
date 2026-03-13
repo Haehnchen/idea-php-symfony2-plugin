@@ -7,6 +7,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineManagerEnum;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
@@ -15,6 +16,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.yaml.YAMLFileType;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -127,17 +129,17 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
      */
     public void testGetTables() {
 
-        Map<String, PsiElement> items = new HashMap<>();
+        Map<String, String> items = new HashMap<>();
 
-        Collection<Pair<String, PsiElement>> tables = DoctrineMetadataUtil.getTables(getProject());
-        for (Pair<String, PsiElement> pair : tables) {
+        Collection<Pair<String, String>> tables = DoctrineMetadataUtil.getTables(getProject());
+        for (Pair<String, String> pair : tables) {
             items.put(pair.getFirst(), pair.getSecond());
         }
 
         assertContainsElements(items.keySet(), "cms_users", "foo_table");
 
-        assertNotNull(items.get("cms_users"));
-        assertNotNull(items.get("foo_table"));
+        assertEquals("Doctrine\\Tests\\ORM\\Mapping\\XmlUser", items.get("cms_users"));
+        assertEquals("Doctrine\\Tests\\ORM\\Mapping\\YamlUser", items.get("foo_table"));
     }
 
     /**
@@ -215,6 +217,20 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
             PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
             assertEquals("Foo\\Foo", DoctrineMetadataUtil.findModelNameInScope(psiElement));
         }
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil#findEntityByTableName
+     */
+    public void testFindEntityByTableName() {
+        // index-based: explicit table name from XML mapping
+        Collection<PhpClass> navigatables = DoctrineMetadataUtil.findEntityByTableName(getProject(), "cms_users");
+        assertFalse("Expected navigatables for cms_users", navigatables.isEmpty());
+
+        Set<String> fqns = navigatables.stream().map(PhpNamedElement::getFQN).collect(Collectors.toSet());
+        assertContainsElements(fqns, "\\Doctrine\\Tests\\ORM\\Mapping\\XmlUser");
+
+        assertTrue(DoctrineMetadataUtil.findEntityByTableName(getProject(), "non_existent_table").isEmpty());
     }
 
     /**

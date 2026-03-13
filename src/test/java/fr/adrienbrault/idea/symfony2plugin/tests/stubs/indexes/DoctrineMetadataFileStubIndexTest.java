@@ -163,10 +163,84 @@ public class DoctrineMetadataFileStubIndexTest extends SymfonyLightCodeInsightFi
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineUtil#getClassRepositoryPair
      */
+    public void testXmlMetadataWithTable() {
+        myFixture.configureByText("doctrine_table.orm.xml",
+            "<doctrine-mapping>\n" +
+            "    <entity name=\"Entity\\WithTable\" table=\"my_custom_table\"/>\n" +
+            "</doctrine-mapping>"
+        );
+
+        assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "Entity\\WithTable");
+        assertIndexContainsKeyWithValue(DoctrineMetadataFileStubIndex.KEY, "Entity\\WithTable", new IndexValueTableNameEquals("my_custom_table"));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineUtil#getClassRepositoryPair
+     */
+    public void testXmlMetadataWithCollection() {
+        myFixture.configureByText("doctrine_table.mongodb.xml",
+            "<doctrine-mongo-mapping>\n" +
+            "    <document name=\"Documents\\WithCollection\" collection=\"my_collection\"/>\n" +
+            "</doctrine-mongo-mapping>"
+        );
+
+        assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "Documents\\WithCollection");
+        assertIndexContainsKeyWithValue(DoctrineMetadataFileStubIndex.KEY, "Documents\\WithCollection", new IndexValueTableNameEquals("my_collection"));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineUtil#getClassRepositoryPair
+     */
+    public void testYamlMetadataWithTable() {
+        myFixture.configureByText("doctrine.orm.yml",
+            "Entity\\YamlTable:\n" +
+            "  type: entity\n" +
+            "  table: yaml_table_name\n" +
+            "  fields: ~"
+        );
+
+        assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "Entity\\YamlTable");
+        assertIndexContainsKeyWithValue(DoctrineMetadataFileStubIndex.KEY, "Entity\\YamlTable", new IndexValueTableNameEquals("yaml_table_name"));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineUtil#getClassRepositoryPair
+     */
+    public void testPhpAnnotationMetadataWithTable() {
+        assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "Doctrine\\Orm\\AnnotationWithTable");
+        assertIndexContainsKeyWithValue(DoctrineMetadataFileStubIndex.KEY, "Doctrine\\Orm\\AnnotationWithTable", new IndexValueTableNameEquals("annotation_users"));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineUtil#getClassRepositoryPair
+     */
+    public void testPhpAttributeMetadataWithTable() {
+        assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "Doctrine\\Orm\\AttributeEntityWithTable");
+        assertIndexContainsKeyWithValue(DoctrineMetadataFileStubIndex.KEY, "Doctrine\\Orm\\AttributeEntityWithTable", new IndexValueTableNameEquals("attribute_users"));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineUtil#getClassRepositoryPair
+     */
     public void testPhpOdmAnnotationMetadata() {
         // @TODO: implement
         //assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "Doctrine\\MongoDB\\Annotation");
         //assertIndexContains(DoctrineMetadataFileStubIndex.KEY, "Doctrine\\CouchDB\\Annotation");
+    }
+
+    private static class IndexValueTableNameEquals implements IndexValue.Assert<DoctrineModelSerializable> {
+
+        @NotNull
+        private final String tableName;
+
+        public IndexValueTableNameEquals(@NotNull String tableName) {
+            this.tableName = tableName;
+        }
+
+        @Override
+        public boolean match(@NotNull DoctrineModelSerializable value) {
+            return tableName.equals(value.getTableName());
+        }
     }
 
     private static class IndexValueRepositoryClassEquals implements IndexValue.Assert<DoctrineModelSerializable> {

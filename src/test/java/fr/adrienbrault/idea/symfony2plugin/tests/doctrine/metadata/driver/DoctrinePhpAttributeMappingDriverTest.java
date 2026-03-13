@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.metadata.driver;
 
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
+import java.util.Collection;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.driver.DoctrineMappingDriverArguments;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.driver.DoctrinePhpAttributeMappingDriver;
@@ -112,9 +113,35 @@ public class DoctrinePhpAttributeMappingDriverTest extends SymfonyLightCodeInsig
         assertContainsElements(taggedItemField.getPropertyTypes(), "\\ORM\\Foobar\\Serializable&\\ORM\\Foobar\\Countable");
     }
 
+    /**
+     * @see DoctrinePhpAttributeMappingDriver#getMetadata(DoctrineMappingDriverArguments)
+     */
+    public void testTableAttributeNamelessArgument() {
+        DoctrineMetadataModel metadata = createOrmMetadataForClass("\\ORM\\Attributes\\AttributeEntityNamelessTable");
+
+        assertNotNull(metadata);
+        assertEquals("nameless_table_name", metadata.getTable());
+    }
+
+    /**
+     * @see DoctrinePhpAttributeMappingDriver#getMetadata(DoctrineMappingDriverArguments)
+     */
+    public void testColumnNamelessArgument() {
+        DoctrineMetadataModel metadata = createOrmMetadataForClass("\\ORM\\Attributes\\AttributeEntityNamelessTable");
+
+        assertNotNull(metadata);
+        Collection<DoctrineModelField> fields = metadata.getFields();
+        assertEquals(1, fields.size());
+        assertEquals("custom_column_name", fields.iterator().next().getColumn());
+    }
+
     private DoctrineMetadataModel createOrmMetadata() {
+        return createOrmMetadataForClass("\\ORM\\Attributes\\AttributeEntity");
+    }
+
+    private DoctrineMetadataModel createOrmMetadataForClass(String className) {
         return new DoctrinePhpAttributeMappingDriver().getMetadata(
-            new DoctrineMappingDriverArguments(getProject(), PhpPsiElementFactory.createPsiFileFromText(getProject(), "<?php $foo = null;"), "\\ORM\\Attributes\\AttributeEntity")
+            new DoctrineMappingDriverArguments(getProject(), PhpPsiElementFactory.createPsiFileFromText(getProject(), "<?php $foo = null;"), className)
         );
     }
 }

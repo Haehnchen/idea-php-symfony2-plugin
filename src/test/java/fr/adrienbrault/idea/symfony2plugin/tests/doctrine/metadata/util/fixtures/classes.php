@@ -3,6 +3,7 @@
 namespace Doctrine\Tests\ORM\Mapping {
     class YamlUser {}
     class YamlUserRepository {}
+    class XmlUser {}
 }
 
 namespace Foo {

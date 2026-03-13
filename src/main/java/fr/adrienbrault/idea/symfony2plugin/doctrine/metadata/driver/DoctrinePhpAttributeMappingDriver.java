@@ -6,6 +6,7 @@ import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpPsiAttributesUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -45,7 +46,7 @@ public class DoctrinePhpAttributeMappingDriver implements DoctrineMappingDriverI
                     continue;
                 }
 
-                String name = PhpElementsUtil.findAttributeArgumentByNameAsString("name", attribute);
+                String name = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, 0, "name");
                 if (name != null) {
                     model.setTable(name);
                 }
@@ -70,12 +71,12 @@ public class DoctrinePhpAttributeMappingDriver implements DoctrineMappingDriverI
                     if (PhpElementsUtil.isEqualClassName(fqn, "\\Doctrine\\ORM\\Mapping\\Column")) {
                         isField = true;
 
-                        String name = PhpElementsUtil.findAttributeArgumentByNameAsString("name", attribute);
+                        String name = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, 0, "name");
                         if (name != null) {
                             doctrineModelField.setColumn(name);
                         }
 
-                        String type = PhpElementsUtil.findAttributeArgumentByNameAsString("type", attribute);
+                        String type = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, 1, "type");
                         if (type != null) {
                             doctrineModelField.setTypeName(type);
                         }

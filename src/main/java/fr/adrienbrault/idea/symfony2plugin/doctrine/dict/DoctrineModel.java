@@ -19,6 +19,10 @@ public class DoctrineModel implements DoctrineModelSerializable {
     @SerializedName("repository_class")
     private String repositoryClass;
 
+    @Nullable
+    @SerializedName("table_name")
+    private String tableName;
+
     public DoctrineModel(@NotNull String clazz) {
         this.clazz = clazz;
     }
@@ -26,6 +30,12 @@ public class DoctrineModel implements DoctrineModelSerializable {
     public DoctrineModel(@NotNull String clazz, @Nullable String repositoryClass) {
         this.clazz = clazz;
         this.repositoryClass = repositoryClass;
+    }
+
+    public DoctrineModel(@NotNull String clazz, @Nullable String repositoryClass, @Nullable String tableName) {
+        this.clazz = clazz;
+        this.repositoryClass = repositoryClass;
+        this.tableName = tableName;
     }
 
     @NotNull
@@ -36,6 +46,12 @@ public class DoctrineModel implements DoctrineModelSerializable {
     @Nullable
     public String getRepositoryClass() {
         return repositoryClass;
+    }
+
+    @Nullable
+    @Override
+    public String getTableName() {
+        return tableName;
     }
 
     @Override
@@ -52,6 +68,12 @@ public class DoctrineModel implements DoctrineModelSerializable {
 
         hash.append(repositoryClass);
 
+        String tableName = this.tableName;
+        if (tableName == null) {
+            tableName = "null";
+        }
+        hash.append(tableName);
+
         return hash.toHashCode();
     }
 
@@ -59,7 +81,8 @@ public class DoctrineModel implements DoctrineModelSerializable {
     public boolean equals(Object obj) {
         return obj instanceof DoctrineModel &&
             Objects.equals(((DoctrineModel) obj).clazz, this.clazz) &&
-            Objects.equals(((DoctrineModel) obj).repositoryClass, this.repositoryClass)
+            Objects.equals(((DoctrineModel) obj).repositoryClass, this.repositoryClass) &&
+            Objects.equals(((DoctrineModel) obj).tableName, this.tableName)
         ;
     }
 }

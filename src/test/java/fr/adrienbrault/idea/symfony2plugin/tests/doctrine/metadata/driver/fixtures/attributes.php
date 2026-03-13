@@ -88,4 +88,11 @@ namespace ORM\Attributes {
         #[ORM\Column(type: "string")]
         private Countable&Serializable $taggedItem;
     };
+
+    #[ORM\Entity]
+    #[ORM\Table("nameless_table_name")]
+    class AttributeEntityNamelessTable {
+        #[ORM\Column("custom_column_name")]
+        private string $field;
+    };
 }

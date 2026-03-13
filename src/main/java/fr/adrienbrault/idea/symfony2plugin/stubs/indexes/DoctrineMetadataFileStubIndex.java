@@ -1,6 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
-import com.intellij.openapi.util.Pair;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineClassMetadata;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
@@ -41,18 +41,18 @@ public class DoctrineMetadataFileStubIndex extends FileBasedIndexExtension<Strin
                 return map;
             }
 
-            Collection<Pair<String, String>> classRepositoryPair = DoctrineUtil.getClassRepositoryPair(psiFile);
+            Collection<DoctrineClassMetadata> classRepositoryPair = DoctrineUtil.getClassRepositoryPair(psiFile);
             if(classRepositoryPair == null || classRepositoryPair.isEmpty()) {
                 return map;
             }
 
-            for (Pair<String, String> pair : classRepositoryPair) {
-                String first = pair.getFirst();
-                if(first == null || first.isEmpty()) {
+            for (DoctrineClassMetadata metadata : classRepositoryPair) {
+                String className = metadata.className();
+                if(className.isEmpty()) {
                     continue;
                 }
 
-                map.put(first, new DoctrineModel(first, pair.getSecond()));
+                map.put(className, new DoctrineModel(className, metadata.repositoryClass(), metadata.tableName()));
             }
 
             return map;
@@ -96,7 +96,7 @@ public class DoctrineMetadataFileStubIndex extends FileBasedIndexExtension<Strin
 
     @Override
     public int getVersion() {
-        return 3;
+        return 4;
     }
 
     public static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {

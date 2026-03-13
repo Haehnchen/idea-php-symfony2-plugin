@@ -18,6 +18,7 @@ import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocParamTag;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.DocumentNamespacesParser;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineClassMetadata;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
@@ -93,11 +94,11 @@ public class EntityHelper {
         if(docAnnotation != null) {
             // search for repositoryClass="Foo\Bar\RegisterRepository"; repositoryClass=Foo\Bar\RegisterRepository::class
             // @MongoDB\Document; @ORM\Entity
-            Collection<Pair<String, String>> classRepositoryPair = DoctrineUtil.extractAnnotations(phpClass, docAnnotation);
+            Collection<DoctrineClassMetadata> classRepositoryPair = DoctrineUtil.extractAnnotations(phpClass, docAnnotation);
             if (!classRepositoryPair.isEmpty()) {
-                Pair<String, String> next = classRepositoryPair.iterator().next();
-                if (next.getSecond() != null) {
-                    return PhpElementsUtil.getClassInterface(project, next.getSecond());
+                DoctrineClassMetadata next = classRepositoryPair.iterator().next();
+                if (next.repositoryClass() != null) {
+                    return PhpElementsUtil.getClassInterface(project, next.repositoryClass());
                 }
             }
         }
