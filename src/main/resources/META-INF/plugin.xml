@@ -854,6 +854,7 @@
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.templating.AssetPackageGotoCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.security.AnnotationExpressionGotoCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.templating.webpack.WebpackEncoreGotoCompletionRegistrar"/>
+        <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.vite.ViteGotoCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.routing.RoutingCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.stimulus.StimulusControllerCompletionRegistrar$HtmlDataControllerCompletionRegistrar"/>
         <GotoCompletionRegistrar implementation="fr.adrienbrault.idea.symfony2plugin.stimulus.StimulusControllerCompletionRegistrar$StimulusTwigCompletionRegistrar"/>
