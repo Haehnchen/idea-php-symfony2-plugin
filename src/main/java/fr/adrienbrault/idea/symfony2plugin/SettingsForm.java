@@ -18,7 +18,6 @@ import com.intellij.util.ui.UIUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.util.IndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
-import fr.adrienbrault.idea.symfony2plugin.webDeployment.WebDeploymentUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -60,7 +59,6 @@ public class SettingsForm implements Configurable {
     private JCheckBox codeFoldingTwigConstant;
 
     private JButton buttonReindex;
-    private JCheckBox enableSchedulerCheckBox;
     private JCheckBox featureTwigIcon;
     private JButton buttonBuyLicense;
     private JButton buttonAutoConfigure;
@@ -114,7 +112,6 @@ public class SettingsForm implements Configurable {
         directoryToApp = new TextFieldWithBrowseButton();
         directoryToAppReset = new JButton("Default");
 
-        enableSchedulerCheckBox = new JCheckBox("Enable Remote File Scheduler");
         codeFoldingPhpRoute = new JCheckBox("Route (PHP)");
         codeFoldingPhpModel = new JCheckBox("Repository Entity (PHP)");
         codeFoldingPhpTemplate = new JCheckBox("Template (PHP)");
@@ -136,8 +133,6 @@ public class SettingsForm implements Configurable {
 
         directoryToWeb.addBrowseFolderListener(createBrowseFolderListener(directoryToWeb.getTextField(), FileChooserDescriptorFactory.createSingleFolderDescriptor()));
         directoryToWebReset.addMouseListener(createResetPathButtonMouseListener(directoryToWeb.getTextField(), Settings.DEFAULT_WEB_DIRECTORY));
-
-        enableSchedulerCheckBox.setEnabled(WebDeploymentUtil.isEnabled(project));
 
         buttonReindex.addMouseListener(new MouseAdapter() {
             @Override
@@ -246,11 +241,6 @@ public class SettingsForm implements Configurable {
         content.add(createFieldWithHint("App Directory", directoryToApp, directoryToAppReset,
             "Legacy Symfony 2/3 app/ directory containing config, cache, and logs"), gbc);
 
-        gbc.gridy = row++;
-        gbc.insets = JBUI.insets(4, 8, 0, 0);
-        content.add(createCheckWithHint(enableSchedulerCheckBox,
-            "Periodically sync remote deployment files (requires Web Deployment plugin; reopen project after change)"), gbc);
-
         // Filler
         gbc.gridy = row;
         gbc.fill = GridBagConstraints.BOTH;
@@ -335,8 +325,6 @@ public class SettingsForm implements Configurable {
         return
             !pluginEnabled.isSelected() == getSettings().pluginEnabled
                 || !pathToTranslationRootTextField.getText().equals(getSettings().pathToTranslation)
-                || !enableSchedulerCheckBox.isSelected() == getSettings().remoteDevFileScheduler
-
                 || !codeFoldingPhpRoute.isSelected() == getSettings().codeFoldingPhpRoute
                 || !codeFoldingPhpModel.isSelected() == getSettings().codeFoldingPhpModel
                 || !codeFoldingPhpTemplate.isSelected() == getSettings().codeFoldingPhpTemplate
@@ -358,8 +346,6 @@ public class SettingsForm implements Configurable {
         getSettings().pluginEnabled = pluginEnabled.isSelected();
 
         getSettings().pathToTranslation = pathToTranslationRootTextField.getText();
-        getSettings().remoteDevFileScheduler = enableSchedulerCheckBox.isSelected();
-
         getSettings().codeFoldingPhpRoute = codeFoldingPhpRoute.isSelected();
         getSettings().codeFoldingPhpModel = codeFoldingPhpModel.isSelected();
         getSettings().codeFoldingPhpTemplate = codeFoldingPhpTemplate.isSelected();
@@ -388,8 +374,6 @@ public class SettingsForm implements Configurable {
         pluginEnabled.setSelected(getSettings().pluginEnabled);
 
         pathToTranslationRootTextField.setText(getSettings().pathToTranslation);
-        enableSchedulerCheckBox.setSelected(getSettings().remoteDevFileScheduler);
-
         codeFoldingPhpRoute.setSelected(getSettings().codeFoldingPhpRoute);
         codeFoldingPhpModel.setSelected(getSettings().codeFoldingPhpModel);
         codeFoldingPhpTemplate.setSelected(getSettings().codeFoldingPhpTemplate);
