@@ -1,7 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin;
 
-import com.intellij.openapi.util.Condition;
-import com.intellij.util.containers.ContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoader;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoaderParameter;
@@ -13,8 +11,6 @@ import java.util.List;
  */
 public class ServiceContainerSettingsLoader implements ServiceContainerLoader {
 
-    private static final Condition<ContainerFile> CONDITION = new ContainerFileCondition();
-
     @Override
     public void attachContainerFile(ServiceContainerLoaderParameter parameter) {
 
@@ -23,14 +19,9 @@ public class ServiceContainerSettingsLoader implements ServiceContainerLoader {
             return;
         }
 
-        List<ContainerFile> filter = ContainerUtil.filter(settingsContainerFiles, CONDITION);
+        List<ContainerFile> filter = settingsContainerFiles.stream()
+            .filter(containerFile -> containerFile.getPath() != null)
+            .toList();
         parameter.addContainerFiles(filter);
-    }
-
-    private static class ContainerFileCondition implements Condition<ContainerFile> {
-        @Override
-        public boolean value(ContainerFile containerFile) {
-            return containerFile.getPath() != null && !containerFile.getPath().startsWith("remote://");
-        }
     }
 }

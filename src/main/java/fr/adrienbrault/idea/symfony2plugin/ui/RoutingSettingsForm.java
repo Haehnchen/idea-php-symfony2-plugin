@@ -1,26 +1,17 @@
 package fr.adrienbrault.idea.symfony2plugin.ui;
 
-import com.intellij.icons.AllIcons;
-import com.intellij.openapi.actionSystem.ActionUpdateThread;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
-import com.intellij.ui.AnActionButton;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.TableView;
 import com.intellij.util.ui.ElementProducer;
 import com.intellij.util.ui.ListTableModel;
 import com.jetbrains.php.lang.PhpFileType;
-import com.jetbrains.plugins.webDeployment.config.WebServerConfig;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutingFile;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.UiSettingsUtil;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.dict.UiPathColumnInfo;
-import fr.adrienbrault.idea.symfony2plugin.ui.utils.dict.WebServerFileDialogExtensionCallback;
-import fr.adrienbrault.idea.symfony2plugin.webDeployment.WebDeploymentUtil;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -171,35 +162,9 @@ public class RoutingSettingsForm implements Configurable {
             RoutingSettingsForm.this.changed = true;
         });
 
-        if (WebDeploymentUtil.isEnabled(project)) {
-            addWebDeploymentButton(tablePanel);
-        }
-
         this.panel1.add(tablePanel.createPanel());
 
         return this.panel1;
-    }
-
-    private void addWebDeploymentButton(ToolbarDecorator tablePanel) {
-        tablePanel.addExtraAction((AnAction) new AnActionButton("Remote", AllIcons.Actions.Download) {
-            @Override
-            public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
-                UiSettingsUtil.openFileDialogForDefaultWebServerConnection(project, new WebServerFileDialogExtensionCallback("php") {
-                    @Override
-                    public void success(@NotNull WebServerConfig server, @NotNull WebServerConfig.RemotePath remotePath) {
-                        RoutingSettingsForm.this.tableView.getListTableModel().addRow(
-                            new RoutingFile("remote://" + StringUtils.stripStart(remotePath.path, "/"))
-                        );
-
-                        RoutingSettingsForm.this.changed = true;
-                    }
-                });
-            }
-
-            public @NotNull ActionUpdateThread getActionUpdateThread() {
-                return ActionUpdateThread.BGT;
-            }
-        });
     }
 
     @Override
