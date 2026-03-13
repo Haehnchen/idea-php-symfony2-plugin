@@ -7,6 +7,8 @@ import com.intellij.navigation.GotoRelatedProvider;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
+import com.intellij.util.indexing.FileBasedIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -58,8 +60,12 @@ public class TwigGotoRelatedProvider extends GotoRelatedProvider {
         PsiFile psiFile = psiElement.getContainingFile();
         if (psiFile instanceof TwigFile) {
             // extends
-            Set<String> templates = new HashSet<>();
-            TwigUtil.visitTemplateExtends((TwigFile) psiFile, pair -> templates.add(pair.getFirst()));
+            VirtualFile twigVirtualFile = psiFile.getVirtualFile();
+
+            Set<String> templates = twigVirtualFile != null
+                ? new HashSet<>(FileBasedIndex.getInstance().getFileData(TwigExtendsStubIndex.KEY, twigVirtualFile, project).keySet())
+                : new HashSet<>();
+
             Set<VirtualFile> virtualFiles = new HashSet<>();
             for (String template : templates) {
                 for (PsiFile templatePsiElement : TwigUtil.getTemplatePsiElements(project, template)) {

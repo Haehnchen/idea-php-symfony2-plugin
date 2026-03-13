@@ -19,6 +19,8 @@ import com.jetbrains.twig.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacro;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigMacroTagInterface;
+import fr.adrienbrault.idea.symfony2plugin.Settings;
+import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
@@ -1036,6 +1038,42 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         if(!StringUtils.join(c, ",").equals(StringUtils.join(Arrays.asList(values), ","))) {
             fail(String.format("Fail that '%s' is equal '%s'", StringUtils.join(c, ","), StringUtils.join(Arrays.asList(values), ",")));
         }
+    }
+
+    /**
+     * @see TwigUtil#getExtendsTemplates(TwigFile)
+     */
+    public void testGetExtendsTemplates() {
+        PsiFile childFile = myFixture.addFileToProject("templates/child.html.twig", "{% extends 'parent.html.twig' %}");
+        myFixture.addFileToProject("templates/parent.html.twig", "{% extends 'grandparent.html.twig' %}");
+        myFixture.addFileToProject("templates/grandparent.html.twig", "");
+
+        Settings.getInstance(getProject()).twigNamespaces.add(
+            new TwigNamespaceSetting(TwigUtil.MAIN, "templates", true, TwigUtil.NamespaceType.ADD_PATH, true)
+        );
+
+        assertInstanceOf(childFile, TwigFile.class);
+
+        Map<TwigFile, String> result = TwigUtil.getExtendsTemplates((TwigFile) childFile);
+
+        assertContainsElements(result.values(), "parent.html.twig", "grandparent.html.twig");
+    }
+
+    /**
+     * @see TwigUtil#buildStringFromTwigCreateContainer
+     */
+    public void testBuildStringFromTwigCreateContainerIncludesExtendsFromIndex() {
+        PsiFile extendsFile = myFixture.addFileToProject("templates2/child.html.twig", "{% extends 'base.html.twig' %}");
+        myFixture.addFileToProject("templates2/blocks.html.twig", "{% block content %}{% endblock %}");
+
+        VirtualFile templatesDir = extendsFile.getVirtualFile().getParent();
+        assertNotNull(templatesDir);
+
+        String result = TwigUtil.buildStringFromTwigCreateContainer(getProject(), templatesDir);
+
+        assertNotNull(result);
+        assertTrue(result.contains("base.html.twig"));
+        assertTrue(result.contains("{% block content %}"));
     }
 
     private Collection<String> buildExtendsTagList(String string) {

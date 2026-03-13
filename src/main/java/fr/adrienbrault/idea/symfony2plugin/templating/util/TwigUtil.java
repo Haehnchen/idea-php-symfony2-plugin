@@ -2246,32 +2246,25 @@ public class TwigUtil {
                     return true;
                 }
 
+                FileBasedIndex.getInstance().getFileData(TwigExtendsStubIndex.KEY, virtualFile, project)
+                    .keySet().forEach(containerElement::addExtend);
+
                 PsiFile twigFile = PsiManager.getInstance(project).findFile(virtualFile);
                 if (twigFile instanceof TwigFile) {
-                    collect((TwigFile) twigFile);
+                    for (PsiElement psiElement : twigFile.getChildren()) {
+                        if (psiElement.getNode().getElementType() == TwigElementTypes.BLOCK_STATEMENT) {
+                            PsiElement blockTag = psiElement.getFirstChild();
+                            if (blockTag instanceof TwigBlockTag) {
+                                String name = ((TwigBlockTag) blockTag).getName();
+                                if (StringUtils.isNotBlank(name)) {
+                                    containerElement.addBlock(name);
+                                }
+                            }
+                        }
+                    }
                 }
 
                 return true;
-            }
-
-            private void collect(TwigFile twigFile) {
-                for (PsiElement psiElement : twigFile.getChildren()) {
-                    if (psiElement instanceof TwigExtendsTag) {
-                        for (String s : getTwigExtendsTagTemplates((TwigExtendsTag) psiElement)) {
-                            containerElement.addExtend(s);
-                        }
-                    } else if (psiElement.getNode().getElementType() == TwigElementTypes.BLOCK_STATEMENT) {
-                        PsiElement blockTag = psiElement.getFirstChild();
-                        if (blockTag instanceof TwigBlockTag) {
-                            String name = ((TwigBlockTag) blockTag).getName();
-                            if (StringUtils.isNotBlank(name)) {
-                                containerElement.addBlock(name);
-                            }
-                        }
-
-                    }
-
-                }
             }
 
         });
@@ -3034,17 +3027,18 @@ public class TwigUtil {
             return Collections.emptyMap();
         }
 
+        VirtualFile virtualFile = twigFile.getVirtualFile();
+        if (virtualFile == null) {
+            return Collections.emptyMap();
+        }
+
         Map<TwigFile, String> templates = new HashMap<>();
 
-        for (TwigExtendsTag extendsTag : PsiTreeUtil.getChildrenOfTypeAsList(twigFile, TwigExtendsTag.class)) {
-            for (String extendsTemplate : getTwigExtendsTagTemplates(extendsTag)) {
-                String templateName = normalizeTemplateName(extendsTemplate);
-
-                for (PsiFile psiFile : getTemplatePsiElements(twigFile.getProject(), templateName)) {
-                    if (psiFile instanceof TwigFile && !templates.containsKey(psiFile)) {
-                        templates.put((TwigFile) psiFile, templateName);
-                        templates.putAll(getExtendsTemplates((TwigFile) psiFile, --depth));
-                    }
+        for (String templateName : FileBasedIndex.getInstance().getFileData(TwigExtendsStubIndex.KEY, virtualFile, twigFile.getProject()).keySet()) {
+            for (PsiFile psiFile : getTemplatePsiElements(twigFile.getProject(), templateName)) {
+                if (psiFile instanceof TwigFile && !templates.containsKey(psiFile)) {
+                    templates.put((TwigFile) psiFile, templateName);
+                    templates.putAll(getExtendsTemplates((TwigFile) psiFile, --depth));
                 }
             }
         }
