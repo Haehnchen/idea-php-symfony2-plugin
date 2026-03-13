@@ -1076,6 +1076,44 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertTrue(result.contains("{% block content %}"));
     }
 
+    /**
+     * @see TwigUtil#getTemplateMap(Project)
+     */
+    public void testGetTwigFileNames() {
+        createDummyFiles("res/foobar/foo.html.twig");
+
+        Settings.getInstance(getProject()).twigNamespaces.addAll(createTwigNamespaceSettings());
+
+        assertContainsElements(
+            TwigUtil.getTemplateMap(getProject()).keySet(),
+            "@Foo/foobar/foo.html.twig", "FooBundle:foobar:foo.html.twig", ":foobar:foo.html.twig", "foobar/foo.html.twig"
+        );
+    }
+
+    /**
+     * @see TwigUtil#getTemplateMap(Project, boolean)
+     */
+    public void testGetTwigAndPhpTemplateFiles() {
+        createDummyFiles("res/foobar/foo.html.twig", "res/foobar/foo.php");
+
+        Settings.getInstance(getProject()).twigNamespaces.addAll(createTwigNamespaceSettings());
+
+        assertContainsElements(
+            TwigUtil.getTemplateMap(getProject(), true).keySet(),
+            "@Foo/foobar/foo.html.twig", "FooBundle:foobar:foo.html.twig", ":foobar:foo.html.twig", "foobar/foo.html.twig",
+            "@Foo/foobar/foo.php", "FooBundle:foobar:foo.php", ":foobar:foo.php", "foobar/foo.php"
+        );
+    }
+
+    private List<TwigNamespaceSetting> createTwigNamespaceSettings() {
+        return Arrays.asList(
+            new TwigNamespaceSetting("Foo", "res", true, TwigUtil.NamespaceType.ADD_PATH, true),
+            new TwigNamespaceSetting(TwigUtil.MAIN, "res", true, TwigUtil.NamespaceType.ADD_PATH, true),
+            new TwigNamespaceSetting(TwigUtil.MAIN, "res", true, TwigUtil.NamespaceType.BUNDLE, true),
+            new TwigNamespaceSetting("FooBundle", "res", true, TwigUtil.NamespaceType.BUNDLE, true)
+        );
+    }
+
     private Collection<String> buildExtendsTagList(String string) {
         return TwigUtil.getTwigExtendsTagTemplates((TwigExtendsTag) TwigElementFactory.createPsiElement(getProject(), string, TwigElementTypes.EXTENDS_TAG));
     }

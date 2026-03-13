@@ -76,30 +76,7 @@ public class TwigUtilTempTest extends SymfonyTempCodeInsightFixtureTestCase {
         );
     }
 
-    public void testGetTwigFileNames() {
-        createFile("res/foobar/foo.html.twig");
-
-        Settings.getInstance(getProject()).twigNamespaces.addAll(createTwigNamespaceSettings());
-
-        assertContainsElements(
-            TwigUtil.getTemplateMap(getProject()).keySet(),
-            "@Foo/foobar/foo.html.twig", "FooBundle:foobar:foo.html.twig", ":foobar:foo.html.twig", "foobar/foo.html.twig"
-        );
-    }
-
-    public void testGetTwigAndPhpTemplateFiles() {
-        createFiles("res/foobar/foo.html.twig", "res/foobar/foo.php");
-
-        Settings.getInstance(getProject()).twigNamespaces.addAll(createTwigNamespaceSettings());
-
-        assertContainsElements(
-            TwigUtil.getTemplateMap(getProject(), true).keySet(),
-            "@Foo/foobar/foo.html.twig", "FooBundle:foobar:foo.html.twig", ":foobar:foo.html.twig", "foobar/foo.html.twig",
-            "@Foo/foobar/foo.php", "FooBundle:foobar:foo.php", ":foobar:foo.php", "foobar/foo.php"
-        );
-    }
-
-    /**
+/**
      * @see TwigUtil#getTemplateNavigationOnOffset
      */
     public void testGetTemplateNavigationOnOffset() {
