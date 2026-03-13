@@ -19,6 +19,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.twig.loader.FileImplementsLazyLoader;
 import fr.adrienbrault.idea.symfony2plugin.twig.loader.FileOverwritesLazyLoader;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,29 +30,64 @@ import java.util.stream.Collectors;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TwigBlockUtil {
+    /**
+     * Returns the subset of {@code virtualFiles} that contain {@code blockName} according to the Twig block index.
+     * Use this to pre-filter before loading PSI, avoiding traversal of files that do not define the block.
+     */
     @NotNull
-    public static Collection<TwigBlock> collectParentBlocks(boolean includeSelf, @NotNull PsiFile... file) {
-        Collection<TwigBlock> blocks = new ArrayList<>();
-
-        for (PsiFile psiFile : file) {
-            blocks.addAll(collectBlocksInFile(includeSelf, psiFile));
+    public static Collection<VirtualFile> filterFilesWithBlock(
+        @NotNull Project project,
+        @NotNull String blockName,
+        @NotNull Collection<VirtualFile> virtualFiles
+    ) {
+        if (virtualFiles.isEmpty()) {
+            return Collections.emptyList();
         }
 
-        return blocks;
+        Set<VirtualFile> result = new HashSet<>();
+        FileBasedIndex.getInstance().processValues(
+            TwigBlockIndexExtension.KEY,
+            "block",
+            null,
+            (file, blockNames) -> {
+                if (blockNames.contains(blockName)) {
+                    result.add(file);
+                }
+                return true;
+            },
+            GlobalSearchScope.filesScope(project, virtualFiles)
+        );
+
+        return result;
     }
 
+    /**
+     * Resolves PSI targets of {@code blockName} across all templates of the given Twig component.
+     */
     @NotNull
-    private static Collection<TwigBlock> collectBlocksInFile(boolean includeSelf, @NotNull PsiFile file) {
-        Collection<TwigBlock> current = new ArrayList<>();
-
-        for (VirtualFile virtualFile : TwigFileUtil.collectParentFiles(includeSelf, file)) {
-            PsiFile psiFile = PsiManager.getInstance(file.getProject()).findFile(virtualFile);
-            if(psiFile instanceof TwigFile) {
-                current.addAll(TwigUtil.getBlocksInFile((TwigFile) psiFile));
-            }
+    public static Collection<PsiElement> getComponentBlockTargets(@NotNull Project project, @NotNull String componentName, @NotNull String blockName) {
+        Collection<VirtualFile> templateVirtualFiles = new ArrayList<>();
+        for (PsiFile f : UxUtil.getComponentTemplates(project, componentName)) {
+            VirtualFile vf = f.getVirtualFile();
+            if (vf != null && f instanceof TwigFile) templateVirtualFiles.add(vf);
         }
 
-        return current;
+        return resolveBlockTargets(project, blockName, templateVirtualFiles);
+    }
+
+    /**
+     * Pre-filters {@code candidateFiles} via index, then traverses PSI only for files that define {@code blockName}.
+     */
+    @NotNull
+    private static Collection<PsiElement> resolveBlockTargets(@NotNull Project project, @NotNull String blockName, @NotNull Collection<VirtualFile> candidateFiles) {
+        Collection<PsiElement> targets = new ArrayList<>();
+        for (VirtualFile vf : filterFilesWithBlock(project, blockName, candidateFiles)) {
+            if (!(PsiManager.getInstance(project).findFile(vf) instanceof TwigFile twigFile)) continue;
+            for (TwigBlock block : TwigUtil.getBlocksInFile(twigFile)) {
+                if (blockName.equals(block.getName())) targets.add(block.getTarget());
+            }
+        }
+        return targets;
     }
 
     /**
@@ -141,17 +177,7 @@ public class TwigBlockUtil {
             }
         }
 
-        for (VirtualFile parentTwigExtendingFile : parentTwigExtendingFiles) {
-            if (!(PsiManager.getInstance(project).findFile(parentTwigExtendingFile) instanceof TwigFile twigFile)) {
-                continue;
-            }
-
-            for (TwigBlock twigBlock : TwigUtil.getBlocksInFile(twigFile)) {
-                if (blockName.equals(twigBlock.getName())) {
-                    blockTargets.add(twigBlock.getTarget());
-                }
-            }
-        }
+        blockTargets.addAll(resolveBlockTargets(project, blockName, parentTwigExtendingFiles));
 
         return blockTargets;
     }
@@ -233,15 +259,14 @@ public class TwigBlockUtil {
      */
     @NotNull
     public static Collection<PsiElement> getBlockOverwriteTargets(@NotNull PsiFile psiFile, @NotNull String blockName, boolean withSelfBlocks) {
-        Collection<PsiElement> psiElements = new ArrayList<>();
-
-        for (TwigBlock block : collectParentBlocks(withSelfBlocks, psiFile)) {
-            if(block.getName().equals(blockName)) {
-                Collections.addAll(psiElements, block.getTarget());
-            }
+        Collection<VirtualFile> parentVirtualFiles = TwigFileUtil.collectParentFiles(withSelfBlocks, psiFile);
+        if (parentVirtualFiles.isEmpty()) {
+            return Collections.emptyList();
         }
 
-        return psiElements;
+        Project project = psiFile.getProject();
+
+        return resolveBlockTargets(project, blockName, parentVirtualFiles);
     }
 
     /**
