@@ -1,6 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.doctrine;
 
-import com.intellij.openapi.util.Pair;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineClassMetadata;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
@@ -39,12 +39,12 @@ public class DoctrineUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
             "}\n"
         );
 
-        Collection<Pair<String, String>> classRepositoryPair = DoctrineUtil.getClassRepositoryPair(psiFileFromText);
+        Collection<DoctrineClassMetadata> classRepositoryPair = DoctrineUtil.getClassRepositoryPair(psiFileFromText);
 
-        Pair<String, String> next = classRepositoryPair.iterator().next();
+        DoctrineClassMetadata next = classRepositoryPair.iterator().next();
 
-        assertEquals("Foo\\Apple", next.getFirst());
-        assertEquals("MyBundle\\Entity\\Repository\\AddressRepository", next.getSecond());
+        assertEquals("Foo\\Apple", next.className());
+        assertEquals("MyBundle\\Entity\\Repository\\AddressRepository", next.repositoryClass());
     }
 
     /**
@@ -73,15 +73,15 @@ public class DoctrineUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
             "\n"
         );
 
-        Collection<Pair<String, String>> classRepositoryPair = DoctrineUtil.getClassRepositoryPair(psiFileFromText);
+        Collection<DoctrineClassMetadata> classRepositoryPair = DoctrineUtil.getClassRepositoryPair(psiFileFromText);
 
-        Pair<String, String> apple = classRepositoryPair.stream().filter(stringStringPair -> "Foo\\Apple".equals(stringStringPair.getFirst())).findFirst().get();
-        assertEquals("Foo\\Apple", apple.getFirst());
-        assertEquals("Foobar", apple.getSecond());
+        DoctrineClassMetadata apple = classRepositoryPair.stream().filter(m -> "Foo\\Apple".equals(m.className())).findFirst().get();
+        assertEquals("Foo\\Apple", apple.className());
+        assertEquals("Foobar", apple.repositoryClass());
 
-        Pair<String, String> car = classRepositoryPair.stream().filter(stringStringPair -> "Foo\\Car".equals(stringStringPair.getFirst())).findFirst().get();
-        assertEquals("Foo\\Car", car.getFirst());
-        assertNull(car.getSecond());
+        DoctrineClassMetadata car = classRepositoryPair.stream().filter(m -> "Foo\\Car".equals(m.className())).findFirst().get();
+        assertEquals("Foo\\Car", car.className());
+        assertNull(car.repositoryClass());
     }
 
     /**
@@ -104,12 +104,12 @@ public class DoctrineUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
             "}\n"
         );
 
-        Collection<Pair<String, String>> classRepositoryPair = DoctrineUtil.getClassRepositoryPair(psiFileFromText);
+        Collection<DoctrineClassMetadata> classRepositoryPair = DoctrineUtil.getClassRepositoryPair(psiFileFromText);
 
-        Pair<String, String> next = classRepositoryPair.iterator().next();
+        DoctrineClassMetadata next = classRepositoryPair.iterator().next();
 
-        assertEquals("Foo\\Apple", next.getFirst());
-        assertEquals("Foobar", next.getSecond());
+        assertEquals("Foo\\Apple", next.className());
+        assertEquals("Foobar", next.repositoryClass());
     }
 
     public void testGetClassRepositoryPairForClassConstanta() {
@@ -156,22 +156,22 @@ public class DoctrineUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
             "class White {}\n"
         );
 
-        Collection<Pair<String, String>> classRepositoryPair = DoctrineUtil.getClassRepositoryPair(psiFileFromText);
+        Collection<DoctrineClassMetadata> classRepositoryPair = DoctrineUtil.getClassRepositoryPair(psiFileFromText);
 
-        Pair<String, String> apple = classRepositoryPair.stream().filter(stringStringPair -> "Foo\\Apple".equals(stringStringPair.getFirst())).findFirst().get();
-        assertEquals("Bar\\Foobar", apple.getSecond());
+        DoctrineClassMetadata apple = classRepositoryPair.stream().filter(m -> "Foo\\Apple".equals(m.className())).findFirst().get();
+        assertEquals("Bar\\Foobar", apple.repositoryClass());
 
-        Pair<String, String> banana = classRepositoryPair.stream().filter(stringStringPair -> "Foo\\Banana".equals(stringStringPair.getFirst())).findFirst().get();
-        assertEquals("Bar\\Foobar", banana.getSecond());
+        DoctrineClassMetadata banana = classRepositoryPair.stream().filter(m -> "Foo\\Banana".equals(m.className())).findFirst().get();
+        assertEquals("Bar\\Foobar", banana.repositoryClass());
 
-        Pair<String, String> yellow = classRepositoryPair.stream().filter(stringStringPair -> "Foo\\Yellow".equals(stringStringPair.getFirst())).findFirst().get();
-        assertEquals("Bar\\Foobar", yellow.getSecond());
+        DoctrineClassMetadata yellow = classRepositoryPair.stream().filter(m -> "Foo\\Yellow".equals(m.className())).findFirst().get();
+        assertEquals("Bar\\Foobar", yellow.repositoryClass());
 
-        Pair<String, String> black = classRepositoryPair.stream().filter(stringStringPair -> "Foo\\Black".equals(stringStringPair.getFirst())).findFirst().get();
-        assertEquals("BarAlias\\Foobar", black.getSecond());
+        DoctrineClassMetadata black = classRepositoryPair.stream().filter(m -> "Foo\\Black".equals(m.className())).findFirst().get();
+        assertEquals("BarAlias\\Foobar", black.repositoryClass());
 
-        Pair<String, String> white = classRepositoryPair.stream().filter(stringStringPair -> "Foo\\White".equals(stringStringPair.getFirst())).findFirst().get();
-        assertEquals("Foo\\Foobar", white.getSecond());
+        DoctrineClassMetadata white = classRepositoryPair.stream().filter(m -> "Foo\\White".equals(m.className())).findFirst().get();
+        assertEquals("Foo\\Foobar", white.repositoryClass());
     }
 
     public void testGetClassRepositoryPairForClassConstantForYaml() {
@@ -181,7 +181,7 @@ public class DoctrineUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         );
 
         assertTrue(Objects.requireNonNull(DoctrineUtil.getClassRepositoryPair(yamlFile)).stream().anyMatch(
-            stringStringPair -> "Doctrine\\Tests\\ORM\\Mapping\\User".equals(stringStringPair.getFirst())
+            m -> "Doctrine\\Tests\\ORM\\Mapping\\User".equals(m.className())
         ));
 
         YAMLFile yamlFile2 = (YAMLFile) myFixture.configureByText(YAMLFileType.YML, "Doctrine\\Tests\\ORM\\Mapping\\User:\n" +
@@ -198,7 +198,7 @@ public class DoctrineUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         );
 
         assertTrue(Objects.requireNonNull(DoctrineUtil.getClassRepositoryPair(yamlFile3)).stream().anyMatch(
-            stringStringPair -> "User".equals(stringStringPair.getFirst())
+            m -> "User".equals(m.className())
         ));
 
         YAMLFile yamlFile4 = (YAMLFile) myFixture.configureByText(YAMLFileType.YML, "MyProject\\Model\\Admin:\n" +
@@ -212,7 +212,7 @@ public class DoctrineUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         );
 
         assertTrue(Objects.requireNonNull(DoctrineUtil.getClassRepositoryPair(yamlFile4)).stream().anyMatch(
-            stringStringPair -> "MyProject\\Model\\Admin".equals(stringStringPair.getFirst())
+            m -> "MyProject\\Model\\Admin".equals(m.className())
         ));
 
         YAMLFile yamlFile5 = (YAMLFile) myFixture.configureByText(YAMLFileType.YML, "MyProject\\Model\\User2:\n" +
@@ -224,7 +224,7 @@ public class DoctrineUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         );
 
         assertTrue(Objects.requireNonNull(DoctrineUtil.getClassRepositoryPair(yamlFile5)).stream().anyMatch(
-            stringStringPair -> "MyProject\\Model\\User2".equals(stringStringPair.getFirst())
+            m -> "MyProject\\Model\\User2".equals(m.className())
         ));
 
         YAMLFile yamlFile6 = (YAMLFile) myFixture.configureByText(YAMLFileType.YML, "\\Doctrine\\Foobar:\n" +
@@ -233,7 +233,7 @@ public class DoctrineUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         );
 
         assertTrue(Objects.requireNonNull(DoctrineUtil.getClassRepositoryPair(yamlFile6)).stream().anyMatch(
-            stringStringPair -> "\\Doctrine\\Foobar".equals(stringStringPair.getFirst())
+            m -> "\\Doctrine\\Foobar".equals(m.className())
         ));
 
         YAMLFile yamlFile7 = (YAMLFile) myFixture.configureByText(YAMLFileType.YML, "'\\Doctrine\\Foobar':\n" +
@@ -242,7 +242,7 @@ public class DoctrineUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         );
 
         assertTrue(Objects.requireNonNull(DoctrineUtil.getClassRepositoryPair(yamlFile7)).stream().anyMatch(
-            stringStringPair -> "\\Doctrine\\Foobar".equals(stringStringPair.getFirst())
+            m -> "\\Doctrine\\Foobar".equals(m.className())
         ));
     }
 
@@ -270,7 +270,7 @@ public class DoctrineUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         );
 
         assertTrue(Objects.requireNonNull(DoctrineUtil.getClassRepositoryPair(yamlFile)).stream().anyMatch(
-            stringStringPair -> "Documents\\User".equals(stringStringPair.getFirst())
+            m -> "Documents\\User".equals(m.className())
         ));
 
         YAMLFile yamlFile2 = (YAMLFile) myFixture.configureByText(YAMLFileType.YML, "User:\n" +
@@ -281,7 +281,7 @@ public class DoctrineUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         );
 
         assertTrue(Objects.requireNonNull(DoctrineUtil.getClassRepositoryPair(yamlFile2)).stream().anyMatch(
-            stringStringPair -> "User".equals(stringStringPair.getFirst())
+            m -> "User".equals(m.className())
         ));
     }
 

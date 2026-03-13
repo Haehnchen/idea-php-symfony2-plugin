@@ -2,6 +2,7 @@
 
 namespace Doctrine\ORM\Mapping {
     class Entity {};
+    class Table {};
 }
 
 namespace TYPO3\Flow\Annotations {
@@ -26,8 +27,18 @@ namespace Doctrine\Orm {
      */
     class Annotation {}
 
+    /**
+     * @ORM\Entity(repositoryClass="Foo")
+     * @ORM\Table(name="annotation_users")
+     */
+    class AnnotationWithTable {}
+
     #[ORM\Entity(repositoryClass: AttributeEntityRepository::class)]
     class AttributeEntity {}
+
+    #[ORM\Entity(repositoryClass: AttributeEntityRepository::class)]
+    #[ORM\Table(name: "attribute_users")]
+    class AttributeEntityWithTable {}
 }
 
 namespace Doctrine\OrmRepository {

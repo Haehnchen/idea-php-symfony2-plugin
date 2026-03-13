@@ -13,4 +13,9 @@ public interface DoctrineModelInterface {
 
     @Nullable
     String getRepositoryClass();
+
+    @Nullable
+    default String getTableName() {
+        return null;
+    }
 }

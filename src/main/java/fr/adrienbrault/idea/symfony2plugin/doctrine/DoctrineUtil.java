@@ -2,7 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.doctrine;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
-import com.intellij.openapi.util.Pair;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineClassMetadata;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -12,7 +12,6 @@ import com.jetbrains.php.lang.PhpLanguage;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
-import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.config.PhpLanguageLevel;
 import com.jetbrains.php.lang.documentation.phpdoc.PhpDocUtil;
@@ -59,9 +58,9 @@ public class DoctrineUtil {
      * As of often class stay in static only context
      */
     @Nullable
-    public static Collection<Pair<String, String>> getClassRepositoryPair(@NotNull PsiFile psiFile) {
+    public static Collection<DoctrineClassMetadata> getClassRepositoryPair(@NotNull PsiFile psiFile) {
 
-        Collection<Pair<String, String>> pairs = null;
+        Collection<DoctrineClassMetadata> pairs = null;
 
         if(psiFile instanceof XmlFile) {
             pairs = getClassRepositoryPair((XmlFile) psiFile);
@@ -79,14 +78,14 @@ public class DoctrineUtil {
      * We support orm and all odm syntax here
      */
     @Nullable
-    private static Collection<Pair<String, String>> getClassRepositoryPair(@NotNull XmlFile xmlFile) {
+    private static Collection<DoctrineClassMetadata> getClassRepositoryPair(@NotNull XmlFile xmlFile) {
 
         XmlTag rootTag = xmlFile.getRootTag();
         if(rootTag == null || !rootTag.getName().toLowerCase().startsWith("doctrine")) {
             return null;
         }
 
-        Collection<Pair<String, String>> pairs = new ArrayList<>();
+        Collection<DoctrineClassMetadata> pairs = new ArrayList<>();
 
         for (XmlTag xmlTag : ArrayUtils.addAll(rootTag.findSubTags("document"), rootTag.findSubTags("entity"))) {
 
@@ -110,7 +109,19 @@ public class DoctrineUtil {
                 }
             }
 
-            pairs.add(Pair.create(value, repositoryClass));
+            // extract table name: "table" for ORM entity, "collection" for ODM document
+            String tableName = null;
+            XmlAttribute tableAttr = xmlTag.getAttribute("table");
+            if (tableAttr != null && StringUtils.isNotBlank(tableAttr.getValue())) {
+                tableName = tableAttr.getValue();
+            } else {
+                XmlAttribute collectionAttr = xmlTag.getAttribute("collection");
+                if (collectionAttr != null && StringUtils.isNotBlank(collectionAttr.getValue())) {
+                    tableName = collectionAttr.getValue();
+                }
+            }
+
+            pairs.add(new DoctrineClassMetadata(value, repositoryClass, tableName));
         }
 
         if(pairs.isEmpty()) {
@@ -124,8 +135,8 @@ public class DoctrineUtil {
      * We support multiple use case like orm an so on
      */
     @NotNull
-    public static Collection<Pair<String, String>> getClassRepositoryPair(@NotNull PhpFile phpFile) {
-        final Collection<Pair<String, String>> pairs = new ArrayList<>();
+    public static Collection<DoctrineClassMetadata> getClassRepositoryPair(@NotNull PhpFile phpFile) {
+        final Collection<DoctrineClassMetadata> pairs = new ArrayList<>();
         Collection<PhpClass> classes = PhpPsiUtil.findAllClasses(phpFile);
 
         for (PhpClass phpClass : classes) {
@@ -137,9 +148,13 @@ public class DoctrineUtil {
                 String attributeFQN = attribute.getFQN();
                 if (attributeFQN == null) continue;
                 if (PhpElementsUtil.isEqualClassName(attributeFQN, MODEL_CLASS_ANNOTATION)) {
-                    String repositoryClass = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, "repositoryClass");
-                    pairs.add(Pair.create(StringUtils.stripStart(phpClass.getFQN(), "\\"),
-                            repositoryClass != null ? StringUtils.stripStart(repositoryClass, "\\") : null));
+                    String repositoryClass = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, 0, "repositoryClass");
+                    String tableName = extractTableNameFromAttributes(phpClass);
+                    pairs.add(new DoctrineClassMetadata(
+                        StringUtils.stripStart(phpClass.getFQN(), "\\"),
+                        repositoryClass != null ? StringUtils.stripStart(repositoryClass, "\\") : null,
+                        tableName
+                    ));
                 }
             }
         }
@@ -147,8 +162,19 @@ public class DoctrineUtil {
         return pairs;
     }
 
-    public static Collection<Pair<String, String>> extractAnnotations(@NotNull PhpClass phpClass, @NotNull PhpDocComment docComment) {
-        Collection<Pair<String, String>> result = new ArrayList<>();
+    @Nullable
+    private static String extractTableNameFromAttributes(@NotNull PhpClass phpClass) {
+        for (PhpAttribute attribute : phpClass.getAttributes()) {
+            String fqn = attribute.getFQN();
+            if (fqn != null && PhpElementsUtil.isEqualClassName(fqn, "\\Doctrine\\ORM\\Mapping\\Table")) {
+                return PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, 0, "name");
+            }
+        }
+        return null;
+    }
+
+    public static Collection<DoctrineClassMetadata> extractAnnotations(@NotNull PhpClass phpClass, @NotNull PhpDocComment docComment) {
+        Collection<DoctrineClassMetadata> result = new ArrayList<>();
         PhpDocUtil.processTagElementsByPredicate(
             docComment,
             phpDocTag -> {
@@ -162,14 +188,30 @@ public class DoctrineUtil {
                 }
 
                 String annotationFqnName = AnnotationBackportUtil.getClassNameReference(phpDocTag, fileImports);
-                if (ContainerUtil.exists(MODEL_CLASS_ANNOTATION, c -> c.equals(annotationFqnName))) {
-                    result.add(Pair.create(phpClass.getPresentableFQN(), getAnnotationRepositoryClass(phpDocTag, phpClass)));
+                if (Arrays.asList(MODEL_CLASS_ANNOTATION).contains(annotationFqnName)) {
+                    String tableName = extractTableNameFromAnnotations(docComment);
+                    result.add(new DoctrineClassMetadata(phpClass.getPresentableFQN(), getAnnotationRepositoryClass(phpDocTag, phpClass), tableName));
                 }
             },
             phpDocTag -> true
         );
 
         return result;
+    }
+
+    @Nullable
+    private static String extractTableNameFromAnnotations(@NotNull PhpDocComment docComment) {
+        Map<String, String> fileImports = AnnotationBackportUtil.getUseImportMap(docComment);
+        for (PhpDocTag phpDocTag : PsiTreeUtil.findChildrenOfAnyType(docComment, PhpDocTag.class)) {
+            if (AnnotationBackportUtil.NON_ANNOTATION_TAGS.contains(phpDocTag.getName())) {
+                continue;
+            }
+            String fqn = AnnotationBackportUtil.getClassNameReference(phpDocTag, fileImports);
+            if ("\\Doctrine\\ORM\\Mapping\\Table".equals(fqn)) {
+                return AnnotationUtil.getPropertyValue(phpDocTag, "name");
+            }
+        }
+        return null;
     }
 
     /**
@@ -283,7 +325,7 @@ public class DoctrineUtil {
      * Note: index context method, so file validity in each statement
      */
     @Nullable
-    private static Collection<Pair<String, String>> getClassRepositoryPair(@NotNull YAMLFile yamlFile) {
+    private static Collection<DoctrineClassMetadata> getClassRepositoryPair(@NotNull YAMLFile yamlFile) {
 
         // we are indexing all yaml files for prefilter on path,
         // if false if check on parse
@@ -304,7 +346,7 @@ public class DoctrineUtil {
             return null;
         }
 
-        Collection<Pair<String, String>> pairs = new ArrayList<>();
+        Collection<DoctrineClassMetadata> pairs = new ArrayList<>();
         for (YAMLKeyValue yamlKey : ((YAMLMapping) topLevelValue).getKeyValues()) {
             String keyText = yamlKey.getKeyText();
             if (StringUtils.isBlank(keyText) || !PhpNameUtil.isValidNamespaceFullName(keyText, true, PhpLanguageLevel.current(yamlFile.getProject()))) {
@@ -365,7 +407,14 @@ public class DoctrineUtil {
                 repositoryClass = repositoryClassValue;
             }
 
-            pairs.add(Pair.create(keyText, repositoryClass));
+            // extract table name: "table" for ORM, "collection" for ODM
+            String tableNameValue = YamlHelper.getYamlKeyValueAsString(yamlKey, "table");
+            if (tableNameValue == null) {
+                tableNameValue = YamlHelper.getYamlKeyValueAsString(yamlKey, "collection");
+            }
+            String tableName = StringUtils.isNotBlank(tableNameValue) ? tableNameValue : null;
+
+            pairs.add(new DoctrineClassMetadata(keyText, repositoryClass, tableName));
         }
 
         if(pairs.isEmpty()) {

@@ -6,6 +6,7 @@ import com.intellij.openapi.util.Pair;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.PhpLanguage;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
@@ -203,8 +204,8 @@ public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegi
         public Collection<LookupElement> getLookupElements() {
             Collection<LookupElement> elements = new ArrayList<>();
 
-            for (String tableName : DoctrineMetadataUtil.getTableNames(getProject())) {
-                elements.add(LookupElementBuilder.create(tableName).withIcon(Symfony2Icons.DOCTRINE));
+            for (com.intellij.openapi.util.Pair<String, String> pair : DoctrineMetadataUtil.getTables(getProject())) {
+                elements.add(LookupElementBuilder.create(pair.getFirst()).withIcon(Symfony2Icons.DOCTRINE));
             }
 
             return elements;
@@ -220,17 +221,15 @@ public class DoctrineDbalQbGotoCompletionRegistrar implements GotoCompletionRegi
 
             Collection<PsiElement> psiElements = new ArrayList<>();
 
-            for (Pair<String, PsiElement> pair : DoctrineMetadataUtil.getTables(getProject())) {
+            for (Pair<String, String> pair : DoctrineMetadataUtil.getTables(getProject())) {
                 if(!contents.equals(pair.getFirst())) {
                     continue;
                 }
 
-                PsiElement second = pair.getSecond();
-                if(second == null) {
-                    continue;
+                PhpClass phpClass = PhpElementsUtil.getClassInterface(getProject(), pair.getSecond());
+                if (phpClass != null) {
+                    psiElements.add(phpClass);
                 }
-
-                psiElements.add(second);
             }
 
             return psiElements;
