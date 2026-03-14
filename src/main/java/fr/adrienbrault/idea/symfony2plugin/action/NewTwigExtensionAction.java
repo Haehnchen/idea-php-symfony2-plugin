@@ -100,6 +100,7 @@ public class NewTwigExtensionAction extends AbstractProjectDumbAwareAction {
     public static class Shortcut extends NewTwigExtensionAction {
         @Override
         public void update(@NotNull AnActionEvent event) {
+            this.setStatus(event, false);
             Project project = getEventProject(event);
             if (!Symfony2ProjectComponent.isEnabled(project)) {
                 return;

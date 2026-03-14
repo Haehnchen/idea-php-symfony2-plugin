@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.ui.Messages
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
 import fr.adrienbrault.idea.symfony2plugin.integrations.database.DatabaseConnectionConfig
 import fr.adrienbrault.idea.symfony2plugin.integrations.database.provider.DotEnvConnectionProvider
 import fr.adrienbrault.idea.symfony2plugin.integrations.database.ui.AddFoundDatabaseConnectionDialog
@@ -27,6 +28,11 @@ class AddApplicationDatabaseConnectionsAction : AnAction(
     "Add database connections from Symfony configuration (.env, doctrine.yaml)",
     Symfony2Icons.SYMFONY
 ) {
+
+    override fun update(e: AnActionEvent) {
+        val project = e.project
+        e.presentation.isEnabledAndVisible = project != null && Symfony2ProjectComponent.isEnabled(project)
+    }
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
