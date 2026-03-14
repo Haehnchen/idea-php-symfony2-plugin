@@ -9,6 +9,9 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -142,4 +145,26 @@ public class SymfonyBundle {
     public String getParentBundleName() {
         return PhpElementsUtil.getMethodReturnAsString(this.getPhpClass(), "getParent");
     }
+
+    /**
+     * Returns all possible template directories for this bundle.
+     * Supports both legacy (Resources/views) and new Symfony 4.4+ (templates) structures.
+     */
+    @NotNull
+    public Collection<PsiDirectory> getTemplateDirectories() {
+        Collection<PsiDirectory> directories = new ArrayList<>();
+
+        PsiDirectory legacy = getSubDirectory("Resources", "views");
+        if (legacy != null) {
+            directories.add(legacy);
+        }
+
+        PsiDirectory modern = getSubDirectory("templates");
+        if (modern != null) {
+            directories.add(modern);
+        }
+
+        return directories;
+    }
+
 }

@@ -25,26 +25,23 @@ public class BundleTwigNamespaceExtension implements TwigNamespaceExtension {
 
         Collection<SymfonyBundle> symfonyBundles = new SymfonyBundleUtil(parameter.getProject()).getBundles();
         for (SymfonyBundle bundle : symfonyBundles) {
-            PsiDirectory views = bundle.getSubDirectory("Resources", "views");
-            if(views == null) {
-                continue;
+            for (PsiDirectory views : bundle.getTemplateDirectories()) {
+                // @TODO: use relative path and make os independent
+                String path = views.getVirtualFile().getPath();
+
+                String bundleName = bundle.getName();
+
+                if (TwigUtil.hasBundleNamespaceSupport(parameter.getProject())) {
+                    twigPaths.add(new TwigPath(path, bundleName, TwigUtil.NamespaceType.BUNDLE));
+                }
+
+                // Bundle is stripped from its name on the ending "FooBarBundle" => "FooBar"
+                if (bundleName.endsWith("Bundle")) {
+                    bundleName = bundleName.substring(0, bundleName.length() - 6);
+                }
+
+                twigPaths.add(new TwigPath(path, bundleName, TwigUtil.NamespaceType.ADD_PATH));
             }
-
-            // @TODO: use relative path and make os independent
-            String path = views.getVirtualFile().getPath();
-
-            String bundleName = bundle.getName();
-
-            if (TwigUtil.hasBundleNamespaceSupport(parameter.getProject())) {
-                twigPaths.add(new TwigPath(path, bundleName, TwigUtil.NamespaceType.BUNDLE));
-            }
-
-            // Bundle is stripped from its name on the ending "FooBarBundle" => "FooBarBundle"
-            if (bundleName.endsWith("Bundle")) {
-                bundleName = bundleName.substring(0, bundleName.length() - 6);
-            }
-
-            twigPaths.add(new TwigPath(path, bundleName, TwigUtil.NamespaceType.ADD_PATH));
         }
 
         return twigPaths;

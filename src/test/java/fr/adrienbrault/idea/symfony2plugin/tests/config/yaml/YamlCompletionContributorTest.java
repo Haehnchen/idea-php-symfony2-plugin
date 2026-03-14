@@ -318,6 +318,29 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
         );
     }
 
+    public void testBundleResourceCompletionWithLegacyConfigStructure() {
+        com.intellij.openapi.vfs.VirtualFile bundleFile = myFixture.copyFileToProject("FooBundle.php");
+        com.intellij.openapi.vfs.VirtualFile resourcesDir = com.intellij.testFramework.VfsTestUtil.createDir(bundleFile.getParent(), "Resources");
+        com.intellij.openapi.vfs.VirtualFile configDir = com.intellij.testFramework.VfsTestUtil.createDir(resourcesDir, "config");
+        com.intellij.testFramework.VfsTestUtil.createFile(configDir, "routing.yml");
+
+        assertCompletionContains(YAMLFileType.YML,
+            "imports:\n    - { resource: <caret> }",
+            "FooBundle/Resources/config/routing.yml"
+        );
+    }
+
+    public void testBundleResourceCompletionWithNewConfigStructure() {
+        com.intellij.openapi.vfs.VirtualFile bundleFile = myFixture.copyFileToProject("FooBundle.php");
+        com.intellij.openapi.vfs.VirtualFile configDir = com.intellij.testFramework.VfsTestUtil.createDir(bundleFile.getParent(), "config");
+        com.intellij.testFramework.VfsTestUtil.createFile(configDir, "routing.yml");
+
+        assertCompletionContains(YAMLFileType.YML,
+            "imports:\n    - { resource: <caret> }",
+            "FooBundle/config/routing.yml"
+        );
+    }
+
     public void testNamedArgumentCompletionForServiceArguments() {
         assertCompletionContains(YAMLFileType.YML, "" +
                 "services:\n" +
