@@ -137,5 +137,9 @@ tasks {
 
         // Disable CDS warning about java.system.class.loader
         jvmArgs("-Xshare:off")
+
+        // Disable SVG rendering to work around JSvg IllegalAccessError in IntelliJ 2025.3.x
+        systemProperty("idea.ui.icons.svg.disabled", "true")
+        systemProperty("java.awt.headless", "true")
     }
 }

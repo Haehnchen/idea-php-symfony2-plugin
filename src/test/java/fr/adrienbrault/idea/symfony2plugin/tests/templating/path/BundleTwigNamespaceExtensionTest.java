@@ -42,4 +42,22 @@ public class BundleTwigNamespaceExtensionTest extends SymfonyLightCodeInsightFix
             "Foo".equals(twigPath.getNamespace()) && "/src/Resources/views".equals(twigPath.getPath()))
         );
     }
+
+    public void testThatNewStructureTemplateDirectoryIsAdded() {
+        Settings.getInstance(getProject()).twigBundleNamespaceSupport = true;
+
+        VirtualFile virtualFile = myFixture.copyFileToProject("classes.php");
+        VfsTestUtil.createDir(virtualFile.getParent(), "templates");
+
+        Collection<TwigPath> namespaces = new BundleTwigNamespaceExtension()
+            .getNamespaces(new TwigNamespaceExtensionParameter(getProject()));
+
+        assertNotNull(ContainerUtil.find(namespaces, twigPath ->
+            "FooBundle".equals(twigPath.getNamespace()) && twigPath.getPath().endsWith("/src/templates"))
+        );
+
+        assertNotNull(ContainerUtil.find(namespaces, twigPath ->
+            "Foo".equals(twigPath.getNamespace()) && twigPath.getPath().endsWith("/src/templates"))
+        );
+    }
 }

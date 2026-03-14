@@ -52,7 +52,7 @@ public class XmlCompletionContributor extends CompletionContributor {
         extend(
             CompletionType.BASIC,
             XmlPatterns.psiElement().withParent(XmlHelper.getImportResourcePattern()),
-            new SymfonyBundleFileCompletionProvider("Resources/config", "Controller")
+            new SymfonyBundleFileCompletionProvider("Resources/config", "config", "Controller", "src/Controller")
         );
 
         extend(
@@ -64,9 +64,9 @@ public class XmlCompletionContributor extends CompletionContributor {
 
     private static class FormAliasParametersCompletionProvider extends CompletionProvider<CompletionParameters> {
         @Override
-        protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, final @NotNull CompletionResultSet completionResultSet) {
+        protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, final @NotNull CompletionResultSet completionResultSet) {
             PsiElement psiElement = completionParameters.getOriginalPosition();
-            if(psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
+            if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
                 return;
             }
 
@@ -80,7 +80,7 @@ public class XmlCompletionContributor extends CompletionContributor {
                 XmlAttribute xmlAttribute = xmlTagService.getAttribute("class");
                 if(xmlAttribute != null) {
                     String value = xmlAttribute.getValue();
-                    if(value != null && StringUtils.isNotBlank(value)) {
+                    if(StringUtils.isNotBlank(value)) {
                         PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(psiElement.getProject(), value);
                         if(phpClass != null) {
                             FormUtil.attachFormAliasesCompletions(phpClass, completionResultSet);
@@ -101,7 +101,7 @@ public class XmlCompletionContributor extends CompletionContributor {
         @Override
         protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
             PsiElement psiElement = completionParameters.getOriginalPosition();
-            if(psiElement == null || !Symfony2ProjectComponent.isEnabled(psiElement)) {
+            if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
                 return;
             }
 
