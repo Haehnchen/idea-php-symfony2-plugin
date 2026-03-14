@@ -1026,13 +1026,9 @@ public class ServiceContainerUtil {
      * - ...
      */
     public static Collection<String> getContainerFiles(@NotNull Project project) {
-        return CachedValuesManager.getManager(project)
-            .getCachedValue(
-                project,
-                SYMFONY_COMPILED_SERVICE_WATCHER,
-                () -> CachedValueProvider.Result.create(getContainerFilesInner(project), PsiModificationTracker.MODIFICATION_COUNT),
-                false
-            );
+        // Directly use the inner cache with AbsoluteFileModificationTracker
+        // This ensures cache invalidation works properly when var/cache is deleted/recreated
+        return getContainerFilesInner(project);
     }
 
     /**
@@ -1110,9 +1106,37 @@ public class ServiceContainerUtil {
                 }
             }
 
-            Set<String> cache = files.stream().map(s -> baseDir.getPath() + "/" + s).collect(Collectors.toSet());
+            // Track both the found files AND the cache directories themselves
+            // This ensures cache invalidation when var/cache is deleted/recreated
+            Set<String> trackedPaths = new HashSet<>();
 
-            return CachedValueProvider.Result.create(Collections.unmodifiableSet(files), new AbsoluteFileModificationTracker(cache));
+            // Add the found container files
+            trackedPaths.addAll(files.stream().map(s -> baseDir.getPath() + "/" + s).collect(Collectors.toSet()));
+
+            // ALWAYS track the cache directories - even if they don't exist
+            // This way, if they're deleted and recreated, the timestamp change will invalidate cache
+            for (String root : new String[] {"var/cache", "app/cache"}) {
+                // Add the expected path even if it doesn't exist yet
+                String rootPath = baseDir.getPath() + "/" + root;
+                trackedPaths.add(rootPath);
+
+                VirtualFile cacheRoot = VfsUtil.findRelativeFile(root, baseDir);
+                if (cacheRoot != null && cacheRoot.exists()) {
+                    // Also track common dev subdirectories (both existing and potentially appearing)
+                    for (String devSubdir : new String[] {"dev", "development", "dev_old"}) {
+                        trackedPaths.add(rootPath + "/" + devSubdir);
+                    }
+
+                    // And track all actually existing dev* subdirectories
+                    for (VirtualFile child : cacheRoot.getChildren()) {
+                        if (child.isDirectory() && child.getName().toLowerCase().startsWith("dev")) {
+                            trackedPaths.add(child.getPath());
+                        }
+                    }
+                }
+            }
+
+            return CachedValueProvider.Result.create(Collections.unmodifiableSet(files), new AbsoluteFileModificationTracker(trackedPaths));
         }, false);
     }
 }
