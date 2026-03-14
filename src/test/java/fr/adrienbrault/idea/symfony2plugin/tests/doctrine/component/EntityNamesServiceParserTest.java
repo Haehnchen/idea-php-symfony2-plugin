@@ -17,7 +17,7 @@ public class EntityNamesServiceParserTest extends Assert {
 
         File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/doctrine/component/appDevDebugProjectContainer.xml");
         EntityNamesServiceParser entityNamesServiceParser = new EntityNamesServiceParser();
-        entityNamesServiceParser.parser(new FileInputStream(testFile), null);
+        entityNamesServiceParser.parser(new FileInputStream(testFile), null, null);
         Map<String, String> map = entityNamesServiceParser.getEntityNameMap();
 
         assertEquals("\\My\\NiceBundle\\Entity", map.get("MyNiceBundle"));

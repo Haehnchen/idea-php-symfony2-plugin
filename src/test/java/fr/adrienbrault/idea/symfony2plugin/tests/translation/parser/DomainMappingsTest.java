@@ -19,7 +19,7 @@ public class DomainMappingsTest extends Assert {
         File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/translation/parser/appDevDebugProjectContainer.xml");
 
         DomainMappings domainMappings = new DomainMappings();
-        domainMappings.parser(new FileInputStream(testFile), null);
+        domainMappings.parser(new FileInputStream(testFile), null, null);
         Collection<DomainFileMap> domainFileMaps = domainMappings.getDomainFileMaps();
 
         assertEquals(16, domainFileMaps.size());

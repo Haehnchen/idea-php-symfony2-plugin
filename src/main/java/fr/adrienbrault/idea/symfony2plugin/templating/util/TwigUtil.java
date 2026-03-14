@@ -7,6 +7,7 @@ import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -1510,7 +1511,14 @@ public class TwigUtil {
         if(twigNamespaceSettings != null) {
             for(TwigNamespaceSetting twigNamespaceSetting: twigNamespaceSettings) {
                 if(twigNamespaceSetting.isCustom()) {
-                    twigPaths.add(TwigPath.createTwigPath(twigNamespaceSetting.getPath(), twigNamespaceSetting.getNamespace(), twigNamespaceSetting.getNamespaceType(), true, twigNamespaceSetting.isEnabled()));
+                    String path = twigNamespaceSetting.getPath();
+
+                    // Skip absolute paths - only relative paths are supported
+                    if(path != null && FileUtil.isAbsolute(path)) {
+                        continue;
+                    }
+
+                    twigPaths.add(TwigPath.createTwigPath(path, twigNamespaceSetting.getNamespace(), twigNamespaceSetting.getNamespaceType(), true, twigNamespaceSetting.isEnabled()));
                 }
             }
         }
@@ -1528,9 +1536,11 @@ public class TwigUtil {
 
         Set<String> hashes = new HashSet<>();
         for (TwigPath twigPath : origin) {
-            // normalize hash; for same path element
-            // TODO: move to path object itself
-            String hash = twigPath.getNamespaceType() + twigPath.getNamespace() + twigPath.getPath().replace("\\", "/");
+            String normalizedPath = twigPath.getPath()
+                .replace("\\", "/")
+                .replaceAll("/+", "/");
+
+            String hash = twigPath.getNamespaceType() + twigPath.getNamespace() + normalizedPath;
             if(hashes.contains(hash)) {
                 continue;
             }

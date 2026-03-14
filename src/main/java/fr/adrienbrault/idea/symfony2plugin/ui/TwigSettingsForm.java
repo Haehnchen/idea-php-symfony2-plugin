@@ -6,6 +6,7 @@ import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.project.impl.DefaultProject;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import com.intellij.ui.ToolbarDecorator;
@@ -199,9 +200,16 @@ public class TwigSettingsForm implements Configurable {
         List<TwigNamespaceSetting> twigPaths = new ArrayList<>();
 
         for (TwigPath twigPath : this.tableView.getListTableModel().getItems()) {
+            // Skip absolute paths - only relative paths are supported
+            if (twigPath.isCustomPath() && FileUtil.isAbsolute(twigPath.getPath())) {
+                continue;
+            }
+
+            String relativePath = twigPath.getRelativePath(this.project);
+
             // only custom and disabled path need to save
-            if ((!twigPath.isEnabled() && twigPath.getRelativePath(this.project) != null) || twigPath.isCustomPath()) {
-                twigPaths.add(new TwigNamespaceSetting(twigPath.getNamespace(), twigPath.getRelativePath(this.project), twigPath.isEnabled(), twigPath.getNamespaceType(), twigPath.isCustomPath()));
+            if ((!twigPath.isEnabled() && relativePath != null) || twigPath.isCustomPath()) {
+                twigPaths.add(new TwigNamespaceSetting(twigPath.getNamespace(), relativePath, twigPath.isEnabled(), twigPath.getNamespaceType(), twigPath.isCustomPath()));
             }
         }
 

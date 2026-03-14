@@ -16,7 +16,7 @@ public class TwigGlobalsServiceParserTest extends Assert {
         File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/path/globals/appDevDebugProjectContainer.xml");
 
         TwigGlobalsServiceParser parser = new TwigGlobalsServiceParser();
-        parser.parser(new FileInputStream(testFile), null);
+        parser.parser(new FileInputStream(testFile), null, null);
 
         assertEquals("templating.globals", parser.getTwigGlobals().get("app").getValue());
         assertEquals(TwigGlobalEnum.SERVICE, parser.getTwigGlobals().get("app").getTwigGlobalEnum());

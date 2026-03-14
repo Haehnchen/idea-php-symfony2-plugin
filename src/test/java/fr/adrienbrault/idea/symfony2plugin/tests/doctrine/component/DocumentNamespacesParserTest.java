@@ -18,7 +18,7 @@ public class DocumentNamespacesParserTest extends Assert {
 
         File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/doctrine/component/appDevDebugProjectContainer.xml");
         DocumentNamespacesParser entityNamesServiceParser = new DocumentNamespacesParser();
-        entityNamesServiceParser.parser(new FileInputStream(testFile), null);
+        entityNamesServiceParser.parser(new FileInputStream(testFile), null, null);
         Map<String, String> map = entityNamesServiceParser.getNamespaceMap();
 
         assertEquals("\\AcmeProject\\FrontendBundle\\Document", map.get("AcmeProjectFrontendBundle"));

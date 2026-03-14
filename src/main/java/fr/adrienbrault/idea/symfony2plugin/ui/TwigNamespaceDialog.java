@@ -12,6 +12,7 @@ import com.intellij.ui.table.TableView;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
+import com.intellij.openapi.ui.Messages;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
@@ -96,7 +97,7 @@ public class TwigNamespaceDialog extends JDialog {
         fieldsPanel.add(name, gbc);
 
         gbc.gridx = 0; gbc.gridy = 1; gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0;
-        fieldsPanel.add(new JLabel("Project-Path"), gbc);
+        fieldsPanel.add(new JLabel("Path (relative to project)"), gbc);
         gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
         fieldsPanel.add(namespacePath, gbc);
 
@@ -178,7 +179,12 @@ public class TwigNamespaceDialog extends JDialog {
 
                 String path = VfsUtil.getRelativePath(selectedFile, projectDirectory, '/');
                 if (null == path) {
-                    path = selectedFile.getPath();
+                    Messages.showErrorDialog(
+                        contentPane,
+                        "Selected directory is outside the project root. Please select a directory within the project.",
+                        "Invalid Path"
+                    );
+                    return;
                 }
 
                 textField.setText(path);

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<container>
+    <parameters>
+        <parameter key="kernel.project_dir">/app</parameter>
+    </parameters>
+    <services>
+        <service id="twig.loader.native_filesystem" class="Symfony\Bundle\TwigBundle\Loader\NativeFilesystemLoader">
+            <call method="addPath">
+                <argument>/app/templates</argument>
+            </call>
+            <call method="addPath">
+                <argument>/app/vendor/symfony/twig-bridge/Resources/views</argument>
+                <argument>SymfonyBridge</argument>
+            </call>
+            <call method="addPath">
+                <argument>relative/path/views</argument>
+                <argument>AlreadyRelative</argument>
+            </call>
+        </service>
+    </services>
+</container>

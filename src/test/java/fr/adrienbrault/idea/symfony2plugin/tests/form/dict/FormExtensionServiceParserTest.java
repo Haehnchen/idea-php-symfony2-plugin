@@ -19,7 +19,7 @@ public class FormExtensionServiceParserTest extends Assert {
         File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/form/dict/appDevDebugProjectContainer.xml");
 
         FormExtensionServiceParser formExtensionServiceParser = new FormExtensionServiceParser();
-        formExtensionServiceParser.parser(new FileInputStream(testFile), null);
+        formExtensionServiceParser.parser(new FileInputStream(testFile), null, null);
         Map<String, String> parser = formExtensionServiceParser.getFormExtensions();
 
         assertEquals("form", parser.get("Symfony\\Component\\Form\\Extension\\Validator\\Type\\FormTypeValidatorExtension"));
