@@ -17,7 +17,7 @@ public class FormTypeServiceParserTest extends Assert {
         File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/form/dict/appDevDebugProjectContainer.xml");
 
         FormTypeServiceParser parser = new FormTypeServiceParser();
-        parser.parser(new FileInputStream(testFile), null);
+        parser.parser(new FileInputStream(testFile), null, null);
 
         assertEquals("field", parser.getFormTypeMap().getMap().get("form.type.field"));
         assertEquals("locale", parser.getFormTypeMap().getMap().get("form.type.locale"));

@@ -1,12 +1,11 @@
 package fr.adrienbrault.idea.symfony2plugin.twig.variable.globals;
 
-import com.intellij.openapi.vfs.VirtualFile;
 import fr.adrienbrault.idea.symfony2plugin.util.service.AbstractServiceParser;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,9 +21,8 @@ public class TwigGlobalsServiceParser extends AbstractServiceParser {
         return "/container/services/service[@id='twig']//call[@method='addGlobal']";
     }
 
-    @Override
-    public void parser(@NotNull InputStream inputStream, @Nullable VirtualFile sourceFile) {
-        NodeList nodeList = this.parserer(inputStream);
+    public void parser(InputStream file, VirtualFile sourceFile, Project project) {
+        NodeList nodeList = this.parserer(file);
 
         if(nodeList == null) {
             return;

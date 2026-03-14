@@ -92,7 +92,7 @@ public class TwigPath {
             return path;
         }
 
-        VirtualFile virtualFile = getDirectory();
+        VirtualFile virtualFile = VfsUtil.findFileByIoFile(new File(path), false);
         if(virtualFile == null) {
             return null;
         }
@@ -148,18 +148,6 @@ public class TwigPath {
     public TwigPath setEnabled(boolean enabled) {
         this.enabled = enabled;
         return this;
-    }
-
-    @Nullable
-    private VirtualFile getDirectory() {
-
-        File file = new File(this.getPath());
-
-        if(!file.exists()) {
-            return null;
-        }
-
-        return VfsUtil.findFileByIoFile(file, false);
     }
 
     public boolean isCustomPath() {

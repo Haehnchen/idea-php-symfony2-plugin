@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.path;
 
+import com.intellij.openapi.project.Project;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtensionParameter;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
@@ -9,23 +10,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- * Collects path on compiled container: appDevDebugProjectContainer.xml
- *
- * <call method="addPath">
- *  <argument>... ymfony\Bundle\FrameworkBundle/Resources/views</argument>
- *  <argument>Framework</argument>
- * </call>
+ * Collects Twig paths from the compiled container (e.g., appDevDebugProjectContainer.xml).
+ * Path normalization is handled by TwigPathServiceParser.
  *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class ContainerTwigNamespaceExtension implements TwigNamespaceExtension {
+
     @NotNull
     @Override
     public Collection<TwigPath> getNamespaces(@NotNull TwigNamespaceExtensionParameter parameter) {
-        TwigPathServiceParser twigPathServiceParser = ServiceXmlParserFactory.getInstance(parameter.getProject(), TwigPathServiceParser.class);
+        Project project = parameter.getProject();
 
-        return new ArrayList<>(
-            twigPathServiceParser.getTwigPathIndex().getTwigPaths()
-        );
+        TwigPathServiceParser parser = ServiceXmlParserFactory.getInstance(project, TwigPathServiceParser.class);
+        return new ArrayList<>(parser.getTwigPathIndex().getTwigPaths());
     }
 }

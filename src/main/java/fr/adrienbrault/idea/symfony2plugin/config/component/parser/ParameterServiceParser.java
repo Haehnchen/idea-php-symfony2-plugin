@@ -1,10 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.config.component.parser;
 
-import com.intellij.openapi.vfs.VirtualFile;
 import fr.adrienbrault.idea.symfony2plugin.util.service.AbstractServiceParser;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,9 +20,8 @@ public class ParameterServiceParser extends AbstractServiceParser {
         return "";
     }
 
-    @Override
-    public void parser(@NotNull InputStream inputStream, @Nullable VirtualFile sourceFile) {
-        this.parameterMap.putAll(ParameterServiceCollector.collect(inputStream));
+    public void parser(InputStream file, VirtualFile sourceFile, Project project) {
+        this.parameterMap.putAll(ParameterServiceCollector.collect(file));
     }
 
     public Map<String, String> getParameterMap() {

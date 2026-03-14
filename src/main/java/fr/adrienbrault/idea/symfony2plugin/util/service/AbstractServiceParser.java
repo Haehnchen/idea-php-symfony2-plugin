@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.util.service;
 
-import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -17,9 +16,6 @@ import java.io.InputStream;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 abstract public class AbstractServiceParser implements ServiceParserInterface {
-
-    @Nullable
-    private VirtualFile sourceFile;
 
     @Nullable
     protected NodeList parserer(InputStream file) {
@@ -48,18 +44,6 @@ abstract public class AbstractServiceParser implements ServiceParserInterface {
         }
 
         return (NodeList) result;
-    }
-
-    /**
-     * Get the source file being parsed.
-     */
-    @Nullable
-    protected VirtualFile getSourceFile() {
-        return sourceFile;
-    }
-
-    void setSourceFile(@Nullable VirtualFile sourceFile) {
-        this.sourceFile = sourceFile;
     }
 
 }
