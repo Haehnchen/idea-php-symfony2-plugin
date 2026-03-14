@@ -84,6 +84,7 @@ public class NewFormTypeAction extends AbstractProjectDumbAwareAction {
     public static class Shortcut extends NewFormTypeAction {
         @Override
         public void update(@NotNull AnActionEvent event) {
+            this.setStatus(event, false);
             Project project = getEventProject(event);
             if (!Symfony2ProjectComponent.isEnabled(project)) {
                 return;
