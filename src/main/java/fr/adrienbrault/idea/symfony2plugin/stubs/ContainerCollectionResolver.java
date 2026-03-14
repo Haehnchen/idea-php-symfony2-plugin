@@ -8,6 +8,7 @@ import com.intellij.psi.util.CachedValue;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.psi.util.PsiModificationTracker;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.util.indexing.FileBasedIndex;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
@@ -23,8 +24,11 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerBuilderStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerParameterStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -43,6 +47,7 @@ public class ContainerCollectionResolver {
     private static final Key<CachedValue<Set<String>>> SERVICE_PARAMETER_INDEX_NAMES = new Key<>("SERVICE_PARAMETER_INDEX_NAMES");
 
     private static final Key<CachedValue<ServiceCollector>> SYMFONY_SERVICE_COLLECTOR_CACHE = new Key<>("SYMFONY_SERVICE_COLLECTOR_CACHE");
+    private static final Key<CachedValue<Map<String, ContainerService>>> RESOURCE_BASED_SERVICES_CACHE = new Key<>("SYMFONY_RESOURCE_BASED_SERVICES_CACHE");
     private static final Key<CachedValue<ParameterCollector>> SYMFONY_PARAMETER_COLLECTOR_CACHE = new Key<>("SYMFONY_PARAMETER_COLLECTOR_CACHE");
 
     private static final ExtensionPointName<fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector> EXTENSIONS = new ExtensionPointName<>(
@@ -75,6 +80,72 @@ public class ContainerCollectionResolver {
 
     public static Map<String, ContainerService> getServices(@NotNull Project project) {
         return ServiceCollector.create(project).getServices();
+    }
+
+    /**
+     * Collect services defined via resource patterns (e.g., "App\: resource: '../src/'").
+     * These are auto-loaded services that should be available for autocompletion and type providers.
+     */
+    @NotNull
+    private static Map<String, ContainerService> getResourceBasedServices(@NotNull Project project) {
+        return CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            RESOURCE_BASED_SERVICES_CACHE,
+            () -> CachedValueProvider.Result.create(
+                getResourceBasedServicesInner(project),
+                FileIndexCaches.getModificationTrackerForIndexId(project, ServicesDefinitionStubIndex.KEY),
+                VirtualFileManager.VFS_STRUCTURE_MODIFICATIONS
+            ),
+            false
+        );
+    }
+
+    @NotNull
+    private static Map<String, ContainerService> getResourceBasedServicesInner(@NotNull Project project) {
+        Map<String, ContainerService> services = new HashMap<>();
+
+        // Collect keys first to avoid nested index access inside processAllKeys
+        List<String> resourceServiceIds = new ArrayList<>();
+        FileBasedIndex.getInstance().processAllKeys(ServicesDefinitionStubIndex.KEY, serviceId -> {
+            if (serviceId.endsWith("\\")) {
+                resourceServiceIds.add(serviceId);
+            }
+            return true;
+        }, project);
+
+        GlobalSearchScope scope = ServiceIndexUtil.getRestrictedFileTypesScope(project);
+        for (String serviceId : resourceServiceIds) {
+            List<ServiceSerializable> serviceValues = FileBasedIndex.getInstance()
+                .getValues(ServicesDefinitionStubIndex.KEY, serviceId, scope);
+
+            for (ServiceSerializable service : serviceValues) {
+                if (service.getResource().isEmpty()) {
+                    continue;
+                }
+
+                VirtualFile[] definitionFiles = ServiceIndexUtil.findServiceDefinitionFiles(project, serviceId);
+                if (definitionFiles.length == 0) {
+                    continue;
+                }
+
+                VirtualFile containerFile = definitionFiles[0];
+
+                Collection<String> phpClasses = ServiceContainerUtil.getPhpClassFromResources(
+                    project,
+                    service.getId(),
+                    containerFile,
+                    service.getResource(),
+                    service.getExclude()
+                );
+
+                for (String phpClass : phpClasses) {
+                    String fqn = StringUtils.stripStart(phpClass, "\\");
+                    services.put(fqn, new ContainerService(fqn, fqn, true));
+                }
+            }
+        }
+
+        return services;
     }
 
     @Nullable
@@ -200,6 +271,9 @@ public class ContainerCollectionResolver {
                     services.put(entry.getId(), new ContainerService(entry.getId(), entry.getClassName()));
                 }
             }
+
+            // Add resource-based services (auto-loaded from namespace patterns)
+            services.putAll(getResourceBasedServices(project));
 
             Collection<ServiceInterface> aliases = new ArrayList<>();
             Collection<ServiceInterface> decorated = new ArrayList<>();
@@ -361,6 +435,7 @@ public class ContainerCollectionResolver {
             }
 
             Set<String> serviceNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+            serviceNames.addAll(getResourceBasedServices(project).keySet());
 
             // local filesystem
             serviceNames.addAll(

@@ -864,12 +864,15 @@ public class XmlHelper {
             }
         }
 
-        return ServiceContainerUtil.getPhpClassFromResources(
+        return PhpElementsUtil.getClassesByClassFqn(
             xmlTag.getProject(),
-            namespace,
-            xmlTag.getContainingFile().getVirtualFile(),
-            List.of(resource),
-            excludes
+            ServiceContainerUtil.getPhpClassFromResources(
+                xmlTag.getProject(),
+                namespace,
+                xmlTag.getContainingFile().getVirtualFile(),
+                List.of(resource),
+                excludes
+            )
         );
     }
 }
