@@ -35,12 +35,8 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLFile;
 
-import java.nio.file.FileSystems;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Supplier;
-import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -171,58 +167,22 @@ public class ServiceIndexUtil {
      *
      */
     public static boolean matchesResourcesGlob(@NotNull VirtualFile serviceFileAsBase, @NotNull VirtualFile phpClassFile, @NotNull Collection<String> resources, @NotNull Collection<String> excludes) {
-        for (String resource : resources.stream().filter(StringUtils::isNoneBlank).toList()) {
-            String replace = resource.replace("\\\\", "/");
-
-            VirtualFile serviceFile = serviceFileAsBase.getParent();
-            String[] split = replace.split("/");
-            String[] replacePathParts = split;
-            for (String s : split) {
-                if (s.equals("..")) {
-                    replacePathParts = Arrays.copyOfRange(replacePathParts, 1, replacePathParts.length);
-                    serviceFile = serviceFile.getParent();
-                } else {
-                    break;
-                }
-            }
-
-            if (serviceFile == null) {
-                return false;
-            }
-
-            // ending one wildcard must be *
-            // "src/*" => "src/**"
-            String path = (serviceFile.getPath() + "/" + StringUtils.join(replacePathParts, "/"))
-                .replaceAll("[^*]([*])$", "**");
-
-            // force "**" at the end
-            if (!path.endsWith("*")) {
-                path += "**";
-            }
-
-            String phpClassPath = phpClassFile.getPath();
-
-            boolean matchingGlobResource = isMatchingGlobResource(path, phpClassPath);
-            if (!matchingGlobResource) {
-                continue;
-            }
-
-            // direct match; skip it
-            if (excludes.isEmpty()) {
-                return true;
-            }
-
-            if (!matchesResourcesGlob(serviceFileAsBase, phpClassFile, excludes, Collections.emptyList())) {
-                return true;
-            }
-        }
-
-        return false;
+        return ServiceResourceGlobMatcher.create(serviceFileAsBase, resources, excludes).matches(phpClassFile.getPath());
     }
 
     @Nullable
     public static Pair<ClassServiceDefinitionTargetLazyValue, Collection<ContainerService>> findServiceDefinitionsOfResourceLazy(@NotNull PhpClass phpClass) {
         if (phpClass.isInterface() || phpClass.isAbstract()) {
+            return null;
+        }
+
+        PsiFile containingFile = phpClass.getContainingFile();
+        if (containingFile == null) {
+            return null;
+        }
+
+        VirtualFile phpClassFile = containingFile.getVirtualFile();
+        if (phpClassFile == null) {
             return null;
         }
 
@@ -264,17 +224,8 @@ public class ServiceIndexUtil {
 
             VirtualFile[] serviceDefinitionFiles = ServiceIndexUtil.findServiceDefinitionFiles(phpClass.getProject(), s);
             for (VirtualFile virtualFile : serviceDefinitionFiles) {
-                PsiFile containingFile = phpClass.getContainingFile();
-                if (containingFile == null) {
-                    continue;
-                }
-
-                VirtualFile phpClassFile = containingFile.getVirtualFile();
-                if (phpClassFile == null) {
-                    continue;
-                }
-
-                if (matchesResourcesGlob(virtualFile, phpClassFile, resources, service.getExclude())) {
+                ServiceResourceGlobMatcher matcher = ServiceResourceGlobMatcher.create(virtualFile, resources, service.getExclude());
+                if (matcher.matches(phpClassFile.getPath())) {
                     namespaceServices.add(containerService);
                     namespaceTargets.add(s);
                 }
@@ -286,27 +237,6 @@ public class ServiceIndexUtil {
         }
 
         return null;
-    }
-
-    /**
-     * Glob matching of resource / exclude pattern: "src/{Entity,Tests,Kernel.php}"
-     *
-     * @param glob src/{Entity,Tests,Kernel.php}
-     * @param path src/Entity/Foo.php
-     */
-    private static boolean isMatchingGlobResource(@NotNull String glob, @NotNull String path) {
-        // "src/{Entity,Tests,Kernel.php}"
-        // We must match files also: "src/Entity/Foo.php"
-        if (!glob.endsWith("**")) {
-            glob += "**";
-        }
-
-        // nested types not support by java glob implementation so just catch the exception: "../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php,Service/{IspConfiguration,DataCollection}}"
-        try {
-            return FileSystems.getDefault().getPathMatcher("glob:" + glob).matches(Paths.get(path));
-        } catch (PatternSyntaxException | InvalidPathException e) {
-            return false;
-        }
     }
 
     /**

@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.util.dict;
 
 import com.intellij.openapi.vfs.VirtualFile;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceResourceGlobMatcher;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyTempCodeInsightFixtureTestCase;
 
 import java.util.Arrays;
@@ -107,4 +108,38 @@ public class ServiceUtilTempProjectTest extends SymfonyTempCodeInsightFixtureTes
         assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, Collections.singleton("../src/*"), Arrays.asList("../src/{Bar,Kernel.php}", "../src/{Foobar,Kernel.php}")));
         assertTrue(ServiceIndexUtil.matchesResourcesGlob(file, file2, Collections.singleton("../src/*"), Arrays.asList("../src/{Migrations,Kernel.php}", "../src/{Migrations2,Kernel.php}")));
    }
+
+    public void testCompiledServiceResourcesMatcher() {
+        VirtualFile file = createFile("config/services.yml");
+
+        VirtualFile file2 = createFile(
+            "src/Foobar/Bar.php",
+            "<?php\n"
+        );
+
+        ServiceResourceGlobMatcher matcher = ServiceResourceGlobMatcher.create(
+            file,
+            Collections.singleton("../src/*"),
+            Collections.singleton("../src/{Foobar,Kernel.php}")
+        );
+
+        assertFalse(matcher.matches(file2.getPath()));
+    }
+
+    public void testCompiledServiceResourcesMatcherWithExcludeMiss() {
+        VirtualFile file = createFile("config/services.yml");
+
+        VirtualFile file2 = createFile(
+            "src/Foobar/Bar.php",
+            "<?php\n"
+        );
+
+        ServiceResourceGlobMatcher matcher = ServiceResourceGlobMatcher.create(
+            file,
+            Collections.singleton("../src/*"),
+            Collections.singleton("../src/{Migrations,Kernel.php}")
+        );
+
+        assertTrue(matcher.matches(file2.getPath()));
+    }
 }

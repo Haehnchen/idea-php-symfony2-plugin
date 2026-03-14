@@ -975,6 +975,23 @@ public class PhpElementsUtil {
         return PhpIndex.getInstance(project).getAnyByFQN(className);
     }
 
+    @NotNull
+    public static Collection<PhpClass> getClassesByClassFqn(@NotNull Project project, @NotNull String classFqn) {
+        return PhpIndex.getInstance(project).getClassesByFQN(classFqn);
+    }
+
+    @NotNull
+    public static Collection<PhpClass> getClassesByClassFqn(@NotNull Project project, @NotNull Collection<String> classFqns) {
+        Collection<PhpClass> phpClasses = new HashSet<>();
+        PhpIndex phpIndex = PhpIndex.getInstance(project);
+
+        for (String classFqn : classFqns) {
+            phpClasses.addAll(phpIndex.getClassesByFQN(classFqn));
+        }
+
+        return phpClasses;
+    }
+
     static public void addClassPublicMethodCompletion(CompletionResultSet completionResultSet, PhpClass phpClass) {
         for(Method method: getClassPublicMethod(phpClass)) {
             completionResultSet.addElement(new PhpLookupElement(method));

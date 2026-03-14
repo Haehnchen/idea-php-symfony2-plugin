@@ -5,11 +5,13 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.NlsSafe;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.search.GlobalSearchScopesCore;
 import com.intellij.psi.util.*;
 import com.intellij.psi.xml.*;
 import com.intellij.util.Consumer;
@@ -22,6 +24,7 @@ import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.lang.psi.stubs.indexes.PhpClassFqnIndex;
 import com.jetbrains.php.refactoring.PhpNamespaceBraceConverter;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.AttributeValueInterface;
@@ -34,7 +37,9 @@ import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ServiceFileDefault
 import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ServiceTypeHint;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.visitor.ServiceConsumer;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceResourceGlobMatcher;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
+import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerIdUsagesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.*;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
@@ -47,6 +52,7 @@ import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.*;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -54,6 +60,7 @@ import java.util.stream.Stream;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class ServiceContainerUtil {
+    private static final Key<CachedValue<Map<String, Collection<PhpClassResourceCandidate>>>> PHP_CLASS_FQN_RESOURCE_CACHE = new Key<>("SYMFONY_PHP_CLASS_FQN_RESOURCE_CACHE");
     public static final MethodMatcher.CallToSignature[] SERVICE_GET_SIGNATURES = new MethodMatcher.CallToSignature[] {
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "get"),
         new MethodMatcher.CallToSignature("\\Psr\\Container\\ContainerInterface", "get"),
@@ -1043,23 +1050,149 @@ public class ServiceContainerUtil {
      *  exclude: '....'
      */
     @NotNull
-    public static Collection<PhpClass> getPhpClassFromResources(@NotNull Project project, @NotNull String namespace, @NotNull VirtualFile containerFile, @NotNull Collection<String> resource, @NotNull Collection<String> exclude) {
-        Collection<PhpClass> phpClasses = new HashSet<>();
+    public static Collection<String> getPhpClassFromResources(@NotNull Project project, @NotNull String namespace, @NotNull VirtualFile containerFile, @NotNull Collection<String> resources, @NotNull Collection<String> excludes) {
+        Collection<String> phpClasses = new HashSet<>();
 
-        for (PhpClass phpClass : PhpIndexUtil.getPhpClassInsideNamespace(project, "\\" + StringUtils.strip(namespace, "\\"))) {
-            boolean classMatchesGlob = ServiceIndexUtil.matchesResourcesGlob(
+        // Normalize namespace for string matching (ensure backslash prefix)
+        String normalizedNamespace = namespace.startsWith("\\") ? namespace : "\\" + namespace;
+
+        for (String resource : resources) {
+            if (StringUtils.isBlank(resource)) {
+                continue;
+            }
+
+            // Step 1: Resolve base directory from resource pattern
+            VirtualFile baseDirectory = resolveBaseDirectoryFromResourcePattern(resource, containerFile);
+
+            // Step 2: Collect matching FQNs via index (lightweight string matching, no PSI loading)
+
+            if (baseDirectory == null) {
+                continue;
+            }
+
+            ServiceResourceGlobMatcher globMatcher = ServiceResourceGlobMatcher.create(
                 containerFile,
-                phpClass.getContainingFile().getVirtualFile(),
-                resource,
-                exclude
+                Collections.singletonList(resource),
+                excludes
             );
 
-            if (classMatchesGlob) {
-                phpClasses.add(phpClass);
+            // resource: src/* vs src/test.php
+            GlobalSearchScope scope = baseDirectory.isDirectory()
+                ? GlobalSearchScopesCore.directoriesScope(project, true, baseDirectory)
+                : GlobalSearchScope.fileScope(project, baseDirectory);
+
+            for (PhpClassResourceCandidate candidate : getPhpClassFqnsForResourceScope(project, normalizedNamespace, baseDirectory, scope)) {
+                if (!globMatcher.matches(candidate.path())) {
+                    continue;
+                }
+
+                phpClasses.add(candidate.fqn());
             }
         }
 
         return phpClasses;
+    }
+
+    /**
+     * Cached resource-scope candidates with concrete class FQN and file path for glob filtering.
+     */
+    @NotNull
+    private static Collection<PhpClassResourceCandidate> getPhpClassFqnsForResourceScope(
+        @NotNull Project project,
+        @NotNull String normalizedNamespace,
+        @NotNull VirtualFile baseDirectory,
+        @NotNull GlobalSearchScope scope
+    ) {
+        Map<String, Collection<PhpClassResourceCandidate>> cache = CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            PHP_CLASS_FQN_RESOURCE_CACHE,
+            () -> CachedValueProvider.Result.create(
+                new ConcurrentHashMap<>(),
+                FileIndexCaches.getModificationTrackerForIndexId(project, PhpClassFqnIndex.KEY)
+            ),
+            false
+        );
+
+        String cacheKey = normalizedNamespace + "|" + baseDirectory.getPath();
+
+        return cache.computeIfAbsent(cacheKey, key -> {
+            PhpIndex phpIndex = PhpIndex.getInstance(project);
+            Set<PhpClassResourceCandidate> candidates = new HashSet<>();
+            FileBasedIndex.getInstance().processAllKeys(PhpClassFqnIndex.KEY, fqn -> {
+                if (fqn.startsWith(normalizedNamespace)) {
+                    boolean hasConcreteClass = phpIndex.getClassesByFQN(fqn).stream().anyMatch(phpClass -> !phpClass.isAbstract());
+                    if (!hasConcreteClass) {
+                        return true;
+                    }
+
+                    for (VirtualFile virtualFile : FileBasedIndex.getInstance().getContainingFiles(PhpClassFqnIndex.KEY, fqn, scope)) {
+                        candidates.add(new PhpClassResourceCandidate(fqn, virtualFile.getPath()));
+                    }
+                }
+                return true;
+            }, scope, null);
+
+            return candidates;
+        });
+    }
+
+    private record PhpClassResourceCandidate(@NotNull String fqn, @NotNull String path) {
+    }
+
+    /**
+     * Extract the base directory from a resource glob pattern.
+     *
+     * Examples:
+     *   "../src/" → "../src/"
+     *   "../src/*" → "../src/"
+     *   "../src/{Foo,Bar}/*" → "../src/"
+     *   "../../{DependencyInjection,Tests}" → "../../"
+     */
+    @Nullable
+    public static VirtualFile resolveBaseDirectoryFromResourcePattern(
+        @NotNull String resourcePattern,
+        @NotNull VirtualFile containerFile
+    ) {
+        String normalizedPath = resourcePattern.replace("\\", "/");
+
+        // Find the first glob special character
+        int globIndex = -1;
+        for (int i = 0; i < normalizedPath.length(); i++) {
+            char c = normalizedPath.charAt(i);
+            if (c == '*' || c == '{' || c == '?') {
+                globIndex = i;
+                break;
+            }
+        }
+
+        String basePath;
+        if (globIndex > 0) {
+            // Extract path up to the last directory separator before glob
+            String beforeGlob = normalizedPath.substring(0, globIndex);
+            int lastSlash = beforeGlob.lastIndexOf('/');
+            basePath = lastSlash > 0 ? beforeGlob.substring(0, lastSlash) : beforeGlob;
+        } else {
+            basePath = normalizedPath;
+        }
+
+        // Remove trailing slash
+        basePath = StringUtils.stripEnd(basePath, "/");
+
+        // Handle ".." relative paths
+        VirtualFile baseDir = containerFile.getParent();
+        String[] parts = basePath.split("/");
+        for (String part : parts) {
+            if ("..".equals(part)) {
+                baseDir = baseDir != null ? baseDir.getParent() : null;
+            } else if (StringUtils.isNotBlank(part) && !".".equals(part)) {
+                baseDir = baseDir != null ? baseDir.findChild(part) : null;
+            }
+            if (baseDir == null) {
+                return null;
+            }
+        }
+
+        return baseDir;
     }
 
     /**

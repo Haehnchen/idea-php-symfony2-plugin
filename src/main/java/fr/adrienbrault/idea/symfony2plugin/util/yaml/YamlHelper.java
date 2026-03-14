@@ -1248,9 +1248,16 @@ public class YamlHelper {
                 if (containingFile != null)  {
                     VirtualFile virtualFile = containingFile.getVirtualFile();
                     if (virtualFile != null) {
-                        phpClasses.addAll(ServiceContainerUtil.getPhpClassFromResources(
-                            yamlKeyValue.getProject(), valueText, virtualFile, resource, YamlHelper.getYamlKeyValueStringOrArray(yamlKeyValue, "exclude"))
-                        );
+                        phpClasses.addAll(PhpElementsUtil.getClassesByClassFqn(
+                            yamlKeyValue.getProject(),
+                            ServiceContainerUtil.getPhpClassFromResources(
+                                yamlKeyValue.getProject(),
+                                valueText,
+                                virtualFile,
+                                resource,
+                                YamlHelper.getYamlKeyValueStringOrArray(yamlKeyValue, "exclude")
+                            )
+                        ));
                     }
                 }
             }

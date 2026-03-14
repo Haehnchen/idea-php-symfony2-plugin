@@ -499,9 +499,10 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
             return Collections.emptyList();
         }
 
-        return new HashSet<>(
+        return new HashSet<>(PhpElementsUtil.getClassesByClassFqn(
+            psiElement.getProject(),
             ServiceContainerUtil.getPhpClassFromResources(psiElement.getProject(), name, virtualFile, List.of(resource), Collections.emptyList())
-        );
+        ));
     }
 
     @NotNull

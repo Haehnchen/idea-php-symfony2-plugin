@@ -132,4 +132,12 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
     public void testThatGetKernelParametersAreCollected() {
         assertContainsElements(ContainerCollectionResolver.getParameters(getProject()).keySet(), "kernel.foobar");
     }
+
+    public void testThatResourceBasedServicesAreResolved() {
+        myFixture.copyFileToProject("ResourceFooService.php", "Service/ResourceFooService.php");
+        myFixture.copyFileToProject("resource_based_services.yml", "config/services.yml");
+
+        assertTrue(ContainerCollectionResolver.hasServiceNames(getProject(), "App\\Service\\ResourceFooService"));
+        assertNotNull(ContainerCollectionResolver.getService(getProject(), "App\\Service\\ResourceFooService"));
+    }
 }
