@@ -1,6 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.dic;
 
+import com.intellij.openapi.vfs.VirtualFile;
 import fr.adrienbrault.idea.symfony2plugin.util.service.AbstractServiceParser;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -25,8 +27,9 @@ public class XmlTagParser extends AbstractServiceParser {
         return "/container/services/service[@id]/tag[@name]";
     }
 
-    public void parser(InputStream file) {
-        NodeList nodeList = this.parserer(file);
+    @Override
+    public void parser(@NotNull InputStream inputStream, @Nullable VirtualFile sourceFile) {
+        NodeList nodeList = this.parserer(inputStream);
 
         if(nodeList == null) {
             return;

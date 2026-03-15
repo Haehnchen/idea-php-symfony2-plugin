@@ -14,7 +14,7 @@ public class ParameterServiceParserTest extends Assert {
 
         File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/config/component/parser/appDevDebugProjectContainer.xml");
         ParameterServiceParser parameterServiceParser = new ParameterServiceParser();
-        parameterServiceParser.parser(new FileInputStream(testFile));
+        parameterServiceParser.parser(new FileInputStream(testFile), null);
 
         Map<String, String> map = parameterServiceParser.getParameterMap();
 

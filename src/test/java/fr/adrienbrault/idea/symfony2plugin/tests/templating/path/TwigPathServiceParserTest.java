@@ -17,7 +17,7 @@ public class TwigPathServiceParserTest extends Assert {
         File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/path/appDevDebugProjectContainer.xml");
 
         TwigPathServiceParser parser = new TwigPathServiceParser();
-        parser.parser(new FileInputStream(testFile));
+        parser.parser(new FileInputStream(testFile), null);
 
         assertEquals("vendor\\symfony\\symfony\\src\\Symfony\\Bundle\\FrameworkBundle/Resources/views", parser.getTwigPathIndex().getNamespacePaths("Framework").get(0).getPath());
         assertEquals("vendor\\foo\\bar\\FooBundle/Resources/views", parser.getTwigPathIndex().getNamespacePaths("Framework").get(1).getPath());

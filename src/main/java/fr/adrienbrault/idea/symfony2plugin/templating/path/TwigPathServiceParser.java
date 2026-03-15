@@ -1,7 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.path;
 
+import com.intellij.openapi.vfs.VirtualFile;
 import fr.adrienbrault.idea.symfony2plugin.util.service.AbstractServiceParser;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -19,8 +21,10 @@ public class TwigPathServiceParser extends AbstractServiceParser {
         return "/container/services/service[@id[starts-with(.,'twig.loader')]]//call[@method='addPath']";
     }
 
-    public synchronized void parser(InputStream file) {
-        NodeList nodeList = this.parserer(file);
+    @Override
+    public synchronized void parser(@NotNull InputStream inputStream, @Nullable VirtualFile sourceFile) {
+        // TODO: Use sourceFile for path normalization (separate task)
+        NodeList nodeList = this.parserer(inputStream);
 
         if(nodeList == null) {
             return;

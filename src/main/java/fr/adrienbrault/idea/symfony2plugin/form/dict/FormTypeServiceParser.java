@@ -1,6 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.form.dict;
 
+import com.intellij.openapi.vfs.VirtualFile;
 import fr.adrienbrault.idea.symfony2plugin.util.service.AbstractServiceParser;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -18,8 +21,9 @@ public class FormTypeServiceParser extends AbstractServiceParser {
         return "/container/services/service[@id='form.registry']//service[@class]/argument[@type='collection'][1]/argument[@key]";
     }
 
-    public void parser(InputStream file) {
-        NodeList nodeList = this.parserer(file);
+    @Override
+    public void parser(@NotNull InputStream inputStream, @Nullable VirtualFile sourceFile) {
+        NodeList nodeList = this.parserer(inputStream);
 
         if(nodeList == null) {
             return;

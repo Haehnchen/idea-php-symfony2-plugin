@@ -18,7 +18,7 @@ public class TwigNamedAssetsServiceParserTest extends UsefulTestCase {
         File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/assets/appDevDebugProjectContainer.xml");
 
         TwigNamedAssetsServiceParser parser = new TwigNamedAssetsServiceParser();
-        parser.parser(new FileInputStream(testFile));
+        parser.parser(new FileInputStream(testFile), null);
 
         Map<String, String[]> namedAssets = parser.getNamedAssets();
         assertNotNull(namedAssets.get("jquery_js"));
