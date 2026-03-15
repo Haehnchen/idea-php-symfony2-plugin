@@ -1,22 +1,20 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.dic;
 
+import com.intellij.openapi.vfs.VfsUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlEventParser;
-import org.junit.Assert;
-import org.junit.Test;
+import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyTempCodeInsightFixtureTestCase;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Map;
 
-public class XmlEventParserTest extends Assert {
+public class XmlEventParserTest extends SymfonyTempCodeInsightFixtureTestCase {
 
-    @Test
     public void testParse() throws Exception {
-
         File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic/appDevDebugProjectContainer.xml");
 
         XmlEventParser serviceMapParser = new XmlEventParser();
-        serviceMapParser.parser(new FileInputStream(testFile), null, null);
+        serviceMapParser.parser(new FileInputStream(testFile), VfsUtil.findFileByIoFile(testFile, true), getProject());
         Map<String, String> tags = serviceMapParser.get();
 
         assertTrue(tags.containsKey("kernel.controller"));

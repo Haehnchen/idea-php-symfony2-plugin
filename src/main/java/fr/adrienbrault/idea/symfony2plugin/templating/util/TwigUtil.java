@@ -7,7 +7,6 @@ import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
-import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -1492,6 +1491,26 @@ public class TwigUtil {
             twigPaths.addAll(namespaceExtension.getNamespaces(parameter));
         }
 
+        // normalize any absolute paths from extensions to project-relative paths; drop unresolvable ones
+        List<TwigPath> normalizedPaths = new ArrayList<>();
+        for (TwigPath twigPath : twigPaths) {
+            String path = twigPath.getPath();
+            if (VfsExUtil.isAbsolutePath(path)) {
+                VirtualFile virtualFile = VfsUtil.findFileByIoFile(new java.io.File(path), false);
+                if (virtualFile == null) {
+                    continue;
+                }
+                String relativePath = VfsExUtil.getRelativeProjectPathStrict(project, virtualFile);
+                if (relativePath == null) {
+                    continue;
+                }
+                normalizedPaths.add(TwigPath.createTwigPath(relativePath, twigPath.getNamespace(), twigPath.getNamespaceType(), twigPath.isCustomPath(), twigPath.isEnabled()));
+            } else {
+                normalizedPaths.add(twigPath);
+            }
+        }
+        twigPaths = normalizedPaths;
+
         // disable namespace explicitly disabled by user
         for(int i = 0; i < twigPaths.size(); i++) {
             TwigPath twigPath = twigPaths.get(i);
@@ -1512,9 +1531,12 @@ public class TwigUtil {
             for(TwigNamespaceSetting twigNamespaceSetting: twigNamespaceSettings) {
                 if(twigNamespaceSetting.isCustom()) {
                     String path = twigNamespaceSetting.getPath();
+                    if (path == null || path.isBlank()) {
+                        continue;
+                    }
 
                     // Skip absolute paths - only relative paths are supported
-                    if(path != null && FileUtil.isAbsolute(path)) {
+                    if (VfsExUtil.isAbsolutePath(path)) {
                         continue;
                     }
 

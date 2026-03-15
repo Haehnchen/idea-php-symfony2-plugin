@@ -23,6 +23,10 @@ public class ContainerTwigNamespaceExtensionTest extends SymfonyTempCodeInsightF
         )));
 
         createFile("var/cache/dev/appDevDebugProjectContainer.xml", containerXml);
+        createFile("vendor/symfony/symfony/src/Symfony/Bundle/FrameworkBundle/Resources/views/.keep");
+        createFile("vendor/foo/bar/FooBundle/Resources/views/.keep");
+        createFile("vendor/symfony/symfony/src/Symfony/Bridge/Twig/Resources/views/Form/.keep");
+        createFile("app/Resources/views/.keep");
 
         Collection<TwigPath> namespaces = new ContainerTwigNamespaceExtension()
             .getNamespaces(new TwigNamespaceExtensionParameter(getProject()));
@@ -37,7 +41,8 @@ public class ContainerTwigNamespaceExtensionTest extends SymfonyTempCodeInsightF
             TwigUtil.MAIN.equals(p.getNamespace())
         ));
 
-        assertTrue(namespaces.stream().anyMatch(p ->
+        // absolute path without kernel.project_dir is skipped — no Twig2 namespace
+        assertFalse(namespaces.stream().anyMatch(p ->
             "Twig2".equals(p.getNamespace())
         ));
     }
