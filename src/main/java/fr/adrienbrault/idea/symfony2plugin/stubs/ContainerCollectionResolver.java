@@ -125,6 +125,10 @@ public class ContainerCollectionResolver {
                     continue;
                 }
 
+                if (!service.isAutowire()) {
+                    continue;
+                }
+
                 VirtualFile[] definitionFiles = ServiceIndexUtil.findServiceDefinitionFiles(project, serviceId);
                 if (definitionFiles.length == 0) {
                     continue;

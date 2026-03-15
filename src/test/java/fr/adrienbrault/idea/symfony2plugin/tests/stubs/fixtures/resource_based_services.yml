@@ -1,3 +1,6 @@
 services:
+    _defaults:
+        autowire: true
+
     App\Service\:
         resource: '../Service/*'

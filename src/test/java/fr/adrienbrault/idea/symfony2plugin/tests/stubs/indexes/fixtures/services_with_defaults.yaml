@@ -1,0 +1,11 @@
+services:
+    _defaults:
+        autowire: true
+        public: false
+
+    App\Service\:
+        resource: '../src/Service/*'
+
+    App\Controller2\:
+        resource: '../src/Controller2/*'
+        autowire: false
