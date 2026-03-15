@@ -14,10 +14,12 @@ import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigBlockStatement;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigBlockEmbedIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigBlockIndexExtension;
+import fr.adrienbrault.idea.symfony2plugin.templating.TwigBlockFakePsiNavigationItem;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.twig.loader.FileImplementsLazyLoader;
 import fr.adrienbrault.idea.symfony2plugin.twig.loader.FileOverwritesLazyLoader;
+import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -216,7 +218,14 @@ public class TwigBlockUtil {
             psiElements.addAll(getBlockOverwriteTargets(psiFile, blockName, scopedFile.getSecond()));
         }
 
-        return psiElements;
+        if (psiElements.size() <= 1) {
+            return psiElements;
+        }
+
+        VirtualFile projectDir = ProjectUtil.getProjectDir(psiElement);
+        return psiElements.stream()
+            .map(element -> new TwigBlockFakePsiNavigationItem(projectDir, element))
+            .collect(Collectors.toList());
     }
 
     /**

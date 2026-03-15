@@ -266,6 +266,9 @@
         <completion.contributor language="JavaScript" implementationClass="fr.adrienbrault.idea.symfony2plugin.javascript.JavascriptCompletionNavigationContributor$Completion"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.javascript.JavascriptCompletionNavigationContributor$GotoDeclaration"/>
 
+        <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TemplateRenderBlockCompletionContributor$Completion"/>
+        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.TemplateRenderBlockCompletionContributor$GotoDeclaration"/>
+
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.translation.TranslationNavigationCompletionContributor$Completion"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.translation.TranslationNavigationCompletionContributor$GotoDeclaration"/>
 
