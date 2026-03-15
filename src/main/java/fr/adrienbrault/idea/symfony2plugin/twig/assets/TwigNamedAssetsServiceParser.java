@@ -1,8 +1,10 @@
 package fr.adrienbrault.idea.symfony2plugin.twig.assets;
 
+import com.intellij.openapi.vfs.VirtualFile;
 import fr.adrienbrault.idea.symfony2plugin.util.service.AbstractServiceParser;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -24,8 +26,9 @@ public class TwigNamedAssetsServiceParser extends AbstractServiceParser {
         return "/container/services/service[@id='assetic.asset_manager']//call[@method='addResource']//service[@class='Symfony\\Bundle\\AsseticBundle\\Factory\\Resource\\ConfigurationResource']//argument/argument[@key]";
     }
 
-    public void parser(InputStream file) {
-        NodeList nodeList = this.parserer(file);
+    @Override
+    public void parser(@NotNull InputStream inputStream, @Nullable VirtualFile sourceFile) {
+        NodeList nodeList = this.parserer(inputStream);
         if(nodeList == null) {
             return;
         }

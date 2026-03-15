@@ -16,7 +16,7 @@ public class XmlTagParserTest extends Assert {
         File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic/appDevDebugProjectContainer.xml");
 
         XmlTagParser xmlTagParser = new XmlTagParser();
-        xmlTagParser.parser(new FileInputStream(testFile));
+        xmlTagParser.parser(new FileInputStream(testFile), null);
         Set<String> tags = xmlTagParser.get();
 
         assertTrue(tags.contains("twig.extension"));

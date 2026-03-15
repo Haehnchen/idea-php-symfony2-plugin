@@ -16,7 +16,7 @@ public class XmlEventParserTest extends Assert {
         File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic/appDevDebugProjectContainer.xml");
 
         XmlEventParser serviceMapParser = new XmlEventParser();
-        serviceMapParser.parser(new FileInputStream(testFile));
+        serviceMapParser.parser(new FileInputStream(testFile), null);
         Map<String, String> tags = serviceMapParser.get();
 
         assertTrue(tags.containsKey("kernel.controller"));

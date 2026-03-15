@@ -1,7 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.dic;
 
+import com.intellij.openapi.vfs.VirtualFile;
 import fr.adrienbrault.idea.symfony2plugin.util.service.AbstractServiceParser;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -21,9 +23,10 @@ public class XmlServiceParser extends AbstractServiceParser {
         return "";
     }
 
-    public void parser(InputStream file) {
+    @Override
+    public void parser(@NotNull InputStream inputStream, @Nullable VirtualFile sourceFile) {
         try {
-            this.serviceMap = new ServiceMapParser().parse(file);
+            this.serviceMap = new ServiceMapParser().parse(inputStream);
         } catch (SAXException | IOException | ParserConfigurationException ignored) {
         }
     }

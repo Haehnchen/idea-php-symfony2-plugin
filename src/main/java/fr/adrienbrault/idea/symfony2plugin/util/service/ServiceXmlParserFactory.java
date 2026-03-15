@@ -93,7 +93,7 @@ public class ServiceXmlParserFactory {
                 }
 
                 for (InputStream inputStream : args.getStreams()) {
-                    this.serviceParserInstance.parser(inputStream);
+                    this.serviceParserInstance.parser(inputStream, null);
                 }
             }
 
@@ -106,7 +106,7 @@ public class ServiceXmlParserFactory {
                 }
 
                 try {
-                    this.serviceParserInstance.parser(new FileInputStream(settingsServiceFile));
+                    this.serviceParserInstance.parser(new FileInputStream(settingsServiceFile), vf);
                 } catch (FileNotFoundException e) {
                     continue;
                 }
