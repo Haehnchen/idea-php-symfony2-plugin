@@ -82,7 +82,7 @@ public class PhpAttributeIndex extends FileBasedIndexExtension<String, List<Stri
         private static final String AS_COMMAND_ATTRIBUTE = "\\Symfony\\Component\\Console\\Attribute\\AsCommand";
 
         // Symfony dependency injection attributes on classes
-        private static final String EXCLUDE_ATTRIBUTE = "\\Symfony\\Component\\DependencyInjection\\Attribute\\Exclude";
+        public static final String EXCLUDE_ATTRIBUTE = "\\Symfony\\Component\\DependencyInjection\\Attribute\\Exclude";
 
         @Override
         public @NotNull Map<String, List<String>> map(@NotNull FileContent inputData) {

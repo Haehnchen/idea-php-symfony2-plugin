@@ -140,4 +140,22 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
         assertTrue(ContainerCollectionResolver.hasServiceNames(getProject(), "App\\Service\\ResourceFooService"));
         assertNotNull(ContainerCollectionResolver.getService(getProject(), "App\\Service\\ResourceFooService"));
     }
+
+    public void testThatResourceBasedServiceWithExcludeAttributeIsFiltered() {
+        myFixture.copyFileToProject("ExcludedService.php", "Service/ExcludedService.php");
+        myFixture.copyFileToProject("resource_based_services.yml", "config/services.yml");
+
+        assertFalse(ContainerCollectionResolver.hasServiceNames(getProject(), "App\\Service\\ExcludedService"));
+        assertNull(ContainerCollectionResolver.getService(getProject(), "App\\Service\\ExcludedService"));
+    }
+
+    public void testThatExplicitServiceWithExcludeAttributeIsFilteredFromNames() {
+        myFixture.copyFileToProject("ExcludedService.php");
+        myFixture.configureByText("exclude_explicit.yml", "" +
+            "services:\n" +
+            "    App\\Service\\ExcludedService: ~\n"
+        );
+
+        assertFalse(ContainerCollectionResolver.hasServiceNames(getProject(), "App\\Service\\ExcludedService"));
+    }
 }
