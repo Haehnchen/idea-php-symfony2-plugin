@@ -20,6 +20,7 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services.yml"));
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services.yaml"));
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services.php"));
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services_with_defaults.yaml"));
     }
 
     public String getTestDataPath() {
@@ -114,6 +115,16 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
         ServiceInterface firstValue = getFirstValue("foo.tagged.xml_type");
 
         assertContainsElements(firstValue.getTags(), "xml_type_tag");
+    }
+
+    public void testThatAutowireIsPropagatedToResourceServices() {
+        // Resource service should inherit autowire from _defaults
+        ServiceInterface resourceService = getFirstValue("app\\service\\");
+        assertTrue("Resource service should inherit autowire from _defaults", resourceService.isAutowire());
+
+        // Resource service with explicit override should not be autowired
+        ServiceInterface resourceServiceOverride = getFirstValue("app\\controller2\\");
+        assertFalse("Resource service should use explicit autowire override", resourceServiceOverride.isAutowire());
     }
 
     private ServiceInterface getFirstValue(@NotNull String key) {
