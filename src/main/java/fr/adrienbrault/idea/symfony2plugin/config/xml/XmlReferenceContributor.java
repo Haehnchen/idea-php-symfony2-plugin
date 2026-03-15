@@ -439,6 +439,10 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
         @NotNull
         @Override
         public ResolveResult @NotNull [] multiResolve(boolean b) {
+            if (com.intellij.openapi.project.DumbService.isDumb(getElement().getProject())) {
+                return ResolveResult.EMPTY_ARRAY;
+            }
+
             String value = this.psiElement.getValue();
 
 
@@ -478,6 +482,10 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
         @NotNull
         @Override
         public ResolveResult @NotNull [] multiResolve(boolean b) {
+            if (com.intellij.openapi.project.DumbService.isDumb(getElement().getProject())) {
+                return ResolveResult.EMPTY_ARRAY;
+            }
+
             String value = this.psiElement.getValue();
             return PsiElementResolveResult.createResults(ServiceUtil.getServiceClassTargets(getElement().getProject(), value));
         }
@@ -566,6 +574,10 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
         @NotNull
         @Override
         public ResolveResult @NotNull [] multiResolve(boolean b) {
+            if (com.intellij.openapi.project.DumbService.isDumb(getElement().getProject())) {
+                return ResolveResult.EMPTY_ARRAY;
+            }
+
             Method classMethod = PhpElementsUtil.getClassMethod(getElement().getProject(), aClass, method);
             if(classMethod == null) {
                 return new ResolveResult[0];
