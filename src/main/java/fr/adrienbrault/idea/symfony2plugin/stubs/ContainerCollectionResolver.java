@@ -23,6 +23,7 @@ import fr.adrienbrault.idea.symfony2plugin.extension.ServiceParameterCollectorPa
 import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerBuilderStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerParameterStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
@@ -49,6 +50,7 @@ public class ContainerCollectionResolver {
     private static final Key<CachedValue<ServiceCollector>> SYMFONY_SERVICE_COLLECTOR_CACHE = new Key<>("SYMFONY_SERVICE_COLLECTOR_CACHE");
     private static final Key<CachedValue<Map<String, ContainerService>>> RESOURCE_BASED_SERVICES_CACHE = new Key<>("SYMFONY_RESOURCE_BASED_SERVICES_CACHE");
     private static final Key<CachedValue<ParameterCollector>> SYMFONY_PARAMETER_COLLECTOR_CACHE = new Key<>("SYMFONY_PARAMETER_COLLECTOR_CACHE");
+    private static final Key<CachedValue<Set<String>>> EXCLUDED_CLASSES_CACHE = new Key<>("SYMFONY_EXCLUDED_CLASSES_CACHE");
 
     private static final ExtensionPointName<fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector> EXTENSIONS = new ExtensionPointName<>(
         "fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector"
@@ -214,6 +216,41 @@ public class ContainerCollectionResolver {
         return lazyServiceCollector.getParameterCollector().getNames().contains(parameterName);
     }
 
+
+    /**
+     * Get all class FQNs that have the #[Exclude] attribute (without leading backslash).
+     * These classes should be excluded from service discovery.
+     */
+    @NotNull
+    private static Set<String> getExcludedClasses(@NotNull Project project) {
+        return CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            EXCLUDED_CLASSES_CACHE,
+            () -> {
+                Set<String> excludedClasses = new HashSet<>();
+
+                FileBasedIndex.getInstance().processValues(
+                    PhpAttributeIndex.KEY,
+                    PhpAttributeIndex.PhpAttributeIndexer.EXCLUDE_ATTRIBUTE,
+                    null,
+                    (file, value) -> {
+                        if (!value.isEmpty()) {
+                            excludedClasses.add(value.getFirst());
+                        }
+                        return true;
+                    },
+                    GlobalSearchScope.allScope(project)
+                );
+
+                return CachedValueProvider.Result.create(
+                    excludedClasses,
+                    FileIndexCaches.getModificationTrackerForIndexId(project, PhpAttributeIndex.KEY)
+                );
+            },
+            false
+        );
+    }
+
     public static class ServiceCollector {
 
         @NotNull
@@ -362,6 +399,19 @@ public class ContainerCollectionResolver {
                 services.putAll(collectDecorated(decorated, services));
             }
 
+            // Filter out services whose class has the #[Exclude] attribute
+            Set<String> excludedClasses = getExcludedClasses(project);
+            if (!excludedClasses.isEmpty()) {
+                services.entrySet().removeIf(entry -> {
+                    for (String className : entry.getValue().getClassNames()) {
+                        if (excludedClasses.contains(StringUtils.stripStart(className, "\\"))) {
+                            return true;
+                        }
+                    }
+                    return false;
+                });
+            }
+
             return this.servicesCache = services;
         }
 
@@ -456,6 +506,12 @@ public class ContainerCollectionResolver {
             serviceNames.addAll(
                 FileIndexCaches.getIndexKeysCache(project, SERVICE_CONTAINER_INDEX_NAMES, ServicesDefinitionStubIndex.KEY)
             );
+
+            // Filter out service names whose class has the #[Exclude] attribute
+            Set<String> excludedClasses = getExcludedClasses(project);
+            if (!excludedClasses.isEmpty()) {
+                serviceNames.removeAll(excludedClasses);
+            }
 
             return this.serviceNamesCache = serviceNames;
         }
