@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.assets;
 
-import com.intellij.testFramework.UsefulTestCase;
+import com.intellij.openapi.vfs.VfsUtil;
+import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyTempCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.twig.assets.TwigNamedAssetsServiceParser;
 
 import java.io.File;
@@ -11,14 +12,13 @@ import java.util.Map;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class TwigNamedAssetsServiceParserTest extends UsefulTestCase {
+public class TwigNamedAssetsServiceParserTest extends SymfonyTempCodeInsightFixtureTestCase {
 
     public void testParse() throws Exception {
-
         File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/assets/appDevDebugProjectContainer.xml");
 
         TwigNamedAssetsServiceParser parser = new TwigNamedAssetsServiceParser();
-        parser.parser(new FileInputStream(testFile), null, null);
+        parser.parser(new FileInputStream(testFile), VfsUtil.findFileByIoFile(testFile, true), getProject());
 
         Map<String, String[]> namedAssets = parser.getNamedAssets();
         assertNotNull(namedAssets.get("jquery_js"));

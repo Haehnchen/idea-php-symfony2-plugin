@@ -16,6 +16,10 @@
                 <argument>relative/path/views</argument>
                 <argument>AlreadyRelative</argument>
             </call>
+            <call method="addPath">
+                <argument>src/Report/Resources/views</argument>
+                <argument>Report</argument>
+            </call>
         </service>
     </services>
 </container>

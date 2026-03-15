@@ -33,13 +33,12 @@ public class BundleTwigNamespaceExtensionTest extends SymfonyLightCodeInsightFix
 
         Collection<TwigPath> namespaces = new BundleTwigNamespaceExtension()
             .getNamespaces(new TwigNamespaceExtensionParameter(getProject()));
-
         assertNotNull(ContainerUtil.find(namespaces, twigPath ->
-            "FooBundle".equals(twigPath.getNamespace()) && "/src/Resources/views".equals(twigPath.getPath()))
+            "FooBundle".equals(twigPath.getNamespace()) && "Resources/views".equals(twigPath.getPath()))
         );
 
         assertNotNull(ContainerUtil.find(namespaces, twigPath ->
-            "Foo".equals(twigPath.getNamespace()) && "/src/Resources/views".equals(twigPath.getPath()))
+            "Foo".equals(twigPath.getNamespace()) && "Resources/views".equals(twigPath.getPath()))
         );
     }
 
@@ -53,11 +52,11 @@ public class BundleTwigNamespaceExtensionTest extends SymfonyLightCodeInsightFix
             .getNamespaces(new TwigNamespaceExtensionParameter(getProject()));
 
         assertNotNull(ContainerUtil.find(namespaces, twigPath ->
-            "FooBundle".equals(twigPath.getNamespace()) && twigPath.getPath().endsWith("/src/templates"))
+            "FooBundle".equals(twigPath.getNamespace()) && "templates".equals(twigPath.getPath()))
         );
 
         assertNotNull(ContainerUtil.find(namespaces, twigPath ->
-            "Foo".equals(twigPath.getNamespace()) && twigPath.getPath().endsWith("/src/templates"))
+            "Foo".equals(twigPath.getNamespace()) && "templates".equals(twigPath.getPath()))
         );
     }
 }

@@ -1,10 +1,10 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.path;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.VfsExUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.AbstractServiceParser;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -26,6 +26,7 @@ import java.io.InputStream;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TwigPathServiceParser extends AbstractServiceParser {
+
     @NotNull
     private final TwigPathIndex twigPathIndex = new TwigPathIndex();
 
@@ -35,14 +36,14 @@ public class TwigPathServiceParser extends AbstractServiceParser {
     }
 
     @Override
-    public synchronized void parser(InputStream file, @Nullable VirtualFile sourceFile, @Nullable Project project) {
+    public synchronized void parser(@NotNull InputStream file, @NotNull VirtualFile sourceFile, @NotNull Project project) {
         Document document = parseDocument(file);
         if (document == null) {
             return;
         }
 
         String kernelProjectDir = extractKernelProjectDir(document);
-        String intellijProjectRoot = findProjectRootFromContainer(project, sourceFile);
+        String symfonyRootPrefix = findSymfonyRootPrefix(project, sourceFile);
 
         NodeList nodeList = queryTwigPaths(document);
         if (nodeList == null) {
@@ -68,43 +69,43 @@ public class TwigPathServiceParser extends AbstractServiceParser {
                 }
             }
 
-            if (path != null) {
-                String resolvedPath = resolvePath(path, kernelProjectDir, intellijProjectRoot);
-                twigPathIndex.addPath(new TwigPath(resolvedPath, namespace));
+            if (path == null) {
+                continue;
+            }
+
+            // Step 1: normalize absolute paths to relative using kernel.project_dir.
+            // VfsExUtil.isAbsolutePath catches both Windows ("C:/") and Linux ("/") style paths
+            // so Docker-generated Linux paths are handled correctly on Windows too.
+            String relativePath;
+            if (VfsExUtil.isAbsolutePath(path)) {
+                if (kernelProjectDir == null) {
+                    continue;
+                }
+                relativePath = normalizeAbsolutePath(path, kernelProjectDir);
+                if (relativePath == null) {
+                    continue;
+                }
+            } else {
+                relativePath = path;
+            }
+
+            // Step 2: apply Symfony root prefix, then verify the resolved path exists in the project
+            if (symfonyRootPrefix != null && !symfonyRootPrefix.isEmpty()) {
+                relativePath = symfonyRootPrefix + "/" + relativePath;
+            }
+
+            if (existsInProjectRoot(project, relativePath)) {
+                twigPathIndex.addPath(new TwigPath(relativePath, namespace));
             }
         }
     }
 
     /**
-     * Resolve a Twig path to IntelliJ project path.
-     *
-     * 1. Normalize: absolute path + kernel.project_dir → relative path
-     * 2. Resolve: relative path + IntelliJ project root → absolute IntelliJ path
+     * Strip kernel.project_dir prefix from an absolute path to produce a relative path.
+     * Returns null if the path does not start with kernelProjectDir.
      */
-    @NotNull
-    private String resolvePath(@NotNull String path, @Nullable String kernelProjectDir, @Nullable String intellijProjectRoot) {
-        String relativePath = normalizePath(path, kernelProjectDir);
-
-        if (!FileUtil.isAbsolute(relativePath) && intellijProjectRoot != null) {
-            return intellijProjectRoot + "/" + relativePath;
-        }
-
-        return relativePath;
-    }
-
-    /**
-     * Normalize absolute path to relative using kernel.project_dir.
-     */
-    @NotNull
-    private String normalizePath(@NotNull String path, @Nullable String kernelProjectDir) {
-        if (!FileUtil.isAbsolute(path)) {
-            return path;
-        }
-
-        if (kernelProjectDir == null) {
-            return path;
-        }
-
+    @Nullable
+    private String normalizeAbsolutePath(@NotNull String path, @NotNull String kernelProjectDir) {
         String normalizedPath = path.replace('\\', '/');
         String normalizedDir = kernelProjectDir.replace('\\', '/').replaceAll("/+$", "");
 
@@ -114,19 +115,19 @@ public class TwigPathServiceParser extends AbstractServiceParser {
             return "";
         }
 
-        return path;
+        return null;
     }
 
-
     /**
-     * Find IntelliJ project root by locating "var" directory in container file path.
-     * Container is typically at: project_root/var/cache/dev/srcDevDebugProjectContainer.xml
+     * Find the Symfony project root (parent of the "var" directory in the container file path)
+     * and return its path relative to the IntelliJ project root.
      *
-     * Traversal stops at the IntelliJ project boundary — never walks above it.
+     * Returns "" when the Symfony root equals the IntelliJ project root.
+     * Returns null when the Symfony root cannot be determined or is not inside the IntelliJ project.
      */
     @Nullable
-    private String findProjectRootFromContainer(@Nullable Project project, @Nullable VirtualFile containerFile) {
-        if (containerFile == null || project == null) {
+    private String findSymfonyRootPrefix(@NotNull Project project, @Nullable VirtualFile containerFile) {
+        if (containerFile == null) {
             return null;
         }
 
@@ -134,20 +135,42 @@ public class TwigPathServiceParser extends AbstractServiceParser {
         if (intellijProjectDir == null) {
             return null;
         }
+
         String intellijProjectPath = intellijProjectDir.getPath();
 
         VirtualFile current = containerFile.getParent();
         while (current != null && current.getPath().startsWith(intellijProjectPath)) {
             if ("var".equals(current.getName())) {
-                VirtualFile projectRoot = current.getParent();
-                if (projectRoot != null) {
-                    return projectRoot.getPath();
+                VirtualFile symfonyRoot = current.getParent();
+                if (symfonyRoot == null) {
+                    return null;
                 }
+
+                String symfonyRootPath = symfonyRoot.getPath();
+                if (symfonyRootPath.equals(intellijProjectPath)) {
+                    return "";
+                } else if (symfonyRootPath.startsWith(intellijProjectPath + "/")) {
+                    return symfonyRootPath.substring(intellijProjectPath.length() + 1);
+                }
+
+                return null;
             }
             current = current.getParent();
         }
 
         return null;
+    }
+
+    /**
+     * Returns true if the given relative path exists as a directory or file under the IntelliJ project root.
+     */
+    private boolean existsInProjectRoot(@NotNull Project project, @NotNull String relativePath) {
+        VirtualFile intellijProjectDir = ProjectUtil.getProjectDir(project);
+        if (intellijProjectDir == null) {
+            return false;
+        }
+
+        return intellijProjectDir.findFileByRelativePath(relativePath.replace('\\', '/')) != null;
     }
 
     @Nullable

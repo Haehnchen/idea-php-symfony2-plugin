@@ -5,6 +5,7 @@ import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtensionParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.VfsExUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyBundle;
 import org.jetbrains.annotations.NotNull;
 
@@ -26,8 +27,10 @@ public class BundleTwigNamespaceExtension implements TwigNamespaceExtension {
         Collection<SymfonyBundle> symfonyBundles = new SymfonyBundleUtil(parameter.getProject()).getBundles();
         for (SymfonyBundle bundle : symfonyBundles) {
             for (PsiDirectory views : bundle.getTemplateDirectories()) {
-                // @TODO: use relative path and make os independent
-                String path = views.getVirtualFile().getPath();
+                String path = VfsExUtil.getRelativeProjectPathStrict(parameter.getProject(), views.getVirtualFile());
+                if (path == null) {
+                    continue;
+                }
 
                 String bundleName = bundle.getName();
 

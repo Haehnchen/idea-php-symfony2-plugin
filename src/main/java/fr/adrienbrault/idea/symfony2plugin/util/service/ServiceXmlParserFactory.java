@@ -92,8 +92,8 @@ public class ServiceXmlParserFactory {
                     builder.build(args);
                 }
 
-                for (InputStream inputStream : args.getStreams()) {
-                    this.serviceParserInstance.parser(inputStream, null, project);
+                for (CompiledServiceBuilderArguments.StreamEntry entry : args.getStreams()) {
+                    this.serviceParserInstance.parser(entry.stream(), entry.virtualFile(), project);
                 }
             }
 

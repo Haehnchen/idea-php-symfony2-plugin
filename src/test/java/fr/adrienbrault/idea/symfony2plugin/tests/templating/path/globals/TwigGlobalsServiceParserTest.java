@@ -1,27 +1,24 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.path.globals;
 
+import com.intellij.openapi.vfs.VfsUtil;
+import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyTempCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.twig.variable.globals.TwigGlobalEnum;
 import fr.adrienbrault.idea.symfony2plugin.twig.variable.globals.TwigGlobalsServiceParser;
-import org.junit.Assert;
-import org.junit.Test;
 
 import java.io.File;
 import java.io.FileInputStream;
 
-public class TwigGlobalsServiceParserTest extends Assert {
+public class TwigGlobalsServiceParserTest extends SymfonyTempCodeInsightFixtureTestCase {
 
-    @Test
     public void testParse() throws Exception {
-
         File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/path/globals/appDevDebugProjectContainer.xml");
 
         TwigGlobalsServiceParser parser = new TwigGlobalsServiceParser();
-        parser.parser(new FileInputStream(testFile), null, null);
+        parser.parser(new FileInputStream(testFile), VfsUtil.findFileByIoFile(testFile, true), getProject());
 
         assertEquals("templating.globals", parser.getTwigGlobals().get("app").getValue());
         assertEquals(TwigGlobalEnum.SERVICE, parser.getTwigGlobals().get("app").getTwigGlobalEnum());
         assertEquals("1.2", parser.getTwigGlobals().get("version").getValue());
-
     }
 
 }
