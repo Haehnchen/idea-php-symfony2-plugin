@@ -9,7 +9,9 @@ import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.psi.util.PsiModificationTracker;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionScalarArgument;
+import fr.adrienbrault.idea.symfony2plugin.dic.ConsoleCommandServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeIndexUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyCommand;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -59,7 +61,16 @@ public class SymfonyCommandUtil {
             false
         );
 
-        return cachedValue.entrySet().stream()
+        // Fallback: compiled container XML for commands tagged with "console.command" (e.g., Doctrine)
+        Map<String, String> result = new HashMap<>(cachedValue);
+        ConsoleCommandServiceParser compiledParser = ServiceXmlParserFactory.getInstance(project, ConsoleCommandServiceParser.class);
+        if (compiledParser != null) {
+            for (Map.Entry<String, String> entry : compiledParser.getCommands().entrySet()) {
+                result.putIfAbsent(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return result.entrySet().stream()
             .map(entry -> new SymfonyCommand(entry.getKey(), entry.getValue()))
             .collect(Collectors.toList());
     }

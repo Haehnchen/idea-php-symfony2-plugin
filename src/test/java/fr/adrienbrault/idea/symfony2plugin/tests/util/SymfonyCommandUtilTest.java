@@ -39,6 +39,24 @@ public class SymfonyCommandUtilTest extends SymfonyLightCodeInsightFixtureTestCa
     }
 
     /**
+     * @see SymfonyCommandUtil#getCommands
+     */
+    public void testGetCommandsFqnAndModernInvokable() {
+        myFixture.copyFileToProject("SymfonyCommandUtilModernTest.php");
+
+        Collection<SymfonyCommand> commands = SymfonyCommandUtil.getCommands(getProject());
+
+        // FQN is correctly mapped for a classic AsCommand class
+        SymfonyCommand cmd = commands.stream().filter(c -> "app:create-user-1".equals(c.getName())).findFirst().orElseThrow();
+        assertEquals("\\Foo\\FoobarCommand1", cmd.getFqn());
+
+        // Modern #[AsCommand] without extends Command is included (must be in its own file —
+        // PhpAttributeIndex keeps one entry per attribute key per file, so sharing a file with
+        // other #[AsCommand] classes would overwrite this entry)
+        assertTrue(commands.stream().anyMatch(c -> "app:modern-invokable".equals(c.getName())));
+    }
+
+    /**
      * @see SymfonyCommandUtil#getCommandOptions
      */
     public void testGetCommandOptionsFromTraditionalCommand() {
