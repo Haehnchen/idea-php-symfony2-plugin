@@ -21,13 +21,19 @@ import icons.TwigIcons;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
  * Based on Twig content add overlay to the default Twig file icon, indicating the possible template type
+ *
+ * Icon positions:
+ * - Controller: top left (NORTH_WEST)
+ * - Extends: bottom left (SOUTH_WEST)
+ * - Include: bottom right (SOUTH_EAST)
  *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -48,34 +54,39 @@ public class TwigIconProvider extends IconProvider {
             return null;
         }
 
-        // attach controller icon overlay
-        LayeredIcon icon = null;
+        // Collect all badge icons with their positions
+        List<BadgeIcon> badges = new ArrayList<>();
 
+        // Controller: top left
         if (hasController(twigFile, templateNames)) {
-            icon = LayeredIcon.layeredIcon(new Icon[]{TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_CONTROLLER_FILE});
-            icon.setIcon(Symfony2Icons.TWIG_CONTROLLER_FILE, 1, SwingConstants.NORTH_WEST);
+            badges.add(new BadgeIcon(Symfony2Icons.TWIG_CONTROLLER_FILE, SwingConstants.NORTH_WEST));
         }
 
-        // file provides extends tag, add another layer on top; but put the layer below the previous layer if provided
+        // Extends: bottom left
         if (hasFileExtendsTag(project, virtualFile)) {
-            if (icon == null) {
-                // we are alone so just place the icon
-                icon = LayeredIcon.layeredIcon(new Icon[]{TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_EXTENDS_FILE});
-                icon.setIcon(Symfony2Icons.TWIG_EXTENDS_FILE, 1, SwingConstants.NORTH_WEST);
-            } else {
-                // icon should be below first one
-                icon.setIcon(Symfony2Icons.TWIG_EXTENDS_FILE, 1, 0, Symfony2Icons.TWIG_CONTROLLER_FILE.getIconHeight() + 1);
-            }
+            badges.add(new BadgeIcon(Symfony2Icons.TWIG_EXTENDS_FILE, SwingConstants.SOUTH_WEST));
         }
 
-        // template is included by other templates, add badge icon in bottom-right corner
+        // Include: bottom right
         if (isIncludedByOtherTemplates(project, templateNames)) {
-            if (icon == null) {
-                icon = LayeredIcon.layeredIcon(new Icon[]{TwigIcons.TwigFileIcon, Symfony2Icons.TWIG_IMPLEMENTS_FILE});
-                icon.setIcon(Symfony2Icons.TWIG_IMPLEMENTS_FILE, 1, SwingConstants.SOUTH_EAST);
-            } else {
-                icon.setIcon(Symfony2Icons.TWIG_IMPLEMENTS_FILE, 1, SwingConstants.SOUTH_EAST);
-            }
+            badges.add(new BadgeIcon(Symfony2Icons.TWIG_IMPLEMENTS_FILE, SwingConstants.SOUTH_EAST));
+        }
+
+        if (badges.isEmpty()) {
+            return null;
+        }
+
+        // Build layered icon
+        Icon[] layers = new Icon[badges.size() + 1];
+        layers[0] = TwigIcons.TwigFileIcon;
+        for (int i = 0; i < badges.size(); i++) {
+            layers[i + 1] = badges.get(i).icon;
+        }
+
+        LayeredIcon icon = LayeredIcon.layeredIcon(layers);
+        for (int i = 0; i < badges.size(); i++) {
+            BadgeIcon badge = badges.get(i);
+            icon.setIcon(badge.icon, i + 1, badge.position);
         }
 
         return icon;
@@ -115,4 +126,9 @@ public class TwigIconProvider extends IconProvider {
 
         return false;
     }
+
+    /**
+     * Holds an icon badge with its target position
+     */
+    private record BadgeIcon(Icon icon, int position) {}
 }
