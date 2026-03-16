@@ -198,7 +198,7 @@ object AssetMapperUtil {
     }
 
     private fun getEntrypointMappings(project: Project): List<AssetMapperModule> {
-        return getMappingFiles(project).filter { it.entrypoint != null && it.entrypoint!! }
+        return getMappingFiles(project).filter { it.entrypoint == true }
     }
 
     @JvmStatic
