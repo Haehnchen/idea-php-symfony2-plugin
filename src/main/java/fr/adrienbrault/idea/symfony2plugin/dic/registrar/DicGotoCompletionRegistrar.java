@@ -111,7 +111,12 @@ public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
                 // #[Autoconfigure(['app.some_tag'])]
                 // #[Autoconfigure(tags: ['app.some_tag'])]
                 PhpElementsUtil.getFirstAttributeArrayStringPattern(ServiceContainerUtil.AUTOCONFIGURE_ATTRIBUTE_CLASS),
-                PhpElementsUtil.getAttributeNamedArgumentArrayStringPattern(ServiceContainerUtil.AUTOCONFIGURE_ATTRIBUTE_CLASS, "tags")
+                PhpElementsUtil.getAttributeNamedArgumentArrayStringPattern(ServiceContainerUtil.AUTOCONFIGURE_ATTRIBUTE_CLASS, "tags"),
+
+                // #[AutoconfigureTag('app.handler')]
+                // #[AutoconfigureTag(name: 'app.handler')]
+                PhpElementsUtil.getFirstAttributeStringPattern(ServiceContainerUtil.AUTOCONFIGURE_TAG_ATTRIBUTE_CLASS),
+                PhpElementsUtil.getAttributeNamedArgumentStringPattern(ServiceContainerUtil.AUTOCONFIGURE_TAG_ATTRIBUTE_CLASS, "name")
             ), psiElement -> {
                 PsiElement context = psiElement.getContext();
                 if (!(context instanceof StringLiteralExpression)) {
