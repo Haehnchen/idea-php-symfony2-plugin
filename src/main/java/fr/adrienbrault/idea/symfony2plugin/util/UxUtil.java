@@ -33,8 +33,10 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigComponentUsageStubI
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.UxTemplateStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.util.IndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
+import fr.adrienbrault.idea.symfony2plugin.templating.path.UxComponentTemplateFinderParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.TwigComponentNamespace;
 import kotlin.Pair;
 import org.apache.commons.lang3.StringUtils;
@@ -195,6 +197,7 @@ public class UxUtil {
     private static Set<String> getAnonymousTemplateDirectories(@NotNull Project project) {
         Set<String> list = new HashSet<>();
 
+        // Source A: YAML config via index (twig_component.anonymous_template_directory)
         for (String key : IndexUtil.getAllKeysForProject(ConfigStubIndex.KEY, project)) {
             for (ConfigIndex value : FileBasedIndex.getInstance().getValues(ConfigStubIndex.KEY, key, GlobalSearchScope.allScope(project))) {
                 if ("anonymous_template_directory".equals(value.getName())) {
@@ -203,7 +206,13 @@ public class UxUtil {
             }
         }
 
-        // provide default, is there was noting found
+        // Source B: compiled container XML (ux.twig_component.component_template_finder second argument)
+        UxComponentTemplateFinderParser containerParser = ServiceXmlParserFactory.getInstance(project, UxComponentTemplateFinderParser.class);
+        if (containerParser != null) {
+            list.addAll(containerParser.getTemplateDirectories());
+        }
+
+        // provide default if nothing was found
         if (list.isEmpty()) {
             list.add("components/");
         }

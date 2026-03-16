@@ -105,7 +105,7 @@ public class TwigPathServiceParser extends AbstractServiceParser {
      * Returns null if the path does not start with kernelProjectDir.
      */
     @Nullable
-    private String normalizeAbsolutePath(@NotNull String path, @NotNull String kernelProjectDir) {
+    static String normalizeAbsolutePath(@NotNull String path, @NotNull String kernelProjectDir) {
         String normalizedPath = path.replace('\\', '/');
         String normalizedDir = kernelProjectDir.replace('\\', '/').replaceAll("/+$", "");
 
@@ -126,7 +126,7 @@ public class TwigPathServiceParser extends AbstractServiceParser {
      * Returns null when the Symfony root cannot be determined or is not inside the IntelliJ project.
      */
     @Nullable
-    private String findSymfonyRootPrefix(@NotNull Project project, @Nullable VirtualFile containerFile) {
+    static String findSymfonyRootPrefix(@NotNull Project project, @Nullable VirtualFile containerFile) {
         if (containerFile == null) {
             return null;
         }
@@ -164,7 +164,7 @@ public class TwigPathServiceParser extends AbstractServiceParser {
     /**
      * Returns true if the given relative path exists as a directory or file under the IntelliJ project root.
      */
-    private boolean existsInProjectRoot(@NotNull Project project, @NotNull String relativePath) {
+    static boolean existsInProjectRoot(@NotNull Project project, @NotNull String relativePath) {
         VirtualFile intellijProjectDir = ProjectUtil.getProjectDir(project);
         if (intellijProjectDir == null) {
             return false;
@@ -174,7 +174,7 @@ public class TwigPathServiceParser extends AbstractServiceParser {
     }
 
     @Nullable
-    private String extractKernelProjectDir(@NotNull Document document) {
+    static String extractKernelProjectDir(@NotNull Document document) {
         try {
             XPath xpath = XPathFactory.newInstance().newXPath();
             XPathExpression expr = xpath.compile(

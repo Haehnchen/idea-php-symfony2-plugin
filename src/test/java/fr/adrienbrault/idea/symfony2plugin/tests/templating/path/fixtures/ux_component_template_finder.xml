@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<container>
+    <parameters>
+        <parameter key="kernel.project_dir">/app</parameter>
+    </parameters>
+    <services>
+        <service id="ux.twig_component.component_template_finder"
+                 class="Symfony\UX\TwigComponent\ComponentTemplateFinder">
+            <argument type="service" id="twig.loader.native_filesystem"/>
+            <argument>foobar-ux/</argument>
+        </service>
+    </services>
+</container>
