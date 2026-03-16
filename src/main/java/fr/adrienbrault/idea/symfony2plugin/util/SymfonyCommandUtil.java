@@ -75,16 +75,6 @@ public class SymfonyCommandUtil {
             .collect(Collectors.toList());
     }
 
-    public static boolean isSymfonyConsoleCommand(@NotNull String commandText) {
-        String trimmed = commandText.trim();
-        return trimmed.startsWith("bin/console ") ||
-            trimmed.startsWith("console ") ||
-            trimmed.startsWith("symfony console ") ||
-            trimmed.equals("bin/console") ||
-            trimmed.equals("console") ||
-            trimmed.equals("symfony console");
-    }
-
     /**
      * Collects all available option names and shortcuts from a command class.
      * Supports both traditional configure() methods with addOption() calls
