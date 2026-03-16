@@ -247,8 +247,6 @@
 
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.ConstantEnumCompletionContributor"/>
         <completion.contributor language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.QueryBuilderCompletionContributor"/>
-        <completion.contributor language="any" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.command.CommandNameTerminalCompletionContributor"/>
-        <completion.contributor language="any" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.command.CommandOptionTerminalCompletionContributor"/>
         <completion.contributor language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.xml.XmlCompletionContributor"/>
         <annotator language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.annotation.TwigVarCommentAnnotator"/>
         <completion.contributor language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor"/>
@@ -891,7 +889,6 @@
     <depends>JavaScript</depends>
     <depends>com.intellij.modules.platform</depends>
     <depends>org.jetbrains.plugins.yaml</depends>
-    <depends>org.jetbrains.plugins.terminal</depends>
     <depends config-file="annotation.xml">de.espend.idea.php.annotation</depends>
 
     <depends config-file="dql.xml" optional="true" >com.jetbrains.php.dql</depends>
