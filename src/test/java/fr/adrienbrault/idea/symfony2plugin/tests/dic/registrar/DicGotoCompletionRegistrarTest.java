@@ -290,6 +290,36 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
         );
     }
 
+    public void testTagContributorForAutoconfigureTagAttribute() {
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\AutoconfigureTag;\n" +
+                "#[AutoconfigureTag('<caret>')]\n" +
+                "class MyHandler {}",
+            "yaml_type_tag"
+        );
+
+        assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\AutoconfigureTag;\n" +
+                "#[AutoconfigureTag('yaml_<caret>type_tag')]\n" +
+                "class MyHandler {}",
+            PlatformPatterns.psiElement()
+        );
+
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\AutoconfigureTag;\n" +
+                "#[AutoconfigureTag(name: '<caret>')]\n" +
+                "class MyHandler {}",
+            "yaml_type_tag"
+        );
+
+        assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\Attribute\\AutoconfigureTag;\n" +
+                "#[AutoconfigureTag(name: 'yaml_<caret>type_tag')]\n" +
+                "class MyHandler {}",
+            PlatformPatterns.psiElement()
+        );
+    }
+
     public void testTagContributorForWhenAttribute() {
         assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
                 "use Symfony\\Component\\DependencyInjection\\Attribute\\When;\n" +
