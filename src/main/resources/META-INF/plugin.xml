@@ -303,9 +303,9 @@
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.StimulusControllerStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.vite.ViteEntryStubIndex"/>
+        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.vite.ViteTwigUsageStubIndex"/>
 
         <codeInsight.lineMarkerProvider language="JavaScript" implementationClass="fr.adrienbrault.idea.symfony2plugin.vite.ViteJavaScriptLineMarkerProvider"/>
-        <codeInsight.lineMarkerProvider language="TypeScript" implementationClass="fr.adrienbrault.idea.symfony2plugin.vite.ViteJavaScriptLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.ServiceLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.ControllerMethodLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigLineMarkerProvider"/>

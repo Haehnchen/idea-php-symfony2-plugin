@@ -17,14 +17,12 @@ import com.intellij.util.io.KeyDescriptor
  *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
+@JvmField
+val VITE_ENTRY_STUB_INDEX_KEY: ID<String, String> = ID.create("fr.adrienbrault.idea.symfony2plugin.vite_entry_index")
+
 class ViteEntryStubIndex : FileBasedIndexExtension<String, String>() {
 
-    companion object {
-        @JvmField
-        val KEY: ID<String, String> = ID.create("fr.adrienbrault.idea.symfony2plugin.vite_entry_index")
-    }
-
-    override fun getName(): ID<String, String> = KEY
+    override fun getName(): ID<String, String> = VITE_ENTRY_STUB_INDEX_KEY
 
     override fun getKeyDescriptor(): KeyDescriptor<String> = EnumeratorStringDescriptor.INSTANCE
 
@@ -46,7 +44,6 @@ class ViteEntryStubIndex : FileBasedIndexExtension<String, String>() {
             val entries = ViteConfigParser().parseEntries(psiFile)
             for (entry in entries) {
                 val raw = entry.targetPath ?: continue
-                // Normalize: strip leading "./" or "/" so paths are comparable
                 val normalized = raw.removePrefix("./").removePrefix("/")
                 if (normalized.isNotEmpty()) {
                     result[normalized] = entry.name
