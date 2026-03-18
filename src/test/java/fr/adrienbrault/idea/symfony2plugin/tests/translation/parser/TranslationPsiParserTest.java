@@ -5,6 +5,7 @@ import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringM
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -31,5 +32,14 @@ public class TranslationPsiParserTest extends SymfonyLightCodeInsightFixtureTest
 
         assertTrue(!translationStringMap.getDomainMap("my_intl_icu_domain").isEmpty());
         assertTrue(translationStringMap.getDomainMap("my_intl_icu_domain").contains("messages_intl_icu_key"));
+    }
+
+    public void testCompiledTranslationParserOnBackgroundThread() throws Exception {
+        TranslationStringMap translationStringMap = CompletableFuture
+            .supplyAsync(() -> TranslationStringMap.create(getProject(), List.of(new File(getTestDataPath()))))
+            .get();
+
+        assertNotNull(translationStringMap.getDomainMap("validators"));
+        assertTrue(translationStringMap.getDomainMap("validators").contains("This value should be false."));
     }
 }
