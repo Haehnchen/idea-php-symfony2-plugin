@@ -9,7 +9,7 @@ import com.intellij.util.io.KeyDescriptor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceSerializable;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.SerializableServiceExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.inputFilter.FileInputFilter;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import org.jetbrains.annotations.NotNull;
@@ -28,7 +28,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
 
     public static final ID<String, ServiceSerializable> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.service_definition");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
-    private static final ObjectStreamDataExternalizer<ServiceSerializable> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
+    private static final SerializableServiceExternalizer EXTERNALIZER = SerializableServiceExternalizer.INSTANCE;
 
     @NotNull
     @Override
@@ -82,7 +82,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
 
     @Override
     public int getVersion() {
-        return 7;
+        return 8;
     }
 
     public static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {

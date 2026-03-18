@@ -18,7 +18,7 @@ import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ContainerBuilderCall;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ContainerBuilderCallExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import one.util.streamex.StreamEx;
@@ -39,7 +39,7 @@ public class ContainerBuilderStubIndex extends FileBasedIndexExtension<String, C
 
     public static final ID<String, ContainerBuilderCall> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.container_builder");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
-    private final static ObjectStreamDataExternalizer<ContainerBuilderCall> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
+    private final static ContainerBuilderCallExternalizer EXTERNALIZER = ContainerBuilderCallExternalizer.INSTANCE;
 
     private static final int MAX_FILE_BYTE_SIZE = 2621440;
 
@@ -112,7 +112,7 @@ public class ContainerBuilderStubIndex extends FileBasedIndexExtension<String, C
 
     @Override
     public int getVersion() {
-        return 2;
+        return 3;
     }
 
     private static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {

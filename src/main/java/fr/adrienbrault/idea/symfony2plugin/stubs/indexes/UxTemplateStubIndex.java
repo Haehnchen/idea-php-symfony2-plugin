@@ -7,7 +7,7 @@ import com.intellij.util.io.KeyDescriptor;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.stubs.indexes.PhpConstantNameIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.UxComponent;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.UxComponentExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -19,7 +19,7 @@ import java.util.Map;
  */
 public class UxTemplateStubIndex extends FileBasedIndexExtension<String, UxComponent> {
     public static final ID<String, UxComponent> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.ux_template_index");
-    private static final ObjectStreamDataExternalizer<UxComponent> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
+    private static final UxComponentExternalizer EXTERNALIZER = UxComponentExternalizer.INSTANCE;
 
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
     @Override
@@ -52,7 +52,7 @@ public class UxTemplateStubIndex extends FileBasedIndexExtension<String, UxCompo
 
     @Override
     public int getVersion() {
-        return 3;
+        return 4;
     }
 
     public FileBasedIndex.@NotNull InputFilter getInputFilter() {

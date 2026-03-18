@@ -21,7 +21,7 @@ import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StimulusController;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.StimulusControllerExternalizer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,7 +37,7 @@ import java.util.*;
  */
 public class StimulusControllerStubIndex extends FileBasedIndexExtension<String, StimulusController> {
     public static final ID<String, StimulusController> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.stimulus_controller_index");
-    private static final ObjectStreamDataExternalizer<StimulusController> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
+    private static final StimulusControllerExternalizer EXTERNALIZER = StimulusControllerExternalizer.INSTANCE;
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
 
     @Override
@@ -437,7 +437,7 @@ public class StimulusControllerStubIndex extends FileBasedIndexExtension<String,
 
     @Override
     public int getVersion() {
-        return 6;
+        return 7;
     }
 
     @Override
