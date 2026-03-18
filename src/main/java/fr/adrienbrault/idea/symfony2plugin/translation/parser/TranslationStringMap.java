@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.translation.parser;
 
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -11,8 +12,6 @@ import com.jetbrains.php.lang.psi.elements.*;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import gnu.trove.THashSet;
 
 import java.io.File;
 import java.io.IOException;
@@ -75,7 +74,7 @@ public class TranslationStringMap {
         Map<String, Set<String>> merged = new HashMap<>();
 
         for (FileData fileData : perFileData) {
-            fileData.domainMap().forEach((domain, keys) -> merged.computeIfAbsent(domain, k -> new THashSet<>()).addAll(keys));
+            fileData.domainMap().forEach((domain, keys) -> merged.computeIfAbsent(domain, k -> new HashSet<>()).addAll(keys));
         }
 
         Map<String, Set<String>> result = new HashMap<>(merged.size());
@@ -91,34 +90,36 @@ public class TranslationStringMap {
     private record FileData(@NotNull Map<String, Set<String>> domainMap) {
         @NotNull
         public static FileData parse(@NotNull Project project, @NotNull VirtualFile virtualFile) {
-            PsiFile psiFile;
-            try {
-                String content = VfsUtil.loadText(virtualFile);
-                psiFile = PhpPsiElementFactory.createPsiFileFromText(project, content);
-            } catch (IOException e) {
-                return empty();
-            }
-
-            if (psiFile == null) {
-                return empty();
-            }
-
-            // local mutable accumulator — never escapes this method
-            Map<String, Set<String>> data = new HashMap<>();
-
-            for (NewExpression newExpression : PsiTreeUtil.collectElementsOfType(psiFile, NewExpression.class)) {
-                ClassReference classReference = newExpression.getClassReference();
-                if (classReference == null) {
-                    continue;
+            return ReadAction.compute(() -> {
+                PsiFile psiFile;
+                try {
+                    String content = VfsUtil.loadText(virtualFile);
+                    psiFile = PhpPsiElementFactory.createPsiFileFromText(project, content);
+                } catch (IOException e) {
+                    return empty();
                 }
-                if ("\\Symfony\\Component\\Translation\\MessageCatalogue".equals(classReference.getFQN())) {
-                    collectMessages(newExpression, data);
-                }
-            }
 
-            Map<String, Set<String>> result = new HashMap<>(data.size());
-            data.forEach((k, v) -> result.put(k, Set.copyOf(v)));
-            return new FileData(Map.copyOf(result));
+                if (psiFile == null) {
+                    return empty();
+                }
+
+                // local mutable accumulator — never escapes this method
+                Map<String, Set<String>> data = new HashMap<>();
+
+                for (NewExpression newExpression : PsiTreeUtil.collectElementsOfType(psiFile, NewExpression.class)) {
+                    ClassReference classReference = newExpression.getClassReference();
+                    if (classReference == null) {
+                        continue;
+                    }
+                    if ("\\Symfony\\Component\\Translation\\MessageCatalogue".equals(classReference.getFQN())) {
+                        collectMessages(newExpression, data);
+                    }
+                }
+
+                Map<String, Set<String>> result = new HashMap<>(data.size());
+                data.forEach((k, v) -> result.put(k, Set.copyOf(v)));
+                return new FileData(Map.copyOf(result));
+            });
         }
 
         @NotNull
@@ -151,7 +152,7 @@ public class TranslationStringMap {
                     continue;
                 }
 
-                data.putIfAbsent(transDomain, new THashSet<>());
+                data.putIfAbsent(transDomain, new HashSet<>());
 
                 PhpPsiElement arrayValue = arrayHashElement.getValue();
                 if (arrayValue instanceof ArrayCreationExpression) {
@@ -164,7 +165,7 @@ public class TranslationStringMap {
             for (ArrayHashElement arrayHashElement : PsiTreeUtil.getChildrenOfTypeAsList(translationArray, ArrayHashElement.class)) {
                 PhpPsiElement translationKey = arrayHashElement.getKey();
                 if (translationKey instanceof StringLiteralExpression) {
-                    data.computeIfAbsent(domain, k -> new THashSet<>()).add(((StringLiteralExpression) translationKey).getContents());
+                    data.computeIfAbsent(domain, k -> new HashSet<>()).add(((StringLiteralExpression) translationKey).getContents());
                 }
             }
         }
