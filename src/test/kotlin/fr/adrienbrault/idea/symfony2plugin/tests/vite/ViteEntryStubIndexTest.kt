@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.vite
 
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
+import fr.adrienbrault.idea.symfony2plugin.vite.VITE_ENTRY_STUB_INDEX_KEY
 import fr.adrienbrault.idea.symfony2plugin.vite.ViteEntryStubIndex
 
 /**
@@ -26,7 +27,7 @@ class ViteEntryStubIndexTest : SymfonyLightCodeInsightFixtureTestCase() {
             """.trimIndent()
         )
 
-        assertIndexContainsKeyWithValue(ViteEntryStubIndex.KEY, "assets/app.ts", "app")
+        assertIndexContainsKeyWithValue(VITE_ENTRY_STUB_INDEX_KEY, "assets/app.ts", "app")
     }
 
     fun testMultipleEntriesAreIndexed() {
@@ -47,8 +48,8 @@ class ViteEntryStubIndexTest : SymfonyLightCodeInsightFixtureTestCase() {
             """.trimIndent()
         )
 
-        assertIndexContainsKeyWithValue(ViteEntryStubIndex.KEY, "assets/app.ts", "app")
-        assertIndexContainsKeyWithValue(ViteEntryStubIndex.KEY, "assets/admin.js", "admin")
+        assertIndexContainsKeyWithValue(VITE_ENTRY_STUB_INDEX_KEY, "assets/app.ts", "app")
+        assertIndexContainsKeyWithValue(VITE_ENTRY_STUB_INDEX_KEY, "assets/admin.js", "admin")
     }
 
     fun testPathWithoutLeadingDotSlashIsNormalized() {
@@ -68,7 +69,7 @@ class ViteEntryStubIndexTest : SymfonyLightCodeInsightFixtureTestCase() {
             """.trimIndent()
         )
 
-        assertIndexContainsKeyWithValue(ViteEntryStubIndex.KEY, "assets/app.ts", "app")
+        assertIndexContainsKeyWithValue(VITE_ENTRY_STUB_INDEX_KEY, "assets/app.ts", "app")
     }
 
     fun testTypeScriptConfigIsIndexed() {
@@ -88,7 +89,7 @@ class ViteEntryStubIndexTest : SymfonyLightCodeInsightFixtureTestCase() {
             """.trimIndent()
         )
 
-        assertIndexContainsKeyWithValue(ViteEntryStubIndex.KEY, "assets/main.ts", "main")
+        assertIndexContainsKeyWithValue(VITE_ENTRY_STUB_INDEX_KEY, "assets/main.ts", "main")
     }
 
     fun testSpreadEntriesAreIndexed() {
@@ -112,7 +113,7 @@ class ViteEntryStubIndexTest : SymfonyLightCodeInsightFixtureTestCase() {
             """.trimIndent()
         )
 
-        assertIndexContainsKeyWithValue(ViteEntryStubIndex.KEY, "assets/app.ts", "app")
-        assertIndexContainsKeyWithValue(ViteEntryStubIndex.KEY, "assets/extra.js", "extra")
+        assertIndexContainsKeyWithValue(VITE_ENTRY_STUB_INDEX_KEY, "assets/app.ts", "app")
+        assertIndexContainsKeyWithValue(VITE_ENTRY_STUB_INDEX_KEY, "assets/extra.js", "extra")
     }
 }

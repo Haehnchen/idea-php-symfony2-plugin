@@ -71,6 +71,7 @@ Test files use dummy fixtures via `myFixture.addFileToProject()` to simulate Sym
 
 - **Performance:** Always use indexes and caching (`CachedValue`, `CachedValuesManager`) for expensive operations. Never iterate all files in the project directly.
 - **Thread Safety:** Follow IntelliJ's threading model - read actions for PSI access, write actions for modifications. Most operations should be read-only.
+- **Kotlin: Companion** Follow Rule: Companion objects in IDE extension implementations may only contain a logger and constants
 
 ## Common Development Patterns
 

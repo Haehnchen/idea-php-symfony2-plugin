@@ -34,7 +34,9 @@ class ViteGotoCompletionRegistrar : GotoCompletionRegistrar {
     private class ViteEntryProvider(element: PsiElement) : GotoCompletionProvider(element) {
 
         override fun getLookupElements(): Collection<LookupElement> {
-            return ViteUtil.getEntries(project).map { entry ->
+            val seen = mutableSetOf<String>()
+            return ViteUtil.getEntries(project).mapNotNull { entry ->
+                if (!seen.add(entry.name)) return@mapNotNull null
                 LookupElementBuilder.create(entry.name)
                     .withIcon(Symfony2Icons.SYMFONY)
                     .withTypeText(entry.targetPath ?: entry.configFile.name)
@@ -45,7 +47,7 @@ class ViteGotoCompletionRegistrar : GotoCompletionRegistrar {
             val contents = element.text
             if (StringUtils.isBlank(contents)) return emptyList()
 
-            val targets = mutableListOf<PsiElement>()
+            val targets = mutableSetOf<PsiElement>()
 
             for (entry in ViteUtil.getEntries(project)) {
                 if (entry.name == contents) {
