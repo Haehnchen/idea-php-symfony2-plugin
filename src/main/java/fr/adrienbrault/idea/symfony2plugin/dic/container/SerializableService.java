@@ -89,6 +89,11 @@ public class SerializableService implements ServiceSerializable {
         return this;
     }
 
+    @Nullable
+    public Boolean isPublicNullable() {
+        return isPublic;
+    }
+
     public SerializableService setIsPublic(@Nullable Boolean isPublic) {
         this.isPublic = isPublic;
         return this;
@@ -97,6 +102,11 @@ public class SerializableService implements ServiceSerializable {
     @Override
     public boolean isLazy() {
         return isLazy != null ? isLazy : false;
+    }
+
+    @Nullable
+    public Boolean isLazyNullable() {
+        return isLazy;
     }
 
     public SerializableService setIsLazy(@Nullable Boolean isLazy) {
@@ -109,6 +119,11 @@ public class SerializableService implements ServiceSerializable {
         return isAbstract != null ? isAbstract : false;
     }
 
+    @Nullable
+    public Boolean isAbstractNullable() {
+        return isAbstract;
+    }
+
     public SerializableService setIsAbstract(@Nullable Boolean isAbstract) {
         this.isAbstract = isAbstract;
         return this;
@@ -119,6 +134,11 @@ public class SerializableService implements ServiceSerializable {
         return isAutowire != null ? isAutowire : false;
     }
 
+    @Nullable
+    public Boolean isAutowireNullable() {
+        return isAutowire;
+    }
+
     public SerializableService setIsAutowire(@Nullable Boolean isAutowire) {
         this.isAutowire = isAutowire;
         return this;
@@ -127,6 +147,11 @@ public class SerializableService implements ServiceSerializable {
     @Override
     public boolean isDeprecated() {
         return isDeprecated != null ? isDeprecated : false;
+    }
+
+    @Nullable
+    public Boolean isDeprecatedNullable() {
+        return isDeprecated;
     }
 
     public SerializableService setIsDeprecated(@Nullable Boolean isDeprecated) {

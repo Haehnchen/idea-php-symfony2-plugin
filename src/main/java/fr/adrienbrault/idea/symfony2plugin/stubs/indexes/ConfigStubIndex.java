@@ -8,7 +8,7 @@ import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.ConfigIndex;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ConfigIndexExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
@@ -27,7 +27,7 @@ public class ConfigStubIndex extends FileBasedIndexExtension<String, ConfigIndex
     public static final ID<String, ConfigIndex> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.config_stub_index");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
     private static final int MAX_FILE_BYTE_SIZE = 2097152;
-    private static final ObjectStreamDataExternalizer<ConfigIndex> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
+    private static final ConfigIndexExternalizer EXTERNALIZER = ConfigIndexExternalizer.INSTANCE;
 
     @NotNull
     @Override
@@ -141,7 +141,7 @@ public class ConfigStubIndex extends FileBasedIndexExtension<String, ConfigIndex
 
     @Override
     public int getVersion() {
-        return 2;
+        return 3;
     }
 
     @Override

@@ -21,7 +21,7 @@ import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.elements.impl.ClassConstImpl;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.DispatcherEvent;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.DispatcherEventExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.stubs.util.EventDispatcherUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -37,7 +37,7 @@ public class EventAnnotationStubIndex extends FileBasedIndexExtension<String, Di
 
     public static final ID<String, DispatcherEvent> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.events_annotation");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
-    private static final ObjectStreamDataExternalizer<DispatcherEvent> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
+    private static final DispatcherEventExternalizer EXTERNALIZER = DispatcherEventExternalizer.INSTANCE;
 
     @NotNull
     @Override
@@ -105,7 +105,7 @@ public class EventAnnotationStubIndex extends FileBasedIndexExtension<String, Di
 
     @Override
     public int getVersion() {
-        return 2;
+        return 3;
     }
 
     private void visitPhpDocTag(@NotNull PhpDocTag element, @NotNull Map<String, DispatcherEvent> map, @NotNull ElementPattern<PsiElement> phpDocAttributeListPattern, @NotNull ElementPattern<PsiElement> phpDocStringPattern) {

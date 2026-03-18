@@ -9,7 +9,7 @@ import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateInclude;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.TemplateIncludeExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,7 +23,7 @@ public class TwigIncludeStubIndex extends FileBasedIndexExtension<String, Templa
 
     public static final ID<String, TemplateInclude> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.twig_include_tags");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
-    private static final ObjectStreamDataExternalizer<TemplateInclude> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
+    private static final TemplateIncludeExternalizer EXTERNALIZER = TemplateIncludeExternalizer.INSTANCE;
 
     @NotNull
     @Override
@@ -83,7 +83,7 @@ public class TwigIncludeStubIndex extends FileBasedIndexExtension<String, Templa
 
     @Override
     public int getVersion() {
-        return 4;
+        return 5;
     }
 
 }

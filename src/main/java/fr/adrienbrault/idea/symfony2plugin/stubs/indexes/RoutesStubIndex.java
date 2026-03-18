@@ -15,7 +15,7 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.StubIndexedRouteExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.inputFilter.FileInputFilter;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.AnnotationRouteElementVisitor;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
@@ -33,7 +33,7 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, StubIndexed
 
     public static final ID<String, StubIndexedRoute> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.routes_object");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
-    private static final ObjectStreamDataExternalizer<StubIndexedRoute> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
+    private static final StubIndexedRouteExternalizer EXTERNALIZER = StubIndexedRouteExternalizer.INSTANCE;
 
     @NotNull
     @Override
@@ -119,7 +119,7 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, StubIndexed
 
     @Override
     public int getVersion() {
-        return 4;
+        return 5;
     }
 
     private static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {

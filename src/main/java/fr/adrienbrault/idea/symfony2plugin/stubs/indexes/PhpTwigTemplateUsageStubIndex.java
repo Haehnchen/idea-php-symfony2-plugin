@@ -16,7 +16,7 @@ import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.stubs.indexes.PhpConstantNameIndex;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateUsage;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.TemplateUsageExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.PhpMethodVariableResolveUtil;
 import kotlin.Triple;
 import org.apache.commons.lang3.StringUtils;
@@ -33,7 +33,7 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
     public static final ID<String, TemplateUsage> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.twig_php_usage");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
     private static final int MAX_FILE_BYTE_SIZE = 2097152;
-    private static final ObjectStreamDataExternalizer<TemplateUsage> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
+    private static final TemplateUsageExternalizer EXTERNALIZER = TemplateUsageExternalizer.INSTANCE;
 
     @NotNull
     @Override
@@ -138,7 +138,7 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
 
     @Override
     public int getVersion() {
-        return 3;
+        return 4;
     }
 
     private static boolean isValidForIndex(FileContent inputData) {

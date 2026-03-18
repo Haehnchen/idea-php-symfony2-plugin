@@ -9,7 +9,7 @@ import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TwigMacroTagIndex;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.TwigMacroTagIndexExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,7 +23,7 @@ public class TwigMacroFunctionStubIndex extends FileBasedIndexExtension<String, 
 
     public static final ID<String, TwigMacroTagIndex> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.twig_macro_function");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
-    private static final ObjectStreamDataExternalizer<TwigMacroTagIndex> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
+    private static final TwigMacroTagIndexExternalizer EXTERNALIZER = TwigMacroTagIndexExternalizer.INSTANCE;
 
     @NotNull
     @Override
@@ -83,7 +83,7 @@ public class TwigMacroFunctionStubIndex extends FileBasedIndexExtension<String, 
 
     @Override
     public int getVersion() {
-        return 3;
+        return 4;
     }
 }
 

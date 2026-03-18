@@ -7,7 +7,7 @@ import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.FileResource;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.FileResourceExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.inputFilter.FileInputFilter;
 import fr.adrienbrault.idea.symfony2plugin.util.FileResourceVisitorUtil;
 import org.jetbrains.annotations.NotNull;
@@ -22,7 +22,7 @@ import java.util.Map;
 public class FileResourcesIndex extends FileBasedIndexExtension<String, FileResource> {
 
     private static final int MAX_FILE_BYTE_SIZE = 1048576;
-    private static final ObjectStreamDataExternalizer<FileResource> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
+    private static final FileResourceExternalizer EXTERNALIZER = FileResourceExternalizer.INSTANCE;
 
     public static final ID<String, FileResource> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.file_resources");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
@@ -80,7 +80,7 @@ public class FileResourcesIndex extends FileBasedIndexExtension<String, FileReso
 
     @Override
     public int getVersion() {
-        return 3;
+        return 4;
     }
 
     public static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {

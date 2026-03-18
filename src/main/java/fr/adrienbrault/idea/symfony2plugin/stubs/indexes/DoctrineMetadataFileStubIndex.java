@@ -10,7 +10,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineUtil;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModel;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelSerializable;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ObjectStreamDataExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.DoctrineModelExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.inputFilter.FileInputFilter;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,7 +25,7 @@ public class DoctrineMetadataFileStubIndex extends FileBasedIndexExtension<Strin
 
     public static final ID<String, DoctrineModelSerializable> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.doctrine_metadata");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
-    private static final ObjectStreamDataExternalizer<DoctrineModelSerializable> EXTERNALIZER = new ObjectStreamDataExternalizer<>();
+    private static final DoctrineModelExternalizer EXTERNALIZER = DoctrineModelExternalizer.INSTANCE;
 
     private static final int MAX_FILE_BYTE_SIZE = 1048576;
 
@@ -96,7 +96,7 @@ public class DoctrineMetadataFileStubIndex extends FileBasedIndexExtension<Strin
 
     @Override
     public int getVersion() {
-        return 4;
+        return 5;
     }
 
     public static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {
