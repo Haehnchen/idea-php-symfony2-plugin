@@ -1,0 +1,29 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <projectService
+            serviceImplementation="fr.adrienbrault.idea.symfony2plugin.assistant.review.ReviewSessionManager"/>
+        <editorFactoryListener
+            implementation="fr.adrienbrault.idea.symfony2plugin.assistant.review.ReviewEditorListener"/>
+    </extensions>
+
+    <actions>
+        <group id="Symfony.ReviewGroup" text="Internal Review" popup="true">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </group>
+
+        <action id="Symfony.StartReview"
+                class="fr.adrienbrault.idea.symfony2plugin.assistant.review.action.StartReviewAction"
+                text="Start Internal Review"
+                description="Start an internal review session to collect inline comments">
+            <add-to-group group-id="Symfony.ReviewGroup" anchor="first"/>
+        </action>
+
+        <action id="Symfony.GenerateAgentPrompt"
+                class="fr.adrienbrault.idea.symfony2plugin.assistant.review.action.GenerateAgentPromptAction"
+                text="Generate Agent Prompt"
+                description="Generate a Claude Code agent prompt from collected review comments">
+            <add-to-group group-id="Symfony.ReviewGroup" anchor="last"/>
+        </action>
+    </actions>
+</idea-plugin>
