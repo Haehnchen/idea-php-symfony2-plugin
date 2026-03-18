@@ -92,6 +92,7 @@ import static fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore;
  */
 public class TwigUtil {
     public static final String DOC_SEE_REGEX_WITHOUT_SEE  = "([-@\\./\\:\\w\\\\\\[\\]]+)[\\s]*";
+    private static final Pattern MULTIPLE_SLASHES = Pattern.compile("/+");
 
     /**
      * Twig namespace for "non namespace"; its also a reserved value in Twig library
@@ -126,6 +127,8 @@ public class TwigUtil {
     private static final Key<CachedValue<Map<String, String>>> SYMFONY_DEPRECATED_NAMED_TOKEN_TAGS = new Key<>("SYMFONY_DEPRECATED_NAMED_TOKEN_TAGS");
     private static final Key<CachedValue<Set<String>>> SYMFONY_DEPRECATED_FILTERS = new Key<>("SYMFONY_DEPRECATED_FILTERS");
     private static final Key<CachedValue<Set<String>>> SYMFONY_DEPRECATED_FUNCTIONS = new Key<>("SYMFONY_DEPRECATED_FUNCTIONS");
+
+    private static final Key<CachedValue<List<TwigPath>>> TWIG_NAMESPACES_WITH_SETTINGS = new Key<>("TWIG_NAMESPACES_WITH_SETTINGS");
 
     public static final String[] CSS_FILES_EXTENSIONS = new String[] { "css", "less", "sass", "scss" };
 
@@ -1482,7 +1485,23 @@ public class TwigUtil {
     }
 
     @NotNull
+    private static List<TwigPath> getTwigNamespacesWithSettings(@NotNull Project project) {
+        return CachedValuesManager.getManager(project).getCachedValue(project, TWIG_NAMESPACES_WITH_SETTINGS, () -> {
+            List<TwigPath> result = getTwigNamespacesRaw(project, true);
+            return CachedValueProvider.Result.create(result, PsiModificationTracker.getInstance(project));
+        }, false);
+    }
+
+    @NotNull
     public static List<TwigPath> getTwigNamespaces(@NotNull Project project, boolean includeSettings) {
+        if (includeSettings) {
+            return getTwigNamespacesWithSettings(project);
+        }
+        return getTwigNamespacesRaw(project, false);
+    }
+
+    @NotNull
+    private static List<TwigPath> getTwigNamespacesRaw(@NotNull Project project, boolean includeSettings) {
         List<TwigPath> twigPaths = new ArrayList<>();
 
         // load extension
@@ -1558,9 +1577,7 @@ public class TwigUtil {
 
         Set<String> hashes = new HashSet<>();
         for (TwigPath twigPath : origin) {
-            String normalizedPath = twigPath.getPath()
-                .replace("\\", "/")
-                .replaceAll("/+", "/");
+            String normalizedPath = MULTIPLE_SLASHES.matcher(twigPath.getPath().replace("\\", "/")).replaceAll("/");
 
             String hash = twigPath.getNamespaceType() + twigPath.getNamespace() + normalizedPath;
             if(hashes.contains(hash)) {
