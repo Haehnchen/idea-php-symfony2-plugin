@@ -2,7 +2,9 @@ package fr.adrienbrault.idea.symfony2plugin.templating.usages;
 
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiReferenceBase;
+import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,9 +35,19 @@ public class TwigTemplateUsageReference extends PsiReferenceBase<PsiElement> {
     }
 
     @Override
+    public PsiElement bindToElement(@NotNull PsiElement element) throws IncorrectOperationException {
+        return myElement;
+    }
+
+    @Override
+    public PsiElement handleElementRename(@NotNull String newElementName) throws IncorrectOperationException {
+        return myElement;
+    }
+
+    @Override
     public @NotNull String getCanonicalText() {
-        if (targetElement instanceof com.intellij.psi.PsiFile) {
-            return ((com.intellij.psi.PsiFile) targetElement).getName();
+        if (targetElement instanceof PsiFile) {
+            return ((PsiFile) targetElement).getName();
         }
         return targetElement.getText();
     }
