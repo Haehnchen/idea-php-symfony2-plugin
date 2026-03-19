@@ -226,7 +226,9 @@ public class TwigTemplateReferencesSearchExecutor implements QueryExecutor<PsiRe
                 PsiElement sourceElement = pair.getSecond();
                 if (sourceElement != null) {
                     PsiReference ref = createStringReference(sourceElement, targetFile, pair.getFirst());
-                    consumer.process(ref);
+                    if (ref != null) {
+                        consumer.process(ref);
+                    }
                 }
             }
         });
