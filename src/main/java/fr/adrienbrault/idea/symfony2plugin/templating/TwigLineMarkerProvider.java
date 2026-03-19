@@ -155,7 +155,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.SYMFONY)
+        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.SYMFONY_LINE_MARKER)
             .setTargets(NotNullLazyValue.lazy(new UxComponentTemplateTargets(twigFile)))
             .setTooltipText("Navigate to UX Component")
             .setCellRenderer(UxComponentTargetsPsiElementListCellRenderer::new);
