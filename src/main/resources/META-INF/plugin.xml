@@ -804,6 +804,7 @@
 
         <referencesSearch implementation="fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigTemplateReferencesSearchExecutor"/>
         <usageTypeProvider implementation="fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigTemplateUsageTypeProvider"/>
+        <moveFileHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigMoveFileHandler"/>
     </extensions>
 
     <extensionPoints>
