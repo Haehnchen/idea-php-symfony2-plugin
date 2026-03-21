@@ -66,6 +66,6 @@ object ViteUtil {
     private fun isTestFile(project: Project, virtualFile: VirtualFile): Boolean {
         val path = VfsUtil.getRelativePath(virtualFile, ProjectUtil.getProjectDir(project), '/') ?: return false
         val lower = path.lowercase()
-        return lower.contains("/test/") || lower.contains("/tests/")
+        return "/test/" in lower || "/tests/" in lower
     }
 }

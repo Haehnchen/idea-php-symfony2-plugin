@@ -63,6 +63,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import static fr.adrienbrault.idea.symfony2plugin.util.StringUtils.startWithEqualClassname;
+
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -1457,7 +1459,7 @@ public class PhpElementsUtil {
         // search classes in current namespace and child namespaces
         for(PhpClass phpClass: PhpIndexUtil.getPhpClassInsideNamespace(psiElement.getProject(), namespace)) {
             String presentableFQN = phpClass.getPresentableFQN();
-            if(fr.adrienbrault.idea.symfony2plugin.util.StringUtils.startWithEqualClassname(presentableFQN, beforeCursor)) {
+            if(startWithEqualClassname(presentableFQN, beforeCursor)) {
                 visitor.visit(phpClass, presentableFQN, prefix);
             }
 

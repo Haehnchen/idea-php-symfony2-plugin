@@ -106,9 +106,8 @@ class ServiceDefinitionGenerator(private val project: Project) {
      * Gets the best service name from a set of possible services.
      * Returns the first one (services are sorted by priority).
      */
-    private fun getServiceName(services: Set<String>): String? {
-        return if (services.isEmpty()) null else services.iterator().next()
-    }
+    private fun getServiceName(services: Set<String>): String? =
+        if (services.isEmpty()) null else services.iterator().next()
 
     /**
      * Output format for service definitions.

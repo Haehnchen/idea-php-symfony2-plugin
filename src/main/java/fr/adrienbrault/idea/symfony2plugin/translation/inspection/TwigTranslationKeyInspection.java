@@ -13,6 +13,8 @@ import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import static fr.adrienbrault.idea.symfony2plugin.util.StringUtils.isInterpolatedString;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -46,7 +48,7 @@ public class TwigTranslationKeyInspection extends LocalInspectionTool {
             }
 
             String text = psiElement.getText();
-            if(StringUtils.isBlank(text) || fr.adrienbrault.idea.symfony2plugin.util.StringUtils.isInterpolatedString(text)) {
+            if(StringUtils.isBlank(text) || isInterpolatedString(text)) {
                 super.visitElement(psiElement);
                 return;
             }

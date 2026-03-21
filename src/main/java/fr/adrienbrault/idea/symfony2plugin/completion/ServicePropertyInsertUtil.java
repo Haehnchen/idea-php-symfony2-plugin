@@ -28,6 +28,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static fr.adrienbrault.idea.symfony2plugin.util.StringUtils.*;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -70,13 +72,13 @@ public class ServicePropertyInsertUtil {
         }
 
         // try to find partial ending match for normalized properties: fooBarCar => barCar
-        String classPropertyNameForEndingMatch = fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(StringUtils.strip(propertyNameFindRaw, "_"));
+        String classPropertyNameForEndingMatch = underscore(StringUtils.strip(propertyNameFindRaw, "_"));
         for (String replace : CLASS_TYPE_NAMES) {
-            classPropertyNameForEndingMatch = StringUtils.removeEndIgnoreCase(classPropertyNameForEndingMatch, replace);
-            classPropertyNameForEndingMatch = StringUtils.removeStartIgnoreCase(classPropertyNameForEndingMatch, replace);
+            classPropertyNameForEndingMatch = removeEndIgnoreCase(classPropertyNameForEndingMatch, replace);
+            classPropertyNameForEndingMatch = removeStartIgnoreCase(classPropertyNameForEndingMatch, replace);
         }
 
-        classPropertyNameForEndingMatch = fr.adrienbrault.idea.symfony2plugin.util.StringUtils.camelize(classPropertyNameForEndingMatch, true);
+        classPropertyNameForEndingMatch = camelize(classPropertyNameForEndingMatch, true);
 
         // collect partial match with least 3 parts
         Set<String> endingMatches = new HashSet<>();
@@ -85,7 +87,7 @@ public class ServicePropertyInsertUtil {
             PhpCodeStyleSettings settings = CodeStyle.getCustomSettings(PhpPsiElementFactory.createPsiFileFromText(project, "<?php"), PhpCodeStyleSettings.class);
             endingMatches.addAll(PhpNameStyle.DECAPITALIZE.withStyle(settings.VARIABLE_NAMING_STYLE).generateNames(nameParts)
                 .stream()
-                .filter(s -> fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(s).split("_").length > 2)
+                .filter(s -> underscore(s).split("_").length > 2)
                 .collect(Collectors.toSet())
             );
         }
@@ -214,8 +216,8 @@ public class ServicePropertyInsertUtil {
         classPropertyName = classPropertyName.replaceAll("_", "").toLowerCase();
 
         for (String replace : CLASS_TYPE_NAMES) {
-            classPropertyName = StringUtils.removeEndIgnoreCase(classPropertyName, replace);
-            classPropertyName = StringUtils.removeStartIgnoreCase(classPropertyName, replace);
+            classPropertyName = removeEndIgnoreCase(classPropertyName, replace);
+            classPropertyName = removeStartIgnoreCase(classPropertyName, replace);
         }
 
         return classPropertyName;
