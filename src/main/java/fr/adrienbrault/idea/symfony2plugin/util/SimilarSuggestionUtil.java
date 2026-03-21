@@ -5,6 +5,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static fr.adrienbrault.idea.symfony2plugin.util.StringUtils.getFuzzyDistance;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -14,7 +16,7 @@ public class SimilarSuggestionUtil {
         Map<String, Integer> fuzzy = new HashMap<>();
 
         for (String domain : strings) {
-            int fuzzyDistance = org.apache.commons.lang3.StringUtils.getFuzzyDistance(string, domain, Locale.ENGLISH);
+            int fuzzyDistance = getFuzzyDistance(domain, string);
             if (fuzzyDistance > 0) {
                 fuzzy.put(domain, fuzzyDistance);
             }

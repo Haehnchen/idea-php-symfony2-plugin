@@ -47,7 +47,7 @@ class TwigTemplateUsageCollector(private val project: Project) {
         val matchingTemplates = sortedSetOf<String>()
 
         // Strategy 1: partial template-name match using internal template map
-        TwigUtil.getTemplateMap(project).keys.filterTo(matchingTemplates) { it.lowercase().contains(filterLower) }
+        TwigUtil.getTemplateMap(project).keys.filterTo(matchingTemplates) { filterLower in it.lowercase() }
 
         // Strategy 2: resolve input as a file path relative to the project root and add its
         // logical template names (e.g. "templates/home/index.html.twig" → "home/index.html.twig")
@@ -62,7 +62,7 @@ class TwigTemplateUsageCollector(private val project: Project) {
         index.processValues(TwigBlockIndexExtension.KEY, "use", null, { file, templateSet ->
             val callerPath = VfsExUtil.getRelativeProjectPath(project, file) ?: return@processValues true
             for (usedTemplate in templateSet) {
-                if (usedTemplate.lowercase().contains(filterLower)) {
+                if (filterLower in usedTemplate.lowercase()) {
                     matchingTemplates.add(usedTemplate)
                     useReverseMap.getOrPut(usedTemplate) { sortedSetOf() }.add(callerPath)
                 }
@@ -160,7 +160,7 @@ class TwigTemplateUsageCollector(private val project: Project) {
     }
 
     private fun escapeCsv(value: String): String {
-        return if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
+        return if ("," in value || "\"" in value || "\n" in value) {
             "\"${value.replace("\"", "\"\"")}\""
         } else {
             value

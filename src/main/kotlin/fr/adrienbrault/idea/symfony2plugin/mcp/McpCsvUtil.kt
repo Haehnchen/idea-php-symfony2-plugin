@@ -2,7 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.mcp
 
 object McpCsvUtil {
     fun escape(value: String): String {
-        return if (value.contains(',') || value.contains('"') || value.contains('\n')) {
+        return if (',' in value || '"' in value || '\n' in value) {
             "\"${value.replace("\"", "\"\"")}\""
         } else {
             value

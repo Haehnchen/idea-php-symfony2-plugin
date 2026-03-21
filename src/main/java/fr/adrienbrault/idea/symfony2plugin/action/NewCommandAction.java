@@ -16,6 +16,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+
+import static fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore;
 import java.util.HashMap;
 import java.util.List;
 
@@ -79,7 +81,7 @@ public class NewCommandAction extends AbstractProjectDumbAwareAction {
 
                 put("class", finalClassName);
                 put("namespace", strings.get(0));
-                put("command_name", prefix + ":" + fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(clazz));
+                put("command_name", prefix + ":" + underscore(clazz));
             }};
 
             PsiElement commandAttributes = PhpBundleFileFactory.createFile(

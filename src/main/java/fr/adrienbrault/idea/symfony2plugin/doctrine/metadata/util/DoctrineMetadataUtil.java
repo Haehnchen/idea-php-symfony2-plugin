@@ -33,6 +33,8 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import static fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore;
 import org.jetbrains.yaml.psi.*;
 
 import java.util.*;
@@ -267,7 +269,7 @@ public class DoctrineMetadataUtil {
                 continue;
             }
 
-            String singular = fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(shortName);
+            String singular = underscore(shortName);
             if (singular.isBlank()) {
                 continue;
             }

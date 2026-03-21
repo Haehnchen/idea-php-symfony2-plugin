@@ -38,7 +38,7 @@ class SymfonyConsoleRunAnythingProvider : RunAnythingProviderBase<SymfonyCommand
 
         return ReadAction.compute<Collection<SymfonyCommand>, RuntimeException> {
             SymfonyCommandUtil.getCommands(project!!)
-                .filter { it.name.lowercase().contains(lowerPattern) }
+                .filter { lowerPattern in it.name.lowercase() }
         }
     }
 

@@ -21,7 +21,7 @@ class SymfonyRouteCollector(private val project: Project) {
 
         val controllerFqns = filteredRoutes
             .mapNotNull { it.value.controller }
-            .filter { it.contains("::") }
+            .filter { "::" in it }
             .toSet()
 
         val templatesByController = TwigUtil.findTemplatesByControllers(project, controllerFqns)
@@ -30,7 +30,7 @@ class SymfonyRouteCollector(private val project: Project) {
 
         filteredRoutes.forEach { (_, route) ->
             val controllerClass = route.controller?.let { ctrl ->
-                if (ctrl.contains("::")) ctrl.substringBefore("::") else ctrl
+                if ("::" in ctrl) ctrl.substringBefore("::") else ctrl
             }
 
             val filePath = controllerClass?.let { className ->

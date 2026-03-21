@@ -124,7 +124,7 @@ object AssetMapperUtil {
                                 files.add(relativeFile)
                                 break
                             }
-                        } else if (mappingFile.key.contains("/")) {
+                        } else if ("/" in mappingFile.key) {
                             val path: String = if (mappingFile.key.startsWith("@") && mappingFile.key.split("/").size == 2) {
                                 mappingFile.key + "/" + mappingFile.key.split("/")[1] + ".index.js"
                             } else {
@@ -157,7 +157,7 @@ object AssetMapperUtil {
                             files.add(relativeFile)
                             break
                         }
-                    } else if (mappingFile.key.contains("/")) {
+                    } else if ("/" in mappingFile.key) {
                         val path: String = if (mappingFile.key.startsWith("@") && mappingFile.key.split("/").size == 2) {
                             mappingFile.key + "/" + mappingFile.key.split("/")[1] + ".index.js"
                         } else {
@@ -197,19 +197,16 @@ object AssetMapperUtil {
         return files
     }
 
-    private fun getEntrypointMappings(project: Project): List<AssetMapperModule> {
-        return getMappingFiles(project).filter { it.entrypoint == true }
-    }
+    private fun getEntrypointMappings(project: Project): List<AssetMapperModule> =
+        getMappingFiles(project).filter { it.entrypoint == true }
 
     @JvmStatic
-    fun getLookupElements(project: Project): Collection<LookupElement> {
-        return getLookupElements(getMappingFiles(project))
-    }
+    fun getLookupElements(project: Project): Collection<LookupElement> =
+        getLookupElements(getMappingFiles(project))
 
     @JvmStatic
-    fun getEntrypointLookupElements(project: Project): Collection<LookupElement> {
-        return getLookupElements(getEntrypointMappings(project))
-    }
+    fun getEntrypointLookupElements(project: Project): Collection<LookupElement> =
+        getLookupElements(getEntrypointMappings(project))
 
     @JvmStatic
     fun getLookupElements(modules: List<AssetMapperModule>): Collection<LookupElement> {
@@ -217,7 +214,7 @@ object AssetMapperUtil {
         val visited = HashSet<String>()
 
         for (module in modules) {
-            if (visited.contains(module.key)) {
+            if (module.key in visited) {
                 continue
             }
 

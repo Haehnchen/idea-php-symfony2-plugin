@@ -122,32 +122,20 @@ public class TemplateGuessTypoQuickFix extends IntentionAndQuickFixAction {
 
     @NotNull
     private static List<String> findSimilarTemplateNames(@NotNull Project project, String templateNameIfMissing) {
-        String outTemplate = stripTemplateFormatAndExtensionLowered(templateNameIfMissing);
+        String strippedInput = stripTemplateFormatAndExtensionLowered(templateNameIfMissing);
 
-        Map<String, Integer> fuzzy = new HashMap<>();
+        Map<String, String> strippedToOriginal = new HashMap<>();
+        Set<String> strippedNames = new HashSet<>();
 
         for (String template : TwigUtil.getTemplateMap(project, true).keySet()) {
-            String myTemplate = stripTemplateFormatAndExtensionLowered(template);
-
-            int fuzzyDistance = org.apache.commons.lang3.StringUtils.getFuzzyDistance(outTemplate, myTemplate, Locale.ENGLISH);
-            if (fuzzyDistance > 0) {
-                fuzzy.put(template, fuzzyDistance);
-            }
+            String stripped = stripTemplateFormatAndExtensionLowered(template);
+            strippedToOriginal.put(stripped, template);
+            strippedNames.add(stripped);
         }
 
-        double v = SimilarSuggestionUtil.calculateStandardDeviation(Arrays.stream(fuzzy.values().stream().mapToInt(i->i).toArray()).asDoubleStream().toArray());
-
-        Map<String, Integer> fuzzySelected = new HashMap<>();
-        for (Map.Entry<String, Integer> entry : fuzzy.entrySet()) {
-            if (entry.getValue() > v) {
-                fuzzySelected.put(entry.getKey(), entry.getValue());
-            }
-        }
-
-        return fuzzySelected.entrySet().stream()
-            .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-            .limit(5)
-            .map(Map.Entry::getKey)
+        return SimilarSuggestionUtil.findSimilarString(strippedInput, strippedNames).stream()
+            .map(strippedToOriginal::get)
+            .filter(Objects::nonNull)
             .collect(Collectors.toList());
     }
 

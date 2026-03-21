@@ -20,7 +20,7 @@ class TwigComponentCollector(private val project: Project) {
             .asSequence()
             .map { it.name() }
             .filter { it.isNotBlank() }
-            .filter { name -> searchLower == null || name.lowercase().contains(searchLower) }
+            .filter { name -> searchLower == null || searchLower in name.lowercase() }
             .distinct()
             .sortedWith(String.CASE_INSENSITIVE_ORDER)
             .toList()
@@ -105,20 +105,18 @@ class TwigComponentCollector(private val project: Project) {
     }
 
     private fun escapeCsv(value: String): String {
-        return if (value.contains(',') || value.contains('"') || value.contains('\n')) {
+        return if (',' in value || '"' in value || '\n' in value) {
             "\"${value.replace("\"", "\"\"")}\""
         } else {
             value
         }
     }
 
-    private fun escapeTwigSingleQuotedString(value: String): String {
-        return value.replace("'", "\\'")
-    }
+    private fun escapeTwigSingleQuotedString(value: String): String =
+        value.replace("'", "\\'")
 
-    private fun escapeTwigBlockName(value: String): String {
-        return value.replace("'", "")
-    }
+    private fun escapeTwigBlockName(value: String): String =
+        value.replace("'", "")
 
     private data class ComponentRow(
         val componentName: String,

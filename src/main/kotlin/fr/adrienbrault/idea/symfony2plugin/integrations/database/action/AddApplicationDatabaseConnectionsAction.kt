@@ -7,6 +7,7 @@ import com.intellij.database.dataSource.LocalDataSource
 import com.intellij.database.dataSource.LocalDataSourceManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.ui.Messages
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
@@ -28,6 +29,8 @@ class AddApplicationDatabaseConnectionsAction : AnAction(
     "Add database connections from Symfony configuration (.env, doctrine.yaml)",
     Symfony2Icons.SYMFONY
 ) {
+
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     override fun update(e: AnActionEvent) {
         val project = e.project
