@@ -12,7 +12,6 @@ import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.util.VfsExUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.psi.ParentPathPatternCondition;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLElementTypes;
 import org.jetbrains.yaml.YAMLFileType;
@@ -892,7 +891,7 @@ public class YamlElementPatternHelper {
 
         @Override
         public boolean accepts(@NotNull YAMLScalar yamlScalar, ProcessingContext processingContext) {
-            return StringUtils.startsWith(yamlScalar.getTextValue(), value);
+            return yamlScalar.getTextValue().startsWith(value);
         }
     }
 

@@ -42,6 +42,8 @@ import kotlin.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import static fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore;
 import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
@@ -633,7 +635,7 @@ public class FormUtil {
                                 className = className.substring(0, className.length() - 4);
                             }
 
-                            return fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(className);
+                            return underscore(className);
                         }
                     }
                 }

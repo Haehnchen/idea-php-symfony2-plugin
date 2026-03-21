@@ -44,15 +44,4 @@ object McpUtil {
             }
         }
     }
-
-    /**
-     * Checks if a tool is globally visible (application-level setting)
-     * This is used by the tools provider to filter tools at registration time.
-     *
-     * @param toolId The ID of the MCP tool to check
-     * @return true if the tool should be exposed to the MCP server
-     */
-    fun isToolGloballyVisible(toolId: String): Boolean {
-        return McpApplicationSettings.getInstance().isToolGloballyVisible(toolId)
-    }
 }

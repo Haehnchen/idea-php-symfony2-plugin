@@ -2,6 +2,8 @@ package fr.adrienbrault.idea.symfony2plugin.util;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Locale;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -72,5 +74,61 @@ public class StringUtils {
      */
     public static boolean isInterpolatedString(@NotNull String content) {
         return content.matches(".*#\\{[^{]*}.*");
+    }
+
+    @NotNull
+    public static String removeEnd(@NotNull String str, @NotNull String suffix) {
+        return str.endsWith(suffix) ? str.substring(0, str.length() - suffix.length()) : str;
+    }
+
+    @NotNull
+    public static String removeEndIgnoreCase(@NotNull String str, @NotNull String suffix) {
+        if (suffix.isEmpty()) return str;
+        if (str.length() >= suffix.length() && str.regionMatches(true, str.length() - suffix.length(), suffix, 0, suffix.length())) {
+            return str.substring(0, str.length() - suffix.length());
+        }
+        return str;
+    }
+
+    @NotNull
+    public static String removeStartIgnoreCase(@NotNull String str, @NotNull String prefix) {
+        if (prefix.isEmpty()) return str;
+        if (str.length() >= prefix.length() && str.regionMatches(true, 0, prefix, 0, prefix.length())) {
+            return str.substring(prefix.length());
+        }
+        return str;
+    }
+
+    /**
+     * Replacement for deprecated Apache Commons StringUtils.getFuzzyDistance.
+     * Awards +1 per character match, +3 for consecutive matches (case-insensitive).
+     */
+    public static int getFuzzyDistance(@NotNull CharSequence term, @NotNull CharSequence query) {
+        String termLower = term.toString().toLowerCase(Locale.ENGLISH);
+        String queryLower = query.toString().toLowerCase(Locale.ENGLISH);
+
+        int score = 0;
+        int termIndex = 0;
+        int lastMatchIndex = Integer.MIN_VALUE;
+
+        for (int queryIndex = 0; queryIndex < queryLower.length(); queryIndex++) {
+            char queryChar = queryLower.charAt(queryIndex);
+            boolean found = false;
+
+            while (termIndex < termLower.length() && !found) {
+                char termChar = termLower.charAt(termIndex);
+                if (queryChar == termChar) {
+                    score++;
+                    if (lastMatchIndex + 1 == termIndex) {
+                        score += 2;
+                    }
+                    lastMatchIndex = termIndex;
+                    found = true;
+                }
+                termIndex++;
+            }
+        }
+
+        return score;
     }
 }

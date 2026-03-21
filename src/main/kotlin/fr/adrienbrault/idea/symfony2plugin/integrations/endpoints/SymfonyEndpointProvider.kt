@@ -85,52 +85,51 @@ class SymfonyEndpointProvider : EndpointsProvider<SymfonyRouteGroup, Route> {
         return if (methods.isNotEmpty()) methods[0] else null
     }
 
-    override fun getModificationTracker(project: Project): ModificationTracker {
+    override fun getModificationTracker(project: Project): ModificationTracker =
         // FileBasedIndex#getIndexModificationStamp can assert on EDT in Endpoints scrolling/update paths.
         // Use PSI tracker to keep Endpoints refresh safe on EDT.
-        return PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE)
-    }
+        PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE)
 
     companion object {
         private const val ROUTES_GROUP_NAME = "routes"
-
-        private val PRESENTATION = FrameworkPresentation(
-            "symfony",
-            "Symfony",
-            Symfony2Icons.SYMFONY
-        )
-
-        private fun buildDefinitionSource(endpoint: Route): String {
-            val routeName = endpoint.name
-            val controller = endpoint.controller
-
-            if (controller.isNullOrEmpty()) return routeName
-
-            return "$routeName (${formatControllerShort(controller)})"
-        }
-
-        private fun formatControllerShort(controller: String): String {
-            if (controller.contains("::")) {
-                val parts = controller.split("::", limit = 2)
-                return "${shortClassName(parts[0])}:${parts[1]}"
-            }
-
-            val colonIndex = controller.lastIndexOf(':')
-            if (colonIndex > 0 && colonIndex < controller.length - 1) {
-                val left = controller.substring(0, colonIndex)
-                val right = controller.substring(colonIndex + 1)
-                return "${shortClassName(left)}:$right"
-            }
-
-            return shortClassName(controller)
-        }
-
-        private fun shortClassName(value: String): String {
-            val namespaceSeparator = value.lastIndexOf('\\')
-            if (namespaceSeparator >= 0 && namespaceSeparator < value.length - 1) {
-                return value.substring(namespaceSeparator + 1)
-            }
-            return value
-        }
     }
+}
+
+private val PRESENTATION = FrameworkPresentation(
+    "symfony",
+    "Symfony",
+    Symfony2Icons.SYMFONY
+)
+
+private fun buildDefinitionSource(endpoint: Route): String {
+    val routeName = endpoint.name
+    val controller = endpoint.controller
+
+    if (controller.isNullOrEmpty()) return routeName
+
+    return "$routeName (${formatControllerShort(controller)})"
+}
+
+private fun formatControllerShort(controller: String): String {
+    if ("::" in controller) {
+        val parts = controller.split("::", limit = 2)
+        return "${shortClassName(parts[0])}:${parts[1]}"
+    }
+
+    val colonIndex = controller.lastIndexOf(':')
+    if (colonIndex > 0 && colonIndex < controller.length - 1) {
+        val left = controller.substring(0, colonIndex)
+        val right = controller.substring(colonIndex + 1)
+        return "${shortClassName(left)}:$right"
+    }
+
+    return shortClassName(controller)
+}
+
+private fun shortClassName(value: String): String {
+    val namespaceSeparator = value.lastIndexOf('\\')
+    if (namespaceSeparator >= 0 && namespaceSeparator < value.length - 1) {
+        return value.substring(namespaceSeparator + 1)
+    }
+    return value
 }

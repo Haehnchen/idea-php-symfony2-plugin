@@ -15,7 +15,7 @@ class SymfonyServiceLocatorCollector(private val project: Project) {
         val services = ContainerCollectionResolver.getServices(project)
         val csv = StringBuilder("serviceName,className,filePath,lineNumber\\n")
 
-        val isClassName = identifier.contains("\\")
+        val isClassName = "\\" in identifier
 
         if (isClassName) {
             val stripped = StringUtils.stripStart(identifier, "\\")

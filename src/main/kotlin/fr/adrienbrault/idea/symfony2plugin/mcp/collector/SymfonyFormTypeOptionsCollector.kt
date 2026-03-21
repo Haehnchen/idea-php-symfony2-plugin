@@ -2,14 +2,13 @@ package fr.adrienbrault.idea.symfony2plugin.mcp.collector
 
 import com.intellij.mcpserver.mcpFail
 import fr.adrienbrault.idea.symfony2plugin.mcp.McpCsvUtil
-import fr.adrienbrault.idea.symfony2plugin.mcp.McpPathUtil
 import com.intellij.openapi.project.Project
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormOption
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil
 
 class SymfonyFormTypeOptionsCollector(private val project: Project) {
     fun collect(formType: String): String {
-        val normalizedFormType = if (formType.contains("\\")) {
+        val normalizedFormType = if ("\\" in formType) {
             "\\" + formType.trimStart('\\')
         } else {
             formType

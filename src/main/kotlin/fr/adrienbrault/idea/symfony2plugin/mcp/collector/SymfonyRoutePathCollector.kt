@@ -15,7 +15,7 @@ class SymfonyRoutePathCollector(private val project: Project) {
 
         matches.forEach { (route, _) ->
             val controllerClass = route.controller?.let { ctrl ->
-                if (ctrl.contains("::")) ctrl.substringBefore("::") else ctrl
+                if ("::" in ctrl) ctrl.substringBefore("::") else ctrl
             }
 
             val filePath = controllerClass?.let { className ->

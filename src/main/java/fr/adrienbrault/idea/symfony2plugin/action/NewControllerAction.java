@@ -16,6 +16,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+
+import static fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore;
 import java.util.HashMap;
 import java.util.List;
 
@@ -77,8 +79,8 @@ public class NewControllerAction extends AbstractProjectDumbAwareAction {
 
                 put("class", finalClassName);
                 put("namespace", strings.get(0));
-                put("path", "/" + fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(clazz).replace("_", "-"));
-                put("template_path", fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore(clazz));
+                put("path", "/" + underscore(clazz).replace("_", "-"));
+                put("template_path", underscore(clazz));
             }};
 
             PsiElement commandAttributes = PhpBundleFileFactory.createFile(

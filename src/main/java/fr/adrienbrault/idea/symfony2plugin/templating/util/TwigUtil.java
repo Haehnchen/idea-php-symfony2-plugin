@@ -84,6 +84,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.captureVariableOrField;
+import static fr.adrienbrault.idea.symfony2plugin.util.StringUtils.removeEnd;
 import static fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore;
 
 /**
@@ -212,7 +213,7 @@ public class TwigUtil {
                     symfonyBundle.getName(),
                     underscore(templateFolderName),
                     underscore(templateName),
-                    underscore(StringUtils.removeEnd(methodName, "Action"))
+                    underscore(removeEnd(methodName, "Action"))
                 );
 
                 // FooBundle:FooBar:fooBar.html.twig
@@ -221,7 +222,7 @@ public class TwigUtil {
                     symfonyBundle.getName(),
                     templateFolderName,
                     templateName,
-                    StringUtils.removeEnd(methodName, "Action")
+                    removeEnd(methodName, "Action")
                 );
             }
         } else {
