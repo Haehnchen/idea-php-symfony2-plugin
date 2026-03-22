@@ -63,4 +63,11 @@ public class TemplateReference extends PsiPolyVariantReferenceBase<PsiElement> {
         PsiElement result = TemplateMoveRenameUtil.applyToStringLiteralElement(getElement(), newTemplateName);
         return result != null ? result : getElement();
     }
+
+    @Override
+    public PsiElement handleElementRename(@NotNull String newElementName) throws IncorrectOperationException {
+        String newTemplateName = TemplateMoveRenameUtil.renameTemplateName(templateName, newElementName);
+        PsiElement result = TemplateMoveRenameUtil.applyToStringLiteralElement(getElement(), newTemplateName);
+        return result != null ? result : getElement();
+    }
 }

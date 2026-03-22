@@ -126,6 +126,31 @@ public final class TemplateMoveRenameUtil {
     }
 
     /**
+     * Replaces only the filename portion of a logical Twig template name while keeping its
+     * namespace/path style intact.
+     *
+     * <p>Examples:
+     * <ul>
+     *   <li>{@code "foo/bar.html.twig" + "baz.html.twig" -> "foo/baz.html.twig"}</li>
+     *   <li>{@code "@App/foo/bar.html.twig" + "baz.html.twig" -> "@App/foo/baz.html.twig"}</li>
+     *   <li>{@code "FooBundle:dir:bar.html.twig" + "baz.html.twig" -> "FooBundle:dir:baz.html.twig"}</li>
+     *   <li>{@code "bar.html.twig" + "baz.html.twig" -> "baz.html.twig"}</li>
+     * </ul>
+     */
+    @NotNull
+    public static String renameTemplateName(@NotNull String oldTemplateName, @NotNull String newFileName) {
+        int slash = oldTemplateName.lastIndexOf('/');
+        int colon = oldTemplateName.lastIndexOf(':');
+        int separator = Math.max(slash, colon);
+
+        if (separator < 0) {
+            return newFileName;
+        }
+
+        return oldTemplateName.substring(0, separator + 1) + newFileName;
+    }
+
+    /**
      * Computes the new template names for a moved Twig file and delegates to the caller.
      * Returns the best-matching name, or {@code null} when the file falls outside all configured
      * Twig namespaces (i.e. we cannot compute a logical name for the new location).
