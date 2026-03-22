@@ -11,17 +11,12 @@ import java.util.concurrent.CompletableFuture;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TranslationPsiParserTest extends SymfonyLightCodeInsightFixtureTestCase {
-    public void setUp() throws Exception {
-        super.setUp();
-        myFixture.copyFileToProject("classes.php");
-    }
-
     protected String getTestDataPath() {
         return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/translation/parser/fixtures";
     }
 
     public void testCompiledTranslationParser() {
-        TranslationStringMap translationStringMap = TranslationStringMap.create(getProject(), List.of(new File(getTestDataPath())));
+        TranslationStringMap translationStringMap = TranslationStringMap.create(List.of(new File(getTestDataPath())));
 
         assertTrue(!translationStringMap.getDomainMap("security").isEmpty());
 
@@ -36,7 +31,7 @@ public class TranslationPsiParserTest extends SymfonyLightCodeInsightFixtureTest
 
     public void testCompiledTranslationParserOnBackgroundThread() throws Exception {
         TranslationStringMap translationStringMap = CompletableFuture
-            .supplyAsync(() -> TranslationStringMap.create(getProject(), List.of(new File(getTestDataPath()))))
+            .supplyAsync(() -> TranslationStringMap.create(List.of(new File(getTestDataPath()))))
             .get();
 
         assertNotNull(translationStringMap.getDomainMap("validators"));
