@@ -23,6 +23,19 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2026.1.293
+* Add check for `IntentionPreviewUtils.isPreviewSession` to skip actions during intention preview sessions (Daniel Espendiller)
+* Add support for handling dumb mode in `TagReference` to prevent invalid resolution scenarios (Daniel Espendiller)
+* Fix windows file resolving for service glob resolving (Daniel Espendiller)
+* Skip PHP 8 attributes in `TemplateAnnotationReferences` to avoid duplicate handling with Symfony named-arg provider (Daniel Espendiller)
+* Add support for template name updates during file rename (Daniel Espendiller)
+* Update Twig gutter icon to use `SYMFONY_LINE_MARKER` for UX component navigation (Daniel Espendiller)
+* Switch to custom DataExternalizers for stub indexes (Daniel Espendiller)
+* Improve Twig namespace resolution by introducing `getTwigNamespacesWithSettings` and cache (Daniel Espendiller)
+* Refactor `FileData.parse` to use `ReadAction` for safe read-only operations and add test for background thread translation parsing (Daniel Espendiller)
+* Add `ViteTwigUsageStubIndex` for tracking Twig usages of Vite entry points and integrate it with gutter navigation. (Daniel Espendiller)
+* [#2102](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2102) Add support for `#[AutoconfigureTag]` attribute completion and navigation (Daniel Espendiller)
+
 ## 2026.1.292
 * Extract anonymous UX component directories from compiled container XML (Daniel Espendiller)
 * Remove terminal command name and option completion contributors as requested per https://platform.jetbrains.com/t/reworked-terminal-api-is-available-in-2025-3/3159/6 (Daniel Espendiller)
