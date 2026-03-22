@@ -38,10 +38,6 @@ public class TemplateMoveRenameUtilTest extends SymfonyLightCodeInsightFixtureTe
         );
     }
 
-    // -------------------------------------------------------------------------
-    // pickBestTemplateName
-    // -------------------------------------------------------------------------
-
     /**
      * @see TemplateMoveRenameUtil#pickBestTemplateName
      */
@@ -91,10 +87,6 @@ public class TemplateMoveRenameUtilTest extends SymfonyLightCodeInsightFixtureTe
         );
     }
 
-    // -------------------------------------------------------------------------
-    // extractNamespacePrefix
-    // -------------------------------------------------------------------------
-
     /**
      * @see TemplateMoveRenameUtil#extractNamespacePrefix
      */
@@ -130,9 +122,35 @@ public class TemplateMoveRenameUtilTest extends SymfonyLightCodeInsightFixtureTe
         assertEquals("", TemplateMoveRenameUtil.extractNamespacePrefix("bar.html.twig"));
     }
 
-    // -------------------------------------------------------------------------
-    // TemplateReference.bindToElement — PHP render() call update
-    // -------------------------------------------------------------------------
+    /**
+     * @see TemplateMoveRenameUtil#renameTemplateName
+     */
+    public void testRenameTemplateNameKeepsPlainPathStyle() {
+        assertEquals(
+            "foo/baz.html.twig",
+            TemplateMoveRenameUtil.renameTemplateName("foo/bar.html.twig", "baz.html.twig")
+        );
+    }
+
+    /**
+     * @see TemplateMoveRenameUtil#renameTemplateName
+     */
+    public void testRenameTemplateNameKeepsNamespaceStyle() {
+        assertEquals(
+            "@App/foo/baz.html.twig",
+            TemplateMoveRenameUtil.renameTemplateName("@App/foo/bar.html.twig", "baz.html.twig")
+        );
+    }
+
+    /**
+     * @see TemplateMoveRenameUtil#renameTemplateName
+     */
+    public void testRenameTemplateNameKeepsBundleStyle() {
+        assertEquals(
+            "FooBundle:dir:baz.html.twig",
+            TemplateMoveRenameUtil.renameTemplateName("FooBundle:dir:bar.html.twig", "baz.html.twig")
+        );
+    }
 
     /**
      * Moving a Twig template must update the path inside a PHP render() call.
@@ -166,9 +184,32 @@ public class TemplateMoveRenameUtilTest extends SymfonyLightCodeInsightFixtureTe
         );
     }
 
-    // -------------------------------------------------------------------------
-    // TemplateMoveRenameUtil.applyRangeReplacement
-    // -------------------------------------------------------------------------
+    /**
+     * Renaming a Twig template must update the filename portion inside a PHP render() call while
+     * preserving the existing logical path style.
+     *
+     * @see TemplateReference#handleElementRename
+     */
+    public void testTemplateReferenceHandleElementRenameUpdatesPhpRenderCall() {
+        myFixture.configureByText(
+            PhpFileType.INSTANCE,
+            "<?php class C { function i() { $this->render('@App/old/page.html.twig'); } }"
+        );
+
+        StringLiteralExpression literal = PsiTreeUtil.findChildOfType(myFixture.getFile(), StringLiteralExpression.class);
+        assertNotNull("Expected StringLiteralExpression in PHP file", literal);
+
+        TemplateReference ref = new TemplateReference(literal);
+
+        WriteCommandAction.runWriteCommandAction(getProject(), () -> {
+            ref.handleElementRename("renamed.html.twig");
+        });
+
+        assertTrue(
+            "PHP file must contain the renamed template path after handleElementRename",
+            myFixture.getFile().getText().contains("@App/old/renamed.html.twig")
+        );
+    }
 
     /**
      * @see TemplateMoveRenameUtil#applyRangeReplacement
@@ -183,9 +224,29 @@ public class TemplateMoveRenameUtilTest extends SymfonyLightCodeInsightFixtureTe
         assertEquals("Hello Twig", file.getText());
     }
 
-    // -------------------------------------------------------------------------
-    // helpers
-    // -------------------------------------------------------------------------
+    /**
+     * Renaming a Twig template must update the filename portion in Twig include usage while
+     * preserving the original namespace/path style.
+     *
+     * @see TwigTemplateUsageReference#handleElementRename
+     */
+    public void testTwigTemplateUsageReferenceHandleElementRenameUpdatesIncludeTag() {
+        myFixture.addFileToProject("templates/old/partial.html.twig", "");
+
+        PsiFile sourceTwig = myFixture.addFileToProject(
+            "templates/page.html.twig",
+            "{% include '@App/old/partial.html.twig' %}"
+        );
+
+        TwigTemplateUsageReference ref = findTwigUsageReference("templates/old/partial.html.twig", sourceTwig);
+        assertNotNull("Expected TwigTemplateUsageReference for include", ref);
+
+        WriteCommandAction.runWriteCommandAction(getProject(), () -> {
+            ref.handleElementRename("renamed.html.twig");
+        });
+
+        assertEquals("{% include '@App/old/renamed.html.twig' %}", sourceTwig.getText());
+    }
 
     /**
      * Finds the {@link TwigTemplateUsageReference} in {@code sourceTwig} that points to

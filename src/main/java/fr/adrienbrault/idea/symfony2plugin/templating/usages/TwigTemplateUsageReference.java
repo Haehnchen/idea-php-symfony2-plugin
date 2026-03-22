@@ -5,6 +5,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiReferenceBase;
 import com.intellij.util.IncorrectOperationException;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TemplateMoveRenameUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,10 +18,13 @@ import org.jetbrains.annotations.Nullable;
 public class TwigTemplateUsageReference extends PsiReferenceBase<PsiElement> {
 
     private final PsiElement targetElement;
+    @NotNull
+    private final String templateName;
 
     public TwigTemplateUsageReference(@NotNull PsiElement sourceElement, @NotNull PsiElement targetElement, @NotNull TextRange rangeInElement) {
         super(sourceElement, rangeInElement, false);
         this.targetElement = targetElement;
+        this.templateName = rangeInElement.substring(sourceElement.getText());
     }
 
     @Override
@@ -41,7 +45,9 @@ public class TwigTemplateUsageReference extends PsiReferenceBase<PsiElement> {
 
     @Override
     public PsiElement handleElementRename(@NotNull String newElementName) throws IncorrectOperationException {
-        return myElement;
+        String renamedTemplateName = TemplateMoveRenameUtil.renameTemplateName(templateName, newElementName);
+        PsiElement result = TemplateMoveRenameUtil.applyRangeReplacement(myElement, getRangeInElement(), renamedTemplateName);
+        return result != null ? result : myElement;
     }
 
     @Override
