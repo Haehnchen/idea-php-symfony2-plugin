@@ -5,7 +5,6 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.NlsSafe;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
@@ -38,7 +37,6 @@ import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ServiceTypeHint;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.visitor.ServiceConsumer;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceResourceGlobMatcher;
-import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerIdUsagesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.*;
@@ -1083,7 +1081,7 @@ public class ServiceContainerUtil {
                 : GlobalSearchScope.fileScope(project, baseDirectory);
 
             for (PhpClassResourceCandidate candidate : getPhpClassFqnsForResourceScope(project, normalizedNamespace, baseDirectory, scope)) {
-                if (!globMatcher.matches(candidate.path())) {
+                if (!globMatcher.matches(candidate.virtualFile())) {
                     continue;
                 }
 
@@ -1127,7 +1125,7 @@ public class ServiceContainerUtil {
                     }
 
                     for (VirtualFile virtualFile : FileBasedIndex.getInstance().getContainingFiles(PhpClassFqnIndex.KEY, fqn, scope)) {
-                        candidates.add(new PhpClassResourceCandidate(fqn, virtualFile.getPath()));
+                        candidates.add(new PhpClassResourceCandidate(fqn, virtualFile));
                     }
                 }
                 return true;
@@ -1137,7 +1135,7 @@ public class ServiceContainerUtil {
         });
     }
 
-    private record PhpClassResourceCandidate(@NotNull String fqn, @NotNull String path) {
+    private record PhpClassResourceCandidate(@NotNull String fqn, @NotNull VirtualFile virtualFile) {
     }
 
     /**

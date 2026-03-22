@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs;
 
+import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -7,8 +8,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.FileSystems;
 import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.nio.file.PathMatcher;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -41,16 +42,18 @@ public class ServiceResourceGlobMatcher {
         );
     }
 
-    public boolean matches(@NotNull String phpClassPath) {
+    public boolean matches(@NotNull VirtualFile phpClassFile) {
         if (this.resourceMatchers.isEmpty()) {
             return false;
         }
 
-        if (this.resourceMatchers.stream().noneMatch(pathMatcher -> pathMatcher.matches(Paths.get(phpClassPath)))) {
+        Path path = VfsUtilCore.virtualToIoFile(phpClassFile).toPath();
+
+        if (this.resourceMatchers.stream().noneMatch(pathMatcher -> pathMatcher.matches(path))) {
             return false;
         }
 
-        return this.excludeMatchers.stream().noneMatch(pathMatcher -> pathMatcher.matches(Paths.get(phpClassPath)));
+        return this.excludeMatchers.stream().noneMatch(pathMatcher -> pathMatcher.matches(path));
     }
 
     @NotNull
@@ -87,7 +90,11 @@ public class ServiceResourceGlobMatcher {
             return null;
         }
 
-        String path = (serviceFile.getPath() + "/" + StringUtils.join(replacePathParts, "/"))
+        // Use IO file path to get a valid OS-native path; VirtualFile.getPath() on Windows returns "/C:/..."
+        // which is rejected by the Windows NIO path parser — virtualToIoFile gives us "C:/..." instead.
+        String serviceFilePath = VfsUtilCore.virtualToIoFile(serviceFile).getAbsolutePath().replace('\\', '/');
+
+        String path = (serviceFilePath + "/" + StringUtils.join(replacePathParts, "/"))
             .replaceAll("[^*]([*])$", "**");
 
         if (!path.endsWith("*")) {
