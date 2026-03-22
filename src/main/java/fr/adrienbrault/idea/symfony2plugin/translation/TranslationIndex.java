@@ -51,7 +51,7 @@ public class TranslationIndex {
 
                 TranslationStringMap translationStringMap;
                 if (!translationDirectories.isEmpty()) {
-                    translationStringMap = TranslationStringMap.create(project, translationDirectories);
+                    translationStringMap = TranslationStringMap.create(translationDirectories);
                 } else {
                     translationStringMap = TranslationStringMap.createEmpty();
                 }
