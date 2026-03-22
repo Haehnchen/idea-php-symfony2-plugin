@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.translation;
 
 import com.intellij.codeInspection.IntentionAndQuickFixAction;
+import com.intellij.codeInsight.intention.preview.IntentionPreviewUtils;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.editor.Editor;
@@ -77,7 +78,7 @@ public class TranslationKeyIntentionAndQuickFixAction extends IntentionAndQuickF
 
     @Override
     public void applyFix(@NotNull Project project, @NotNull PsiFile psiFile, @Nullable Editor editor) {
-        if(editor == null) {
+        if(editor == null || IntentionPreviewUtils.isIntentionPreviewActive()) {
             return;
         }
 
