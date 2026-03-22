@@ -123,7 +123,7 @@ public class ServiceUtilTempProjectTest extends SymfonyTempCodeInsightFixtureTes
             Collections.singleton("../src/{Foobar,Kernel.php}")
         );
 
-        assertFalse(matcher.matches(file2.getPath()));
+        assertFalse(matcher.matches(file2));
     }
 
     public void testCompiledServiceResourcesMatcherWithExcludeMiss() {
@@ -140,6 +140,6 @@ public class ServiceUtilTempProjectTest extends SymfonyTempCodeInsightFixtureTes
             Collections.singleton("../src/{Migrations,Kernel.php}")
         );
 
-        assertTrue(matcher.matches(file2.getPath()));
+        assertTrue(matcher.matches(file2));
     }
 }

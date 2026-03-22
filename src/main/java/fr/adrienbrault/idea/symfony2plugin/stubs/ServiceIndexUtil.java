@@ -167,7 +167,7 @@ public class ServiceIndexUtil {
      *
      */
     public static boolean matchesResourcesGlob(@NotNull VirtualFile serviceFileAsBase, @NotNull VirtualFile phpClassFile, @NotNull Collection<String> resources, @NotNull Collection<String> excludes) {
-        return ServiceResourceGlobMatcher.create(serviceFileAsBase, resources, excludes).matches(phpClassFile.getPath());
+        return ServiceResourceGlobMatcher.create(serviceFileAsBase, resources, excludes).matches(phpClassFile);
     }
 
     @Nullable
@@ -225,7 +225,7 @@ public class ServiceIndexUtil {
             VirtualFile[] serviceDefinitionFiles = ServiceIndexUtil.findServiceDefinitionFiles(phpClass.getProject(), s);
             for (VirtualFile virtualFile : serviceDefinitionFiles) {
                 ServiceResourceGlobMatcher matcher = ServiceResourceGlobMatcher.create(virtualFile, resources, service.getExclude());
-                if (matcher.matches(phpClassFile.getPath())) {
+                if (matcher.matches(phpClassFile)) {
                     namespaceServices.add(containerService);
                     namespaceTargets.add(s);
                 }
