@@ -47,4 +47,57 @@ class SymfonyProfilerRequestsCollectorTest : McpCollectorTestCase() {
         assertFalse(csv.contains("\\n837681,GET,"))
         assertFalse(csv.contains("\\n802072,GET,"))
     }
+
+    fun testFormatRequestsProvidesControllerIndexedTemplatesColumn() {
+        myFixture.addFileToProject(
+            "src/Controller/ProductController.php",
+            "<?php\nnamespace App\\Controller;\n" +
+                "class ProductController {\n" +
+                "    public function show() {\n" +
+                "        \$this->render('product/show.html.twig');\n" +
+                "        \$this->renderView('product/_card.html.twig');\n" +
+                "    }\n" +
+                "}\n"
+        )
+
+        val collector = SymfonyProfilerRequestsCollector(project)
+        val requests = listOf(
+            HttpProfilerRequest(
+                200,
+                "837681",
+                "_profiler/837681",
+                "GET",
+                "http://127.0.0.1:8000/products/42",
+                object : DefaultDataCollectorInterface {
+                    override fun getController() = "App\\Controller\\ProductController::show"
+                    override fun getRoute() = "product_show"
+                    override fun getTemplate() = "profiler/fragment.html.twig"
+                    override fun getFormTypes() = emptyList<String>()
+                }
+            )
+        )
+
+        val csv = collector.formatRequests(requests)
+
+        assertTrue(csv.startsWith("hash,method,url,statusCode,profilerUrl,controller,route,entryView,renderTemplate,formTypes\n"))
+        assertTrue(csv.contains(",profiler/fragment.html.twig,product/_card.html.twig;product/show.html.twig,"))
+    }
+
+    fun testFormatRequestsRespectsCustomLimit() {
+        val collector = SymfonyProfilerRequestsCollector(project)
+        val requests = (1..35).map { index ->
+            HttpProfilerRequest(
+                200,
+                "token$index",
+                "_profiler/token$index",
+                "GET",
+                "http://127.0.0.1:8000/test/$index"
+            )
+        }
+
+        val csv = collector.formatRequests(requests, limit = 30)
+
+        assertFalse(csv.contains("\ntoken31,GET,"))
+        assertTrue(csv.contains("\ntoken30,GET,"))
+    }
 }
