@@ -20,18 +20,19 @@ class DoctrineEntityFieldsCollector(private val project: Project) {
             mcpFail("Entity '$className' has no fields or is not a valid Doctrine entity with metadata.")
         }
 
-        val csv = StringBuilder("name,column,type,relation,relationType,enumType,propertyType\\n")
-
-        fields.forEach { field ->
-            csv.append("${McpCsvUtil.escape(field.name)},")
-            csv.append("${McpCsvUtil.escape(field.column ?: "")},")
-            csv.append("${McpCsvUtil.escape(field.typeName ?: "")},")
-            csv.append("${McpCsvUtil.escape(field.relation ?: "")},")
-            csv.append("${McpCsvUtil.escape(field.relationType ?: "")},")
-            csv.append("${McpCsvUtil.escape(field.enumType ?: "")},")
-            csv.append("${McpCsvUtil.escape(field.propertyTypes.joinToString("|"))}\\n")
+        return buildString {
+            appendLine("name,column,type,relation,relationType,enumType,propertyType")
+            fields.forEach { field ->
+                appendLine(
+                    "${McpCsvUtil.escape(field.name)}," +
+                        "${McpCsvUtil.escape(field.column ?: "")}," +
+                        "${McpCsvUtil.escape(field.typeName ?: "")}," +
+                        "${McpCsvUtil.escape(field.relation ?: "")}," +
+                        "${McpCsvUtil.escape(field.relationType ?: "")}," +
+                        "${McpCsvUtil.escape(field.enumType ?: "")}," +
+                        McpCsvUtil.escape(field.propertyTypes.joinToString("|"))
+                )
+            }
         }
-
-        return csv.toString()
     }
 }

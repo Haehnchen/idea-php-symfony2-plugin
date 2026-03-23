@@ -28,15 +28,14 @@ class SymfonyFormTypeOptionsCollector(private val project: Project) {
             mcpFail("Form type '$formType' not found or has no options.")
         }
 
-        val csv = StringBuilder("name,type,source\\n")
+        return buildString {
+            appendLine("name,type,source")
+            options.forEach { (name, formOption) ->
+                val types = formOption.optionEnum.joinToString("|") { it.name }
+                val source = formOption.formClass.phpClass.fqn
 
-        options.forEach { (name, formOption) ->
-            val types = formOption.optionEnum.joinToString("|") { it.name }
-            val source = formOption.formClass.phpClass.fqn
-
-            csv.append("${McpCsvUtil.escape(name)},${McpCsvUtil.escape(types)},${McpCsvUtil.escape(source)}\\n")
+                appendLine("${McpCsvUtil.escape(name)},${McpCsvUtil.escape(types)},${McpCsvUtil.escape(source)}")
+            }
         }
-
-        return csv.toString()
     }
 }

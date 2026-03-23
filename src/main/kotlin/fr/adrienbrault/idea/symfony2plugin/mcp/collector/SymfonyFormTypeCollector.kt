@@ -6,11 +6,10 @@ import fr.adrienbrault.idea.symfony2plugin.mcp.McpPathUtil
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil
 
 class SymfonyFormTypeCollector(private val project: Project) {
-    fun collect(): String {
+    fun collect(): String = buildString {
         val collector = FormUtil.FormTypeCollector(project).collect()
         val formTypes = collector.formTypesMap
-
-        val csv = StringBuilder("name,className,filePath\\n")
+        appendLine("name,className,filePath")
 
         formTypes.forEach { (name, formTypeClass) ->
             val phpClass = formTypeClass.getPhpClass(project)
@@ -18,9 +17,7 @@ class SymfonyFormTypeCollector(private val project: Project) {
                 ?.let { McpPathUtil.getRelativeProjectPath(project, it) }
                 ?: ""
 
-            csv.append("${McpCsvUtil.escape(name)},${McpCsvUtil.escape(formTypeClass.phpClassName)},${McpCsvUtil.escape(filePath)}\\n")
+            appendLine("${McpCsvUtil.escape(name)},${McpCsvUtil.escape(formTypeClass.phpClassName)},${McpCsvUtil.escape(filePath)}")
         }
-
-        return csv.toString()
     }
 }

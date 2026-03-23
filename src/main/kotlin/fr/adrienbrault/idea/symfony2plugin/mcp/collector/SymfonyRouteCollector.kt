@@ -9,7 +9,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil
 import org.apache.commons.lang3.StringUtils
 
 class SymfonyRouteCollector(private val project: Project) {
-    fun collect(routeName: String? = null, controller: String? = null): String {
+    fun collect(routeName: String? = null, controller: String? = null): String = buildString {
         val allRoutes = RouteHelper.getAllRoutes(project)
         val phpIndex = PhpIndex.getInstance(project)
 
@@ -26,7 +26,7 @@ class SymfonyRouteCollector(private val project: Project) {
 
         val templatesByController = TwigUtil.findTemplatesByControllers(project, controllerFqns)
 
-        val csv = StringBuilder("name,controller,path,filePath,templates\\n")
+        appendLine("name,controller,path,filePath,templates")
 
         filteredRoutes.forEach { (_, route) ->
             val controllerClass = route.controller?.let { ctrl ->
@@ -49,9 +49,7 @@ class SymfonyRouteCollector(private val project: Project) {
                 templatesByController[ctrl]?.joinToString(";") ?: ""
             } ?: ""
 
-            csv.append("${McpCsvUtil.escape(route.name)},${McpCsvUtil.escape(route.controller ?: "")},${McpCsvUtil.escape(route.path ?: "")},${McpCsvUtil.escape(filePath)},${McpCsvUtil.escape(templates)}\\n")
+            appendLine("${McpCsvUtil.escape(route.name)},${McpCsvUtil.escape(route.controller ?: "")},${McpCsvUtil.escape(route.path ?: "")},${McpCsvUtil.escape(filePath)},${McpCsvUtil.escape(templates)}")
         }
-
-        return csv.toString()
     }
 }

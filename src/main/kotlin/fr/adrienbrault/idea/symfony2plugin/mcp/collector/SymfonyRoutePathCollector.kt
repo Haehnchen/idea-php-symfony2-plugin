@@ -7,11 +7,10 @@ import com.jetbrains.php.PhpIndex
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper
 
 class SymfonyRoutePathCollector(private val project: Project) {
-    fun collect(urlPath: String): String {
+    fun collect(urlPath: String): String = buildString {
         val matches = RouteHelper.getMethodsForPathWithPlaceholderMatchRoutes(project, urlPath)
         val phpIndex = PhpIndex.getInstance(project)
-
-        val csv = StringBuilder("name,controller,path,filePath\\n")
+        appendLine("name,controller,path,filePath")
 
         matches.forEach { (route, _) ->
             val controllerClass = route.controller?.let { ctrl ->
@@ -26,9 +25,7 @@ class SymfonyRoutePathCollector(private val project: Project) {
                     ?.let { McpPathUtil.getRelativeProjectPath(project, it) }
             } ?: ""
 
-            csv.append("${McpCsvUtil.escape(route.name)},${McpCsvUtil.escape(route.controller ?: "")},${McpCsvUtil.escape(route.path ?: "")},${McpCsvUtil.escape(filePath)}\\n")
+            appendLine("${McpCsvUtil.escape(route.name)},${McpCsvUtil.escape(route.controller ?: "")},${McpCsvUtil.escape(route.path ?: "")},${McpCsvUtil.escape(filePath)}")
         }
-
-        return csv.toString()
     }
 }

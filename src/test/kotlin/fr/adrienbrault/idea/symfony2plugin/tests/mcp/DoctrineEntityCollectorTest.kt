@@ -11,6 +11,7 @@ class DoctrineEntityCollectorTest : McpCollectorTestCase() {
         val result = DoctrineEntityCollector(project).collect()
 
         assertTrue("CSV should contain header:\n$result", result.contains("className,filePath"))
+        assertUsesRealLineBreaks(result)
     }
 
     /**

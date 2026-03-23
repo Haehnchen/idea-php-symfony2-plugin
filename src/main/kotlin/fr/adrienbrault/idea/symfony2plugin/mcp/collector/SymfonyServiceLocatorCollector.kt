@@ -11,9 +11,9 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil
 import org.apache.commons.lang3.StringUtils
 
 class SymfonyServiceLocatorCollector(private val project: Project) {
-    fun collect(identifier: String): String {
+    fun collect(identifier: String): String = buildString {
         val services = ContainerCollectionResolver.getServices(project)
-        val csv = StringBuilder("serviceName,className,filePath,lineNumber\\n")
+        appendLine("serviceName,className,filePath,lineNumber")
 
         val isClassName = "\\" in identifier
 
@@ -27,7 +27,7 @@ class SymfonyServiceLocatorCollector(private val project: Project) {
                 val className = normalizedIdentifier
                 for (serviceName in serviceNames) {
                     val elements = ServiceIndexUtil.findServiceDefinitions(project, serviceName)
-                    appendServiceDefinitions(csv, serviceName, className, elements)
+                    appendServiceDefinitions(this, serviceName, className, elements)
                 }
             }
 
@@ -35,20 +35,18 @@ class SymfonyServiceLocatorCollector(private val project: Project) {
             if (directServiceElements.isNotEmpty()) {
                 val containerService = services[identifier.lowercase()]
                 val className = containerService?.className ?: normalizedIdentifier
-                appendServiceDefinitions(csv, identifier, className, directServiceElements)
+                appendServiceDefinitions(this, identifier, className, directServiceElements)
             }
         } else {
             val directServiceElements = ServiceIndexUtil.findServiceDefinitions(project, identifier)
             val containerService = services[identifier.lowercase()]
             val className = containerService?.className ?: ""
-            appendServiceDefinitions(csv, identifier, className, directServiceElements)
+            appendServiceDefinitions(this, identifier, className, directServiceElements)
         }
-
-        return csv.toString()
     }
 
     private fun appendServiceDefinitions(
-        csv: StringBuilder,
+        csv: Appendable,
         serviceName: String,
         className: String,
         elements: List<PsiElement>
@@ -65,7 +63,7 @@ class SymfonyServiceLocatorCollector(private val project: Project) {
 
             val lineNumber = getLineNumber(psiElement, psiFile)
 
-            csv.append("${McpCsvUtil.escape(serviceName)},${McpCsvUtil.escape(className)},${McpCsvUtil.escape(filePath)},$lineNumber\\n")
+            csv.appendLine("${McpCsvUtil.escape(serviceName)},${McpCsvUtil.escape(className)},${McpCsvUtil.escape(filePath)},$lineNumber")
         }
     }
 

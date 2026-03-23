@@ -5,8 +5,7 @@ import fr.adrienbrault.idea.symfony2plugin.mcp.collector.TwigExtensionCollector
 /**
  * @see TwigExtensionCollector
  *
- * Note: TwigExtensionCollector uses a literal "\n" (backslash-n) as the row separator,
- * not a real newline character. Assertions must account for this.
+ * Verifies CSV output for Twig extensions.
  */
 class TwigExtensionCollectorTest : McpCollectorTestCase() {
 
@@ -62,9 +61,10 @@ class TwigExtensionCollectorTest : McpCollectorTestCase() {
         val result = TwigExtensionCollector(project).collect("zzz_no_such_extension_zzz", true, true, true, true)
 
         assertEquals(
-            "extension_type,name,className,methodName,parameters\\n",
+            "extension_type,name,className,methodName,parameters\n",
             result
         )
+        assertUsesRealLineBreaks(result)
     }
 
     fun testCollectNullSearchReturnsAllTypes() {
@@ -74,5 +74,6 @@ class TwigExtensionCollectorTest : McpCollectorTestCase() {
         assertTrue("Must contain product_number_filter row", result.contains("filter,product_number_filter,"))
         assertTrue("Must contain product_number_function row", result.contains("function,product_number_function,"))
         assertTrue("Must contain product_number_test row", result.contains("test,product_number_test,"))
+        assertUsesRealLineBreaks(result)
     }
 }

@@ -9,9 +9,11 @@ class SymfonyServiceLocatorCollectorTest : McpCollectorTestCase() {
         assertTrue("Unexpected CSV:\n$byServiceName", byServiceName.contains("foo.yml_id"))
         assertTrue("Unexpected CSV:\n$byServiceName", byServiceName.contains("My\\Foo\\Service\\Targets"))
         assertTrue("Unexpected CSV:\n$byServiceName", byServiceName.contains("services.yml"))
+        assertUsesRealLineBreaks(byServiceName)
 
         val byClassName = SymfonyServiceLocatorCollector(project).collect("My\\Foo\\Service\\Targets")
         assertTrue("Unexpected CSV:\n$byClassName", byClassName.contains("foo.yml_id"))
         assertTrue("Unexpected CSV:\n$byClassName", byClassName.contains("foo.xml_id"))
+        assertUsesRealLineBreaks(byClassName)
     }
 }

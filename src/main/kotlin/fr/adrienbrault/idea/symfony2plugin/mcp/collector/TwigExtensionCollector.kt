@@ -14,9 +14,9 @@ class TwigExtensionCollector(private val project: Project) {
         includeFunctions: Boolean = true,
         includeTests: Boolean = true,
         includeTags: Boolean = true
-    ): String {
+    ): String = buildString {
         val phpIndex = PhpIndex.getInstance(project)
-        val csv = StringBuilder("extension_type,name,className,methodName,parameters\\n")
+        appendLine("extension_type,name,className,methodName,parameters")
 
         val searchLower = search?.lowercase()
 
@@ -26,7 +26,7 @@ class TwigExtensionCollector(private val project: Project) {
                 if (searchLower == null || searchLower in name.lowercase()) {
                     val (className, methodName, parameters) = parseExtensionSignature(extension.signature, phpIndex)
                     val paramsStr = parameters?.joinToString(",") ?: ""
-                    csv.append("filter,${McpCsvUtil.escape(name)},${McpCsvUtil.escape(className ?: "")},${McpCsvUtil.escape(methodName ?: "")},${McpCsvUtil.escape(paramsStr)}\\n")
+                    appendLine("filter,${McpCsvUtil.escape(name)},${McpCsvUtil.escape(className ?: "")},${McpCsvUtil.escape(methodName ?: "")},${McpCsvUtil.escape(paramsStr)}")
                 }
             }
         }
@@ -37,7 +37,7 @@ class TwigExtensionCollector(private val project: Project) {
                 if (searchLower == null || searchLower in name.lowercase()) {
                     val (className, methodName, parameters) = parseExtensionSignature(extension.signature, phpIndex)
                     val paramsStr = parameters?.joinToString(",") ?: ""
-                    csv.append("function,${McpCsvUtil.escape(name)},${McpCsvUtil.escape(className ?: "")},${McpCsvUtil.escape(methodName ?: "")},${McpCsvUtil.escape(paramsStr)}\\n")
+                    appendLine("function,${McpCsvUtil.escape(name)},${McpCsvUtil.escape(className ?: "")},${McpCsvUtil.escape(methodName ?: "")},${McpCsvUtil.escape(paramsStr)}")
                 }
             }
         }
@@ -48,7 +48,7 @@ class TwigExtensionCollector(private val project: Project) {
                 if (searchLower == null || searchLower in name.lowercase()) {
                     val (className, methodName, parameters) = parseExtensionSignature(extension.signature, phpIndex)
                     val paramsStr = parameters?.joinToString(",") ?: ""
-                    csv.append("test,${McpCsvUtil.escape(name)},${McpCsvUtil.escape(className ?: "")},${McpCsvUtil.escape(methodName ?: "")},${McpCsvUtil.escape(paramsStr)}\\n")
+                    appendLine("test,${McpCsvUtil.escape(name)},${McpCsvUtil.escape(className ?: "")},${McpCsvUtil.escape(methodName ?: "")},${McpCsvUtil.escape(paramsStr)}")
                 }
             }
         }
@@ -57,12 +57,10 @@ class TwigExtensionCollector(private val project: Project) {
             val tags = TwigUtil.getNamedTokenParserTags(project)
             tags.forEach { name ->
                 if (searchLower == null || searchLower in name.lowercase()) {
-                    csv.append("tag,${McpCsvUtil.escape(name)},,,\\n")
+                    appendLine("tag,${McpCsvUtil.escape(name)},,,")
                 }
             }
         }
-
-        return csv.toString()
     }
 
     private fun parseExtensionSignature(signature: String?, phpIndex: PhpIndex): Triple<String?, String?, List<String>?> {

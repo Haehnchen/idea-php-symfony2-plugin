@@ -7,11 +7,10 @@ import com.jetbrains.php.PhpIndex
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyCommandUtil
 
 class SymfonyCommandCollector(private val project: Project) {
-    fun collect(): String {
+    fun collect(): String = buildString {
         val commands = SymfonyCommandUtil.getCommands(project)
         val phpIndex = PhpIndex.getInstance(project)
-
-        val csv = StringBuilder("name,className,filePath\\n")
+        appendLine("name,className,filePath")
 
         commands.forEach { command ->
             val filePath = phpIndex.getClassesByFQN(command.fqn).firstOrNull()
@@ -20,9 +19,7 @@ class SymfonyCommandCollector(private val project: Project) {
                 ?.let { McpPathUtil.getRelativeProjectPath(project, it) }
                 ?: ""
 
-            csv.append("${McpCsvUtil.escape(command.name)},${McpCsvUtil.escape(command.fqn)},${McpCsvUtil.escape(filePath)}\\n")
+            appendLine("${McpCsvUtil.escape(command.name)},${McpCsvUtil.escape(command.fqn)},${McpCsvUtil.escape(filePath)}")
         }
-
-        return csv.toString()
     }
 }
