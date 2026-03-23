@@ -8,7 +8,9 @@ import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterfac
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -77,6 +79,20 @@ public class ProfilerUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         assertEquals(16, requests.get("@Twig/Exception/trace.html.twig").intValue());
         assertEquals(1, requests.get("@Twig/Exception/traces.html.twig").intValue());
+    }
+
+    /**
+     * @see ProfilerUtil#getRenderedElementTwigTemplateNames
+     */
+    public void testGetRenderedElementTwigTemplateNamesPreservesProfilerOrder() {
+        PsiFile psiFile = myFixture.configureByFile("profiler-twig.html");
+        List<String> templates = ProfilerUtil.getRenderedElementTwigTemplateNames(getProject(), psiFile.getText());
+
+        assertEquals(Arrays.asList(
+            "@Twig/Exception/exception_full.html.twig",
+            "@Twig/layout.html.twig",
+            "@Twig/Exception/exception.html.twig"
+        ), templates.subList(0, 3));
     }
 
     /**

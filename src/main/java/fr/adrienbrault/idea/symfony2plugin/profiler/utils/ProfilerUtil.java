@@ -257,7 +257,7 @@ public class ProfilerUtil {
             return Collections.emptyMap();
         }
 
-        Map<String, Integer> templates = new HashMap<>();
+        Map<String, Integer> templates = new LinkedHashMap<>();
 
         for (XmlTag tag : PsiTreeUtil.getChildrenOfTypeAsList(tbody, XmlTag.class)) {
             if(!"tr".equals(tag.getName())) {
@@ -285,6 +285,11 @@ public class ProfilerUtil {
         }
 
         return templates;
+    }
+
+    @NotNull
+    public static List<String> getRenderedElementTwigTemplateNames(@NotNull Project project, @NotNull String html) {
+        return new ArrayList<>(getRenderedElementTwigTemplates(project, html).keySet());
     }
 
     @NotNull
@@ -335,9 +340,12 @@ public class ProfilerUtil {
                 return requestCache;
             }
 
+            Map<String, String> requestAttributes = new HashMap<>();
+            List<String> renderedTemplates = getRenderedTemplates(requestAttributes);
+
             ProfilerRequestInterface httpProfilerRequest = new HttpProfilerRequest(
                 request,
-                new HttpDefaultDataCollector(getRequestAttributes())
+                new HttpDefaultDataCollector(requestAttributes, renderedTemplates)
             );
 
             PROFILER_REQUEST_CACHE.put(profilerUrl, httpProfilerRequest);
@@ -346,9 +354,7 @@ public class ProfilerUtil {
         }
 
         @NotNull
-        private Map<String, String> getRequestAttributes() {
-            Map<String, String> requestAttributes = new HashMap<>();
-
+        private List<String> getRenderedTemplates(@NotNull Map<String, String> requestAttributes) {
             String requestContent = getUrlContent(profilerUrl + "?panel=request");
             String twigContent = getUrlContent(profilerUrl + "?panel=twig");
 
@@ -359,15 +365,22 @@ public class ProfilerUtil {
             }
 
             if(twigContent != null) {
+                List<String> templates = new ArrayList<>();
                 ApplicationManager.getApplication().runReadAction(() -> {
-                    Map<String, Integer> templates = getRenderedElementTwigTemplates(project, twigContent);
+                    templates.addAll(getRenderedElementTwigTemplateNames(project, twigContent));
                     if(!templates.isEmpty()) {
-                        requestAttributes.put("_template", templates.keySet().iterator().next());
+                        String entryView = templates.stream()
+                            .filter(template -> !template.startsWith("@WebProfiler"))
+                            .findFirst()
+                            .orElse(templates.get(0));
+                        requestAttributes.put("_template", entryView);
                     }
                 });
+
+                return templates;
             }
 
-            return requestAttributes;
+            return Collections.emptyList();
         }
 
         private String getUrlContent(@NotNull String url) {
@@ -544,4 +557,3 @@ public class ProfilerUtil {
         return null;
     }
 }
-

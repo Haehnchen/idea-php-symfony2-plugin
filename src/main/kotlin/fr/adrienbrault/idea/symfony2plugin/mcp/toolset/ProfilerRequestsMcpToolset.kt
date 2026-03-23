@@ -23,7 +23,7 @@ class ProfilerRequestsMcpToolset : McpToolset {
 
     @McpTool
     @McpDescription("""
-        Lists recent Symfony profiler requests as CSV for tracing request handling, routes, controller and rendered views.
+        Lists recent Symfony requests from the Profiler as CSV for tracing request handling, controller resolution, and rendered Twig views.
 
         - hash: Profiler token/hash
         - method: HTTP method (GET, POST, etc.)
@@ -34,14 +34,11 @@ class ProfilerRequestsMcpToolset : McpToolset {
         - route: Matched route name
         - entryView: Symfony profiler "Entry View"
         - renderTemplate: Templates indexed from render*()/@Template/#[Template], joined by semicolon
+        - renderedTemplates: First 3 Twig templates from the profiler "Rendered Templates" panel, in profiler order, joined by semicolon
         - formTypes: Form types used (pipe-separated if multiple)
-
-        Example output:
-        hash,method,url,statusCode,profilerUrl,controller,route,entryView,renderTemplate,formTypes
-        18e6b8,GET,http://127.0.0.1:8000/user/1,200,_profiler/18e6b8,App\Controller\UserController::show,user_show,user/show.html.twig,user/show.html.twig;user/_card.html.twig,
     """)
     suspend fun list_profiler_requests(
-        @McpDescription("Optional URL partial match, case-insensitive. Example: '/admin' or '127.0.0.1:8000'")
+        @McpDescription("Optional URL partial match, case-insensitive. Example: '/admin'")
         url: String? = null,
 
         @McpDescription("Optional profiler token partial match, case-insensitive. Example: '18e6b8'")
@@ -53,8 +50,8 @@ class ProfilerRequestsMcpToolset : McpToolset {
         @McpDescription("Optional route partial match, case-insensitive. Example: 'user_show'")
         route: String? = null,
 
-        @McpDescription("Optional max rows. Default: 30. Example: 5")
-        limit: Int = 30
+        @McpDescription("Optional max rows. Default: 25.")
+        limit: Int = 25
     ): String {
         val project = currentCoroutineContext().project
 
