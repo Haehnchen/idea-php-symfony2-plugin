@@ -32,29 +32,76 @@ public class LocalDefaultDataCollector implements DefaultDataCollectorInterface 
 
     @Nullable
     public String getTemplate() {
+        Collection<String> renderedTemplates = getRenderedTemplates();
+        if (!renderedTemplates.isEmpty()) {
+            for (String renderedTemplate : renderedTemplates) {
+                if (!renderedTemplate.startsWith("@WebProfiler")) {
+                    return renderedTemplate;
+                }
+            }
+
+            return renderedTemplates.iterator().next();
+        }
+
         if (this.contents == null) {
             return null;
         }
 
-        // try to find template ordered loading list from "Rendered Templates", to find main template entrypoint
+        return this.pregMatch(this.contents, "\"template.twig \\(([^\"]*\\.html\\.\\w{2,4})\\)\"");
+    }
+
+    @Override
+    public @NotNull Collection<String> getRenderedTemplates() {
+        if (this.contents == null) {
+            return Collections.emptyList();
+        }
+
+        int templatePathsIndex = this.contents.indexOf("\"template_paths\"");
+        if (templatePathsIndex >= 0) {
+            int nullEndingCollector = this.contents.indexOf(Character.toString('\0'), templatePathsIndex);
+            String templatePathsContent = nullEndingCollector > templatePathsIndex
+                ? this.contents.substring(templatePathsIndex, nullEndingCollector)
+                : this.contents.substring(templatePathsIndex);
+
+            List<String> templatePaths = new ArrayList<>();
+            Matcher templatePathsMatcher = Pattern.compile("s:\\d+:\"([^\"]+)\";s:\\d+:\"([^\"]+)\"").matcher(templatePathsContent);
+            while (templatePathsMatcher.find()) {
+                String template = templatePathsMatcher.group(1);
+                String path = templatePathsMatcher.group(2);
+
+                if (!template.isBlank() && !path.isBlank()) {
+                    templatePaths.add(template);
+                }
+            }
+
+            if (!templatePaths.isEmpty()) {
+                return templatePaths;
+            }
+        }
+
+        List<String> templates = new ArrayList<>();
+
         Matcher matcher = Pattern.compile("\"template_paths\"[\\w;:{]+\"([^\"]+)\"").matcher(this.contents);
         while(matcher.find()){
             int groupStart = matcher.start();
             int i = this.contents.lastIndexOf(Character.toString('\0'), groupStart);
             if (i > 0) {
                 String substring = this.contents.substring(i, groupStart);
-
-                // try to find parent scope, to reduce false positive matches
                 if (substring.contains("Twig\\Profiler\\Profile")) {
                     String group = matcher.group(1);
-                    if (!group.isBlank() && !group.startsWith("@WebProfiler")) {
-                        return group;
+                    if (!group.isBlank()) {
+                        templates.add(group);
                     }
                 }
             }
         }
 
-        return this.pregMatch(this.contents, "\"template.twig \\(([^\"]*\\.html\\.\\w{2,4})\\)\"");
+        if (!templates.isEmpty()) {
+            return templates;
+        }
+
+        String template = this.pregMatch(this.contents, "\"template.twig \\(([^\"]*\\.html\\.\\w{2,4})\\)\"");
+        return template != null ? Collections.singletonList(template) : Collections.emptyList();
     }
 
     @Nullable

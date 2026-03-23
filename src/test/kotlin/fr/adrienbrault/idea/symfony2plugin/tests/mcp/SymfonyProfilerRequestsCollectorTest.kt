@@ -28,6 +28,7 @@ class SymfonyProfilerRequestsCollectorTest : McpCollectorTestCase() {
                     override fun getController() = "App\\Controller\\ProductController::show"
                     override fun getRoute() = "product_show"
                     override fun getTemplate() = "product/show.html.twig"
+                    override fun getRenderedTemplates() = listOf("product/show.html.twig", "base.html.twig")
                     override fun getFormTypes() = listOf("App\\Form\\ProductFilterType")
                 }
             ),
@@ -72,6 +73,14 @@ class SymfonyProfilerRequestsCollectorTest : McpCollectorTestCase() {
                     override fun getController() = "App\\Controller\\ProductController::show"
                     override fun getRoute() = "product_show"
                     override fun getTemplate() = "profiler/fragment.html.twig"
+                    override fun getRenderedTemplates() = listOf(
+                        "profiler/fragment.html.twig",
+                        "layout/base.html.twig",
+                        "widgets/card.html.twig",
+                        "widgets/list.html.twig",
+                        "widgets/footer.html.twig",
+                        "widgets/ignored.html.twig"
+                    )
                     override fun getFormTypes() = emptyList<String>()
                 }
             )
@@ -79,8 +88,8 @@ class SymfonyProfilerRequestsCollectorTest : McpCollectorTestCase() {
 
         val csv = collector.formatRequests(requests)
 
-        assertTrue(csv.startsWith("hash,method,url,statusCode,profilerUrl,controller,route,entryView,renderTemplate,formTypes\n"))
-        assertTrue(csv.contains(",profiler/fragment.html.twig,product/_card.html.twig;product/show.html.twig,"))
+        assertTrue(csv.startsWith("hash,method,url,statusCode,profilerUrl,controller,route,entryView,renderTemplate,renderedTemplates,formTypes\n"))
+        assertTrue(csv.contains(",profiler/fragment.html.twig,product/_card.html.twig;product/show.html.twig,profiler/fragment.html.twig;layout/base.html.twig;widgets/card.html.twig,"))
     }
 
     fun testFormatRequestsRespectsCustomLimit() {
@@ -95,9 +104,9 @@ class SymfonyProfilerRequestsCollectorTest : McpCollectorTestCase() {
             )
         }
 
-        val csv = collector.formatRequests(requests, limit = 30)
+        val csv = collector.formatRequests(requests, limit = 25)
 
-        assertFalse(csv.contains("\ntoken31,GET,"))
-        assertTrue(csv.contains("\ntoken30,GET,"))
+        assertFalse(csv.contains("\ntoken26,GET,"))
+        assertTrue(csv.contains("\ntoken25,GET,"))
     }
 }

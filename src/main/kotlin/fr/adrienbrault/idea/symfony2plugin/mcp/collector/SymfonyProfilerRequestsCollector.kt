@@ -14,7 +14,7 @@ class SymfonyProfilerRequestsCollector(private val project: Project) {
         hash: String? = null,
         controller: String? = null,
         route: String? = null,
-        limit: Int = 30
+        limit: Int = 25
     ): String {
         val profilerIndex = ProfilerFactoryUtil.createIndex(project)
             ?: mcpFail("No profiler index available. Make sure the Symfony profiler is enabled and accessible.")
@@ -34,9 +34,9 @@ class SymfonyProfilerRequestsCollector(private val project: Project) {
         hash: String? = null,
         controller: String? = null,
         route: String? = null,
-        limit: Int = 30
+        limit: Int = 25
     ): String {
-        val effectiveLimit = if (limit > 0) limit else 30
+        val effectiveLimit = if (limit > 0) limit else 25
         val filteredRequests = requests.filter { request ->
             val collectorData = request.getCollector(DefaultDataCollectorInterface::class.java)
 
@@ -60,16 +60,20 @@ class SymfonyProfilerRequestsCollector(private val project: Project) {
         )
 
         return buildString {
-            appendLine("hash,method,url,statusCode,profilerUrl,controller,route,entryView,renderTemplate,formTypes")
+            appendLine("hash,method,url,statusCode,profilerUrl,controller,route,entryView,renderTemplate,renderedTemplates,formTypes")
             for (request in filteredRequests) {
                 val collectorData = request.getCollector(DefaultDataCollectorInterface::class.java)
 
                 val controllerValue = collectorData?.controller ?: ""
                 val routeValue = collectorData?.route ?: ""
-                val template = collectorData?.template ?: ""
-                val controllerTemplates = templatesByController[normalizeControllerScope(controllerValue)]
+                val entryView = collectorData?.template ?: ""
+                val renderTemplate = templatesByController[normalizeControllerScope(controllerValue)]
                     ?.toList()
                     ?.sorted()
+                    ?.joinToString(";")
+                    ?: ""
+                val renderedTemplates = collectorData?.renderedTemplates
+                    ?.take(3)
                     ?.joinToString(";")
                     ?: ""
                 val formTypes = collectorData?.formTypes?.joinToString("|") ?: ""
@@ -82,8 +86,9 @@ class SymfonyProfilerRequestsCollector(private val project: Project) {
                         "${McpCsvUtil.escape(request.profilerUrl)}," +
                         "${McpCsvUtil.escape(controllerValue)}," +
                         "${McpCsvUtil.escape(routeValue)}," +
-                        "${McpCsvUtil.escape(template)}," +
-                        "${McpCsvUtil.escape(controllerTemplates)}," +
+                        "${McpCsvUtil.escape(entryView)}," +
+                        "${McpCsvUtil.escape(renderTemplate)}," +
+                        "${McpCsvUtil.escape(renderedTemplates)}," +
                         McpCsvUtil.escape(formTypes)
                 )
             }
