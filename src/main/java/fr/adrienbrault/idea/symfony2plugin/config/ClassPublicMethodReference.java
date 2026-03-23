@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.config;
 
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementResolveResult;
@@ -33,6 +34,10 @@ public class ClassPublicMethodReference extends PsiPolyVariantReferenceBase<PsiE
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
+        if (DumbService.isDumb(project)) {
+            return ResolveResult.EMPTY_ARRAY;
+        }
+
         PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(project, this.className);
         if(phpClass == null) {
             return new ResolveResult[0];
@@ -50,6 +55,9 @@ public class ClassPublicMethodReference extends PsiPolyVariantReferenceBase<PsiE
     @Override
     @Deprecated
     public Object[] getVariants() {
+        if (DumbService.isDumb(project)) {
+            return new Object[0];
+        }
 
         PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(project, this.className);
         if(phpClass == null) {
