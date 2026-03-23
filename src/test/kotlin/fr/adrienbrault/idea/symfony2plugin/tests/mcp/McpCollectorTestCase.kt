@@ -43,4 +43,9 @@ abstract class McpCollectorTestCase : SymfonyLightCodeInsightFixtureTestCase() {
     override fun getTestDataPath(): String {
         return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests"
     }
+
+    protected fun assertUsesRealLineBreaks(csv: String) {
+        assertTrue("CSV should contain at least one real line break:\n$csv", csv.contains('\n'))
+        assertFalse("CSV should not contain literal \\\\n separators:\n$csv", csv.contains("\\n"))
+    }
 }

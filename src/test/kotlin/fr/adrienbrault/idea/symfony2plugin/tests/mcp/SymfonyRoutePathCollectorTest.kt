@@ -9,5 +9,6 @@ class SymfonyRoutePathCollectorTest : McpCollectorTestCase() {
         assertTrue("Unexpected CSV:\n$result", result.startsWith("name,controller,path,filePath"))
         assertTrue("Unexpected CSV:\n$result", result.contains("my_car_foo_stuff"))
         assertTrue("Unexpected CSV:\n$result", result.contains("CarController::fooAction"))
+        assertUsesRealLineBreaks(result)
     }
 }

@@ -11,6 +11,7 @@ class SymfonyFormTypeCollectorTest : McpCollectorTestCase() {
         val result = SymfonyFormTypeCollector(project).collect()
 
         assertTrue("CSV must start with header", result.startsWith("name,className,filePath"))
+        assertUsesRealLineBreaks(result)
     }
 
     /**

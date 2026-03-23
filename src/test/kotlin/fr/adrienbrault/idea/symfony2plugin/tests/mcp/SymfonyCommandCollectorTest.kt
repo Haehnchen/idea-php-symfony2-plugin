@@ -15,6 +15,7 @@ class SymfonyCommandCollectorTest : McpCollectorTestCase() {
         assertTrue("Must contain command name 'foo'", result.contains("foo"))
         assertTrue("Must contain FQN \\Foo\\FooCommand", result.contains("\\Foo\\FooCommand"))
         assertTrue("Must contain source file path", result.contains("SymfonyCommandUtilTest.php"))
+        assertUsesRealLineBreaks(result)
     }
 
     /**

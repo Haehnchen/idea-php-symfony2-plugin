@@ -10,5 +10,6 @@ class SymfonyFormTypeOptionsCollectorTest : McpCollectorTestCase() {
         assertTrue("Unexpected CSV:\n$result", result.contains("MyType"))
         assertTrue("Unexpected CSV:\n$result", result.contains("BarTypeParent"))
         assertTrue("Unexpected CSV:\n$result", result.contains("BarTypeExtension"))
+        assertUsesRealLineBreaks(result)
     }
 }

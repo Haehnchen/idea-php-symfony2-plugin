@@ -11,6 +11,7 @@ class DoctrineEntityFieldsCollectorTest : McpCollectorTestCase() {
         val result = DoctrineEntityFieldsCollector(project).collect("FooBundle\\Entity\\Yaml")
 
         assertTrue("CSV should contain header:\n$result", result.contains("name,column,type,relation,relationType,enumType,propertyType"))
+        assertUsesRealLineBreaks(result)
     }
 
     /**

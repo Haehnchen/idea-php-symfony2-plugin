@@ -6,10 +6,9 @@ import fr.adrienbrault.idea.symfony2plugin.mcp.McpPathUtil
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper
 
 class DoctrineEntityCollector(private val project: Project) {
-    fun collect(): String {
+    fun collect(): String = buildString {
         val entities = EntityHelper.getModelClasses(project)
-
-        val csv = StringBuilder("className,filePath\\n")
+        appendLine("className,filePath")
 
         entities.forEach { entity ->
             val phpClass = entity.phpClass
@@ -17,9 +16,7 @@ class DoctrineEntityCollector(private val project: Project) {
                 ?.let { McpPathUtil.getRelativeProjectPath(project, it) }
                 ?: ""
 
-            csv.append("${McpCsvUtil.escape(phpClass.fqn)},${McpCsvUtil.escape(filePath)}\\n")
+            appendLine("${McpCsvUtil.escape(phpClass.fqn)},${McpCsvUtil.escape(filePath)}")
         }
-
-        return csv.toString()
     }
 }
