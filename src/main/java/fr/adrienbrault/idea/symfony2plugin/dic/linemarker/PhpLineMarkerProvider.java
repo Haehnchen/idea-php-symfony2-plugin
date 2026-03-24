@@ -25,7 +25,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -89,33 +88,10 @@ public class PhpLineMarkerProvider implements LineMarkerProvider {
             }
 
             result.add(NavigationGutterIconBuilder.create(AllIcons.Modules.SourceRoot)
-                .setTargets(NotNullLazyValue.lazy(() -> getClassesForServiceKey(project, virtualFile, service)))
+                .setTargets(NotNullLazyValue.lazy(() -> ServiceIndexUtil.getClassesForServiceDefinition(project, virtualFile, service)))
                 .setTooltipText("Navigate to class")
                 .createLineMarkerInfo(psiElement));
         }
-    }
-
-    /**
-     * Resolve class targets for one indexed PHP service definition.
-     *
-     * Namespace resource prototypes reuse the shared resource expansion path,
-     * using the current container file as the base for resource resolution.
-     */
-    @NotNull
-    private static Collection<PsiElement> getClassesForServiceKey(@NotNull Project project, @NotNull VirtualFile containerFile, @NotNull ServiceSerializable service) {
-        Collection<PsiElement> targets = new HashSet<>();
-
-        for (String className : ServiceContainerUtil.getPhpClassFromResources(
-            project,
-            service.getId(),
-            containerFile,
-            service.getResource(),
-            service.getExclude()
-        )) {
-            targets.addAll(PhpElementsUtil.getClassesInterface(project, className));
-        }
-
-        return targets;
     }
 
     /**

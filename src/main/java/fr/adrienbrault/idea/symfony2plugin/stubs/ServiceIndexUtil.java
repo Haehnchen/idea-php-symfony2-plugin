@@ -29,6 +29,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUt
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceDefinitionLocator;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceDefinitionLocatorParameter;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -71,6 +72,31 @@ public class ServiceIndexUtil {
         return FileBasedIndex.getInstance()
             .getFileData(ServicesDefinitionStubIndex.KEY, virtualFile, project)
             .get(serviceName.toLowerCase());
+    }
+
+    /**
+     * Expand resource/exclude patterns for an indexed service definition into PhpClass targets.
+     * Used by XML, YAML, and PHP line marker providers to resolve "Navigate to class" gutters.
+     */
+    @NotNull
+    public static Collection<PsiElement> getClassesForServiceDefinition(
+        @NotNull Project project,
+        @NotNull VirtualFile containerFile,
+        @NotNull ServiceSerializable service
+    ) {
+        Collection<PsiElement> targets = new HashSet<>();
+
+        for (String className : ServiceContainerUtil.getPhpClassFromResources(
+            project,
+            service.getId(),
+            containerFile,
+            service.getResource(),
+            service.getExclude()
+        )) {
+            targets.addAll(PhpElementsUtil.getClassesInterface(project, className));
+        }
+
+        return targets;
     }
 
     public static List<PsiElement> findServiceDefinitions(@NotNull Project project, @NotNull String serviceName) {

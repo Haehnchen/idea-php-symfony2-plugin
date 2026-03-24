@@ -6,10 +6,13 @@ import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.NotNullLazyValue;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
-import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlGoToDeclarationHandler;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceSerializable;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang3.StringUtils;
@@ -65,18 +68,33 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
             // services:
             //    App\:
             //        resource: '../src/*'
-            visitServiceIdForResources(psiElement, (YAMLKeyValue) yamlKeyValue, result);
+            visitServiceIdForResources(project, psiElement, (YAMLKeyValue) yamlKeyValue, result);
         }
     }
 
-    private void visitServiceIdForResources(PsiElement leafTarget, YAMLKeyValue yamlKeyValue, @NotNull Collection<? super LineMarkerInfo<?>> result) {
-        String resource = YamlHelper.getYamlKeyValueAsString(yamlKeyValue, "resource");
-        if (resource == null) {
+    private void visitServiceIdForResources(@NotNull Project project, PsiElement leafTarget, YAMLKeyValue yamlKeyValue, @NotNull Collection<? super LineMarkerInfo<?>> result) {
+        String id = yamlKeyValue.getKeyText();
+        if (StringUtils.isBlank(id) || !id.endsWith("\\")) {
+            return;
+        }
+
+        PsiFile containingFile = yamlKeyValue.getContainingFile();
+        if (containingFile == null) {
+            return;
+        }
+
+        VirtualFile containerFile = containingFile.getVirtualFile();
+        if (containerFile == null) {
+            return;
+        }
+
+        ServiceSerializable service = ServiceIndexUtil.findServiceDefinition(project, containerFile, id);
+        if (service == null || service.getResource().isEmpty()) {
             return;
         }
 
         result.add(NavigationGutterIconBuilder.create(AllIcons.Modules.SourceRoot)
-            .setTargets(NotNullLazyValue.lazy(() -> YamlGoToDeclarationHandler.getClassesForServiceKey(yamlKeyValue)))
+            .setTargets(NotNullLazyValue.lazy(() -> ServiceIndexUtil.getClassesForServiceDefinition(project, containerFile, service)))
             .setTooltipText("Navigate to class")
             .createLineMarkerInfo(leafTarget));
     }

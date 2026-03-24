@@ -1,8 +1,13 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.dic.linemarker;
 
 import com.intellij.ide.highlighter.XmlFileType;
+import com.intellij.patterns.PatternCondition;
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
+import com.intellij.util.ProcessingContext;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
@@ -65,6 +70,31 @@ public class XmlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTes
                 "</container>"
             ),
             new LineMarker.ToolTipEqualsAssert("Navigate to parent service")
+        );
+    }
+
+    public void testThatPrototypeNamespaceResourceIsHavingLinemarker() {
+        myFixture.addFileToProject("src/Controller/FooController.php", "<?php\n" +
+            "namespace App\\Controller;\n" +
+            "class FooController {}\n");
+
+        PsiFile configFile = myFixture.addFileToProject("config/services.xml",
+            "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+            "<container>\n" +
+            "    <services>\n" +
+            "        <prototype namespace=\"App\\Controller\\\" resource=\"../src/Controller/*\"/>\n" +
+            "    </services>\n" +
+            "</container>");
+        myFixture.configureFromExistingVirtualFile(configFile.getVirtualFile());
+
+        assertLineMarker(myFixture.getFile(), new LineMarker.ToolTipEqualsAssert("Navigate to class"));
+        assertLineMarker(myFixture.getFile(), new LineMarker.TargetAcceptsPattern("Navigate to class",
+            PlatformPatterns.psiElement(PhpClass.class).with(new PatternCondition<>("fqn") {
+                @Override
+                public boolean accepts(@NotNull PhpClass phpClass, ProcessingContext context) {
+                    return "\\App\\Controller\\FooController".equals(phpClass.getFQN());
+                }
+            }))
         );
     }
 

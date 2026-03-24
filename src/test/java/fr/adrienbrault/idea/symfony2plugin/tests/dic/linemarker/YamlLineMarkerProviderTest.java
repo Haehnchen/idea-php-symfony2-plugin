@@ -1,7 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.dic.linemarker;
 
+import com.intellij.patterns.PatternCondition;
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
+import com.intellij.util.ProcessingContext;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
@@ -65,11 +70,24 @@ public class YamlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTe
     }
 
     public void testThatServiceResourceIsHavingLinemarker() {
-        assertLineMarker(createYamlFile("" +
-                "services:\n" +
-                "    App\\Controller\\:\n" +
-                "        resource: '../src/Controller'\n"),
-            new LineMarker.ToolTipEqualsAssert("Navigate to class")
+        myFixture.addFileToProject("src/Controller/FooController.php", "<?php\n" +
+            "namespace App\\Controller;\n" +
+            "class FooController {}\n");
+
+        PsiFile configFile = myFixture.addFileToProject("config/services.yaml",
+            "services:\n" +
+            "    App\\Controller\\:\n" +
+            "        resource: '../src/Controller/*'\n");
+        myFixture.configureFromExistingVirtualFile(configFile.getVirtualFile());
+
+        assertLineMarker(myFixture.getFile(), new LineMarker.ToolTipEqualsAssert("Navigate to class"));
+        assertLineMarker(myFixture.getFile(), new LineMarker.TargetAcceptsPattern("Navigate to class",
+            PlatformPatterns.psiElement(PhpClass.class).with(new PatternCondition<>("fqn") {
+                @Override
+                public boolean accepts(@NotNull PhpClass phpClass, ProcessingContext context) {
+                    return "\\App\\Controller\\FooController".equals(phpClass.getFQN());
+                }
+            }))
         );
     }
 

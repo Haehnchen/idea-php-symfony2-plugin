@@ -6,6 +6,7 @@ import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.NotNullLazyValue;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.patterns.XmlTagPattern;
 import com.intellij.psi.PsiElement;
@@ -13,6 +14,8 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlTag;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceSerializable;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -79,13 +82,18 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
                     continue;
                 }
 
-                String resource = ((XmlTag) xmlTag).getAttributeValue("resource");
-                if (StringUtils.isBlank(resource)) {
+                VirtualFile containerFile = containingFile.getVirtualFile();
+                if (containerFile == null) {
+                    continue;
+                }
+
+                ServiceSerializable service = ServiceIndexUtil.findServiceDefinition(project, containerFile, namespace);
+                if (service == null || service.getResource().isEmpty()) {
                     continue;
                 }
 
                 result.add(NavigationGutterIconBuilder.create(AllIcons.Modules.SourceRoot)
-                    .setTargets(NotNullLazyValue.lazy(() -> XmlHelper.getNamespaceResourcesClasses((XmlTag) xmlTag)))
+                    .setTargets(NotNullLazyValue.lazy(() -> ServiceIndexUtil.getClassesForServiceDefinition(project, containerFile, service)))
                     .setTooltipText("Navigate to class")
                     .createLineMarkerInfo(psiElement));
             }

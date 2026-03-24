@@ -580,24 +580,6 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
         assertTrue(taggedServices2.stream().anyMatch(yamlKeyValue -> "foobar2".equals(yamlKeyValue.getKey().getText())));
     }
 
-    public void testGetServiceKeyFromResourceFromStringOrArray() {
-        YAMLQuotedText fromText = YamlPsiElementFactory.createFromText(getProject(), YAMLQuotedText.class,
-            "services:\n" +
-                "   App\\:\n" +
-                "       resource: 'foobar'"
-        );
-
-        assertEquals("App\\", YamlHelper.getServiceKeyFromResourceFromStringOrArray(fromText));
-
-        fromText = YamlPsiElementFactory.createFromText(getProject(), YAMLQuotedText.class,
-            "services:\n" +
-                "   App\\:\n" +
-                "       resource: ['foobar_2', 'foobar_3']"
-        );
-
-        assertEquals("App\\", YamlHelper.getServiceKeyFromResourceFromStringOrArray(fromText));
-    }
-
     @NotNull
     private Collection<String> getClassNamesFromResourceGlob(@NotNull Collection<YAMLKeyValue> yamlKeyValues, @NotNull String namespace) {
         YAMLKeyValue yamlKeyValue = yamlKeyValues.stream()
@@ -617,30 +599,11 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
 
         Collection<YAMLKeyValue> yamlKeyValues = PsiTreeUtil.collectElementsOfType(file, YAMLKeyValue.class);
 
-        assertContainsElements(
-            getClassNamesFromResourceGlob(yamlKeyValues, "Foo\\"),
-            "\\Foo\\Bar"
-        );
-
-        assertContainsElements(
-            getClassNamesFromResourceGlob(yamlKeyValues, "Foo1\\"),
-            "\\Foo1\\Bar"
-        );
-
-        assertContainsElements(
-            getClassNamesFromResourceGlob(yamlKeyValues, "Foo2\\"),
-            "\\Foo2\\Bar"
-        );
-
-        assertContainsElements(
-            getClassNamesFromResourceGlob(yamlKeyValues, "Foo3\\"),
-            "\\Foo3\\Bar"
-        );
-
-        assertContainsElements(
-            getClassNamesFromResourceGlob(yamlKeyValues, "Foo4\\"),
-            "\\Foo4\\Bar"
-        );
+        assertContainsElements(getClassNamesFromResourceGlob(yamlKeyValues, "Foo\\"), "\\Foo\\Bar");
+        assertContainsElements(getClassNamesFromResourceGlob(yamlKeyValues, "Foo1\\"), "\\Foo1\\Bar");
+        assertContainsElements(getClassNamesFromResourceGlob(yamlKeyValues, "Foo2\\"), "\\Foo2\\Bar");
+        assertContainsElements(getClassNamesFromResourceGlob(yamlKeyValues, "Foo3\\"), "\\Foo3\\Bar");
+        assertContainsElements(getClassNamesFromResourceGlob(yamlKeyValues, "Foo4\\"), "\\Foo4\\Bar");
     }
 
     public void testGetNamespaceResourcesClassesWithExclude() {
@@ -650,20 +613,9 @@ public class YamlHelperLightTest extends SymfonyLightCodeInsightFixtureTestCase 
 
         Collection<YAMLKeyValue> yamlKeyValues = PsiTreeUtil.collectElementsOfType(file, YAMLKeyValue.class);
 
-        assertDoesntContain(
-            getClassNamesFromResourceGlob(yamlKeyValues, "Foo5\\"),
-            "\\Foo5\\Bar"
-        );
-
-        assertDoesntContain(
-            getClassNamesFromResourceGlob(yamlKeyValues, "Foo6\\"),
-            "\\Foo6\\Bar"
-        );
-
-        assertDoesntContain(
-            getClassNamesFromResourceGlob(yamlKeyValues, "Foo7\\"),
-            "\\Foo7\\Bar"
-        );
+        assertDoesntContain(getClassNamesFromResourceGlob(yamlKeyValues, "Foo5\\"), "\\Foo5\\Bar");
+        assertDoesntContain(getClassNamesFromResourceGlob(yamlKeyValues, "Foo6\\"), "\\Foo6\\Bar");
+        assertDoesntContain(getClassNamesFromResourceGlob(yamlKeyValues, "Foo7\\"), "\\Foo7\\Bar");
     }
 
     private int getIndentForTextContent(@NotNull String content) {

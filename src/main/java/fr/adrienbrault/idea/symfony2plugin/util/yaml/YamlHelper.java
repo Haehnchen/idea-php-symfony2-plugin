@@ -23,6 +23,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.ParameterResolverConsumer;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.tags.yaml.StaticAttributeResolver;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
@@ -41,6 +42,7 @@ import org.jetbrains.yaml.psi.impl.YAMLHashImpl;
 import org.jetbrains.yaml.psi.impl.YAMLPlainTextImpl;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -1212,7 +1214,9 @@ public class YamlHelper {
 
                 // My<caret>Class\:
                 //    resource: ...
-                phpClasses.addAll(YamlHelper.getNamespaceResourcesClasses(keyValue));
+                if (keyValue.getKeyText().endsWith("\\")) {
+                    phpClasses.addAll(YamlHelper.getNamespaceResourcesClasses(keyValue));
+                }
             } else if(value instanceof YAMLPlainTextImpl) {
                 // Foo\Bar: ~
                 String text = keyValue.getKeyText();
@@ -1233,37 +1237,25 @@ public class YamlHelper {
      */
     @NotNull
     public static Collection<PhpClass> getNamespaceResourcesClasses(@NotNull YAMLKeyValue yamlKeyValue) {
-        String valueText = yamlKeyValue.getKeyText();
-        if (StringUtils.isBlank(valueText)) {
+        PsiFile containingFile = yamlKeyValue.getContainingFile();
+        if (containingFile == null) {
             return Collections.emptyList();
         }
 
-        Collection<PhpClass> phpClasses = new HashSet<>();
-
-        if (valueText.endsWith("\\")) {
-            Collection<String> resource = YamlHelper.getYamlKeyValueStringOrArray(yamlKeyValue, "resource");
-            if (!resource.isEmpty()) {
-                PsiFile containingFile = yamlKeyValue.getContainingFile();
-                // PhpStorm 2021.1 needs file check
-                if (containingFile != null)  {
-                    VirtualFile virtualFile = containingFile.getVirtualFile();
-                    if (virtualFile != null) {
-                        phpClasses.addAll(PhpElementsUtil.getClassesByClassFqn(
-                            yamlKeyValue.getProject(),
-                            ServiceContainerUtil.getPhpClassFromResources(
-                                yamlKeyValue.getProject(),
-                                valueText,
-                                virtualFile,
-                                resource,
-                                YamlHelper.getYamlKeyValueStringOrArray(yamlKeyValue, "exclude")
-                            )
-                        ));
-                    }
-                }
-            }
+        VirtualFile containerFile = containingFile.getVirtualFile();
+        if (containerFile == null) {
+            return Collections.emptyList();
         }
 
-        return phpClasses;
+        var service = ServiceIndexUtil.findServiceDefinition(yamlKeyValue.getProject(), containerFile, yamlKeyValue.getKeyText());
+        if (service == null || service.getResource().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return ServiceIndexUtil.getClassesForServiceDefinition(yamlKeyValue.getProject(), containerFile, service).stream()
+            .filter(PhpClass.class::isInstance)
+            .map(PhpClass.class::cast)
+            .collect(Collectors.toCollection(HashSet::new));
     }
 
     /**
@@ -1298,66 +1290,4 @@ public class YamlHelper {
         return PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(YAMLTokenTypes.EOL)) != null;
     }
 
-    /**
-     * services:
-     *   App\\:
-     *     resource: 'foobar_2'
-     *   App\\:
-     *     resource: ['foobar_2', 'foobar_3']
-     */
-    @Nullable
-    public static String getServiceKeyFromResourceFromStringOrArray(@NotNull YAMLQuotedText yamlQuotedText) {
-        PsiElement yamlSequence = yamlQuotedText.getParent();
-        if (yamlSequence == null) {
-            return null;
-        }
-
-        YAMLKeyValue serviceKeyValue = null;
-        if (yamlSequence instanceof YAMLSequenceItem) {
-            PsiElement yamlArray = yamlSequence.getParent();
-            if (yamlArray instanceof YAMLSequence) {
-                PsiElement yamlKeyValueResource = yamlArray.getParent();
-                if (yamlKeyValueResource instanceof YAMLKeyValue) {
-                    PsiElement mapping = yamlKeyValueResource.getParent();
-                    if (mapping instanceof YAMLMapping) {
-                        PsiElement serviceKeyValueElement = mapping.getParent();
-                        if (serviceKeyValueElement instanceof YAMLKeyValue) {
-                            serviceKeyValue = (YAMLKeyValue) serviceKeyValueElement;
-                        }
-                    }
-                }
-            }
-        } else {
-            PsiElement yamlKeyValueResource = yamlSequence.getParent();
-            if (yamlKeyValueResource != null) {
-                PsiElement serviceKeyValueElement = yamlKeyValueResource.getParent();
-                if (serviceKeyValueElement instanceof YAMLKeyValue) {
-                    serviceKeyValue = (YAMLKeyValue) serviceKeyValueElement;
-                }
-            }
-        }
-
-        if (serviceKeyValue == null) {
-            return null;
-        }
-
-        String name = serviceKeyValue.getName();
-        if (StringUtils.isBlank(name)) {
-            return null;
-        }
-
-        PsiElement parent = serviceKeyValue.getParent();
-        if (parent instanceof YAMLMapping) {
-            PsiElement parent1 = parent.getParent();
-            if (parent1 instanceof YAMLKeyValue) {
-                String keyText = ((YAMLKeyValue) parent1).getKeyText();
-                if ("services".equals(keyText)) {
-                    return name;
-                }
-            }
-        }
-
-
-        return name;
-    }
 }
