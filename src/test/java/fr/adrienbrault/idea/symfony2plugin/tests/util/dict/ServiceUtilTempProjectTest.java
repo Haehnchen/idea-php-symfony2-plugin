@@ -1,7 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.util.dict;
 
 import com.intellij.openapi.vfs.VirtualFile;
-import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceResourceGlobMatcher;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyTempCodeInsightFixtureTestCase;
 
@@ -28,19 +27,19 @@ public class ServiceUtilTempProjectTest extends SymfonyTempCodeInsightFixtureTes
                 "class Bar {}\n"
         );
 
-        assertTrue(ServiceIndexUtil.matchesResourcesGlob(file, file2, Collections.singleton("../src/*"), Collections.emptyList()));
-        assertTrue(ServiceIndexUtil.matchesResourcesGlob(file, file2, Collections.singleton("../src/Foobar/Bar.php"), Collections.emptyList()));
+        assertTrue(ServiceResourceGlobMatcher.create(file, Collections.singleton("../src/*"), Collections.emptyList()).matches(file2));
+        assertTrue(ServiceResourceGlobMatcher.create(file, Collections.singleton("../src/Foobar/Bar.php"), Collections.emptyList()).matches(file2));
 
-        assertTrue(ServiceIndexUtil.matchesResourcesGlob(file, file2, Collections.singleton("../src/{Foobar,Entity,Migrations,Tests,Kernel.php}"), Collections.emptyList()));
-        assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, Collections.singleton("../src/{Entity,Migrations,Tests,Kernel.php}"), Collections.emptyList()));
+        assertTrue(ServiceResourceGlobMatcher.create(file, Collections.singleton("../src/{Foobar,Entity,Migrations,Tests,Kernel.php}"), Collections.emptyList()).matches(file2));
+        assertFalse(ServiceResourceGlobMatcher.create(file, Collections.singleton("../src/{Entity,Migrations,Tests,Kernel.php}"), Collections.emptyList()).matches(file2));
 
         // exclude
-        assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, Collections.singleton("../src/*"), Collections.singleton("../src/*")));
-        assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, Collections.singleton("../src/*"), Collections.singleton("../src/{Foobar,Kernel.php}")));
-        assertTrue(ServiceIndexUtil.matchesResourcesGlob(file, file2, Collections.singleton("../src/*"), Collections.singleton("../src/{Migrations,Kernel.php}")));
+        assertFalse(ServiceResourceGlobMatcher.create(file, Collections.singleton("../src/*"), Collections.singleton("../src/*")).matches(file2));
+        assertFalse(ServiceResourceGlobMatcher.create(file, Collections.singleton("../src/*"), Collections.singleton("../src/{Foobar,Kernel.php}")).matches(file2));
+        assertTrue(ServiceResourceGlobMatcher.create(file, Collections.singleton("../src/*"), Collections.singleton("../src/{Migrations,Kernel.php}")).matches(file2));
 
         // nested: not supported and must not break in exception
-        assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, Collections.singleton("../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php,Service/{IspConfiguration,DataCollection}}"), Collections.emptyList()));
+        assertFalse(ServiceResourceGlobMatcher.create(file, Collections.singleton("../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php,Service/{IspConfiguration,DataCollection}}"), Collections.emptyList()).matches(file2));
     }
 
     public void testServiceResourcesWithDepth() {
@@ -59,8 +58,8 @@ public class ServiceUtilTempProjectTest extends SymfonyTempCodeInsightFixtureTes
                 "class Bar {}\n"
         );
 
-        assertTrue(ServiceIndexUtil.matchesResourcesGlob(file, file2, Collections.singleton("../../*"), Collections.emptyList()));
-        assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, Collections.singleton("../../*"), Collections.singleton("../../Bar")));
+        assertTrue(ServiceResourceGlobMatcher.create(file, Collections.singleton("../../*"), Collections.emptyList()).matches(file2));
+        assertFalse(ServiceResourceGlobMatcher.create(file, Collections.singleton("../../*"), Collections.singleton("../../Bar")).matches(file2));
     }
 
     public void testPossibleResourceCondition() {
@@ -78,15 +77,15 @@ public class ServiceUtilTempProjectTest extends SymfonyTempCodeInsightFixtureTes
                 "class Bar {}\n"
         );
 
-        assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, Collections.singleton(""), Collections.singleton("")));
-        assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, Collections.singleton("src"), Collections.singleton("src")));
-        assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, Collections.singleton("/aaa"), Collections.singleton("/aaaa")));
-        assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, Collections.singleton("/"), Collections.singleton("/")));
-        assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, Collections.singleton("a"), Collections.singleton("/")));
-        assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, Collections.singleton(""), Collections.emptyList()));
-        assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, Collections.singleton("src"), Collections.emptyList()));
-        assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, Collections.singleton("/"), Collections.emptyList()));
-        assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, Collections.singleton(".."), Collections.singleton("..")));
+        assertFalse(ServiceResourceGlobMatcher.create(file, Collections.singleton(""), Collections.singleton("")).matches(file2));
+        assertFalse(ServiceResourceGlobMatcher.create(file, Collections.singleton("src"), Collections.singleton("src")).matches(file2));
+        assertFalse(ServiceResourceGlobMatcher.create(file, Collections.singleton("/aaa"), Collections.singleton("/aaaa")).matches(file2));
+        assertFalse(ServiceResourceGlobMatcher.create(file, Collections.singleton("/"), Collections.singleton("/")).matches(file2));
+        assertFalse(ServiceResourceGlobMatcher.create(file, Collections.singleton("a"), Collections.singleton("/")).matches(file2));
+        assertFalse(ServiceResourceGlobMatcher.create(file, Collections.singleton(""), Collections.emptyList()).matches(file2));
+        assertFalse(ServiceResourceGlobMatcher.create(file, Collections.singleton("src"), Collections.emptyList()).matches(file2));
+        assertFalse(ServiceResourceGlobMatcher.create(file, Collections.singleton("/"), Collections.emptyList()).matches(file2));
+        assertFalse(ServiceResourceGlobMatcher.create(file, Collections.singleton(".."), Collections.singleton("..")).matches(file2));
     }
 
     public void testServiceResourcesWithArrays() {
@@ -97,17 +96,17 @@ public class ServiceUtilTempProjectTest extends SymfonyTempCodeInsightFixtureTes
             "<?php\n"
         );
 
-        assertTrue(ServiceIndexUtil.matchesResourcesGlob(file, file2, Collections.singleton("../src/*"), Collections.emptyList()));
-        assertTrue(ServiceIndexUtil.matchesResourcesGlob(file, file2, Arrays.asList("../src2/Foobar/Bar.php", "../src/Foobar/Bar.php"), Collections.emptyList()));
+        assertTrue(ServiceResourceGlobMatcher.create(file, Collections.singleton("../src/*"), Collections.emptyList()).matches(file2));
+        assertTrue(ServiceResourceGlobMatcher.create(file, Arrays.asList("../src2/Foobar/Bar.php", "../src/Foobar/Bar.php"), Collections.emptyList()).matches(file2));
 
-        assertTrue(ServiceIndexUtil.matchesResourcesGlob(file, file2, Arrays.asList("../src/{Entity,Tests,Kernel.php}", "../src/{Foobar,EntityKernel.php}"), Collections.emptyList()));
-        assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, Collections.singleton("../src/{Entity,Migrations,Tests,Kernel.php}"), Collections.emptyList()));
+        assertTrue(ServiceResourceGlobMatcher.create(file, Arrays.asList("../src/{Entity,Tests,Kernel.php}", "../src/{Foobar,EntityKernel.php}"), Collections.emptyList()).matches(file2));
+        assertFalse(ServiceResourceGlobMatcher.create(file, Collections.singleton("../src/{Entity,Migrations,Tests,Kernel.php}"), Collections.emptyList()).matches(file2));
 
         // exclude
-        assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, Arrays.asList("../foobar/*", "../src/*"), Arrays.asList("../foo/*", "../src/*")));
-        assertFalse(ServiceIndexUtil.matchesResourcesGlob(file, file2, Collections.singleton("../src/*"), Arrays.asList("../src/{Bar,Kernel.php}", "../src/{Foobar,Kernel.php}")));
-        assertTrue(ServiceIndexUtil.matchesResourcesGlob(file, file2, Collections.singleton("../src/*"), Arrays.asList("../src/{Migrations,Kernel.php}", "../src/{Migrations2,Kernel.php}")));
-   }
+        assertFalse(ServiceResourceGlobMatcher.create(file, Arrays.asList("../foobar/*", "../src/*"), Arrays.asList("../foo/*", "../src/*")).matches(file2));
+        assertFalse(ServiceResourceGlobMatcher.create(file, Collections.singleton("../src/*"), Arrays.asList("../src/{Bar,Kernel.php}", "../src/{Foobar,Kernel.php}")).matches(file2));
+        assertTrue(ServiceResourceGlobMatcher.create(file, Collections.singleton("../src/*"), Arrays.asList("../src/{Migrations,Kernel.php}", "../src/{Migrations2,Kernel.php}")).matches(file2));
+    }
 
     public void testCompiledServiceResourcesMatcher() {
         VirtualFile file = createFile("config/services.yml");
