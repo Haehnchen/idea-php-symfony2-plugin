@@ -130,6 +130,84 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
         );
     }
 
+    public void testPhpArrayServicesAreInIndex() {
+        PsiFile phpFile = myFixture.configureByFile("services_array.php");
+
+        Collection<ServiceSerializable> servicesInFile = ServiceContainerUtil.getServicesInFile(phpFile);
+
+        ServiceSerializable defaultsService = servicesInFile.stream().filter(s -> "App\\Util\\MessageGenerator".equals(s.getId())).findFirst().get();
+        assertEquals("App\\Util\\MessageGenerator", defaultsService.getClassName());
+        assertTrue(defaultsService.isAutowire());
+        assertFalse(defaultsService.isPublic());
+
+        ServiceSerializable configuredService = servicesInFile.stream().filter(s -> "app.my_service".equals(s.getId())).findFirst().get();
+        assertEquals("App\\Service\\MyService", configuredService.getClassName());
+        assertTrue(configuredService.isAutowire());
+        assertFalse(configuredService.isPublic());
+        assertContainsElements(configuredService.getTags(), "my.tag", "my.named_tag");
+
+        ServiceSerializable aliasService = servicesInFile.stream().filter(s -> "app.alias_service".equals(s.getId())).findFirst().get();
+        assertEquals("app.my_service", aliasService.getAlias());
+
+        ServiceSerializable decoratedService = servicesInFile.stream().filter(s -> "app.decorated_service".equals(s.getId())).findFirst().get();
+        assertEquals("ArrayObject", decoratedService.getClassName());
+        assertEquals("app.my_service", decoratedService.getDecorates());
+        assertEquals("app.decorated_service.inner_custom", decoratedService.getDecorationInnerName());
+
+        ServiceSerializable decoratedInner = servicesInFile.stream().filter(s -> "app.decorated_service.inner_custom".equals(s.getId())).findFirst().get();
+        assertEquals("app.decorated_service.inner_custom", decoratedInner.getId());
+
+        ServiceSerializable resourceService = servicesInFile.stream().filter(s -> "app.resource_prototype".equals(s.getId())).findFirst().get();
+        assertContainsElements(resourceService.getResource(), "../src/*", "../src2/*");
+        assertContainsElements(resourceService.getExclude(), "../src/{Tests,Kernel.php}");
+        assertFalse(resourceService.isAutowire());
+    }
+
+    public void testPhpArrayAutowireUsesDefaultsAndPerEntryOverride() {
+        PsiFile phpFile = myFixture.configureByFile("services_array.php");
+
+        Collection<ServiceSerializable> servicesInFile = ServiceContainerUtil.getServicesInFile(phpFile);
+
+        ServiceSerializable defaultsService = servicesInFile.stream().filter(s -> "App\\Util\\MessageGenerator".equals(s.getId())).findFirst().get();
+        assertTrue(defaultsService.isAutowire());
+
+        ServiceSerializable configuredService = servicesInFile.stream().filter(s -> "app.my_service".equals(s.getId())).findFirst().get();
+        assertTrue(configuredService.isAutowire());
+
+        ServiceSerializable resourceService = servicesInFile.stream().filter(s -> "app.resource_prototype".equals(s.getId())).findFirst().get();
+        assertFalse(resourceService.isAutowire());
+    }
+
+    public void testPhpArrayResourcePrototypeKeepsNamespaceIdAndAutowire() {
+        PsiFile phpFile = myFixture.configureByText("services_resource_array.php", "<?php\nnamespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\nreturn App::config([\n    'services' => [\n        '_defaults' => ['autowire' => true],\n        'App\\\\Service\\\\' => ['resource' => '../Service/*'],\n    ],\n]);");
+
+        Collection<ServiceSerializable> servicesInFile = ServiceContainerUtil.getServicesInFile(phpFile);
+        ServiceSerializable service = servicesInFile.stream().filter(s -> "App\\Service\\".equals(s.getId())).findFirst().get();
+
+        assertEquals("App\\Service\\", service.getId());
+        assertEquals("App\\Service\\", service.getClassName());
+        assertContainsElements(service.getResource(), "../Service/*");
+        assertTrue(service.isAutowire());
+    }
+
+    public void testPhpDirectArrayReturnServicesAreInIndex() {
+        PsiFile phpFile = myFixture.configureByText("services_direct_array.php", "<?php\nreturn ['services' => ['direct.array_service' => ['class' => \\DateTime::class]]];");
+
+        Collection<ServiceSerializable> servicesInFile = ServiceContainerUtil.getServicesInFile(phpFile);
+        ServiceSerializable service = servicesInFile.stream().filter(s -> "direct.array_service".equals(s.getId())).findFirst().get();
+
+        assertEquals("DateTime", service.getClassName());
+    }
+
+    public void testPhpConfiguratorClosureArrayServicesAreInIndex() {
+        PsiFile phpFile = myFixture.configureByText("services_configurator_closure.php", "<?php\nnamespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\nreturn static function (ContainerConfigurator $container) {\n    return ['services' => ['closure.array_service' => ['class' => \\ArrayObject::class]]];\n};");
+
+        Collection<ServiceSerializable> servicesInFile = ServiceContainerUtil.getServicesInFile(phpFile);
+        ServiceSerializable service = servicesInFile.stream().filter(s -> "closure.array_service".equals(s.getId())).findFirst().get();
+
+        assertEquals("ArrayObject", service.getClassName());
+    }
+
     public void testThatDefaultValueAreNullAndNotSerialized() {
         for (PsiFile psiFile : new PsiFile[]{xmlFile, ymlFile}) {
             ServiceInterface bar = ContainerUtil.find(ServiceContainerUtil.getServicesInFile(psiFile), MyStringServiceInterfaceCondition.create("defaults"));

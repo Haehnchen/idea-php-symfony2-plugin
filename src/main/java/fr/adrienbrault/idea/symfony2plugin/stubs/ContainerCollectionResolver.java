@@ -135,7 +135,6 @@ public class ContainerCollectionResolver {
                 }
 
                 VirtualFile containerFile = definitionFiles[0];
-
                 Collection<String> phpClasses = ServiceContainerUtil.getPhpClassFromResources(
                     project,
                     service.getId(),

@@ -209,4 +209,69 @@ public class ServiceContainerUtilResourceTest extends SymfonyLightCodeInsightFix
 
         assertTrue("No classes should match a non-existing namespace", classes.isEmpty());
     }
+
+    public void testGetPhpClassFromResourcesWithPhpConfigFile() {
+        myFixture.addFileToProject("config/services.php", "<?php\n" +
+            "namespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\n" +
+            "return App::config([\n" +
+            "    'services' => [\n" +
+            "        'App\\\\Service\\\\' => [\n" +
+            "            'resource' => '../src/Service/*',\n" +
+            "        ],\n" +
+            "    ],\n" +
+            "]);");
+        myFixture.addFileToProject("src/Service/FooService.php", "<?php\n" +
+            "namespace App\\Service;\n" +
+            "class FooService {}\n");
+
+        VirtualFile configFile = myFixture.findFileInTempDir("config/services.php");
+        assertNotNull(configFile);
+
+        Collection<String> classes = ServiceContainerUtil.getPhpClassFromResources(
+            getProject(),
+            "App\\Service\\",
+            configFile,
+            List.of("../src/Service/*"),
+            Collections.emptyList()
+        );
+
+        assertContainsElements(classes, "\\App\\Service\\FooService");
+    }
+
+    public void testGetPhpClassFromResourcesWithPhpConfigRootNamespaceDirectory() {
+        myFixture.addFileToProject("config/services.php", "<?php\n" +
+            "namespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\n" +
+            "return App::config([\n" +
+            "    'services' => [\n" +
+            "        'App\\\\' => [\n" +
+            "            'resource' => '../src/',\n" +
+            "            'exclude' => [\n" +
+            "                '../src/DependencyInjection/',\n" +
+            "                '../src/Entity/',\n" +
+            "                '../src/Kernel.php',\n" +
+            "            ],\n" +
+            "        ],\n" +
+            "    ],\n" +
+            "]);");
+        myFixture.addFileToProject("src/ResourceLineMarkerFoo.php", "<?php\n" +
+            "namespace App;\n" +
+            "class ResourceLineMarkerFoo {}\n");
+        myFixture.addFileToProject("src/DependencyInjection/ShouldBeExcluded.php", "<?php\n" +
+            "namespace App\\DependencyInjection;\n" +
+            "class ShouldBeExcluded {}\n");
+
+        VirtualFile configFile = myFixture.findFileInTempDir("config/services.php");
+        assertNotNull(configFile);
+
+        Collection<String> classes = ServiceContainerUtil.getPhpClassFromResources(
+            getProject(),
+            "App\\",
+            configFile,
+            List.of("../src/"),
+            List.of("../src/DependencyInjection/", "../src/Entity/", "../src/Kernel.php")
+        );
+
+        assertContainsElements(classes, "\\App\\ResourceLineMarkerFoo");
+        assertDoesntContain(classes, "\\App\\DependencyInjection\\ShouldBeExcluded");
+    }
 }

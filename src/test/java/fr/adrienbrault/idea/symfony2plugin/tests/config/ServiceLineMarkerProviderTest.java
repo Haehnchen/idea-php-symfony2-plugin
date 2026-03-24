@@ -7,6 +7,7 @@ import com.intellij.patterns.XmlPatterns;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
+import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
@@ -208,6 +209,42 @@ public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtur
             "   }\n" +
             "}"
         ), markerInfo -> markerInfo.getLineMarkerTooltip() != null && markerInfo.getLineMarkerTooltip().toLowerCase().contains("autowire"));
+    }
+
+    public void testThatPhpArrayResourceAutowireConstructorIsGivenALineMarker() {
+        myFixture.addFileToProject("config/services.php", "<?php\n" +
+            "namespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\n" +
+            "return App::config([\n" +
+            "    'services' => [\n" +
+                "        '_defaults' => ['autowire' => true],\n" +
+                "        'App\\\\' => [\n" +
+            "            'resource' => '../src/',\n" +
+            "            'exclude' => [\n" +
+            "                '../src/DependencyInjection/',\n" +
+            "                '../src/Entity/',\n" +
+            "                '../src/Kernel.php',\n" +
+            "            ],\n" +
+            "        ],\n" +
+            "    ],\n" +
+            "]);");
+
+        assertLineMarker(myFixture.addFileToProject("src/ResourceLineMarkerFoo.php", "<?php\n" +
+            "namespace App {\n" +
+            "    class ResourceLineMarkerFoo {\n" +
+            "       public function __construct() {}\n" +
+            "   }\n" +
+            "}"
+        ), markerInfo -> markerInfo.getLineMarkerTooltip() != null && markerInfo.getLineMarkerTooltip().toLowerCase().contains("autowire"));
+
+        assertLineMarker(myFixture.addFileToProject("src/ResourceLineMarkerBar.php", "<?php\n" +
+            "namespace App {\n" +
+            "    class ResourceLineMarkerBar {\n" +
+            "       public function __construct() {}\n" +
+            "   }\n" +
+            "}"
+        ), new LineMarker.TargetAcceptsPattern("Symfony: <a href=\"https://symfony.com/doc/current/service_container/autowiring.html\">Autowire available</a>",
+            PlatformPatterns.psiElement(StringLiteralExpression.class).withText("'App\\\\'")
+        ));
     }
 
     public void testNavigateToTranslationForConstraintMessage() {
