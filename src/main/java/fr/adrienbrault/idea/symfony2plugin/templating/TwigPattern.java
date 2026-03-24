@@ -427,6 +427,75 @@ public class TwigPattern {
         )
         .withLanguage(TwigLanguage.INSTANCE);
 
+    /**
+     * app.request.attributes.get('_route') == '<caret>'
+     * app.request.attributes.get('_route') != '<caret>'
+     */
+    private static final ElementPattern<PsiElement> CACHED_ROUTE_COMPARE_PATTERN = PlatformPatterns
+        .psiElement(TwigTokenTypes.STRING_TEXT)
+        .afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE)
+            ),
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(TwigTokenTypes.EQ_EQ),
+                PlatformPatterns.psiElement(TwigTokenTypes.NOT_EQ)
+            )
+        )
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    /**
+     * app.request.attributes.get('_route') starts with '<caret>'
+     * app.request.attributes.get('_route') starts with('<caret>')
+     */
+    private static final ElementPattern<PsiElement> CACHED_ROUTE_STARTS_WITH_PATTERN = PlatformPatterns
+        .psiElement(TwigTokenTypes.STRING_TEXT)
+        .afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
+                PlatformPatterns.psiElement(TwigTokenTypes.LBRACE)
+            ),
+            PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("with")
+        )
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    /**
+     * app.request.attributes.get('_route') is same as('<caret>')
+     */
+    private static final ElementPattern<PsiElement> CACHED_ROUTE_SAME_AS_PATTERN = PlatformPatterns
+        .psiElement(TwigTokenTypes.STRING_TEXT)
+        .afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
+                PlatformPatterns.psiElement(TwigTokenTypes.LBRACE)
+            ),
+            PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("as")
+        )
+        .withLanguage(TwigLanguage.INSTANCE);
+
+    /**
+     * app.request.attributes.get('_route') in ['<caret>', 'route_b']
+     * app.request.attributes.get('_route') not in ['<caret>', 'route_b']
+     */
+    private static final ElementPattern<PsiElement> CACHED_ROUTE_IN_ARRAY_PATTERN = PlatformPatterns
+        .psiElement(TwigTokenTypes.STRING_TEXT)
+        .withParent(
+            PlatformPatterns.psiElement(TwigElementTypes.ARRAY_VALUE)
+                .withParent(
+                    PlatformPatterns.psiElement(TwigElementTypes.ARRAY_LITERAL)
+                )
+        )
+        .withLanguage(TwigLanguage.INSTANCE);
+
     private static final ElementPattern<PsiElement> CACHED_COMPONENT_PATTERN = PlatformPatterns
         .psiElement(TwigTokenTypes.STRING_TEXT)
         .afterLeafSkipping(
@@ -1558,6 +1627,58 @@ public class TwigPattern {
 
     public static ElementPattern<PsiElement> getAutocompletableRoutePattern() {
         return CACHED_AUTOCOMPLETABLE_ROUTE_PATTERN;
+    }
+
+    /**
+     * app.request.attributes.get('_route') == '<caret>'
+     * app.request.attributes.get('_route') != '<caret>'
+     */
+    public static ElementPattern<PsiElement> getTwigRouteComparePattern() {
+        return CACHED_ROUTE_COMPARE_PATTERN;
+    }
+
+    /**
+     * app.request.attributes.get('_route') starts with '<caret>'
+     * app.request.attributes.get('_route') starts with('<caret>')
+     */
+    public static ElementPattern<PsiElement> getTwigRouteStartsWithPattern() {
+        return CACHED_ROUTE_STARTS_WITH_PATTERN;
+    }
+
+    /**
+     * app.request.attributes.get('_route') is same as('<caret>')
+     */
+    public static ElementPattern<PsiElement> getTwigRouteSameAsPattern() {
+        return CACHED_ROUTE_SAME_AS_PATTERN;
+    }
+
+    /**
+     * app.request.attributes.get('_route') in ['<caret>', 'route_b']
+     * app.request.attributes.get('_route') not in ['<caret>', 'route_b']
+     */
+    public static ElementPattern<PsiElement> getTwigRouteInArrayPattern() {
+        return CACHED_ROUTE_IN_ARRAY_PATTERN;
+    }
+
+    /**
+     * Returns true when the element is inside a route comparison context,
+     * i.e. there is a preceding '_route' string literal in the same template block.
+     *
+     * app.request.attributes.get('_route') == 'my_route'
+     */
+    public static boolean isRouteCompareContext(@NotNull PsiElement element) {
+        PsiElement prev = PsiTreeUtil.prevLeaf(element);
+        while (prev != null) {
+            IElementType type = prev.getNode().getElementType();
+            if (type == TwigTokenTypes.STATEMENT_BLOCK_START || type == TwigTokenTypes.PRINT_BLOCK_START) {
+                break;
+            }
+            if (type == TwigTokenTypes.STRING_TEXT && "_route".equals(prev.getText())) {
+                return true;
+            }
+            prev = PsiTreeUtil.prevLeaf(prev);
+        }
+        return false;
     }
 
     /**

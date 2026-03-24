@@ -85,6 +85,29 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         assertNavigationMatch(TwigFileType.INSTANCE, "{{ path('xml_route', {'sl<caret>ug'}) }}", PlatformPatterns.psiElement());
     }
 
+    public void testCompletionForRouteCompareEquals() {
+        assertCompletionContains(TwigFileType.INSTANCE, "{% if app.request.attributes.get('_route') == '<caret>' %}", "xml_route");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% if app.request.attributes.get('_route') != '<caret>' %}", "xml_route");
+    }
+
+    public void testCompletionForRouteCompareStartsWith() {
+        assertCompletionContains(TwigFileType.INSTANCE, "{% if app.request.attributes.get('_route') starts with '<caret>' %}", "xml_route");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% if app.request.attributes.get('_route') starts with('<caret>') %}", "xml_route");
+    }
+
+    public void testCompletionForRouteCompareSameAs() {
+        assertCompletionContains(TwigFileType.INSTANCE, "{% if app.request.attributes.get('_route') is same as('<caret>') %}", "xml_route");
+    }
+
+    public void testCompletionForRouteCompareInArray() {
+        assertCompletionContains(TwigFileType.INSTANCE, "{% if app.request.attributes.get('_route') in ['<caret>'] %}", "xml_route");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% if app.request.attributes.get('_route') not in ['<caret>'] %}", "xml_route");
+    }
+
+    public void testNoCompletionForRouteCompareWithoutRouteContext() {
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{% if app.request.something == '<caret>' %}", "xml_route");
+    }
+
     public void testCompletionForRoutingParameterWithIdentifierHash() {
         assertCompletionContains(TwigFileType.INSTANCE, "{{ path('xml_route', {<caret>}) }}", "slug");
     }

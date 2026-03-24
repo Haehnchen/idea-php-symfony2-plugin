@@ -636,6 +636,13 @@
                          language="Twig"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.TwigRouteMissingInspection"/>
 
+        <localInspection groupPath="Symfony" shortName="TwigRouteCompareInspection" displayName="Twig: Missing Route in comparison"
+                         groupName="Route"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         language="Twig"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.inspection.TwigRouteCompareInspection"/>
+
         <localInspection groupPath="Symfony" shortName="TwigTemplateMissingInspection" displayName="Twig: Missing Template"
                          groupName="Template"
                          enabledByDefault="true"

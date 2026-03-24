@@ -78,6 +78,27 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             targets.addAll(getRouteGoTo(psiElement));
         }
 
+        // app.request.attributes.get('_route') == '<caret>'
+        // app.request.attributes.get('_route') != '<caret>'
+        // app.request.attributes.get('_route') is same as('<caret>')
+        // app.request.attributes.get('_route') in ['<caret>']
+        if ((TwigPattern.getTwigRouteComparePattern().accepts(psiElement)
+            || TwigPattern.getTwigRouteSameAsPattern().accepts(psiElement)
+            || TwigPattern.getTwigRouteInArrayPattern().accepts(psiElement))
+            && TwigPattern.isRouteCompareContext(psiElement))
+        {
+            targets.addAll(getRouteGoTo(psiElement));
+        }
+
+        // app.request.attributes.get('_route') starts with '<caret>'
+        // app.request.attributes.get('_route') starts with('<caret>')
+        // The string is a prefix — navigate to all routes whose names start with it
+        if (TwigPattern.getTwigRouteStartsWithPattern().accepts(psiElement)
+            && TwigPattern.isRouteCompareContext(psiElement))
+        {
+            targets.addAll(getRouteStartsWithGoTo(psiElement));
+        }
+
         // {{ component('<caret>'}) }}
         // {% component FOO
         if (TwigPattern.getComponentPattern().accepts(psiElement) || TwigPattern.getArgumentAfterTagNamePattern("component").accepts(psiElement)) {
@@ -308,6 +329,21 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
     }
 
     @NotNull
+    private Collection<PsiElement> getRouteStartsWithGoTo(@NotNull PsiElement psiElement) {
+        String prefix = PsiElementUtils.getText(psiElement);
+        if (StringUtils.isBlank(prefix)) {
+            return Collections.emptyList();
+        }
+
+        Collection<PsiElement> targets = new ArrayList<>();
+        for (String routeName : RouteHelper.getAllRoutes(psiElement.getProject()).keySet()) {
+            if (routeName.startsWith(prefix)) {
+                targets.addAll(RouteHelper.getRouteDefinitionTargets(psiElement.getProject(), routeName));
+            }
+        }
+        return targets;
+    }
+
     private Collection<PsiElement> getRouteGoTo(@NotNull PsiElement psiElement) {
         String text = PsiElementUtils.getText(psiElement);
 
