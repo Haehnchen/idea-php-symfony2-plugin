@@ -32,6 +32,14 @@ public class TwigTranslationKeyInspectionTest extends SymfonyLightCodeInsightFix
         );
     }
 
+    public void testKnownKeyWithNamedArgumentColonSyntaxIsNotInspected() {
+        assertLocalInspectionNotContains(
+            "f.html.twig",
+            "{{ 'symfon<caret>y.great'|trans(domain: 'symfony') }}",
+            PhpTranslationKeyInspection.MESSAGE
+        );
+    }
+
     public void testThatInterpolatedStringsMustNotInspected() {
         assertLocalInspectionNotContains(
             "f.html.twig",

@@ -45,6 +45,11 @@ public class TwigTranslationCompletionContributorTest extends TwigTranslationFix
             "yaml_weak.symfony.great"
         );
 
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ '<caret>'|trans(domain: 'foo') }}", "foo.symfony.great");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ '<caret>'|trans(domain:'foo') }}", "foo.symfony.great");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ 'foo'|trans(domain: '<caret>') }}", "messages");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ 'foo'|trans(domain:'<caret>') }}", "messages");
+
         assertCompletionNotContains(TwigFileType.INSTANCE, "{{ 'foo'|trans|desc('<caret>') }}", "messages");
 
         assertCompletionNotContains(TwigFileType.INSTANCE, "{{ sonata_block_render({\n" +

@@ -573,6 +573,7 @@ public class TwigUtil {
 
     /**
      * ('aaa', name: "foobar", )
+     * ('aaa', name= "foobar", )
      */
     @Nullable
     private static String extractDomainFromNamedParameter(@NotNull PsiElement psiElement) {
@@ -584,7 +585,7 @@ public class TwigUtil {
             PsiElement parameterValue = PsiElementUtils.getNextSiblingAndSkip(
                 variableReference,
                 TwigTokenTypes.STRING_TEXT,
-                TwigTokenTypes.EQ, TwigTokenTypes.WHITE_SPACE, TwigTokenTypes.SINGLE_QUOTE, TwigTokenTypes.DOUBLE_QUOTE
+                TwigTokenTypes.EQ, TwigTokenTypes.COLON, TwigTokenTypes.WHITE_SPACE, TwigTokenTypes.SINGLE_QUOTE, TwigTokenTypes.DOUBLE_QUOTE
             );
 
             if (parameterValue == null) {

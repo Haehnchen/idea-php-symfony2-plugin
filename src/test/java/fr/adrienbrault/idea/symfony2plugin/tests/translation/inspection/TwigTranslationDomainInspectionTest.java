@@ -32,4 +32,20 @@ public class TwigTranslationDomainInspectionTest extends SymfonyLightCodeInsight
             TwigTranslationDomainInspection.MESSAGE
         );
     }
+
+    public void testUnknownDomainWithNamedArgumentColonSyntaxIsInspected() {
+        assertLocalInspectionContains(
+            "f.html.twig",
+            "{{ 'foo'|trans(domain: 'UNK<caret>NOWN') }}",
+            TwigTranslationDomainInspection.MESSAGE
+        );
+    }
+
+    public void testKnownDomainWithNamedArgumentColonSyntaxIsNotInspected() {
+        assertLocalInspectionNotContains(
+            "f.html.twig",
+            "{{ 'foo'|trans(domain: 'sy<caret>mfony') }}",
+            TwigTranslationDomainInspection.MESSAGE
+        );
+    }
 }
