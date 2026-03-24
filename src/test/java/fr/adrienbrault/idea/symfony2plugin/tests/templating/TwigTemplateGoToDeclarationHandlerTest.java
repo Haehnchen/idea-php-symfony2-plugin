@@ -310,4 +310,25 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
         // Should not navigate to non-enum classes
         assertNavigationIsEmpty(TwigFileType.INSTANCE, "{{ enum_cases('App\\\\Bike\\\\Foo<caret>Const') }}");
     }
+
+    public void testNavigationForRouteCompareExpressions() {
+        myFixture.copyFileToProject("routing.xml");
+
+        assertNavigationMatch(TwigFileType.INSTANCE, "{% if app.request.attributes.get('_route') == 'xml_ro<caret>ute' %}", PlatformPatterns.psiElement());
+        assertNavigationMatch(TwigFileType.INSTANCE, "{% if app.request.attributes.get('_route') != 'xml_ro<caret>ute' %}", PlatformPatterns.psiElement());
+        assertNavigationMatch(TwigFileType.INSTANCE, "{% if app.request.attributes.get('_route') starts with 'xml_ro<caret>ute' %}", PlatformPatterns.psiElement());
+        assertNavigationMatch(TwigFileType.INSTANCE, "{% if app.request.attributes.get('_route') starts with('xml_ro<caret>ute') %}", PlatformPatterns.psiElement());
+        assertNavigationMatch(TwigFileType.INSTANCE, "{% if app.request.attributes.get('_route') is same as('xml_ro<caret>ute') %}", PlatformPatterns.psiElement());
+        assertNavigationMatch(TwigFileType.INSTANCE, "{% if app.request.attributes.get('_route') in ['xml_ro<caret>ute'] %}", PlatformPatterns.psiElement());
+        assertNavigationMatch(TwigFileType.INSTANCE, "{% if app.request.attributes.get('_route') not in ['xml_ro<caret>ute'] %}", PlatformPatterns.psiElement());
+    }
+
+    public void testStartsWithNavigatesOnPartialPrefix() {
+        myFixture.copyFileToProject("routing.xml");
+
+        // 'xml' is a partial prefix — should still navigate to xml_route
+        assertNavigationMatch(TwigFileType.INSTANCE,
+            "{% if app.request.attributes.get('_route') starts with 'xm<caret>l' %}",
+            PlatformPatterns.psiElement());
+    }
 }

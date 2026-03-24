@@ -350,6 +350,28 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             }
         );
 
+        // routing completion for route compare expressions:
+        // app.request.attributes.get('_route') == '<caret>'
+        // app.request.attributes.get('_route') != '<caret>'
+        // app.request.attributes.get('_route') starts with '<caret>'
+        // app.request.attributes.get('_route') starts with('<caret>')
+        // app.request.attributes.get('_route') is same as('<caret>')
+        // app.request.attributes.get('_route') in ['<caret>']
+        // app.request.attributes.get('_route') not in ['<caret>']
+        CompletionProvider<CompletionParameters> twigRouteCompareCompletionProvider = new CompletionProvider<>() {
+            public void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet resultSet) {
+                PsiElement position = parameters.getPosition();
+                if (!Symfony2ProjectComponent.isEnabled(position) || !TwigPattern.isRouteCompareContext(position)) {
+                    return;
+                }
+                resultSet.addAllElements(RouteHelper.getRoutesLookupElements(position.getProject(), true));
+            }
+        };
+        extend(CompletionType.BASIC, TwigPattern.getTwigRouteComparePattern(), twigRouteCompareCompletionProvider);
+        extend(CompletionType.BASIC, TwigPattern.getTwigRouteStartsWithPattern(), twigRouteCompareCompletionProvider);
+        extend(CompletionType.BASIC, TwigPattern.getTwigRouteSameAsPattern(), twigRouteCompareCompletionProvider);
+        extend(CompletionType.BASIC, TwigPattern.getTwigRouteInArrayPattern(), twigRouteCompareCompletionProvider);
+
         // {{ component('<caret>'}) }}
         // {% component FOO
         extend(
