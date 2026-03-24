@@ -1,0 +1,5 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="org.jetbrains.plugins.terminal">
+        <commandSpecsProvider implementation="fr.adrienbrault.idea.symfony2plugin.integrations.terminal.SymfonyShellCommandSpecsProvider"/>
+    </extensions>
+</idea-plugin>
