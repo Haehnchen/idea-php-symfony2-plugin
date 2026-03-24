@@ -24,6 +24,7 @@ import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.ClassServiceDefinitionTargetLazyValue;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceSerializable;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceDefinitionLocator;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceDefinitionLocatorParameter;
@@ -63,6 +64,13 @@ public class ServiceIndexUtil {
 
         return virtualFiles.toArray(new VirtualFile[0]);
 
+    }
+
+    @Nullable
+    public static ServiceSerializable findServiceDefinition(@NotNull Project project, @NotNull VirtualFile virtualFile, @NotNull String serviceName) {
+        return FileBasedIndex.getInstance()
+            .getFileData(ServicesDefinitionStubIndex.KEY, virtualFile, project)
+            .get(serviceName.toLowerCase());
     }
 
     public static List<PsiElement> findServiceDefinitions(@NotNull Project project, @NotNull String serviceName) {

@@ -20,6 +20,7 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services.yml"));
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services.yaml"));
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services.php"));
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services_array.php"));
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services_with_defaults.yaml"));
     }
 
@@ -60,6 +61,38 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
     public void testThatServiceIdOfPhpFileIsIndexed() {
         assertIndexContains(ServicesDefinitionStubIndex.KEY, "twig.command.debug");
         assertIndexContains(ServicesDefinitionStubIndex.KEY, "twig.command.debug_alias");
+    }
+
+    public void testThatServiceIdOfPhpArrayFileIsIndexed() {
+        assertIndexContains(ServicesDefinitionStubIndex.KEY, "php_array.service");
+        assertIndexContains(ServicesDefinitionStubIndex.KEY, "php_array.alias");
+
+        ServiceInterface defaultsService = getFirstValue("datetime");
+        assertEquals("DateTime", defaultsService.getClassName());
+        assertTrue(defaultsService.isAutowire());
+        assertFalse(defaultsService.isPublic());
+
+        ServiceInterface configuredService = getFirstValue("php_array.service");
+        assertEquals("DateTimeImmutable", configuredService.getClassName());
+        assertContainsElements(configuredService.getTags(), "php_array_tag", "php_array_named_tag");
+
+        ServiceInterface aliasService = getFirstValue("php_array.alias");
+        assertEquals("php_array.service", aliasService.getAlias());
+
+        ServiceInterface decoratedService = getFirstValue("php_array.decorated");
+        assertEquals("ArrayObject", decoratedService.getClassName());
+        assertEquals("php_array.service", decoratedService.getDecorates());
+        assertEquals("php_array.decorated.inner_custom", decoratedService.getDecorationInnerName());
+
+        ServiceInterface decoratedInner = getFirstValue("php_array.decorated.inner_custom");
+        assertEquals("php_array.decorated.inner_custom", decoratedInner.getId());
+
+        ServiceInterface resourceService = getFirstValue("php_array.resource");
+        assertEquals("php_array.resource", resourceService.getId());
+        assertEquals("php_array.resource", resourceService.getClassName());
+        assertContainsElements(resourceService.getResource(), "../src/*", "../src2/*");
+        assertContainsElements(resourceService.getExclude(), "../src/{Tests,Kernel.php}");
+        assertFalse(resourceService.isAutowire());
     }
 
     public void testServiceIdOfYmlWithDeprecatedShortcut() {

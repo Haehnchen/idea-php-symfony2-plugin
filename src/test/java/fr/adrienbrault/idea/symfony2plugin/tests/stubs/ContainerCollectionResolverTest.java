@@ -149,6 +149,42 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
         assertNull(ContainerCollectionResolver.getService(getProject(), "App\\Service\\ExcludedService"));
     }
 
+    public void testThatPhpArrayResourceBasedServicesAreResolved() {
+        myFixture.copyFileToProject("ResourceFooService.php", "Service/ResourceFooService.php");
+        myFixture.copyFileToProject("resource_based_services.php", "config/services.php");
+
+        assertTrue(ContainerCollectionResolver.hasServiceNames(getProject(), "App\\Service\\ResourceFooService"));
+
+        ContainerService service = ContainerCollectionResolver.getService(getProject(), "App\\Service\\ResourceFooService");
+        assertNotNull(service);
+        assertEquals("App\\Service\\ResourceFooService", service.getClassName());
+        assertTrue(service.isWeak());
+    }
+
+    public void testThatPhpArrayResourceBasedServicesRespectPerEntryAutowireOverride() {
+        myFixture.copyFileToProject("ResourceFooService.php", "Service/ResourceFooService.php");
+        myFixture.copyFileToProject("resource_based_services_autowire_false.php", "config/services.php");
+
+        assertFalse(ContainerCollectionResolver.hasServiceNames(getProject(), "App\\Service\\ResourceFooService"));
+        assertNull(ContainerCollectionResolver.getService(getProject(), "App\\Service\\ResourceFooService"));
+    }
+
+    public void testThatDirectPhpArrayResourceBasedServicesAreResolved() {
+        myFixture.copyFileToProject("DirectResourceFooService.php", "DirectService/DirectResourceFooService.php");
+        myFixture.copyFileToProject("direct_resource_based_services.php", "config/services.php");
+
+        assertTrue(ContainerCollectionResolver.hasServiceNames(getProject(), "App\\DirectService\\DirectResourceFooService"));
+        assertNotNull(ContainerCollectionResolver.getService(getProject(), "App\\DirectService\\DirectResourceFooService"));
+    }
+
+    public void testThatClosurePhpArrayResourceBasedServicesAreResolved() {
+        myFixture.copyFileToProject("ClosureResourceFooService.php", "ClosureService/ClosureResourceFooService.php");
+        myFixture.copyFileToProject("closure_resource_based_services.php", "config/services.php");
+
+        assertTrue(ContainerCollectionResolver.hasServiceNames(getProject(), "App\\ClosureService\\ClosureResourceFooService"));
+        assertNotNull(ContainerCollectionResolver.getService(getProject(), "App\\ClosureService\\ClosureResourceFooService"));
+    }
+
     public void testThatExplicitServiceWithExcludeAttributeIsFilteredFromNames() {
         myFixture.copyFileToProject("ExcludedService.php");
         myFixture.configureByText("exclude_explicit.yml", "" +

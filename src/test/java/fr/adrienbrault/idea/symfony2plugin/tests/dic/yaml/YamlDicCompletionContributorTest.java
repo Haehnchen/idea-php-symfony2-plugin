@@ -12,6 +12,7 @@ public class YamlDicCompletionContributorTest extends SymfonyLightCodeInsightFix
     public void setUp() throws Exception {
         super.setUp();
         myFixture.copyFileToProject("appDevDebugProjectContainer.xml");
+        myFixture.copyFileToProject("container/util/fixtures/services_array.php", "services_array.php");
 
         myFixture.configureByText("classes.php", "<?php\n" +
             "namespace Foo\\Name;\n" +
@@ -52,6 +53,12 @@ public class YamlDicCompletionContributorTest extends SymfonyLightCodeInsightFix
             "    my_service:\n" +
             "        factory_service: <caret>\n"
             , "data_collector.router"
+        );
+
+        assertCompletionContains(YAMLFileType.YML, "services:\n" +
+            "    foo:\n" +
+            "        arguments: ['@<caret>']\n"
+            , "app.my_service"
         );
 
         assertCompletionContains(YAMLFileType.YML, "services:\n" +

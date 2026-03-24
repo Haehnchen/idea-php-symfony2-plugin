@@ -16,6 +16,7 @@ import com.intellij.psi.xml.*;
 import com.intellij.util.Consumer;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.codeInsight.PhpScopeHolder;
 import com.jetbrains.php.codeInsight.controlFlow.PhpControlFlowUtil;
 import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
 import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpReturnInstruction;
@@ -91,6 +92,7 @@ public class ServiceContainerUtil {
     public static final String AUTOWIRE_CALLABLE_ATTRIBUTE_CLASS = "\\Symfony\\Component\\DependencyInjection\\Attribute\\AutowireCallable";
     public static final String AUTOWIRE_METHOD_OF_ATTRIBUTE_CLASS = "\\Symfony\\Component\\DependencyInjection\\Attribute\\AutowireMethodOf";
     public static final String CONTAINER_CONFIGURATOR = "\\Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\ContainerConfigurator";
+    public static final String CONTAINER_CONFIG_APP = "\\Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\App";
 
     @NotNull
     public static Collection<ServiceSerializable> getServicesInFile(@NotNull PsiFile psiFile) {
@@ -139,10 +141,12 @@ public class ServiceContainerUtil {
                 services.add(serializableService);
             });
         } else if (psiFile instanceof PhpFile) {
-            visitFile((PhpFile) psiFile, serviceConsumer -> {
+            visitPhpFluentFile((PhpFile) psiFile, serviceConsumer -> {
                 SerializableService serializableService = createService(serviceConsumer);
                 services.add(serializableService);
             });
+
+            services.addAll(getPhpArrayServices((PhpFile) psiFile));
         }
 
         // decorated services
@@ -287,7 +291,7 @@ public class ServiceContainerUtil {
     private static String getStringValueIndexSafe(@NotNull PsiElement psiElement) {
         String serviceClass = null;
         if (psiElement instanceof StringLiteralExpression) {
-            serviceClass = ((StringLiteralExpression) psiElement).getContents();
+            serviceClass = normalizePhpStringValue(((StringLiteralExpression) psiElement).getContents());
         } else if(psiElement instanceof ClassConstantReference) {
             serviceClass = PhpElementsUtil.getClassConstantPhpFqn((ClassConstantReference) psiElement);
         }
@@ -416,6 +420,11 @@ public class ServiceContainerUtil {
      * "return static function (ContainerConfigurator $container) { ... }"
      */
     public static void visitFile(@NotNull PhpFile phpFile, @NotNull Consumer<ServiceConsumer> consumer) {
+        visitPhpFluentFile(phpFile, consumer);
+        visitPhpArrayConfig(phpFile, consumer);
+    }
+
+    private static void visitPhpFluentFile(@NotNull PhpFile phpFile, @NotNull Consumer<ServiceConsumer> consumer) {
         for (Function function : getPhpContainerConfiguratorFunctions(phpFile)) {
             // we only want "set" and "alias" methods
             for (MethodReference methodReference : PhpElementsUtil.collectMethodReferencesInsideControlFlow(function, "set", "alias")) {
@@ -475,6 +484,349 @@ public class ServiceContainerUtil {
                 }
             }
         }
+    }
+
+    private static void visitPhpArrayConfig(@NotNull PhpFile phpFile, @NotNull Consumer<ServiceConsumer> consumer) {
+        for (PsiElement psiElement : collectPhpConfigReturnArguments(phpFile)) {
+            ArrayCreationExpression configArray = extractReturnedConfigArray(psiElement);
+            if (configArray == null) {
+                continue;
+            }
+
+            visitPhpArrayServices(configArray, createPhpArrayDefaults(configArray), consumer);
+        }
+    }
+
+    @NotNull
+    private static Collection<ServiceSerializable> getPhpArrayServices(@NotNull PhpFile phpFile) {
+        Collection<ServiceSerializable> services = new ArrayList<>();
+
+        for (PsiElement psiElement : collectPhpConfigReturnArguments(phpFile)) {
+            ArrayCreationExpression configArray = extractReturnedConfigArray(psiElement);
+            if (configArray == null) {
+                continue;
+            }
+
+            services.addAll(createServicesFromPhpArray(configArray, createPhpArrayDefaults(configArray)));
+        }
+
+        return services;
+    }
+
+    @NotNull
+    private static Collection<PsiElement> collectPhpConfigReturnArguments(@NotNull PhpFile phpFile) {
+        Collection<PsiElement> elements = new LinkedHashSet<>();
+
+        collectTopLevelReturnArguments(phpFile, phpFile, elements);
+
+        for (PhpNamespace phpNamespace : PhpNamespaceBraceConverter.getAllNamespaces(phpFile)) {
+            collectTopLevelReturnArguments(phpNamespace, phpNamespace, elements);
+        }
+
+        for (Function function : getPhpContainerConfiguratorFunctions(phpFile)) {
+            elements.addAll(PhpElementsUtil.collectPhpReturnArgumentsInsideControlFlow(function));
+        }
+
+        return elements;
+    }
+
+    private static void collectTopLevelReturnArguments(@NotNull PhpScopeHolder phpScopeHolder, @NotNull PsiElement boundary, @NotNull Collection<PsiElement> elements) {
+        for (PsiElement argument : PhpElementsUtil.collectPhpReturnArgumentsInsideControlFlow(phpScopeHolder)) {
+            PsiElement parentScope = PsiTreeUtil.getParentOfType(argument, Function.class, Method.class, PhpClass.class);
+            if (parentScope != null && PsiTreeUtil.isAncestor(boundary, parentScope, false)) {
+                continue;
+            }
+
+            elements.add(argument);
+        }
+    }
+
+    @Nullable
+    private static ArrayCreationExpression extractReturnedConfigArray(@NotNull PsiElement psiElement) {
+        if (psiElement instanceof ArrayCreationExpression arrayCreationExpression) {
+            return arrayCreationExpression;
+        }
+
+        if (!(psiElement instanceof MethodReference methodReference) || !isConfigFactoryCall(methodReference)) {
+            return null;
+        }
+
+        PsiElement[] parameters = methodReference.getParameters();
+        if (parameters.length == 0 || !(parameters[0] instanceof ArrayCreationExpression arrayCreationExpression)) {
+            return null;
+        }
+
+        return arrayCreationExpression;
+    }
+
+    private static boolean isConfigFactoryCall(@NotNull MethodReference methodReference) {
+        if (!"config".equals(methodReference.getName())) {
+            return false;
+        }
+
+        PhpExpression classReference = methodReference.getClassReference();
+        if (classReference == null) {
+            return false;
+        }
+
+        PsiElement resolved = classReference.getReference() != null ? classReference.getReference().resolve() : null;
+        if (resolved instanceof PhpClass phpClass) {
+            return CONTAINER_CONFIG_APP.equals(phpClass.getFQN());
+        }
+
+        String text = StringUtils.stripStart(classReference.getText(), "\\");
+        return "App".equals(text) || CONTAINER_CONFIG_APP.substring(1).equals(text);
+    }
+
+    @Nullable
+    private static ArrayCreationExpression getPhpArrayServicesValue(@NotNull ArrayCreationExpression configArray) {
+        PhpPsiElement services = PhpElementsUtil.getArrayValue(configArray, "services");
+        return services instanceof ArrayCreationExpression ? (ArrayCreationExpression) services : null;
+    }
+
+    /**
+     * Extract `_defaults` for a single PHP array config root.
+     */
+    @NotNull
+    private static ServiceFileDefaults createPhpArrayDefaults(@NotNull ArrayCreationExpression configArray) {
+        ArrayCreationExpression services = getPhpArrayServicesValue(configArray);
+        if (services == null) {
+            return ServiceFileDefaults.EMPTY;
+        }
+
+        PhpPsiElement defaults = PhpElementsUtil.getArrayValue(services, "_defaults");
+        if (!(defaults instanceof ArrayCreationExpression defaultsArray)) {
+            return ServiceFileDefaults.EMPTY;
+        }
+
+        return new ServiceFileDefaults(
+            PhpElementsUtil.getArrayValueBool(defaultsArray, "public"),
+            PhpElementsUtil.getArrayValueBool(defaultsArray, "autowire")
+        );
+    }
+
+    private static void visitPhpArrayServices(@NotNull ArrayCreationExpression configArray, @NotNull ServiceFileDefaults defaults, @NotNull Consumer<ServiceConsumer> consumer) {
+        ArrayCreationExpression services = getPhpArrayServicesValue(configArray);
+        if (services == null) {
+            return;
+        }
+
+        for (ArrayHashElement hashElement : services.getHashElements()) {
+            String serviceId = getPhpArrayKey(hashElement.getKey());
+            if (StringUtils.isBlank(serviceId) || "_defaults".equals(serviceId)) {
+                continue;
+            }
+
+            consumer.consume(new ServiceConsumer(
+                hashElement.getKey(),
+                serviceId,
+                new PhpKeyValueAttributeValue(
+                    hashElement,
+                    createPhpArrayServiceAttributeMap(hashElement.getValue()),
+                    createPhpArrayServiceStringArrayMap(hashElement.getValue()),
+                    getPhpArrayTags(hashElement.getValue() instanceof ArrayCreationExpression arrayCreationExpression ? PhpElementsUtil.getArrayValue(arrayCreationExpression, "tags") : null)
+                ),
+                defaults
+            ));
+        }
+    }
+
+    @NotNull
+    private static Collection<ServiceSerializable> createServicesFromPhpArray(@NotNull ArrayCreationExpression configArray, @NotNull ServiceFileDefaults defaults) {
+        Collection<ServiceSerializable> services = new ArrayList<>();
+
+        ArrayCreationExpression phpServices = getPhpArrayServicesValue(configArray);
+        if (phpServices == null) {
+            return services;
+        }
+
+        for (ArrayHashElement hashElement : phpServices.getHashElements()) {
+            String serviceId = getPhpArrayKey(hashElement.getKey());
+            if (StringUtils.isBlank(serviceId) || "_defaults".equals(serviceId)) {
+                continue;
+            }
+
+            PsiElement value = hashElement.getValue();
+            SerializableService serializableService = new SerializableService(serviceId)
+                .setIsAutowire(defaults.isAutowire())
+                .setIsPublic(defaults.isPublic());
+
+            if (value instanceof ArrayCreationExpression arrayCreationExpression) {
+                Boolean isAbstract = PhpElementsUtil.getArrayValueBool(arrayCreationExpression, "abstract");
+                Boolean isAutowire = PhpElementsUtil.getArrayValueBool(arrayCreationExpression, "autowire");
+                Boolean isPublic = PhpElementsUtil.getArrayValueBool(arrayCreationExpression, "public");
+                String className = StringUtils.stripStart(getPhpArrayValueString(arrayCreationExpression, "class"), "\\");
+                if (className == null && isPhpArrayServiceIdAsClassSupported(arrayCreationExpression, isAbstract)) {
+                    className = serviceId;
+                }
+
+                Collection<String> tags = getPhpArrayTags(PhpElementsUtil.getArrayValue(arrayCreationExpression, "tags"));
+
+                services.add(serializableService
+                    .setClassName(className)
+                    .setAlias(getPhpArrayValueString(arrayCreationExpression, "alias"))
+                    .setDecorates(getPhpArrayValueString(arrayCreationExpression, "decorates"))
+                    .setDecorationInnerName(getFirstNotBlank(
+                        getPhpArrayValueString(arrayCreationExpression, "decoration_inner_name"),
+                        getPhpArrayValueString(arrayCreationExpression, "decoration-inner-name")
+                    ))
+                    .setParent(getPhpArrayValueString(arrayCreationExpression, "parent"))
+                    .setIsAbstract(isAbstract)
+                    .setIsAutowire(isAutowire != null ? isAutowire : defaults.isAutowire())
+                    .setIsLazy(PhpElementsUtil.getArrayValueBool(arrayCreationExpression, "lazy"))
+                    .setIsPublic(isPublic != null ? isPublic : defaults.isPublic())
+                    .setIsDeprecated(PhpElementsUtil.getArrayValueBool(arrayCreationExpression, "deprecated"))
+                    .setResource(getPhpArrayStringValues(PhpElementsUtil.getArrayValue(arrayCreationExpression, "resource")))
+                    .setExclude(getPhpArrayStringValues(PhpElementsUtil.getArrayValue(arrayCreationExpression, "exclude")))
+                    .setTags(tags)
+                );
+                continue;
+            }
+
+            String scalarValue = PhpElementsUtil.getStringValue(value);
+            if (StringUtils.isNotBlank(scalarValue) && scalarValue.startsWith("@") && scalarValue.length() > 1) {
+                services.add(serializableService.setAlias(scalarValue.substring(1)));
+                continue;
+            }
+
+            if (StringUtils.isNotBlank(scalarValue)) {
+                services.add(serializableService.setClassName(StringUtils.stripStart(scalarValue, "\\")));
+                continue;
+            }
+
+            services.add(serializableService.setClassName(serviceId));
+        }
+
+        return services;
+    }
+
+    @NotNull
+    private static Map<String, String> createPhpArrayServiceAttributeMap(@Nullable PsiElement value) {
+        if (value instanceof ArrayCreationExpression arrayCreationExpression) {
+            return createPhpArrayServiceAttributeValueMap(arrayCreationExpression);
+        }
+
+        String scalarValue = PhpElementsUtil.getStringValue(value);
+        if (StringUtils.isBlank(scalarValue)) {
+            return Collections.emptyMap();
+        }
+
+        Map<String, String> values = new HashMap<>();
+        if (scalarValue.startsWith("@") && scalarValue.length() > 1) {
+            values.put("alias", scalarValue.substring(1));
+        } else {
+            values.put("class", StringUtils.stripStart(scalarValue, "\\"));
+        }
+
+        return values;
+    }
+
+    @NotNull
+    private static Map<String, Collection<String>> createPhpArrayServiceStringArrayMap(@Nullable PsiElement value) {
+        if (!(value instanceof ArrayCreationExpression arrayCreationExpression)) {
+            return Collections.emptyMap();
+        }
+
+        Map<String, Collection<String>> values = new HashMap<>();
+        values.put("resource", getPhpArrayStringValues(PhpElementsUtil.getArrayValue(arrayCreationExpression, "resource")));
+        values.put("exclude", getPhpArrayStringValues(PhpElementsUtil.getArrayValue(arrayCreationExpression, "exclude")));
+
+        return values;
+    }
+
+    @NotNull
+    private static Map<String, String> createPhpArrayServiceAttributeValueMap(@NotNull ArrayCreationExpression arrayCreationExpression) {
+        Map<String, String> values = new HashMap<>();
+
+        putPhpArrayStringValue(values, "class", arrayCreationExpression, "class");
+        putPhpArrayStringValue(values, "alias", arrayCreationExpression, "alias");
+        putPhpArrayStringValue(values, "decorates", arrayCreationExpression, "decorates");
+        putPhpArrayStringValue(values, "decoration_inner_name", arrayCreationExpression, "decoration_inner_name");
+        putPhpArrayStringValue(values, "decoration_inner_name", arrayCreationExpression, "decoration-inner-name");
+        putPhpArrayStringValue(values, "parent", arrayCreationExpression, "parent");
+
+        return values;
+    }
+
+    private static boolean isPhpArrayServiceIdAsClassSupported(@NotNull ArrayCreationExpression arrayCreationExpression, @Nullable Boolean anAbstract) {
+        return getPhpArrayValueString(arrayCreationExpression, "alias") == null && !(anAbstract != null && anAbstract);
+    }
+
+    private static void putPhpArrayStringValue(@NotNull Map<String, String> values, @NotNull String targetKey, @NotNull ArrayCreationExpression arrayCreationExpression, @NotNull String sourceKey) {
+        String value = getPhpArrayValueString(arrayCreationExpression, sourceKey);
+        if (StringUtils.isNotBlank(value)) {
+            values.put(targetKey, StringUtils.stripStart(value, "\\"));
+        }
+    }
+
+    @Nullable
+    private static String getPhpArrayValueString(@NotNull ArrayCreationExpression arrayCreationExpression, @NotNull String key) {
+        return normalizePhpStringValue(PhpElementsUtil.getStringValue(PhpElementsUtil.getArrayValue(arrayCreationExpression, key)));
+    }
+
+    @Nullable
+    private static String getPhpArrayKey(@Nullable PsiElement psiElement) {
+        if (psiElement == null) {
+            return null;
+        }
+
+        return StringUtils.stripStart(getStringValueIndexSafe(psiElement), "\\");
+    }
+
+    @NotNull
+    private static Collection<String> getPhpArrayStringValues(@Nullable PsiElement psiElement) {
+        if (psiElement instanceof ArrayCreationExpression arrayCreationExpression) {
+            return new HashSet<>(PhpElementsUtil.getArrayValuesAsString(arrayCreationExpression));
+        }
+
+        String value = PhpElementsUtil.getStringValue(psiElement);
+        if (StringUtils.isBlank(value)) {
+            return new HashSet<>();
+        }
+
+        return new HashSet<>(Collections.singletonList(value));
+    }
+
+    @NotNull
+    private static Collection<String> getPhpArrayTags(@Nullable PsiElement psiElement) {
+        Collection<String> tags = new HashSet<>();
+
+        if (!(psiElement instanceof ArrayCreationExpression arrayCreationExpression)) {
+            return tags;
+        }
+
+        for (PsiElement tagElement : PhpElementsUtil.getArrayValues(arrayCreationExpression)) {
+            if (tagElement instanceof ArrayCreationExpression tagConfig) {
+                String name = getPhpArrayValueString(tagConfig, "name");
+                if (StringUtils.isNotBlank(name)) {
+                    tags.add(name);
+                }
+                continue;
+            }
+
+            String tag = PhpElementsUtil.getStringValue(tagElement);
+            if (StringUtils.isNotBlank(tag)) {
+                tags.add(tag);
+            }
+        }
+
+        return tags;
+    }
+
+    @Nullable
+    private static String getFirstNotBlank(@Nullable String... values) {
+        for (String value : values) {
+            if (StringUtils.isNotBlank(value)) {
+                return value;
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public static String normalizePhpStringValue(@Nullable String value) {
+        return value != null ? value.replace("\\\\", "\\") : null;
     }
 
     /**

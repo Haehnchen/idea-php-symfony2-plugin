@@ -8,6 +8,7 @@ import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceSerializable;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -33,6 +34,7 @@ public class ServiceIndexUtilTest extends SymfonyLightCodeInsightFixtureTestCase
         ymlVirtualFile = myFixture.copyFileToProject("services.yml");
         xmlVirtualFile = myFixture.copyFileToProject("services.xml");
         myFixture.copyFileToProject("services.php");
+        myFixture.copyFileToProject("services_array.php");
     }
 
     public String getTestDataPath() {
@@ -88,6 +90,68 @@ public class ServiceIndexUtilTest extends SymfonyLightCodeInsightFixtureTestCase
         assertNotNull(ContainerUtil.find(
             ServiceIndexUtil.findServiceDefinitions(PhpElementsUtil.getClass(getProject(), "My\\Foo\\Service\\PhpTargets")),
             new MyPhpCondition("php_twig.command.debug")
+        ));
+    }
+
+    public void testFindServiceDefinitionsForStringInsidePhpArray() {
+        assertNotNull(ContainerUtil.find(
+            ServiceIndexUtil.findServiceDefinitions(getProject(), "php_array.service"),
+            new MyPhpCondition("php_array.service")
+        ));
+    }
+
+    public void testFindServiceDefinitionsForStringInsideDirectPhpArray() {
+        myFixture.addFileToProject("config/direct_services.php", "<?php\n" +
+            "return [\n" +
+            "    'services' => [\n" +
+            "        'direct_php_array.service' => [\n" +
+            "            'class' => \\DateTime::class,\n" +
+            "        ],\n" +
+            "    ],\n" +
+            "];");
+
+        assertNotNull(ContainerUtil.find(
+            ServiceIndexUtil.findServiceDefinitions(getProject(), "direct_php_array.service"),
+            new MyPhpCondition("direct_php_array.service")
+        ));
+    }
+
+    public void testFindServiceDefinitionInPhpFileByIndex() {
+        ServiceSerializable service = ServiceIndexUtil.findServiceDefinition(getProject(), ymlVirtualFile, "foo.yml_id");
+        assertNotNull(service);
+        assertEquals("My\\Foo\\Service\\Targets", service.getClassName());
+
+        VirtualFile phpVirtualFile = myFixture.findFileInTempDir("services_array.php");
+        assertNotNull(phpVirtualFile);
+
+        service = ServiceIndexUtil.findServiceDefinition(getProject(), phpVirtualFile, "php_array.resource");
+        assertNotNull(service);
+        assertContainsElements(service.getResource(), "../src/*", "../src2/*");
+        assertContainsElements(service.getExclude(), "../src/{Tests,Kernel.php}");
+    }
+
+    public void testFindServiceDefinitionInClosurePhpFileByIndex() {
+        VirtualFile phpVirtualFile = myFixture.addFileToProject("config/closure_services.php", "<?php\n" +
+            "namespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\n" +
+            "return static function (ContainerConfigurator $container) {\n" +
+            "    return [\n" +
+            "        'services' => [\n" +
+            "            'closure_php_array.service' => [\n" +
+            "                'class' => \\DateTime::class,\n" +
+            "            ],\n" +
+            "        ],\n" +
+            "    ];\n" +
+            "};").getVirtualFile();
+
+        ServiceSerializable service = ServiceIndexUtil.findServiceDefinition(getProject(), phpVirtualFile, "closure_php_array.service");
+        assertNotNull(service);
+        assertEquals("DateTime", service.getClassName());
+    }
+
+    public void testFindServiceDefinitionsForPhpClassInsidePhpArray() {
+        assertNotNull(ContainerUtil.find(
+            ServiceIndexUtil.findServiceDefinitions(PhpElementsUtil.getClass(getProject(), "My\\Foo\\Service\\PhpArrayTargets")),
+            new MyPhpCondition("php_array.service")
         ));
     }
 

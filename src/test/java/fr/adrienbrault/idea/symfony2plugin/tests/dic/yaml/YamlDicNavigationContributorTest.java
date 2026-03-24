@@ -1,5 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.dic.yaml;
 
+import com.intellij.patterns.PlatformPatterns;
+import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.YAMLFileType;
 
@@ -12,6 +14,7 @@ public class YamlDicNavigationContributorTest extends SymfonyLightCodeInsightFix
     public void setUp() throws Exception {
         super.setUp();
         myFixture.copyFileToProject("appDevDebugProjectContainer.xml");
+        myFixture.copyFileToProject("container/util/fixtures/services_array.php", "services_array.php");
 
         myFixture.configureByText("classes.php", "<?php\n" +
             "namespace Foo\\Name;\n" +
@@ -60,6 +63,14 @@ public class YamlDicNavigationContributorTest extends SymfonyLightCodeInsightFix
                 "    foo.manager:\n" +
                 "        factory: 'foo.factory:f<caret>oo'\n"
             , "Foo\\Name\\FooClass::foo"
+        );
+    }
+
+    public void testPhpArrayServiceNavigation() {
+        assertNavigationMatch(YAMLFileType.YML, "services:\n" +
+                "    foo:\n" +
+                "        arguments: ['@app.my<caret>_service']\n",
+            PlatformPatterns.psiElement(StringLiteralExpression.class)
         );
     }
 }
