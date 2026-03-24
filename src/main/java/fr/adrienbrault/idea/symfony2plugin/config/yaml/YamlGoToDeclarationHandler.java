@@ -21,6 +21,7 @@ import fr.adrienbrault.idea.symfony2plugin.config.utils.ConfigUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.DotEnvUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceSerializable;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
@@ -489,20 +490,27 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
             return Collections.emptyList();
         }
 
-        PsiElement quotedText = psiElement.getParent();
-        if (!(quotedText instanceof YAMLQuotedText)) {
+        YAMLKeyValue resourceKeyValue = PsiTreeUtil.getParentOfType(psiElement, YAMLKeyValue.class);
+        if (resourceKeyValue == null) {
             return Collections.emptyList();
         }
 
-        String name = YamlHelper.getServiceKeyFromResourceFromStringOrArray((YAMLQuotedText) quotedText);
-        if (name == null) {
+        YAMLKeyValue serviceKeyValue = PsiTreeUtil.getParentOfType(resourceKeyValue, YAMLKeyValue.class);
+        if (serviceKeyValue == null) {
             return Collections.emptyList();
         }
 
-        return new HashSet<>(PhpElementsUtil.getClassesByClassFqn(
-            psiElement.getProject(),
-            ServiceContainerUtil.getPhpClassFromResources(psiElement.getProject(), name, virtualFile, List.of(resource), Collections.emptyList())
-        ));
+        String id = serviceKeyValue.getKeyText();
+        if (StringUtils.isBlank(id)) {
+            return Collections.emptyList();
+        }
+
+        ServiceSerializable service = ServiceIndexUtil.findServiceDefinition(psiElement.getProject(), virtualFile, id);
+        if (service == null || service.getResource().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return new HashSet<>(ServiceIndexUtil.getClassesForServiceDefinition(psiElement.getProject(), virtualFile, service));
     }
 
     @NotNull
@@ -620,7 +628,7 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
 
     @Nullable
     @Override
-    public String getActionText(DataContext dataContext) {
+    public String getActionText(@NotNull DataContext dataContext) {
         return null;
     }
 
