@@ -132,7 +132,7 @@ public class TranslatorKeyExtractorDialog extends JDialog {
         fieldsPanel.add(textTranslationKey, gbc);
 
         gbc.gridx = 0; gbc.gridy = 1; gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0;
-        fieldsPanel.add(new JLabel("Domain (Yaml)"), gbc);
+        fieldsPanel.add(new JLabel("Domain"), gbc);
         gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
         fieldsPanel.add(comboBox1, gbc);
 

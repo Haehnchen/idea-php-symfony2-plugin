@@ -1531,6 +1531,17 @@ public class TwigPattern {
                         PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("domain"))
                             .withParent(PlatformPatterns.psiElement(TwigVariableReference.class)
                                 .withParent(PlatformPatterns.psiElement().with(PARENTHESIZED_FUNCTION_NAME_WORKAROUND)))
+                    ),
+                    // transchoice(2, null, domain: 'bar')
+                    // trans(domain: 'bar')
+                    PlatformPatterns.psiElement(TwigTokenTypes.COLON).afterLeafSkipping(
+                        PlatformPatterns.or(
+                            PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+                        ),
+                        PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("domain"))
+                            .withParent(PlatformPatterns.psiElement(TwigVariableReference.class)
+                                .withParent(PlatformPatterns.psiElement().with(PARENTHESIZED_FUNCTION_NAME_WORKAROUND)))
                     )
                 )
             )
