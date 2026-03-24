@@ -196,14 +196,6 @@ public class ServiceIndexUtil {
         return new ClassServiceDefinitionTargetLazyValue(phpClass.getProject(), phpClassName);
     }
 
-    /**
-     * "..src/Foo/{Foo,Foobar.php}"
-     *
-     */
-    public static boolean matchesResourcesGlob(@NotNull VirtualFile serviceFileAsBase, @NotNull VirtualFile phpClassFile, @NotNull Collection<String> resources, @NotNull Collection<String> excludes) {
-        return ServiceResourceGlobMatcher.create(serviceFileAsBase, resources, excludes).matches(phpClassFile);
-    }
-
     @Nullable
     public static Pair<ClassServiceDefinitionTargetLazyValue, Collection<ContainerService>> findServiceDefinitionsOfResourceLazy(@NotNull PhpClass phpClass) {
         if (phpClass.isInterface() || phpClass.isAbstract()) {

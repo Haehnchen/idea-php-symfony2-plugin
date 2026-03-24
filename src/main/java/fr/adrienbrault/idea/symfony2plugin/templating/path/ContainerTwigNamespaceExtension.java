@@ -23,6 +23,6 @@ public class ContainerTwigNamespaceExtension implements TwigNamespaceExtension {
         Project project = parameter.getProject();
 
         TwigPathServiceParser parser = ServiceXmlParserFactory.getInstance(project, TwigPathServiceParser.class);
-        return new ArrayList<>(parser.getTwigPathIndex().getTwigPaths());
+        return new ArrayList<>(parser.getTwigPaths());
     }
 }

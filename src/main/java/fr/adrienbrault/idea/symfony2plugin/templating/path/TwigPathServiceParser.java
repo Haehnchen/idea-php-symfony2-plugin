@@ -21,6 +21,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -28,7 +30,7 @@ import java.io.InputStream;
 public class TwigPathServiceParser extends AbstractServiceParser {
 
     @NotNull
-    private final TwigPathIndex twigPathIndex = new TwigPathIndex();
+    private final List<TwigPath> twigPaths = new ArrayList<>();
 
     @Override
     public String getXPathFilter() {
@@ -95,7 +97,7 @@ public class TwigPathServiceParser extends AbstractServiceParser {
             }
 
             if (existsInProjectRoot(project, relativePath)) {
-                twigPathIndex.addPath(new TwigPath(relativePath, namespace));
+                twigPaths.add(new TwigPath(relativePath, namespace));
             }
         }
     }
@@ -212,7 +214,7 @@ public class TwigPathServiceParser extends AbstractServiceParser {
     }
 
     @NotNull
-    public TwigPathIndex getTwigPathIndex() {
-        return twigPathIndex;
+    public List<TwigPath> getTwigPaths() {
+        return twigPaths;
     }
 }
