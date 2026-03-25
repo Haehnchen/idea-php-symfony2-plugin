@@ -171,6 +171,53 @@ public class PhpLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTes
         assertLineMarker(myFixture.getFile(), new LineMarker.ToolTipEqualsAssert("Navigate to decorated service"));
     }
 
+    public void testThatPhpFluentParentProvidesForwardMarker() {
+        PsiFile configFile = myFixture.addFileToProject("config/services.php", "<?php\n" +
+            "namespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\n" +
+            "use App\\ChildMailer;\n" +
+            "use App\\Mailer;\n" +
+            "return static function (ContainerConfigurator $container): void {\n" +
+            "    $services = $container->services();\n" +
+            "    $services->set(ChildMailer::class)\n" +
+            "        ->parent(Mail<caret>er::class);\n" +
+            "};");
+        myFixture.configureFromExistingVirtualFile(configFile.getVirtualFile());
+
+        assertLineMarker(myFixture.getFile(), new LineMarker.ToolTipEqualsAssert("Navigate to parent service"));
+    }
+
+    public void testThatPhpFluentDecoratedServiceProvidesReverseMarker() {
+        PsiFile configFile = myFixture.addFileToProject("config/services.php", "<?php\n" +
+            "namespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\n" +
+            "use App\\DecoratingMailer;\n" +
+            "use App\\Mailer;\n" +
+            "return static function (ContainerConfigurator $container): void {\n" +
+            "    $services = $container->services();\n" +
+            "    $services->set(Mail<caret>er::class);\n" +
+            "    $services->set(DecoratingMailer::class)\n" +
+            "        ->decorate(Mailer::class);\n" +
+            "};");
+        myFixture.configureFromExistingVirtualFile(configFile.getVirtualFile());
+
+        assertLineMarker(myFixture.getFile(), new LineMarker.ToolTipEqualsAssert("Navigate to decoration"));
+    }
+
+    public void testThatPhpFluentParentServiceProvidesReverseMarker() {
+        PsiFile configFile = myFixture.addFileToProject("config/services.php", "<?php\n" +
+            "namespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\n" +
+            "use App\\ChildMailer;\n" +
+            "use App\\Mailer;\n" +
+            "return static function (ContainerConfigurator $container): void {\n" +
+            "    $services = $container->services();\n" +
+            "    $services->set(Mail<caret>er::class);\n" +
+            "    $services->set(ChildMailer::class)\n" +
+            "        ->parent(Mailer::class);\n" +
+            "};");
+        myFixture.configureFromExistingVirtualFile(configFile.getVirtualFile());
+
+        assertLineMarker(myFixture.getFile(), new LineMarker.ToolTipEqualsAssert("Navigate to parent"));
+    }
+
     public void testThatNonSymfonyFluentDecorateDoesNotProvideMarker() {
         PsiFile configFile = myFixture.addFileToProject("config/services.php", "<?php\n" +
             "namespace App;\n" +

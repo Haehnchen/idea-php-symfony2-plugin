@@ -17,23 +17,19 @@ import java.util.Map;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class ParameterReference  extends PsiPolyVariantReferenceBase<PsiElement> {
-
-    private final String parameterName;
-
     public ParameterReference(@NotNull StringLiteralExpression element) {
         super(element);
-        parameterName = element.getContents();
     }
 
     @NotNull
     @Override
-    public ResolveResult[] multiResolve(boolean incompleteCode) {
-        return new ResolveResult[0];
+    public ResolveResult @NotNull [] multiResolve(boolean incompleteCode) {
+        return ResolveResult.EMPTY_ARRAY;
     }
 
     @NotNull
     @Override
-    public Object[] getVariants() {
+    public Object @NotNull [] getVariants() {
 
         List<LookupElement> results = new ArrayList<>();
 

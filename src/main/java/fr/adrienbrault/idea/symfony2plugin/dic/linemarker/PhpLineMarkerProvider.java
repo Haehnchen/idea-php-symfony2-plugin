@@ -15,16 +15,12 @@ import com.jetbrains.php.lang.psi.elements.PhpNamespace;
 import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression;
 import com.jetbrains.php.lang.psi.elements.ArrayHashElement;
 import com.jetbrains.php.lang.psi.elements.ClassConstantReference;
-import com.jetbrains.php.lang.psi.elements.ClassReference;
-import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.ParameterList;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.PhpExpression;
-import com.jetbrains.php.lang.psi.elements.PhpReturn;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.php.refactoring.PhpNamespaceBraceConverter;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.config.php.PhpArrayServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceSerializable;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
@@ -94,7 +90,7 @@ public class PhpLineMarkerProvider implements LineMarkerProvider {
                 continue;
             }
 
-            if (!isPhpServiceKey(serviceIdElement)) {
+            if (!isServiceDefinitionId(serviceIdElement)) {
                 continue;
             }
 
@@ -142,65 +138,32 @@ public class PhpLineMarkerProvider implements LineMarkerProvider {
      * Accept only keys that belong to a PHP `services` entry like:
      * 'App\\' => ['resource' => '../src/']
      */
+    private static boolean isServiceDefinitionId(@NotNull PsiElement keyElement) {
+        return isPhpServiceKey(keyElement) || isFluentServiceSetId(keyElement);
+    }
+
     private static boolean isPhpServiceKey(@NotNull PsiElement keyElement) {
-        ArrayHashElement serviceEntry = PsiTreeUtil.getParentOfType(keyElement, ArrayHashElement.class);
-        if (serviceEntry == null || serviceEntry.getKey() != keyElement) {
-            return false;
-        }
-
-        ArrayCreationExpression servicesArray = PsiTreeUtil.getParentOfType(serviceEntry, ArrayCreationExpression.class);
-        if (servicesArray == null) {
-            return false;
-        }
-
-        ArrayHashElement servicesEntry = PsiTreeUtil.getParentOfType(servicesArray, ArrayHashElement.class);
-        return servicesEntry != null
-            && servicesEntry.getValue() == servicesArray
-            && isInsideAcceptedPhpConfigArray(servicesEntry)
-            && "services".equals(PhpElementsUtil.getStringValue(servicesEntry.getKey()));
+        return PhpArrayServiceUtil.isServiceKey(keyElement);
     }
 
     /**
-     * Accept only PHP config arrays that are real container config roots, eg:
-     * return ['services' => [...]]
-     * return App::config(['services' => [...]])
+     * Accept service ids from fluent config chains like:
+     * $services->set('app.mailer')->decorate(...)
+     * $services->set(Mailer::class)->decorate(...)
      */
-    private static boolean isInsideAcceptedPhpConfigArray(@NotNull ArrayHashElement servicesEntry) {
-        ArrayCreationExpression configArray = PsiTreeUtil.getParentOfType(servicesEntry, ArrayCreationExpression.class);
-        if (configArray == null) {
+    private static boolean isFluentServiceSetId(@NotNull PsiElement keyElement) {
+        PsiElement parent = keyElement.getParent();
+        if (!(parent instanceof ParameterList) || PsiElementUtils.getParameterIndexValue(keyElement) != 0) {
             return false;
         }
 
-        PsiElement parent = configArray.getParent();
-        if (parent instanceof PhpReturn) {
-            return isAllowedPhpReturn((PhpReturn) parent);
-        }
-
-        if (parent instanceof ParameterList parameterList && parameterList.getParent() instanceof MethodReference methodReference) {
-            if (!isConfigFactoryCall(methodReference)) {
-                return false;
-            }
-
-            return methodReference.getParent() instanceof PhpReturn phpReturn && isAllowedPhpReturn(phpReturn);
-        }
-
-        return false;
-    }
-
-    /**
-     * Allow top-level returns and configurator-closure returns, but not class methods.
-     */
-    private static boolean isAllowedPhpReturn(@NotNull PhpReturn phpReturn) {
-        Function function = PsiTreeUtil.getParentOfType(phpReturn, Function.class);
-        if (function == null) {
-            return true;
-        }
-
-        if (PsiTreeUtil.getParentOfType(phpReturn, PhpClass.class) != null) {
+        MethodReference methodReference = PsiTreeUtil.getParentOfType(keyElement, MethodReference.class);
+        if (methodReference == null || methodReference.getParameterList() != parent || !"set".equals(methodReference.getName())) {
             return false;
         }
 
-        return isContainerConfiguratorNamespace((PhpFile) phpReturn.getContainingFile());
+        PsiFile containingFile = methodReference.getContainingFile();
+        return containingFile instanceof PhpFile phpFile && isContainerConfiguratorNamespace(phpFile);
     }
 
     private static void visitServiceKeyForResources(@NotNull Project project, @NotNull PsiElement leafTarget, @NotNull PsiElement keyElement, @NotNull String serviceId, @Nullable VirtualFile virtualFile, @NotNull Collection<? super LineMarkerInfo<?>> result) {
@@ -274,22 +237,7 @@ public class PhpLineMarkerProvider implements LineMarkerProvider {
      */
     @Nullable
     private static String getPhpServiceAttributeName(@NotNull PsiElement valueElement) {
-        ArrayHashElement attributeEntry = PsiTreeUtil.getParentOfType(valueElement, ArrayHashElement.class);
-        if (attributeEntry == null || attributeEntry.getValue() != valueElement) {
-            return null;
-        }
-
-        ArrayCreationExpression serviceDefinition = PsiTreeUtil.getParentOfType(attributeEntry, ArrayCreationExpression.class);
-        if (serviceDefinition == null) {
-            return null;
-        }
-
-        ArrayHashElement serviceEntry = PsiTreeUtil.getParentOfType(serviceDefinition, ArrayHashElement.class);
-        if (serviceEntry == null || serviceEntry.getValue() != serviceDefinition || !isPhpServiceKey(serviceEntry.getKey())) {
-            return null;
-        }
-
-        String key = PhpElementsUtil.getStringValue(attributeEntry.getKey());
+        String key = PhpArrayServiceUtil.getServiceAttributeName(valueElement);
         if (!"decorates".equals(key) && !"parent".equals(key)) {
             return null;
         }
@@ -308,16 +256,31 @@ public class PhpLineMarkerProvider implements LineMarkerProvider {
         }
 
         MethodReference methodReference = PsiTreeUtil.getParentOfType(parameterElement, MethodReference.class);
-        if (methodReference == null || methodReference.getParameterList() != parent || !"decorate".equals(methodReference.getName())) {
+        if (methodReference == null || methodReference.getParameterList() != parent) {
             return false;
         }
 
-        if (!isFluentServiceDecorateMethod(methodReference)) {
+        ServiceUtil.ServiceLineMarker lineMarker = getFluentServiceLineMarker(methodReference);
+        if (lineMarker == null || !isFluentServiceDecorateMethod(methodReference)) {
             return false;
         }
 
-        result.add(ServiceUtil.getLineMarkerForDecoratesServiceId(leafTarget, ServiceUtil.ServiceLineMarker.DECORATE, serviceId));
+        result.add(ServiceUtil.getLineMarkerForDecoratesServiceId(leafTarget, lineMarker, serviceId));
         return true;
+    }
+
+    @Nullable
+    private static ServiceUtil.ServiceLineMarker getFluentServiceLineMarker(@NotNull MethodReference methodReference) {
+        String name = methodReference.getName();
+        if ("decorate".equals(name)) {
+            return ServiceUtil.ServiceLineMarker.DECORATE;
+        }
+
+        if ("parent".equals(name)) {
+            return ServiceUtil.ServiceLineMarker.PARENT;
+        }
+
+        return null;
     }
 
     /**
@@ -349,25 +312,5 @@ public class PhpLineMarkerProvider implements LineMarkerProvider {
         }
 
         return false;
-    }
-
-    /**
-     * Match App::config([...]) container config roots.
-     */
-    private static boolean isConfigFactoryCall(@NotNull MethodReference methodReference) {
-        if (!"config".equals(methodReference.getName())) {
-            return false;
-        }
-
-        if (!(methodReference.getClassReference() instanceof ClassReference classReference)) {
-            return false;
-        }
-
-        String fqn = classReference.getFQN();
-        if ("\\Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\App".equals(fqn)) {
-            return true;
-        }
-
-        return "App".equals(classReference.getName());
     }
 }
