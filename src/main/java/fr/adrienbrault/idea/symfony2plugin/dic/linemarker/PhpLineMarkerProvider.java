@@ -11,15 +11,26 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.PhpFile;
+import com.jetbrains.php.lang.psi.elements.PhpNamespace;
 import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression;
 import com.jetbrains.php.lang.psi.elements.ArrayHashElement;
+import com.jetbrains.php.lang.psi.elements.ClassConstantReference;
+import com.jetbrains.php.lang.psi.elements.ClassReference;
+import com.jetbrains.php.lang.psi.elements.Function;
+import com.jetbrains.php.lang.psi.elements.MethodReference;
+import com.jetbrains.php.lang.psi.elements.ParameterList;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.PhpExpression;
+import com.jetbrains.php.lang.psi.elements.PhpReturn;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import com.jetbrains.php.refactoring.PhpNamespaceBraceConverter;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceSerializable;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -28,10 +39,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Definition-side line marker for PHP array service resource prototypes.
- *
- * It mirrors the YAML/XML "Navigate to class" gutter on namespace entries like:
- * 'App\\' => ['resource' => '../src/']
+ * Definition-side line marker for PHP DIC service definitions.
  *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -60,51 +68,83 @@ public class PhpLineMarkerProvider implements LineMarkerProvider {
         }
 
         VirtualFile virtualFile = phpFile.getVirtualFile();
-        if (virtualFile == null) {
-            return;
-        }
+        LazyDecoratedParentServiceValues lazyDecoratedParentServiceValues = null;
 
         for (PsiElement psiElement : psiElements) {
-            if (!(psiElement.getParent() instanceof StringLiteralExpression stringLiteralExpression)) {
+            PsiElement serviceIdElement = getServiceIdElement(psiElement);
+            if (serviceIdElement == null) {
                 continue;
             }
 
-            if (psiElement != PsiElementUtils.getTextLeafElementFromStringLiteralExpression(stringLiteralExpression)) {
+            PsiElement leafTarget = getLineMarkerLeafTarget(serviceIdElement);
+            if (leafTarget == null) {
                 continue;
             }
 
-            String serviceId = StringUtils.stripStart(ServiceContainerUtil.normalizePhpStringValue(stringLiteralExpression.getContents()), "\\");
-            if (StringUtils.isBlank(serviceId) || !serviceId.endsWith("\\")) {
+            String serviceId = getNormalizedServiceId(serviceIdElement);
+            if (StringUtils.isBlank(serviceId)) {
                 continue;
             }
 
-            if (!isPhpServiceKey(stringLiteralExpression)) {
+            if (visitArrayServiceAttributeValue(leafTarget, serviceIdElement, serviceId, result)) {
                 continue;
             }
 
-            ServiceSerializable service = ServiceIndexUtil.findServiceDefinition(project, virtualFile, serviceId);
-            if (service == null || service.getResource().isEmpty()) {
+            if (visitFluentDecoratesMethod(leafTarget, serviceIdElement, serviceId, result)) {
                 continue;
             }
 
-            result.add(NavigationGutterIconBuilder.create(AllIcons.Modules.SourceRoot)
-                .setTargets(NotNullLazyValue.lazy(() -> ServiceIndexUtil.getClassesForServiceDefinition(project, virtualFile, service)))
-                .setTooltipText("Navigate to class")
-                .createLineMarkerInfo(psiElement));
+            if (!isPhpServiceKey(serviceIdElement)) {
+                continue;
+            }
+
+            visitServiceKeyForResources(project, leafTarget, serviceIdElement, serviceId, virtualFile, result);
+
+            if (lazyDecoratedParentServiceValues == null) {
+                lazyDecoratedParentServiceValues = new LazyDecoratedParentServiceValues(project);
+            }
+
+            visitServiceKeyForDecorates(project, leafTarget, serviceId, result, lazyDecoratedParentServiceValues);
         }
     }
 
-    /**
-     * Accept only string keys that belong to a PHP `services` entry like:
-     * 'App\\' => ['resource' => '../src/']
-     */
-    private static boolean isPhpServiceKey(@NotNull StringLiteralExpression stringLiteralExpression) {
-        ArrayHashElement serviceEntry = PsiTreeUtil.getParentOfType(stringLiteralExpression, ArrayHashElement.class);
-        if (serviceEntry == null || serviceEntry.getKey() != stringLiteralExpression) {
-            return false;
+    @Nullable
+    private static PsiElement getServiceIdElement(@NotNull PsiElement psiElement) {
+        if (psiElement instanceof StringLiteralExpression || psiElement instanceof ClassConstantReference) {
+            return psiElement;
         }
 
-        if (!(serviceEntry.getValue() instanceof ArrayCreationExpression)) {
+        return null;
+    }
+
+    @Nullable
+    private static String getNormalizedServiceId(@NotNull PsiElement psiElement) {
+        return StringUtils.stripStart(ServiceContainerUtil.normalizePhpStringValue(PhpElementsUtil.getStringValue(psiElement)), "\\");
+    }
+
+    @Nullable
+    private static PsiElement getLineMarkerLeafTarget(@NotNull PsiElement psiElement) {
+        if (psiElement instanceof StringLiteralExpression stringLiteralExpression) {
+            return PsiElementUtils.getTextLeafElementFromStringLiteralExpression(stringLiteralExpression);
+        }
+
+        if (psiElement instanceof ClassConstantReference classConstantReference) {
+            PsiElement classReference = classConstantReference.getClassReference();
+            if (classReference != null) {
+                return PsiTreeUtil.getDeepestFirst(classReference);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Accept only keys that belong to a PHP `services` entry like:
+     * 'App\\' => ['resource' => '../src/']
+     */
+    private static boolean isPhpServiceKey(@NotNull PsiElement keyElement) {
+        ArrayHashElement serviceEntry = PsiTreeUtil.getParentOfType(keyElement, ArrayHashElement.class);
+        if (serviceEntry == null || serviceEntry.getKey() != keyElement) {
             return false;
         }
 
@@ -114,6 +154,220 @@ public class PhpLineMarkerProvider implements LineMarkerProvider {
         }
 
         ArrayHashElement servicesEntry = PsiTreeUtil.getParentOfType(servicesArray, ArrayHashElement.class);
-        return servicesEntry != null && "services".equals(PhpElementsUtil.getStringValue(servicesEntry.getKey()));
+        return servicesEntry != null
+            && servicesEntry.getValue() == servicesArray
+            && isInsideAcceptedPhpConfigArray(servicesEntry)
+            && "services".equals(PhpElementsUtil.getStringValue(servicesEntry.getKey()));
+    }
+
+    /**
+     * Accept only PHP config arrays that are real container config roots, eg:
+     * return ['services' => [...]]
+     * return App::config(['services' => [...]])
+     */
+    private static boolean isInsideAcceptedPhpConfigArray(@NotNull ArrayHashElement servicesEntry) {
+        ArrayCreationExpression configArray = PsiTreeUtil.getParentOfType(servicesEntry, ArrayCreationExpression.class);
+        if (configArray == null) {
+            return false;
+        }
+
+        PsiElement parent = configArray.getParent();
+        if (parent instanceof PhpReturn) {
+            return isAllowedPhpReturn((PhpReturn) parent);
+        }
+
+        if (parent instanceof ParameterList parameterList && parameterList.getParent() instanceof MethodReference methodReference) {
+            if (!isConfigFactoryCall(methodReference)) {
+                return false;
+            }
+
+            return methodReference.getParent() instanceof PhpReturn phpReturn && isAllowedPhpReturn(phpReturn);
+        }
+
+        return false;
+    }
+
+    /**
+     * Allow top-level returns and configurator-closure returns, but not class methods.
+     */
+    private static boolean isAllowedPhpReturn(@NotNull PhpReturn phpReturn) {
+        Function function = PsiTreeUtil.getParentOfType(phpReturn, Function.class);
+        if (function == null) {
+            return true;
+        }
+
+        if (PsiTreeUtil.getParentOfType(phpReturn, PhpClass.class) != null) {
+            return false;
+        }
+
+        return isContainerConfiguratorNamespace((PhpFile) phpReturn.getContainingFile());
+    }
+
+    private static void visitServiceKeyForResources(@NotNull Project project, @NotNull PsiElement leafTarget, @NotNull PsiElement keyElement, @NotNull String serviceId, @Nullable VirtualFile virtualFile, @NotNull Collection<? super LineMarkerInfo<?>> result) {
+        if (virtualFile == null || !serviceId.endsWith("\\")) {
+            return;
+        }
+
+        ArrayHashElement serviceEntry = PsiTreeUtil.getParentOfType(keyElement, ArrayHashElement.class);
+        if (serviceEntry == null || !(serviceEntry.getValue() instanceof ArrayCreationExpression)) {
+            return;
+        }
+
+        ServiceSerializable service = ServiceIndexUtil.findServiceDefinition(project, virtualFile, serviceId);
+        if (service == null || service.getResource().isEmpty()) {
+            return;
+        }
+
+        result.add(NavigationGutterIconBuilder.create(AllIcons.Modules.SourceRoot)
+            .setTargets(NotNullLazyValue.lazy(() -> ServiceIndexUtil.getClassesForServiceDefinition(project, virtualFile, service)))
+            .setTooltipText("Navigate to class")
+            .createLineMarkerInfo(leafTarget));
+    }
+
+    /**
+     * Add reverse gutters on a PHP service key, eg:
+     * Mailer::class => null
+     * DecoratingMailer::class => ['decorates' => Mailer::class]
+     */
+    private static void visitServiceKeyForDecorates(@NotNull Project project, @NotNull PsiElement leafTarget, @NotNull String serviceId, @NotNull Collection<? super LineMarkerInfo<?>> result, @NotNull LazyDecoratedParentServiceValues lazyDecoratedParentServiceValues) {
+        NavigationGutterIconBuilder<PsiElement> decorateLineMarker = ServiceUtil.getLineMarkerForDecoratedServiceId(
+            project,
+            ServiceUtil.ServiceLineMarker.DECORATE,
+            lazyDecoratedParentServiceValues.getDecoratedServices(),
+            serviceId
+        );
+
+        if (decorateLineMarker != null) {
+            result.add(decorateLineMarker.createLineMarkerInfo(leafTarget));
+        }
+
+        NavigationGutterIconBuilder<PsiElement> parentLineMarker = ServiceUtil.getLineMarkerForDecoratedServiceId(
+            project,
+            ServiceUtil.ServiceLineMarker.PARENT,
+            lazyDecoratedParentServiceValues.getParentServices(),
+            serviceId
+        );
+
+        if (parentLineMarker != null) {
+            result.add(parentLineMarker.createLineMarkerInfo(leafTarget));
+        }
+    }
+
+    private static boolean visitArrayServiceAttributeValue(@NotNull PsiElement leafTarget, @NotNull PsiElement valueElement, @NotNull String serviceId, @NotNull Collection<? super LineMarkerInfo<?>> result) {
+        String attributeName = getPhpServiceAttributeName(valueElement);
+        if (attributeName == null) {
+            return false;
+        }
+
+        if ("decorates".equals(attributeName)) {
+            result.add(ServiceUtil.getLineMarkerForDecoratesServiceId(leafTarget, ServiceUtil.ServiceLineMarker.DECORATE, serviceId));
+            return true;
+        }
+
+        result.add(ServiceUtil.getLineMarkerForDecoratesServiceId(leafTarget, ServiceUtil.ServiceLineMarker.PARENT, serviceId));
+        return true;
+    }
+
+    /**
+     * Resolve "decorates" / "parent" for PHP array values like:
+     * 'decorates' => Mailer::class
+     */
+    @Nullable
+    private static String getPhpServiceAttributeName(@NotNull PsiElement valueElement) {
+        ArrayHashElement attributeEntry = PsiTreeUtil.getParentOfType(valueElement, ArrayHashElement.class);
+        if (attributeEntry == null || attributeEntry.getValue() != valueElement) {
+            return null;
+        }
+
+        ArrayCreationExpression serviceDefinition = PsiTreeUtil.getParentOfType(attributeEntry, ArrayCreationExpression.class);
+        if (serviceDefinition == null) {
+            return null;
+        }
+
+        ArrayHashElement serviceEntry = PsiTreeUtil.getParentOfType(serviceDefinition, ArrayHashElement.class);
+        if (serviceEntry == null || serviceEntry.getValue() != serviceDefinition || !isPhpServiceKey(serviceEntry.getKey())) {
+            return null;
+        }
+
+        String key = PhpElementsUtil.getStringValue(attributeEntry.getKey());
+        if (!"decorates".equals(key) && !"parent".equals(key)) {
+            return null;
+        }
+
+        return key;
+    }
+
+    /**
+     * Add a forward gutter on fluent config, eg:
+     * $services->set(DecoratingMailer::class)->decorate(Mailer::class)
+     */
+    private static boolean visitFluentDecoratesMethod(@NotNull PsiElement leafTarget, @NotNull PsiElement parameterElement, @NotNull String serviceId, @NotNull Collection<? super LineMarkerInfo<?>> result) {
+        PsiElement parent = parameterElement.getParent();
+        if (!(parent instanceof ParameterList) || PsiElementUtils.getParameterIndexValue(parameterElement) != 0) {
+            return false;
+        }
+
+        MethodReference methodReference = PsiTreeUtil.getParentOfType(parameterElement, MethodReference.class);
+        if (methodReference == null || methodReference.getParameterList() != parent || !"decorate".equals(methodReference.getName())) {
+            return false;
+        }
+
+        if (!isFluentServiceDecorateMethod(methodReference)) {
+            return false;
+        }
+
+        result.add(ServiceUtil.getLineMarkerForDecoratesServiceId(leafTarget, ServiceUtil.ServiceLineMarker.DECORATE, serviceId));
+        return true;
+    }
+
+    /**
+     * Restrict "decorate(...)" to service configurator chains that originate from ->set(...).
+     */
+    private static boolean isFluentServiceDecorateMethod(@NotNull MethodReference methodReference) {
+        PsiFile containingFile = methodReference.getContainingFile();
+        if (!(containingFile instanceof PhpFile phpFile) || !isContainerConfiguratorNamespace(phpFile)) {
+            return false;
+        }
+
+        PsiElement classReference = methodReference.getClassReference();
+        while (classReference instanceof MethodReference chainedMethodReference) {
+            if ("set".equals(chainedMethodReference.getName())) {
+                return true;
+            }
+
+            classReference = chainedMethodReference.getClassReference();
+        }
+
+        return false;
+    }
+
+    private static boolean isContainerConfiguratorNamespace(@NotNull PhpFile phpFile) {
+        for (PhpNamespace phpNamespace : PhpNamespaceBraceConverter.getAllNamespaces(phpFile)) {
+            if ("\\Symfony\\Component\\DependencyInjection\\Loader\\Configurator".equals(phpNamespace.getFQN())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Match App::config([...]) container config roots.
+     */
+    private static boolean isConfigFactoryCall(@NotNull MethodReference methodReference) {
+        if (!"config".equals(methodReference.getName())) {
+            return false;
+        }
+
+        if (!(methodReference.getClassReference() instanceof ClassReference classReference)) {
+            return false;
+        }
+
+        String fqn = classReference.getFQN();
+        if ("\\Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\App".equals(fqn)) {
+            return true;
+        }
+
+        return "App".equals(classReference.getName());
     }
 }
