@@ -1,20 +1,29 @@
 package fr.adrienbrault.idea.symfony2plugin.config.php;
 
 import com.intellij.patterns.PlatformPatterns;
+import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.config.ClassPublicMethodReference;
 import fr.adrienbrault.idea.symfony2plugin.config.PhpClassReference;
 import fr.adrienbrault.idea.symfony2plugin.config.dic.EventDispatcherEventReference;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceIndexedReference;
+import fr.adrienbrault.idea.symfony2plugin.dic.AbstractServiceReference;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceReference;
 import fr.adrienbrault.idea.symfony2plugin.dic.TagReference;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpStringLiteralExpressionReference;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -190,6 +199,64 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
                 }
             }
         );
+
+        psiReferenceRegistrar.registerReferenceProvider(
+            PlatformPatterns.psiElement(StringLiteralExpression.class),
+            new PsiReferenceProvider() {
+                @Override
+                public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+                    if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement instanceof StringLiteralExpression stringLiteralExpression)) {
+                        return PsiReference.EMPTY_ARRAY;
+                    }
+
+                    if (!PhpArrayServiceUtil.isInsidePhpArrayServiceConfig(stringLiteralExpression)) {
+                        return PsiReference.EMPTY_ARRAY;
+                    }
+
+                    Collection<PsiReference> references = new ArrayList<>();
+                    String[] keyPath = PhpArrayServiceUtil.getKeyPath(stringLiteralExpression);
+
+                    if (PhpArrayServiceUtil.isServiceLevelAliasValue(stringLiteralExpression)) {
+                        attachServiceReference(references, stringLiteralExpression, stringLiteralExpression.getContents(), 1, 0);
+                    }
+
+                    if (keyPath == null) {
+                        return references.toArray(PsiReference.EMPTY_ARRAY);
+                    }
+
+                    if (keyPath.length == 1 && ("decorates".equals(keyPath[0]) || "parent".equals(keyPath[0]))) {
+                        // 'decorates' / 'parent' => service id
+                        references.add(new ServiceReference(stringLiteralExpression, true));
+                    } else if (keyPath.length == 1 && "class".equals(keyPath[0])) {
+                        // 'class' => FQCN string
+                        references.add(new PhpClassReference(stringLiteralExpression, true));
+                    } else if (isArgumentPath(keyPath)) {
+                        // 'arguments' and nested call arguments
+                        attachArgumentReferences(references, stringLiteralExpression);
+                    } else if (isTagPath(keyPath)) {
+                        // 'tags' => ['tag'] or ['name' => 'tag']
+                        references.add(new TagReference(stringLiteralExpression));
+                    } else if (isFactoryServicePath(keyPath)) {
+                        // 'factory' => ['@service', 'method']
+                        attachServiceReference(references, stringLiteralExpression, stringLiteralExpression.getContents(), 1, 0);
+                    } else if (isFactoryMethodPath(keyPath)) {
+                        // 'factory' => ['@service', 'method']
+                        String factoryClass = getFactoryClass(stringLiteralExpression);
+                        if (StringUtils.isNotBlank(factoryClass)) {
+                            references.add(new ClassPublicMethodReference(stringLiteralExpression, factoryClass));
+                        }
+                    } else if (isCallsMethodPath(keyPath)) {
+                        // 'calls' => [['method', [...]]]
+                        String serviceClass = PhpArrayServiceUtil.getCurrentServiceClass(stringLiteralExpression);
+                        if (StringUtils.isNotBlank(serviceClass)) {
+                            references.add(new ClassPublicMethodReference(stringLiteralExpression, serviceClass));
+                        }
+                    }
+
+                    return references.toArray(PsiReference.EMPTY_ARRAY);
+                }
+            }
+        );
     }
 
     private static boolean phpStringLiteralExpressionClassReference(String signature, int index, PsiElement psiElement) {
@@ -212,6 +279,90 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
         }
 
         return classReference.getSignature().equals("#C" + signature);
+    }
+
+    private static boolean isArgumentPath(@NotNull String[] keyPath) {
+        return (keyPath.length >= 2 && "arguments".equals(keyPath[0]))
+            || (keyPath.length >= 4 && "calls".equals(keyPath[0]) && "1".equals(keyPath[2]));
+    }
+
+    private static boolean isTagPath(@NotNull String[] keyPath) {
+        return (keyPath.length == 2 && "tags".equals(keyPath[0]))
+            || (keyPath.length == 3 && "tags".equals(keyPath[0]) && "name".equals(keyPath[2]));
+    }
+
+    private static boolean isFactoryServicePath(@NotNull String[] keyPath) {
+        return keyPath.length == 2 && "factory".equals(keyPath[0]) && "0".equals(keyPath[1]);
+    }
+
+    private static boolean isFactoryMethodPath(@NotNull String[] keyPath) {
+        return keyPath.length == 2 && "factory".equals(keyPath[0]) && "1".equals(keyPath[1]);
+    }
+
+    private static boolean isCallsMethodPath(@NotNull String[] keyPath) {
+        return keyPath.length == 3 && "calls".equals(keyPath[0]) && "0".equals(keyPath[2]);
+    }
+
+    private static void attachArgumentReferences(@NotNull Collection<PsiReference> references, @NotNull StringLiteralExpression stringLiteralExpression) {
+        String contents = stringLiteralExpression.getContents();
+        if (StringUtils.isBlank(contents)) {
+            return;
+        }
+
+        if (contents.startsWith("@") && contents.length() > 1) {
+            attachServiceReference(references, stringLiteralExpression, contents, 1, 0);
+            return;
+        }
+
+        if (isClassString(contents)) {
+            references.add(new PhpClassReference(stringLiteralExpression, true));
+        }
+    }
+
+    private static void attachServiceReference(@NotNull Collection<PsiReference> references, @NotNull StringLiteralExpression stringLiteralExpression, @NotNull String contents, int trimLeft, int trimRight) {
+        if (contents.length() <= trimLeft + trimRight) {
+            return;
+        }
+
+        references.add(new TrimmedServiceReference(stringLiteralExpression, createValueRange(contents, trimLeft, trimRight), contents.substring(trimLeft, contents.length() - trimRight)));
+    }
+
+    @NotNull
+    private static TextRange createValueRange(@NotNull String contents, int trimLeft, int trimRight) {
+        return TextRange.from(1 + trimLeft, contents.length() - trimLeft - trimRight);
+    }
+
+    private static boolean isClassString(@NotNull String contents) {
+        return contents.contains("\\") && !contents.startsWith("@") && !contents.startsWith("%");
+    }
+
+    @Nullable
+    private static String getFactoryClass(@NotNull StringLiteralExpression stringLiteralExpression) {
+        ArrayCreationExpression factoryArray = PsiTreeUtil.getParentOfType(stringLiteralExpression, ArrayCreationExpression.class);
+        if (factoryArray == null) {
+            return null;
+        }
+
+        PsiElement[] arrayValues = PhpElementsUtil.getArrayValues(factoryArray);
+        PsiElement firstValue = arrayValues.length > 0 ? arrayValues[0] : null;
+
+        String factoryValue = PhpArrayServiceUtil.getPsiValue(firstValue);
+        if (StringUtils.isBlank(factoryValue)) {
+            return null;
+        }
+
+        if (factoryValue.startsWith("@")) {
+            return ContainerCollectionResolver.resolveService(stringLiteralExpression.getProject(), factoryValue.substring(1));
+        }
+
+        return StringUtils.stripStart(factoryValue, "\\");
+    }
+
+    private static class TrimmedServiceReference extends AbstractServiceReference {
+        private TrimmedServiceReference(@NotNull StringLiteralExpression element, @NotNull TextRange textRange, @NotNull String serviceId) {
+            super(element, textRange);
+            this.serviceId = serviceId;
+        }
     }
 
 }
