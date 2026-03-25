@@ -10,6 +10,7 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -37,13 +38,26 @@ public class YamlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTe
     }
 
     public void testThatParentServiceShouldProvideMarker() {
-        assertLineMarker(createYamlFile("" +
-                "services:\n" +
-                "\n" +
-                "    foo_bar_main:\n" +
-                "        class: Foo\\Bar\n"
-            ),
-            new LineMarker.ToolTipEqualsAssert("Navigate to parent")
+        myFixture.addFileToProject("config/services_parent.yaml", "" +
+            "services:\n" +
+            "    app.child:\n" +
+            "        parent: foo_bar_parent_main\n");
+
+        PsiElement yamlFile = createYamlFile("" +
+            "services:\n" +
+            "\n" +
+            "    foo_bar_parent_main:\n" +
+            "        class: Foo\\Bar\n"
+        );
+
+        assertLineMarker(yamlFile, new LineMarker.ToolTipEqualsAssert("Navigate to parent"));
+        assertLineMarker(yamlFile, new LineMarker.TargetAcceptsPattern("Navigate to parent",
+            PlatformPatterns.psiElement(YAMLKeyValue.class).with(new PatternCondition<>("KeyText") {
+                @Override
+                public boolean accepts(@NotNull YAMLKeyValue yamlKeyValue, ProcessingContext context) {
+                    return "app.child".equals(yamlKeyValue.getKeyText());
+                }
+            }))
         );
     }
 
