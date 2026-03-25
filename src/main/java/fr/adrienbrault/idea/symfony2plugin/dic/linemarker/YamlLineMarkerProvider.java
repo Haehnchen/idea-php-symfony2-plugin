@@ -133,7 +133,7 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
         NavigationGutterIconBuilder<PsiElement> parentLineMarker = ServiceUtil.getLineMarkerForDecoratedServiceId(
             project,
             ServiceUtil.ServiceLineMarker.PARENT,
-            lazyDecoratedServices.getDecoratedServices(),
+            lazyDecoratedServices.getParentServices(),
             id
         );
 

@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.dic.linemarker;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.patterns.PatternCondition;
 import com.intellij.patterns.PlatformPatterns;
+import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
@@ -38,14 +39,24 @@ public class XmlLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTes
     }
 
     public void testThatParentServiceShouldProvideMarker() {
-        assertLineMarker(createXmlFile("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-                "<container>\n" +
-                "    <services>\n" +
-                "       <service id=\"foo_bar_main\" class=\"Foo\\Bar\\Apple\"/>\n" +
-                "    </services>\n" +
-                "</container>"
-            ),
-            new LineMarker.ToolTipEqualsAssert("Navigate to decoration")
+        myFixture.addFileToProject("config/services_parent.xml", "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+            "<container>\n" +
+            "    <services>\n" +
+            "       <service id=\"app.child\" parent=\"foo_bar_parent_main_xml\"/>\n" +
+            "    </services>\n" +
+            "</container>");
+
+        PsiElement xmlFile = createXmlFile("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+            "<container>\n" +
+            "    <services>\n" +
+            "       <service id=\"foo_bar_parent_main_xml\" class=\"Foo\\Bar\\Apple\"/>\n" +
+            "    </services>\n" +
+            "</container>"
+        );
+
+        assertLineMarker(xmlFile, new LineMarker.ToolTipEqualsAssert("Navigate to parent"));
+        assertLineMarker(xmlFile, new LineMarker.TargetAcceptsPattern("Navigate to parent",
+            XmlPatterns.xmlTag().withName("service").withAttributeValue("id", "app.child"))
         );
     }
 
