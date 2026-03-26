@@ -214,7 +214,7 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
                     }
 
                     Collection<PsiReference> references = new ArrayList<>();
-                    String[] keyPath = PhpArrayServiceUtil.getKeyPath(stringLiteralExpression);
+                    PhpArrayServiceUtil.ServiceConfigPath keyPath = PhpArrayServiceUtil.getKeyPath(stringLiteralExpression);
 
                     if (PhpArrayServiceUtil.isServiceLevelAliasValue(stringLiteralExpression)) {
                         attachServiceReference(references, stringLiteralExpression, stringLiteralExpression.getContents(), 1, 0);
@@ -224,28 +224,28 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
                         return references.toArray(PsiReference.EMPTY_ARRAY);
                     }
 
-                    if (keyPath.length == 1 && ("decorates".equals(keyPath[0]) || "parent".equals(keyPath[0]))) {
+                    if (keyPath.isDecoratesOrParent()) {
                         // 'decorates' / 'parent' => service id
                         references.add(new ServiceReference(stringLiteralExpression, true));
-                    } else if (keyPath.length == 1 && "class".equals(keyPath[0])) {
+                    } else if (keyPath.isClass()) {
                         // 'class' => FQCN string
                         references.add(new PhpClassReference(stringLiteralExpression, true));
-                    } else if (isArgumentPath(keyPath)) {
+                    } else if (keyPath.isArgument()) {
                         // 'arguments' and nested call arguments
                         attachArgumentReferences(references, stringLiteralExpression);
-                    } else if (isTagPath(keyPath)) {
+                    } else if (keyPath.isTag()) {
                         // 'tags' => ['tag'] or ['name' => 'tag']
                         references.add(new TagReference(stringLiteralExpression));
-                    } else if (isFactoryServicePath(keyPath)) {
+                    } else if (keyPath.isFactoryService()) {
                         // 'factory' => ['@service', 'method']
                         attachServiceReference(references, stringLiteralExpression, stringLiteralExpression.getContents(), 1, 0);
-                    } else if (isFactoryMethodPath(keyPath)) {
+                    } else if (keyPath.isFactoryMethod()) {
                         // 'factory' => ['@service', 'method']
                         String factoryClass = getFactoryClass(stringLiteralExpression);
                         if (StringUtils.isNotBlank(factoryClass)) {
                             references.add(new ClassPublicMethodReference(stringLiteralExpression, factoryClass));
                         }
-                    } else if (isCallsMethodPath(keyPath)) {
+                    } else if (keyPath.isCallsMethod()) {
                         // 'calls' => [['method', [...]]]
                         String serviceClass = PhpArrayServiceUtil.getCurrentServiceClass(stringLiteralExpression);
                         if (StringUtils.isNotBlank(serviceClass)) {
@@ -279,28 +279,6 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
         }
 
         return classReference.getSignature().equals("#C" + signature);
-    }
-
-    private static boolean isArgumentPath(@NotNull String[] keyPath) {
-        return (keyPath.length >= 2 && "arguments".equals(keyPath[0]))
-            || (keyPath.length >= 4 && "calls".equals(keyPath[0]) && "1".equals(keyPath[2]));
-    }
-
-    private static boolean isTagPath(@NotNull String[] keyPath) {
-        return (keyPath.length == 2 && "tags".equals(keyPath[0]))
-            || (keyPath.length == 3 && "tags".equals(keyPath[0]) && "name".equals(keyPath[2]));
-    }
-
-    private static boolean isFactoryServicePath(@NotNull String[] keyPath) {
-        return keyPath.length == 2 && "factory".equals(keyPath[0]) && "0".equals(keyPath[1]);
-    }
-
-    private static boolean isFactoryMethodPath(@NotNull String[] keyPath) {
-        return keyPath.length == 2 && "factory".equals(keyPath[0]) && "1".equals(keyPath[1]);
-    }
-
-    private static boolean isCallsMethodPath(@NotNull String[] keyPath) {
-        return keyPath.length == 3 && "calls".equals(keyPath[0]) && "0".equals(keyPath[2]);
     }
 
     private static void attachArgumentReferences(@NotNull Collection<PsiReference> references, @NotNull StringLiteralExpression stringLiteralExpression) {

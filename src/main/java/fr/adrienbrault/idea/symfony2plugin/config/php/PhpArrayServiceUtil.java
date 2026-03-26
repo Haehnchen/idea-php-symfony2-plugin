@@ -24,6 +24,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Utilities for Symfony service definitions inside PHP `services` arrays.
+ *
+ * Supported roots:
+ * `return ['services' => [...]]`
+ * `return App::config(['services' => [...]])`
+ *
+ * Supported service ids:
+ * `'app.mailer'`
+ * `Mailer::class`
+ */
 public final class PhpArrayServiceUtil {
     private PhpArrayServiceUtil() {
     }
@@ -84,10 +95,18 @@ public final class PhpArrayServiceUtil {
     }
 
     /**
-     * Builds the nested key path from the service definition root to the value.
+     * Builds the nested path from a service definition root to a nested value.
+     *
+     * Examples:
+     * `'decorates' => 'mailer'` => `["decorates"]`
+     * `'arguments' => ['@logger']` => `["arguments", "0"]`
+     * `'calls' => [['setLogger', ['@logger']]]` => `["calls", "0", "1", "0"]`
+     * `'tags' => [['name' => 'kernel.event_listener']]` => `["tags", "0", "name"]`
+     *
+     * @param valueElement the value PSI element inside a PHP `services` array, such as a `StringLiteralExpression` or `ClassConstantReference`
      */
     @Nullable
-    public static String[] getKeyPath(@NotNull PsiElement valueElement) {
+    public static ServiceConfigPath getKeyPath(@NotNull PsiElement valueElement) {
         ArrayHashElement serviceEntry = getServiceEntry(valueElement);
         if (serviceEntry == null) {
             return null;
@@ -124,7 +143,7 @@ public final class PhpArrayServiceUtil {
 
         Collections.reverse(path);
 
-        return path.toArray(new String[0]);
+        return new ServiceConfigPath(path.toArray(new String[0]));
     }
 
     /**
@@ -238,6 +257,51 @@ public final class PhpArrayServiceUtil {
         }
 
         return null;
+    }
+
+    public record ServiceConfigPath(@NotNull String[] segments) {
+        public boolean isDecoratesOrParent() {
+            return lengthIs(1) && ("decorates".equals(segment(0)) || "parent".equals(segment(0)));
+        }
+
+        public boolean isClass() {
+            return lengthIs(1) && "class".equals(segment(0));
+        }
+
+        public boolean isArgument() {
+            return (lengthAtLeast(2) && "arguments".equals(segment(0)))
+                || (lengthAtLeast(4) && "calls".equals(segment(0)) && "1".equals(segment(2)));
+        }
+
+        public boolean isTag() {
+            return (lengthIs(2) && "tags".equals(segment(0)))
+                || (lengthIs(3) && "tags".equals(segment(0)) && "name".equals(segment(2)));
+        }
+
+        public boolean isFactoryService() {
+            return lengthIs(2) && "factory".equals(segment(0)) && "0".equals(segment(1));
+        }
+
+        public boolean isFactoryMethod() {
+            return lengthIs(2) && "factory".equals(segment(0)) && "1".equals(segment(1));
+        }
+
+        public boolean isCallsMethod() {
+            return lengthIs(3) && "calls".equals(segment(0)) && "0".equals(segment(2));
+        }
+
+        private boolean lengthIs(int expected) {
+            return segments.length == expected;
+        }
+
+        private boolean lengthAtLeast(int expected) {
+            return segments.length >= expected;
+        }
+
+        @Nullable
+        private String segment(int index) {
+            return index >= 0 && index < segments.length ? segments[index] : null;
+        }
     }
 
     /**
