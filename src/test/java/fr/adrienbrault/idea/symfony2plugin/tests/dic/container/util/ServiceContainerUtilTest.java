@@ -480,6 +480,129 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
         assertTrue("Service 'service2' should have its own class", visitedClasses.contains("service2:App\\Service\\TestClassC"));
     }
 
+    public void testVisitFileForPhpFluentChainTagsAreCollected() {
+        PsiFile phpFile = myFixture.configureByFile("services_set_alias.php");
+        Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(phpFile);
+
+        ServiceSerializable fullChain = services.stream().filter(s -> "test.full_chain".equals(s.getId())).findFirst().orElseThrow();
+        assertContainsElements(fullChain.getTags(), "chain.tag_one", "chain.tag_two");
+    }
+
+    public void testVisitFileForPhpFluentChainBooleanFlagsAreIndexed() {
+        PsiFile phpFile = myFixture.configureByFile("services_set_alias.php");
+        Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(phpFile);
+
+        ServiceSerializable fullChain = services.stream().filter(s -> "test.full_chain".equals(s.getId())).findFirst().orElseThrow();
+        assertTrue(fullChain.isPublic());
+        assertTrue(fullChain.isAutowire());
+        assertTrue(fullChain.isLazy());
+        assertTrue(fullChain.isDeprecated());
+
+        ServiceSerializable privateService = services.stream().filter(s -> "test.private".equals(s.getId())).findFirst().orElseThrow();
+        assertFalse(privateService.isPublic());
+
+        // ->autowire(false) and ->public(false) must be explicitly false, not just default
+        ServiceSerializable autowireFalse = services.stream().filter(s -> "test.autowire_false".equals(s.getId())).findFirst().orElseThrow();
+        assertFalse(autowireFalse.isAutowire());
+        assertFalse(autowireFalse.isPublic());
+    }
+
+    public void testVisitFileForPhpFluentDefaultsAreInheritedByServices() {
+        PsiFile phpFile = myFixture.configureByFile("services_fluent_defaults.php");
+        Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(phpFile);
+
+        // Service with no explicit flags should inherit from ->defaults()
+        ServiceSerializable inherited = services.stream().filter(s -> "defaults.inherited".equals(s.getId())).findFirst().orElseThrow();
+        assertTrue(inherited.isAutowire());
+        assertFalse(inherited.isPublic());
+    }
+
+    public void testVisitFileForPhpFluentPerServiceOverridesDefaults() {
+        PsiFile phpFile = myFixture.configureByFile("services_fluent_defaults.php");
+        Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(phpFile);
+
+        // ->autowire(false) overrides defaults.autowire=true; public stays false from defaults
+        ServiceSerializable autowireOverride = services.stream().filter(s -> "defaults.autowire_override".equals(s.getId())).findFirst().orElseThrow();
+        assertFalse(autowireOverride.isAutowire());
+        assertFalse(autowireOverride.isPublic());
+
+        // ->public() overrides defaults.public=false; autowire stays true from defaults
+        ServiceSerializable publicOverride = services.stream().filter(s -> "defaults.public_override".equals(s.getId())).findFirst().orElseThrow();
+        assertTrue(publicOverride.isAutowire());
+        assertTrue(publicOverride.isPublic());
+    }
+
+    /**
+     * $container->parameters()->set() defines a container parameter, not a service.
+     * The services index must not contain entries from the parameters configurator.
+     */
+    public void testThatParametersSetIsNotIndexedAsService() {
+        PsiFile phpFile = myFixture.configureByFile("services_fluent_chained.php");
+        Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(phpFile);
+
+        assertTrue("my.parameter must not be indexed as a service",
+            services.stream().noneMatch(s -> "my.parameter".equals(s.getId())));
+        assertTrue("my.parameter_variable must not be indexed as a service",
+            services.stream().noneMatch(s -> "my.parameter_variable".equals(s.getId())));
+    }
+
+    /**
+     * Services defined via $container->services()->set(...)-> ... ->set(...) (no $services variable)
+     * must all be discovered and include class, tags, visibility, and decoration data.
+     */
+    public void testThatDirectChainOnServicesCallIsFullyIndexed() {
+        PsiFile phpFile = myFixture.configureByFile("services_fluent_chained.php");
+        Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(phpFile);
+
+        ServiceSerializable serviceA = services.stream()
+            .filter(s -> "chain.service_a".equals(s.getId())).findFirst().orElseThrow();
+        assertEquals("App\\Service\\TestClassA", serviceA.getClassName());
+        assertContainsElements(serviceA.getTags(), "app.handler");
+
+        ServiceSerializable serviceB = services.stream()
+            .filter(s -> "chain.service_b".equals(s.getId())).findFirst().orElseThrow();
+        assertTrue(serviceB.isPublic());
+        assertContainsElements(serviceB.getTags(), "app.processor", "app.secondary");
+
+        ServiceSerializable lazyAutowired = services.stream()
+            .filter(s -> "chain.lazy_autowired".equals(s.getId())).findFirst().orElseThrow();
+        assertTrue(lazyAutowired.isLazy());
+        assertTrue(lazyAutowired.isAutowire());
+
+        // last service in chain with no chained attributes
+        assertTrue(services.stream().anyMatch(s -> "chain.last".equals(s.getId())));
+    }
+
+    public void testThatDirectChainDecoratesIsIndexed() {
+        PsiFile phpFile = myFixture.configureByFile("services_fluent_chained.php");
+        Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(phpFile);
+
+        ServiceSerializable decorated = services.stream()
+            .filter(s -> "chain.decorated".equals(s.getId())).findFirst().orElseThrow();
+        assertEquals("chain.service_a", decorated.getDecorates());
+        assertEquals("chain.decorated.inner", decorated.getDecorationInnerName());
+    }
+
+    public void testVisitFileForPhpFluentChainDecoratesIsIndexed() {
+        PsiFile phpFile = myFixture.configureByFile("services_set_alias.php");
+        Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(phpFile);
+
+        ServiceSerializable decorated = services.stream().filter(s -> "test.decorated".equals(s.getId())).findFirst().orElseThrow();
+        assertEquals("test.service_direct", decorated.getDecorates());
+
+        ServiceSerializable decoratedWithInner = services.stream().filter(s -> "test.decorated_with_inner".equals(s.getId())).findFirst().orElseThrow();
+        assertEquals("test.service_direct", decoratedWithInner.getDecorates());
+        assertEquals("test.decorated_with_inner.custom", decoratedWithInner.getDecorationInnerName());
+    }
+
+    public void testVisitFileForPhpFluentChainParentIsIndexed() {
+        PsiFile phpFile = myFixture.configureByFile("services_set_alias.php");
+        Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(phpFile);
+
+        ServiceSerializable withParent = services.stream().filter(s -> "test.with_parent".equals(s.getId())).findFirst().orElseThrow();
+        assertEquals("test.service_direct", withParent.getParent());
+    }
+
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil#visitFile(com.jetbrains.php.lang.psi.PhpFile, com.intellij.util.Consumer)
      */
