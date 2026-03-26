@@ -26,8 +26,8 @@ public class PhpArrayGotoCompletionRegistrar implements GotoCompletionRegistrar 
                     return null;
                 }
 
-                String[] keyPath = PhpArrayServiceUtil.getKeyPath(stringLiteralExpression);
-                if (keyPath == null || keyPath.length != 1 || (!"decorates".equals(keyPath[0]) && !"parent".equals(keyPath[0]))) {
+                PhpArrayServiceUtil.ServiceConfigPath keyPath = PhpArrayServiceUtil.getKeyPath(stringLiteralExpression);
+                if (keyPath == null || !keyPath.isDecoratesOrParent()) {
                     return null;
                 }
 
