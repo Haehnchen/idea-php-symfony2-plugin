@@ -25,14 +25,16 @@ class CommandMcpToolset : McpToolset {
     @McpDescription("""
         Lists all Symfony console commands available in the project as CSV.
 
-        Returns CSV format with columns: name,className,filePath
+        Returns CSV format with columns: name,className,filePath,options,arguments
         - name: Command name (e.g., cache:clear)
         - className: FQN of implementing class
         - filePath: Relative path from project root
+        - options: JSON array of command options with name, shortcut, description, defaultValue
+        - arguments: JSON array of command arguments with name, description, defaultValue
 
         Example output:
-        name,className,filePath
-        cache:clear,\App\Command\CacheClearCommand,src/Command/CacheClearCommand.php
+        name,className,filePath,options,arguments
+        cache:clear,\App\Command\CacheClearCommand,src/Command/CacheClearCommand.php,,
     """)
     suspend fun list_symfony_commands(): String {
         val project = currentCoroutineContext().project
