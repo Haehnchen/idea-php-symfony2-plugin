@@ -78,6 +78,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         // all file template "include" pattern
         extend(CompletionType.BASIC, PlatformPatterns.or(
             TwigPattern.getPrintBlockOrTagFunctionPattern("include", "source"),
+            TwigPattern.getPrintBlockOrTagFunctionSecondParameterPattern("block"),
             TwigPattern.getIncludeTagArrayPattern(),
             TwigPattern.getTagTernaryPattern(TwigElementTypes.INCLUDE_TAG)
         ), new TemplateCompletionProvider());
@@ -1869,4 +1870,3 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         return lookupElements;
     }
 }
-
