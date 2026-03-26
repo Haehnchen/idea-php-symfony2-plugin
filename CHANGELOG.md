@@ -23,6 +23,25 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2026.1.294
+* MCP: Add support for exporting Symfony console command arguments and options as JSON in CSV output, including metadata serialization. (Daniel Espendiller)
+* [paid] Property Service Injection Completion: reduce scope filering and refactoring using indexed autowire service too ([#72](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/72)) (Daniel Espendiller)
+* Add support for PHP DIC service navigation and completion, including handling for "decorates," "parent," array-based services (Daniel Espendiller)
+* Add support for indexing and processing PHP fluent service definitions, including attributes like `defaults`, `autowire`, `tags`, `decorates`, `parent`, and chain overrides. (Daniel Espendiller)
+* Add support for `block` function template argument completion, navigation, and scoped block lookups. (Daniel Espendiller)
+* Add line markers for PHP DIC service definitions, including support for "decorates" and "parent" attributes, array-based services, and fluent configurator chains. (Daniel Espendiller)
+* Fixed the YAML reverse parent linemarker bug by switching the reverse lookup to getParentServices() (Daniel Espendiller)
+* [#2661](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2661) Refactor TwigPath handling: remove `TwigPathIndex` and simplify path management in `TwigPathServiceParser` (Daniel Espendiller)
+* Refactor: Remove redundant resource glob resolution logic for YAML and XML services by delegating to ServiceIndexUtil (Daniel Espendiller)
+* [#2443](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2443) Add support for named arguments with colon syntax in Twig translations, including completion, navigation, and inspection (Daniel Espendiller)
+* Add support services defined via PHP arrays in index and autowire linemarker (Daniel Espendiller)
+* Add support for Symfony console command arguments and options in terminal completion, including discovery from various declaration sources (Daniel Espendiller)
+* Add route comparison support for Twig templates, with completion, navigation and inspection (Daniel Espendiller)
+* MCP: Add rendered templates support to Symfony profiler collectors (Daniel Espendiller)
+* Handle dumb mode in `ClassPublicMethodReference` to prevent invalid resolution scenarios (Daniel Espendiller)
+* MCP: Enhance Symfony profiler tool: add indexed templates, entry view, custom limit, and filter improvements (Daniel Espendiller)
+* Refactor: Replace IntelliJ PSI-based parsing with lightweight catalogue text parsing in `TranslationStringMap` to improve performance and simplify logic (Daniel Espendiller)
+
 ## 2026.1.293
 * Add check for `IntentionPreviewUtils.isPreviewSession` to skip actions during intention preview sessions (Daniel Espendiller)
 * Add support for handling dumb mode in `TagReference` to prevent invalid resolution scenarios (Daniel Espendiller)
