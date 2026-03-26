@@ -143,6 +143,8 @@ public class ServiceContainerUtil {
         } else if (psiFile instanceof PhpFile) {
             visitPhpFluentFile((PhpFile) psiFile, serviceConsumer -> {
                 SerializableService serializableService = createService(serviceConsumer);
+                serializableService.setDecorationInnerName(serviceConsumer.attributes().getString("decoration_inner_name"));
+                serializableService.setIsDeprecated(serviceConsumer.attributes().getBoolean("deprecated"));
                 services.add(serializableService);
             });
 
@@ -426,10 +428,17 @@ public class ServiceContainerUtil {
 
     private static void visitPhpFluentFile(@NotNull PhpFile phpFile, @NotNull Consumer<ServiceConsumer> consumer) {
         for (Function function : getPhpContainerConfiguratorFunctions(phpFile)) {
+            ServiceFileDefaults defaults = createFluentDefaults(function);
+
             // we only want "set" and "alias" methods
             for (MethodReference methodReference : PhpElementsUtil.collectMethodReferencesInsideControlFlow(function, "set", "alias")) {
                 // ->set('translator.default', Translator::class)
                 if ("set".equals(methodReference.getName())) {
+                    // Skip ->set() calls on ->parameters() — those are container parameters, not services
+                    if (isFluentParametersSet(methodReference)) {
+                        continue;
+                    }
+
                     PsiElement[] parameters = methodReference.getParameters();
                     String serviceName = null;
                     if (parameters.length >= 1) {
@@ -457,7 +466,16 @@ public class ServiceContainerUtil {
                         }
                     }
 
-                    consumer.consume(new ServiceConsumer(parameters[0], serviceName, new PhpKeyValueAttributeValue(methodReference, keyValue), ServiceFileDefaults.EMPTY));
+                    List<String> tags = new ArrayList<>();
+                    Map<String, Collection<String>> arrayValues = new HashMap<>();
+                    collectFluentChainAttributes(methodReference, keyValue, tags, arrayValues);
+
+                    consumer.consume(new ServiceConsumer(
+                        parameters[0],
+                        serviceName,
+                        new PhpKeyValueAttributeValue(methodReference, keyValue, arrayValues, tags),
+                        defaults
+                    ));
                 }
 
                 // ->alias(TranslatorInterface::class, 'translator')
@@ -480,9 +498,205 @@ public class ServiceContainerUtil {
                         }
                     }
 
-                    consumer.consume(new ServiceConsumer(parameters[0], serviceName, new PhpKeyValueAttributeValue(methodReference, keyValue), ServiceFileDefaults.EMPTY));
+                    consumer.consume(new ServiceConsumer(parameters[0], serviceName, new PhpKeyValueAttributeValue(methodReference, keyValue), defaults));
                 }
             }
+        }
+    }
+
+    /**
+     * Returns true if this ->set() call is on the parameters configurator chain
+     * ($container->parameters()->set(...)) rather than the services chain.
+     *
+     * Walks the classRef chain downward from ->set() looking for ->parameters()
+     * before ->services(). This filters out container parameter definitions that
+     * would otherwise be misidentified as service definitions.
+     */
+    private static boolean isFluentParametersSet(@NotNull MethodReference setMethodReference) {
+        return "parameters".equals(getFluentConfiguratorType(setMethodReference.getClassReference(), new HashSet<>()));
+    }
+
+    /**
+     * Resolve the fluent configurator kind behind a method chain or local variable.
+     *
+     * Supports direct chains like "$container->parameters()->set(...)" and variable-backed
+     * chains like "$parameters = $container->parameters(); $parameters->set(...)".
+     *
+     * Returns "parameters", "services", or null when the origin cannot be determined.
+     */
+    @Nullable
+    private static String getFluentConfiguratorType(@Nullable PsiElement psiElement, @NotNull Set<PsiElement> visited) {
+        // Guard against incomplete PSI and cyclic variable resolution.
+        if (psiElement == null || !visited.add(psiElement)) {
+            return null;
+        }
+
+        if (psiElement instanceof MethodReference methodRef) {
+            String name = methodRef.getName();
+            if ("parameters".equals(name) || "services".equals(name)) {
+                return name;
+            }
+
+            return getFluentConfiguratorType(methodRef.getClassReference(), visited);
+        }
+
+        if (psiElement instanceof Variable variable) {
+            // Follow the declaration first so "$foo = $bar; $foo->set(...)" can resolve transitively.
+            PsiElement resolved = variable.resolve();
+            if (resolved instanceof Variable resolvedVariable && resolvedVariable != variable) {
+                String resolvedType = getFluentConfiguratorType(resolvedVariable, visited);
+                if (resolvedType != null) {
+                    return resolvedType;
+                }
+            }
+
+            // Then inspect the assigned value for "$parameters = $container->parameters()".
+            PsiElement parent = psiElement.getParent();
+            if (parent instanceof AssignmentExpression assignmentExpression) {
+                return getFluentConfiguratorType(assignmentExpression.getValue(), visited);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Parse ->defaults()->autowire()->public() from the ContainerConfigurator function
+     * to produce a ServiceFileDefaults for the whole file scope.
+     */
+    @NotNull
+    private static ServiceFileDefaults createFluentDefaults(@NotNull Function function) {
+        for (MethodReference defaultsRef : PhpElementsUtil.collectMethodReferencesInsideControlFlow(function, "defaults")) {
+            Boolean isPublic = null;
+            Boolean isAutowire = null;
+
+            PsiElement parent = defaultsRef.getParent();
+            while (parent instanceof MethodReference chainedMethod) {
+                PsiElement[] params = chainedMethod.getParameters();
+                switch (StringUtils.defaultString(chainedMethod.getName())) {
+                    case "autowire" -> isAutowire = extractFluentBooleanParam(params, true);
+                    case "public" -> isPublic = extractFluentBooleanParam(params, true);
+                    case "private" -> isPublic = false;
+                }
+                parent = parent.getParent();
+            }
+
+            return new ServiceFileDefaults(isPublic, isAutowire);
+        }
+
+        return ServiceFileDefaults.EMPTY;
+    }
+
+    /**
+     * Extract a boolean from a no-arg or single PHP literal arg method call.
+     *
+     * ->autowire()      → defaultWhenEmpty (true)
+     * ->autowire(true)  → true
+     * ->autowire(false) → false
+     */
+    @NotNull
+    private static Boolean extractFluentBooleanParam(@NotNull PsiElement[] params, boolean defaultWhenEmpty) {
+        if (params.length == 0) {
+            return defaultWhenEmpty;
+        }
+
+        if (params[0] instanceof ConstantReference constantRef) {
+            String name = constantRef.getName();
+            if ("false".equalsIgnoreCase(name)) return false;
+            if ("true".equalsIgnoreCase(name)) return true;
+        }
+
+        return defaultWhenEmpty;
+    }
+
+    /**
+     * Walk up the PSI method chain from ->set() and collect all attributes contributed
+     * by chained calls: ->tag(), ->decorate(), ->parent(), ->public(), ->lazy(), etc.
+     *
+     * In PSI, $services->set('id')->tag('foo')->public() is represented as nested
+     * MethodReferences where each outer call wraps the inner. Walking getParent()
+     * upward from ->set() visits each subsequent method in chain order.
+     */
+    private static void collectFluentChainAttributes(
+        @NotNull MethodReference setMethodReference,
+        @NotNull Map<String, String> keyValue,
+        @NotNull List<String> tags,
+        @NotNull Map<String, Collection<String>> arrayValues
+    ) {
+        List<String> resource = new ArrayList<>();
+        List<String> exclude = new ArrayList<>();
+
+        PsiElement parent = setMethodReference.getParent();
+        while (parent instanceof MethodReference chainedMethod) {
+            String methodName = chainedMethod.getName();
+
+            // Stop when we reach another service definition
+            if ("set".equals(methodName) || "alias".equals(methodName)) {
+                break;
+            }
+
+            PsiElement[] params = chainedMethod.getParameters();
+
+            switch (StringUtils.defaultString(methodName)) {
+                case "tag" -> {
+                    // ->tag('name') or ->tag('name', ['attr' => 'value'])
+                    if (params.length >= 1) {
+                        String tagName = getStringValueIndexSafe(params[0]);
+                        if (StringUtils.isNotBlank(tagName)) {
+                            tags.add(tagName);
+                        }
+                    }
+                }
+                case "decorate" -> {
+                    // ->decorate('service.id') or ->decorate('service.id', 'inner.name')
+                    if (params.length >= 1) {
+                        String decorates = getStringValueIndexSafe(params[0]);
+                        if (StringUtils.isNotBlank(decorates)) {
+                            keyValue.put("decorates", decorates);
+                        }
+                    }
+                    if (params.length >= 2) {
+                        String innerName = getStringValueIndexSafe(params[1]);
+                        if (StringUtils.isNotBlank(innerName)) {
+                            keyValue.put("decoration_inner_name", innerName);
+                        }
+                    }
+                }
+                case "parent" -> {
+                    if (params.length >= 1) {
+                        String parentService = getStringValueIndexSafe(params[0]);
+                        if (StringUtils.isNotBlank(parentService)) {
+                            keyValue.put("parent", parentService);
+                        }
+                    }
+                }
+                case "public" -> keyValue.put("public", String.valueOf(extractFluentBooleanParam(params, true)));
+                case "private" -> keyValue.put("public", "false");
+                case "autowire" -> keyValue.put("autowire", String.valueOf(extractFluentBooleanParam(params, true)));
+                case "lazy" -> keyValue.put("lazy", "true");
+                case "abstract" -> keyValue.put("abstract", "true");
+                case "deprecated" -> keyValue.put("deprecated", "true");
+                case "load" -> {
+                    // not supported
+                }
+                case "exclude" -> {
+                    if (params.length >= 1) {
+                        String excludePath = getStringValueIndexSafe(params[0]);
+                        if (StringUtils.isNotBlank(excludePath)) {
+                            exclude.add(excludePath);
+                        }
+                    }
+                }
+            }
+
+            parent = parent.getParent();
+        }
+
+        if (!resource.isEmpty()) {
+            arrayValues.put("resource", resource);
+        }
+        if (!exclude.isEmpty()) {
+            arrayValues.put("exclude", exclude);
         }
     }
 

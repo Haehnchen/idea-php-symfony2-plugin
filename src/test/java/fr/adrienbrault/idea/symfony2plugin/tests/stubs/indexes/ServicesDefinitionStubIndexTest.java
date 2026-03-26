@@ -22,6 +22,7 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services.php"));
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services_array.php"));
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services_with_defaults.yaml"));
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services_fluent_chained.php"));
     }
 
     public String getTestDataPath() {
@@ -61,6 +62,22 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
     public void testThatServiceIdOfPhpFileIsIndexed() {
         assertIndexContains(ServicesDefinitionStubIndex.KEY, "twig.command.debug");
         assertIndexContains(ServicesDefinitionStubIndex.KEY, "twig.command.debug_alias");
+
+        ServiceInterface debugCommand = getFirstValue("twig.command.debug");
+        assertContainsElements(debugCommand.getTags(), "console.command");
+        assertTrue(debugCommand.isPublic());
+
+        ServiceInterface decorated = getFirstValue("twig.service.decorated");
+        assertEquals("twig.command.debug", decorated.getDecorates());
+        assertEquals("twig.service.decorated.inner_custom", decorated.getDecorationInnerName());
+
+        // auto-generated inner service from decorates
+        assertIndexContains(ServicesDefinitionStubIndex.KEY, "twig.service.decorated.inner_custom");
+
+        ServiceInterface withParent = getFirstValue("twig.service.with_parent");
+        assertEquals("twig.command.debug", withParent.getParent());
+        assertTrue(withParent.isLazy());
+        assertTrue(withParent.isAutowire());
     }
 
     public void testThatServiceIdOfPhpArrayFileIsIndexed() {
@@ -158,6 +175,48 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
         // Resource service with explicit override should not be autowired
         ServiceInterface resourceServiceOverride = getFirstValue("app\\controller2\\");
         assertFalse("Resource service should use explicit autowire override", resourceServiceOverride.isAutowire());
+    }
+
+    /**
+     * $container->parameters()->set() defines a container parameter, not a service.
+     * Both the parameters and services configurators expose ->set(), so the parser
+     * must walk the classRef chain to distinguish them.
+     */
+    public void testThatParametersSetIsNotIndexedAsService() {
+        assertIndexNotContains(ServicesDefinitionStubIndex.KEY, "fluent.parameter");
+        assertIndexNotContains(ServicesDefinitionStubIndex.KEY, "fluent.parameter2");
+        assertIndexNotContains(ServicesDefinitionStubIndex.KEY, "fluent.parameter_variable");
+    }
+
+    /**
+     * Services defined via a direct chain on $container->services() (no intermediate
+     * $services variable) must be fully indexed with all chain attributes.
+     */
+    public void testThatDirectChainServicesAreIndexed() {
+        assertIndexContains(ServicesDefinitionStubIndex.KEY, "fluent.chain.a");
+        assertIndexContains(ServicesDefinitionStubIndex.KEY, "fluent.chain.b");
+        assertIndexContains(ServicesDefinitionStubIndex.KEY, "fluent.chain.decorated");
+        assertIndexContains(ServicesDefinitionStubIndex.KEY, "fluent.chain.last");
+    }
+
+    public void testThatDirectChainTagsAreIndexed() {
+        ServiceInterface serviceA = getFirstValue("fluent.chain.a");
+        assertContainsElements(serviceA.getTags(), "console.command");
+        assertTrue(serviceA.isPublic());
+
+        ServiceInterface serviceB = getFirstValue("fluent.chain.b");
+        assertContainsElements(serviceB.getTags(), "app.tag_one", "app.tag_two");
+        assertTrue(serviceB.isLazy());
+        assertTrue(serviceB.isAutowire());
+    }
+
+    public void testThatDirectChainDecoratesIsIndexed() {
+        ServiceInterface decorated = getFirstValue("fluent.chain.decorated");
+        assertEquals("fluent.chain.a", decorated.getDecorates());
+        assertEquals("fluent.chain.decorated.inner_custom", decorated.getDecorationInnerName());
+
+        // auto-generated inner service from decorate()
+        assertIndexContains(ServicesDefinitionStubIndex.KEY, "fluent.chain.decorated.inner_custom");
     }
 
     private ServiceInterface getFirstValue(@NotNull String key) {
