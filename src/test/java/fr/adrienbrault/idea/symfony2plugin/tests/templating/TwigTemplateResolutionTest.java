@@ -29,6 +29,8 @@ public class TwigTemplateResolutionTest extends SymfonyLightCodeInsightFixtureTe
         myFixture.copyFileToProject("templates/child.html.twig", "templates/child.html.twig");
         myFixture.copyFileToProject("templates/macros.html.twig", "templates/macros.html.twig");
         myFixture.copyFileToProject("templates/partial.html.twig", "templates/partial.html.twig");
+        myFixture.addFileToProject("templates/block_target_a.html.twig", "{% block only_a %}{% endblock %}\n{% block shared_name %}{% endblock %}\n");
+        myFixture.addFileToProject("templates/block_target_b.html.twig", "{% block only_b %}{% endblock %}\n{% block shared_name %}{% endblock %}\n");
     }
 
     @Override
@@ -179,6 +181,77 @@ public class TwigTemplateResolutionTest extends SymfonyLightCodeInsightFixtureTe
             TwigFileType.INSTANCE,
             "{% extends 'base.html.twig' %}\n" +
             "{{ block('<caret>') }}",
+            "title",
+            "header",
+            "content",
+            "footer"
+        );
+    }
+
+    public void testBlockFunctionTemplateArgumentCompletion() {
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{{ block('title', '<caret>') }}",
+            "base.html.twig",
+            "child.html.twig",
+            "partial.html.twig",
+            "block_target_a.html.twig"
+        );
+    }
+
+    public void testBlockFunctionTemplateArgumentNavigation() {
+        assertNavigationContainsFile(
+            TwigFileType.INSTANCE,
+            "{{ block('title', 'base<caret>.html.twig') }}",
+            "base.html.twig"
+        );
+    }
+
+    public void testBlockFunctionScopedCompletion() {
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{{ block('<caret>', 'block_target_a.html.twig') }}",
+            "only_a",
+            "shared_name"
+        );
+
+        assertCompletionNotContains(
+            TwigFileType.INSTANCE,
+            "{{ block('<caret>', 'block_target_a.html.twig') }}",
+            "only_b"
+        );
+    }
+
+    public void testBlockFunctionScopedCompletionIncludesInheritedBlocks() {
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{{ block('<caret>', 'child.html.twig') }}",
+            "title",
+            "header",
+            "content",
+            "footer"
+        );
+    }
+
+    public void testBlockFunctionScopedNavigation() {
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{{ block('only<caret>_a', 'block_target_a.html.twig') }}"
+        );
+    }
+
+    public void testBlockFunctionScopedNavigationIsEmptyForUnrelatedTemplate() {
+        assertNavigationIsEmpty(
+            TwigFileType.INSTANCE,
+            "{{ block('only<caret>_b', 'block_target_a.html.twig') }}"
+        );
+    }
+
+    public void testBlockFunctionWithDynamicTemplateFallsBackToCurrentScope() {
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{% extends 'base.html.twig' %}\n" +
+            "{{ block('<caret>', foo) }}",
             "title",
             "header",
             "content",

@@ -65,7 +65,10 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             targets.addAll(getRouteParameterGoTo(psiElement));
         }
 
-        if (TwigPattern.getTemplateFileReferenceTagPattern().accepts(psiElement) || TwigPattern.getPrintBlockOrTagFunctionPattern("include", "source").accepts(psiElement)) {
+        if (TwigPattern.getTemplateFileReferenceTagPattern().accepts(psiElement)
+            || TwigPattern.getPrintBlockOrTagFunctionPattern("include", "source").accepts(psiElement)
+            || TwigPattern.getPrintBlockOrTagFunctionSecondParameterPattern("block").accepts(psiElement))
+        {
             // support: {% include() %}, {{ include() }}
             targets.addAll(getTwigFiles(psiElement, offset));
         } else if (PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT).withText(PlatformPatterns.string().endsWith(".twig")).accepts(psiElement)) {

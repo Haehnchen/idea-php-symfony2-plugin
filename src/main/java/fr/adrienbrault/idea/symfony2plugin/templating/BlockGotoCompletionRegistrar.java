@@ -1,11 +1,11 @@
 package fr.adrienbrault.idea.symfony2plugin.templating;
 
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigBlockUtil;
-import fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigFileUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -44,6 +44,15 @@ public class BlockGotoCompletionRegistrar implements GotoCompletionRegistrar {
                 return Collections.emptyList();
             }
 
+            Collection<PsiFile> explicitTemplateTargets = TwigBlockUtil.getBlockFunctionTemplateTargets(element);
+            if (!explicitTemplateTargets.isEmpty()) {
+                return explicitTemplateTargets.stream()
+                    .map(psiFile -> TwigBlockUtil.getBlockOverwriteTargets(psiFile, blockName, true))
+                    .flatMap(Collection::stream)
+                    .filter(psiElement -> psiElement != element)
+                    .collect(Collectors.toSet());
+            }
+
             Collection<PsiElement> psiElements = new HashSet<>();
 
             psiElements.addAll(
@@ -62,9 +71,18 @@ public class BlockGotoCompletionRegistrar implements GotoCompletionRegistrar {
 
         @Override
         public void getLookupElements(@NotNull GotoCompletionProviderLookupArguments arguments) {
+            Collection<PsiFile> explicitTemplateTargets = TwigBlockUtil.getBlockFunctionTemplateTargets(getElement());
+            if (!explicitTemplateTargets.isEmpty()) {
+                arguments.addAllElements(TwigUtil.getBlockLookupElements(
+                    getProject(),
+                    TwigBlockUtil.getBlockLookupScopeFiles(explicitTemplateTargets)
+                ));
+                return;
+            }
+
             arguments.addAllElements(TwigUtil.getBlockLookupElements(
                 getProject(),
-                TwigFileUtil.collectParentFiles(true, arguments.getParameters().getOriginalFile())
+                TwigBlockUtil.getBlockLookupScopeFiles(Collections.singleton(arguments.getParameters().getOriginalFile()))
             ));
         }
     }

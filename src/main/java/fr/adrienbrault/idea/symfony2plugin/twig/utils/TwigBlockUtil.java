@@ -15,6 +15,7 @@ import com.jetbrains.twig.elements.TwigBlockStatement;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigBlockEmbedIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigBlockIndexExtension;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigBlockFakePsiNavigationItem;
+import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigBlock;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.twig.loader.FileImplementsLazyLoader;
@@ -32,6 +33,50 @@ import java.util.stream.Collectors;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TwigBlockUtil {
+    /**
+     * Resolves literal template targets for: {{ block('name', 'template.html.twig') }}
+     */
+    @NotNull
+    public static Collection<PsiFile> getBlockFunctionTemplateTargets(@NotNull PsiElement blockNameElement) {
+        if (!TwigPattern.getPrintBlockOrTagFunctionPattern("block").accepts(blockNameElement)) {
+            return Collections.emptyList();
+        }
+
+        PsiElement templateNameElement = PsiElementUtils.getNextSiblingOfType(
+            blockNameElement,
+            PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT)
+        );
+
+        if (templateNameElement == null || !TwigPattern.getPrintBlockOrTagFunctionSecondParameterPattern("block").accepts(templateNameElement)) {
+            return Collections.emptyList();
+        }
+
+        String templateName = PsiElementUtils.trimQuote(templateNameElement.getText());
+        if (StringUtils.isBlank(templateName)) {
+            return Collections.emptyList();
+        }
+
+        return TwigUtil.getTemplatePsiElements(blockNameElement.getProject(), templateName);
+    }
+
+    /**
+     * Builds the file scope used for block-name completion from a set of Twig templates.
+     *
+     * The returned scope contains the template files themselves and every reachable parent
+     * template collected through the existing Twig extends/use traversal in
+     * {@link TwigFileUtil#collectParentFiles(boolean, PsiFile...)}.
+     *
+     * Use this when block completion should behave like normal Twig block lookup, but the
+     * starting point is an explicit template reference rather than the current file.
+     */
+    @NotNull
+    public static Collection<VirtualFile> getBlockLookupScopeFiles(@NotNull Collection<PsiFile> psiFiles) {
+        return psiFiles.stream()
+            .map(psiFile -> TwigFileUtil.collectParentFiles(true, psiFile))
+            .flatMap(Collection::stream)
+            .collect(Collectors.toSet());
+    }
+
     /**
      * Returns the subset of {@code virtualFiles} that contain {@code blockName} according to the Twig block index.
      * Use this to pre-filter before loading PSI, avoiding traversal of files that do not define the block.
