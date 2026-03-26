@@ -11,10 +11,14 @@ class SymfonyCommandCollectorTest : McpCollectorTestCase() {
     fun testCollectExportsSetNameCommand() {
         val result = SymfonyCommandCollector(project).collect()
 
-        assertTrue("CSV must start with header", result.startsWith("name,className,filePath"))
+        assertTrue("CSV must start with header", result.startsWith("name,className,filePath,options,arguments"))
         assertTrue("Must contain command name 'foo'", result.contains("foo"))
         assertTrue("Must contain FQN \\Foo\\FooCommand", result.contains("\\Foo\\FooCommand"))
         assertTrue("Must contain source file path", result.contains("SymfonyCommandUtilTest.php"))
+        assertTrue(
+            "Must contain empty options and arguments fields",
+            result.lineSequence().any { it.startsWith("foo,") && it.endsWith(",,") }
+        )
         assertUsesRealLineBreaks(result)
     }
 
@@ -66,5 +70,29 @@ class SymfonyCommandCollectorTest : McpCollectorTestCase() {
 
         assertTrue("Must contain command name 'const'", result.contains("const"))
         assertTrue("Must contain FQN \\Foo\\ConstCommand", result.contains("\\Foo\\ConstCommand"))
+    }
+
+    /**
+     * Verifies that option metadata is exported as JSON in the CSV output.
+     */
+    fun testCollectExportsCommandOptions() {
+        val result = SymfonyCommandCollector(project).collect()
+
+        assertTrue("Must contain traditional options command", result.contains("app:traditional"))
+        assertTrue("Must contain option name 'name'", result.contains("\"\"name\"\":\"\"name\"\""))
+        assertTrue("Must contain option name 'last_name'", result.contains("\"\"name\"\":\"\"last_name\"\""))
+        assertTrue("Must contain option shortcut 'd'", result.contains("\"\"shortcut\"\":\"\"d\"\""))
+    }
+
+    /**
+     * Verifies that argument metadata is exported as JSON in the CSV output.
+     */
+    fun testCollectExportsCommandArguments() {
+        val result = SymfonyCommandCollector(project).collect()
+
+        assertTrue("Must contain traditional arguments command", result.contains("app:traditional-args"))
+        assertTrue("Must contain argument name 'username'", result.contains("\"\"name\"\":\"\"username\"\""))
+        assertTrue("Must contain argument description 'The username'", result.contains("\"\"description\"\":\"\"The username\"\""))
+        assertTrue("Must contain argument default value ''default123''", result.contains("\"\"defaultValue\"\":\"\"'default123'\"\""))
     }
 }
