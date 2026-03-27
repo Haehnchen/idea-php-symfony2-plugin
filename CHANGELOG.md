@@ -23,6 +23,9 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2016.1.295
+* Fix variable resolution for PHP fluent service definitions: Indexing process should not rely on non-indexed file data. (Daniel Espendiller)
+
 ## 2026.1.294
 * MCP: Add support for exporting Symfony console command arguments and options as JSON in CSV output, including metadata serialization. (Daniel Espendiller)
 * [paid] Property Service Injection Completion: reduce scope filering and refactoring using indexed autowire service too ([#72](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/72)) (Daniel Espendiller)
