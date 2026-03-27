@@ -27,7 +27,7 @@ dependencies {
         val version = providers.gradleProperty("platformVersion")
         val type = providers.gradleProperty("platformType")
         create(type, version) {
-            useInstaller = false
+            useInstaller = true
             useCache = true
         }
 
@@ -65,7 +65,7 @@ intellijPlatform {
     pluginVerification {
         ides {
             create(type, version) {
-                useInstaller = false
+                useInstaller = true
                 useCache = true
             }
         }
