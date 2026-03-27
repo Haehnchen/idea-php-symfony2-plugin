@@ -141,6 +141,9 @@
         <postStartupActivity implementation="fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent$PostStartupActivity"/>
         <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent$ProjectCloseService"/>
 
+        <!-- VFS watcher for var/cache/ and app/cache/ – invalidates compiled Symfony artifact caches -->
+        <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.util.SymfonyVarDirectoryWatcher"/>
+
         <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.SettingsForm"
                              displayName="Symfony"
                              id="Symfony2.SettingsForm"

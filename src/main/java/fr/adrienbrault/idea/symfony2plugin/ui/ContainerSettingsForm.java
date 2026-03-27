@@ -13,6 +13,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.UiSettingsUtil;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.dict.UiPathColumnInfo;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyVarDirectoryWatcherKt;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -156,6 +157,8 @@ public class ContainerSettingsForm implements Configurable {
 
         getSettings().containerFiles = containerFiles;
         this.changed = false;
+
+        SymfonyVarDirectoryWatcherKt.syncSymfonyVarDirectoryWatcher(project);
     }
 
     private Settings getSettings() {

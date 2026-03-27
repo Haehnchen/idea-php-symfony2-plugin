@@ -12,6 +12,7 @@ import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.RoutingFile;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.UiSettingsUtil;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.dict.UiPathColumnInfo;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyVarDirectoryWatcherKt;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -182,6 +183,8 @@ public class RoutingSettingsForm implements Configurable {
 
         getSettings().routingFiles = containerFiles;
         this.changed = false;
+
+        SymfonyVarDirectoryWatcherKt.syncSymfonyVarDirectoryWatcher(project);
     }
 
     private Settings getSettings() {
