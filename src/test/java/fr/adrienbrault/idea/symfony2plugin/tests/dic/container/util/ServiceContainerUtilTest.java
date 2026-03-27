@@ -544,6 +544,8 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
             services.stream().noneMatch(s -> "my.parameter".equals(s.getId())));
         assertTrue("my.parameter_variable must not be indexed as a service",
             services.stream().noneMatch(s -> "my.parameter_variable".equals(s.getId())));
+        assertTrue("my.parameter_variable_alias must not be indexed as a service",
+            services.stream().noneMatch(s -> "my.parameter_variable_alias".equals(s.getId())));
     }
 
     /**
@@ -571,6 +573,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
 
         // last service in chain with no chained attributes
         assertTrue(services.stream().anyMatch(s -> "chain.last".equals(s.getId())));
+        assertTrue(services.stream().anyMatch(s -> "chain.alias_service".equals(s.getId())));
     }
 
     public void testThatDirectChainDecoratesIsIndexed() {

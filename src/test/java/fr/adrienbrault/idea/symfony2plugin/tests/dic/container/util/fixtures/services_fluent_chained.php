@@ -14,6 +14,8 @@ return static function (ContainerConfigurator $container) {
 
     $parameters = $container->parameters();
     $parameters->set('my.parameter_variable', 'some_value');
+    $parametersAlias = $parameters;
+    $parametersAlias->set('my.parameter_variable_alias', 'some_value');
 
     // All services chained directly on ->services() without a variable
     $container->services()
@@ -38,4 +40,8 @@ return static function (ContainerConfigurator $container) {
 
         ->set('chain.last', TestClassB::class)
     ;
+
+    $services = $container->services();
+    $servicesAlias = $services;
+    $servicesAlias->set('chain.alias_service', TestClassC::class);
 };
