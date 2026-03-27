@@ -18,6 +18,7 @@ import com.intellij.util.ui.UIUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.util.IndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyVarDirectoryWatcherKt;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -359,6 +360,8 @@ public class SettingsForm implements Configurable {
 
         getSettings().directoryToApp = directoryToApp.getText();
         getSettings().directoryToWeb = directoryToWeb.getText();
+
+        SymfonyVarDirectoryWatcherKt.syncSymfonyVarDirectoryWatcher(project);
     }
 
     @Override
