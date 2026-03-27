@@ -15,6 +15,7 @@ import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoader;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoaderParameter;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyVarDirectoryWatcherKt;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import kotlin.Unit;
 import kotlin.coroutines.Continuation;
@@ -33,6 +34,10 @@ public class Symfony2ProjectComponent {
         @Nullable
         @Override
         public Object execute(@NotNull Project project, @NotNull Continuation<? super Unit> continuation) {
+            if (isEnabled(project)) {
+                SymfonyVarDirectoryWatcherKt.getSymfonyVarDirectoryWatcher(project);
+            }
+
             if (!ApplicationManager.getApplication().isUnitTestMode() && !ApplicationManager.getApplication().isHeadlessEnvironment()) {
                 checkProject(project);
             }
