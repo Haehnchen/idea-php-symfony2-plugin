@@ -186,6 +186,7 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
         assertIndexNotContains(ServicesDefinitionStubIndex.KEY, "fluent.parameter");
         assertIndexNotContains(ServicesDefinitionStubIndex.KEY, "fluent.parameter2");
         assertIndexNotContains(ServicesDefinitionStubIndex.KEY, "fluent.parameter_variable");
+        assertIndexNotContains(ServicesDefinitionStubIndex.KEY, "fluent.parameter_variable_alias");
     }
 
     /**
@@ -197,6 +198,7 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
         assertIndexContains(ServicesDefinitionStubIndex.KEY, "fluent.chain.b");
         assertIndexContains(ServicesDefinitionStubIndex.KEY, "fluent.chain.decorated");
         assertIndexContains(ServicesDefinitionStubIndex.KEY, "fluent.chain.last");
+        assertIndexContains(ServicesDefinitionStubIndex.KEY, "fluent.chain.alias_service");
     }
 
     public void testThatDirectChainTagsAreIndexed() {

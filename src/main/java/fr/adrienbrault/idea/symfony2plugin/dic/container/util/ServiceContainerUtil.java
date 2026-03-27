@@ -541,23 +541,44 @@ public class ServiceContainerUtil {
         }
 
         if (psiElement instanceof Variable variable) {
-            // Follow the declaration first so "$foo = $bar; $foo->set(...)" can resolve transitively.
-            PsiElement resolved = variable.resolve();
-            if (resolved instanceof Variable resolvedVariable && resolvedVariable != variable) {
-                String resolvedType = getFluentConfiguratorType(resolvedVariable, visited);
-                if (resolvedType != null) {
-                    return resolvedType;
-                }
-            }
-
-            // Then inspect the assigned value for "$parameters = $container->parameters()".
-            PsiElement parent = psiElement.getParent();
-            if (parent instanceof AssignmentExpression assignmentExpression) {
-                return getFluentConfiguratorType(assignmentExpression.getValue(), visited);
+            // Indexers must stay syntax-only here: resolving variables can hit stub/type indexes.
+            PsiElement assignedValue = getPreviousVariableAssignmentValue(variable);
+            if (assignedValue != null) {
+                return getFluentConfiguratorType(assignedValue, visited);
             }
         }
 
         return null;
+    }
+
+    @Nullable
+    private static PsiElement getPreviousVariableAssignmentValue(@NotNull Variable variable) {
+        String variableName = variable.getName();
+        if (StringUtils.isBlank(variableName)) {
+            return null;
+        }
+
+        Function scope = PsiTreeUtil.getParentOfType(variable, Function.class);
+        if (scope == null) {
+            return null;
+        }
+
+        AssignmentExpression latestAssignment = null;
+        int variableOffset = variable.getTextOffset();
+
+        for (AssignmentExpression assignmentExpression : PsiTreeUtil.collectElementsOfType(scope, AssignmentExpression.class)) {
+            if (assignmentExpression.getTextOffset() >= variableOffset) {
+                continue;
+            }
+
+            if (!(assignmentExpression.getVariable() instanceof Variable assignedVariable) || !variableName.equals(assignedVariable.getName())) {
+                continue;
+            }
+
+            latestAssignment = assignmentExpression;
+        }
+
+        return latestAssignment != null ? latestAssignment.getValue() : null;
     }
 
     /**

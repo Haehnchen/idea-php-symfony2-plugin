@@ -15,6 +15,8 @@ return static function (ContainerConfigurator $container) {
 
     $parameters = $container->parameters();
     $parameters->set('fluent.parameter_variable', 'some_value');
+    $parametersAlias = $parameters;
+    $parametersAlias->set('fluent.parameter_variable_alias', 'some_value');
 
     // All services chained directly on ->services() without an intermediate variable
     $container->services()
@@ -34,4 +36,8 @@ return static function (ContainerConfigurator $container) {
 
         ->set('fluent.chain.last', DebugCommand::class)
     ;
+
+    $services = $container->services();
+    $servicesAlias = $services;
+    $servicesAlias->set('fluent.chain.alias_service', DebugCommand::class);
 };
