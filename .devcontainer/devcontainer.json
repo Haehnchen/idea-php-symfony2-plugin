@@ -15,10 +15,11 @@
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   // "forwardPorts": [],
 
-  "postCreateCommand": "sudo apt-get update -q && sudo apt-get install -y libfreetype6 fontconfig",
+  "containerEnv": {
+    "NO_FS_ROOTS_ACCESS_CHECK": "true"
+  },
 
-  // Configure tool-specific properties.
-  // "customizations": {},
+  "postCreateCommand": "sudo apt-get update -q && sudo apt-get install -y libfreetype6 fontconfig fonts-dejavu-core && mkdir -p \"$JAVA_HOME/Packages\"",
 
-  "remoteUser": "root"
+  //"remoteUser": "root"
 }
