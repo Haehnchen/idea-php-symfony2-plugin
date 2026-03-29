@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.dic.container.util;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.SimpleModificationTracker;
 import com.intellij.openapi.util.NlsSafe;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -74,8 +75,7 @@ public class ServiceContainerUtil {
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\DependencyInjection\\ParameterBag\\ContainerBagInterface", "get"),
     };
 
-    private static final Key<CachedValue<Collection<String>>> SYMFONY_COMPILED_TIMED_SERVICE_WATCHER = new Key<>("SYMFONY_COMPILED_TIMED_SERVICE_WATCHER");
-    private static final Key<CachedValue<Collection<String>>> SYMFONY_COMPILED_SERVICE_WATCHER = new Key<>("SYMFONY_COMPILED_SERVICE_WATCHER");
+    private static final Key<CachedValue<Collection<String>>> SYMFONY_CONTAINER_FILES = new Key<>("SYMFONY_CONTAINER_FILES");
 
     private static final String[] LOWER_PRIORITY = new String[] {
         "debug", "default", "abstract", "inner", "chain", "decorate", "delegat"
@@ -1613,19 +1613,28 @@ public class ServiceContainerUtil {
     }
 
     /**
-     * Find compiled and cache it until any psi change occur
+     * Find compiled service container XML files.
      *
      * - "app/cache/dev/appDevDebugProjectContainer.xml"
      * - ...
+     *
+     * Cache invalidation is handled by SymfonyVarDirectoryWatcher via VFS events.
      */
     public static Collection<String> getContainerFiles(@NotNull Project project) {
-        return CachedValuesManager.getManager(project)
-            .getCachedValue(
-                project,
-                SYMFONY_COMPILED_SERVICE_WATCHER,
-                () -> CachedValueProvider.Result.create(getContainerFilesInner(project), PsiModificationTracker.MODIFICATION_COUNT),
-                false
-            );
+        return CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            SYMFONY_CONTAINER_FILES,
+            () -> CachedValueProvider.Result.create(
+                Collections.unmodifiableSet(getContainerFilesInner(project)),
+                getContainerTracker(project)
+            ),
+            false
+        );
+    }
+
+    private static SimpleModificationTracker getContainerTracker(@NotNull Project project) {
+        return SymfonyVarDirectoryWatcherKt.getSymfonyVarDirectoryWatcher(project)
+            .getModificationTracker(SymfonyVarDirectoryWatcher.Scope.CONTAINER);
     }
 
     /**
@@ -1782,7 +1791,7 @@ public class ServiceContainerUtil {
     }
 
     /**
-     * Find possible compiled service file with seconds cache
+     * Find possible compiled service file
      *
      * - "app/cache/dev/appDevDebugProjectContainer.xml"
      * - "var/cache/dev/appDevDebugProjectContainer.xml"
@@ -1791,47 +1800,46 @@ public class ServiceContainerUtil {
      * - "var/cache/dev/App_KernelDevDebugContainer.xml" // Symfony => 4 + flex
      * - "app/cache/dev_392373729/appDevDebugProjectContainer.xml"
      */
-    private static Collection<String> getContainerFilesInner(@NotNull Project project) {
-        return CachedValuesManager.getManager(project).getCachedValue(project, SYMFONY_COMPILED_TIMED_SERVICE_WATCHER, () -> {
-            Set<String> files = new HashSet<>();
+    private static Set<String> getContainerFilesInner(@NotNull Project project) {
+        Set<String> files = new HashSet<>();
 
-            VirtualFile baseDir = ProjectUtil.getProjectDir(project);
+        VirtualFile baseDir = ProjectUtil.getProjectDir(project);
+        if (baseDir == null) {
+            return files;
+        }
 
-            // several Symfony cache folder structures
-            for (String root : new String[] {"var/cache", "app/cache"}) {
-                VirtualFile relativeFile = VfsUtil.findRelativeFile(root, baseDir);
-                if (relativeFile == null) {
+        // several Symfony cache folder structures
+        for (String root : new String[] {"var/cache", "app/cache"}) {
+            VirtualFile relativeFile = VfsUtil.findRelativeFile(root, baseDir);
+            if (relativeFile == null) {
+                continue;
+            }
+
+            // find a dev folder eg: "dev_392373729" or just "dev"
+            for (VirtualFile child : relativeFile.getChildren()) {
+                if (!child.isDirectory() || !child.getName().toLowerCase().startsWith("dev")) {
                     continue;
                 }
 
-                // find a dev folder eg: "dev_392373729" or just "dev"
-                Set<VirtualFile> devFolders = Stream.of(relativeFile.getChildren())
-                    .filter(virtualFile -> virtualFile.isDirectory() && virtualFile.getName().toLowerCase().startsWith("dev"))
-                    .collect(Collectors.toSet());
+                for (VirtualFile file : child.getChildren()) {
+                    if (file.isDirectory() || !"xml".equalsIgnoreCase(file.getExtension())) {
+                        continue;
+                    }
 
-                for (VirtualFile devFolder : devFolders) {
-                    Set<String> debugContainers = Stream.of(devFolder.getChildren())
-                        .filter(virtualFile -> {
-                            if (!"xml".equalsIgnoreCase(virtualFile.getExtension())) {
-                                return false;
-                            }
-
-                            // Some examples: App_KernelDevDebugContainer, appDevDebugProjectContainer
-                            String filename = virtualFile.getName().toLowerCase();
-                            return filename.contains("debugcontainer")
-                                || (filename.contains("debug") && filename.contains("container"))
-                                || (filename.contains("kernel") && filename.contains("container"));
-                        })
-                        .map(virtualFile -> VfsUtil.getRelativePath(virtualFile, baseDir, '/'))
-                        .collect(Collectors.toSet());
-
-                    files.addAll(debugContainers);
+                    // Some examples: App_KernelDevDebugContainer, appDevDebugProjectContainer
+                    String filename = file.getName().toLowerCase();
+                    if (filename.contains("debugcontainer")
+                        || (filename.contains("debug") && filename.contains("container"))
+                        || (filename.contains("kernel") && filename.contains("container"))) {
+                        String path = VfsUtil.getRelativePath(file, baseDir, '/');
+                        if (path != null) {
+                            files.add(path.replace('\\', '/'));
+                        }
+                    }
                 }
             }
+        }
 
-            Set<String> cache = files.stream().map(s -> baseDir.getPath() + "/" + s).collect(Collectors.toSet());
-
-            return CachedValueProvider.Result.create(Collections.unmodifiableSet(files), new AbsoluteFileModificationTracker(cache));
-        }, false);
+        return files;
     }
 }
