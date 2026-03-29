@@ -16,7 +16,6 @@ import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoaderParam
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyVarDirectoryWatcherKt;
-import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import kotlin.Unit;
 import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
@@ -55,7 +54,6 @@ public class Symfony2ProjectComponent {
 
         @Override
         public void dispose() {
-            ServiceXmlParserFactory.cleanInstance(this.project);
         }
     }
 
