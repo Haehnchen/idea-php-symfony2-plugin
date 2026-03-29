@@ -827,7 +827,6 @@
         <extensionPoint dynamic="true" name="extension.GotoCompletionRegistrar" interface="fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar"/>
         <extensionPoint dynamic="true" name="extension.TwigNamespaceExtension" interface="fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtension"/>
         <extensionPoint dynamic="true" name="extension.RoutingLoader" interface="fr.adrienbrault.idea.symfony2plugin.extension.RoutingLoader"/>
-        <extensionPoint dynamic="true" name="extension.CompiledServiceBuilderFactory" interface="fr.adrienbrault.idea.symfony2plugin.extension.CompiledServiceBuilderFactory"/>
         <extensionPoint dynamic="true" name="extension.ServiceCollector" interface="fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector"/>
         <extensionPoint dynamic="true" name="extension.ServiceParameterCollector" interface="fr.adrienbrault.idea.symfony2plugin.extension.ServiceParameterCollector"/>
         <extensionPoint dynamic="true" name="extension.ServiceDefinitionLocator" interface="fr.adrienbrault.idea.symfony2plugin.extension.ServiceDefinitionLocator"/>

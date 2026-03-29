@@ -5,7 +5,9 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
+ * @deprecated No longer used; the extension point "fr.adrienbrault.idea.symfony2plugin.extension.CompiledServiceBuilderFactory" has been removed.
  */
+@Deprecated
 public interface CompiledServiceBuilderFactory {
 
     @NotNull

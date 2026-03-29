@@ -10,7 +10,9 @@ import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
+ * @deprecated No longer used; {@link CompiledServiceBuilderFactory} extension support has been removed.
  */
+@Deprecated
 public class CompiledServiceBuilderArguments {
 
     public record StreamEntry(@NotNull InputStream stream, @NotNull VirtualFile virtualFile) {}
