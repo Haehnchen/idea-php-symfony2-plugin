@@ -7,10 +7,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.SimpleModificationTracker;
 import com.intellij.openapi.util.io.FileUtil;
-import com.intellij.openapi.vfs.InvalidVirtualFileAccessException;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
@@ -44,7 +42,6 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.AnnotationRouteElementVisitor;
-import fr.adrienbrault.idea.symfony2plugin.ui.dict.AbstractUiFilePath;
 import fr.adrienbrault.idea.symfony2plugin.util.*;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerAction;
 import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
@@ -61,7 +58,6 @@ import org.jetbrains.yaml.psi.*;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -81,8 +77,6 @@ public class RouteHelper {
     private static final Key<CachedValue<Set<String>>> ROUTE_CONTROLLER_RESOLVED_CACHE = new Key<>("ROUTE_CONTROLLER_RESOLVED_CACHE");
 
     private static final Key<CachedValue<Map<String, Route>>> SYMFONY_COMPILED_CACHE_ROUTES = new Key<>("SYMFONY_COMPILED_CACHE_ROUTES");
-    private static final Key<CachedValue<Collection<String>>> SYMFONY_COMPILED_CACHE_ROUTES_FILES = new Key<>("SYMFONY_COMPILED_CACHE_ROUTES_FILES");
-    private static final Key<CachedValue<Collection<String>>> SYMFONY_COMPILED_GUESTED_FILES = new Key<>("SYMFONY_COMPILED_GUESTED_FILES");
 
     private static final ExtensionPointName<RoutingLoader> ROUTING_LOADER = new ExtensionPointName<>(
         "fr.adrienbrault.idea.symfony2plugin.extension.RoutingLoader"
@@ -465,108 +459,74 @@ public class RouteHelper {
         return null;
     }
 
-    private static String getPath(Project project, String path) {
-        if (!FileUtil.isAbsolute(path)) { // Project relative path
-            path = project.getBasePath() + "/" + path;
-        }
-
-        return path;
-    }
-
     @NotNull
-    private static Set<String> getDefaultRoutes(@NotNull Project project) {
-        Set<String> allFiles = new HashSet<>();
+    private static Collection<VirtualFile> findCompiledRouteFiles(@NotNull Project project) {
+        Collection<VirtualFile> files = new HashSet<>();
 
         VirtualFile projectDir = ProjectUtil.getProjectDir(project);
-        if (projectDir != null) {
-            VirtualFile varCache = VfsUtil.findRelativeFile(projectDir, "var", "cache");
-            if (varCache != null) {
-                String path1 = varCache.getPath();
+        if (projectDir == null) {
+            return files;
+        }
 
-                Collection<String> cachedValue = CachedValuesManager.getManager(project).getCachedValue(
-                    project,
-                    SYMFONY_COMPILED_GUESTED_FILES,
-                    () -> {
-                        Set<String> files = new HashSet<>();
+        // Search var/cache/dev* and app/cache/dev* directories for URL generator files
+        for (String[] root : new String[][]{{"var", "cache"}, {"app", "cache"}}) {
+            VirtualFile cache = VfsUtil.findRelativeFile(projectDir, root);
+            if (cache == null) {
+                continue;
+            }
 
-                        // old "app/cache" is ignored for now
-                        VirtualFile cache = null;
+            for (VirtualFile child : cache.getChildren()) {
+                String filename = child.getName();
+                if (!"dev".equals(filename) && !filename.startsWith("dev_")) {
+                    continue;
+                }
 
-                        try {
-                            cache = VfsUtil.findRelativeFile(projectDir, "var", "cache");
-                        } catch (InvalidVirtualFileAccessException ignored) {
-                            // "Accessing invalid virtual file"
-                        }
+                for (VirtualFile file : child.getChildren()) {
+                    if (file.isDirectory() || !"php".equalsIgnoreCase(file.getExtension())) {
+                        continue;
+                    }
 
-                        for (VirtualFile child : (cache != null) ? cache.getChildren() : new VirtualFile[]{}) {
-                            String filename = child.getName();
-                            // support "dev" and "dev_*"
-                            if ("dev".equals(filename) || filename.startsWith("dev_")) {
-                                for (VirtualFile childChild : child.getChildren()) {
-                                    if (childChild.isDirectory() || !"php".equalsIgnoreCase(childChild.getExtension())) {
-                                        continue;
-                                    }
-
-                                    // guess a compiled php file by its normalized name
-                                    // some common examples, from Symfony 2 to now :)
-                                    // appDevDebugProjectContainerUrlGenerator, UrlGenerator
-                                    String s = childChild.getNameWithoutExtension().toLowerCase().replace("_", "");
-                                    if (s.contains("urlgenerator") || s.contains("urlgenerating")) {
-                                        String path = VfsUtil.getRelativePath(childChild, projectDir, '/');
-                                        if (path != null) {
-                                            files.add(path.replace("\\", "//"));
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        return CachedValueProvider.Result.create(Collections.unmodifiableSet(files), new AbsoluteFileModificationTracker(List.of(path1)));
-                    },
-                    false
-                );
-
-                allFiles.addAll(cachedValue);
+                    // guess a compiled php file by its normalized name
+                    // some common examples, from Symfony 2 to now :)
+                    // appDevDebugProjectContainerUrlGenerator, UrlGenerator
+                    String normalized = file.getNameWithoutExtension().toLowerCase().replace("_", "");
+                    if (normalized.contains("urlgenerator") || normalized.contains("urlgenerating")) {
+                        files.add(file);
+                    }
+                }
             }
         }
 
-        // work with cloned data
-        Set<String> files2 = new HashSet<>(allFiles);
-        files2.addAll(Settings.DEFAULT_ROUTES);
-        return files2;
+        // Custom routing files from settings
+        List<RoutingFile> routingFiles = Settings.getInstance(project).routingFiles;
+        if (routingFiles != null) {
+            for (RoutingFile rf : routingFiles) {
+                String path = rf.getPath();
+
+                if (StringUtils.isBlank(path)) {
+                    continue;
+                }
+
+                VirtualFile vf;
+                if (FileUtil.isAbsolute(path)) {
+                    vf = VfsUtil.findFileByIoFile(new File(path), false);
+                } else {
+                    vf = VfsUtil.findRelativeFile(projectDir, path.replace('\\', '/').split("/"));
+                }
+
+                if (vf != null && vf.exists()) {
+                    files.add(vf);
+                }
+            }
+        }
+
+        return files;
     }
 
     @NotNull
-    private static synchronized Collection<String> getCompiledRouteFiles(@NotNull Project project) {
-        return CachedValuesManager.getManager(project).getCachedValue(
-            project,
-            SYMFONY_COMPILED_CACHE_ROUTES_FILES,
-            () -> {
-                Set<String> files = new HashSet<>();
-
-                // add custom routing files on settings
-                List<RoutingFile> routingFiles = Settings.getInstance(project).routingFiles;
-                if (routingFiles != null) {
-                    files = routingFiles.stream().map(AbstractUiFilePath::getPath)
-                        .filter(StringUtils::isNotBlank)
-                        .collect(Collectors.toSet());
-                }
-
-                files.addAll(getDefaultRoutes(project));
-
-                Set<String> filesAbsolute = files.stream()
-                    .map(s -> getPath(project, s))
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toSet());
-
-                return CachedValueProvider.Result.create(
-                    Collections.unmodifiableSet(filesAbsolute),
-                    new AbsoluteFileModificationTracker(filesAbsolute),
-                    VirtualFileManager.VFS_STRUCTURE_MODIFICATIONS
-                );
-            },
-            false
-        );
+    private static SimpleModificationTracker getCompiledRoutesTracker(@NotNull Project project) {
+        return SymfonyVarDirectoryWatcherKt.getSymfonyVarDirectoryWatcher(project)
+            .getModificationTracker(SymfonyVarDirectoryWatcher.Scope.ROUTES);
     }
 
     @NotNull
@@ -577,22 +537,13 @@ public class RouteHelper {
             () -> {
                 Map<String, Route> routesContainerMap = new HashMap<>();
 
-                Collection<String> compiledRouteFiles = getCompiledRouteFiles(project);
-
-                for (String file : compiledRouteFiles) {
-                    File urlGeneratorFile = new File(getPath(project, file));
-                    VirtualFile virtualUrlGeneratorFile = VfsUtil.findFileByIoFile(urlGeneratorFile, false);
-                    if (virtualUrlGeneratorFile == null || !urlGeneratorFile.exists()) {
-                        continue;
-                    }
-
-                    routesContainerMap.putAll(RouteHelper.getRoutesInsideUrlGeneratorFile(project, virtualUrlGeneratorFile));
+                for (VirtualFile file : findCompiledRouteFiles(project)) {
+                    routesContainerMap.putAll(RouteHelper.getRoutesInsideUrlGeneratorFile(project, file));
                 }
 
                 return CachedValueProvider.Result.create(
                     Collections.unmodifiableMap(routesContainerMap),
-                    new CompiledRoutePathFilesModificationTracker(project),
-                    new AbsoluteFileModificationTracker(compiledRouteFiles)
+                    getCompiledRoutesTracker(project)
                 );
             },
             false
@@ -1490,8 +1441,7 @@ public class RouteHelper {
                 return CachedValueProvider.Result.create(
                     Collections.unmodifiableMap(routes),
                     FileIndexCaches.getModificationTrackerForIndexId(project, RoutesStubIndex.KEY), // index
-                    new CompiledRoutePathFilesModificationTracker(project), // compiled
-                    new AbsoluteFileModificationTracker(getCompiledRouteFiles(project)) // compiled
+                    getCompiledRoutesTracker(project) // compiled route file changes
                 );
             },
             false
@@ -1513,8 +1463,7 @@ public class RouteHelper {
                 return CachedValueProvider.Result.create(
                     Collections.unmodifiableMap(routes),
                     FileIndexCaches.getModificationTrackerForIndexId(project, RoutesStubIndex.KEY), // index
-                    new CompiledRoutePathFilesModificationTracker(project), // compiled
-                    new AbsoluteFileModificationTracker(getCompiledRouteFiles(project)) // compiled
+                    getCompiledRoutesTracker(project) // compiled route file changes
                 );
             },
             false
@@ -1602,23 +1551,4 @@ public class RouteHelper {
         return Arrays.stream(ROUTE_ANNOTATIONS).anyMatch(s -> s.equalsIgnoreCase(myClazz));
     }
 
-    private static class CompiledRoutePathFilesModificationTracker extends SimpleModificationTracker {
-        private final @NotNull Project project;
-        private int last = 0;
-
-        public CompiledRoutePathFilesModificationTracker(@NotNull Project project) {
-            this.project = project;
-        }
-
-        @Override
-        public long getModificationCount() {
-            int hash = getCompiledRouteFiles(project).stream().sorted().collect(Collectors.joining()).hashCode();
-            if (hash != this.last) {
-                this.last = hash;
-                this.incModificationCount();
-            }
-
-            return super.getModificationCount();
-        }
-    }
 }
