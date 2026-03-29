@@ -8,7 +8,6 @@ import fr.adrienbrault.idea.symfony2plugin.translation.parser.PhpCatalogueParser
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
@@ -45,11 +44,12 @@ public class TranslationStringMap {
     }
 
     @NotNull
-    public static TranslationStringMap create(@NotNull Collection<File> translationDirectories) {
+    public static TranslationStringMap create(@NotNull Collection<VirtualFile> translationDirectories) {
         List<FileData> perFileData = translationDirectories.stream()
-            .flatMap((Function<File, Stream<File>>) path -> {
-                File[] found = path.listFiles((directory, s) -> isCatalogueFile(s));
-                return found != null ? Arrays.stream(found) : Stream.empty();
+            .flatMap((Function<VirtualFile, Stream<VirtualFile>>) dir -> {
+                VirtualFile[] children = dir.getChildren();
+                if (children == null) return Stream.empty();
+                return Arrays.stream(children).filter(f -> isCatalogueFile(f.getName()));
             })
             .parallel()
             .map(FileData::parse)
@@ -81,15 +81,10 @@ public class TranslationStringMap {
      */
     private record FileData(@NotNull Map<String, Set<String>> domainMap) {
         @NotNull
-        static FileData parse(@NotNull File file) {
-            VirtualFile virtualFile = VfsUtil.findFileByIoFile(file, false);
-            if (virtualFile == null) {
-                return empty();
-            }
-
+        static FileData parse(@NotNull VirtualFile file) {
             String content;
             try {
-                content = VfsUtil.loadText(virtualFile);
+                content = VfsUtil.loadText(file);
             } catch (IOException e) {
                 return empty();
             }

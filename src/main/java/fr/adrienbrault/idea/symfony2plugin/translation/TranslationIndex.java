@@ -6,48 +6,37 @@ import com.intellij.openapi.util.SimpleModificationTracker;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.InvalidVirtualFileAccessException;
 import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.util.CachedValue;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
-import com.intellij.psi.util.PsiModificationTracker;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
-import fr.adrienbrault.idea.symfony2plugin.util.AbsoluteFileModificationTracker;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.TimeSecondModificationTracker;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyVarDirectoryWatcher;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyVarDirectoryWatcherKt;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TranslationIndex {
-    private static final Key<CachedValue<Collection<File>>> SYMFONY_TRANSLATION_COMPILED_TIMED_WATCHER = new Key<>("SYMFONY_TRANSLATION_COMPILED_TIMED_WATCHER");
-    private static final Key<CachedValue<Collection<File>>> SYMFONY_TRANSLATION_COMPILED = new Key<>("SYMFONY_TRANSLATION_COMPILED");
-    private static final Key<CachedValue<Collection<String>>> SYMFONY_GUESTED_TRANSLATION_DIRECTORIES = new Key<>("SYMFONY_GUESTED_TRANSLATION_DIRECTORIES");
+    private static final Key<CachedValue<TranslationStringMap>> SYMFONY_TRANSLATION_MAP_COMPILED = new Key<>("SYMFONY_TRANSLATION_MAP_COMPILED");
 
     private TranslationIndex() {
     }
-
-    private static final Key<CachedValue<TranslationStringMap>> SYMFONY_TRANSLATION_MAP_COMPILED = new Key<>("SYMFONY_TRANSLATION_MAP_COMPILED");
 
     synchronized static public TranslationStringMap getTranslationMap(@NotNull Project project) {
         return CachedValuesManager.getManager(project).getCachedValue(
             project,
             SYMFONY_TRANSLATION_MAP_COMPILED,
             () -> {
-                Collection<File> translationDirectories = getTranslationRoot(project);
+                Collection<VirtualFile> translationDirectories = findTranslationDirectories(project);
 
                 TranslationStringMap translationStringMap;
                 if (!translationDirectories.isEmpty()) {
@@ -56,129 +45,66 @@ public class TranslationIndex {
                     translationStringMap = TranslationStringMap.createEmpty();
                 }
 
-                Symfony2ProjectComponent.getLogger().info("translations changed: " + StringUtils.join(translationDirectories.stream().map(File::toString).collect(Collectors.toSet()), ","));
-
-                return CachedValueProvider.Result.create(translationStringMap, new FileModificationModificationTracker(project));
+                return CachedValueProvider.Result.create(translationStringMap, getTranslationsTracker(project));
             },
             false
         );
     }
 
+    /**
+     * Discovers compiled translation catalogue directories from var/cache and app/cache
+     * "dev" directories, the configured pathToTranslation setting, and sibling translations/
+     * directories next to container XML files.
+     *
+     * Cache invalidation is handled by SymfonyVarDirectoryWatcher via VFS events.
+     */
     @NotNull
-    private static Collection<File> getTranslationRoot(@NotNull Project project) {
-        return CachedValuesManager.getManager(project)
-            .getCachedValue(
-                project,
-                SYMFONY_TRANSLATION_COMPILED,
-                () -> CachedValueProvider.Result.create(getTranslationRootInnerTime(project), PsiModificationTracker.MODIFICATION_COUNT),
-                false
-            );
-    }
-
-    @NotNull
-    private static Collection<File> getTranslationRootInnerTime(@NotNull Project project) {
-        return CachedValuesManager.getManager(project).getCachedValue(
-            project,
-            SYMFONY_TRANSLATION_COMPILED_TIMED_WATCHER,
-            () -> CachedValueProvider.Result.create(getTranslationRootInner(project), TimeSecondModificationTracker.TIMED_MODIFICATION_TRACKER_60),
-            false
-        );
-    }
-
-    private static class TranslationSettingsModificationTracker extends SimpleModificationTracker {
-        private final @NotNull Project project;
-        private int last = 0;
-
-        public TranslationSettingsModificationTracker(@NotNull Project project) {
-            this.project = project;
-        }
-
-        @Override
-        public long getModificationCount() {
-            String pathToTranslation = Settings.getInstance(project).pathToTranslation;
-            if (StringUtils.isBlank(pathToTranslation)) {
-                pathToTranslation = "";
-            }
-
-            int hash = pathToTranslation.hashCode();
-            if (hash != this.last) {
-                this.last = hash;
-                this.incModificationCount();
-            }
-
-            return super.getModificationCount();
-        }
-    }
-
-    @NotNull
-    private static Collection<File> getTranslationRootInner(@NotNull Project project) {
-        Collection<File> files = new HashSet<>();
-        Collection<String> filesAbsolute = new HashSet<>();
+    private static Collection<VirtualFile> findTranslationDirectories(@NotNull Project project) {
+        Collection<VirtualFile> files = new HashSet<>();
 
         VirtualFile projectDir = ProjectUtil.getProjectDir(project);
         if (projectDir != null) {
-            Collection<String> cachedValue = CachedValuesManager.getManager(project).getCachedValue(
-                project,
-                SYMFONY_GUESTED_TRANSLATION_DIRECTORIES,
-                () -> {
-                    Set<String> directories = new HashSet<>();
-                    Set<String> caches = new HashSet<>();
+            for (String root : new String[] {"var/cache", "app/cache"}) {
+                VirtualFile cache;
+                try {
+                    cache = VfsUtil.findRelativeFile(projectDir, root.split("/"));
+                } catch (InvalidVirtualFileAccessException ignored) {
+                    continue;
+                }
 
-                    for (String root : new String[] {"var/cache", "app/cache"}) {
-                        VirtualFile cache = null;
-                        try {
-                            cache = VfsUtil.findRelativeFile(projectDir, root.split("/"));
-                        } catch (InvalidVirtualFileAccessException ignored) {
-                            // "Accessing invalid virtual file"
-                        }
+                if (cache == null) {
+                    continue;
+                }
 
-                        if (cache == null) {
-                            continue;
-                        }
-
-                        caches.add(cache.getParent().getPath());
-
-                        for (VirtualFile child : cache.getChildren()) {
-                            String filename = child.getName();
-                            // support "dev" and "dev_*"
-                            if (!"dev".equals(filename) && !filename.startsWith("dev_")) {
-                                continue;
-                            }
-
-                            VirtualFile translations = child.findChild("translations");
-                            if (translations == null) {
-                                continue;
-                            }
-
-                            directories.add(translations.getPath());
-                        }
+                for (VirtualFile child : cache.getChildren()) {
+                    String filename = child.getName();
+                    // support "dev" and "dev_*"
+                    if (!"dev".equals(filename) && !filename.startsWith("dev_")) {
+                        continue;
                     }
 
-                    String translationPath = Settings.getInstance(project).pathToTranslation;
-                    if (StringUtils.isNotBlank(translationPath)) {
-                        if (!FileUtil.isAbsolute(translationPath)) {
-                            translationPath = project.getBasePath() + "/" + translationPath;
-                        }
-
-                        File file = new File(translationPath);
-                        if(file.exists() && file.isDirectory()) {
-                            directories.add(file.getPath());
-                        }
+                    VirtualFile translations = child.findChild("translations");
+                    if (translations == null) {
+                        continue;
                     }
 
-                    caches.addAll(directories);
+                    files.add(translations);
+                }
+            }
 
-                    return CachedValueProvider.Result.create(
-                        Collections.unmodifiableSet(directories),
-                        new TranslationSettingsModificationTracker(project),
-                        new AbsoluteFileModificationTracker(caches)
-                    );
-                },
-                false
-            );
+            String translationPath = Settings.getInstance(project).pathToTranslation;
+            if (StringUtils.isNotBlank(translationPath)) {
+                VirtualFile vf;
+                if (FileUtil.isAbsolute(translationPath)) {
+                    vf = VfsUtil.findFileByIoFile(new java.io.File(translationPath), false);
+                } else {
+                    vf = VfsUtil.findRelativeFile(projectDir, translationPath.replace('\\', '/').split("/"));
+                }
 
-            files.addAll(cachedValue.stream().map(File::new).collect(Collectors.toSet()));
-            filesAbsolute.addAll(cachedValue);
+                if (vf != null && vf.isDirectory()) {
+                    files.add(vf);
+                }
+            }
         }
 
         for (String containerFile : ServiceContainerUtil.getContainerFiles(project)) {
@@ -196,56 +122,16 @@ public class TranslationIndex {
 
             // get translation sub directory
             VirtualFile translations = cacheDirectory.findChild("translations");
-            if (translations != null && !filesAbsolute.contains(translations.getPath())) {
-                filesAbsolute.add(translations.getPath());
-                files.add(VfsUtilCore.virtualToIoFile(translations));
+            if (translations != null) {
+                files.add(translations);
             }
         }
 
         return files;
     }
 
-    private static class FileModificationModificationTracker extends SimpleModificationTracker {
-        @NotNull
-        private final Project project;
-        private long last = 0;
-
-        public FileModificationModificationTracker(@NotNull Project project) {
-            this.project = project;
-        }
-
-        @Override
-        public long getModificationCount() {
-            // Check both directory timestamps (for add/remove) and catalogue file timestamps (for content changes).
-            // VirtualFile.getTimeStamp() is cached in VFS - no filesystem I/O.
-            long hash = getTranslationRoot(this.project)
-                .stream()
-                .mapToLong(file -> {
-                    VirtualFile dir = VfsUtil.findFileByIoFile(file, false);
-                    if (dir == null || !dir.exists()) {
-                        return 0;
-                    }
-
-                    // directory timestamp covers structural changes (add/remove files)
-                    long dirHash = dir.getTimeStamp();
-
-                    // catalogue file timestamps cover content changes within existing files
-                    for (VirtualFile child : dir.getChildren()) {
-                        if (!child.isDirectory() && TranslationStringMap.isCatalogueFile(child.getName())) {
-                            dirHash += child.getTimeStamp();
-                        }
-                    }
-
-                    return dirHash;
-                })
-                .sum();
-
-            if (hash != this.last) {
-                this.last = hash;
-                this.incModificationCount();
-            }
-
-            return super.getModificationCount();
-        }
+    private static SimpleModificationTracker getTranslationsTracker(@NotNull Project project) {
+        return SymfonyVarDirectoryWatcherKt.getSymfonyVarDirectoryWatcher(project)
+            .getModificationTracker(SymfonyVarDirectoryWatcher.Scope.TRANSLATIONS);
     }
 }
