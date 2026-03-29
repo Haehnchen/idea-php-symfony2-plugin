@@ -290,7 +290,11 @@ public class ServiceContainerUtil {
     }
 
     @Nullable
-    private static String getStringValueIndexSafe(@NotNull PsiElement psiElement) {
+    private static String getStringValueIndexSafe(@Nullable PsiElement psiElement) {
+        if (psiElement == null) {
+            return null;
+        }
+
         String serviceClass = null;
         if (psiElement instanceof StringLiteralExpression) {
             serviceClass = normalizePhpStringValue(((StringLiteralExpression) psiElement).getContents());
@@ -918,7 +922,7 @@ public class ServiceContainerUtil {
                 continue;
             }
 
-            String scalarValue = PhpElementsUtil.getStringValue(value);
+            String scalarValue = getStringValueIndexSafe(value);
             if (StringUtils.isNotBlank(scalarValue) && scalarValue.startsWith("@") && scalarValue.length() > 1) {
                 services.add(serializableService.setAlias(scalarValue.substring(1)));
                 continue;
@@ -941,7 +945,7 @@ public class ServiceContainerUtil {
             return createPhpArrayServiceAttributeValueMap(arrayCreationExpression);
         }
 
-        String scalarValue = PhpElementsUtil.getStringValue(value);
+        String scalarValue = getStringValueIndexSafe(value);
         if (StringUtils.isBlank(scalarValue)) {
             return Collections.emptyMap();
         }
@@ -996,7 +1000,8 @@ public class ServiceContainerUtil {
 
     @Nullable
     private static String getPhpArrayValueString(@NotNull ArrayCreationExpression arrayCreationExpression, @NotNull String key) {
-        return normalizePhpStringValue(PhpElementsUtil.getStringValue(PhpElementsUtil.getArrayValue(arrayCreationExpression, key)));
+        PhpPsiElement value = PhpElementsUtil.getArrayValue(arrayCreationExpression, key);
+        return value != null ? normalizePhpStringValue(getStringValueIndexSafe(value)) : null;
     }
 
     @Nullable
@@ -1011,10 +1016,17 @@ public class ServiceContainerUtil {
     @NotNull
     private static Collection<String> getPhpArrayStringValues(@Nullable PsiElement psiElement) {
         if (psiElement instanceof ArrayCreationExpression arrayCreationExpression) {
-            return new HashSet<>(PhpElementsUtil.getArrayValuesAsString(arrayCreationExpression));
+            Collection<String> values = new HashSet<>();
+            for (PsiElement value : PhpElementsUtil.getArrayValues(arrayCreationExpression)) {
+                String stringValue = getStringValueIndexSafe(value);
+                if (StringUtils.isNotBlank(stringValue)) {
+                    values.add(stringValue);
+                }
+            }
+            return values;
         }
 
-        String value = PhpElementsUtil.getStringValue(psiElement);
+        String value = getStringValueIndexSafe(psiElement);
         if (StringUtils.isBlank(value)) {
             return new HashSet<>();
         }
@@ -1039,7 +1051,7 @@ public class ServiceContainerUtil {
                 continue;
             }
 
-            String tag = PhpElementsUtil.getStringValue(tagElement);
+            String tag = getStringValueIndexSafe(tagElement);
             if (StringUtils.isNotBlank(tag)) {
                 tags.add(tag);
             }
