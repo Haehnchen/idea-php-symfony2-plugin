@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.translation.parser;
 
+import com.intellij.openapi.vfs.VfsUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
 
@@ -16,7 +17,9 @@ public class TranslationPsiParserTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public void testCompiledTranslationParser() {
-        TranslationStringMap translationStringMap = TranslationStringMap.create(List.of(new File(getTestDataPath())));
+        TranslationStringMap translationStringMap = TranslationStringMap.create(List.of(
+            VfsUtil.findFileByIoFile(new File(getTestDataPath()), true)
+        ));
 
         assertTrue(!translationStringMap.getDomainMap("security").isEmpty());
 
@@ -31,7 +34,9 @@ public class TranslationPsiParserTest extends SymfonyLightCodeInsightFixtureTest
 
     public void testCompiledTranslationParserOnBackgroundThread() throws Exception {
         TranslationStringMap translationStringMap = CompletableFuture
-            .supplyAsync(() -> TranslationStringMap.create(List.of(new File(getTestDataPath()))))
+            .supplyAsync(() -> TranslationStringMap.create(List.of(
+                VfsUtil.findFileByIoFile(new File(getTestDataPath()), true)
+            )))
             .get();
 
         assertNotNull(translationStringMap.getDomainMap("validators"));
