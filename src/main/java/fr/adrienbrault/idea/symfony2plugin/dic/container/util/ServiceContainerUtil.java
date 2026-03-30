@@ -27,6 +27,7 @@ import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.stubs.indexes.PhpClassFqnIndex;
 import com.jetbrains.php.refactoring.PhpNamespaceBraceConverter;
+import fr.adrienbrault.idea.symfony2plugin.config.php.PhpArrayServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.AttributeValueInterface;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.PhpKeyValueAttributeValue;
@@ -529,7 +530,7 @@ public class ServiceContainerUtil {
      * Returns "parameters", "services", or null when the origin cannot be determined.
      */
     @Nullable
-    private static String getFluentConfiguratorType(@Nullable PsiElement psiElement, @NotNull Set<PsiElement> visited) {
+    static String getFluentConfiguratorType(@Nullable PsiElement psiElement, @NotNull Set<PsiElement> visited) {
         // Guard against incomplete PSI and cyclic variable resolution.
         if (psiElement == null || !visited.add(psiElement)) {
             return null;
@@ -1181,6 +1182,202 @@ public class ServiceContainerUtil {
             }
         }
 
+        return null;
+    }
+
+    /**
+     * PHP array service config constructor argument type hint:
+     *
+     * 'Foo\Bar\Car' => [
+     *     'arguments' => [service('<caret>')]
+     *     'arguments' => ['$apple' => service('<caret>')]
+     *     'arguments' => ['@<caret>']
+     * ]
+     */
+    @Nullable
+    public static ServiceTypeHint getPhpArrayConstructorTypeHint(
+        @NotNull PsiElement psiElement,
+        @NotNull ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector
+    ) {
+        PsiElement element = psiElement instanceof StringLiteralExpression
+            ? psiElement
+            : psiElement.getParent() instanceof StringLiteralExpression ? psiElement.getParent() : null;
+        if (element == null) {
+            return null;
+        }
+
+        // Determine the element to pass to isInsidePhpArrayServiceConfig / getKeyPath.
+        // For service('...') / ref('...') calls the StringLiteralExpression is nested inside a FunctionReference
+        // which is the direct array value. For raw '@foo' strings the element itself is the direct array value.
+        FunctionReference funcRef = PsiTreeUtil.getParentOfType(element, FunctionReference.class);
+        String funcName = funcRef != null ? funcRef.getName() : null;
+        boolean isServiceCall = "service".equals(funcName) || "ref".equals(funcName);
+        PsiElement lookupElement = isServiceCall ? funcRef : element;
+
+        if (!PhpArrayServiceUtil.isInsidePhpArrayServiceConfig(lookupElement)) {
+            return null;
+        }
+
+        PhpArrayServiceUtil.ServiceConfigPath keyPath = PhpArrayServiceUtil.getKeyPath(lookupElement);
+        if (keyPath == null) {
+            return null;
+        }
+
+        String[] segments = keyPath.segments();
+        if (segments.length < 2 || !"arguments".equals(segments[0])) {
+            return null;
+        }
+
+        String serviceClass = PhpArrayServiceUtil.getCurrentServiceClass(lookupElement);
+        if (StringUtils.isBlank(serviceClass)) {
+            return null;
+        }
+
+        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(lookupElement.getProject(), serviceClass, lazyServiceCollector);
+        if (phpClass == null) {
+            return null;
+        }
+
+        Method constructor = phpClass.getConstructor();
+        if (constructor == null) {
+            return null;
+        }
+
+        int parameterIndex = getPhpArrayConstructorArgumentIndex(segments[1], constructor);
+        if (parameterIndex < 0) {
+            return null;
+        }
+
+        return new ServiceTypeHint(constructor, parameterIndex, element);
+    }
+
+    private static int getPhpArrayConstructorArgumentIndex(@NotNull String segment, @NotNull Method constructor) {
+        if (segment.startsWith("$") && segment.length() > 1) {
+            return PhpElementsUtil.getFunctionArgumentByName(constructor, StringUtils.stripStart(segment, "$"));
+        }
+
+        try {
+            return Integer.parseInt(segment);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
+    /**
+     * PHP fluent service config constructor argument type hint:
+     *
+     * $container->services()
+     *     ->set('foo', Foo\Bar\Car::class)
+     *     ->args([service('<caret>')])
+     */
+    @Nullable
+    public static ServiceTypeHint getPhpFluentConstructorTypeHint(
+        @NotNull PsiElement psiElement,
+        @NotNull ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector
+    ) {
+        PsiElement element = psiElement instanceof StringLiteralExpression
+            ? psiElement
+            : psiElement.getParent() instanceof StringLiteralExpression ? psiElement.getParent() : null;
+        if (element == null) {
+            return null;
+        }
+
+        // Must be inside service() or ref() call
+        PsiElement functionParameterList = element.getParent();
+        if (!(functionParameterList instanceof ParameterList)) {
+            return null;
+        }
+
+        PsiElement functionReference = functionParameterList.getParent();
+        if (!(functionReference instanceof FunctionReference)) {
+            return null;
+        }
+
+        String functionName = ((FunctionReference) functionReference).getName();
+        if (!"service".equals(functionName) && !"ref".equals(functionName)) {
+            return null;
+        }
+
+        // The FunctionReference must be inside an ArrayCreationExpression (the args array)
+        PsiElement arrayValueWrapper = functionReference.getParent();
+        PsiElement argsArrayCandidate = (arrayValueWrapper != null) ? arrayValueWrapper.getParent() : null;
+        if (!(argsArrayCandidate instanceof ArrayCreationExpression argsArray)) {
+            return null;
+        }
+
+        // The array must be the first argument of ->args(...)
+        PsiElement argsParameterList = argsArray.getParent();
+        if (!(argsParameterList instanceof ParameterList)) {
+            return null;
+        }
+
+        PsiElement argsMethodRef = argsParameterList.getParent();
+        if (!(argsMethodRef instanceof MethodReference argsMethod) || !"args".equals(argsMethod.getName())) {
+            return null;
+        }
+
+        // Verify the chain resolves to services(), not parameters()
+        if ("parameters".equals(getFluentConfiguratorType(argsMethod.getClassReference(), new HashSet<>()))) {
+            return null;
+        }
+
+        // Walk the chain to find the ->set(...) call
+        MethodReference setMethod = getFluentSetMethodForArgs(argsMethod);
+        if (setMethod == null) {
+            return null;
+        }
+
+        String serviceClass = getFluentServiceClassFromSet(setMethod);
+        if (StringUtils.isBlank(serviceClass)) {
+            return null;
+        }
+
+        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(element.getProject(), serviceClass, lazyServiceCollector);
+        if (phpClass == null) {
+            return null;
+        }
+
+        Method constructor = phpClass.getConstructor();
+        if (constructor == null) {
+            return null;
+        }
+
+        int parameterIndex = getFluentArgsArrayIndex(argsArray, functionReference);
+        return new ServiceTypeHint(constructor, parameterIndex, element);
+    }
+
+    @Nullable
+    private static MethodReference getFluentSetMethodForArgs(@NotNull MethodReference argsMethod) {
+        PsiElement current = argsMethod.getClassReference();
+        while (current instanceof MethodReference methodRef) {
+            if ("set".equals(methodRef.getName())) {
+                return methodRef;
+            }
+            current = methodRef.getClassReference();
+        }
+        return null;
+    }
+
+    private static int getFluentArgsArrayIndex(
+        @NotNull ArrayCreationExpression argsArray,
+        @NotNull PsiElement valueElement
+    ) {
+        PsiElement[] values = PhpElementsUtil.getArrayValues(argsArray);
+        for (int i = 0; i < values.length; i++) {
+            PsiElement val = values[i];
+            if (PsiTreeUtil.isAncestor(val, valueElement, false) || val == valueElement) {
+                return i;
+            }
+        }
+        return 0;
+    }
+
+    @Nullable
+    private static String getFluentServiceClassFromSet(@NotNull MethodReference setMethod) {
+        PsiElement[] params = setMethod.getParameters();
+        if (params.length >= 2) {
+            return PhpArrayServiceUtil.getPsiValue(params[1]);
+        }
         return null;
     }
 

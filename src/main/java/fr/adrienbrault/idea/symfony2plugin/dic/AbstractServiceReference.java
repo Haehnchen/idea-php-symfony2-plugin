@@ -80,7 +80,7 @@ abstract public class AbstractServiceReference extends PsiPolyVariantReferenceBa
             values = ContainerUtil.filter(values, service -> !service.isPrivate());
         }
 
-        List<LookupElement> results = new ArrayList<>(ServiceCompletionProvider.getLookupElements(null, values).getLookupElements());
+        List<LookupElement> results = new ArrayList<>(ServiceCompletionProvider.getLookupElements(getElement(), values).getLookupElements());
         return results.toArray();
     }
 }
