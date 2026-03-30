@@ -1,12 +1,15 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
+import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceSerializable;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.SerializableServiceExternalizer;
@@ -14,9 +17,9 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.inputFilter.FileInputFi
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -82,7 +85,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
 
     @Override
     public int getVersion() {
-        return 9;
+        return 10;
     }
 
     public static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {
@@ -105,10 +108,26 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
             return false;
         }
 
-        // dont add configured service paths
-        Collection<File> settingsServiceFiles = Symfony2ProjectComponent.getContainerFiles(psiFile.getProject());
-        for(File file: settingsServiceFiles) {
-            if(VfsUtil.isAncestor(VfsUtil.virtualToIoFile(inputData.getFile()), file, false)) {
+        // exclude settings-configured service container paths (lightweight path comparison, no VFS lookups)
+        List<ContainerFile> settingsContainerFiles = Settings.getInstance(psiFile.getProject()).containerFiles;
+        if (settingsContainerFiles != null) {
+            String inputPath = FileUtil.toSystemIndependentName(inputData.getFile().getPath());
+            String inputRelativePath = relativePath != null ? FileUtil.toSystemIndependentName(relativePath) : null;
+            for (ContainerFile containerFile : settingsContainerFiles) {
+                String path = containerFile.getPath();
+                if (path != null) {
+                    String normalizedPath = FileUtil.toSystemIndependentName(path);
+                    if (FileUtil.pathsEqual(inputPath, normalizedPath) || (inputRelativePath != null && FileUtil.pathsEqual(inputRelativePath, normalizedPath))) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        // exclude XML files in var/cache and app/cache directories
+        if (relativePath != null && extension.equalsIgnoreCase("xml")) {
+            String lowerPath = FileUtil.toSystemIndependentName(relativePath).toLowerCase(Locale.ROOT);
+            if (lowerPath.startsWith("var/cache/") || lowerPath.startsWith("app/cache/")) {
                 return false;
             }
         }
