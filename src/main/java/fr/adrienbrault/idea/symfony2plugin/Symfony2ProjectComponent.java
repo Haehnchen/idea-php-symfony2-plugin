@@ -11,8 +11,6 @@ import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtension;
-import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoader;
-import fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoaderParameter;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyVarDirectoryWatcherKt;
@@ -24,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
@@ -58,7 +57,6 @@ public class Symfony2ProjectComponent {
     }
 
     final private static Logger LOG = Logger.getInstance("Symfony-Plugin");
-    private static final ExtensionPointName<ServiceContainerLoader> SERVICE_CONTAINER_POINT_NAME = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.ServiceContainerLoader");
     public static final ExtensionPointName<PluginConfigurationExtension> PLUGIN_CONFIGURATION_EXTENSION = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtension");
 
     public static Logger getLogger() {
@@ -68,9 +66,11 @@ public class Symfony2ProjectComponent {
     public static Collection<File> getContainerFiles(@NotNull Project project) {
         Collection<ContainerFile> containerFiles = new ArrayList<>();
 
-        ServiceContainerLoaderParameter containerLoaderExtensionParameter = new ServiceContainerLoaderParameter(project, containerFiles);
-        for(ServiceContainerLoader loaderExtension : SERVICE_CONTAINER_POINT_NAME.getExtensions()) {
-            loaderExtension.attachContainerFile(containerLoaderExtensionParameter);
+        List<ContainerFile> settingsContainerFiles = Settings.getInstance(project).containerFiles;
+        if (settingsContainerFiles != null) {
+            containerFiles.addAll(settingsContainerFiles.stream()
+                .filter(containerFile -> containerFile.getPath() != null)
+                .toList());
         }
 
         if(containerFiles.isEmpty()) {

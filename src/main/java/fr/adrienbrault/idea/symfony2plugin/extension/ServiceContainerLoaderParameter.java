@@ -7,7 +7,9 @@ import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
+ * @deprecated Extension point removed
  */
+@Deprecated
 public class ServiceContainerLoaderParameter {
 
     private final Collection<ContainerFile> containerFiles;
