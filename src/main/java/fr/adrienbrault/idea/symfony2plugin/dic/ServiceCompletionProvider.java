@@ -26,6 +26,8 @@ public class ServiceCompletionProvider extends CompletionProvider<CompletionPara
         new YamlConstructServiceSuggestionCollector(),
         new XmlCallServiceSuggestionCollector(),
         new PhpAttributeServiceSuggestionCollector(),
+        new PhpArrayArgumentServiceSuggestionCollector(),
+        new PhpFluentArgumentServiceSuggestionCollector(),
     };
 
     public void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet resultSet) {
