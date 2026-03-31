@@ -525,7 +525,7 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
             return Collections.emptyList();
         }
 
-        return new ArrayList<>(FileResourceUtil.getFileResourceTargetsInDirectoryScope(containingFile, text));
+        return new ArrayList<>(FileResourceUtil.getFileResourceTargets(psiElement.getProject(), containingFile, text));
     }
 
     /**

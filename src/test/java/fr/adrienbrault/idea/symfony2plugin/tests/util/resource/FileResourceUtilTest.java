@@ -1,7 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.util.resource;
 
 import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.util.containers.ContainerUtil;
@@ -11,6 +13,10 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 
 /**
@@ -123,6 +129,50 @@ public class FileResourceUtilTest extends SymfonyLightCodeInsightFixtureTestCase
         assertNotNull(FileResourceUtil.getFileImplementsLineMarker(PsiElementUtils.virtualFileToPsiFile(getProject(), virtualFile)));
     }
 
+    public void testGetFileResourceTargetsForYamlGlob() throws IOException {
+        Path root = Files.createTempDirectory("symfony-resource-yaml");
+
+        createLocalFile(root.resolve("config/packages/config.yaml"), "imports:\n  - { resource: './legacy_*.yaml' }\n");
+        createLocalFile(root.resolve("config/packages/legacy_one.yaml"), "imports: []\n");
+        createLocalFile(root.resolve("config/packages/legacy_two.yaml"), "imports: []\n");
+
+        PsiFile configFile = getPsiFile(root.resolve("config/packages/config.yaml"));
+        assertNotNull(configFile);
+
+        assertTrue(FileResourceUtil.hasFileResourceTargets(getProject(), configFile, "./legacy_*.yaml"));
+
+        Collection<PsiElement> targets = FileResourceUtil.getFileResourceTargets(getProject(), configFile, "./legacy_*.yaml");
+        assertTrue(targets.stream().anyMatch(psiElement -> psiElement instanceof PsiFile psiFile && "legacy_one.yaml".equals(psiFile.getName())));
+    }
+
+    public void testGetFileResourceTargetsForPhpGlob() throws IOException {
+        Path root = Files.createTempDirectory("symfony-resource-php");
+
+        createLocalFile(root.resolve("config/packages/config.php"), "<?php return [];\n");
+        createLocalFile(root.resolve("config/packages/legacy_config_one.php"), "<?php return [];\n");
+        createLocalFile(root.resolve("config/packages/legacy_config_two.php"), "<?php return [];\n");
+
+        PsiFile configFile = getPsiFile(root.resolve("config/packages/config.php"));
+        assertNotNull(configFile);
+
+        assertTrue(FileResourceUtil.hasFileResourceTargets(getProject(), configFile, "./legacy_config_*.php"));
+
+        Collection<PsiElement> targets = FileResourceUtil.getFileResourceTargets(getProject(), configFile, "./legacy_config_*.php");
+        assertTrue(targets.stream().anyMatch(psiElement -> psiElement instanceof PsiFile psiFile && "legacy_config_one.php".equals(psiFile.getName())));
+    }
+
+    public void testHasFileResourceTargetsForMissingGlob() throws IOException {
+        Path root = Files.createTempDirectory("symfony-resource-missing");
+
+        createLocalFile(root.resolve("config/packages/config.yaml"), "imports:\n  - { resource: './legacy_*.yaml' }\n");
+
+        PsiFile configFile = getPsiFile(root.resolve("config/packages/config.yaml"));
+        assertNotNull(configFile);
+
+        assertFalse(FileResourceUtil.hasFileResourceTargets(getProject(), configFile, "./legacy_*.yaml"));
+        assertTrue(FileResourceUtil.getFileResourceTargets(getProject(), configFile, "./legacy_*.yaml").isEmpty());
+    }
+
     private void createBundleScopeProject() {
         myFixture.copyFileToProject("classes.php");
         myFixture.configureByText("target.xml", "" +
@@ -130,5 +180,20 @@ public class FileResourceUtilTest extends SymfonyLightCodeInsightFixtureTestCase
             "    <import resource=\"@FooBundle/foo.xml\" />\n" +
             "</routes>"
         );
+    }
+
+    private void createLocalFile(@NotNull Path path, @NotNull String content) throws IOException {
+        Files.createDirectories(path.getParent());
+        Files.writeString(path, content, StandardCharsets.UTF_8);
+    }
+
+    private PsiFile getPsiFile(@NotNull Path path) {
+        VirtualFile virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByNioFile(path);
+        assertNotNull(virtualFile);
+
+        PsiFile psiFile = PsiManager.getInstance(getProject()).findFile(virtualFile);
+        assertNotNull(psiFile);
+
+        return psiFile;
     }
 }

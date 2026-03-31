@@ -340,6 +340,63 @@ public class FileResourceUtil {
         return psiFiles;
     }
 
+    /**
+     * Resolves a "resource" path to its target PSI elements (files, classes, directories).
+     * Supports bundle scope ("@Bundle/..."), glob patterns ("../src/*.php"), and relative paths.
+     */
+    @NotNull
+    public static Collection<PsiElement> getFileResourceTargets(@NotNull Project project, @NotNull PsiFile containingFile, @NotNull String resourcePath) {
+        if (StringUtils.isBlank(resourcePath)) {
+            return Collections.emptyList();
+        }
+
+        Collection<PsiElement> targets = new HashSet<>();
+
+        if (Arrays.stream(GLOB_DETECTION_CHARS).anyMatch(resourcePath::contains)) {
+            VirtualFile containingVirtualFile = containingFile.getVirtualFile();
+            if (containingVirtualFile != null) {
+                targets.addAll(PsiElementUtils.convertVirtualFilesToPsiFiles(project, getFilesForResources(project, containingVirtualFile, resourcePath)));
+            }
+        } else {
+            targets.addAll(getFileResourceTargetsInDirectoryScope(containingFile, resourcePath));
+        }
+
+        if (resourcePath.startsWith("@")) {
+            targets.addAll(getFileResourceTargetsInBundleScope(project, resourcePath));
+
+            if (targets.isEmpty()) {
+                targets.addAll(getFileResourceTargetsInBundleDirectory(project, resourcePath));
+            }
+        }
+
+        return targets;
+    }
+
+    /**
+     * Fast path check whether a "resource" path resolves to any targets,
+     * without collecting the full result set.
+     */
+    public static boolean hasFileResourceTargets(@NotNull Project project, @NotNull PsiFile containingFile, @NotNull String resourcePath) {
+        if (StringUtils.isBlank(resourcePath)) {
+            return false;
+        }
+
+        if (resourcePath.startsWith("@")) {
+            if (!getFileResourceTargetsInBundleScope(project, resourcePath).isEmpty()) {
+                return true;
+            }
+
+            return !getFileResourceTargetsInBundleDirectory(project, resourcePath).isEmpty();
+        }
+
+        if (Arrays.stream(GLOB_DETECTION_CHARS).anyMatch(resourcePath::contains)) {
+            VirtualFile containingVirtualFile = containingFile.getVirtualFile();
+            return containingVirtualFile != null && !getFilesForResources(project, containingVirtualFile, resourcePath).isEmpty();
+        }
+
+        return !getFileResourceTargetsInDirectoryScope(containingFile, resourcePath).isEmpty();
+    }
+
     private record FileResourceNotNullLazyValue(Project project, VirtualFile virtualFile) implements Supplier<Collection<? extends PsiElement>> {
         private FileResourceNotNullLazyValue(@NotNull Project project, @NotNull VirtualFile virtualFile) {
             this.project = project;

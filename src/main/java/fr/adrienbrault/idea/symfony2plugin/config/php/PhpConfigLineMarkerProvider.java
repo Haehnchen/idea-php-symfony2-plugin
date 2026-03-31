@@ -4,12 +4,14 @@ import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.ConfigLineMarkerUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -77,8 +79,7 @@ public class PhpConfigLineMarkerProvider implements LineMarkerProvider {
             } else if (PhpConfigUtil.isImportResourceValue(stringLiteral)) {
                 String resourcePath = stringLiteral.getContents();
 
-                Collection<PsiElement> targets = ConfigLineMarkerUtil.resolveResourceTargets(project, stringLiteral.getContainingFile(), resourcePath);
-                if (targets.isEmpty()) {
+                if (!FileResourceUtil.hasFileResourceTargets(project, stringLiteral.getContainingFile(), resourcePath)) {
                     continue;
                 }
 
@@ -88,7 +89,7 @@ public class PhpConfigLineMarkerProvider implements LineMarkerProvider {
                 }
 
                 result.add(NavigationGutterIconBuilder.create(Symfony2Icons.SYMFONY_LINE_MARKER)
-                    .setTargets(targets)
+                    .setTargets(NotNullLazyValue.lazy(() -> FileResourceUtil.getFileResourceTargets(project, stringLiteral.getContainingFile(), resourcePath)))
                     .setTooltipText("Navigate to resource")
                     .createLineMarkerInfo(leafTarget));
             }

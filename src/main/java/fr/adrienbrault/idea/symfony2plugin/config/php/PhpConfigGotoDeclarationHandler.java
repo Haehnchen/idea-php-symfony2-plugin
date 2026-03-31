@@ -8,13 +8,11 @@ import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.utils.ConfigUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Collection;
 
 /**
  * Provides Ctrl+Click navigation for root config keys in PHP config files.
- *
  * Navigates from: {@code 'framework' => [...]} to the corresponding PHP configuration class.
  *
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -29,7 +27,7 @@ public class PhpConfigGotoDeclarationHandler implements GotoDeclarationHandler {
             return null;
         }
 
-        PsiElement parent = psiElement.getContext();
+        var parent = psiElement.getContext();
         if (!(parent instanceof StringLiteralExpression stringLiteral)) {
             return null;
         }
@@ -43,13 +41,17 @@ public class PhpConfigGotoDeclarationHandler implements GotoDeclarationHandler {
             return null;
         }
 
-        Collection<PsiElement> targets = ConfigUtil.getTreeSignatureTargets(psiElement.getProject(), key);
-        return targets.isEmpty() ? null : targets.toArray(PsiElement.EMPTY_ARRAY);
+        var targets = ConfigUtil.getTreeSignatureTargets(psiElement.getProject(), key);
+        if (targets.isEmpty()) {
+            return null;
+        }
+
+        return targets.toArray(PsiElement.EMPTY_ARRAY);
     }
 
     @Nullable
     @Override
-    public String getActionText(DataContext context) {
+    public String getActionText(@NotNull DataContext context) {
         return null;
     }
 }
