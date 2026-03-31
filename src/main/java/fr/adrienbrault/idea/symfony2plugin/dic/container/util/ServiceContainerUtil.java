@@ -28,6 +28,7 @@ import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.stubs.indexes.PhpClassFqnIndex;
 import com.jetbrains.php.refactoring.PhpNamespaceBraceConverter;
 import fr.adrienbrault.idea.symfony2plugin.config.php.PhpArrayServiceUtil;
+import fr.adrienbrault.idea.symfony2plugin.config.php.PhpConfigPsiUtil;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.AttributeValueInterface;
 import fr.adrienbrault.idea.symfony2plugin.dic.attribute.value.PhpKeyValueAttributeValue;
@@ -54,8 +55,6 @@ import org.jetbrains.yaml.psi.*;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -788,7 +787,7 @@ public class ServiceContainerUtil {
             return arrayCreationExpression;
         }
 
-        if (!(psiElement instanceof MethodReference methodReference) || !isConfigFactoryCall(methodReference)) {
+        if (!(psiElement instanceof MethodReference methodReference) || !PhpConfigPsiUtil.isConfigFactoryCall(methodReference)) {
             return null;
         }
 
@@ -798,25 +797,6 @@ public class ServiceContainerUtil {
         }
 
         return arrayCreationExpression;
-    }
-
-    private static boolean isConfigFactoryCall(@NotNull MethodReference methodReference) {
-        if (!"config".equals(methodReference.getName())) {
-            return false;
-        }
-
-        PhpExpression classReference = methodReference.getClassReference();
-        if (classReference == null) {
-            return false;
-        }
-
-        PsiElement resolved = classReference.getReference() != null ? classReference.getReference().resolve() : null;
-        if (resolved instanceof PhpClass phpClass) {
-            return CONTAINER_CONFIG_APP.equals(phpClass.getFQN());
-        }
-
-        String text = StringUtils.stripStart(classReference.getText(), "\\");
-        return "App".equals(text) || CONTAINER_CONFIG_APP.substring(1).equals(text);
     }
 
     @Nullable

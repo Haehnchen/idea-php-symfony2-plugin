@@ -320,6 +320,7 @@
         <codeInsight.lineMarkerProvider language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.linemarker.XmlLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.linemarker.YamlLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.ConfigLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.php.PhpConfigLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.DoctrineMetadataLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.form.PhpLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.util.PhpSerializerLineMarkerProvider"/>

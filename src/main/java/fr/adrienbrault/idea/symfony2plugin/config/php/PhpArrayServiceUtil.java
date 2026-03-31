@@ -2,18 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.config.php;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.jetbrains.php.lang.psi.PhpFile;
-import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression;
-import com.jetbrains.php.lang.psi.elements.ArrayHashElement;
-import com.jetbrains.php.lang.psi.elements.ClassConstantReference;
-import com.jetbrains.php.lang.psi.elements.Function;
-import com.jetbrains.php.lang.psi.elements.MethodReference;
-import com.jetbrains.php.lang.psi.elements.ParameterList;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.PhpExpression;
-import com.jetbrains.php.lang.psi.elements.PhpReturn;
-import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
-import com.jetbrains.php.refactoring.PhpNamespaceBraceConverter;
+import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -63,7 +52,7 @@ public final class PhpArrayServiceUtil {
      * Checks whether a PSI element is the key of a service entry under `services`.
      */
     public static boolean isServiceKey(@NotNull PsiElement keyElement) {
-        PsiElement parentScope = getImmediateArrayScope(keyElement);
+        PsiElement parentScope = PhpConfigPsiUtil.getImmediateArrayScope(keyElement);
         if (!(parentScope instanceof ArrayHashElement serviceEntry)) {
             return false;
         }
@@ -81,7 +70,7 @@ public final class PhpArrayServiceUtil {
             return null;
         }
 
-        PsiElement parentScope = getImmediateArrayScope(attributeEntry);
+        PsiElement parentScope = PhpConfigPsiUtil.getImmediateArrayScope(attributeEntry);
         if (!(parentScope instanceof ArrayCreationExpression serviceDefinition)) {
             return null;
         }
@@ -132,7 +121,7 @@ public final class PhpArrayServiceUtil {
                 break;
             }
 
-            PsiElement parentScope = getImmediateArrayScope(arrayHashElement);
+            PsiElement parentScope = PhpConfigPsiUtil.getImmediateArrayScope(arrayHashElement);
             if (!(parentScope instanceof ArrayCreationExpression arrayCreationExpression)) {
                 return null;
             }
@@ -182,7 +171,7 @@ public final class PhpArrayServiceUtil {
                 return arrayHashElement;
             }
 
-            PsiElement parentScope = getImmediateArrayScope(arrayHashElement);
+            PsiElement parentScope = PhpConfigPsiUtil.getImmediateArrayScope(arrayHashElement);
             if (!(parentScope instanceof ArrayCreationExpression arrayCreationExpression)) {
                 return null;
             }
@@ -308,12 +297,12 @@ public final class PhpArrayServiceUtil {
      * Checks whether a hash element is a direct child of the top-level services entry.
      */
     private static boolean isServiceEntry(@NotNull ArrayHashElement serviceEntry) {
-        PsiElement parent = getImmediateArrayScope(serviceEntry);
+        PsiElement parent = PhpConfigPsiUtil.getImmediateArrayScope(serviceEntry);
         if (!(parent instanceof ArrayCreationExpression servicesArray)) {
             return false;
         }
 
-        PsiElement serviceParent = getImmediateArrayScope(servicesArray);
+        PsiElement serviceParent = PhpConfigPsiUtil.getImmediateArrayScope(servicesArray);
         if (!(serviceParent instanceof ArrayHashElement servicesEntry)) {
             return false;
         }
@@ -331,73 +320,12 @@ public final class PhpArrayServiceUtil {
      * - App::config(['services' => [...]])
      */
     private static boolean isInsideAcceptedPhpConfigArray(@NotNull ArrayHashElement servicesEntry) {
-        PsiElement arrayParent = getImmediateArrayScope(servicesEntry);
+        PsiElement arrayParent = PhpConfigPsiUtil.getImmediateArrayScope(servicesEntry);
         if (!(arrayParent instanceof ArrayCreationExpression configArray)) {
             return false;
         }
 
-        PsiElement parent = configArray.getParent();
-
-        // App::config(['services' => [...]])
-        if (parent instanceof ParameterList parameterList && parameterList.getParent() instanceof MethodReference methodReference) {
-            return isConfigFactoryCall(methodReference);
-        }
-
-        // return ['services' => [...]]
-        if (parent instanceof PhpReturn phpReturn) {
-            return isAllowedPhpReturn(phpReturn);
-        }
-
-        return false;
-    }
-
-    /**
-     * Allows top-level returns and configurator-namespace function returns only.
-     */
-    private static boolean isAllowedPhpReturn(@NotNull PhpReturn phpReturn) {
-        Function function = PsiTreeUtil.getParentOfType(phpReturn, Function.class);
-        if (function == null) {
-            return true;
-        }
-
-        if (PsiTreeUtil.getParentOfType(phpReturn, PhpClass.class) != null) {
-            return false;
-        }
-
-        PsiElement containingFile = phpReturn.getContainingFile();
-        if (!(containingFile instanceof PhpFile phpFile)) {
-            return false;
-        }
-
-        String namespaceName = PhpNamespaceBraceConverter.getAllNamespaces(phpFile).stream()
-            .filter(phpNamespace -> PsiTreeUtil.isAncestor(phpNamespace, phpReturn, false))
-            .map(phpNamespace -> StringUtils.stripStart(phpNamespace.getFQN(), "\\"))
-            .findFirst()
-            .orElse("");
-
-        return namespaceName.isEmpty() || ServiceContainerUtil.CONTAINER_CONFIGURATOR.substring(1).startsWith(namespaceName);
-    }
-
-    /**
-     * Matches App::config([...]) factory calls used by PHP DIC config files.
-     */
-    private static boolean isConfigFactoryCall(@NotNull MethodReference methodReference) {
-        if (!"config".equals(methodReference.getName())) {
-            return false;
-        }
-
-        PhpExpression classReference = methodReference.getClassReference();
-        if (classReference == null) {
-            return false;
-        }
-
-        PsiElement resolved = classReference.getReference() != null ? classReference.getReference().resolve() : null;
-        if (resolved instanceof PhpClass phpClass) {
-            return ServiceContainerUtil.CONTAINER_CONFIG_APP.equals(phpClass.getFQN());
-        }
-
-        String text = StringUtils.stripStart(classReference.getText(), "\\");
-        return "App".equals(text) || ServiceContainerUtil.CONTAINER_CONFIG_APP.substring(1).equals(text);
+        return PhpConfigUtil.isAcceptedConfigRootArray(configArray);
     }
 
     /**
@@ -444,7 +372,7 @@ public final class PhpArrayServiceUtil {
      */
     @Nullable
     private static ArrayCreationExpression getParentArrayForValue(@NotNull PsiElement element) {
-        PsiElement parentScope = getImmediateArrayScope(element);
+        PsiElement parentScope = PhpConfigPsiUtil.getImmediateArrayScope(element);
         if (!(parentScope instanceof ArrayCreationExpression arrayCreationExpression)) {
             return null;
         }
@@ -463,7 +391,7 @@ public final class PhpArrayServiceUtil {
      */
     @Nullable
     private static ArrayHashElement getDirectArrayHashElement(@NotNull PsiElement element) {
-        PsiElement parentScope = getImmediateArrayScope(element);
+        PsiElement parentScope = PhpConfigPsiUtil.getImmediateArrayScope(element);
         if (!(parentScope instanceof ArrayHashElement arrayHashElement)) {
             return null;
         }
@@ -471,22 +399,5 @@ public final class PhpArrayServiceUtil {
         return arrayHashElement.getValue() != null && PsiTreeUtil.isAncestor(arrayHashElement.getValue(), element, false)
             ? arrayHashElement
             : null;
-    }
-
-    /**
-     * Steps to the next explicit array scope: keyed entry or positional array.
-     */
-    @Nullable
-    private static PsiElement getImmediateArrayScope(@NotNull PsiElement element) {
-        PsiElement parent = element.getParent();
-        while (parent != null) {
-            if (parent instanceof ArrayHashElement || parent instanceof ArrayCreationExpression) {
-                return parent;
-            }
-
-            parent = parent.getParent();
-        }
-
-        return null;
     }
 }
