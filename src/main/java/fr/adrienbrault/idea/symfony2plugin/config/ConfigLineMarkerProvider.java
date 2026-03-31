@@ -4,12 +4,14 @@ import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -99,13 +101,12 @@ public class ConfigLineMarkerProvider implements LineMarkerProvider {
     private void visitResourceValue(@NotNull Project project, @NotNull Collection<? super LineMarkerInfo<?>> result, @NotNull PsiElement psiElement) {
         String resourcePath = PsiElementUtils.trimQuote(psiElement.getText());
 
-        Collection<PsiElement> targets = ConfigLineMarkerUtil.resolveResourceTargets(project, psiElement.getContainingFile(), resourcePath);
-        if (targets.isEmpty()) {
+        if (!FileResourceUtil.hasFileResourceTargets(project, psiElement.getContainingFile(), resourcePath)) {
             return;
         }
 
         result.add(NavigationGutterIconBuilder.create(Symfony2Icons.SYMFONY_LINE_MARKER)
-            .setTargets(targets)
+            .setTargets(NotNullLazyValue.lazy(() -> FileResourceUtil.getFileResourceTargets(project, psiElement.getContainingFile(), resourcePath)))
             .setTooltipText("Navigate to resource")
             .createLineMarkerInfo(psiElement));
     }
