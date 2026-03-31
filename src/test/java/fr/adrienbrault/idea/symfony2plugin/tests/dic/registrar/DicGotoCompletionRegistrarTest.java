@@ -357,6 +357,25 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
         );
     }
 
+    public void testEnvironmentVariableContributorForEnvFunction() {
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
+                "env('<caret>')",
+            "DATABASE_URL", "APP_ENV", "SOME_ENV_VAR"
+        );
+
+        assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
+                "env('DATABASE<caret>_URL')",
+            PlatformPatterns.psiElement()
+        );
+    }
+
+    public void testEnvironmentVariableContributorForEnvFunctionWithProcessor() {
+        assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
+                "env('bool:SOME_ENV<caret>_VAR')",
+            PlatformPatterns.psiElement()
+        );
+    }
+
     public void testEnvironmentVariableContributorForEnvAttribute() {
         assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
                 "use Symfony\\Component\\DependencyInjection\\Attribute\\Autowire;\n" +

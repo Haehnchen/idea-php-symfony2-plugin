@@ -75,6 +75,18 @@ public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
             }
         );
 
+        // env('<caret>')
+        registrar.register(
+            PlatformPatterns.psiElement().withParent(PhpElementsUtil.getFunctionWithFirstStringPattern("env")), psiElement -> {
+                PsiElement context = psiElement.getContext();
+                if (!(context instanceof StringLiteralExpression)) {
+                    return null;
+                }
+
+                return new EnvironmentVariableContributor((StringLiteralExpression) context);
+            }
+        );
+
         // #[Autowire('%kernel.project_dir%')]
         // #[Autowire(value: '%kernel.project_dir%')]
         registrar.register(
