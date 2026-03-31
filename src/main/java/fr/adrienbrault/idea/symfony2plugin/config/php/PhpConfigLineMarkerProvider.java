@@ -10,12 +10,10 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.ConfigLineMarkerUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
-import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -78,18 +76,8 @@ public class PhpConfigLineMarkerProvider implements LineMarkerProvider {
 
             } else if (PhpConfigUtil.isImportResourceValue(stringLiteral)) {
                 String resourcePath = stringLiteral.getContents();
-                if (StringUtils.isBlank(resourcePath)) {
-                    continue;
-                }
 
-                Collection<PsiElement> targets = new ArrayList<>();
-                if (resourcePath.startsWith("@")) {
-                    targets.addAll(FileResourceUtil.getFileResourceTargetsInBundleScope(project, resourcePath));
-                    targets.addAll(FileResourceUtil.getFileResourceTargetsInBundleDirectory(project, resourcePath));
-                } else {
-                    targets.addAll(FileResourceUtil.getFileResourceTargetsInDirectoryScope(stringLiteral.getContainingFile(), resourcePath));
-                }
-
+                Collection<PsiElement> targets = ConfigLineMarkerUtil.resolveResourceTargets(project, stringLiteral.getContainingFile(), resourcePath);
                 if (targets.isEmpty()) {
                     continue;
                 }

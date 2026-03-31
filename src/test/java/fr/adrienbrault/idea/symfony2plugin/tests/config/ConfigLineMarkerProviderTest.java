@@ -1,8 +1,10 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.config;
 
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlPsiElementFactory;
+import org.jetbrains.yaml.YAMLFileType;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -41,5 +43,51 @@ public class ConfigLineMarkerProviderTest extends SymfonyLightCodeInsightFixture
         );
 
         assertLineMarkerIsEmpty(yaml);
+    }
+
+    public void testResourceImportRelativePathProvidesLineMarker() {
+        myFixture.addFileToProject("config/packages/services.yml", "services:");
+
+        PsiFile configFile = myFixture.addFileToProject("config/packages/config.yaml",
+            "imports:\n" +
+            "  - { resource: 'services.yml' }\n"
+        );
+        myFixture.configureFromExistingVirtualFile(configFile.getVirtualFile());
+
+        assertLineMarker(myFixture.getFile(), new LineMarker.ToolTipEqualsAssert("Navigate to resource"));
+    }
+
+    public void testResourceImportRelativePathWithParentDirProvidesLineMarker() {
+        myFixture.addFileToProject("config/services.yml", "services:");
+
+        PsiFile configFile = myFixture.addFileToProject("config/packages/config.yaml",
+            "imports:\n" +
+            "  - { resource: '../services.yml' }\n"
+        );
+        myFixture.configureFromExistingVirtualFile(configFile.getVirtualFile());
+
+        assertLineMarker(myFixture.getFile(), new LineMarker.ToolTipEqualsAssert("Navigate to resource"));
+    }
+
+    public void testResourceImportDoubleQuotedPathProvidesLineMarker() {
+        myFixture.addFileToProject("config/packages/legacy.yaml", "");
+
+        PsiFile configFile = myFixture.addFileToProject("config/packages/config.yaml",
+            "imports:\n" +
+            "  - { resource: \"legacy.yaml\" }\n"
+        );
+        myFixture.configureFromExistingVirtualFile(configFile.getVirtualFile());
+
+        assertLineMarker(myFixture.getFile(), new LineMarker.ToolTipEqualsAssert("Navigate to resource"));
+    }
+
+    public void testResourceImportNonExistentTargetDoesNotProvideLineMarker() {
+        PsiFile configFile = myFixture.addFileToProject("config/packages/config.yaml",
+            "imports:\n" +
+            "  - { resource: 'nonexistent.yaml' }\n"
+        );
+        myFixture.configureFromExistingVirtualFile(configFile.getVirtualFile());
+
+        assertLineMarkerIsEmpty(myFixture.getFile());
     }
 }
