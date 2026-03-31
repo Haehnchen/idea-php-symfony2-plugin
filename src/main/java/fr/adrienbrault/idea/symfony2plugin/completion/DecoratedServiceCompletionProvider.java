@@ -57,7 +57,12 @@ abstract public class DecoratedServiceCompletionProvider extends GotoCompletionP
             return Collections.emptyList();
         }
 
-        return Collections.singletonList(ServiceUtil.getResolvedClassDefinition(getProject(), decoratesId));
+        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(getProject(), decoratesId);
+        if (phpClass != null) {
+            return Collections.singletonList(phpClass);
+        }
+
+        return Collections.emptyList();
     }
 
     @Nullable
