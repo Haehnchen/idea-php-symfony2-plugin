@@ -1,0 +1,43 @@
+<html>
+<body>
+Provided instance of service id does not match argument
+<!-- tooltip end -->
+
+<p>
+This inspection detects service references in PHP service configuration whose resolved class
+is not an instance of the expected constructor parameter type.
+</p>
+
+<p>
+The inspection checks for:
+</p>
+
+<ul>
+    <li>Service references in PHP array-style <code>'arguments'</code> using <code>service()</code>, <code>ref()</code>, or raw <code>'@service_id'</code></li>
+    <li>Service references in PHP fluent <code>->args([...])</code> using <code>service()</code> or <code>ref()</code></li>
+</ul>
+
+<p>
+Example PHP code that would trigger this inspection:
+</p>
+
+<pre><code>
+// Array-style service configuration
+return [
+    MyService::class => [
+        'arguments' => [
+            service('wrong_type_service'), // triggers inspection - wrong type
+            ref('wrong_type_service'),     // triggers inspection - wrong type
+            '@wrong_type_service',         // triggers inspection - wrong type
+        ],
+    ],
+];
+
+// Fluent-style service configuration
+$services->set(MyService::class)
+    ->args([
+        service('wrong_type_service'), // triggers inspection - wrong type
+    ]);
+</code></pre>
+</body>
+</html>
