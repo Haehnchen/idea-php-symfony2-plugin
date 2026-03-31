@@ -2,11 +2,14 @@ package fr.adrienbrault.idea.symfony2plugin.config;
 
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
+import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -41,12 +44,16 @@ public class ConfigLineMarkerProvider implements LineMarkerProvider {
         ConfigLineMarkerUtil.LazyConfigTreeSignatures function = null;
         var rootConfigKeyPattern = YamlElementPatternHelper.getRootConfigKeyPattern();
 
+        var resourcePattern = YamlElementPatternHelper.getSingleLineScalarKey("resource");
+
         for (PsiElement psiElement : psiElements) {
             if(psiElement.getNode().getElementType() == YAMLTokenTypes.SCALAR_KEY && rootConfigKeyPattern.accepts(psiElement)) {
                 if(function == null) {
                     function = new ConfigLineMarkerUtil.LazyConfigTreeSignatures(project);
                 }
                 visitRootElements(project, result, psiElement, function);
+            } else if (resourcePattern.accepts(psiElement)) {
+                visitResourceValue(project, result, psiElement);
             }
         }
     }
@@ -87,5 +94,19 @@ public class ConfigLineMarkerProvider implements LineMarkerProvider {
         if (marker != null) {
             result.add(marker);
         }
+    }
+
+    private void visitResourceValue(@NotNull Project project, @NotNull Collection<? super LineMarkerInfo<?>> result, @NotNull PsiElement psiElement) {
+        String resourcePath = PsiElementUtils.trimQuote(psiElement.getText());
+
+        Collection<PsiElement> targets = ConfigLineMarkerUtil.resolveResourceTargets(project, psiElement.getContainingFile(), resourcePath);
+        if (targets.isEmpty()) {
+            return;
+        }
+
+        result.add(NavigationGutterIconBuilder.create(Symfony2Icons.SYMFONY_LINE_MARKER)
+            .setTargets(targets)
+            .setTooltipText("Navigate to resource")
+            .createLineMarkerInfo(psiElement));
     }
 }
