@@ -2,14 +2,10 @@ package fr.adrienbrault.idea.symfony2plugin.config;
 
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
-import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.config.utils.ConfigUtil;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -20,9 +16,6 @@ import org.jetbrains.yaml.psi.YAMLValue;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.Supplier;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -45,20 +38,20 @@ public class ConfigLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        LazyConfigTreeSignatures function = null;
+        ConfigLineMarkerUtil.LazyConfigTreeSignatures function = null;
         var rootConfigKeyPattern = YamlElementPatternHelper.getRootConfigKeyPattern();
 
         for (PsiElement psiElement : psiElements) {
             if(psiElement.getNode().getElementType() == YAMLTokenTypes.SCALAR_KEY && rootConfigKeyPattern.accepts(psiElement)) {
                 if(function == null) {
-                    function = new LazyConfigTreeSignatures(project);
+                    function = new ConfigLineMarkerUtil.LazyConfigTreeSignatures(project);
                 }
                 visitRootElements(project, result, psiElement, function);
             }
         }
     }
 
-    private void visitRootElements(@NotNull Project project, @NotNull Collection<? super LineMarkerInfo<?>> result, @NotNull PsiElement psiElement, @NotNull LazyConfigTreeSignatures function) {
+    private void visitRootElements(@NotNull Project project, @NotNull Collection<? super LineMarkerInfo<?>> result, @NotNull PsiElement psiElement, @NotNull ConfigLineMarkerUtil.LazyConfigTreeSignatures function) {
         PsiElement parent = psiElement.getParent();
         if(!(parent instanceof YAMLKeyValue)) {
             return;
@@ -89,42 +82,10 @@ public class ConfigLineMarkerProvider implements LineMarkerProvider {
         visitConfigKey(project, result, psiElement, function, keyText);
     }
 
-    private void visitConfigKey(@NotNull Project project, @NotNull Collection<? super LineMarkerInfo<?>> result, @NotNull PsiElement psiElement, @NotNull LazyConfigTreeSignatures function, String keyText) {
-        Map<String, Collection<String>> treeSignatures = function.value();
-        if(!treeSignatures.containsKey(keyText)) {
-            return;
-        }
-
-        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.SYMFONY_LINE_MARKER)
-            .setTargets(NotNullLazyValue.lazy(new MyClassIdLazyValue(project, treeSignatures.get(keyText), keyText)))
-            .setTooltipText("Navigate to configuration");
-
-        result.add(builder.createLineMarkerInfo(psiElement));
-    }
-
-    private record MyClassIdLazyValue(@NotNull Project project, @NotNull Collection<String> configuration, @NotNull String root) implements Supplier<Collection<? extends PsiElement>> {
-        @Override
-        public Collection<? extends PsiElement> get() {
-            return ConfigUtil.getTreeSignatureTargets(project, root, configuration);
-        }
-    }
-
-    private static class LazyConfigTreeSignatures {
-        @NotNull
-        private final Project project;
-
-        private Map<String, Collection<String>> treeSignatures;
-
-        LazyConfigTreeSignatures(@NotNull Project project) {
-            this.project = project;
-        }
-
-        @NotNull
-        public Map<String, Collection<String>> value() {
-            return Objects.requireNonNullElseGet(
-                this.treeSignatures,
-                () -> this.treeSignatures = ConfigUtil.getTreeSignatures(project)
-            );
+    private void visitConfigKey(@NotNull Project project, @NotNull Collection<? super LineMarkerInfo<?>> result, @NotNull PsiElement psiElement, @NotNull ConfigLineMarkerUtil.LazyConfigTreeSignatures function, String keyText) {
+        LineMarkerInfo<PsiElement> marker = ConfigLineMarkerUtil.createConfigNavigationMarker(project, psiElement, function, keyText);
+        if (marker != null) {
+            result.add(marker);
         }
     }
 }
