@@ -237,6 +237,7 @@
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.asset.AssetGoToDeclarationHandler"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateGlobalStringGoToDeclarationHandler"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.config.PhpClassServiceGotoDeclarationHandler"/>
+        <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.config.php.PhpConfigGotoDeclarationHandler"/>
         <gotoDeclarationHandler implementation="fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.QueryBuilderGotoDeclarationHandler"/>
 
         <completion.confidence language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.PhpParameterStringCompletionConfidence"
