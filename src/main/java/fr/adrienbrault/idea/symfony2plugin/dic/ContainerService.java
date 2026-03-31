@@ -22,7 +22,7 @@ public class ContainerService {
     final private String className;
     private boolean isPrivate = false;
     private boolean isWeak = false;
-    private Set<String> classVariants = Collections.emptySet();
+    private final Set<String> classVariants = new HashSet<>();
     @Nullable
     private Set<String> cachedClassNames;
 
@@ -59,10 +59,6 @@ public class ContainerService {
     }
 
     public void addClassName(@NotNull String className) {
-        if (this.classVariants.isEmpty()) {
-            this.classVariants = new HashSet<>();
-        }
-
         this.classVariants.add(className);
         this.cachedClassNames = null;
     }
