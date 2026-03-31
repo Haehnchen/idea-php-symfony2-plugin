@@ -611,6 +611,14 @@
                          language="XML"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.XmlServiceInstanceInspection"/>
 
+        <localInspection groupPath="Symfony" shortName="PhpServiceInstanceInspection"
+                         displayName="PHP: Wrong Service Instance"
+                         groupName="Service"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         language="PHP"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.inspection.PhpServiceInstanceInspection"/>
+
         <localInspection groupPath="Symfony" shortName="YamlParameterInspection" displayName="Symfony: Missing Parameter"
                          groupName="Service"
                          enabledByDefault="true"

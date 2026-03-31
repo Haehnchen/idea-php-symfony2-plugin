@@ -1199,15 +1199,15 @@ public class ServiceContainerUtil {
         @NotNull PsiElement psiElement,
         @NotNull ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector
     ) {
-        PsiElement element = psiElement instanceof StringLiteralExpression
+        PsiElement element = psiElement instanceof StringLiteralExpression || psiElement instanceof ClassConstantReference
             ? psiElement
-            : psiElement.getParent() instanceof StringLiteralExpression ? psiElement.getParent() : null;
+            : (psiElement.getParent() instanceof StringLiteralExpression || psiElement.getParent() instanceof ClassConstantReference) ? psiElement.getParent() : null;
         if (element == null) {
             return null;
         }
 
         // Determine the element to pass to isInsidePhpArrayServiceConfig / getKeyPath.
-        // For service('...') / ref('...') calls the StringLiteralExpression is nested inside a FunctionReference
+        // For service('...') / ref('...') calls the argument is nested inside a FunctionReference
         // which is the direct array value. For raw '@foo' strings the element itself is the direct array value.
         FunctionReference funcRef = PsiTreeUtil.getParentOfType(element, FunctionReference.class);
         String funcName = funcRef != null ? funcRef.getName() : null;
@@ -1275,9 +1275,9 @@ public class ServiceContainerUtil {
         @NotNull PsiElement psiElement,
         @NotNull ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector
     ) {
-        PsiElement element = psiElement instanceof StringLiteralExpression
+        PsiElement element = psiElement instanceof StringLiteralExpression || psiElement instanceof ClassConstantReference
             ? psiElement
-            : psiElement.getParent() instanceof StringLiteralExpression ? psiElement.getParent() : null;
+            : (psiElement.getParent() instanceof StringLiteralExpression || psiElement.getParent() instanceof ClassConstantReference) ? psiElement.getParent() : null;
         if (element == null) {
             return null;
         }
