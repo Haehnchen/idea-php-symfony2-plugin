@@ -607,6 +607,23 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     /**
+     * $services->set('id')->parent('base')->class(Foo::class)
+     * The ->class() call must be resolved even with ->parent() in the chain.
+     */
+    public void testVisitFileForPhpFluentParentThenClassResolvesClass() {
+        PsiFile phpFile = myFixture.configureByFile("services_set_alias.php");
+        Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(phpFile);
+
+        ServiceSerializable parentThenClass = services.stream()
+            .filter(s -> "test.parent_then_class".equals(s.getId()))
+            .findFirst()
+            .orElseThrow();
+
+        assertEquals("App\\Service\\TestClassC", parentThenClass.getClassName());
+        assertEquals("test.service_direct", parentThenClass.getParent());
+    }
+
+    /**
      * @see fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil#visitFile(com.jetbrains.php.lang.psi.PhpFile, com.intellij.util.Consumer)
      */
     public void testVisitFileForPhpBundleLoadExtension() {

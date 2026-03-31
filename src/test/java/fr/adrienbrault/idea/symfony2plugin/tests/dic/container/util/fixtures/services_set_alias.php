@@ -47,6 +47,11 @@ return static function (ContainerConfigurator $container) {
     $services->set('test.with_parent', TestClassA::class)
         ->parent('test.service_direct');
 
+    // Test ->parent() between ->set() and ->class() - class must override service-id-as-class
+    $services->set('test.parent_then_class')
+        ->parent('test.service_direct')
+        ->class(TestClassC::class);
+
     $services->set('test.private', TestClassA::class)
         ->private();
 };

@@ -328,9 +328,10 @@ public class ServiceContainerUtil {
             }
 
             if ("class".equals(methodName)) {
-                // Check if this ->class() is called on our ->set() method
-                PhpExpression classReference = methodRef.getClassReference();
-                if (classReference instanceof MethodReference && PsiTreeUtil.isAncestor(setMethodReference, classReference, false)) {
+                // The receiver of ->class() can be our ->set() call directly or an intermediate chained call
+                // like ->parent() that still wraps the original ->set().
+                PhpExpression receiver = methodRef.getClassReference();
+                if (receiver instanceof MethodReference && PsiTreeUtil.isAncestor(receiver, setMethodReference, false)) {
                     // Extract the first parameter from ->class(Foo::class)
                     PsiElement[] parameters = methodRef.getParameters();
                     if (parameters.length >= 1) {
