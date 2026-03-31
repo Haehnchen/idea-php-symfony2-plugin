@@ -6,12 +6,9 @@ import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
-import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
-import fr.adrienbrault.idea.symfony2plugin.util.AbsoluteFileModificationTracker;
-import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.*;
@@ -140,17 +137,23 @@ public class DotEnvUtil {
             DOT_ENV_VARIABLE_CACHE,
             () -> {
                 Set<String> items = new HashSet<>();
-                Set<String> files = new HashSet<>();
+                Set<VirtualFile> files = new HashSet<>();
 
                 DotEnvUtil.visitEnvironment(project, pair -> {
                     items.add(pair.getFirst());
-                    files.add(pair.getSecond().getContainingFile().getVirtualFile().getPath());
+                    files.add(pair.getSecond().getContainingFile().getVirtualFile());
                 });
+
+                Object[] dependencies = new Object[files.size() + 1];
+                int i = 0;
+                for (VirtualFile file : files) {
+                    dependencies[i++] = file;
+                }
+                dependencies[i] = VirtualFileManager.VFS_STRUCTURE_MODIFICATIONS;
 
                 return CachedValueProvider.Result.create(
                     items,
-                    VirtualFileManager.VFS_STRUCTURE_MODIFICATIONS,
-                    new AbsoluteFileModificationTracker(files)
+                    dependencies
                 );
             },
             false
