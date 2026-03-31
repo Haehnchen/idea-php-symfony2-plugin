@@ -139,11 +139,7 @@ public class PhpLineMarkerProvider implements LineMarkerProvider {
      * 'App\\' => ['resource' => '../src/']
      */
     private static boolean isServiceDefinitionId(@NotNull PsiElement keyElement) {
-        return isPhpServiceKey(keyElement) || isFluentServiceSetId(keyElement);
-    }
-
-    private static boolean isPhpServiceKey(@NotNull PsiElement keyElement) {
-        return PhpArrayServiceUtil.isServiceKey(keyElement);
+        return PhpArrayServiceUtil.isServiceKey(keyElement) || isFluentServiceSetId(keyElement);
     }
 
     /**

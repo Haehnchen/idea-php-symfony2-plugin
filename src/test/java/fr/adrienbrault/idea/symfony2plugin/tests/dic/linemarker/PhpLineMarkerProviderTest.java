@@ -41,11 +41,12 @@ public class PhpLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTes
         assertLineMarkerIsEmpty(myFixture.getFile());
     }
 
-    public void testThatAssignedAppConfigArrayDoesNotProvideMarker() {
+    public void testThatAssignedAppConfigArrayProvidesMarker() {
         PsiFile configFile = myFixture.addFileToProject("config/services.php", "<?php\n" +
             "namespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\n" +
             "$foo = App::config([\n" +
             "    'services' => [\n" +
+            "        'app.mailer' => null,\n" +
             "        'app.decorator' => [\n" +
             "            'decorates' => 'app.mail<caret>er',\n" +
             "        ],\n" +
@@ -53,7 +54,7 @@ public class PhpLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTes
             "]);");
         myFixture.configureFromExistingVirtualFile(configFile.getVirtualFile());
 
-        assertLineMarkerIsEmpty(myFixture.getFile());
+        assertLineMarker(myFixture.getFile(), new LineMarker.ToolTipEqualsAssert("Navigate to decorated service"));
     }
 
     public void testThatPhpArrayDecoratesProvidesForwardMarkerForStringServiceId() {
@@ -78,6 +79,22 @@ public class PhpLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTes
         PsiFile configFile = myFixture.addFileToProject("config/services.php", "<?php\n" +
             "namespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\n" +
             "return App::config([\n" +
+            "    'services' => [\n" +
+            "        'app.mailer' => null,\n" +
+            "        'app.decorator' => [\n" +
+            "            'decorates' => 'app.mail<caret>er',\n" +
+            "        ],\n" +
+            "    ],\n" +
+            "]);");
+        myFixture.configureFromExistingVirtualFile(configFile.getVirtualFile());
+
+        assertLineMarker(myFixture.getFile(), new LineMarker.ToolTipEqualsAssert("Navigate to decorated service"));
+    }
+
+    public void testThatAppConfigWithoutReturnProvidesForwardMarker() {
+        PsiFile configFile = myFixture.addFileToProject("config/services.php", "<?php\n" +
+            "namespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\n" +
+            "App::config([\n" +
             "    'services' => [\n" +
             "        'app.mailer' => null,\n" +
             "        'app.decorator' => [\n" +

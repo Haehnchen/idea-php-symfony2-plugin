@@ -29,7 +29,7 @@ import java.util.List;
  *
  * Supported roots:
  * `return ['services' => [...]]`
- * `return App::config(['services' => [...]])`
+ * `App::config(['services' => [...]])`
  *
  * Supported service ids:
  * `'app.mailer'`
@@ -325,6 +325,10 @@ public final class PhpArrayServiceUtil {
 
     /**
      * Verifies that the services entry belongs to an accepted PHP config root.
+     *
+     * Accepted roots:
+     * - return ['services' => [...]]
+     * - App::config(['services' => [...]])
      */
     private static boolean isInsideAcceptedPhpConfigArray(@NotNull ArrayHashElement servicesEntry) {
         PsiElement arrayParent = getImmediateArrayScope(servicesEntry);
@@ -333,16 +337,15 @@ public final class PhpArrayServiceUtil {
         }
 
         PsiElement parent = configArray.getParent();
-        if (parent instanceof PhpReturn phpReturn) {
-            return isAllowedPhpReturn(phpReturn);
+
+        // App::config(['services' => [...]])
+        if (parent instanceof ParameterList parameterList && parameterList.getParent() instanceof MethodReference methodReference) {
+            return isConfigFactoryCall(methodReference);
         }
 
-        if (parent instanceof ParameterList parameterList && parameterList.getParent() instanceof MethodReference methodReference) {
-            if (!isConfigFactoryCall(methodReference)) {
-                return false;
-            }
-
-            return methodReference.getParent() instanceof PhpReturn phpReturn && isAllowedPhpReturn(phpReturn);
+        // return ['services' => [...]]
+        if (parent instanceof PhpReturn phpReturn) {
+            return isAllowedPhpReturn(phpReturn);
         }
 
         return false;
