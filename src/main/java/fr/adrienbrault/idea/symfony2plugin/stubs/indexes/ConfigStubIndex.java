@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
-import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
@@ -9,7 +8,6 @@ import com.intellij.util.io.KeyDescriptor;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.ConfigIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ConfigIndexExternalizer;
-import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang3.StringUtils;
@@ -42,7 +40,7 @@ public class ConfigStubIndex extends FileBasedIndexExtension<String, ConfigIndex
             public @NotNull Map<String, ConfigIndex> map(@NotNull FileContent inputData) {
                 if (!(inputData.getPsiFile() instanceof YAMLFile yamlFile) ||
                     !Symfony2ProjectComponent.isEnabledForIndex(yamlFile.getProject()) ||
-                    !isValidForIndex(inputData, yamlFile)
+                    !StubIndexValidationUtil.isValidForIndex(inputData, yamlFile, MAX_FILE_BYTE_SIZE, true, null)
                 ) {
                     return Collections.emptyMap();
                 }
@@ -152,25 +150,6 @@ public class ConfigStubIndex extends FileBasedIndexExtension<String, ConfigIndex
 
     @Override
     public boolean dependsOnFileContent() {
-        return true;
-    }
-
-    private static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {
-        String fileName = psiFile.getName();
-        if(fileName.startsWith(".") || fileName.endsWith("Test")) {
-            return false;
-        }
-
-        // is Test file in path name
-        String relativePath = VfsUtil.getRelativePath(inputData.getFile(), ProjectUtil.getProjectDir(inputData.getProject()), '/');
-        if(relativePath != null && (relativePath.contains("/Test/") || relativePath.contains("/Tests/") || relativePath.contains("/Fixture/") || relativePath.contains("/Fixtures/"))) {
-            return false;
-        }
-
-        if(inputData.getFile().getLength() > MAX_FILE_BYTE_SIZE) {
-            return false;
-        }
-
         return true;
     }
 }
