@@ -112,6 +112,47 @@ public class PhpConfigReferenceContributorTest extends SymfonyLightCodeInsightFi
         assertTrue(resolved);
     }
 
+    public void testAliasReferences() {
+        // ContainerBuilder::setAlias - second parameter navigation
+        assertReferenceMatchOnParent(
+            PhpFileType.INSTANCE,
+            "<?php\n" +
+            "/** @var $cb \\Symfony\\Component\\DependencyInjection\\ContainerBuilder */\n" +
+            "$cb->setAlias('app.my_alias', 'app.mail<caret>er');",
+            PlatformPatterns.psiElement(PhpClass.class).withName("Mailer")
+        );
+
+        // ServicesConfigurator::alias - fluent chain completion
+        myFixture.configureFromExistingVirtualFile(myFixture.addFileToProject("config/services_alias_completion.php", "<?php\n" +
+            "namespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\n" +
+            "\n" +
+            "return static function (ContainerConfigurator $container): void {\n" +
+            "    $services = $container->services();\n" +
+            "\n" +
+            "    $services->set('app.alias_target', \\App\\Service\\Mailer::class);\n" +
+            "    $services->set('app.alias_source', \\App\\Service\\Foo::class)\n" +
+            "        ->alias('app.runtime_alias', '<caret>');\n" +
+            "};").getVirtualFile());
+
+        myFixture.completeBasic();
+        assertContainsElements(myFixture.getLookupElementStrings(), "app.alias_target");
+
+        // AbstractServiceConfigurator::alias - fluent chain navigation
+        assertReferenceMatchOnParent(
+            PhpFileType.INSTANCE,
+            "<?php\n" +
+            "namespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\n" +
+            "\n" +
+            "return static function (ContainerConfigurator $container): void {\n" +
+            "    $services = $container->services();\n" +
+            "\n" +
+            "    $services->set('app.alias_source', \\App\\Service\\Foo::class)\n" +
+            "        ->alias('app.runtime_alias', 'app.mail<caret>er');\n" +
+            "};",
+            PlatformPatterns.psiElement(PhpClass.class).withName("Mailer")
+        );
+    }
+
     public void testDecoratesReference() {
         assertReferenceMatchOnParent(
             PhpFileType.INSTANCE,
