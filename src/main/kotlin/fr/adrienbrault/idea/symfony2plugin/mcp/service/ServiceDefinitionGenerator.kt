@@ -26,7 +26,7 @@ class ServiceDefinitionGenerator(private val project: Project) {
      * Validation should be handled by the caller (e.g., MCP tool).
      *
      * @param className The fully qualified class name (FQN) - should be validated by caller
-     * @param outputType The output format (YAML or XML)
+     * @param outputType The output format (YAML, XML, FLUENT, or PHP_ARRAY)
      * @param useClassNameAsId If true, use class name as service ID; if false, use generated snake_case service name
      * @return The generated service definition as a string, or null if generation fails
      */
@@ -54,7 +54,12 @@ class ServiceDefinitionGenerator(private val project: Project) {
         )
 
         // Build the service definition
-        val builderOutputType = if (outputType == OutputType.YAML) ServiceBuilder.OutputType.Yaml else ServiceBuilder.OutputType.XML
+        val builderOutputType = when (outputType) {
+            OutputType.YAML -> ServiceBuilder.OutputType.Yaml
+            OutputType.XML -> ServiceBuilder.OutputType.XML
+            OutputType.FLUENT -> ServiceBuilder.OutputType.Fluent
+            OutputType.PHP_ARRAY -> ServiceBuilder.OutputType.PhpArray
+        }
 
         val builder = ServiceBuilder(modelParameters, project, useClassNameAsId)
         return builder.build(builderOutputType, normalizedClassName, serviceName)
@@ -114,6 +119,8 @@ class ServiceDefinitionGenerator(private val project: Project) {
      */
     enum class OutputType {
         YAML,
-        XML
+        XML,
+        FLUENT,
+        PHP_ARRAY
     }
 }

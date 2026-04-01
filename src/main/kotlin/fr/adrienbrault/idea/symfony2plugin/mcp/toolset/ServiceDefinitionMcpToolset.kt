@@ -23,7 +23,7 @@ class ServiceDefinitionMcpToolset : McpToolset {
 
     @McpTool
     @McpDescription("""
-        Generate Symfony service definition in YAML or XML format for a given class.
+        Generate Symfony service definition in YAML, XML, Fluent PHP or PHP array format for a given class.
 
         This tool analyzes a PHP class to generate an appropriate service container definition.
         It inspects the class constructor to identify dependencies and creates service arguments
@@ -41,12 +41,15 @@ class ServiceDefinitionMcpToolset : McpToolset {
             <argument type="service" id="mailer"/>
         </service>
         ```
+
+        Fluent PHP format uses set()/args()/call() on the services configurator.
+        PHP array format uses class constants as keys with 'arguments'/'calls' arrays.
     """)
 
     suspend fun generate_symfony_service_definition(
         @McpDescription("Fully qualified class name for the service (e.g., 'App\\Service\\EmailService')")
         className: String,
-        @McpDescription("Output format: 'yaml' (default) or 'xml'")
+        @McpDescription("Output format: 'yaml' (default), 'xml', 'fluent' or 'phparray'")
         format: String = "yaml",
         @McpDescription("If true, uses class name as service ID (default); if false, generates a short ID")
         useClassNameAsId: Boolean = true
@@ -66,7 +69,9 @@ class ServiceDefinitionMcpToolset : McpToolset {
         val outputType = when (format.lowercase()) {
             "xml" -> ServiceDefinitionGenerator.OutputType.XML
             "yaml", "" -> ServiceDefinitionGenerator.OutputType.YAML
-            else -> mcpFail("Invalid format: '$format'. Valid values are: 'yaml' or 'xml'")
+            "fluent" -> ServiceDefinitionGenerator.OutputType.FLUENT
+            "phparray" -> ServiceDefinitionGenerator.OutputType.PHP_ARRAY
+            else -> mcpFail("Invalid format: '$format'. Valid values are: 'yaml', 'xml', 'fluent' or 'phparray'")
         }
 
         return readAction {

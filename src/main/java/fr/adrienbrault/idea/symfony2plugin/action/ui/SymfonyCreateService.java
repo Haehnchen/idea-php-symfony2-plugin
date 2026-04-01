@@ -5,6 +5,7 @@ import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.ScrollType;
+import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.util.TextRange;
@@ -13,17 +14,22 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.XmlElementFactory;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.ui.JBColor;
+import com.intellij.ui.TitledSeparator;
 import com.intellij.ui.ToolbarDecorator;
+import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.table.TableView;
 import com.intellij.util.ui.ColumnInfo;
+import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.ListTableModel;
+import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
-import fr.adrienbrault.idea.symfony2plugin.mcp.service.ServiceDefinitionGenerator;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.ui.utils.ClassCompletionPanelWrapper;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -33,8 +39,12 @@ import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlPsiElementFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
+
+import com.intellij.ide.highlighter.XmlFileType;
+import com.intellij.ui.EditorTextField;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -58,18 +68,21 @@ public class SymfonyCreateService extends JDialog {
     private JPanel panel1;
     private JPanel content;
     private JPanel tableViewPanel;
-    private JTextArea textAreaOutput;
+    private EditorTextField editorOutput;
     private JButton generateButton;
     private JButton buttonCopy;
     private JButton closeButton;
 
     private JRadioButton radioButtonOutXml;
     private JRadioButton radioButtonOutYaml;
+    private JRadioButton radioButtonOutFluent;
+    private JRadioButton radioButtonOutPhpArray;
     private JTextField textFieldServiceName;
     private JButton buttonSettings;
     private JButton buttonInsert;
     private JPanel panelFoo;
     private JCheckBox checkBoxSymfonyIdClass;
+    private JPanel serviceNamePanel;
 
     private TableView<MethodParameter.MethodModelParameter> tableView;
     private ListTableModel<MethodParameter.MethodModelParameter> modelList;
@@ -123,6 +136,10 @@ public class SymfonyCreateService extends JDialog {
             radioButtonOutXml.setSelected(true);
         } else if ("yaml".equalsIgnoreCase(lastServiceGeneratorLanguage)) {
             radioButtonOutYaml.setSelected(true);
+        } else if ("fluent".equalsIgnoreCase(lastServiceGeneratorLanguage)) {
+            radioButtonOutFluent.setSelected(true);
+        } else if ("phparray".equalsIgnoreCase(lastServiceGeneratorLanguage)) {
+            radioButtonOutPhpArray.setSelected(true);
         }
 
         // overwrite language output on direct file context
@@ -133,7 +150,7 @@ public class SymfonyCreateService extends JDialog {
         }
 
         // lets use yaml as default
-        if (!radioButtonOutYaml.isSelected() && !radioButtonOutXml.isSelected()) {
+        if (!radioButtonOutYaml.isSelected() && !radioButtonOutXml.isSelected() && !radioButtonOutFluent.isSelected() && !radioButtonOutPhpArray.isSelected()) {
             radioButtonOutYaml.setSelected(true);
         }
 
@@ -161,8 +178,10 @@ public class SymfonyCreateService extends JDialog {
         this.generateButton.addActionListener(e -> update());
 
         this.checkBoxSymfonyIdClass.setSelected(Settings.getInstance(project).serviceClassAsIdAttribute);
+        updateServiceNameVisibility();
         this.checkBoxSymfonyIdClass.addItemListener(e -> {
             Settings.getInstance(project).serviceClassAsIdAttribute = checkBoxSymfonyIdClass.isSelected();
+            updateServiceNameVisibility();
             generateServiceDefinition();
         });
 
@@ -172,11 +191,11 @@ public class SymfonyCreateService extends JDialog {
         });
 
         this.buttonCopy.addActionListener(e -> {
-            if (StringUtils.isBlank(textAreaOutput.getText())) {
+            if (StringUtils.isBlank(editorOutput.getText())) {
                 return;
             }
 
-            StringSelection stringSelection = new StringSelection(textAreaOutput.getText());
+            StringSelection stringSelection = new StringSelection(editorOutput.getText());
             Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
             clipboard.setContents(stringSelection, null);
         });
@@ -185,9 +204,13 @@ public class SymfonyCreateService extends JDialog {
 
         initClassName();
 
-        radioButtonOutXml.addChangeListener(e -> generateServiceDefinition());
+        radioButtonOutXml.addActionListener(e -> generateServiceDefinition());
 
-        radioButtonOutYaml.addChangeListener(e -> generateServiceDefinition());
+        radioButtonOutYaml.addActionListener(e -> generateServiceDefinition());
+
+        radioButtonOutFluent.addActionListener(e -> generateServiceDefinition());
+
+        radioButtonOutPhpArray.addActionListener(e -> generateServiceDefinition());
 
         textFieldServiceName.getDocument().addDocumentListener(new DocumentListener() {
             @Override
@@ -232,6 +255,11 @@ public class SymfonyCreateService extends JDialog {
 
     }
 
+    private void updateServiceNameVisibility() {
+        boolean visible = !checkBoxSymfonyIdClass.isSelected();
+        serviceNamePanel.setVisible(visible);
+    }
+
     private void createUIComponents() {
         // Components
         generateButton = new JButton("Generate");
@@ -241,18 +269,37 @@ public class SymfonyCreateService extends JDialog {
         buttonInsert = new JButton("Insert");
         radioButtonOutXml = new JRadioButton("XML");
         radioButtonOutYaml = new JRadioButton("Yaml");
+        radioButtonOutFluent = new JRadioButton("Fluent");
+        radioButtonOutPhpArray = new JRadioButton("Array");
         textFieldServiceName = new JTextField(20);
-        checkBoxSymfonyIdClass = new JCheckBox("Class as id (Symfony 3.3)");
-        textAreaOutput = new JTextArea(7, 40);
-        textAreaOutput.setEditable(false);
-        textAreaOutput.setFont(new Font("Courier New", Font.PLAIN, textAreaOutput.getFont().getSize()));
-        textAreaOutput.setLineWrap(true);
+        checkBoxSymfonyIdClass = new JCheckBox("Class as id");
+
+        // Editor with syntax highlighting for output
+        editorOutput = new EditorTextField("", project, null);
+        editorOutput.setOneLineMode(false);
+        editorOutput.setViewer(true);
+        editorOutput.setPreferredSize(new Dimension(500, 120));
+
         panelFoo = new JPanel(new GridBagLayout());
         tableViewPanel = new JPanel(new BorderLayout());
 
         ButtonGroup outputGroup = new ButtonGroup();
         outputGroup.add(radioButtonOutYaml);
         outputGroup.add(radioButtonOutXml);
+        outputGroup.add(radioButtonOutFluent);
+        outputGroup.add(radioButtonOutPhpArray);
+
+        // Hint label style (smaller, grayed - IntelliJ style)
+        Font hintFont = UIManager.getFont("Label.font").deriveFont(Math.max(UIManager.getFont("Label.font").getSize() - 2f, 10f));
+        Color hintColor = UIManager.getColor("Label.disabledForeground");
+        if (hintColor == null) {
+            hintColor = JBColor.GRAY;
+        }
+
+        JBLabel classHint = new JBLabel("Use the class name as the service id (e.g. App\\Service\\MyService)");
+        classHint.setFont(hintFont);
+        classHint.setForeground(hintColor);
+
 
         // North: Class label + panelFoo + Generate button
         JPanel northPanel = new JPanel(new BorderLayout(4, 0));
@@ -260,20 +307,52 @@ public class SymfonyCreateService extends JDialog {
         northPanel.add(panelFoo, BorderLayout.CENTER);
         northPanel.add(generateButton, BorderLayout.EAST);
 
-        // South options: service name + yaml/xml radios + checkbox
-        JPanel serviceNameRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
-        serviceNameRow.add(textFieldServiceName);
-        serviceNameRow.add(radioButtonOutYaml);
-        serviceNameRow.add(radioButtonOutXml);
-
+        // Options panel
         JPanel optionsPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0; gbc.gridy = 0; gbc.anchor = GridBagConstraints.WEST; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
-        optionsPanel.add(checkBoxSymfonyIdClass, gbc);
+        gbc.gridx = 0; gbc.anchor = GridBagConstraints.WEST; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
+
+        // Checkbox + hint
+        gbc.gridy = 0;
+        JPanel classIdPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        classIdPanel.add(checkBoxSymfonyIdClass);
+        optionsPanel.add(classIdPanel, gbc);
+
         gbc.gridy = 1;
-        optionsPanel.add(serviceNameRow, gbc);
-        gbc.gridy = 2; gbc.fill = GridBagConstraints.BOTH; gbc.weighty = 1.0;
-        optionsPanel.add(new JScrollPane(textAreaOutput), gbc);
+        JPanel classHintPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 0));
+        classHintPanel.add(classHint);
+        optionsPanel.add(classHintPanel, gbc);
+
+        // Service name row (hidden when class as id is checked)
+        gbc.gridy = 2; gbc.insets = JBUI.insetsTop(4);
+        serviceNamePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        JLabel serviceNameLabel = new JLabel("Service name:");
+        serviceNamePanel.add(serviceNameLabel);
+        serviceNamePanel.add(textFieldServiceName);
+        optionsPanel.add(serviceNamePanel, gbc);
+
+        // Output section with separator
+        gbc.gridy = 3; gbc.insets = JBUI.insetsTop(10);
+        optionsPanel.add(new TitledSeparator("Output"), gbc);
+
+        // Output format radios
+        gbc.gridy = 4; gbc.insets = JBUI.insetsTop(2);
+        JPanel outputRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        outputRow.add(radioButtonOutYaml);
+        outputRow.add(Box.createHorizontalStrut(12));
+        outputRow.add(radioButtonOutXml);
+        outputRow.add(Box.createHorizontalStrut(12));
+        outputRow.add(radioButtonOutFluent);
+        outputRow.add(Box.createHorizontalStrut(12));
+        outputRow.add(radioButtonOutPhpArray);
+        optionsPanel.add(outputRow, gbc);
+
+        // Output editor wrapped in scroll pane so content doesn't push the layout
+        JScrollPane editorScrollPane = new JScrollPane(editorOutput);
+        editorScrollPane.setPreferredSize(new Dimension(500, 120));
+        editorScrollPane.setMinimumSize(new Dimension(200, 80));
+        gbc.gridy = 5; gbc.fill = GridBagConstraints.BOTH; gbc.weighty = 1.0; gbc.insets = JBUI.insetsTop(4);
+        optionsPanel.add(editorScrollPane, gbc);
 
         // Center section: table + options
         JPanel centerPanel = new JPanel(new BorderLayout());
@@ -297,7 +376,7 @@ public class SymfonyCreateService extends JDialog {
         content.add(buttonsPanel, BorderLayout.SOUTH);
 
         panel1 = new JPanel(new BorderLayout());
-        panel1.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        panel1.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         panel1.add(content, BorderLayout.CENTER);
     }
 
@@ -309,8 +388,7 @@ public class SymfonyCreateService extends JDialog {
 
         try {
             Object data = Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
-            if (data instanceof String) {
-                String stringData = (String) data;
+            if (data instanceof String stringData) {
                 if (stringData.length() <= 255 && stringData.matches("[_A-Za-z0-9\\\\]+")) {
                     classCompletionPanelWrapper.setClassName(stringData);
                 }
@@ -378,31 +456,21 @@ public class SymfonyCreateService extends JDialog {
     }
 
     private String createServiceAsText(@NotNull ServiceBuilder.OutputType outputType, @NotNull PsiFile psiFile) {
-        // Delegate to ServiceDefinitionGenerator for consistency with MCP tools
-        ServiceDefinitionGenerator generator = new ServiceDefinitionGenerator(psiFile.getProject());
-        ServiceDefinitionGenerator.OutputType generatorOutputType = outputType == ServiceBuilder.OutputType.Yaml
-            ? ServiceDefinitionGenerator.OutputType.YAML
-            : ServiceDefinitionGenerator.OutputType.XML;
+        String className = StringUtils.stripStart(classCompletionPanelWrapper.getClassName(), "\\");
+        String serviceName = textFieldServiceName.getText();
 
-        return generator.generate(
-            StringUtils.stripStart(classCompletionPanelWrapper.getClassName(), "\\"),
-            generatorOutputType,
-            this.checkBoxSymfonyIdClass.isSelected()
-        );
+        List<MethodParameter.MethodModelParameter> items = new ArrayList<>(modelList.getItems());
+        ServiceBuilder builder = new ServiceBuilder(items, psiFile, this.checkBoxSymfonyIdClass.isSelected());
+        return builder.build(outputType, className, serviceName);
     }
 
     private String createServiceAsText(@NotNull ServiceBuilder.OutputType outputType) {
-        // Delegate to ServiceDefinitionGenerator for consistency with MCP tools
-        ServiceDefinitionGenerator generator = new ServiceDefinitionGenerator(this.project);
-        ServiceDefinitionGenerator.OutputType generatorOutputType = outputType == ServiceBuilder.OutputType.Yaml
-            ? ServiceDefinitionGenerator.OutputType.YAML
-            : ServiceDefinitionGenerator.OutputType.XML;
+        String className = StringUtils.stripStart(classCompletionPanelWrapper.getClassName(), "\\");
+        String serviceName = textFieldServiceName.getText();
 
-        return generator.generate(
-            StringUtils.stripStart(classCompletionPanelWrapper.getClassName(), "\\"),
-            generatorOutputType,
-            this.checkBoxSymfonyIdClass.isSelected()
-        );
+        List<MethodParameter.MethodModelParameter> items = new ArrayList<>(modelList.getItems());
+        ServiceBuilder builder = new ServiceBuilder(items, this.project, this.checkBoxSymfonyIdClass.isSelected());
+        return builder.build(outputType, className, serviceName);
     }
 
     private void generateServiceDefinition() {
@@ -421,19 +489,34 @@ public class SymfonyCreateService extends JDialog {
         ServiceBuilder.OutputType outputType = ServiceBuilder.OutputType.XML;
         if (radioButtonOutYaml.isSelected()) {
             outputType = ServiceBuilder.OutputType.Yaml;
+        } else if (radioButtonOutFluent.isSelected()) {
+            outputType = ServiceBuilder.OutputType.Fluent;
+        } else if (radioButtonOutPhpArray.isSelected()) {
+            outputType = ServiceBuilder.OutputType.PhpArray;
         }
 
         // save last selection
         Settings.getInstance(project).lastServiceGeneratorLanguage = outputType.toString().toLowerCase();
 
         final ServiceBuilder.OutputType finalOutputType = outputType;
+        final FileType fileType = getFileType(outputType);
         ReadAction.nonBlocking(() -> createServiceAsText(finalOutputType))
             .finishOnUiThread(com.intellij.openapi.application.ModalityState.any(), text -> {
                 if (text != null) {
-                    textAreaOutput.setText(text);
+                    editorOutput.setFileType(fileType);
+                    editorOutput.setText(text);
                 }
             })
             .submit(com.intellij.util.concurrency.AppExecutorUtil.getAppExecutorService());
+    }
+
+    @NotNull
+    private FileType getFileType(@NotNull ServiceBuilder.OutputType outputType) {
+        return switch (outputType) {
+            case XML -> XmlFileType.INSTANCE;
+            case Fluent, PhpArray -> PhpFileType.INSTANCE;
+            case Yaml -> YAMLFileType.YML;
+        };
     }
 
     private void update() {
@@ -522,8 +605,43 @@ public class SymfonyCreateService extends JDialog {
         }
 
         public void setValue(MethodParameter.MethodModelParameter modelParameter, Boolean value) {
+            if (value && modelParameter.getCurrentService() == null) {
+                resolveServiceName(modelParameter);
+            }
+
             modelParameter.setPossibleService(value);
             tableView.getListTableModel().fireTableDataChanged();
+        }
+
+        private void resolveServiceName(@NotNull MethodParameter.MethodModelParameter modelParameter) {
+            String type = getTypeFromParameter(modelParameter.getParameter());
+            if (type != null) {
+                Set<String> possibleServices = ServiceActionUtil.getPossibleServices(project, type, serviceClass);
+                if (!possibleServices.isEmpty()) {
+                    modelParameter.setCurrentService(getServiceName(possibleServices));
+                    return;
+                }
+
+                modelParameter.setCurrentService(ServiceUtil.getServiceNameForClass(project, StringUtils.stripStart(type, "\\")));
+            }
+        }
+
+        @Nullable
+        private String getTypeFromParameter(@NotNull Parameter parameter) {
+            PhpPsiElement phpPsiElement = parameter.getFirstPsiChild();
+            if (phpPsiElement instanceof ClassReference classReference) {
+                return classReference.getFQN();
+            }
+
+            // fallback: iterate declared types and filter out primitives
+            for (String type : parameter.getDeclaredType().getTypes()) {
+                if (PhpType.isPrimitiveType(type)) {
+                    continue;
+                }
+                return StringUtils.stripStart(type, "\\");
+            }
+
+            return null;
         }
 
         public Class<?> getColumnClass() {
@@ -626,16 +744,26 @@ public class SymfonyCreateService extends JDialog {
     private Set<String> getPossibleServices(Parameter parameter) {
 
         PhpPsiElement phpPsiElement = parameter.getFirstPsiChild();
-        if (!(phpPsiElement instanceof ClassReference classReference)) {
-            return Collections.emptySet();
+        if (phpPsiElement instanceof ClassReference classReference) {
+            String type = classReference.getFQN();
+            if (type != null) {
+                return ServiceActionUtil.getPossibleServices(project, type, serviceClass);
+            }
         }
 
-        String type = classReference.getFQN();
-        if (type == null) {
-            return Collections.emptySet();
+        // fallback: iterate declared types and filter out primitives
+        for (String type : parameter.getDeclaredType().getTypes()) {
+            if (PhpType.isPrimitiveType(type)) {
+                continue;
+            }
+
+            Set<String> services = ServiceActionUtil.getPossibleServices(project, StringUtils.stripStart(type, "\\"), serviceClass);
+            if (!services.isEmpty()) {
+                return services;
+            }
         }
 
-        return ServiceActionUtil.getPossibleServices(project, type, serviceClass);
+        return Collections.emptySet();
     }
 
     public static class ContainerServicePriorityNameComparator implements Comparator<ContainerService> {
@@ -672,7 +800,8 @@ public class SymfonyCreateService extends JDialog {
         service.setIconImage(Symfony2Icons.getImage(Symfony2Icons.SYMFONY));
         service.pack();
 
-        service.setMinimumSize(new Dimension(550, 250));
+        service.setMinimumSize(new Dimension(700, 500));
+        service.setPreferredSize(new Dimension(800, 600));
 
         if (component != null) {
             service.setLocationRelativeTo(component);
@@ -680,9 +809,7 @@ public class SymfonyCreateService extends JDialog {
 
         // The invokeLater() method schedules the setVisible(true) call to run on the EDT asynchronously, which prevents the thread context conflict.
         // This is the standard approach for showing dialogs in IntelliJ plugins.
-        ApplicationManager.getApplication().invokeLater(() -> {
-            service.setVisible(true);
-        });
+        ApplicationManager.getApplication().invokeLater(() -> service.setVisible(true));
 
         return service;
     }

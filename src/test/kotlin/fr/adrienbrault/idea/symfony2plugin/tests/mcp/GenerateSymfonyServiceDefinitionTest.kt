@@ -70,6 +70,41 @@ class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestC
         assertTrue(result.contains("class=\"Foo\\Bar\""))
     }
 
+    fun testGenerateFluentWithClassNameAsIdTrue() {
+        val generator = ServiceDefinitionGenerator(project)
+        val result = generator.generate("Foo\\Bar", ServiceDefinitionGenerator.OutputType.FLUENT, true)
+
+        assertNotNull(result)
+        assertTrue(result!!.contains("\$services->set(\\Foo\\Bar::class)"))
+        assertFalse(result.contains(", \\Foo\\Bar::class"))
+    }
+
+    fun testGenerateFluentWithClassNameAsIdFalse() {
+        val generator = ServiceDefinitionGenerator(project)
+        val result = generator.generate("Foo\\Bar", ServiceDefinitionGenerator.OutputType.FLUENT, false)
+
+        assertNotNull(result)
+        assertTrue(result!!.contains("\$services->set('foo.bar', \\Foo\\Bar::class)"))
+    }
+
+    fun testGeneratePhpArrayWithClassNameAsIdTrue() {
+        val generator = ServiceDefinitionGenerator(project)
+        val result = generator.generate("Foo\\Bar", ServiceDefinitionGenerator.OutputType.PHP_ARRAY, true)
+
+        assertNotNull(result)
+        assertTrue(result!!.contains("\\Foo\\Bar::class => ["))
+        assertFalse(result.contains("'class'"))
+    }
+
+    fun testGeneratePhpArrayWithClassNameAsIdFalse() {
+        val generator = ServiceDefinitionGenerator(project)
+        val result = generator.generate("Foo\\Bar", ServiceDefinitionGenerator.OutputType.PHP_ARRAY, false)
+
+        assertNotNull(result)
+        assertTrue(result!!.contains("'foo.bar' => ["))
+        assertTrue(result.contains("'class' => \\Foo\\Bar::class"))
+    }
+
     fun testGenerateReturnsNullForNonExistentClass() {
         val generator = ServiceDefinitionGenerator(project)
         val result = generator.generate("NonExistent\\Class", ServiceDefinitionGenerator.OutputType.YAML, true)
