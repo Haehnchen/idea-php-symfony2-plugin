@@ -106,19 +106,10 @@ public class NavigationItemPresentableOverwrite implements NavigationItem, ItemP
     public static NavigationItemPresentableOverwrite create(@NotNull PsiElement psiElement, @NotNull String presentableText, @NotNull Icon icon, @NotNull String locationString, boolean appendBundleLocation, @NotNull String name) {
         String locationPathString = locationString;
 
-        if(appendBundleLocation) {
+        if (appendBundleLocation) {
             PsiFile psiFile = psiElement.getContainingFile();
-            if(psiFile != null) {
-                locationPathString = locationString + " " + psiFile.getName();
-
-                String bundleName = psiFile.getVirtualFile().getPath();
-
-                if(bundleName.contains("Bundle")) {
-                    bundleName = bundleName.substring(0, bundleName.lastIndexOf("Bundle"));
-                    if(bundleName.length() > 1 && bundleName.contains("/")) {
-                        locationPathString = locationPathString + " " + bundleName.substring(bundleName.lastIndexOf("/") + 1) + "::" + psiFile.getName();
-                    }
-                }
+            if (psiFile != null) {
+                locationPathString = NavigationItemEx.buildBundleLocationString(locationString, psiFile);
             }
         }
 
@@ -129,6 +120,6 @@ public class NavigationItemPresentableOverwrite implements NavigationItem, ItemP
             locationPathString,
             name
         );
-    } 
+    }
 }
 

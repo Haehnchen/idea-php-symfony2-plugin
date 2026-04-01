@@ -258,17 +258,22 @@ public class CommandToInvokableIntention extends PsiElementBaseIntentionAction i
     }
 
     @Nullable
+    private static String extractMethodParamName(@NotNull MethodReference methodRef) {
+        PsiElement nameParam = PsiElementUtils.getMethodParameterPsiElementAt(methodRef, 0);
+        if (nameParam == null) {
+            return null;
+        }
+        String name = PhpElementsUtil.getStringValue(nameParam);
+        return StringUtils.isBlank(name) ? null : name;
+    }
+
+    @Nullable
     private ArgumentInfo parseAddArgument(@NotNull MethodReference methodRef) {
         // addArgument(name, mode, description, default)
         ArgumentInfo info = new ArgumentInfo();
 
-        // Get name (parameter 0)
-        PsiElement nameParam = PsiElementUtils.getMethodParameterPsiElementAt(methodRef, 0);
-        if (nameParam != null) {
-            info.name = PhpElementsUtil.getStringValue(nameParam);
-        }
-
-        if (StringUtils.isBlank(info.name)) {
+        info.name = extractMethodParamName(methodRef);
+        if (info.name == null) {
             return null;
         }
 
@@ -301,13 +306,8 @@ public class CommandToInvokableIntention extends PsiElementBaseIntentionAction i
         // addOption(name, shortcut, mode, description, default)
         OptionInfo info = new OptionInfo();
 
-        // Get name (parameter 0)
-        PsiElement nameParam = PsiElementUtils.getMethodParameterPsiElementAt(methodRef, 0);
-        if (nameParam != null) {
-            info.name = PhpElementsUtil.getStringValue(nameParam);
-        }
-
-        if (StringUtils.isBlank(info.name)) {
+        info.name = extractMethodParamName(methodRef);
+        if (info.name == null) {
             return null;
         }
 

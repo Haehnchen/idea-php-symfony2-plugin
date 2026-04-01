@@ -13,26 +13,19 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
-import com.jetbrains.php.codeInsight.PhpCodeInsightUtil;
 import com.jetbrains.php.lang.PhpLanguage;
-import com.jetbrains.php.lang.psi.elements.*;
-import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.intentions.php.AddRouteAttributeIntention;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.UxTemplateStubIndex;
-import fr.adrienbrault.idea.symfony2plugin.stubs.util.IndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.CodeUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
 
 /**
  * Provides completion for Symfony PHP attributes like #[Route()] and #[AsController]
@@ -161,7 +154,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                     lookupElements.addAll(getControllerClassCompletions(project));
                 }
 
-                if (isTwigComponentClass(project, phpClass)) {
+                if (PhpAttributeScopeValidator.isTwigComponentClass(project, phpClass)) {
                     lookupElements.addAll(getTwigComponentClassCompletions(project));
                 }
 
@@ -344,54 +337,6 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
             }
 
             return lookupElements;
-        }
-
-        /**
-         * Check if the class is a Twig component class.
-         * A class is considered a Twig component if:
-         * - Its namespace contains "\\Components\\" or ends with "\\Components", OR
-         * - There are existing component classes (from index) in the same namespace
-         * (e.g., App\Twig\Components\Button, Foo\Components\Form\Input)
-         */
-        private boolean isTwigComponentClass(@NotNull Project project, @NotNull PhpClass phpClass) {
-            String fqn = phpClass.getFQN();
-            if (fqn.isBlank()) {
-                return false;
-            }
-
-            fqn = StringUtils.stripStart(fqn, "\\");
-
-            int lastBackslash = fqn.lastIndexOf('\\');
-            if (lastBackslash == -1) {
-                return false; // No namespace
-            }
-
-            String namespace = fqn.substring(0, lastBackslash);
-            if (namespace.contains("\\Components\\") ||
-                namespace.endsWith("\\Components") ||
-                namespace.equals("Components")) {
-                return true;
-            }
-
-            // Check if there are any component classes in the same namespace from the index
-            //  keys are FQN class names of components with #[AsTwigComponent] attribute
-            for (String key : IndexUtil.getAllKeysForProject(UxTemplateStubIndex.KEY, project)) {
-                String componentFqn = StringUtils.stripStart(key, "\\");
-
-                // Extract namespace from the component FQN
-                int componentLastBackslash = componentFqn.lastIndexOf('\\');
-                if (componentLastBackslash == -1) {
-                    continue;
-                }
-
-                // Check if the current class's namespace matches the component namespace
-                String componentNamespace = componentFqn.substring(0, componentLastBackslash);
-                if (namespace.equals(componentNamespace)) {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         /**

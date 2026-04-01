@@ -21,6 +21,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,16 +54,10 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                 @NotNull
                 @Override
                 public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
-                    if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
+                    String value = getXmlTextValue(psiElement);
+                    if (value == null) {
                         return new PsiReference[0];
                     }
-
-                    PsiElement parent = psiElement.getParent();
-                    if(!(parent instanceof XmlText)) {
-                        return new PsiReference[0];
-                    }
-
-                    String value = ((XmlText) parent).getValue();
                     return new PsiReference[]{ new PhpClassReference(psiElement, value) };
                 }
 
@@ -118,20 +113,10 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                 @NotNull
                 @Override
                 public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
-                    if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
+                    String value = getXmlTextValue(psiElement);
+                    if (value == null || StringUtils.isBlank(value)) {
                         return new PsiReference[0];
                     }
-
-                    PsiElement parent = psiElement.getParent();
-                    if(!(parent instanceof XmlText)) {
-                        return new PsiReference[0];
-                    }
-
-                    String value = ((XmlText) parent).getValue();
-                    if (StringUtils.isBlank(value)) {
-                        return new PsiReference[0];
-                    }
-
                     return new PsiReference[]{ new ParameterXmlReference(psiElement, value) };
                 }
 
@@ -149,20 +134,10 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                 @NotNull
                 @Override
                 public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
-                    if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
+                    String value = getXmlTextValue(psiElement);
+                    if (value == null || StringUtils.isBlank(value)) {
                         return new PsiReference[0];
                     }
-
-                    PsiElement parent = psiElement.getParent();
-                    if(!(parent instanceof XmlText)) {
-                        return new PsiReference[0];
-                    }
-
-                    String value = ((XmlText) parent).getValue();
-                    if (StringUtils.isBlank(value)) {
-                        return new PsiReference[0];
-                    }
-
                     return new PsiReference[]{ new ConstantXmlReference(psiElement, value) };
                 }
 
@@ -312,6 +287,40 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
 
     }
 
+    /**
+     * Returns the text value of the XmlText parent of {@code psiElement}, or {@code null} if the plugin is
+     * disabled or the parent is not an {@link XmlText}.
+     */
+    @Nullable
+    private static String getXmlTextValue(@NotNull PsiElement psiElement) {
+        if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
+            return null;
+        }
+        PsiElement parent = psiElement.getParent();
+        if (!(parent instanceof XmlText)) {
+            return null;
+        }
+        return ((XmlText) parent).getValue();
+    }
+
+    /**
+     * Builds a {@link ClassMethodStringPsiReference} for {@code method} on {@code phpClass}, or returns
+     * an empty array if either is {@code null}/missing.
+     */
+    @NotNull
+    private static PsiReference[] buildMethodStringReference(@NotNull PsiElement psiElement, @Nullable PhpClass phpClass, @NotNull String method) {
+        if (phpClass == null) {
+            return new PsiReference[0];
+        }
+        Method targetMethod = phpClass.findMethodByName(method);
+        if (targetMethod == null) {
+            return new PsiReference[0];
+        }
+        return new PsiReference[]{
+            new ClassMethodStringPsiReference(psiElement, phpClass.getFQN(), targetMethod.getName()),
+        };
+    }
+
     private static class ClassPsiReferenceProvider extends PsiReferenceProvider {
         @NotNull
         @Override
@@ -380,19 +389,7 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                 return new PsiReference[0];
             }
 
-            PhpClass phpClass = XmlHelper.getPhpClassForServiceFactory((XmlAttributeValue) psiElement);
-            if(phpClass == null) {
-                return new PsiReference[0];
-            }
-
-            Method targetMethod = phpClass.findMethodByName(method);
-            if(targetMethod == null) {
-                return new PsiReference[0];
-            }
-
-            return new PsiReference[] {
-                new ClassMethodStringPsiReference(psiElement, phpClass.getFQN(), targetMethod.getName()),
-            };
+            return buildMethodStringReference(psiElement, XmlHelper.getPhpClassForServiceFactory((XmlAttributeValue) psiElement), method);
         }
 
         public boolean acceptsTarget(@NotNull PsiElement target) {
@@ -513,19 +510,7 @@ public class XmlReferenceContributor extends PsiReferenceContributor {
                 return new PsiReference[0];
             }
 
-            PhpClass phpClass = XmlHelper.getPhpClassForClassFactory((XmlAttributeValue) psiElement);
-            if(phpClass == null) {
-                return new PsiReference[0];
-            }
-
-            Method classMethod = phpClass.findMethodByName(method);
-            if(classMethod == null) {
-                return new PsiReference[0];
-            }
-
-            return new PsiReference[]{
-                new ClassMethodStringPsiReference(psiElement, phpClass.getFQN(), classMethod.getName()),
-            };
+            return buildMethodStringReference(psiElement, XmlHelper.getPhpClassForClassFactory((XmlAttributeValue) psiElement), method);
         }
 
         public boolean acceptsTarget(@NotNull PsiElement target) {

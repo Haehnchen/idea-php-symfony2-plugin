@@ -1,9 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
+import com.intellij.lang.html.HTMLLanguage;
 import com.intellij.patterns.*;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.html.HtmlTag;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlText;
 import com.intellij.psi.xml.XmlTokenType;
@@ -199,5 +202,44 @@ public class TwigHtmlCompletionUtil {
         }
 
         return "block".equals(name) && "twig".equals(tag.getNamespacePrefix());
+    }
+
+    /**
+     * Returns true if the given XML tag is a {@code <twig:SomeName>} component tag
+     * (but NOT {@code <twig:block>}).
+     */
+    public static boolean isTwigComponentTag(@NotNull XmlTag tag) {
+        if (isTwigBlockTag(tag)) {
+            return false;
+        }
+        String name = tag.getName();
+        return name.startsWith("twig:") || "twig".equals(tag.getNamespacePrefix());
+    }
+
+    /**
+     * Checks if the given Twig element is inside an HTML-syntax Twig component tag
+     * ({@code <twig:ComponentName>...</twig:ComponentName>}) by inspecting the
+     * HTML view via the ViewProvider.
+     */
+    public static boolean isInsideHtmlComponentTag(@NotNull PsiElement element, @NotNull PsiFile twigFile) {
+        int offset = element.getTextOffset();
+
+        PsiElement htmlElement = twigFile.getViewProvider().findElementAt(offset, HTMLLanguage.INSTANCE);
+        if (htmlElement == null) {
+            htmlElement = twigFile.getViewProvider().findElementAt(Math.max(0, offset - 1), HTMLLanguage.INSTANCE);
+        }
+        if (htmlElement == null) {
+            return false;
+        }
+
+        XmlTag parentTag = PsiTreeUtil.getParentOfType(htmlElement, XmlTag.class);
+        while (parentTag != null) {
+            if (isTwigComponentTag(parentTag)) {
+                return true;
+            }
+            parentTag = PsiTreeUtil.getParentOfType(parentTag, XmlTag.class);
+        }
+
+        return false;
     }
 }

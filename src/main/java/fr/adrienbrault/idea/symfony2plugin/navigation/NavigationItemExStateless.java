@@ -92,16 +92,7 @@ public class NavigationItemExStateless implements NavigationItem, ItemPresentati
         if (appendBundleLocation) {
             PsiFile psiFile = psiElement.getContainingFile();
             if (psiFile != null) {
-                locationPathString = locationString + " " + psiFile.getName();
-
-                String bundleName = psiFile.getVirtualFile().getPath();
-
-                if (bundleName.contains("Bundle")) {
-                    bundleName = bundleName.substring(0, bundleName.lastIndexOf("Bundle"));
-                    if (bundleName.length() > 1 && bundleName.contains("/")) {
-                        locationPathString = locationPathString + " " + bundleName.substring(bundleName.lastIndexOf("/") + 1) + "::" + psiFile.getName();
-                    }
-                }
+                locationPathString = NavigationItemEx.buildBundleLocationString(locationString, psiFile);
             }
         }
 
@@ -111,6 +102,6 @@ public class NavigationItemExStateless implements NavigationItem, ItemPresentati
             icon,
             locationPathString
         );
-    } 
+    }
 }
 

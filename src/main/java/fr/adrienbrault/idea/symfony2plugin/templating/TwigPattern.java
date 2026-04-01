@@ -1115,44 +1115,7 @@ public class TwigPattern {
                 )
             );
 
-        return
-            PlatformPatterns.or(
-                // {{ foo(['fo<caret>obar']) }}
-                PlatformPatterns
-                    .psiElement(TwigTokenTypes.STRING_TEXT).afterLeafSkipping(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement().withElementType(PlatformPatterns.elementType().or(
-                        TwigTokenTypes.SINGLE_QUOTE,
-                        TwigTokenTypes.DOUBLE_QUOTE
-                    )).afterLeafSkipping(
-                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                        functionPattern
-                    )
-                ).withLanguage(TwigLanguage.INSTANCE),
-
-                // {{ foo(['foobar', 'foo<caret>bar']) }}
-                PlatformPatterns
-                    .psiElement(TwigTokenTypes.STRING_TEXT).afterLeafSkipping(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement().withElementType(PlatformPatterns.elementType().or(
-                        TwigTokenTypes.SINGLE_QUOTE,
-                        TwigTokenTypes.DOUBLE_QUOTE
-                    )).afterLeafSkipping(
-                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                        PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
-                            PlatformPatterns.or(
-                                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                                PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                                PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT),
-                                PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-                                PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
-                                PlatformPatterns.psiElement(TwigTokenTypes.COMMA)
-                            ),
-                            functionPattern
-                        )
-                    )
-                ).withLanguage(TwigLanguage.INSTANCE)
-            );
+        return getStringInArrayPattern(functionPattern);
     }
 
     /**
@@ -1183,44 +1146,51 @@ public class TwigPattern {
                 )
             );
 
-        return
-            PlatformPatterns.or(
-                // {{ foo(bar, ['fo<caret>obar']) }}
-                PlatformPatterns
-                    .psiElement(TwigTokenTypes.STRING_TEXT).afterLeafSkipping(
-                    PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement().withElementType(PlatformPatterns.elementType().or(
-                        TwigTokenTypes.SINGLE_QUOTE,
-                        TwigTokenTypes.DOUBLE_QUOTE
-                    )).afterLeafSkipping(
-                        PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                        functionPattern
-                    )
-                ).withLanguage(TwigLanguage.INSTANCE),
+        return getStringInArrayPattern(functionPattern);
+    }
 
-                // {{ foo(bar, ['foobar', 'foo<caret>bar']) }}
-                PlatformPatterns
-                    .psiElement(TwigTokenTypes.STRING_TEXT).afterLeafSkipping(
+    /**
+     * Matches a STRING_TEXT token inside an array literal that follows the given {@code arrayOpenPattern}.
+     * Handles both the first element and subsequent elements (after a comma).
+     */
+    private static ElementPattern<PsiElement> getStringInArrayPattern(@NotNull PsiElementPattern.Capture<PsiElement> arrayOpenPattern) {
+        return PlatformPatterns.or(
+            // first item: ['fo<caret>obar']
+            PlatformPatterns
+                .psiElement(TwigTokenTypes.STRING_TEXT).afterLeafSkipping(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement().withElementType(PlatformPatterns.elementType().or(
+                    TwigTokenTypes.SINGLE_QUOTE,
+                    TwigTokenTypes.DOUBLE_QUOTE
+                )).afterLeafSkipping(
+                    PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                    arrayOpenPattern
+                )
+            ).withLanguage(TwigLanguage.INSTANCE),
+
+            // subsequent item: ['foobar', 'foo<caret>bar']
+            PlatformPatterns
+                .psiElement(TwigTokenTypes.STRING_TEXT).afterLeafSkipping(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement().withElementType(PlatformPatterns.elementType().or(
+                    TwigTokenTypes.SINGLE_QUOTE,
+                    TwigTokenTypes.DOUBLE_QUOTE
+                )).afterLeafSkipping(
                     PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                    PlatformPatterns.psiElement().withElementType(PlatformPatterns.elementType().or(
-                        TwigTokenTypes.SINGLE_QUOTE,
-                        TwigTokenTypes.DOUBLE_QUOTE
-                    )).afterLeafSkipping(
-                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                        PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
-                            PlatformPatterns.or(
-                                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
-                                PlatformPatterns.psiElement(PsiWhiteSpace.class),
-                                PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT),
-                                PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
-                                PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
-                                PlatformPatterns.psiElement(TwigTokenTypes.COMMA)
-                            ),
-                            functionPattern
-                        )
+                    PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
+                        PlatformPatterns.or(
+                            PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE),
+                            PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                            PlatformPatterns.psiElement(TwigTokenTypes.STRING_TEXT),
+                            PlatformPatterns.psiElement(TwigTokenTypes.SINGLE_QUOTE),
+                            PlatformPatterns.psiElement(TwigTokenTypes.DOUBLE_QUOTE),
+                            PlatformPatterns.psiElement(TwigTokenTypes.COMMA)
+                        ),
+                        arrayOpenPattern
                     )
-                ).withLanguage(TwigLanguage.INSTANCE)
-            );
+                )
+            ).withLanguage(TwigLanguage.INSTANCE)
+        );
     }
 
     /**

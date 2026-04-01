@@ -38,17 +38,8 @@ public class PhpTranslationKeyInspection extends LocalInspectionTool {
     }
 
     private void invoke(@NotNull ProblemsHolder holder, @NotNull PsiElement psiElement) {
-        if (!(psiElement instanceof StringLiteralExpression)) {
-            return;
-        }
-
-        PsiElement parameterList = psiElement.getContext();
-        if (!(parameterList instanceof ParameterList)) {
-            return;
-        }
-
-        PsiElement methodReferenceOrNewExpression = parameterList.getContext();
-        if (!(methodReferenceOrNewExpression instanceof NewExpression) && !(methodReferenceOrNewExpression instanceof FunctionReference)) {
+        ParameterListOwner methodReferenceOrNewExpression = TranslationUtil.getTranslationFunctionContext(psiElement);
+        if (methodReferenceOrNewExpression == null) {
             return;
         }
 
@@ -56,11 +47,12 @@ public class PhpTranslationKeyInspection extends LocalInspectionTool {
             return;
         }
 
-        if (!TranslationUtil.isTranslationReference((ParameterListOwner) methodReferenceOrNewExpression)) {
+        if (!TranslationUtil.isTranslationReference(methodReferenceOrNewExpression)) {
             return;
         }
 
-        PsiElement domainElement = ((ParameterList) parameterList).getParameter("domain", PhpTranslationDomainInspection.getDomainParameter(parameterList.getContext()));
+        ParameterList parameterList = (ParameterList) psiElement.getContext();
+        PsiElement domainElement = parameterList.getParameter("domain", PhpTranslationDomainInspection.getDomainParameter(methodReferenceOrNewExpression));
         if(domainElement == null) {
             // no domain found; fallback to default domain
             annotateTranslationKey((StringLiteralExpression) psiElement, "messages", holder);

@@ -90,7 +90,7 @@ public class SymfonyCommandUtil {
             // Case 1: addOption() method calls
             Collection<MethodReference> addOptionCalls = PhpElementsUtil.collectMethodReferencesInsideControlFlow(configureMethod, "addOption");
             for (MethodReference methodRef : addOptionCalls) {
-                CommandOption option = parseAddOptionCall(methodRef);
+                CommandOption option = parseOptionFromParameters(methodRef.getParameters());
                 if (option != null) {
                     options.put(option.name(), option);
                 }
@@ -119,46 +119,6 @@ public class SymfonyCommandUtil {
     }
 
     /**
-     * Parses an addOption() method call and extracts the option name, shortcut, and metadata.
-     */
-    @Nullable
-    private static CommandOption parseAddOptionCall(@NotNull MethodReference methodRef) {
-        // addOption(name, shortcut, mode, description, default)
-        PsiElement[] parameters = methodRef.getParameters();
-
-        // Get name (parameter 0)
-        if (parameters.length == 0) {
-            return null;
-        }
-
-        PsiElement nameParam = parameters[0];
-        String name = PhpElementsUtil.getStringValue(nameParam);
-        if (StringUtils.isBlank(name)) {
-            return null;
-        }
-
-        // Get shortcut (parameter 1)
-        String shortcut = null;
-        if (parameters.length > 1) {
-            shortcut = PhpElementsUtil.getStringValue(parameters[1]);
-        }
-
-        // Get description (parameter 3)
-        String description = null;
-        if (parameters.length > 3) {
-            description = PhpElementsUtil.getStringValue(parameters[3]);
-        }
-
-        // Get default value (parameter 4)
-        String defaultValue = null;
-        if (parameters.length > 4) {
-            defaultValue = parameters[4].getText();
-        }
-
-        return new CommandOption(nameParam, name, shortcut, description, defaultValue);
-    }
-
-    /**
      * Parses a setDefinition() method call and extracts options from new InputOption() instances.
      * Handles both single instances and arrays of instances.
      */
@@ -171,7 +131,7 @@ public class SymfonyCommandUtil {
         for (NewExpression newExpression : newExpressions) {
             // Check if this is a new InputOption() instance
             if (PhpElementsUtil.getNewExpressionPhpClassWithInstance(newExpression, "Symfony\\Component\\Console\\Input\\InputOption") != null) {
-                CommandOption option = parseInputOptionConstructor(newExpression);
+                CommandOption option = parseOptionFromParameters(newExpression.getParameters());
                 if (option != null) {
                     options.put(option.name(), option);
                 }
@@ -182,43 +142,26 @@ public class SymfonyCommandUtil {
     }
 
     /**
-     * Parses a new InputOption() constructor and extracts the option name, shortcut, and metadata.
-     *
-     * Constructor signature: new InputOption(name, shortcut, mode, description, default)
+     * Parses the parameters of addOption(name, shortcut, mode, description, default)
+     * or new InputOption(name, shortcut, mode, description, default).
      */
     @Nullable
-    private static CommandOption parseInputOptionConstructor(@NotNull NewExpression newExpression) {
-        PsiElement[] parameters = newExpression.getParameters();
-
-        // Get name (parameter 0)
+    private static CommandOption parseOptionFromParameters(@NotNull PsiElement[] parameters) {
         if (parameters.length == 0) {
             return null;
         }
 
-        String name = PhpElementsUtil.getStringValue(parameters[0]);
+        PsiElement nameParam = parameters[0];
+        String name = PhpElementsUtil.getStringValue(nameParam);
         if (StringUtils.isBlank(name)) {
             return null;
         }
 
-        // Get shortcut (parameter 1)
-        String shortcut = null;
-        if (parameters.length > 1) {
-            shortcut = PhpElementsUtil.getStringValue(parameters[1]);
-        }
+        String shortcut = parameters.length > 1 ? PhpElementsUtil.getStringValue(parameters[1]) : null;
+        String description = parameters.length > 3 ? PhpElementsUtil.getStringValue(parameters[3]) : null;
+        String defaultValue = parameters.length > 4 ? parameters[4].getText() : null;
 
-        // Get description (parameter 3)
-        String description = null;
-        if (parameters.length > 3) {
-            description = PhpElementsUtil.getStringValue(parameters[3]);
-        }
-
-        // Get default value (parameter 4)
-        String defaultValue = null;
-        if (parameters.length > 4) {
-            defaultValue = parameters[4].getText();
-        }
-
-        return new CommandOption(parameters[0], name, shortcut, description, defaultValue);
+        return new CommandOption(nameParam, name, shortcut, description, defaultValue);
     }
 
     /**
@@ -289,7 +232,7 @@ public class SymfonyCommandUtil {
             // Case 1: addArgument() method calls
             Collection<MethodReference> addArgumentCalls = PhpElementsUtil.collectMethodReferencesInsideControlFlow(configureMethod, "addArgument");
             for (MethodReference methodRef : addArgumentCalls) {
-                CommandArgument argument = parseAddArgumentCall(methodRef);
+                CommandArgument argument = parseArgumentFromParameters(methodRef.getParameters());
                 if (argument != null) {
                     arguments.put(argument.name(), argument);
                 }
@@ -318,40 +261,6 @@ public class SymfonyCommandUtil {
     }
 
     /**
-     * Parses an addArgument() method call and extracts the argument metadata.
-     */
-    @Nullable
-    private static CommandArgument parseAddArgumentCall(@NotNull MethodReference methodRef) {
-        // addArgument(name, mode, description, default)
-        PsiElement[] parameters = methodRef.getParameters();
-
-        // Get name (parameter 0)
-        if (parameters.length == 0) {
-            return null;
-        }
-
-        PsiElement nameParam = parameters[0];
-        String name = PhpElementsUtil.getStringValue(nameParam);
-        if (StringUtils.isBlank(name)) {
-            return null;
-        }
-
-        // Get description (parameter 2)
-        String description = null;
-        if (parameters.length > 2) {
-            description = PhpElementsUtil.getStringValue(parameters[2]);
-        }
-
-        // Get default value (parameter 3) - keep as text representation
-        String defaultValue = null;
-        if (parameters.length > 3) {
-            defaultValue = parameters[3].getText();
-        }
-
-        return new CommandArgument(nameParam, name, description, defaultValue);
-    }
-
-    /**
      * Parses a setDefinition() method call and extracts arguments from new InputArgument() instances.
      *
      * @param methodRef The setDefinition method reference
@@ -366,7 +275,7 @@ public class SymfonyCommandUtil {
         for (NewExpression newExpression : newExpressions) {
             // Check if this is a new InputArgument() instance
             if (PhpElementsUtil.getNewExpressionPhpClassWithInstance(newExpression, "Symfony\\Component\\Console\\Input\\InputArgument") != null) {
-                CommandArgument argument = parseInputArgumentConstructor(newExpression);
+                CommandArgument argument = parseArgumentFromParameters(newExpression.getParameters());
                 if (argument != null) {
                     arguments.put(argument.name(), argument);
                 }
@@ -377,37 +286,25 @@ public class SymfonyCommandUtil {
     }
 
     /**
-     * Parses a new InputArgument() constructor and extracts the argument metadata.
-     *
-     * Constructor signature: new InputArgument(name, mode, description, default)
+     * Parses the parameters of addArgument(name, mode, description, default)
+     * or new InputArgument(name, mode, description, default).
      */
     @Nullable
-    private static CommandArgument parseInputArgumentConstructor(@NotNull NewExpression newExpression) {
-        PsiElement[] parameters = newExpression.getParameters();
-
-        // Get name (parameter 0)
+    private static CommandArgument parseArgumentFromParameters(@NotNull PsiElement[] parameters) {
         if (parameters.length == 0) {
             return null;
         }
 
-        String name = PhpElementsUtil.getStringValue(parameters[0]);
+        PsiElement nameParam = parameters[0];
+        String name = PhpElementsUtil.getStringValue(nameParam);
         if (StringUtils.isBlank(name)) {
             return null;
         }
 
-        // Get description (parameter 2)
-        String description = null;
-        if (parameters.length > 2) {
-            description = PhpElementsUtil.getStringValue(parameters[2]);
-        }
+        String description = parameters.length > 2 ? PhpElementsUtil.getStringValue(parameters[2]) : null;
+        String defaultValue = parameters.length > 3 ? parameters[3].getText() : null;
 
-        // Get default value (parameter 3) - keep as text representation
-        String defaultValue = null;
-        if (parameters.length > 3) {
-            defaultValue = parameters[3].getText();
-        }
-
-        return new CommandArgument(parameters[0], name, description, defaultValue);
+        return new CommandArgument(nameParam, name, description, defaultValue);
     }
 
     /**

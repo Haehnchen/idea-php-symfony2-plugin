@@ -233,20 +233,7 @@ public class ServiceActionUtil {
             }
         }
 
-        Parameter[] parameters = collectOptionalParameter ? constructor.getParameters() : PhpElementsUtil.getFunctionRequiredParameter(constructor);
-        if(parameters.length <= serviceArguments) {
-            return Collections.emptyList();
-        }
-
-        final List<String> args = new ArrayList<>();
-
-        for (int i = serviceArguments; i < parameters.length; i++) {
-            Parameter parameter = parameters[i];
-            String s = parameter.getDeclaredType().toString();
-            args.add(s);
-        }
-
-        return args;
+        return collectMissingArgTypes(constructor, serviceArguments, collectOptionalParameter);
     }
 
     @Nullable
@@ -301,17 +288,19 @@ public class ServiceActionUtil {
             return Collections.emptyList();
         }
 
+        return collectMissingArgTypes(constructor, serviceArguments, collectOptionalParameter);
+    }
+
+    @NotNull
+    private static List<String> collectMissingArgTypes(@NotNull Method constructor, int serviceArguments, boolean collectOptionalParameter) {
         Parameter[] parameters = collectOptionalParameter ? constructor.getParameters() : PhpElementsUtil.getFunctionRequiredParameter(constructor);
-        if(parameters.length <= serviceArguments) {
+        if (parameters.length <= serviceArguments) {
             return Collections.emptyList();
         }
 
         final List<String> args = new ArrayList<>();
-
         for (int i = serviceArguments; i < parameters.length; i++) {
-            Parameter parameter = parameters[i];
-            String s = parameter.getDeclaredType().toString();
-            args.add(s);
+            args.add(parameters[i].getDeclaredType().toString());
         }
 
         return args;

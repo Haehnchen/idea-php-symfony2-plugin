@@ -32,6 +32,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLScalar;
 import org.w3c.dom.*;
@@ -416,6 +417,27 @@ public class TranslationUtil {
         return (psiElement instanceof MethodReference methodReference && PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, TranslationUtil.PHP_TRANSLATION_SIGNATURES))
             || (psiElement instanceof NewExpression newExpression && PhpElementsUtil.isNewExpressionPhpClassWithInstance(newExpression, TranslationUtil.PHP_TRANSLATION_TRANSLATABLE_MESSAGE))
             || (psiElement instanceof FunctionReference functionReference && TranslationUtil.isFunctionReferenceTranslationTFunction(functionReference));
+    }
+
+    /**
+     * Returns the enclosing {@link ParameterListOwner} ({@link FunctionReference} or {@link NewExpression})
+     * when {@code psiElement} is a {@link com.jetbrains.php.lang.psi.elements.StringLiteralExpression} directly
+     * inside a {@link ParameterList} of such a call, or {@code null} otherwise.
+     */
+    @Nullable
+    public static ParameterListOwner getTranslationFunctionContext(@NotNull PsiElement psiElement) {
+        if (!(psiElement instanceof StringLiteralExpression)) {
+            return null;
+        }
+        PsiElement parameterList = psiElement.getContext();
+        if (!(parameterList instanceof ParameterList)) {
+            return null;
+        }
+        PsiElement parent = parameterList.getContext();
+        if (!(parent instanceof FunctionReference) && !(parent instanceof NewExpression)) {
+            return null;
+        }
+        return (ParameterListOwner) parent;
     }
 
 

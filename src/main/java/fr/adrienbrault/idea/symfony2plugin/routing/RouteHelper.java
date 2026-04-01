@@ -1,7 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.routing;
 
+import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
@@ -1549,6 +1551,21 @@ public class RouteHelper {
     public static boolean isRouteClassAnnotation(@NotNull String clazz) {
         String myClazz = "\\" + StringUtils.stripStart(clazz, "\\");
         return Arrays.stream(ROUTE_ANNOTATIONS).anyMatch(s -> s.equalsIgnoreCase(myClazz));
+    }
+
+    /**
+     * Builds a controller action gutter icon and adds it to the given line marker collection.
+     */
+    public static void addControllerLineMarker(
+        @NotNull Collection<? super LineMarkerInfo<?>> lineMarkerInfos,
+        @NotNull PsiElement[] methods,
+        @NotNull PsiElement anchor
+    ) {
+        NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.TWIG_CONTROLLER_LINE_MARKER)
+            .setTargets(methods)
+            .setTooltipText("Navigate to action");
+
+        lineMarkerInfos.add(builder.createLineMarkerInfo(anchor));
     }
 
 }

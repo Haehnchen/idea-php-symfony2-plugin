@@ -62,40 +62,26 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider4 {
 
     @Override
     public Collection<? extends PhpNamedElement> getBySignature(String expression, Set<String> visited, int depth, Project project) {
-
-        // get back our original call
-        // since phpstorm 7.1.2 we need to validate this
-        int endIndex = expression.lastIndexOf(TRIM_KEY);
-        if(endIndex == -1) {
+        PhpTypeProviderUtil.SignatureSplit sig = PhpTypeProviderUtil.resolveSignatureSplit(expression, TRIM_KEY, project);
+        if (sig == null) {
             return Collections.emptySet();
         }
 
-        String originalSignature = expression.substring(0, endIndex);
-        String parameter = expression.substring(endIndex + 1);
-
-        // search for called method
-        PhpIndex phpIndex = PhpIndex.getInstance(project);
-        Collection<? extends PhpNamedElement> phpNamedElementCollections = PhpTypeProviderUtil.getTypeSignature(phpIndex, originalSignature);
-        if(phpNamedElementCollections.isEmpty()) {
-            return Collections.emptySet();
+        PhpNamedElement phpNamedElement = sig.elements().iterator().next();
+        if (!(phpNamedElement instanceof Method)) {
+            return sig.elements();
         }
 
-        // get first matched item
-        PhpNamedElement phpNamedElement = phpNamedElementCollections.iterator().next();
-        if(!(phpNamedElement instanceof Method)) {
-            return phpNamedElementCollections;
-        }
-
-        parameter = PhpTypeProviderUtil.getResolvedParameter(phpIndex, parameter);
-        if(parameter == null) {
-            return phpNamedElementCollections;
+        String parameter = PhpTypeProviderUtil.getResolvedParameter(sig.phpIndex(), sig.parameter());
+        if (parameter == null) {
+            return sig.elements();
         }
 
         // finally search the classes
-        if(PhpElementsUtil.isMethodInstanceOf((Method) phpNamedElement, ServiceContainerUtil.SERVICE_GET_SIGNATURES)) {
+        if (PhpElementsUtil.isMethodInstanceOf((Method) phpNamedElement, ServiceContainerUtil.SERVICE_GET_SIGNATURES)) {
             ContainerService containerService = ContainerCollectionResolver.getService(project, parameter);
 
-            if(containerService != null) {
+            if (containerService != null) {
                 Collection<PhpNamedElement> phpClasses = new HashSet<>();
 
                 for (String s : containerService.getClassNames()) {
@@ -106,6 +92,6 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider4 {
             }
         }
 
-        return phpNamedElementCollections;
+        return sig.elements();
     }
 }

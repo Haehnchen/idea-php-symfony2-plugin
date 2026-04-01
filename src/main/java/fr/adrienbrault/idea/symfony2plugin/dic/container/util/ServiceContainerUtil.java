@@ -308,6 +308,20 @@ public class ServiceContainerUtil {
     }
 
     /**
+     * Returns the string value of the first parameter of {@code methodReference}, or {@code null}
+     * if there are no parameters or the value is blank.
+     */
+    @Nullable
+    private static String extractFirstStringParameter(@NotNull MethodReference methodReference) {
+        PsiElement[] parameters = methodReference.getParameters();
+        if (parameters.length < 1) {
+            return null;
+        }
+        String value = getStringValueIndexSafe(parameters[0]);
+        return StringUtils.isBlank(value) ? null : value;
+    }
+
+    /**
      * Extract class parameter from chained ->class() method call
      *
      * $services->set('id')->class(Foo::class)->tag('foo')
@@ -444,16 +458,12 @@ public class ServiceContainerUtil {
                         continue;
                     }
 
-                    PsiElement[] parameters = methodReference.getParameters();
-                    String serviceName = null;
-                    if (parameters.length >= 1) {
-                        serviceName = getStringValueIndexSafe(parameters[0]);
-                    }
-
-                    if (StringUtils.isBlank(serviceName)) {
+                    String serviceName = extractFirstStringParameter(methodReference);
+                    if (serviceName == null) {
                         continue;
                     }
 
+                    PsiElement[] parameters = methodReference.getParameters();
                     Map<String, String> keyValue = new HashMap<>();
                     if (parameters.length >= 2) {
                         String serviceClass = getStringValueIndexSafe(parameters[1]);
@@ -485,16 +495,12 @@ public class ServiceContainerUtil {
 
                 // ->alias(TranslatorInterface::class, 'translator')
                 if ("alias".equals(methodReference.getName())) {
-                    PsiElement[] parameters = methodReference.getParameters();
-                    String serviceName = null;
-                    if (parameters.length >= 1) {
-                        serviceName = getStringValueIndexSafe(parameters[0]);
-                    }
-
-                    if (StringUtils.isBlank(serviceName)) {
+                    String serviceName = extractFirstStringParameter(methodReference);
+                    if (serviceName == null) {
                         continue;
                     }
 
+                    PsiElement[] parameters = methodReference.getParameters();
                     Map<String, String> keyValue = new HashMap<>();
                     if (parameters.length >= 2) {
                         String serviceClass = getStringValueIndexSafe(parameters[1]);
@@ -1209,17 +1215,17 @@ public class ServiceContainerUtil {
             return null;
         }
 
-        String serviceClass = PhpArrayServiceUtil.getCurrentServiceClass(lookupElement);
-        if (StringUtils.isBlank(serviceClass)) {
+        String currentServiceClass = PhpArrayServiceUtil.getCurrentServiceClass(lookupElement);
+        if (currentServiceClass == null) {
             return null;
         }
 
-        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(lookupElement.getProject(), serviceClass, lazyServiceCollector);
-        if (phpClass == null) {
-            return null;
-        }
+        Method constructor = resolveConstructor(
+            currentServiceClass,
+            lookupElement.getProject(),
+            lazyServiceCollector
+        );
 
-        Method constructor = phpClass.getConstructor();
         if (constructor == null) {
             return null;
         }
@@ -1230,6 +1236,26 @@ public class ServiceContainerUtil {
         }
 
         return new ServiceTypeHint(constructor, parameterIndex, element);
+    }
+
+    /**
+     * Resolves {@code serviceClass} → {@link PhpClass} → constructor {@link Method}, returning
+     * {@code null} at any step that fails (blank class, unresolved class, no constructor).
+     */
+    @Nullable
+    private static Method resolveConstructor(
+        @NotNull String serviceClass,
+        @NotNull Project project,
+        @NotNull ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector
+    ) {
+        if (StringUtils.isBlank(serviceClass)) {
+            return null;
+        }
+        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(project, serviceClass, lazyServiceCollector);
+        if (phpClass == null) {
+            return null;
+        }
+        return phpClass.getConstructor();
     }
 
     private static int getPhpArrayConstructorArgumentIndex(@NotNull String segment, @NotNull Method constructor) {
@@ -1308,17 +1334,12 @@ public class ServiceContainerUtil {
             return null;
         }
 
-        String serviceClass = getFluentServiceClassFromSet(setMethod);
-        if (StringUtils.isBlank(serviceClass)) {
+        String fluentServiceClassFromSet = getFluentServiceClassFromSet(setMethod);
+        if (fluentServiceClassFromSet == null) {
             return null;
         }
 
-        PhpClass phpClass = ServiceUtil.getResolvedClassDefinition(element.getProject(), serviceClass, lazyServiceCollector);
-        if (phpClass == null) {
-            return null;
-        }
-
-        Method constructor = phpClass.getConstructor();
+        Method constructor = resolveConstructor(fluentServiceClassFromSet, element.getProject(), lazyServiceCollector);
         if (constructor == null) {
             return null;
         }

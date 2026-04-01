@@ -43,17 +43,8 @@ public class PhpTranslationDomainInspection extends LocalInspectionTool {
     }
 
     private void invoke(@NotNull ProblemsHolder holder, @NotNull PsiElement psiElement) {
-        if (!(psiElement instanceof StringLiteralExpression)) {
-            return;
-        }
-
-        PsiElement parameterList = psiElement.getContext();
-        if (!(parameterList instanceof ParameterList)) {
-            return;
-        }
-
-        PsiElement methodReferenceOrNewExpression = parameterList.getContext();
-        if (!(methodReferenceOrNewExpression instanceof FunctionReference) && !(methodReferenceOrNewExpression instanceof NewExpression)) {
+        ParameterListOwner methodReferenceOrNewExpression = TranslationUtil.getTranslationFunctionContext(psiElement);
+        if (methodReferenceOrNewExpression == null) {
             return;
         }
 
@@ -64,7 +55,7 @@ public class PhpTranslationDomainInspection extends LocalInspectionTool {
             if (previousNonWhitespaceSibling1 != null && previousNonWhitespaceSibling1.getElementType() == PhpTokenTypes.IDENTIFIER) {
                 String text = previousNonWhitespaceSibling1.getText();
                 boolean isSupportedAttributeInsideContext = "domain".equals(text)
-                    && TranslationUtil.isTranslationReference((ParameterListOwner) methodReferenceOrNewExpression);
+                    && TranslationUtil.isTranslationReference(methodReferenceOrNewExpression);
 
                 if (isSupportedAttributeInsideContext) {
                     annotateTranslationDomain((StringLiteralExpression) psiElement, holder);
