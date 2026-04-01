@@ -109,41 +109,20 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        // <service decorates="foobar" />
-        String decorates = xmlTag.getAttributeValue("decorates");
-        if(StringUtils.isNotBlank(decorates)) {
-            result.add(ServiceUtil.getLineMarkerForDecoratesServiceId(leafTarget, ServiceUtil.ServiceLineMarker.DECORATE, decorates));
-        }
-
-        // <service parent="foobar" />
-        String parent = xmlTag.getAttributeValue("parent");
-        if(StringUtils.isNotBlank(parent)) {
-            result.add(ServiceUtil.getLineMarkerForDecoratesServiceId(leafTarget, ServiceUtil.ServiceLineMarker.PARENT, parent));
-        }
-
-        // foreign "decorates" linemarker
-        NavigationGutterIconBuilder<PsiElement> lineMarkerDecorates = ServiceUtil.getLineMarkerForDecoratedServiceId(
-            project,
-            ServiceUtil.ServiceLineMarker.DECORATE,
-            lazyDecoratedParentServiceValues.getDecoratedServices(),
-            id
+        ServiceLineMarkerUtil.collectDecoratesAndParentTargets(
+            leafTarget,
+            result,
+            xmlTag.getAttributeValue("decorates"),
+            xmlTag.getAttributeValue("parent")
         );
 
-        if(lineMarkerDecorates != null) {
-            result.add(lineMarkerDecorates.createLineMarkerInfo(leafTarget));
-        }
-
-        // foreign "parent" linemarker
-        NavigationGutterIconBuilder<PsiElement> lineMarkerParent = ServiceUtil.getLineMarkerForDecoratedServiceId(
+        ServiceLineMarkerUtil.collectDecoratedAndParentTargets(
             project,
-            ServiceUtil.ServiceLineMarker.PARENT,
-            lazyDecoratedParentServiceValues.getParentServices(),
+            leafTarget,
+            result,
+            lazyDecoratedParentServiceValues,
             id
         );
-
-        if(lineMarkerParent != null) {
-            result.add(lineMarkerParent.createLineMarkerInfo(leafTarget));
-        }
     }
 
     /**

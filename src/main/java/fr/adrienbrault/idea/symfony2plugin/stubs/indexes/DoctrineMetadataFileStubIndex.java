@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -37,7 +38,13 @@ public class DoctrineMetadataFileStubIndex extends FileBasedIndexExtension<Strin
             Map<String, DoctrineModelSerializable> map = new HashMap<>();
 
             PsiFile psiFile = fileContent.getPsiFile();
-            if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject()) || !isValidForIndex(fileContent, psiFile)) {
+            if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject()) || !StubIndexValidationUtil.isValidForIndex(
+                fileContent,
+                psiFile,
+                MAX_FILE_BYTE_SIZE,
+                false,
+                Set.of("xml", "yml", "yaml", "php")
+            )) {
                 return map;
             }
 
@@ -99,24 +106,4 @@ public class DoctrineMetadataFileStubIndex extends FileBasedIndexExtension<Strin
         return 5;
     }
 
-    public static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {
-
-        String fileName = psiFile.getName();
-
-        if(fileName.startsWith(".") || fileName.endsWith("Test")) {
-            return false;
-        }
-
-        // @TODO: filter .orm.xml?
-        String extension = inputData.getFile().getExtension();
-        if(extension == null || !(extension.equalsIgnoreCase("xml") || extension.equalsIgnoreCase("yml")|| extension.equalsIgnoreCase("yaml") || extension.equalsIgnoreCase("php"))) {
-            return false;
-        }
-
-        if(inputData.getFile().getLength() > MAX_FILE_BYTE_SIZE) {
-            return false;
-        }
-
-        return true;
-    }
 }

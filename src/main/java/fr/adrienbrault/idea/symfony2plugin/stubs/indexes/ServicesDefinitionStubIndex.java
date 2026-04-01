@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -89,24 +90,21 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
     }
 
     public static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {
-
-        String fileName = psiFile.getName();
-        if(fileName.startsWith(".") || fileName.endsWith("Test")) {
+        if (!StubIndexValidationUtil.isValidForIndex(
+            inputData,
+            psiFile,
+            MAX_FILE_BYTE_SIZE,
+            true,
+            Set.of("xml", "yml", "yaml", "php")
+        )) {
             return false;
         }
 
-        // container file need to be xml file, eg xsd filetypes are not valid
         String extension = inputData.getFile().getExtension();
-        if(extension == null || !(extension.equalsIgnoreCase("xml") || extension.equalsIgnoreCase("yml") || extension.equalsIgnoreCase("yaml") || extension.equalsIgnoreCase("php"))) {
-            return false;
-        }
 
         // possible fixture or test file
         // to support also library paths, only filter them on project files
         String relativePath = VfsUtil.getRelativePath(inputData.getFile(), ProjectUtil.getProjectDir(inputData.getProject()), '/');
-        if(relativePath != null && (relativePath.contains("/Test/") || relativePath.contains("/Tests/") || relativePath.contains("/Fixture/") || relativePath.contains("/Fixtures/"))) {
-            return false;
-        }
 
         // exclude settings-configured service container paths (lightweight path comparison, no VFS lookups)
         List<ContainerFile> settingsContainerFiles = Settings.getInstance(psiFile.getProject()).containerFiles;
@@ -130,11 +128,6 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
             if (lowerPath.startsWith("var/cache/") || lowerPath.startsWith("app/cache/")) {
                 return false;
             }
-        }
-
-        // dont index files larger then files; use 5 MB here
-        if(inputData.getFile().getLength() > MAX_FILE_BYTE_SIZE) {
-            return false;
         }
 
         return true;

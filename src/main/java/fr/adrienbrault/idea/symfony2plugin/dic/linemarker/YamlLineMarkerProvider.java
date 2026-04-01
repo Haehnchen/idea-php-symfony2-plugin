@@ -13,7 +13,6 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceSerializable;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -105,40 +104,19 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        // decorates: foobar
-        String decorates = YamlHelper.getYamlKeyValueAsString(yamlKeyValue, "decorates");
-        if(StringUtils.isNotBlank(decorates)) {
-            result.add(ServiceUtil.getLineMarkerForDecoratesServiceId(leafTarget, ServiceUtil.ServiceLineMarker.DECORATE, decorates));
-        }
-
-        // parent: foobar
-        String parent = YamlHelper.getYamlKeyValueAsString(yamlKeyValue, "parent");
-        if(StringUtils.isNotBlank(parent)) {
-            result.add(ServiceUtil.getLineMarkerForDecoratesServiceId(leafTarget, ServiceUtil.ServiceLineMarker.PARENT, parent));
-        }
-
-        // foreign "decorates" linemarker
-        NavigationGutterIconBuilder<PsiElement> decorateLineMarker = ServiceUtil.getLineMarkerForDecoratedServiceId(
-            project,
-            ServiceUtil.ServiceLineMarker.DECORATE,
-            lazyDecoratedServices.getDecoratedServices(),
-            id
+        ServiceLineMarkerUtil.collectDecoratesAndParentTargets(
+            leafTarget,
+            result,
+            YamlHelper.getYamlKeyValueAsString(yamlKeyValue, "decorates"),
+            YamlHelper.getYamlKeyValueAsString(yamlKeyValue, "parent")
         );
 
-        if(decorateLineMarker != null) {
-            result.add(decorateLineMarker.createLineMarkerInfo(leafTarget));
-        }
-
-        // foreign "parent" linemarker
-        NavigationGutterIconBuilder<PsiElement> parentLineMarker = ServiceUtil.getLineMarkerForDecoratedServiceId(
+        ServiceLineMarkerUtil.collectDecoratedAndParentTargets(
             project,
-            ServiceUtil.ServiceLineMarker.PARENT,
-            lazyDecoratedServices.getParentServices(),
+            leafTarget,
+            result,
+            lazyDecoratedServices,
             id
         );
-
-        if(parentLineMarker != null) {
-            result.add(parentLineMarker.createLineMarkerInfo(leafTarget));
-        }
     }
 }

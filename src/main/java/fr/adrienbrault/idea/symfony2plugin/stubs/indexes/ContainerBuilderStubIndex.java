@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
-import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.ObjectUtils;
 import com.intellij.util.indexing.*;
@@ -20,7 +19,6 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ContainerBuilderCall;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ContainerBuilderCallExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import one.util.streamex.StreamEx;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -68,7 +66,7 @@ public class ContainerBuilderStubIndex extends FileBasedIndexExtension<String, C
             PsiFile psiFile = inputData.getPsiFile();
             if(!(psiFile instanceof PhpFile) ||
                 !Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject()) ||
-                !isValidForIndex(inputData, psiFile)
+                !StubIndexValidationUtil.isValidForIndex(inputData, psiFile, MAX_FILE_BYTE_SIZE, true, null)
                 ){
 
                 return map;
@@ -113,27 +111,6 @@ public class ContainerBuilderStubIndex extends FileBasedIndexExtension<String, C
     @Override
     public int getVersion() {
         return 3;
-    }
-
-    private static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {
-
-        String fileName = psiFile.getName();
-        if(fileName.startsWith(".") || fileName.endsWith("Test")) {
-            return false;
-        }
-
-        // is Test file in path name
-        String relativePath = VfsUtil.getRelativePath(inputData.getFile(), ProjectUtil.getProjectDir(inputData.getProject()), '/');
-        if(relativePath != null && (relativePath.contains("/Test/") || relativePath.contains("/Tests/") || relativePath.contains("/Fixture/") || relativePath.contains("/Fixtures/"))) {
-            return false;
-        }
-
-        // dont index files larger then files; use 5 MB here
-        if(inputData.getFile().getLength() > MAX_FILE_BYTE_SIZE) {
-            return false;
-        }
-
-        return true;
     }
 
     private void processMethod(@NotNull Method method, @NotNull Map<String, ContainerBuilderCall> map) {
