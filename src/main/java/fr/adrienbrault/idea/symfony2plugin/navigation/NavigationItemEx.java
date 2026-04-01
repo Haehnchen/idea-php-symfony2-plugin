@@ -6,6 +6,7 @@ import com.intellij.navigation.NavigationItem;
 import com.intellij.pom.Navigatable;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -107,6 +108,25 @@ public class NavigationItemEx implements NavigationItem, ItemPresentation {
     @Override
     public Icon getIcon(boolean b) {
         return icon;
+    }
+
+    /**
+     * Appends bundle and file name to the location string when the file path contains "Bundle".
+     * Format: {@code "locationString BundleDir::filename"}, or {@code "locationString filename"} as fallback.
+     */
+    @NotNull
+    public static String buildBundleLocationString(@NotNull String locationString, @NotNull PsiFile psiFile) {
+        String locationPathString = locationString + " " + psiFile.getName();
+
+        String bundlePath = psiFile.getVirtualFile().getPath();
+        if (bundlePath.contains("Bundle")) {
+            bundlePath = bundlePath.substring(0, bundlePath.lastIndexOf("Bundle"));
+            if (bundlePath.length() > 1 && bundlePath.contains("/")) {
+                locationPathString = locationPathString + " " + bundlePath.substring(bundlePath.lastIndexOf("/") + 1) + "::" + psiFile.getName();
+            }
+        }
+
+        return locationPathString;
     }
 
 }

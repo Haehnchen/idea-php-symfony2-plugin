@@ -26,17 +26,7 @@ public class SymfonyCommandRunConfigurationProducer extends LazyRunConfiguration
 
     @Override
     protected boolean setupConfigurationFromContext(@NotNull SymfonyCommandRunConfiguration configuration, @NotNull ConfigurationContext context, @NotNull Ref<PsiElement> sourceElement) {
-        Location<?> location = context.getLocation();
-        if (!(location instanceof PsiLocation)) {
-            return false;
-        }
-
-        PhpClass phpClass = SymfonyCommandTestRunLineMarkerProvider.getCommandContext(location.getPsiElement());
-        if (phpClass == null) {
-            return false;
-        }
-
-        List<String> commandNames = SymfonyCommandUtil.getCommandNameFromClass(phpClass);
+        List<String> commandNames = getCommandNames(context);
         if (commandNames.isEmpty()) {
             return false;
         }
@@ -56,22 +46,26 @@ public class SymfonyCommandRunConfigurationProducer extends LazyRunConfiguration
 
     @Override
     public boolean isConfigurationFromContext(@NotNull SymfonyCommandRunConfiguration configuration, @NotNull ConfigurationContext context) {
-        Location<?> location = context.getLocation();
-        if (!(location instanceof PsiLocation)) {
-            return false;
-        }
-
-        PhpClass phpClass = SymfonyCommandTestRunLineMarkerProvider.getCommandContext(location.getPsiElement());
-        if (phpClass == null) {
-            return false;
-        }
-
-        List<String> commandNames = SymfonyCommandUtil.getCommandNameFromClass(phpClass);
+        List<String> commandNames = getCommandNames(context);
         if (commandNames.isEmpty()) {
             return false;
         }
 
-        String commandName = configuration.getCommandName();
-        return commandNames.contains(commandName);
+        return commandNames.contains(configuration.getCommandName());
+    }
+
+    @NotNull
+    private static List<String> getCommandNames(@NotNull ConfigurationContext context) {
+        Location<?> location = context.getLocation();
+        if (!(location instanceof PsiLocation)) {
+            return List.of();
+        }
+
+        PhpClass phpClass = SymfonyCommandTestRunLineMarkerProvider.getCommandContext(location.getPsiElement());
+        if (phpClass == null) {
+            return List.of();
+        }
+
+        return SymfonyCommandUtil.getCommandNameFromClass(phpClass);
     }
 }

@@ -85,10 +85,7 @@ public class TwigExtensionParser  {
     }
 
     @NotNull
-    private static Map<String, TwigExtension> parseFilters(@NotNull Project project, @NotNull Collection<PhpClass> phpClasses) {
-        Map<String, TwigExtension> extensions = new HashMap<>();
-
-        // Collect unique files
+    private static Set<PsiFile> collectPhpFiles(@NotNull Collection<PhpClass> phpClasses) {
         Set<PsiFile> files = new HashSet<>();
         for (PhpClass phpClass : phpClasses) {
             PsiFile file = phpClass.getContainingFile();
@@ -96,9 +93,15 @@ public class TwigExtensionParser  {
                 files.add(file);
             }
         }
+        return files;
+    }
+
+    @NotNull
+    private static Map<String, TwigExtension> parseFilters(@NotNull Project project, @NotNull Collection<PhpClass> phpClasses) {
+        Map<String, TwigExtension> extensions = new HashMap<>();
 
         // Parse each file (cached per file for filters only)
-        for (PsiFile file : files) {
+        for (PsiFile file : collectPhpFiles(phpClasses)) {
             Map<String, TwigExtension> fileExtensions = CachedValuesManager.getCachedValue(file, FILE_FILTERS_CACHE, () -> {
                 Map<String, TwigExtension> result = new HashMap<>();
                 // Resolve classes fresh from file inside cache provider
@@ -141,17 +144,8 @@ public class TwigExtensionParser  {
     private static Map<String, TwigExtension> parseFunctions(@NotNull Project project, @NotNull Collection<PhpClass> phpClasses) {
         Map<String, TwigExtension> extensions = new HashMap<>();
 
-        // Collect unique files
-        Set<PsiFile> files = new HashSet<>();
-        for (PhpClass phpClass : phpClasses) {
-            PsiFile file = phpClass.getContainingFile();
-            if (file instanceof PhpFile) {
-                files.add(file);
-            }
-        }
-
         // Parse each file (cached per file for functions only)
-        for (PsiFile file : files) {
+        for (PsiFile file : collectPhpFiles(phpClasses)) {
             Map<String, TwigExtension> fileExtensions = CachedValuesManager.getCachedValue(file, FILE_FUNCTIONS_CACHE, () -> {
                 Map<String, TwigExtension> result = new HashMap<>();
                 // Resolve classes fresh from file inside cache provider
@@ -194,17 +188,8 @@ public class TwigExtensionParser  {
     private static Map<String, TwigExtension> parseTests(@NotNull Project project, @NotNull Collection<PhpClass> phpClasses) {
         Map<String, TwigExtension> extensions = new HashMap<>();
 
-        // Collect unique files
-        Set<PsiFile> files = new HashSet<>();
-        for (PhpClass phpClass : phpClasses) {
-            PsiFile file = phpClass.getContainingFile();
-            if (file instanceof PhpFile) {
-                files.add(file);
-            }
-        }
-
         // Parse each file (cached per file for tests only)
-        for (PsiFile file : files) {
+        for (PsiFile file : collectPhpFiles(phpClasses)) {
             Map<String, TwigExtension> fileExtensions = CachedValuesManager.getCachedValue(file, FILE_TESTS_CACHE, () -> {
                 Map<String, TwigExtension> result = new HashMap<>();
                 // Resolve classes fresh from file inside cache provider
@@ -244,17 +229,8 @@ public class TwigExtensionParser  {
     private static Map<String, TwigExtension> parseOperators(@NotNull Project project, @NotNull Collection<PhpClass> phpClasses) {
         Map<String, TwigExtension> extensions = new HashMap<>();
 
-        // Collect unique files
-        Set<PsiFile> files = new HashSet<>();
-        for (PhpClass phpClass : phpClasses) {
-            PsiFile file = phpClass.getContainingFile();
-            if (file instanceof PhpFile) {
-                files.add(file);
-            }
-        }
-
         // Parse each file (cached per file for operators only)
-        for (PsiFile file : files) {
+        for (PsiFile file : collectPhpFiles(phpClasses)) {
             Map<String, TwigExtension> fileExtensions = CachedValuesManager.getCachedValue(file, FILE_OPERATORS_CACHE, () -> {
                 Map<String, TwigExtension> result = new HashMap<>();
                 // Resolve classes fresh from file inside cache provider

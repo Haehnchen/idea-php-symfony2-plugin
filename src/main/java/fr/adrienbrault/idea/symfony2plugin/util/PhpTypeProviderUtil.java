@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.util;
 
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.PhpIndex;
@@ -159,6 +160,43 @@ public class PhpTypeProviderUtil {
 
         return false;
     }
+
+    /**
+     * Splits a TRIM_KEY encoded expression back into the original method signature and the parameter
+     * string, then resolves the type signature to a collection of named elements.
+     *
+     * <p>Returns {@code null} when the expression does not contain {@code trimKey}, or when the
+     * resolved type signature yields no elements.  Callers that need to distinguish "not a Method"
+     * from "nothing found" can inspect {@link SignatureSplit#elements()} after a null check.
+     */
+    @Nullable
+    public static SignatureSplit resolveSignatureSplit(@NotNull String expression, char trimKey, @NotNull Project project) {
+        int endIndex = expression.lastIndexOf(trimKey);
+        if (endIndex == -1) {
+            return null;
+        }
+
+        String originalSignature = expression.substring(0, endIndex);
+        String parameter = expression.substring(endIndex + 1);
+
+        PhpIndex phpIndex = PhpIndex.getInstance(project);
+        Collection<? extends PhpNamedElement> elements = getTypeSignature(phpIndex, originalSignature);
+        if (elements.isEmpty()) {
+            return null;
+        }
+
+        return new SignatureSplit(phpIndex, parameter, elements);
+    }
+
+    /**
+     * Carries the resolved state from {@link #resolveSignatureSplit}: the {@link PhpIndex}, the
+     * decoded parameter string, and the matched named elements.
+     */
+    public record SignatureSplit(
+        @NotNull PhpIndex phpIndex,
+        @NotNull String parameter,
+        @NotNull Collection<? extends PhpNamedElement> elements
+    ) {}
 
     /**
      * We can have multiple types inside a TypeProvider; split them on "|" so that we dont get empty types

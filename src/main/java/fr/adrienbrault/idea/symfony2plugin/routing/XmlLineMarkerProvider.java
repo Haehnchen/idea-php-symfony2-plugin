@@ -3,14 +3,12 @@ package fr.adrienbrault.idea.symfony2plugin.routing;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
-import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.patterns.XmlTagPattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
@@ -65,14 +63,10 @@ public class XmlLineMarkerProvider implements LineMarkerProvider {
         }
 
         String controller = RouteHelper.getXmlController((XmlTag) xmlTag);
-        if(controller != null) {
+        if (controller != null) {
             PsiElement[] methods = RouteHelper.getMethodsOnControllerShortcut(xmlTag.getProject(), controller);
-            if(methods.length > 0) {
-                NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.TWIG_CONTROLLER_LINE_MARKER).
-                    setTargets(methods).
-                    setTooltipText("Navigate to action");
-
-                lineMarkerInfos.add(builder.createLineMarkerInfo(psiElement));
+            if (methods.length > 0) {
+                RouteHelper.addControllerLineMarker(lineMarkerInfos, methods, psiElement);
             }
         }
     }

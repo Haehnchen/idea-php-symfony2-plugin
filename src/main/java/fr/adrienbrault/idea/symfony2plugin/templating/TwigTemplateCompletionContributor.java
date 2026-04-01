@@ -487,21 +487,21 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         extend(
             CompletionType.BASIC,
             PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME).withSuperParent(2, PsiFile.class),
-            new IncompleteExtendsCompletionProvider()
+            new IncompleteTagTemplateCompletionProvider("extends", 1, false, TwigUtil::getExtendsTemplateUsageAsOrderedList, "extends '%s'")
         );
 
         // {% in => {% include '...'
         extend(
             CompletionType.BASIC,
             PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME),
-            new IncompleteIncludeCompletionProvider()
+            new IncompleteTagTemplateCompletionProvider("include", 2, true, TwigUtil::getIncludeTemplateUsageAsOrderedList, "include '%s'")
         );
 
         // {% em => {% embed '...'
         extend(
             CompletionType.BASIC,
             PlatformPatterns.psiElement(TwigTokenTypes.TAG_NAME),
-            new IncompleteEmbedCompletionProvider()
+            new IncompleteTagTemplateCompletionProvider("embed", 2, true, TwigUtil::getEmbedTemplateUsageAsOrderedList, "embed '%s'")
         );
 
         // {% bl => {% block '...'
@@ -529,7 +529,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         extend(
             CompletionType.BASIC,
             TwigPattern.getCompletablePattern(),
-            new IncompleteIncludePrintBlockCompletionProvider()
+            new IncompleteTagTemplateCompletionProvider("include", 2, true, TwigUtil::getIncludeTemplateUsageAsOrderedList, "include('%s')")
         );
 
         // {% for => "for flash in app.flashes"
@@ -882,135 +882,56 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         }
     }
 
-    /**
-     * {% e => {% extends '...'
-     */
-    private class IncompleteExtendsCompletionProvider extends CompletionProvider<CompletionParameters> {
-        @Override
-        protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
-            if(!Symfony2ProjectComponent.isEnabled(completionParameters.getPosition())) {
-                return;
-            }
+    private class IncompleteTagTemplateCompletionProvider extends CompletionProvider<CompletionParameters> {
+        private final String keyword;
+        private final int minLength;
+        private final boolean withPrefixRestart;
+        private final Function<Project, List<String>> templateListSupplier;
+        private final String formatString;
 
-            if (!isCompletionStartingMatch("extends", completionParameters, 1)) {
-                return;
-            }
-
-            List<String> extendsTemplateUsageAsOrderedList = TwigUtil.getExtendsTemplateUsageAsOrderedList(completionParameters.getPosition().getProject());
-
-            CompletionSorter completionSorter = CompletionService.getCompletionService()
-                .defaultSorter(completionParameters, resultSet.getPrefixMatcher())
-                .weighBefore("priority", new ServiceCompletionProvider.MyLookupElementWeigher(extendsTemplateUsageAsOrderedList));
-
-            resultSet = resultSet.withRelevanceSorter(completionSorter);
-
-            for (String s : extendsTemplateUsageAsOrderedList) {
-                resultSet.addElement(LookupElementBuilder.create(String.format("extends '%s'", s)).withIcon(TwigIcons.TwigFileIcon));
-            }
+        IncompleteTagTemplateCompletionProvider(
+            String keyword,
+            int minLength,
+            boolean withPrefixRestart,
+            Function<Project, List<String>> templateListSupplier,
+            String formatString
+        ) {
+            this.keyword = keyword;
+            this.minLength = minLength;
+            this.withPrefixRestart = withPrefixRestart;
+            this.templateListSupplier = templateListSupplier;
+            this.formatString = formatString;
         }
-    }
 
-    /**
-     * {% in => {% include '...'
-     */
-    private class IncompleteIncludeCompletionProvider extends CompletionProvider<CompletionParameters> {
         @Override
         protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
-            if(!Symfony2ProjectComponent.isEnabled(completionParameters.getPosition())) {
+            if (!Symfony2ProjectComponent.isEnabled(completionParameters.getPosition())) {
                 return;
             }
 
-            resultSet.restartCompletionOnPrefixChange(StandardPatterns.string().longerThan(1).with(new PatternCondition<>("include startsWith") {
-                @Override
-                public boolean accepts(@NotNull String s, ProcessingContext processingContext) {
-                    return "include".startsWith(s);
-                }
-            }));
+            if (withPrefixRestart) {
+                resultSet.restartCompletionOnPrefixChange(StandardPatterns.string().longerThan(1).with(new PatternCondition<>(keyword + " startsWith") {
+                    @Override
+                    public boolean accepts(@NotNull String s, ProcessingContext processingContext) {
+                        return keyword.startsWith(s);
+                    }
+                }));
+            }
 
-            if (!isCompletionStartingMatch("include", completionParameters, 2)) {
+            if (!isCompletionStartingMatch(keyword, completionParameters, minLength)) {
                 return;
             }
 
-            List<String> extendsTemplateUsageAsOrderedList = TwigUtil.getIncludeTemplateUsageAsOrderedList(completionParameters.getPosition().getProject());
+            List<String> templates = templateListSupplier.apply(completionParameters.getPosition().getProject());
 
             CompletionSorter completionSorter = CompletionService.getCompletionService()
                 .defaultSorter(completionParameters, resultSet.getPrefixMatcher())
-                .weighBefore("priority", new ServiceCompletionProvider.MyLookupElementWeigher(extendsTemplateUsageAsOrderedList));
+                .weighBefore("priority", new ServiceCompletionProvider.MyLookupElementWeigher(templates));
 
             resultSet = resultSet.withRelevanceSorter(completionSorter);
 
-            for (String s : extendsTemplateUsageAsOrderedList) {
-                resultSet.addElement(LookupElementBuilder.create(String.format("include '%s'", s)).withIcon(TwigIcons.TwigFileIcon));
-            }
-        }
-    }
-
-    /**
-     * {% em => {% embed '...'
-     */
-    private class IncompleteEmbedCompletionProvider extends CompletionProvider<CompletionParameters> {
-        @Override
-        protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
-            if(!Symfony2ProjectComponent.isEnabled(completionParameters.getPosition())) {
-                return;
-            }
-
-            resultSet.restartCompletionOnPrefixChange(StandardPatterns.string().longerThan(1).with(new PatternCondition<>("embed startsWith") {
-                @Override
-                public boolean accepts(@NotNull String s, ProcessingContext processingContext) {
-                    return "embed".startsWith(s);
-                }
-            }));
-
-            if (!isCompletionStartingMatch("embed", completionParameters, 2)) {
-                return;
-            }
-
-            List<String> extendsTemplateUsageAsOrderedList = TwigUtil.getEmbedTemplateUsageAsOrderedList(completionParameters.getPosition().getProject());
-
-            CompletionSorter completionSorter = CompletionService.getCompletionService()
-                .defaultSorter(completionParameters, resultSet.getPrefixMatcher())
-                .weighBefore("priority", new ServiceCompletionProvider.MyLookupElementWeigher(extendsTemplateUsageAsOrderedList));
-
-            resultSet = resultSet.withRelevanceSorter(completionSorter);
-
-            for (String s : extendsTemplateUsageAsOrderedList) {
-                resultSet.addElement(LookupElementBuilder.create(String.format("embed '%s'", s)).withIcon(TwigIcons.TwigFileIcon));
-            }
-        }
-    }
-
-    /**
-     * {{ in => {{ include('...')
-     */
-    private class IncompleteIncludePrintBlockCompletionProvider extends CompletionProvider<CompletionParameters> {
-        @Override
-        protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
-            if(!Symfony2ProjectComponent.isEnabled(completionParameters.getPosition())) {
-                return;
-            }
-
-            resultSet.restartCompletionOnPrefixChange(StandardPatterns.string().longerThan(1).with(new PatternCondition<>("include startsWith") {
-                @Override
-                public boolean accepts(@NotNull String s, ProcessingContext processingContext) {
-                    return "include".startsWith(s);
-                }
-            }));
-
-            if (!isCompletionStartingMatch("include", completionParameters, 2)) {
-                return;
-            }
-
-            List<String> extendsTemplateUsageAsOrderedList = TwigUtil.getIncludeTemplateUsageAsOrderedList(completionParameters.getPosition().getProject());
-
-            CompletionSorter completionSorter = CompletionService.getCompletionService()
-                .defaultSorter(completionParameters, resultSet.getPrefixMatcher())
-                .weighBefore("priority", new ServiceCompletionProvider.MyLookupElementWeigher(extendsTemplateUsageAsOrderedList));
-
-            resultSet = resultSet.withRelevanceSorter(completionSorter);
-
-            for (String s : extendsTemplateUsageAsOrderedList) {
-                resultSet.addElement(LookupElementBuilder.create(String.format("include('%s')", s)).withIcon(TwigIcons.TwigFileIcon));
+            for (String s : templates) {
+                resultSet.addElement(LookupElementBuilder.create(String.format(formatString, s)).withIcon(TwigIcons.TwigFileIcon));
             }
         }
     }

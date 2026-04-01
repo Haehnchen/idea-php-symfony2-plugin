@@ -141,14 +141,10 @@ public class YamlLineMarkerProvider implements LineMarkerProvider {
         }
 
         String yamlController = RouteHelper.getYamlController((YAMLKeyValue) yamlKeyValue);
-        if(yamlController != null) {
+        if (yamlController != null) {
             PsiElement[] methods = RouteHelper.getMethodsOnControllerShortcut(psiElement.getProject(), yamlController);
-            if(methods.length > 0) {
-                NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.TWIG_CONTROLLER_LINE_MARKER).
-                    setTargets(methods).
-                    setTooltipText("Navigate to action");
-
-                lineMarkerInfos.add(builder.createLineMarkerInfo(psiElement));
+            if (methods.length > 0) {
+                RouteHelper.addControllerLineMarker(lineMarkerInfos, methods, psiElement);
             }
         }
     }

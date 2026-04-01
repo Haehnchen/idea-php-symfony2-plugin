@@ -4,12 +4,9 @@ import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.lang.ASTNode;
-import com.intellij.lang.html.HTMLLanguage;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.xml.XmlTag;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigElementTypes;
@@ -103,34 +100,12 @@ public class TwigComponentSelfMacroImportInspection extends LocalInspectionTool 
                 }
 
                 // Check for HTML component context via the HTML language view
-                if (isInsideHtmlComponentTag(element, containingFile)) {
+                if (TwigHtmlCompletionUtil.isInsideHtmlComponentTag(element, containingFile)) {
                     return true;
                 }
 
                 // Check for Twig {% component %} tag context
                 return isInsideTwigComponentTag(element);
-            }
-
-            private boolean isInsideHtmlComponentTag(@NotNull PsiElement element, @NotNull PsiFile twigFile) {
-                int offset = element.getTextOffset();
-
-                PsiElement htmlElement = twigFile.getViewProvider().findElementAt(offset, HTMLLanguage.INSTANCE);
-                if (htmlElement == null) {
-                    htmlElement = twigFile.getViewProvider().findElementAt(Math.max(0, offset - 1), HTMLLanguage.INSTANCE);
-                }
-                if (htmlElement == null) {
-                    return false;
-                }
-
-                XmlTag parentTag = PsiTreeUtil.getParentOfType(htmlElement, XmlTag.class);
-                while (parentTag != null) {
-                    if (isTwigComponentTag(parentTag)) {
-                        return true;
-                    }
-                    parentTag = PsiTreeUtil.getParentOfType(parentTag, XmlTag.class);
-                }
-
-                return false;
             }
 
             /**
@@ -183,17 +158,6 @@ public class TwigComponentSelfMacroImportInspection extends LocalInspectionTool 
                 return count;
             }
 
-            /**
-             * Returns true if the given XML tag is a {@code <twig:SomeName>} component tag
-             * (but NOT {@code <twig:block>}).
-             */
-            private boolean isTwigComponentTag(@NotNull XmlTag tag) {
-                if (TwigHtmlCompletionUtil.isTwigBlockTag(tag)) {
-                    return false;
-                }
-                String name = tag.getName();
-                return name.startsWith("twig:") || "twig".equals(tag.getNamespacePrefix());
-            }
         };
     }
 }

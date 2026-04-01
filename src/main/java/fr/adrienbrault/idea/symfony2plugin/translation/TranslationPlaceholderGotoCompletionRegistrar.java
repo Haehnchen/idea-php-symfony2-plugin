@@ -24,6 +24,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -152,55 +153,12 @@ public class TranslationPlaceholderGotoCompletionRegistrar implements GotoComple
         @Nullable
         @Override
         public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
-            PsiElement context = psiElement.getContext();
-            if (!(context instanceof StringLiteralExpression)) {
-                return null;
-            }
-
-            ArrayCreationExpression arrayCreationExpression = PhpElementsUtil.getCompletableArrayCreationElement(context);
-            if (arrayCreationExpression == null) {
-                return null;
-            }
-
-            PsiElement parameterList = arrayCreationExpression.getContext();
-            if (!(parameterList instanceof ParameterList)) {
-                return null;
-            }
-
-            PsiElement[] parameters = ((ParameterList) parameterList).getParameters();
-            int placeHolderParameter = 1;
-            if (parameters.length < placeHolderParameter) {
-                return null;
-            }
-
-            PsiElement newEx = parameterList.getContext();
-            if (!(newEx instanceof FunctionReference functionReference) || !TranslationUtil.isFunctionReferenceTranslationTFunction(functionReference)) {
-                return null;
-            }
-
-            ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(arrayCreationExpression);
-            if (currentIndex == null || currentIndex.getIndex() != placeHolderParameter) {
-                return null;
-            }
-
-            String key = PhpElementsUtil.getStringValue(parameters[0]);
-            if (key == null) {
-                return null;
-            }
-
-            String domain = "messages";
-            int domainParameter = 2;
-            if (parameters.length > domainParameter) {
-                domain = PhpElementsUtil.getStringValue(parameters[domainParameter]);
-                if(domain == null) {
-                    return null;
-                }
-            }
-
-            return new MyTranslationPlaceholderGotoCompletionProvider(psiElement, key, domain);
+            return getTranslatableMessageProvider(psiElement, newEx ->
+                newEx instanceof NewExpression newExpression
+                    && PhpElementsUtil.isNewExpressionPhpClassWithInstance(newExpression, TranslationUtil.PHP_TRANSLATION_TRANSLATABLE_MESSAGE)
+            );
         }
     }
-
 
     /**
      * t('symfony.great', ['test' => '%fo<caret>obar%'], 'symfony');
@@ -210,57 +168,64 @@ public class TranslationPlaceholderGotoCompletionRegistrar implements GotoComple
         @Nullable
         @Override
         public GotoCompletionProvider getProvider(@NotNull PsiElement psiElement) {
-            PsiElement context = psiElement.getContext();
-            if (!(context instanceof StringLiteralExpression)) {
-                return null;
-            }
-
-            ArrayCreationExpression arrayCreationExpression = PhpElementsUtil.getCompletableArrayCreationElement(context);
-            if (arrayCreationExpression == null) {
-                return null;
-            }
-
-            PsiElement parameterList = arrayCreationExpression.getContext();
-            if (!(parameterList instanceof ParameterList)) {
-                return null;
-            }
-
-            PsiElement[] parameters = ((ParameterList) parameterList).getParameters();
-            int placeHolderParameter = 1;
-            if (parameters.length < placeHolderParameter) {
-                return null;
-            }
-
-            PsiElement newEx = parameterList.getContext();
-            if (!(newEx instanceof NewExpression)) {
-                return null;
-            }
-
-            ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(arrayCreationExpression);
-            if (currentIndex == null || currentIndex.getIndex() != placeHolderParameter) {
-                return null;
-            }
-
-            if (!PhpElementsUtil.isNewExpressionPhpClassWithInstance((NewExpression) newEx, TranslationUtil.PHP_TRANSLATION_TRANSLATABLE_MESSAGE)) {
-                return null;
-            }
-
-            String key = PhpElementsUtil.getStringValue(parameters[0]);
-            if (key == null) {
-                return null;
-            }
-
-            String domain = "messages";
-            int domainParameter = 2;
-            if (parameters.length > domainParameter) {
-                domain = PhpElementsUtil.getStringValue(parameters[domainParameter]);
-                if(domain == null) {
-                    return null;
-                }
-            }
-
-            return new MyTranslationPlaceholderGotoCompletionProvider(psiElement, key, domain);
+            return getTranslatableMessageProvider(psiElement, newEx ->
+                newEx instanceof FunctionReference functionReference
+                    && TranslationUtil.isFunctionReferenceTranslationTFunction(functionReference)
+            );
         }
+    }
+
+    @Nullable
+    private static GotoCompletionProvider getTranslatableMessageProvider(
+        @NotNull PsiElement psiElement,
+        @NotNull Predicate<PsiElement> newExValidator
+    ) {
+        PsiElement context = psiElement.getContext();
+        if (!(context instanceof StringLiteralExpression)) {
+            return null;
+        }
+
+        ArrayCreationExpression arrayCreationExpression = PhpElementsUtil.getCompletableArrayCreationElement(context);
+        if (arrayCreationExpression == null) {
+            return null;
+        }
+
+        PsiElement parameterList = arrayCreationExpression.getContext();
+        if (!(parameterList instanceof ParameterList)) {
+            return null;
+        }
+
+        PsiElement[] parameters = ((ParameterList) parameterList).getParameters();
+        int placeHolderParameter = 1;
+        if (parameters.length < placeHolderParameter) {
+            return null;
+        }
+
+        PsiElement newEx = parameterList.getContext();
+        if (!newExValidator.test(newEx)) {
+            return null;
+        }
+
+        ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(arrayCreationExpression);
+        if (currentIndex == null || currentIndex.getIndex() != placeHolderParameter) {
+            return null;
+        }
+
+        String key = PhpElementsUtil.getStringValue(parameters[0]);
+        if (key == null) {
+            return null;
+        }
+
+        String domain = "messages";
+        int domainParameter = 2;
+        if (parameters.length > domainParameter) {
+            domain = PhpElementsUtil.getStringValue(parameters[domainParameter]);
+            if (domain == null) {
+                return null;
+            }
+        }
+
+        return new MyTranslationPlaceholderGotoCompletionProvider(psiElement, key, domain);
     }
 
     /**

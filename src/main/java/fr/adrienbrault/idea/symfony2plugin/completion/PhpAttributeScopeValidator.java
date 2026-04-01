@@ -310,7 +310,7 @@ public class PhpAttributeScopeValidator {
      * - There are existing component classes (from index) in the same namespace
      * (e.g., App\Twig\Components\Button, Foo\Components\Form\Input)
      */
-    private static boolean isTwigComponentClass(@NotNull Project project, @NotNull PhpClass phpClass) {
+    public static boolean isTwigComponentClass(@NotNull Project project, @NotNull PhpClass phpClass) {
         String fqn = phpClass.getFQN();
         if (fqn.isBlank()) {
             return false;

@@ -3,12 +3,9 @@ package fr.adrienbrault.idea.symfony2plugin.templating.inspection;
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
-import com.intellij.lang.html.HTMLLanguage;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.xml.XmlTag;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -57,9 +54,11 @@ public class TwigComponentMixedSyntaxInspection extends LocalInspectionTool {
                 }
 
                 // Detect {% block name %} inside <twig:Component>
+                PsiFile containingFile = element.getContainingFile();
                 if (element.getNode().getElementType() == TwigTokenTypes.TAG_NAME
                     && "block".equals(element.getText())
-                    && isInsideHtmlComponentContext(element)) {
+                    && containingFile instanceof TwigFile
+                    && TwigHtmlCompletionUtil.isInsideHtmlComponentTag(element, containingFile)) {
 
                     holder.registerProblem(
                         element,
@@ -69,51 +68,6 @@ public class TwigComponentMixedSyntaxInspection extends LocalInspectionTool {
                 }
 
                 super.visitElement(element);
-            }
-
-            /**
-             * Checks if the given Twig element is inside an HTML-syntax Twig component tag
-             * ({@code <twig:ComponentName>...</twig:ComponentName>}) by inspecting the
-             * HTML view via the ViewProvider.
-             */
-            private boolean isInsideHtmlComponentContext(@NotNull PsiElement element) {
-                PsiFile containingFile = element.getContainingFile();
-                if (!(containingFile instanceof TwigFile)) {
-                    return false;
-                }
-
-                // Use the ViewProvider to find the corresponding element in the HTML language view
-                int offset = element.getTextOffset();
-                PsiElement htmlElement = containingFile.getViewProvider().findElementAt(offset, HTMLLanguage.INSTANCE);
-                if (htmlElement == null) {
-                    // Try one character back in case caret is at boundary
-                    htmlElement = containingFile.getViewProvider().findElementAt(Math.max(0, offset - 1), HTMLLanguage.INSTANCE);
-                }
-                if (htmlElement == null) {
-                    return false;
-                }
-
-                XmlTag parentTag = PsiTreeUtil.getParentOfType(htmlElement, XmlTag.class);
-                while (parentTag != null) {
-                    if (isTwigComponentTag(parentTag)) {
-                        return true;
-                    }
-                    parentTag = PsiTreeUtil.getParentOfType(parentTag, XmlTag.class);
-                }
-
-                return false;
-            }
-
-            /**
-             * Returns true if the given XML tag is a {@code <twig:SomeName>} component tag
-             * (but NOT {@code <twig:block>}).
-             */
-            private boolean isTwigComponentTag(@NotNull XmlTag tag) {
-                if (TwigHtmlCompletionUtil.isTwigBlockTag(tag)) {
-                    return false;
-                }
-                String name = tag.getName();
-                return name.startsWith("twig:") || "twig".equals(tag.getNamespacePrefix());
             }
         };
     }
