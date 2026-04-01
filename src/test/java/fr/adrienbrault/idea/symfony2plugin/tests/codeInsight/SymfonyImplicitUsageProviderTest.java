@@ -30,151 +30,133 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
         return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/codeInsight/fixtures";
     }
 
-    public void testControllerClassIsUsedWhenAMethodHasRoute() {
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(createPhpControllerClassWithRouteContent("" +
+    public void testControllerClassImplicitUsage() {
+        assertImplicitUsage(createPhpControllerClassWithRouteContent("" +
             "#[Route()]\n" +
             "public function foo2() {}"
-        )));
+        ));
 
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(createPhpControllerClassWithRouteContent("" +
+        assertImplicitUsage(createPhpControllerClassWithRouteContent("" +
             "/**\n" +
             "* @Route()\n" +
             "*/\n" +
             "public function foo() {}\n"
-        )));
-    }
+        ));
 
-    public void testControllerClassIsUnusedIfRoutesArePrivate() {
-        assertFalse(new SymfonyImplicitUsageProvider().isImplicitUsage(createPhpControllerClassWithRouteContent("" +
+        assertNotImplicitUsage(createPhpControllerClassWithRouteContent("" +
             "/**\n" +
             "* @Route()\n" +
             "*/\n" +
             "private function foo() {}\n" +
             "#[Route()]\n" +
             "private function foo2() {}"
-        )));
+        ));
     }
 
-    public void testControllerMethodIsUsedWhenAMethodIsHasRouteDefinition() {
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(createPhpControllerMethodWithRouteContent("" +
+    public void testControllerMethodImplicitUsage() {
+        assertImplicitUsage(createPhpControllerMethodWithRouteContent("" +
             "/**\n" +
             "* @Route()\n" +
             "*/\n" +
             "public function foobar() {}"
-        )));
+        ));
 
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(createPhpControllerMethodWithRouteContent("" +
+        assertImplicitUsage(createPhpControllerMethodWithRouteContent("" +
             "#[Route()]\n" +
             "public function foobar() {}"
-        )));
-    }
+        ));
 
-    public void testControllerMethodIsUntouchedForPrivateMethods() {
-        assertFalse(new SymfonyImplicitUsageProvider().isImplicitUsage(createPhpControllerMethodWithRouteContent("" +
+        assertNotImplicitUsage(createPhpControllerMethodWithRouteContent("" +
             "/**\n" +
             "* @Route()\n" +
             "*/\n" +
             "private function foobar() {}"
-        )));
+        ));
 
-        assertFalse(new SymfonyImplicitUsageProvider().isImplicitUsage(createPhpControllerMethodWithRouteContent("" +
+        assertNotImplicitUsage(createPhpControllerMethodWithRouteContent("" +
             "#[Route()]\n" +
             "private function foobar() {}"
-        )));
+        ));
     }
 
-    public void testControllerForDefinitionInsideYaml() {
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(createPhpControllerClassWithRouteContent("" +
+    public void testYamlControllerDefinitionsAreMarkedUsed() {
+        assertImplicitUsage(createPhpControllerClassWithRouteContent("" +
             "public function foobarYaml() {}"
-        )));
+        ));
 
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(createPhpControllerClassWithRouteContent(
+        assertImplicitUsage(createPhpControllerClassWithRouteContent(
             "\\App\\Controller\\FooControllerInvoke",
             "public function __invoke() {}"
-        )));
-    }
+        ));
 
-    public void testControllerForDefinitionInsideYamlWithAction() {
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(createPhpControllerClassWithRouteContent("" +
+        assertImplicitUsage(createPhpControllerClassWithRouteContent("" +
             "public function foobarYamlAction() {}"
-        )));
-    }
+        ));
 
-    public void testControllerForDefinitionInsideYamlAsService() {
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(createPhpControllerClassWithRouteContent(
+        assertImplicitUsage(createPhpControllerClassWithRouteContent(
             "\\App\\Controller\\FooControllerService",
             "public function foo() {}"
-        )));
+        ));
 
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(createPhpControllerClassWithRouteContent(
+        assertImplicitUsage(createPhpControllerClassWithRouteContent(
             "\\App\\Controller\\FooControllerService",
             "public function foo() {}"
-        )));
+        ));
 
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(createPhpControllerClassWithRouteContent(
+        assertImplicitUsage(createPhpControllerClassWithRouteContent(
             "\\App\\Controller\\FooControllerServiceInvoke",
             "public function __invoke() {}"
-        )));
+        ));
     }
 
-    public void testCommandRegisteredAsServiceAreMarkedUsed() {
-        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+    public void testServiceRegisteredClassesAreMarkedUsed() {
+        PsiFile commandPsiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
             "namespace App\\Command;\n" +
             "class FooCommand extends \\Symfony\\Component\\Console\\Command\\Command {}"
         );
 
-        PhpClass firstClassFromFile = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(firstClassFromFile));
-    }
+        PhpClass commandClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) commandPsiFile.getContainingFile());
+        assertImplicitUsage(commandClass);
 
-    public void testCommandRegisteredNotAsServiceIsUntouched() {
-        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+        PsiFile nonServiceCommandPsiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
             "namespace App\\Command;\n" +
             "class FoobarServiceCommand extends \\Symfony\\Component\\Console\\Command\\Command {}"
         );
 
-        PhpClass firstClassFromFile = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
-        assertFalse(new SymfonyImplicitUsageProvider().isImplicitUsage(firstClassFromFile));
-    }
+        PhpClass nonServiceCommandClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) nonServiceCommandPsiFile.getContainingFile());
+        assertNotImplicitUsage(nonServiceCommandClass);
 
-    public void testVoterRegisteredAsServiceAreMarkedUsed() {
-        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+        PsiFile voterPsiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
             "namespace App\\Voter;\n" +
             "class MyFoobarVoter implements \\Symfony\\Component\\Security\\Core\\Authorization\\Voter\\VoterInterface {}"
         );
 
-        PhpClass firstClassFromFile = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(firstClassFromFile));
-    }
+        PhpClass voterClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) voterPsiFile.getContainingFile());
+        assertImplicitUsage(voterClass);
 
-    public void testEntityRepositoryInsideDoctrineMetadataIsMarkedAsUsed() {
-        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+        PsiFile repositoryPsiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
             "namespace App\\Repository;\n" +
             "class MyFoobarEntityRepository extends \\Doctrine\\ORM\\EntityRepository {}\n"
         );
 
-        PhpClass firstClassFromFile = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(firstClassFromFile));
-    }
+        PhpClass repositoryClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) repositoryPsiFile.getContainingFile());
+        assertImplicitUsage(repositoryClass);
 
-    public void testConstraintValidatorReferenceIsMarkedAsUsed() {
-        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+        PsiFile validatorPsiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
             "namespace App\\Validator;\n" +
             "class MyFoobarConstraint extends \\Symfony\\Component\\Validator\\Constraint {}\n"
         );
 
-        PhpClass firstClassFromFile = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(firstClassFromFile));
-    }
+        PhpClass validatorClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) validatorPsiFile.getContainingFile());
+        assertImplicitUsage(validatorClass);
 
-    public void testClassWithTaggedEventListenerIsMarkedAsUsed() {
-        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+        PsiFile eventListenerPsiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
             "namespace App\\EventListener;\n" +
             "class ExceptionListener {}\n"
         );
 
-        PhpClass firstClassFromFile = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(firstClassFromFile));
+        PhpClass eventListenerClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) eventListenerPsiFile.getContainingFile());
+        assertImplicitUsage(eventListenerClass);
     }
 
     public void testEventSubscriberGetSubscribedEventsArray() {
@@ -211,19 +193,19 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
 
         PhpClass phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
 
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("processException")));
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("logException")));
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("notifyException")));
+        assertImplicitUsage(phpClass.findOwnMethodByName("processException"));
+        assertImplicitUsage(phpClass.findOwnMethodByName("logException"));
+        assertImplicitUsage(phpClass.findOwnMethodByName("notifyException"));
 
-        assertFalse(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("notifyExceptionUnknown")));
-        assertFalse(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("keyString")));
+        assertNotImplicitUsage(phpClass.findOwnMethodByName("notifyExceptionUnknown"));
+        assertNotImplicitUsage(phpClass.findOwnMethodByName("keyString"));
 
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass));
+        assertImplicitUsage(phpClass);
     }
 
 
-    public void testEventSubscriberGetAsEventListenerOnClass() {
-        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+    public void testEventListenerAttributeUsage() {
+        PsiFile classListenerPsiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
                 "namespace App\\EventListener;\n" +
                 "\n" +
                 "use Symfony\\Component\\EventDispatcher\\Attribute\\AsEventListener;\n" +
@@ -238,13 +220,10 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
                 "}"
         );
 
-        PhpClass phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
+        PhpClass classListenerClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) classListenerPsiFile.getContainingFile());
+        assertImplicitUsage(classListenerClass.findOwnMethodByName("onFoo"));
 
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("onFoo")));
-    }
-
-    public void testEventSubscriberGetAsEventListenerOnMethod() {
-        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+        PsiFile methodListenerPsiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
                 "namespace App\\EventListener;\n" +
                 "\n" +
                 "use Symfony\\Component\\EventDispatcher\\Attribute\\AsEventListener;\n" +
@@ -259,13 +238,10 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
                 "}"
         );
 
-        PhpClass phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
+        PhpClass methodListenerClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) methodListenerPsiFile.getContainingFile());
+        assertImplicitUsage(methodListenerClass.findOwnMethodByName("onFoo"));
 
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("onFoo")));
-    }
-
-    public void testEventSubscriberGetAsEventListenerOnClassInvokeWithoutMethod() {
-        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+        PsiFile invokeListenerPsiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
                 "namespace App\\EventListener;\n" +
                 "\n" +
                 "use Symfony\\Component\\EventDispatcher\\Attribute\\AsEventListener;\n" +
@@ -280,13 +256,10 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
                 "}"
         );
 
-        PhpClass phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
+        PhpClass invokeListenerClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) invokeListenerPsiFile.getContainingFile());
+        assertImplicitUsage(invokeListenerClass.findOwnMethodByName("__invoke"));
 
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("__invoke")));
-    }
-
-    public void testEventSubscriberGetAsEventListenerOnClassWithoutMethod() {
-        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+        PsiFile inferredMethodListenerPsiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
                 "namespace App\\EventListener;\n" +
                 "\n" +
                 "use Symfony\\Component\\EventDispatcher\\Attribute\\AsEventListener;\n" +
@@ -301,13 +274,10 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
                 "}"
         );
 
-        PhpClass phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
+        PhpClass inferredMethodListenerClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) inferredMethodListenerPsiFile.getContainingFile());
+        assertImplicitUsage(inferredMethodListenerClass.findOwnMethodByName("onBar"));
 
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("onBar")));
-    }
-
-    public void testEventSubscriberGetAsEventListenerOnClassWithoutMethodCleanUp() {
-        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+        PsiFile cleanedUpMethodListenerPsiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
                 "namespace App\\EventListener;\n" +
                 "\n" +
                 "use Symfony\\Component\\EventDispatcher\\Attribute\\AsEventListener;\n" +
@@ -322,13 +292,10 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
                 "}"
         );
 
-        PhpClass phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
+        PhpClass cleanedUpMethodListenerClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) cleanedUpMethodListenerPsiFile.getContainingFile());
+        assertImplicitUsage(cleanedUpMethodListenerClass.findOwnMethodByName("onFooBar"));
 
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("onFooBar")));
-    }
-
-    public void testEventSubscriberGetAsEventListenerCombinedTest() {
-        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+        PsiFile combinedListenerPsiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
                 "namespace App\\EventListener;\n" +
                 "\n" +
                 "use Symfony\\Component\\EventDispatcher\\Attribute\\AsEventListener;\n" +
@@ -358,17 +325,17 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
                 "}"
         );
 
-        PhpClass phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
+        PhpClass combinedListenerClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) combinedListenerPsiFile.getContainingFile());
 
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("onMethodAttr")));
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("onEventName")));
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("__invoke")));
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("onMethod")));
-        assertFalse(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("onUnregistered")));
+        assertImplicitUsage(combinedListenerClass.findOwnMethodByName("onMethodAttr"));
+        assertImplicitUsage(combinedListenerClass.findOwnMethodByName("onEventName"));
+        assertImplicitUsage(combinedListenerClass.findOwnMethodByName("__invoke"));
+        assertImplicitUsage(combinedListenerClass.findOwnMethodByName("onMethod"));
+        assertNotImplicitUsage(combinedListenerClass.findOwnMethodByName("onUnregistered"));
     }
 
-    public void testTwigExtensionRegisteredAsServiceWithFunctionMethodImplementedIsMarkedUsed() {
-        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+    public void testTwigExtensionsImplicitUsage() {
+        PsiFile serviceTwigExtensionPsiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
             "\n" +
             "namespace App\\TwigExtension;\n" +
             "\n" +
@@ -378,10 +345,10 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
             "}"
         );
 
-        PhpClass firstClassFromFile = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(firstClassFromFile));
+        PhpClass serviceTwigExtensionClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) serviceTwigExtensionPsiFile.getContainingFile());
+        assertImplicitUsage(serviceTwigExtensionClass);
 
-        PsiFile psiFile2 = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+        PsiFile nonServiceTwigExtensionPsiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
             "\n" +
             "namespace App\\TwigExtension;\n" +
             "\n" +
@@ -391,12 +358,10 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
             "}"
         );
 
-        PhpClass firstClassFromFile2 = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile2.getContainingFile());
-        assertFalse(new SymfonyImplicitUsageProvider().isImplicitUsage(firstClassFromFile2));
-    }
+        PhpClass nonServiceTwigExtensionClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) nonServiceTwigExtensionPsiFile.getContainingFile());
+        assertNotImplicitUsage(nonServiceTwigExtensionClass);
 
-    public void testTwigExtensionMethodsWithAttributesAreMarkedAsUsed() {
-        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+        PsiFile attributedTwigExtensionPsiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
             "\n" +
             "namespace App\\Twig;\n" +
             "\n" +
@@ -431,20 +396,15 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
             "}"
         );
 
-        PhpClass phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
+        PhpClass attributedTwigExtensionClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) attributedTwigExtensionPsiFile.getContainingFile());
 
-        // Methods with Twig attributes should be marked as used
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("myFunction")));
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("myFilter")));
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("myTest")));
+        assertImplicitUsage(attributedTwigExtensionClass.findOwnMethodByName("myFunction"));
+        assertImplicitUsage(attributedTwigExtensionClass.findOwnMethodByName("myFilter"));
+        assertImplicitUsage(attributedTwigExtensionClass.findOwnMethodByName("myTest"));
 
-        // Method without attributes should not be marked as used
-        assertFalse(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("unusedMethod")));
-    }
+        assertNotImplicitUsage(attributedTwigExtensionClass.findOwnMethodByName("unusedMethod"));
 
-
-    public void testTwigExtensionMethodWithMultipleAttributes() {
-        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+        PsiFile multiAttributeTwigExtensionPsiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
             "\n" +
             "namespace App\\Twig;\n" +
             "\n" +
@@ -462,10 +422,8 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
             "}"
         );
 
-        PhpClass phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
-
-        // Method with multiple attributes should be marked as used
-        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass.findOwnMethodByName("callableMethod")));
+        PhpClass multiAttributeTwigExtensionClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) multiAttributeTwigExtensionPsiFile.getContainingFile());
+        assertImplicitUsage(multiAttributeTwigExtensionClass.findOwnMethodByName("callableMethod"));
     }
 
     private PhpClass createPhpControllerClassWithRouteContent(@NotNull String content) {
@@ -494,5 +452,21 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
     private Method createPhpControllerMethodWithRouteContent(@NotNull String content) {
         PhpClass phpClass = createPhpControllerClassWithRouteContent("\\App\\Controller\\FooController", content);
         return phpClass.getMethods().iterator().next();
+    }
+
+    private void assertImplicitUsage(@NotNull Method method) {
+        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(method));
+    }
+
+    private void assertImplicitUsage(@NotNull PhpClass phpClass) {
+        assertTrue(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass));
+    }
+
+    private void assertNotImplicitUsage(@NotNull Method method) {
+        assertFalse(new SymfonyImplicitUsageProvider().isImplicitUsage(method));
+    }
+
+    private void assertNotImplicitUsage(@NotNull PhpClass phpClass) {
+        assertFalse(new SymfonyImplicitUsageProvider().isImplicitUsage(phpClass));
     }
 }

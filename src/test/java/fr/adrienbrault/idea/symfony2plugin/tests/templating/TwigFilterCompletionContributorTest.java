@@ -25,28 +25,21 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
         return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/fixtures";
     }
 
-    public void testTwigExtensionFilterCompletion() {
+    public void testTwigExtensionFilterCompletionAndNavigation() {
         assertCompletionContains(TwigFileType.INSTANCE, "{{ 'test'|<caret> }}", "doctrine_minify_query", "doctrine_pretty_query");
         assertCompletionContains(TwigFileType.INSTANCE, "{{ 'test'  |   <caret> }}", "doctrine_minify_query", "doctrine_pretty_query");
         assertCompletionContains(TwigFileType.INSTANCE, "{{     'test'    |       <caret>   }}", "doctrine_minify_query", "doctrine_pretty_query");
-    }
 
-    public void testTwigExtensionFilterViaApplyCompletion() {
         assertCompletionContains(TwigFileType.INSTANCE, "{% apply <caret> %}foo{% endapply %}", "doctrine_minify_query", "doctrine_pretty_query");
         assertNavigationContains(TwigFileType.INSTANCE, "{% apply doctrine<caret>_minify_query %}foo{% endapply %}", "Doctrine\\Bundle\\DoctrineBundle\\Twig\\DoctrineExtension::minifyQuery");
-    }
 
-    public void testTwigExtensionFilterNavigation() {
         assertNavigationContains(TwigFileType.INSTANCE, "{{ 'test'|<caret>doctrine_minify_query }}", "Doctrine\\Bundle\\DoctrineBundle\\Twig\\DoctrineExtension::minifyQuery");
         assertNavigationContains(TwigFileType.INSTANCE, "{{ 'test'|<caret>doctrine_pretty_query }}", "SqlFormatter::format");
         assertNavigationContains(TwigFileType.INSTANCE, "{{ 'test'|<caret>json_decode }}", "my_json_decode");
-    }
 
-    public void testTwigExtensionLookupElementPresentable() {
         assertCompletionLookupTailEquals(TwigFileType.INSTANCE, "{{ 'test'|<caret> }}", "doctrine_minify_query", "(query)");
         assertCompletionLookupTailEquals(TwigFileType.INSTANCE, "{{ 'test'|<caret> }}", "doctrine_pretty_query", "()");
 
-        // test parameter strip
         assertCompletionLookupTailEquals(TwigFileType.INSTANCE, "{{ 'test'|<caret> }}", "contextAndEnvironment", "()");
         assertCompletionLookupTailEquals(TwigFileType.INSTANCE, "{{ 'test'|<caret> }}", "contextWithoutEnvironment", "()");
     }
@@ -54,15 +47,8 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor.TagTokenParserCompletionProvider
      */
-    public void testTagTokenParserCompletionProvider() {
+    public void testTagAndSimpleTestCompletions() {
         assertCompletionContains(TwigFileType.INSTANCE, "{% <caret> %}", "foo_tag");
-    }
-
-    /**
-     * @see TwigPattern#getAfterIsTokenPattern
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor.TwigSimpleTestParametersCompletionProvider
-     */
-    public void testSimpleTestExtension() {
         assertCompletionContains(TwigFileType.INSTANCE, "{% if foo is <caret> %}", "bar_even");
         assertCompletionContains(TwigFileType.INSTANCE, "{% bar is <caret> %}", "bar_even");
         assertCompletionContains(TwigFileType.INSTANCE, "{% bar is not <caret> %}", "bar_even");
@@ -105,26 +91,16 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
      */
-    public void testFunctionExtension() {
+    public void testFunctionAndMacroCompletions() {
         assertNavigationContains(TwigFileType.INSTANCE, "{{ foo<caret>bar() }}", "Doctrine\\Bundle\\DoctrineBundle\\Twig\\DoctrineExtension::foobar");
         assertNavigationContains(TwigFileType.INSTANCE, "{{ json_<caret>bar() }}", "my_json_decode");
 
         assertCompletionContains(TwigFileType.INSTANCE, "{{ <caret> }}", "foobar");
         assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ fooba<caret> }}", "{{ foobar() }}");
-    }
 
-    /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
-     */
-    public void testMacroFromImportAlias() {
         assertCompletionContains(TwigFileType.INSTANCE, "{% macro foo() %}{% endmacro %}{% from _self import foo as bar %}{{ <caret> }}", "bar");
         assertNavigationMatchWithParent(TwigFileType.INSTANCE, "{% macro foo() %}{% endmacro %}{% from _self import foo as bar %}{{ b<caret>ar }}", TwigElementTypes.MACRO_STATEMENT);
-    }
 
-    /**
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor
-     */
-    public void testMacroImport() {
         assertCompletionContains(TwigFileType.INSTANCE, "{% macro foo() %}{% endmacro %}{% import _self as bar %}{{ <caret> }}", "bar.foo");
         assertNavigationMatchWithParent(TwigFileType.INSTANCE, "{% macro foo() %}{% endmacro %}{% import _self as bar %}{{ bar.f<caret>oo }}", TwigElementTypes.MACRO_STATEMENT);
     }

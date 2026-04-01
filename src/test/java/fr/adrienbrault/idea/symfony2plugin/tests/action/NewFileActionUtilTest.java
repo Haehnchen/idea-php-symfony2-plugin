@@ -17,13 +17,10 @@ public class NewFileActionUtilTest extends SymfonyLightCodeInsightFixtureTestCas
         return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/action/fixtures";
     }
 
-    public void testGuessCommandTemplateTypeReturnsInvokableForNewNamespace() {
+    public void testGuessCommandTemplateTypeUsesExistingCommandsInNamespace() {
         String result = NewFileActionUtil.guessCommandTemplateType(getProject(), "App\\CommandNothing");
         assertEquals("command_invokable", result);
-    }
 
-    public void testGuessCommandTemplateTypeReturnsInvokableWhenExistingCommandUsesInvoke() {
-        // Create a command with __invoke method (extends Command, not InvokableCommand)
         myFixture.addFileToProject(
             "src/Command/ExistingCommand.php",
             "<?php\n" +
@@ -41,14 +38,11 @@ public class NewFileActionUtilTest extends SymfonyLightCodeInsightFixtureTestCas
                 "}\n"
         );
 
-        String result = NewFileActionUtil.guessCommandTemplateType(getProject(), "App\\Command");
+        result = NewFileActionUtil.guessCommandTemplateType(getProject(), "App\\Command");
         assertEquals("command_invokable", result);
-    }
 
-    public void testGuessCommandTemplateTypeFallsBackWhenExistingCommandUsesExecute() {
-        // Create a command with execute method (uses execute, not __invoke)
-        myFixture.configureByText(
-            "ExistingCommand.php",
+        myFixture.addFileToProject(
+            "src/CommandConfigure/ExistingCommand.php",
             "<?php\n" +
                 "namespace App\\CommandConfigure;\n" +
                 "use Symfony\\Component\\Console\\Attribute\\AsCommand;\n" +
@@ -71,7 +65,7 @@ public class NewFileActionUtilTest extends SymfonyLightCodeInsightFixtureTestCas
                 "}\n"
         );
 
-        String result = NewFileActionUtil.guessCommandTemplateType(getProject(), "App\\CommandConfigure");
+        result = NewFileActionUtil.guessCommandTemplateType(getProject(), "App\\CommandConfigure");
         assertEquals("command_attributes", result);
     }
 }

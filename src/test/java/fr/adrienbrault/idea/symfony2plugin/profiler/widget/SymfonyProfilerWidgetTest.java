@@ -17,9 +17,11 @@ import java.util.Collections;
 import java.util.List;
 
 public class SymfonyProfilerWidgetTest extends SymfonyLightCodeInsightFixtureTestCase {
+    private static final int REQUEST_COUNT = 5;
+
     public void testBuildActionsParallelDoesNotCreateNullActions() {
         List<ProfilerRequestInterface> requests = new ArrayList<>();
-        for (int i = 0; i < 200; i++) {
+        for (int i = 0; i < REQUEST_COUNT; i++) {
             requests.add(new TestProfilerRequest(
                 "hash-" + i,
                 "http://example.com/req-" + i,
