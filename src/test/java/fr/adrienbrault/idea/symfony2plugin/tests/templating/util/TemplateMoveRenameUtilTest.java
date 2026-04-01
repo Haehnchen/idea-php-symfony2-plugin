@@ -249,6 +249,30 @@ public class TemplateMoveRenameUtilTest extends SymfonyLightCodeInsightFixtureTe
     }
 
     /**
+     * Renaming a Twig template must update the template argument of a Twig block() call while
+     * preserving the original namespace/path style.
+     *
+     * @see TwigTemplateUsageReference#handleElementRename
+     */
+    public void testTwigTemplateUsageReferenceHandleElementRenameUpdatesBlockFunctionTemplateArg() {
+        myFixture.addFileToProject("templates/old/partial.html.twig", "");
+
+        PsiFile sourceTwig = myFixture.addFileToProject(
+            "templates/page_block.html.twig",
+            "{{ block('title', '@App/old/partial.html.twig') }}"
+        );
+
+        TwigTemplateUsageReference ref = findTwigUsageReference("templates/old/partial.html.twig", sourceTwig);
+        assertNotNull("Expected TwigTemplateUsageReference for block() template argument", ref);
+
+        WriteCommandAction.runWriteCommandAction(getProject(), () -> {
+            ref.handleElementRename("renamed.html.twig");
+        });
+
+        assertEquals("{{ block('title', '@App/old/renamed.html.twig') }}", sourceTwig.getText());
+    }
+
+    /**
      * Finds the {@link TwigTemplateUsageReference} in {@code sourceTwig} that points to
      * the Twig file at {@code oldTemplateRelativePath} (relative to the temp VFS root).
      */

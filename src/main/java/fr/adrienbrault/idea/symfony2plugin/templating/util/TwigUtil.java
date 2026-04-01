@@ -2454,6 +2454,7 @@ public class TwigUtil {
         final ElementPattern<PsiElement> importTag = TwigPattern.getTagNameParameterPattern(TwigElementTypes.IMPORT_TAG, "import");
         final ElementPattern<PsiElement> fromTag = TwigPattern.getTagNameParameterPattern(TwigElementTypes.IMPORT_TAG, "from");
         final ElementPattern<PsiElement> includeSource = TwigPattern.getPrintBlockOrTagFunctionPattern("include", "source");
+        final ElementPattern<PsiElement> blockFunctionTemplate = TwigPattern.getPrintBlockOrTagFunctionSecondParameterPattern("block");
         final ElementPattern<PsiElement> embed = TwigPattern.getEmbedPattern();
         final ElementPattern<PsiElement> tagName = PlatformPatterns.psiElement().withElementType(TwigTokenTypes.TAG_NAME);
         final ElementPattern<PsiElement> withKeyword = PlatformPatterns.psiElement().withElementType(TwigTokenTypes.IDENTIFIER).withText("with");
@@ -2502,6 +2503,19 @@ public class TwigUtil {
                 String templateName = includeTag.getText();
                 if(StringUtils.isNotBlank(templateName)) {
                     consumer.consume(new TemplateInclude(psiElement, templateName, TemplateInclude.TYPE.INCLUDE_FUNCTION));
+                }
+            }
+
+            // {{ block('title', 'foo.html.twig') }}
+            PsiElement blockFunctionTag = PsiElementUtils.getChildrenOfType(psiElement, patterns.blockFunctionTemplate);
+            if(blockFunctionTag != null) {
+                String templateName = blockFunctionTag.getText();
+                if(StringUtils.isNotBlank(templateName)) {
+                    consumer.consume(new TemplateInclude(
+                        psiElement,
+                        templateName,
+                        TemplateInclude.TYPE.BLOCK_FUNCTION
+                    ));
                 }
             }
 

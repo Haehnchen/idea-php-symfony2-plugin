@@ -88,7 +88,8 @@ public class TwigTemplateUsageTypeProvider implements UsageTypeProviderEx {
         if (hasTagName(element, "include")
             || hasPatternMatch(element, TwigPattern.getTagNameParameterPattern(TwigElementTypes.INCLUDE_TAG, "include"))
             || hasPatternMatch(element, TwigPattern.getIncludeTagArrayPattern())
-            || hasPatternMatch(element, TwigPattern.getPrintBlockOrTagFunctionPattern("include", "source"))) {
+            || hasPatternMatch(element, TwigPattern.getPrintBlockOrTagFunctionPattern("include", "source"))
+            || hasPatternMatch(element, TwigPattern.getPrintBlockOrTagFunctionSecondParameterPattern("block"))) {
             return INCLUDE;
         }
 
