@@ -43,6 +43,7 @@ public class TwigTemplateReferencesSearchExecutorTest extends SymfonyLightCodeIn
         assertContainsSourceFile(references, "templates/include_array_tag.html.twig");
         assertContainsSourceFile(references, "templates/include_function.html.twig");
         assertContainsSourceFile(references, "templates/source_function.html.twig");
+        assertContainsSourceFile(references, "templates/block_function.html.twig");
         assertContainsSourceFile(references, "templates/embed_tag.html.twig");
         assertContainsSourceFile(references, "templates/import_tag.html.twig");
         assertContainsSourceFile(references, "templates/from_tag.html.twig");
@@ -82,6 +83,7 @@ public class TwigTemplateReferencesSearchExecutorTest extends SymfonyLightCodeIn
         myFixture.addFileToProject("templates/include_array_tag.html.twig", "{% include ['base.html.twig', 'fallback.html.twig'] %}");
         myFixture.addFileToProject("templates/include_function.html.twig", "{{ include('base.html.twig') }}");
         myFixture.addFileToProject("templates/source_function.html.twig", "{{ source('base.html.twig') }}");
+        myFixture.addFileToProject("templates/block_function.html.twig", "{{ block('title', 'base.html.twig') }}");
         myFixture.addFileToProject("templates/embed_tag.html.twig", "{% embed 'base.html.twig' %}{% endembed %}");
         myFixture.addFileToProject("templates/import_tag.html.twig", "{% import 'base.html.twig' as macros %}");
         myFixture.addFileToProject("templates/from_tag.html.twig", "{% from 'base.html.twig' import foo as bar %}");

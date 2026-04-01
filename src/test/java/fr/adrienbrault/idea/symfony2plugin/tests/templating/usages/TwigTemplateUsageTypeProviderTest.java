@@ -57,6 +57,7 @@ public class TwigTemplateUsageTypeProviderTest extends SymfonyLightCodeInsightFi
         expectedBySourceFile.put("templates/include_array_tag.html.twig", "include");
         expectedBySourceFile.put("templates/include_function.html.twig", "include");
         expectedBySourceFile.put("templates/source_function.html.twig", "include");
+        expectedBySourceFile.put("templates/block_function.html.twig", "include");
         expectedBySourceFile.put("templates/embed_tag.html.twig", "embed");
         expectedBySourceFile.put("templates/import_tag.html.twig", "import");
         expectedBySourceFile.put("templates/from_tag.html.twig", "from");
@@ -150,6 +151,7 @@ public class TwigTemplateUsageTypeProviderTest extends SymfonyLightCodeInsightFi
         myFixture.addFileToProject("templates/include_array_tag.html.twig", "{% include ['base.html.twig', 'fallback.html.twig'] %}");
         myFixture.addFileToProject("templates/include_function.html.twig", "{{ include('base.html.twig') }}");
         myFixture.addFileToProject("templates/source_function.html.twig", "{{ source('base.html.twig') }}");
+        myFixture.addFileToProject("templates/block_function.html.twig", "{{ block('title', 'base.html.twig') }}");
         myFixture.addFileToProject("templates/embed_tag.html.twig", "{% embed 'base.html.twig' %}{% endembed %}");
         myFixture.addFileToProject("templates/import_tag.html.twig", "{% import 'base.html.twig' as macros %}");
         myFixture.addFileToProject("templates/from_tag.html.twig", "{% from 'base.html.twig' import foo as bar %}");
