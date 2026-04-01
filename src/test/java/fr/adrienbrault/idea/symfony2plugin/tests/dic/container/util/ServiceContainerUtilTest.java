@@ -190,6 +190,21 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
         assertTrue(service.isAutowire());
     }
 
+    public void testPhpArrayServicesUsingImportedAppAliasAreInIndex() {
+        PsiFile phpFile = myFixture.configureByText("services_imported_app_alias.php", "<?php\n" +
+            "use Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\App as ConfigApp;\n" +
+            "return ConfigApp::config([\n" +
+            "    'services' => [\n" +
+            "        'alias.array_service' => ['class' => \\DateTime::class],\n" +
+            "    ],\n" +
+            "]);");
+
+        Collection<ServiceSerializable> servicesInFile = ServiceContainerUtil.getServicesInFile(phpFile);
+        ServiceSerializable service = servicesInFile.stream().filter(s -> "alias.array_service".equals(s.getId())).findFirst().get();
+
+        assertEquals("DateTime", service.getClassName());
+    }
+
     public void testPhpDirectArrayReturnServicesAreInIndex() {
         PsiFile phpFile = myFixture.configureByText("services_direct_array.php", "<?php\nreturn ['services' => ['direct.array_service' => ['class' => \\DateTime::class]]];");
 
