@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.action.ui;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
+import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -36,7 +37,7 @@ import java.util.*;
 public class ServiceBuilder {
 
     public enum OutputType {
-        Yaml, XML,
+        Yaml, XML, Fluent, PhpArray,
     }
 
     private final List<MethodParameter.MethodModelParameter>  methodModelParameter;
@@ -87,6 +88,14 @@ public class ServiceBuilder {
 
         if(outputType == OutputType.XML) {
             return buildXml(methods, className, serviceName);
+        }
+
+        if(outputType == OutputType.Fluent) {
+            return buildFluent(methods, className, serviceName);
+        }
+
+        if(outputType == OutputType.PhpArray) {
+            return buildPhpArray(methods, className, serviceName);
         }
 
         return null;
@@ -297,6 +306,24 @@ public class ServiceBuilder {
         callback.onTags(serviceTags);
     }
 
+    private boolean isPhpClassFqn(@NotNull String serviceId) {
+        // Only query PhpIndex if the serviceId looks like a possible PHP FQN:
+        // it must contain a namespace separator to be considered a class candidate
+        if (!serviceId.contains("\\")) {
+            return false;
+        }
+
+        PhpIndex phpIndex = PhpIndex.getInstance(this.project);
+        return !phpIndex.getClassesByFQN(serviceId).isEmpty();
+    }
+
+    private String formatPhpServiceArgument(@NotNull String serviceId) {
+        if (isPhpClassFqn(serviceId)) {
+            return "\\" + serviceId + "::class";
+        }
+        return String.format("service('%s')", serviceId);
+    }
+
     private List<String> formatYamlService(List<String> parameters) {
 
         // append yaml syntax, more will follow...
@@ -306,6 +333,113 @@ public class ServiceBuilder {
         }
 
         return yamlSyntaxParameters;
+    }
+
+    private String buildFluent(Map<String, List<MethodParameter.MethodModelParameter>> methods, String className, String serviceName) {
+        String serviceId = this.isClassAsIdAttribute ? "\\" + className + "::class" : "'" + serviceName + "'";
+        String classArg = this.isClassAsIdAttribute ? null : "\\" + className + "::class";
+
+        List<String> lines = new ArrayList<>();
+        if (classArg != null) {
+            lines.add(String.format("$services->set(%s, %s)", serviceId, classArg));
+        } else {
+            lines.add(String.format("$services->set(%s)", serviceId));
+        }
+
+        if(methods.containsKey("__construct")) {
+            List<String> parameters = getParameters(methods.get("__construct"));
+            if(parameters != null) {
+                lines.add("    ->args([");
+                for(String parameter: parameters) {
+                    lines.add(String.format("        %s,", formatPhpServiceArgument(parameter)));
+                }
+                lines.add("    ])");
+            }
+
+            methods.remove("__construct");
+        }
+
+        for(Map.Entry<String, List<MethodParameter.MethodModelParameter>> entry: methods.entrySet()) {
+            List<String> parameters = getParameters(entry.getValue());
+            if(parameters != null) {
+                lines.add(String.format("    ->call('%s', [", entry.getKey()));
+                for(String parameter: parameters) {
+                    lines.add(String.format("        %s,", formatPhpServiceArgument(parameter)));
+                }
+                lines.add("    ])");
+            }
+        }
+
+        serviceTagCallback(className, serviceTags -> {
+            for (ServiceTag serviceTag : serviceTags) {
+                lines.add(String.format("    ->tag('%s')", serviceTag.getTagName()));
+            }
+        });
+
+        // Join lines and append semicolon to the last line instead of on its own line
+        if (!lines.isEmpty()) {
+            String lastLine = lines.get(lines.size() - 1);
+            lines.set(lines.size() - 1, lastLine + ";");
+        }
+
+        return StringUtils.join(lines, "\n");
+    }
+
+    private String buildPhpArray(Map<String, List<MethodParameter.MethodModelParameter>> methods, String className, String serviceName) {
+        String serviceId = this.isClassAsIdAttribute ? "\\" + className + "::class" : "'" + serviceName + "'";
+
+        List<String> lines = new ArrayList<>();
+        lines.add(serviceId + " => [");
+
+        if(!this.isClassAsIdAttribute) {
+            lines.add("    'class' => \\" + className + "::class,");
+        }
+
+        if(methods.containsKey("__construct")) {
+            List<String> parameters = getParameters(methods.get("__construct"));
+            if(parameters != null) {
+                lines.add("    'arguments' => [");
+                for(String parameter: parameters) {
+                    lines.add(String.format("        %s,", formatPhpServiceArgument(parameter)));
+                }
+                lines.add("    ],");
+            }
+
+            methods.remove("__construct");
+        }
+
+        List<String> calls = new ArrayList<>();
+        for(Map.Entry<String, List<MethodParameter.MethodModelParameter>> entry: methods.entrySet()) {
+            List<String> parameters = getParameters(entry.getValue());
+            if(parameters != null) {
+                calls.add("        [");
+                calls.add(String.format("            '%s',", entry.getKey()));
+                calls.add("            [");
+                for(String parameter: parameters) {
+                    calls.add(String.format("                %s,", formatPhpServiceArgument(parameter)));
+                }
+                calls.add("            ],");
+                calls.add("        ],");
+            }
+        }
+
+        if(!calls.isEmpty()) {
+            lines.add("    'calls' => [");
+            lines.addAll(calls);
+            lines.add("    ],");
+        }
+
+        serviceTagCallback(className, serviceTags -> {
+            lines.add("    'tags' => [");
+            for (ServiceTag serviceTag : serviceTags) {
+                lines.add(String.format("        '%s',", serviceTag.getTagName()));
+            }
+            lines.add("    ],");
+        });
+
+        lines.add("],");
+
+        return StringUtils.join(lines, "\n");
     }
 
     public interface TagCallbackInterface {

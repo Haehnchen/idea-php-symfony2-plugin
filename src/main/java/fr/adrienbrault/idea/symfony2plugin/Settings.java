@@ -76,10 +76,10 @@ public class Settings implements PersistentStateComponent<Settings> {
     /**
      * Use service id attribute as class name for service generator
      */
-    public boolean serviceClassAsIdAttribute = false;
+    public boolean serviceClassAsIdAttribute = true;
 
     /**
-     * Last user selected output of service generator eg: yaml or xml
+     * Last user selected output of service generator eg: yaml, xml, fluent, or phparray
      */
     public String lastServiceGeneratorLanguage = null;
 
