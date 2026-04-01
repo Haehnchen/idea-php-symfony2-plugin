@@ -49,12 +49,16 @@ public class PhpConfigReferenceContributor extends PsiReferenceContributor {
         psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern(), new PhpStringLiteralExpressionReference(ServiceIndexedReference.class)
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "hasDefinition")
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "getDefinition")
-            .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "setAlias", 1)
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "findDefinition")
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "removeDefinition")
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "removeAlias")
 
             .addCall("\\Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\ServicesConfigurator", "get")
+        );
+
+        psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.getMethodParameterListStringPattern(), new PhpStringLiteralExpressionReference(ServiceIndexedReference.class)
+            .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "setAlias", 1)
+            .addCall("\\Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\ServicesConfigurator", "alias", 1)
             .addCall("\\Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\AbstractServiceConfigurator", "alias", 1)
         );
 
