@@ -1,6 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin;
 
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
+import com.intellij.ide.DataManager;
+import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
@@ -11,10 +13,12 @@ import com.intellij.openapi.ui.TextBrowseFolderListener;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.TitledSeparator;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
+import fr.adrienbrault.idea.symfony2plugin.mcp.McpApplicationSettings;
 import fr.adrienbrault.idea.symfony2plugin.stubs.util.IndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
@@ -66,6 +70,7 @@ public class SettingsForm implements Configurable {
     private JCheckBox featureTypeProvider;
     private JCheckBox featurePropertyInjection;
     private JCheckBox dismissYamlSchemaNotification;
+    private JCheckBox mcpEnabled;
 
     public SettingsForm(@NotNull final Project project) {
         this.project = project;
@@ -105,6 +110,7 @@ public class SettingsForm implements Configurable {
         buttonAutoConfigure = new JButton("Autoconfigure");
         buttonBuyLicense = new JButton("Buy License");
         buttonReindex = new JButton("Clear Index");
+        mcpEnabled = new JCheckBox("Enable MCP Tools");
 
         pathToTranslationRootTextField = new TextFieldWithBrowseButton();
         pathToTranslationRootTextFieldReset = new JButton("Default");
@@ -181,6 +187,10 @@ public class SettingsForm implements Configurable {
         actionBar.add(buttonBuyLicense);
         content.add(actionBar, gbc);
 
+        gbc.gridy = row++;
+        gbc.insets = JBUI.insets(4, 8, 0, 0);
+        content.add(createMcpCheckPanel(), gbc);
+
         // ── Paths ─────────────────────────────────────────────────────────────
         gbc.gridy = row++;
         gbc.insets = JBUI.insetsTop(12);
@@ -255,6 +265,83 @@ public class SettingsForm implements Configurable {
         return panel1;
     }
 
+    private JPanel createMcpCheckPanel() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setOpaque(false);
+        GridBagConstraints c = new GridBagConstraints();
+
+        c.gridx = 0;
+        c.gridy = 0;
+        c.gridwidth = 2;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 1.0;
+        c.insets = JBUI.emptyInsets();
+        panel.add(mcpEnabled, c);
+
+        c.gridwidth = 1;
+        c.gridy = 1;
+        c.gridx = 0;
+        c.fill = GridBagConstraints.NONE;
+        c.weightx = 0;
+        panel.add(Box.createHorizontalStrut(JBUI.scale(26)), c);
+
+        c.gridx = 1;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 1.0;
+        c.insets = JBUI.insetsTop(1);
+        panel.add(createMcpHintRow(), c);
+
+        return panel;
+    }
+
+    private JPanel createMcpHintRow() {
+        JPanel hintRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        hintRow.setOpaque(false);
+
+        Font smallFont = UIUtil.getLabelFont(UIUtil.FontSize.SMALL);
+        Color hintColor = UIUtil.getContextHelpForeground();
+
+        hintRow.add(createHintLabel("Application-wide: requires an IDE restart or ", smallFont, hintColor));
+        hintRow.add(createSettingsLinkLabel("re-enabling the MCP server", smallFont, "com.intellij.mcpserver.settings"));
+        hintRow.add(createHintLabel("; configure tools in ", smallFont, hintColor));
+        hintRow.add(createSettingsLinkLabel("Exposed Tools", smallFont, "com.intellij.mcpserver.settings.filter"));
+        hintRow.add(createHintLabel(".", smallFont, hintColor));
+
+        return hintRow;
+    }
+
+    private JLabel createHintLabel(String text, Font font, Color color) {
+        JLabel label = new JLabel(text);
+        label.setFont(font);
+        label.setForeground(color);
+        return label;
+    }
+
+    private JLabel createSettingsLinkLabel(String text, Font font, String configurableId) {
+        JLabel linkLabel = new JLabel(text);
+        linkLabel.setFont(font);
+        linkLabel.setForeground(UIManager.getColor("link.foreground") != null
+            ? UIManager.getColor("link.foreground")
+            : new JBColor(new Color(0x2470B3), new Color(0x589DF6)));
+        linkLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        linkLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                DataContext dataContext = DataManager.getInstance().getDataContext(linkLabel);
+                com.intellij.openapi.options.ex.Settings settings = com.intellij.openapi.options.ex.Settings.KEY.getData(dataContext);
+                if (settings != null) {
+                    Configurable configurable = settings.find(configurableId);
+                    if (configurable != null) {
+                        settings.select(configurable);
+                    }
+                }
+            }
+        });
+
+        return linkLabel;
+    }
+
     private JPanel createCheckWithHint(JCheckBox checkBox, String hint) {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
@@ -325,6 +412,7 @@ public class SettingsForm implements Configurable {
     public boolean isModified() {
         return
             !pluginEnabled.isSelected() == getSettings().pluginEnabled
+                || !mcpEnabled.isSelected() == getApplicationSettings().mcpEnabled
                 || !pathToTranslationRootTextField.getText().equals(getSettings().pathToTranslation)
                 || !codeFoldingPhpRoute.isSelected() == getSettings().codeFoldingPhpRoute
                 || !codeFoldingPhpModel.isSelected() == getSettings().codeFoldingPhpModel
@@ -345,6 +433,7 @@ public class SettingsForm implements Configurable {
     @Override
     public void apply() throws ConfigurationException {
         getSettings().pluginEnabled = pluginEnabled.isSelected();
+        getApplicationSettings().mcpEnabled = mcpEnabled.isSelected();
 
         getSettings().pathToTranslation = pathToTranslationRootTextField.getText();
         getSettings().codeFoldingPhpRoute = codeFoldingPhpRoute.isSelected();
@@ -373,8 +462,13 @@ public class SettingsForm implements Configurable {
         return Settings.getInstance(project);
     }
 
+    private McpApplicationSettings getApplicationSettings() {
+        return McpApplicationSettings.Companion.getInstance();
+    }
+
     private void updateUIFromSettings() {
         pluginEnabled.setSelected(getSettings().pluginEnabled);
+        mcpEnabled.setSelected(getApplicationSettings().mcpEnabled);
 
         pathToTranslationRootTextField.setText(getSettings().pathToTranslation);
         codeFoldingPhpRoute.setSelected(getSettings().codeFoldingPhpRoute);
