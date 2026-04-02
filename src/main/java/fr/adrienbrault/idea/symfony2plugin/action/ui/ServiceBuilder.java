@@ -3,8 +3,14 @@ package fr.adrienbrault.idea.symfony2plugin.action.ui;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.lang.psi.elements.ClassReference;
 import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.resolve.types.PhpType;
+import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceTag;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
@@ -35,6 +41,29 @@ import java.util.*;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class ServiceBuilder {
+
+    /**
+     * Shared model used by the dialog and MCP generator so both paths start from the same inferred service data.
+     */
+    public static class ServiceDefinitionModel {
+        private final String serviceName;
+        private final List<MethodParameter.MethodModelParameter> modelParameters;
+
+        public ServiceDefinitionModel(@NotNull String serviceName, @NotNull List<MethodParameter.MethodModelParameter> modelParameters) {
+            this.serviceName = serviceName;
+            this.modelParameters = modelParameters;
+        }
+
+        @NotNull
+        public String getServiceName() {
+            return serviceName;
+        }
+
+        @NotNull
+        public List<MethodParameter.MethodModelParameter> getModelParameters() {
+            return modelParameters;
+        }
+    }
 
     public enum OutputType {
         Yaml, XML, Fluent, PhpArray,
@@ -96,6 +125,141 @@ public class ServiceBuilder {
 
         if(outputType == OutputType.PhpArray) {
             return buildPhpArray(methods, className, serviceName);
+        }
+
+        return null;
+    }
+
+    /**
+     * Resolves the target class and pre-fills the default service id plus constructor/setter argument suggestions.
+     */
+    @Nullable
+    public static ServiceDefinitionModel createModel(@NotNull Project project, @NotNull String className) {
+        String normalizedClassName = StringUtils.stripStart(className, "\\");
+
+        PhpClass phpClass = PhpElementsUtil.getClass(project, normalizedClassName);
+        if (phpClass == null) {
+            return null;
+        }
+
+        String serviceName = ServiceUtil.getServiceNameForClass(project, normalizedClassName);
+
+        Map<String, ContainerService> serviceClass = ContainerCollectionResolver.getServices(project);
+        SortedSet<String> serviceSetComplete = new TreeSet<>();
+        serviceSetComplete.add("");
+        serviceSetComplete.addAll(serviceClass.keySet());
+
+        List<MethodParameter.MethodModelParameter> modelParameters = collectMethodParameters(project, phpClass, serviceClass, serviceSetComplete);
+        modelParameters.sort(
+            Comparator
+                .comparing(MethodParameter.MethodModelParameter::getName)
+                .thenComparingInt(MethodParameter.MethodModelParameter::getIndex)
+        );
+
+        return new ServiceDefinitionModel(serviceName, modelParameters);
+    }
+
+    /**
+     * Collects public method parameters and attaches either guessed service matches or the full service list for manual selection.
+     */
+    @NotNull
+    private static List<MethodParameter.MethodModelParameter> collectMethodParameters(
+        @NotNull Project project,
+        @NotNull PhpClass phpClass,
+        @NotNull Map<String, ContainerService> serviceClass,
+        @NotNull Set<String> serviceSetComplete
+    ) {
+        List<MethodParameter.MethodModelParameter> modelParameters = new ArrayList<>();
+
+        for (Method method : phpClass.getMethods()) {
+            if (!method.getModifier().isPublic()) {
+                continue;
+            }
+
+            Parameter[] parameters = method.getParameters();
+            for (int i = 0; i < parameters.length; i++) {
+                Set<String> possibleServices = getPossibleServices(project, parameters[i], serviceClass);
+                if (!possibleServices.isEmpty()) {
+                    String serviceName = getServiceName(possibleServices);
+                    modelParameters.add(new MethodParameter.MethodModelParameter(method, parameters[i], i, possibleServices, serviceName));
+                } else {
+                    modelParameters.add(new MethodParameter.MethodModelParameter(method, parameters[i], i, serviceSetComplete));
+                }
+            }
+        }
+
+        return modelParameters;
+    }
+
+    /**
+     * Guesses matching container services for a parameter by first checking explicit class references and then declared PHP types.
+     */
+    @NotNull
+    public static Set<String> getPossibleServices(
+        @NotNull Project project,
+        @NotNull Parameter parameter,
+        @NotNull Map<String, ContainerService> serviceClass
+    ) {
+        if (parameter.getFirstPsiChild() instanceof ClassReference classReference) {
+            String type = classReference.getFQN();
+            if (type != null) {
+                return ServiceActionUtil.getPossibleServices(project, type, serviceClass);
+            }
+        }
+
+        for (String type : parameter.getDeclaredType().getTypes()) {
+            if (PhpType.isPrimitiveType(type)) {
+                continue;
+            }
+
+            Set<String> services = ServiceActionUtil.getPossibleServices(project, StringUtils.stripStart(type, "\\"), serviceClass);
+            if (!services.isEmpty()) {
+                return services;
+            }
+        }
+
+        return Collections.emptySet();
+    }
+
+    /**
+     * Picks the default service id from the available matches while preserving the sorted priority of the incoming set.
+     */
+    @Nullable
+    public static String getServiceName(@NotNull Set<String> services) {
+        if (services.isEmpty()) {
+            return null;
+        }
+
+        return services.iterator().next();
+    }
+
+    /**
+     * Resolves the preferred service id for a parameter and falls back to the parameter type's conventional service name.
+     */
+    @Nullable
+    public static String resolveServiceName(
+        @NotNull Project project,
+        @NotNull Parameter parameter,
+        @NotNull Map<String, ContainerService> serviceClass
+    ) {
+        Set<String> possibleServices = getPossibleServices(project, parameter, serviceClass);
+        if (!possibleServices.isEmpty()) {
+            return getServiceName(possibleServices);
+        }
+
+        if (parameter.getFirstPsiChild() instanceof ClassReference classReference) {
+            String fqn = classReference.getFQN();
+            if (fqn != null) {
+                return ServiceUtil.getServiceNameForClass(project, StringUtils.stripStart(fqn, "\\"));
+            }
+        }
+
+        for (String type : parameter.getDeclaredType().getTypes()) {
+            if (PhpType.isPrimitiveType(type)) {
+                continue;
+            }
+
+            return ServiceUtil.getServiceNameForClass(project, StringUtils.stripStart(type, "\\"));
         }
 
         return null;

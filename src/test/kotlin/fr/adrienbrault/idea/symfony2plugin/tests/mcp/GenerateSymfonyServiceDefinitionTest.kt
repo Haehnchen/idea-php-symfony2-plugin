@@ -1,17 +1,31 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.mcp
 
+import fr.adrienbrault.idea.symfony2plugin.action.ui.ServiceBuilder
 import fr.adrienbrault.idea.symfony2plugin.mcp.service.ServiceDefinitionGenerator
+import fr.adrienbrault.idea.symfony2plugin.mcp.toolset.ServiceDefinitionMcpToolset
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestCase() {
+    private val serviceDefinitionGenerator = ServiceDefinitionGenerator()
+    private val serviceDefinitionMcpToolset = ServiceDefinitionMcpToolset()
 
     @Throws(Exception::class)
     override fun setUp() {
         super.setUp()
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("classes.php"))
+        myFixture.addFileToProject(
+            "app/config/services.xml",
+            """
+            <container xmlns="http://symfony.com/schema/dic/services">
+                <services>
+                    <service id="foo.bar" class="Foo\Bar"/>
+                </services>
+            </container>
+            """.trimIndent()
+        )
     }
 
     override fun getTestDataPath(): String {
@@ -19,16 +33,14 @@ class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestC
     }
 
     fun testGenerateYamlDefault() {
-        val generator = ServiceDefinitionGenerator(project)
-        val result = generator.generate("Foo\\Bar", ServiceDefinitionGenerator.OutputType.YAML)
+        val result = serviceDefinitionGenerator.generate(project, "Foo\\Bar", ServiceBuilder.OutputType.Yaml)
 
         assertNotNull(result)
         assertTrue(result!!.contains("Foo\\Bar:"))
     }
 
     fun testGenerateYamlWithClassNameAsIdTrue() {
-        val generator = ServiceDefinitionGenerator(project)
-        val result = generator.generate("Foo\\Bar", ServiceDefinitionGenerator.OutputType.YAML, true)
+        val result = serviceDefinitionGenerator.generate(project, "Foo\\Bar", ServiceBuilder.OutputType.Yaml, true)
 
         assertNotNull(result)
         assertTrue(result!!.contains("Foo\\Bar:"))
@@ -36,8 +48,7 @@ class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestC
     }
 
     fun testGenerateYamlWithClassNameAsIdFalse() {
-        val generator = ServiceDefinitionGenerator(project)
-        val result = generator.generate("Foo\\Bar", ServiceDefinitionGenerator.OutputType.YAML, false)
+        val result = serviceDefinitionGenerator.generate(project, "Foo\\Bar", ServiceBuilder.OutputType.Yaml, false)
 
         assertNotNull(result)
         assertTrue(result!!.contains("foo.bar:"))
@@ -45,16 +56,14 @@ class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestC
     }
 
     fun testGenerateXmlDefault() {
-        val generator = ServiceDefinitionGenerator(project)
-        val result = generator.generate("Foo\\Bar", ServiceDefinitionGenerator.OutputType.XML)
+        val result = serviceDefinitionGenerator.generate(project, "Foo\\Bar", ServiceBuilder.OutputType.XML)
 
         assertNotNull(result)
         assertTrue(result!!.contains("<service id=\"Foo\\Bar\""))
     }
 
     fun testGenerateXmlWithClassNameAsIdTrue() {
-        val generator = ServiceDefinitionGenerator(project)
-        val result = generator.generate("Foo\\Bar", ServiceDefinitionGenerator.OutputType.XML, true)
+        val result = serviceDefinitionGenerator.generate(project, "Foo\\Bar", ServiceBuilder.OutputType.XML, true)
 
         assertNotNull(result)
         assertTrue(result!!.contains("<service id=\"Foo\\Bar\""))
@@ -62,8 +71,7 @@ class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestC
     }
 
     fun testGenerateXmlWithClassNameAsIdFalse() {
-        val generator = ServiceDefinitionGenerator(project)
-        val result = generator.generate("Foo\\Bar", ServiceDefinitionGenerator.OutputType.XML, false)
+        val result = serviceDefinitionGenerator.generate(project, "Foo\\Bar", ServiceBuilder.OutputType.XML, false)
 
         assertNotNull(result)
         assertTrue(result!!.contains("id=\"foo.bar\""))
@@ -71,8 +79,7 @@ class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestC
     }
 
     fun testGenerateFluentWithClassNameAsIdTrue() {
-        val generator = ServiceDefinitionGenerator(project)
-        val result = generator.generate("Foo\\Bar", ServiceDefinitionGenerator.OutputType.FLUENT, true)
+        val result = serviceDefinitionGenerator.generate(project, "Foo\\Bar", ServiceBuilder.OutputType.Fluent, true)
 
         assertNotNull(result)
         assertTrue(result!!.contains("\$services->set(\\Foo\\Bar::class)"))
@@ -80,16 +87,14 @@ class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestC
     }
 
     fun testGenerateFluentWithClassNameAsIdFalse() {
-        val generator = ServiceDefinitionGenerator(project)
-        val result = generator.generate("Foo\\Bar", ServiceDefinitionGenerator.OutputType.FLUENT, false)
+        val result = serviceDefinitionGenerator.generate(project, "Foo\\Bar", ServiceBuilder.OutputType.Fluent, false)
 
         assertNotNull(result)
         assertTrue(result!!.contains("\$services->set('foo.bar', \\Foo\\Bar::class)"))
     }
 
     fun testGeneratePhpArrayWithClassNameAsIdTrue() {
-        val generator = ServiceDefinitionGenerator(project)
-        val result = generator.generate("Foo\\Bar", ServiceDefinitionGenerator.OutputType.PHP_ARRAY, true)
+        val result = serviceDefinitionGenerator.generate(project, "Foo\\Bar", ServiceBuilder.OutputType.PhpArray, true)
 
         assertNotNull(result)
         assertTrue(result!!.contains("\\Foo\\Bar::class => ["))
@@ -97,8 +102,7 @@ class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestC
     }
 
     fun testGeneratePhpArrayWithClassNameAsIdFalse() {
-        val generator = ServiceDefinitionGenerator(project)
-        val result = generator.generate("Foo\\Bar", ServiceDefinitionGenerator.OutputType.PHP_ARRAY, false)
+        val result = serviceDefinitionGenerator.generate(project, "Foo\\Bar", ServiceBuilder.OutputType.PhpArray, false)
 
         assertNotNull(result)
         assertTrue(result!!.contains("'foo.bar' => ["))
@@ -106,17 +110,102 @@ class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestC
     }
 
     fun testGenerateReturnsNullForNonExistentClass() {
-        val generator = ServiceDefinitionGenerator(project)
-        val result = generator.generate("NonExistent\\Class", ServiceDefinitionGenerator.OutputType.YAML, true)
+        val result = serviceDefinitionGenerator.generate(project, "NonExistent\\Class", ServiceBuilder.OutputType.Yaml, true)
 
         assertNull(result)
     }
 
     fun testGenerateWithLeadingBackslash() {
-        val generator = ServiceDefinitionGenerator(project)
-        val result = generator.generate("\\Foo\\Bar", ServiceDefinitionGenerator.OutputType.YAML, true)
+        val result = serviceDefinitionGenerator.generate(project, "\\Foo\\Bar", ServiceBuilder.OutputType.Yaml, true)
 
         assertNotNull(result)
         assertTrue(result!!.contains("Foo\\Bar:"))
+    }
+
+    fun testCreateModelUsesSharedPrefillLogicForDeclaredTypes() {
+        myFixture.addFileToProject(
+            "union_types.php",
+            """
+            <?php
+
+            namespace Foo {
+                class UnionBar
+                {
+                    public function __construct(Bar|string ${'$'}bar)
+                    {
+                    }
+                }
+            }
+            """.trimIndent()
+        )
+
+        val result = serviceDefinitionGenerator.createModel(project, "Foo\\UnionBar")
+
+        assertNotNull(result)
+        assertEquals(1, result!!.modelParameters.size)
+        assertEquals("foo.bar", result.modelParameters[0].currentService)
+    }
+
+    fun testGenerateMultipleYamlDefinitionsFromCommaSeparatedClassNames() {
+        myFixture.addFileToProject(
+            "multiple_classes.php",
+            """
+            <?php
+
+            namespace Foo {
+                class Baz
+                {
+                }
+            }
+            """.trimIndent()
+        )
+
+        val result = serviceDefinitionMcpToolset.generateDefinitions(
+            project,
+            "Foo\\Bar, Foo\\Baz",
+            ServiceBuilder.OutputType.Yaml,
+            true
+        )
+
+        assertTrue(result.contains("Foo\\Bar:"))
+        assertTrue(result.contains("Foo\\Baz:"))
+        assertTrue(result.contains("\n---\n"))
+    }
+
+    fun testGenerateMultipleYamlDefinitionsIgnoresBlankCommaSeparatedItems() {
+        myFixture.addFileToProject(
+            "multiple_classes_blank_items.php",
+            """
+            <?php
+
+            namespace Foo {
+                class BazBlank
+                {
+                }
+            }
+            """.trimIndent()
+        )
+
+        val result = serviceDefinitionMcpToolset.generateDefinitions(
+            project,
+            " , Foo\\BazBlank , ",
+            ServiceBuilder.OutputType.Yaml,
+            true
+        )
+
+        assertEquals("Foo\\BazBlank: ~", result)
+    }
+
+    fun testGenerateMultipleYamlDefinitionsKeepsGoingWhenOneClassIsMissing() {
+        val result = serviceDefinitionMcpToolset.generateDefinitions(
+            project,
+            "Foo\\Bar, Missing\\Class",
+            ServiceBuilder.OutputType.Yaml,
+            true
+        )
+
+        assertTrue(result.contains("Foo\\Bar:"))
+        assertTrue(result.contains("Error: Class not found: Missing\\Class"))
+        assertTrue(result.contains("\n---\n"))
     }
 }

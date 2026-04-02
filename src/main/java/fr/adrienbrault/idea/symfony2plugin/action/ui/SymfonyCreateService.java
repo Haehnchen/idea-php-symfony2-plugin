@@ -88,7 +88,6 @@ public class SymfonyCreateService extends JDialog {
     private ListTableModel<MethodParameter.MethodModelParameter> modelList;
 
     private Map<String, ContainerService> serviceClass;
-    private Set<String> serviceSetComplete;
 
     private final Project project;
 
@@ -166,10 +165,6 @@ public class SymfonyCreateService extends JDialog {
         );
 
         this.serviceClass = ContainerCollectionResolver.getServices(project);
-
-        this.serviceSetComplete = new TreeSet<>();
-        serviceSetComplete.add("");
-        serviceSetComplete.addAll(this.serviceClass.keySet());
 
         //update();
 
@@ -532,35 +527,12 @@ public class SymfonyCreateService extends JDialog {
         final String finalClassName = className;
 
         ReadAction.nonBlocking(() -> {
-            PhpClass phpClass = PhpElementsUtil.getClass(project, finalClassName);
-            if (phpClass == null) {
+            ServiceBuilder.ServiceDefinitionModel model = ServiceBuilder.createModel(project, finalClassName);
+            if (model == null) {
                 return null;
             }
 
-            String serviceName = ServiceUtil.getServiceNameForClass(project, finalClassName);
-            List<MethodParameter.MethodModelParameter> modelParameters = new ArrayList<>();
-
-            for (Method method : phpClass.getMethods()) {
-                if (method.getModifier().isPublic()) {
-                    Parameter[] parameters = method.getParameters();
-                    for (int i = 0; i < parameters.length; i++) {
-                        Set<String> possibleServices = getPossibleServices(parameters[i]);
-                        if (!possibleServices.isEmpty()) {
-                            modelParameters.add(new MethodParameter.MethodModelParameter(method, parameters[i], i, possibleServices, getServiceName(possibleServices)));
-                        } else {
-                            modelParameters.add(new MethodParameter.MethodModelParameter(method, parameters[i], i, serviceSetComplete));
-                        }
-                    }
-                }
-            }
-
-            modelParameters.sort(
-                Comparator
-                    .comparing(MethodParameter.MethodModelParameter::getName)
-                    .thenComparingInt(MethodParameter.MethodModelParameter::getIndex)
-            );
-
-            return new UpdateResult(serviceName, modelParameters);
+            return new UpdateResult(model.getServiceName(), model.getModelParameters());
         })
         .finishOnUiThread(com.intellij.openapi.application.ModalityState.any(), result -> {
             if (result == null) {
@@ -581,16 +553,6 @@ public class SymfonyCreateService extends JDialog {
     }
 
     private record UpdateResult(String serviceName, List<MethodParameter.MethodModelParameter> modelParameters) {}
-
-    @Nullable
-    private String getServiceName(Set<String> services) {
-        if (services.isEmpty()) {
-            return null;
-        }
-
-        // we have a weight sorted Set, so first one
-        return services.iterator().next();
-    }
 
     private class IsServiceColumn extends ColumnInfo<MethodParameter.MethodModelParameter, Boolean> {
 
@@ -614,34 +576,7 @@ public class SymfonyCreateService extends JDialog {
         }
 
         private void resolveServiceName(@NotNull MethodParameter.MethodModelParameter modelParameter) {
-            String type = getTypeFromParameter(modelParameter.getParameter());
-            if (type != null) {
-                Set<String> possibleServices = ServiceActionUtil.getPossibleServices(project, type, serviceClass);
-                if (!possibleServices.isEmpty()) {
-                    modelParameter.setCurrentService(getServiceName(possibleServices));
-                    return;
-                }
-
-                modelParameter.setCurrentService(ServiceUtil.getServiceNameForClass(project, StringUtils.stripStart(type, "\\")));
-            }
-        }
-
-        @Nullable
-        private String getTypeFromParameter(@NotNull Parameter parameter) {
-            PhpPsiElement phpPsiElement = parameter.getFirstPsiChild();
-            if (phpPsiElement instanceof ClassReference classReference) {
-                return classReference.getFQN();
-            }
-
-            // fallback: iterate declared types and filter out primitives
-            for (String type : parameter.getDeclaredType().getTypes()) {
-                if (PhpType.isPrimitiveType(type)) {
-                    continue;
-                }
-                return StringUtils.stripStart(type, "\\");
-            }
-
-            return null;
+            modelParameter.setCurrentService(ServiceBuilder.resolveServiceName(project, modelParameter.getParameter(), serviceClass));
         }
 
         public Class<?> getColumnClass() {
@@ -739,31 +674,6 @@ public class SymfonyCreateService extends JDialog {
         public String valueOf(MethodParameter.MethodModelParameter modelParameter) {
             return modelParameter.getParameter().getName();
         }
-    }
-
-    private Set<String> getPossibleServices(Parameter parameter) {
-
-        PhpPsiElement phpPsiElement = parameter.getFirstPsiChild();
-        if (phpPsiElement instanceof ClassReference classReference) {
-            String type = classReference.getFQN();
-            if (type != null) {
-                return ServiceActionUtil.getPossibleServices(project, type, serviceClass);
-            }
-        }
-
-        // fallback: iterate declared types and filter out primitives
-        for (String type : parameter.getDeclaredType().getTypes()) {
-            if (PhpType.isPrimitiveType(type)) {
-                continue;
-            }
-
-            Set<String> services = ServiceActionUtil.getPossibleServices(project, StringUtils.stripStart(type, "\\"), serviceClass);
-            if (!services.isEmpty()) {
-                return services;
-            }
-        }
-
-        return Collections.emptySet();
     }
 
     public static class ContainerServicePriorityNameComparator implements Comparator<ContainerService> {
