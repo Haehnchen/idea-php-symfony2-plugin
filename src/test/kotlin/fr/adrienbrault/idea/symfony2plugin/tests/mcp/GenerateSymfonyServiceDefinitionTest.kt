@@ -12,9 +12,11 @@ class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestC
     private val serviceDefinitionGenerator = ServiceDefinitionGenerator()
     private val serviceDefinitionMcpToolset = ServiceDefinitionMcpToolset()
 
-    @Throws(Exception::class)
-    override fun setUp() {
-        super.setUp()
+    override fun getTestDataPath(): String {
+        return "src/test/kotlin/fr/adrienbrault/idea/symfony2plugin/tests/mcp/fixtures"
+    }
+
+    private fun configureBaseClassesPhp() {
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("classes.php"))
         myFixture.addFileToProject(
             "app/config/services.xml",
@@ -28,18 +30,31 @@ class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestC
         )
     }
 
-    override fun getTestDataPath(): String {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/action/ui/fixtures"
+    private fun configureBaseServicesXml() {
+        myFixture.addFileToProject(
+            "app/config/services.xml",
+            """
+            <container xmlns="http://symfony.com/schema/dic/services">
+                <services>
+                    <service id="foo.bar" class="Foo\Bar"/>
+                    <service id="app.mailer" class="Foo\Mailer"/>
+                </services>
+            </container>
+            """.trimIndent()
+        )
     }
 
     fun testGenerateYamlDefault() {
+        configureBaseClassesPhp()
         val result = serviceDefinitionGenerator.generate(project, "Foo\\Bar", ServiceBuilder.OutputType.Yaml)
 
         assertNotNull(result)
         assertTrue(result!!.contains("Foo\\Bar:"))
+        assertFalse(result.contains("Possible services per parameter:"))
     }
 
     fun testGenerateYamlWithClassNameAsIdTrue() {
+        configureBaseClassesPhp()
         val result = serviceDefinitionGenerator.generate(project, "Foo\\Bar", ServiceBuilder.OutputType.Yaml, true)
 
         assertNotNull(result)
@@ -48,6 +63,7 @@ class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestC
     }
 
     fun testGenerateYamlWithClassNameAsIdFalse() {
+        configureBaseClassesPhp()
         val result = serviceDefinitionGenerator.generate(project, "Foo\\Bar", ServiceBuilder.OutputType.Yaml, false)
 
         assertNotNull(result)
@@ -56,13 +72,16 @@ class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestC
     }
 
     fun testGenerateXmlDefault() {
+        configureBaseClassesPhp()
         val result = serviceDefinitionGenerator.generate(project, "Foo\\Bar", ServiceBuilder.OutputType.XML)
 
         assertNotNull(result)
         assertTrue(result!!.contains("<service id=\"Foo\\Bar\""))
+        assertFalse(result.contains("Possible services per parameter:"))
     }
 
     fun testGenerateXmlWithClassNameAsIdTrue() {
+        configureBaseClassesPhp()
         val result = serviceDefinitionGenerator.generate(project, "Foo\\Bar", ServiceBuilder.OutputType.XML, true)
 
         assertNotNull(result)
@@ -71,6 +90,7 @@ class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestC
     }
 
     fun testGenerateXmlWithClassNameAsIdFalse() {
+        configureBaseClassesPhp()
         val result = serviceDefinitionGenerator.generate(project, "Foo\\Bar", ServiceBuilder.OutputType.XML, false)
 
         assertNotNull(result)
@@ -79,29 +99,36 @@ class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestC
     }
 
     fun testGenerateFluentWithClassNameAsIdTrue() {
+        configureBaseClassesPhp()
         val result = serviceDefinitionGenerator.generate(project, "Foo\\Bar", ServiceBuilder.OutputType.Fluent, true)
 
         assertNotNull(result)
-        assertTrue(result!!.contains("\$services->set(\\Foo\\Bar::class)"))
+        assertTrue(result!!.contains($$"$services->set(\\Foo\\Bar::class)"))
         assertFalse(result.contains(", \\Foo\\Bar::class"))
+        assertFalse(result.contains("Possible services per parameter:"))
     }
 
     fun testGenerateFluentWithClassNameAsIdFalse() {
+        configureBaseClassesPhp()
         val result = serviceDefinitionGenerator.generate(project, "Foo\\Bar", ServiceBuilder.OutputType.Fluent, false)
 
         assertNotNull(result)
-        assertTrue(result!!.contains("\$services->set('foo.bar', \\Foo\\Bar::class)"))
+        assertTrue(result!!.contains($$"$services->set('foo.bar', \\Foo\\Bar::class)"))
     }
 
     fun testGeneratePhpArrayWithClassNameAsIdTrue() {
+        configureBaseClassesPhp()
         val result = serviceDefinitionGenerator.generate(project, "Foo\\Bar", ServiceBuilder.OutputType.PhpArray, true)
 
         assertNotNull(result)
         assertTrue(result!!.contains("\\Foo\\Bar::class => ["))
         assertFalse(result.contains("'class'"))
+        assertFalse(result.contains("Possible services per parameter:"))
     }
 
+
     fun testGeneratePhpArrayWithClassNameAsIdFalse() {
+        configureBaseClassesPhp()
         val result = serviceDefinitionGenerator.generate(project, "Foo\\Bar", ServiceBuilder.OutputType.PhpArray, false)
 
         assertNotNull(result)
@@ -116,6 +143,7 @@ class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestC
     }
 
     fun testGenerateWithLeadingBackslash() {
+        configureBaseClassesPhp()
         val result = serviceDefinitionGenerator.generate(project, "\\Foo\\Bar", ServiceBuilder.OutputType.Yaml, true)
 
         assertNotNull(result)
@@ -123,6 +151,7 @@ class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestC
     }
 
     fun testCreateModelUsesSharedPrefillLogicForDeclaredTypes() {
+        configureBaseClassesPhp()
         myFixture.addFileToProject(
             "union_types.php",
             """
@@ -146,7 +175,147 @@ class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestC
         assertEquals("foo.bar", result.modelParameters[0].currentService)
     }
 
+    fun testMcpShowsSuggestionsWhenConstructorTypeHasMultipleMatchingServices() {
+        configureBaseClassesPhp()
+        myFixture.addFileToProject(
+            "app/config/multi_match_services.xml",
+            """
+            <container xmlns="http://symfony.com/schema/dic/services">
+                <services>
+                    <service id="foo.bar" class="Foo\Bar"/>
+                    <service id="foo.foo" class="Foo\Foo"/>
+                </services>
+            </container>
+            """.trimIndent()
+        )
+
+        val result = serviceDefinitionMcpToolset.generateDefinitions(
+            project,
+            "Foo\\MultiMatchBar",
+            ServiceBuilder.OutputType.Yaml,
+            true
+        )
+
+        assertEquals(
+            listOf(
+                "Foo\\MultiMatchBar:",
+                "    arguments: ['@foo.foo']",
+                "",
+                "# Possible services per parameter:",
+                $$"""# $foo [Foo\Bar|\Foo\Foo] => foo.foo, foo.bar""",
+            ),
+            result.lines()
+        )
+    }
+
+    fun testMcpGenerateXmlAppendsSuggestionCommentForMultipleMatchingServices() {
+        configureBaseClassesPhp()
+        myFixture.addFileToProject(
+            "app/config/multi_match_xml_services.xml",
+            """
+            <container xmlns="http://symfony.com/schema/dic/services">
+                <services>
+                    <service id="foo.bar" class="Foo\Bar"/>
+                    <service id="foo.foo" class="Foo\Foo"/>
+                </services>
+            </container>
+            """.trimIndent()
+        )
+
+        val result = serviceDefinitionMcpToolset.generateDefinitions(
+            project,
+            "Foo\\MultiMatchXml",
+            ServiceBuilder.OutputType.XML,
+            true
+        )
+
+        assertEquals(
+            listOf(
+                "<service id=\"Foo\\MultiMatchXml\">",
+                "  <argument id=\"foo.foo\" type=\"service\"/>",
+                "</service>",
+                "",
+                "",
+                "<!-- Possible services per parameter: -->",
+                $$"""<!-- $foo [Foo\Bar|\Foo\Foo] => foo.foo, foo.bar -->""",
+            ),
+            result.lines()
+        )
+    }
+
+    fun testMcpGenerateFluentAppendsSuggestionCommentForMultipleMatchingServices() {
+        configureBaseClassesPhp()
+        myFixture.addFileToProject(
+            "app/config/multi_match_fluent_services.xml",
+            """
+            <container xmlns="http://symfony.com/schema/dic/services">
+                <services>
+                    <service id="foo.bar" class="Foo\Bar"/>
+                    <service id="foo.foo" class="Foo\Foo"/>
+                </services>
+            </container>
+            """.trimIndent()
+        )
+
+        val result = serviceDefinitionMcpToolset.generateDefinitions(
+            project,
+            "Foo\\MultiMatchFluent",
+            ServiceBuilder.OutputType.Fluent,
+            true
+        )
+
+        assertEquals(
+            listOf(
+                $$"""$services->set(\Foo\MultiMatchFluent::class)""",
+                "    ->args([",
+                "        service('foo.foo'),",
+                "    ]);",
+                "",
+                "// Possible services per parameter:",
+                $$"""// $foo [Foo\Bar|\Foo\Foo] => foo.foo, foo.bar""",
+            ),
+            result.lines()
+        )
+    }
+
+    fun testMcpShowsOnlyKnownSuggestionLinesWhenFollowingParameterIsUnknown() {
+        configureBaseClassesPhp()
+        myFixture.addFileToProject(
+            "app/config/multi_match_with_unknown_second.xml",
+            """
+            <container xmlns="http://symfony.com/schema/dic/services">
+                <services>
+                    <service id="foo.bar" class="Foo\Bar"/>
+                    <service id="foo.foo" class="Foo\Foo"/>
+                </services>
+            </container>
+            """.trimIndent()
+        )
+
+        val result = serviceDefinitionMcpToolset.generateDefinitions(
+            project,
+            "Foo\\MultiMatchWithUnknownSecond",
+            ServiceBuilder.OutputType.Yaml,
+            true
+        )
+
+        assertEquals(
+            listOf(
+                "Foo\\MultiMatchWithUnknownSecond:",
+                "    arguments: ['@foo.foo', '@?']",
+                "",
+                "# Possible services per parameter:",
+                $$"""# $foo [Foo\Bar|\Foo\Foo] => foo.foo, foo.bar""",
+                $$"""# $unknown [Foo\UnknownType]""",
+            ),
+            result.lines()
+        )
+        assertEquals(1, result.lines().count { it == "# Possible services per parameter:" })
+        assertEquals(2, result.lines().count { it.startsWith("# $") })
+    }
+
     fun testGenerateMultipleYamlDefinitionsFromCommaSeparatedClassNames() {
+        configureBaseClassesPhp()
         myFixture.addFileToProject(
             "multiple_classes.php",
             """
@@ -167,12 +336,18 @@ class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestC
             true
         )
 
-        assertTrue(result.contains("Foo\\Bar:"))
-        assertTrue(result.contains("Foo\\Baz:"))
-        assertTrue(result.contains("\n---\n"))
+        assertEquals(
+            """
+            Foo\Bar: ~
+            ---
+            Foo\Baz: ~
+            """.trimIndent(),
+            result
+        )
     }
 
     fun testGenerateMultipleYamlDefinitionsIgnoresBlankCommaSeparatedItems() {
+        configureBaseClassesPhp()
         myFixture.addFileToProject(
             "multiple_classes_blank_items.php",
             """
@@ -193,10 +368,16 @@ class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestC
             true
         )
 
-        assertEquals("Foo\\BazBlank: ~", result)
+        assertEquals(
+            """
+            Foo\BazBlank: ~
+            """.trimIndent(),
+            result
+        )
     }
 
     fun testGenerateMultipleYamlDefinitionsKeepsGoingWhenOneClassIsMissing() {
+        configureBaseClassesPhp()
         val result = serviceDefinitionMcpToolset.generateDefinitions(
             project,
             "Foo\\Bar, Missing\\Class",
@@ -204,8 +385,13 @@ class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestC
             true
         )
 
-        assertTrue(result.contains("Foo\\Bar:"))
-        assertTrue(result.contains("Error: Class not found: Missing\\Class"))
-        assertTrue(result.contains("\n---\n"))
+        assertEquals(
+            """
+            Foo\Bar: ~
+            ---
+            Error: Class not found: Missing\Class
+            """.trimIndent(),
+            result
+        )
     }
 }
