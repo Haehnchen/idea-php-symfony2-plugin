@@ -44,18 +44,6 @@ public class Symfony2ProjectComponent {
         }
     }
 
-    public static class ProjectCloseService implements Disposable {
-        private final Project project;
-
-        public ProjectCloseService(@NotNull Project project) {
-            this.project = project;
-        }
-
-        @Override
-        public void dispose() {
-        }
-    }
-
     final private static Logger LOG = Logger.getInstance("Symfony-Plugin");
     public static final ExtensionPointName<PluginConfigurationExtension> PLUGIN_CONFIGURATION_EXTENSION = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtension");
 
