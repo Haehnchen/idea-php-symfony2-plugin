@@ -9,6 +9,7 @@ import com.intellij.mcpserver.mcpFail
 import com.intellij.mcpserver.project
 import com.intellij.openapi.application.readAction
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
+import fr.adrienbrault.idea.symfony2plugin.action.ui.ServiceBuilder
 import fr.adrienbrault.idea.symfony2plugin.mcp.McpUtil
 import fr.adrienbrault.idea.symfony2plugin.mcp.service.ServiceDefinitionGenerator
 import kotlinx.coroutines.currentCoroutineContext
@@ -20,34 +21,58 @@ import org.apache.commons.lang3.StringUtils
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 class ServiceDefinitionMcpToolset : McpToolset {
+    private val serviceDefinitionGenerator = ServiceDefinitionGenerator()
+
+    internal fun generateDefinitions(
+        project: com.intellij.openapi.project.Project,
+        classNames: String,
+        outputType: ServiceBuilder.OutputType,
+        useClassNameAsId: Boolean
+    ): String {
+        val classes = classNames
+            .split(',')
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+
+        if (classes.isEmpty()) {
+            mcpFail("className parameter is required.")
+        }
+
+        return classes.joinToString("\n---\n") { className ->
+            serviceDefinitionGenerator.generate(project, className, outputType, useClassNameAsId)
+                ?: "Error: Class not found: $className"
+        }
+    }
 
     @McpTool
-    @McpDescription("""
-        Generate Symfony service definition in YAML, XML, Fluent PHP or PHP array format for a given class.
+    @McpDescription(
+        $$"""
+        Generate Symfony service definitions in YAML, XML, Fluent PHP or PHP array format for one or more classes.
+        Inspects each class constructor to guess service dependencies from parameter types for explicit wiring.
 
-        This tool analyzes a PHP class to generate an appropriate service container definition.
-        It inspects the class constructor to identify dependencies and creates service arguments
-        for explicit wiring.
-
-        Simple Symfony YAML example:
-        ```yaml
-        App\Service\EmailService:
-            arguments: ['@mailer', '@logger']
+        Fluent PHP example:
+        ```php
+        $services->set(\App\EmailService::class)
+            ->args([
+                service('mailer')
+            ]);
         ```
 
-        Simple Symfony XML example:
-        ```xml
-        <service id="App\Service\EmailService">
-            <argument type="service" id="mailer"/>
-        </service>
+        PHP array example (eg in `App::config()` or `return`):
+        ```php
+        [
+            \App\EmailService::class => [
+                'arguments' => [
+                    service('mailer')
+                ],
+            ],
+        ];
         ```
-
-        Fluent PHP format uses set()/args()/call() on the services configurator.
-        PHP array format uses class constants as keys with 'arguments'/'calls' arrays.
-    """)
+    """
+    )
 
     suspend fun generate_symfony_service_definition(
-        @McpDescription("Fully qualified class name for the service (e.g., 'App\\Service\\EmailService')")
+        @McpDescription("Fully qualified class name for the service, or a comma-separated list of class names (e.g., '\\App\\Service\\EmailService')")
         className: String,
         @McpDescription("Output format: 'yaml' (default), 'xml', 'fluent' or 'phparray'")
         format: String = "yaml",
@@ -67,19 +92,15 @@ class ServiceDefinitionMcpToolset : McpToolset {
         }
 
         val outputType = when (format.lowercase()) {
-            "xml" -> ServiceDefinitionGenerator.OutputType.XML
-            "yaml", "" -> ServiceDefinitionGenerator.OutputType.YAML
-            "fluent" -> ServiceDefinitionGenerator.OutputType.FLUENT
-            "phparray" -> ServiceDefinitionGenerator.OutputType.PHP_ARRAY
+            "xml" -> ServiceBuilder.OutputType.XML
+            "yaml", "" -> ServiceBuilder.OutputType.Yaml
+            "fluent" -> ServiceBuilder.OutputType.Fluent
+            "phparray" -> ServiceBuilder.OutputType.PhpArray
             else -> mcpFail("Invalid format: '$format'. Valid values are: 'yaml', 'xml', 'fluent' or 'phparray'")
         }
 
         return readAction {
-            val generator = ServiceDefinitionGenerator(project)
-            val definition = generator.generate(className, outputType, useClassNameAsId)
-                ?: mcpFail("Class not found: $className")
-
-            definition
+            generateDefinitions(project, className, outputType, useClassNameAsId)
         }
     }
 }
