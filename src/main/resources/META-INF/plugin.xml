@@ -133,16 +133,11 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Settings"/>
-        <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.mcp.McpSettings"/>
 
         <!-- MCP Application-level settings (global tool visibility) - used by project settings form -->
         <applicationService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.mcp.McpApplicationSettings"/>
 
         <postStartupActivity implementation="fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent$PostStartupActivity"/>
-        <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent$ProjectCloseService"/>
-
-        <!-- VFS watcher for var/cache/ and app/cache/ – invalidates compiled Symfony artifact caches -->
-        <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.util.SymfonyVarDirectoryWatcher"/>
 
         <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.SettingsForm"
                              displayName="Symfony"
