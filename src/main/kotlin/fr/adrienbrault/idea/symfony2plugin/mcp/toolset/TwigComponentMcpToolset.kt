@@ -9,7 +9,6 @@ import com.intellij.mcpserver.mcpFail
 import com.intellij.mcpserver.project
 import com.intellij.openapi.application.readAction
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
-import fr.adrienbrault.idea.symfony2plugin.mcp.McpUtil
 import fr.adrienbrault.idea.symfony2plugin.mcp.collector.TwigComponentCollector
 import kotlinx.coroutines.currentCoroutineContext
 
@@ -47,8 +46,6 @@ class TwigComponentMcpToolset : McpToolset {
         if (!Symfony2ProjectComponent.isEnabled(project)) {
             mcpFail("Symfony plugin is not enabled for this project.")
         }
-
-        McpUtil.checkToolEnabled(project, "list_twig_components")
 
         return readAction {
             TwigComponentCollector(project).collect(search)

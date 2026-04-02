@@ -9,7 +9,6 @@ import com.intellij.mcpserver.mcpFail
 import com.intellij.mcpserver.project
 import com.intellij.openapi.application.readAction
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
-import fr.adrienbrault.idea.symfony2plugin.mcp.McpUtil
 import fr.adrienbrault.idea.symfony2plugin.mcp.collector.SymfonyRouteCollector
 import kotlinx.coroutines.currentCoroutineContext
 
@@ -54,8 +53,6 @@ class RouteMcpToolset : McpToolset {
         if (!Symfony2ProjectComponent.isEnabled(project)) {
             mcpFail("Symfony plugin is not enabled for this project.")
         }
-
-        McpUtil.checkToolEnabled(project, "list_symfony_routes_url_controllers")
 
         return readAction {
             SymfonyRouteCollector(project).collect(routeName, controller, urlPath)

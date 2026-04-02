@@ -134,7 +134,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Settings"/>
 
-        <!-- MCP Application-level settings (global tool visibility) - used by project settings form -->
+        <!-- MCP application-level settings -->
         <applicationService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.mcp.McpApplicationSettings"/>
 
         <postStartupActivity implementation="fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent$PostStartupActivity"/>
@@ -184,13 +184,6 @@
                              displayName="Profiler"
                              parentId="Symfony2.SettingsForm"
                              id="Symfony.ProfilerSettingsForm"
-                             nonDefaultProject="true"
-        />
-
-        <projectConfigurable instance="fr.adrienbrault.idea.symfony2plugin.ui.McpSettingsForm"
-                             displayName="MCP Tools"
-                             parentId="Symfony2.SettingsForm"
-                             id="Symfony2.McpSettingsForm"
                              nonDefaultProject="true"
         />
 

@@ -9,7 +9,6 @@ import com.intellij.mcpserver.mcpFail
 import com.intellij.mcpserver.project
 import com.intellij.openapi.application.readAction
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
-import fr.adrienbrault.idea.symfony2plugin.mcp.McpUtil
 import fr.adrienbrault.idea.symfony2plugin.mcp.collector.SymfonyFormTypeOptionsCollector
 import kotlinx.coroutines.currentCoroutineContext
 
@@ -45,8 +44,6 @@ class FormTypeOptionsMcpToolset : McpToolset {
         if (!Symfony2ProjectComponent.isEnabled(project)) {
             mcpFail("Symfony plugin is not enabled for this project.")
         }
-
-        McpUtil.checkToolEnabled(project, "list_symfony_form_options")
 
         if (formType.isBlank()) {
             mcpFail("formType parameter is required.")

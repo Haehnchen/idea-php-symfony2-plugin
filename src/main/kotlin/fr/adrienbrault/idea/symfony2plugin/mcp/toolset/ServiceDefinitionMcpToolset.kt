@@ -10,7 +10,6 @@ import com.intellij.mcpserver.project
 import com.intellij.openapi.application.readAction
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
 import fr.adrienbrault.idea.symfony2plugin.action.ui.ServiceBuilder
-import fr.adrienbrault.idea.symfony2plugin.mcp.McpUtil
 import fr.adrienbrault.idea.symfony2plugin.mcp.service.ServiceDefinitionGenerator
 import kotlinx.coroutines.currentCoroutineContext
 import org.apache.commons.lang3.StringUtils
@@ -145,8 +144,6 @@ class ServiceDefinitionMcpToolset : McpToolset {
         if (!Symfony2ProjectComponent.isEnabled(project)) {
             mcpFail("Symfony plugin is not enabled for this project.")
         }
-
-        McpUtil.checkToolEnabled(project, "generate_symfony_service_definition")
 
         if (StringUtils.isBlank(className)) {
             mcpFail("className parameter is required.")

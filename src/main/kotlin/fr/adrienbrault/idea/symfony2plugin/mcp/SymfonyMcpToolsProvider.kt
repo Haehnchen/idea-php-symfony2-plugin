@@ -8,8 +8,6 @@ import fr.adrienbrault.idea.symfony2plugin.mcp.toolset.*
 
 /**
  * MCP Tools Provider for Symfony Plugin.
- * Provides tools to the MCP server, filtering based on application-level settings.
- * Tools disabled in application settings are completely hidden from the MCP server.
  *
  * Note: The asTools() extension function uses reflection to extract @McpTool annotated
  * methods from each toolset class. The tool name is derived from the method name.
@@ -43,25 +41,13 @@ class SymfonyMcpToolsProvider : McpToolsProvider {
             TwigTemplateVariablesMcpToolset()
         )
 
-        val tools = mutableListOf<McpTool>()
-
-        for (toolset in allToolsets) {
+        return allToolsets.flatMap { toolset ->
             try {
-                val toolsetTools = toolset.asTools()
-
-                // Filter tools based on application-level visibility settings
-                for (tool in toolsetTools) {
-                    val toolName = tool.descriptor.name
-                    if (settings.isToolGloballyVisible(toolName)) {
-                        tools.add(tool)
-                    }
-                }
+                toolset.asTools()
             } catch (e: Exception) {
-                // Log error but continue with other toolsets
                 println("[Symfony MCP] Error loading tools from ${toolset.javaClass.simpleName}: ${e.message}")
+                emptyList()
             }
         }
-
-        return tools
     }
 }

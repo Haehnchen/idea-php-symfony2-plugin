@@ -10,7 +10,6 @@ import com.intellij.mcpserver.project
 import com.intellij.openapi.application.readAction
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
 import fr.adrienbrault.idea.symfony2plugin.mcp.collector.DoctrineEntityFieldsCollector
-import fr.adrienbrault.idea.symfony2plugin.mcp.McpUtil
 import kotlinx.coroutines.currentCoroutineContext
 
 /**
@@ -50,8 +49,6 @@ class DoctrineEntityFieldsMcpToolset : McpToolset {
         if (!Symfony2ProjectComponent.isEnabled(project)) {
             mcpFail("Symfony plugin is not enabled for this project.")
         }
-
-        McpUtil.checkToolEnabled(project, "list_doctrine_entity_fields")
 
         if (className.isBlank()) {
             mcpFail("className parameter is required.")
