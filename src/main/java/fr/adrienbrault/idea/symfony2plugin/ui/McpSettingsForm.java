@@ -44,14 +44,9 @@ public class McpSettingsForm implements Configurable {
     // All available MCP tools with their metadata
     private static final List<ToolSettingItem> DEFAULT_MCP_TOOLS = List.of(
         new ToolSettingItem(
-            "list_symfony_routes_controllers",
-            "Symfony Routes with Controllers",
-            "Lists all routes with their controller mappings, file paths, and template usages"
-        ),
-        new ToolSettingItem(
-            "match_symfony_url_to_route",
-            "Match Symfony URL to Route",
-            "Matches a plain request URL to Symfony routes using reverse pattern matching"
+            "list_symfony_routes_url_controllers",
+            "Symfony Routes, URLs, and Controllers",
+            "Lists Symfony routes with URLs, controllers, file paths, Twig templates, and optional URL/path filtering"
         ),
         new ToolSettingItem(
             "list_symfony_commands",

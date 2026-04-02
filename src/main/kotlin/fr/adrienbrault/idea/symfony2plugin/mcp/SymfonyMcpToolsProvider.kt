@@ -29,7 +29,6 @@ class SymfonyMcpToolsProvider : McpToolsProvider {
         // All Symfony MCP toolsets - each toolset contains @McpTool annotated methods
         val allToolsets: List<McpToolset> = listOf(
             RouteMcpToolset(),
-            RoutePathMcpToolset(),
             CommandMcpToolset(),
             DoctrineEntityMcpToolset(),
             DoctrineEntityFieldsMcpToolset(),
