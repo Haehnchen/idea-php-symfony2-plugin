@@ -31,7 +31,7 @@ dependencies {
             useCache = true
         }
 
-        bundledPlugins("com.intellij.java", "com.jetbrains.plugins.webDeployment", "org.jetbrains.plugins.yaml", "JavaScript", "com.intellij.mcpServer", "com.intellij.microservices.ui", "com.intellij.database", "org.jetbrains.plugins.terminal")
+        bundledPlugins("com.intellij.java", "com.intellij.modules.json", "com.intellij.css", "com.jetbrains.plugins.webDeployment", "org.jetbrains.plugins.yaml", "JavaScript", "com.intellij.mcpServer", "com.intellij.microservices.ui", "com.intellij.database", "org.jetbrains.plugins.terminal")
 
         compatiblePlugins(
             "com.jetbrains.php",
