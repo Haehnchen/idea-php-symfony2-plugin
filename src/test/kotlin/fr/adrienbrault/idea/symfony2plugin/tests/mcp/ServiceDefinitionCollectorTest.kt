@@ -1,19 +1,26 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.mcp
 
 import fr.adrienbrault.idea.symfony2plugin.action.ui.ServiceBuilder
+import fr.adrienbrault.idea.symfony2plugin.mcp.collector.ServiceDefinitionCollector
 import fr.adrienbrault.idea.symfony2plugin.mcp.service.ServiceDefinitionGenerator
-import fr.adrienbrault.idea.symfony2plugin.mcp.toolset.ServiceDefinitionMcpToolset
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestCase() {
+class ServiceDefinitionCollectorTest : SymfonyLightCodeInsightFixtureTestCase() {
     private val serviceDefinitionGenerator = ServiceDefinitionGenerator()
-    private val serviceDefinitionMcpToolset = ServiceDefinitionMcpToolset()
 
     override fun getTestDataPath(): String {
         return "src/test/kotlin/fr/adrienbrault/idea/symfony2plugin/tests/mcp/fixtures"
+    }
+
+    private fun collectDefinitions(
+        classNames: String,
+        outputType: ServiceBuilder.OutputType,
+        useClassNameAsId: Boolean = true,
+    ): String {
+        return ServiceDefinitionCollector(project).collect(classNames, outputType, useClassNameAsId)
     }
 
     private fun configureBaseClassesPhp() {
@@ -189,8 +196,7 @@ class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestC
             """.trimIndent()
         )
 
-        val result = serviceDefinitionMcpToolset.generateDefinitions(
-            project,
+        val result = collectDefinitions(
             "Foo\\MultiMatchBar",
             ServiceBuilder.OutputType.Yaml,
             true
@@ -222,8 +228,7 @@ class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestC
             """.trimIndent()
         )
 
-        val result = serviceDefinitionMcpToolset.generateDefinitions(
-            project,
+        val result = collectDefinitions(
             "Foo\\MultiMatchXml",
             ServiceBuilder.OutputType.XML,
             true
@@ -257,8 +262,7 @@ class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestC
             """.trimIndent()
         )
 
-        val result = serviceDefinitionMcpToolset.generateDefinitions(
-            project,
+        val result = collectDefinitions(
             "Foo\\MultiMatchFluent",
             ServiceBuilder.OutputType.Fluent,
             true
@@ -292,8 +296,7 @@ class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestC
             """.trimIndent()
         )
 
-        val result = serviceDefinitionMcpToolset.generateDefinitions(
-            project,
+        val result = collectDefinitions(
             "Foo\\MultiMatchWithUnknownSecond",
             ServiceBuilder.OutputType.Yaml,
             true
@@ -329,8 +332,7 @@ class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestC
             """.trimIndent()
         )
 
-        val result = serviceDefinitionMcpToolset.generateDefinitions(
-            project,
+        val result = collectDefinitions(
             "Foo\\Bar, Foo\\Baz",
             ServiceBuilder.OutputType.Yaml,
             true
@@ -361,8 +363,7 @@ class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestC
             """.trimIndent()
         )
 
-        val result = serviceDefinitionMcpToolset.generateDefinitions(
-            project,
+        val result = collectDefinitions(
             " , Foo\\BazBlank , ",
             ServiceBuilder.OutputType.Yaml,
             true
@@ -378,8 +379,7 @@ class GenerateSymfonyServiceDefinitionTest : SymfonyLightCodeInsightFixtureTestC
 
     fun testGenerateMultipleYamlDefinitionsKeepsGoingWhenOneClassIsMissing() {
         configureBaseClassesPhp()
-        val result = serviceDefinitionMcpToolset.generateDefinitions(
-            project,
+        val result = collectDefinitions(
             "Foo\\Bar, Missing\\Class",
             ServiceBuilder.OutputType.Yaml,
             true
