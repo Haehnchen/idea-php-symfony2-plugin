@@ -23,7 +23,30 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
-## 2016.1.295
+## 2026.1.296
+* MCP: Merge Symfony MCP route tools into unified URL/controller listing with linenumber and reverse url matching (Daniel Espendiller)
+* MCP: Improve Symfony service definition generation output with new per-argument suggestions (Daniel Espendiller)
+* Refactor SymfonyCreateService and related logic to use ServiceBuilder for shared dependency resolution and service definition generation and allow multiple services in mcp (Daniel Espendiller)
+* Add Fluent and PhpArray output support to ServiceBuilder, UI and mcp (Daniel Espendiller)
+* Add tests and reference provider support for `alias` in `ServicesConfigurator` (Daniel Espendiller)
+* Add support for `block()` function template resolution in Twig files (Daniel Espendiller)
+* Add `resource` resolution logic to support glob patterns in YAML and PHP (Daniel Espendiller)
+* Add linemarker for resources in yaml files (Daniel Espendiller)
+* Refactor `ConfigUtil` to add tree signature caching (Daniel Espendiller)
+* Add `PhpConfigGotoDeclarationHandler` to enable navigation for PHP config keys. (Daniel Espendiller)
+* Add PHP config line marker support for Symfony configuration files. (Daniel Espendiller)
+* Add environment variable contributor for `env()` function. (Daniel Espendiller)
+* Fix `ServiceContainerUtil` to handle chained `->parent()->class()` calls and add corresponding test coverage. (Daniel Espendiller)
+* Add PhpServiceInstanceInspection and PhpServiceSuggestIntentionAction to validate and suggest service on php service files (Daniel Espendiller)
+* Add PhpArrayArgumentServiceSuggestionCollector and PhpFluentArgumentServiceSuggestionCollector for improved service argument completion eg "App::config" (Daniel Espendiller)
+* Remove `ServiceContainerLoader` extension point and inline container file loading logic (Daniel Espendiller)
+* Refactor ServiceXmlParserFactory to use VFS listener-based cache tracker for service container parsing. (Daniel Espendiller)
+* Refactor service container file discovery to use VFS listener-based cache tracker (Daniel Espendiller)
+* Refactor compiled route file cache to use the new vfs listener-based cache tracker (Daniel Espendiller)
+* Refactor translation directory discovery to use the new vfs listener-based cache tracker (Daniel Espendiller)
+* Add Symfony VFS watcher for cache invalidation on settings changes and project startup. (Daniel Espendiller)
+
+## 2026.1.295
 * Fix variable resolution for PHP fluent service definitions: Indexing process should not rely on non-indexed file data. (Daniel Espendiller)
 
 ## 2026.1.294

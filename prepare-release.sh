@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # --- Find the last tag and calculate new version ---
-LAST_TAG=$(git describe --tags --abbrev=0)
+LAST_TAG=$(git tag --sort=-version:refname | head -1)
 LAST_BUILD=$(echo "$LAST_TAG" | awk -F. '{print $NF}')
 YEAR=$(echo "$LAST_TAG" | awk -F. '{print $1}')
 MAJOR=$(echo "$LAST_TAG" | awk -F. '{print $2}')
