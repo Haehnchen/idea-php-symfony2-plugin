@@ -22,6 +22,11 @@ import org.apache.commons.lang3.StringUtils
  */
 class ServiceDefinitionMcpToolset : McpToolset {
     private val serviceDefinitionGenerator = ServiceDefinitionGenerator()
+    private val maxServicesPerParameterSuggestion = 15
+
+    private data class CommentSyntax(
+        val lineFormat: String,
+    )
 
     internal fun generateDefinitions(
         project: com.intellij.openapi.project.Project,
@@ -39,8 +44,64 @@ class ServiceDefinitionMcpToolset : McpToolset {
         }
 
         return classes.joinToString("\n---\n") { className ->
-            serviceDefinitionGenerator.generate(project, className, outputType, useClassNameAsId)
-                ?: "Error: Class not found: $className"
+            val model = serviceDefinitionGenerator.createModel(project, className)
+                ?: return@joinToString "Error: Class not found: $className"
+
+            val definition = serviceDefinitionGenerator.generate(project, className, outputType, useClassNameAsId)
+                ?: return@joinToString "Error: Class not found: $className"
+
+            appendServiceSuggestions(definition, model.modelParameters, getCommentSyntax(outputType))
+        }
+    }
+
+    private fun getCommentSyntax(outputType: ServiceBuilder.OutputType): CommentSyntax {
+        return when (outputType) {
+            ServiceBuilder.OutputType.Yaml -> CommentSyntax("# %s")
+            ServiceBuilder.OutputType.XML -> CommentSyntax("<!-- %s -->")
+            ServiceBuilder.OutputType.Fluent, ServiceBuilder.OutputType.PhpArray -> CommentSyntax("// %s")
+        }
+    }
+
+    private fun appendServiceSuggestions(
+        content: String,
+        modelParameters: List<fr.adrienbrault.idea.symfony2plugin.action.ui.MethodParameter.MethodModelParameter>,
+        commentSyntax: CommentSyntax,
+    ): String {
+        val commentLines = formatServiceSuggestions(modelParameters, commentSyntax)
+        if (commentLines.isEmpty()) {
+            return content
+        }
+
+        return content + "\n\n" + commentLines.joinToString("\n")
+    }
+
+    private fun formatServiceSuggestions(
+        modelParameters: List<fr.adrienbrault.idea.symfony2plugin.action.ui.MethodParameter.MethodModelParameter>,
+        commentSyntax: CommentSyntax,
+    ): List<String> {
+        if (modelParameters.isEmpty() || modelParameters.none { it.isPossibleService && it.possibleServices.size > 1 }) {
+            return emptyList()
+        }
+
+        return buildList {
+            add(commentSyntax.lineFormat.format("Possible services per parameter:"))
+            modelParameters
+                .forEach { add(commentSyntax.lineFormat.format(formatServiceSuggestion(it))) }
+        }
+    }
+
+    private fun formatServiceSuggestion(modelParameter: fr.adrienbrault.idea.symfony2plugin.action.ui.MethodParameter.MethodModelParameter): String {
+        val parameterName = "$${modelParameter.parameter.name}"
+        val declaredType = StringUtils.stripStart(modelParameter.parameter.declaredType.toString(), "\\")
+        val displayType = declaredType.takeIf { it.isNotBlank() } ?: "mixed"
+        val possibleServices = modelParameter.possibleServices
+            .take(maxServicesPerParameterSuggestion)
+            .joinToString(", ") { service -> if (service.contains(',')) "\"$service\"" else service }
+
+        return if (modelParameter.isPossibleService && modelParameter.possibleServices.size > 1) {
+            "$parameterName [$displayType] => $possibleServices"
+        } else {
+            "$parameterName [$displayType]"
         }
     }
 

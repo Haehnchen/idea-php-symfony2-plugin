@@ -145,6 +145,7 @@ public class ServiceBuilder {
         String serviceName = ServiceUtil.getServiceNameForClass(project, normalizedClassName);
 
         Map<String, ContainerService> serviceClass = ContainerCollectionResolver.getServices(project);
+
         SortedSet<String> serviceSetComplete = new TreeSet<>();
         serviceSetComplete.add("");
         serviceSetComplete.addAll(serviceClass.keySet());
@@ -200,10 +201,12 @@ public class ServiceBuilder {
         @NotNull Parameter parameter,
         @NotNull Map<String, ContainerService> serviceClass
     ) {
+        Set<String> possibleServices = new LinkedHashSet<>();
+
         if (parameter.getFirstPsiChild() instanceof ClassReference classReference) {
             String type = classReference.getFQN();
             if (type != null) {
-                return ServiceActionUtil.getPossibleServices(project, type, serviceClass);
+                possibleServices.addAll(ServiceActionUtil.getPossibleServices(project, type, serviceClass));
             }
         }
 
@@ -212,13 +215,10 @@ public class ServiceBuilder {
                 continue;
             }
 
-            Set<String> services = ServiceActionUtil.getPossibleServices(project, StringUtils.stripStart(type, "\\"), serviceClass);
-            if (!services.isEmpty()) {
-                return services;
-            }
+            possibleServices.addAll(ServiceActionUtil.getPossibleServices(project, StringUtils.stripStart(type, "\\"), serviceClass));
         }
 
-        return Collections.emptySet();
+        return possibleServices;
     }
 
     /**
