@@ -70,6 +70,10 @@ intellijPlatform {
             }
         }
     }
+
+    providers.gradleProperty("testSandboxContainer").orNull?.let { sandboxPath ->
+        sandboxContainer.set(file(sandboxPath))
+    }
 }
 
 // Configure Gradle Changelog Plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
@@ -134,11 +138,32 @@ tasks {
             includeEngines("junit-vintage", "junit-jupiter")
         }
 
+        failFast = true
+
         // Disable CDS warning about java.system.class.loader
         jvmArgs("-Xshare:off")
 
         // Disable SVG rendering to work around JSvg IllegalAccessError in IntelliJ 2025.3.x
         systemProperty("idea.ui.icons.svg.disabled", "true")
         systemProperty("java.awt.headless", "true")
+
+        providers.gradleProperty("testRunId").orNull?.let { testRunId ->
+            reports.junitXml.outputLocation.set(layout.buildDirectory.dir("test-results/$testRunId"))
+            reports.html.outputLocation.set(layout.buildDirectory.dir("reports/tests/$testRunId"))
+            binaryResultsDirectory.set(layout.buildDirectory.dir("test-results/$testRunId/binary"))
+        }
+
+        listOf(
+            "idea.system.path",
+            "idea.config.path",
+            "idea.plugins.path",
+            "idea.log.path",
+            "java.io.tmpdir",
+            "vfs.additional-allowed-roots"
+        ).forEach { key ->
+            providers.systemProperty(key).orNull?.let { value ->
+                systemProperty(key, value)
+            }
+        }
     }
 }

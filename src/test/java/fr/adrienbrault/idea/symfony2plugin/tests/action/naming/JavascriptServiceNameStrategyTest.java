@@ -12,7 +12,7 @@ public class JavascriptServiceNameStrategyTest extends SymfonyLightCodeInsightFi
 
     public void setUp() throws Exception {
         super.setUp();
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("classes.php"));
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("classes.php", "src/action/naming/classes.php"));
     }
 
     protected String getTestDataPath() {

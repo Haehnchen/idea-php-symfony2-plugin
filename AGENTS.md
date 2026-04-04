@@ -30,6 +30,9 @@ The distributable ZIP artifact will be in `build/distributions/`.
 
 # Run tests matching a pattern
 ./gradlew test --tests "*ContainerTest"
+
+# Run isolated parallel batches across multiple Gradle processes
+scripts/parallel-test.sh --workers 3 --test "*Container*"
 ```
 
 ## High-Level Architecture
