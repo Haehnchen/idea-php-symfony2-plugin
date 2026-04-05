@@ -274,4 +274,5 @@ public class ServiceContainerUtilResourceTest extends SymfonyLightCodeInsightFix
         assertContainsElements(classes, "\\App\\ResourceLineMarkerFoo");
         assertDoesntContain(classes, "\\App\\DependencyInjection\\ShouldBeExcluded");
     }
+
 }
