@@ -1,23 +1,28 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.form.dict;
 
+import com.intellij.openapi.vfs.VirtualFile;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeServiceParser;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyTempCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
-import com.intellij.openapi.vfs.VfsUtil;
-
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.InputStream;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class FormTypeServiceParserTest extends SymfonyTempCodeInsightFixtureTestCase {
+public class FormTypeServiceParserTest extends SymfonyLightCodeInsightFixtureTestCase {
+
+    @Override
+    protected String getTestDataPath() {
+        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/form/dict";
+    }
 
     public void testParse() throws Exception {
-        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/form/dict/appDevDebugProjectContainer.xml");
+        VirtualFile testFile = myFixture.copyFileToProject("appDevDebugProjectContainer.xml");
 
         FormTypeServiceParser parser = new FormTypeServiceParser();
-        parser.parser(new FileInputStream(testFile), VfsUtil.findFileByIoFile(testFile, true), getProject());
+        try (InputStream inputStream = testFile.getInputStream()) {
+            parser.parser(inputStream, testFile, getProject());
+        }
 
         assertEquals("field", parser.getFormTypeMap().getMap().get("form.type.field"));
         assertEquals("locale", parser.getFormTypeMap().getMap().get("form.type.locale"));

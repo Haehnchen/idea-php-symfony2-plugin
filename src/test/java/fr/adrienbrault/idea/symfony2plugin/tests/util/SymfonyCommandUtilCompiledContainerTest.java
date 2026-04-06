@@ -8,11 +8,11 @@ import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyCommand;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.Collection;
+import java.util.Map;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.Map;
 
 /**
  * Tests command extraction from compiled container XML via {@link ConsoleCommandServiceParser}.
@@ -87,8 +87,13 @@ public class SymfonyCommandUtilCompiledContainerTest extends SymfonyTempCodeInsi
      *
      * @see SymfonyCommandUtil#getCommands
      */
-    public void testGetCommandsFallsBackToCompiledContainerForMissingCommands() throws IOException {
-        String xml = new String(Files.readAllBytes(Paths.get(FIXTURE_PATH)));
+    public void testGetCommandsFallsBackToCompiledContainerForMissingCommands() {
+        String xml;
+        try {
+            xml = new String(Files.readAllBytes(Paths.get(FIXTURE_PATH)));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         createFile("var/cache/dev/App_KernelDevDebugContainer.xml", xml);
 
         Collection<SymfonyCommand> commands = SymfonyCommandUtil.getCommands(getProject());
@@ -109,8 +114,13 @@ public class SymfonyCommandUtilCompiledContainerTest extends SymfonyTempCodeInsi
      *
      * @see SymfonyCommandUtil#getCommands
      */
-    public void testGetCommandsFallsBackWithCorrectFqn() throws IOException {
-        String xml = new String(Files.readAllBytes(Paths.get(FIXTURE_PATH)));
+    public void testGetCommandsFallsBackWithCorrectFqn() {
+        String xml;
+        try {
+            xml = new String(Files.readAllBytes(Paths.get(FIXTURE_PATH)));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         createFile("var/cache/dev/App_KernelDevDebugContainer.xml", xml);
 
         Collection<SymfonyCommand> commands = SymfonyCommandUtil.getCommands(getProject());

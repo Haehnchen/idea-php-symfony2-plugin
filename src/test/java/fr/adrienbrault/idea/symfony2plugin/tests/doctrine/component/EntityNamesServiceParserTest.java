@@ -1,22 +1,28 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.component;
 
-import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.component.EntityNamesServiceParser;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyTempCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.Map;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class EntityNamesServiceParserTest extends SymfonyTempCodeInsightFixtureTestCase {
+public class EntityNamesServiceParserTest extends SymfonyLightCodeInsightFixtureTestCase {
+
+    @Override
+    protected String getTestDataPath() {
+        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/doctrine/component";
+    }
 
     public void testParse() throws Exception {
-        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/doctrine/component/appDevDebugProjectContainer.xml");
+        VirtualFile testFile = myFixture.copyFileToProject("appDevDebugProjectContainer.xml");
         EntityNamesServiceParser entityNamesServiceParser = new EntityNamesServiceParser();
-        entityNamesServiceParser.parser(new FileInputStream(testFile), VfsUtil.findFileByIoFile(testFile, true), getProject());
+        try (InputStream inputStream = testFile.getInputStream()) {
+            entityNamesServiceParser.parser(inputStream, testFile, getProject());
+        }
         Map<String, String> map = entityNamesServiceParser.getEntityNameMap();
 
         assertEquals("\\My\\NiceBundle\\Entity", map.get("MyNiceBundle"));

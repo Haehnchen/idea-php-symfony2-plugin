@@ -1,20 +1,26 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.dic;
 
-import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlTagParser;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyTempCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.Set;
 
-public class XmlTagParserTest extends SymfonyTempCodeInsightFixtureTestCase {
+public class XmlTagParserTest extends SymfonyLightCodeInsightFixtureTestCase {
+
+    @Override
+    protected String getTestDataPath() {
+        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic";
+    }
 
     public void testParse() throws Exception {
-        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic/appDevDebugProjectContainer.xml");
+        VirtualFile testFile = myFixture.copyFileToProject("appDevDebugProjectContainer.xml");
 
         XmlTagParser xmlTagParser = new XmlTagParser();
-        xmlTagParser.parser(new FileInputStream(testFile), VfsUtil.findFileByIoFile(testFile, true), getProject());
+        try (InputStream inputStream = testFile.getInputStream()) {
+            xmlTagParser.parser(inputStream, testFile, getProject());
+        }
         Set<String> tags = xmlTagParser.get();
 
         assertTrue(tags.contains("twig.extension"));

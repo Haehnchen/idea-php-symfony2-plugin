@@ -1,20 +1,26 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.path.globals;
 
-import com.intellij.openapi.vfs.VfsUtil;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyTempCodeInsightFixtureTestCase;
+import com.intellij.openapi.vfs.VirtualFile;
+import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.twig.variable.globals.TwigGlobalEnum;
 import fr.adrienbrault.idea.symfony2plugin.twig.variable.globals.TwigGlobalsServiceParser;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.InputStream;
 
-public class TwigGlobalsServiceParserTest extends SymfonyTempCodeInsightFixtureTestCase {
+public class TwigGlobalsServiceParserTest extends SymfonyLightCodeInsightFixtureTestCase {
+
+    @Override
+    protected String getTestDataPath() {
+        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/path/globals";
+    }
 
     public void testParse() throws Exception {
-        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/path/globals/appDevDebugProjectContainer.xml");
+        VirtualFile testFile = myFixture.copyFileToProject("appDevDebugProjectContainer.xml");
 
         TwigGlobalsServiceParser parser = new TwigGlobalsServiceParser();
-        parser.parser(new FileInputStream(testFile), VfsUtil.findFileByIoFile(testFile, true), getProject());
+        try (InputStream inputStream = testFile.getInputStream()) {
+            parser.parser(inputStream, testFile, getProject());
+        }
 
         assertEquals("templating.globals", parser.getTwigGlobals().get("app").getValue());
         assertEquals(TwigGlobalEnum.SERVICE, parser.getTwigGlobals().get("app").getTwigGlobalEnum());

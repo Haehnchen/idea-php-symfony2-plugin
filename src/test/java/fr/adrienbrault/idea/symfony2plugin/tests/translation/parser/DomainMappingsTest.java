@@ -1,25 +1,30 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.translation.parser;
 
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyTempCodeInsightFixtureTestCase;
+import com.intellij.openapi.vfs.VirtualFile;
+import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.DomainFileMap;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.DomainMappings;
 
-import com.intellij.openapi.vfs.VfsUtil;
-
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class DomainMappingsTest extends SymfonyTempCodeInsightFixtureTestCase {
+public class DomainMappingsTest extends SymfonyLightCodeInsightFixtureTestCase {
+
+    @Override
+    protected String getTestDataPath() {
+        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/translation/parser";
+    }
 
     public void testParser() throws Exception {
-        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/translation/parser/appDevDebugProjectContainer.xml");
+        VirtualFile testFile = myFixture.copyFileToProject("appDevDebugProjectContainer.xml");
 
         DomainMappings domainMappings = new DomainMappings();
-        domainMappings.parser(new FileInputStream(testFile), VfsUtil.findFileByIoFile(testFile, true), getProject());
+        try (InputStream inputStream = testFile.getInputStream()) {
+            domainMappings.parser(inputStream, testFile, getProject());
+        }
         Collection<DomainFileMap> domainFileMaps = domainMappings.getDomainFileMaps();
 
         assertEquals(16, domainFileMaps.size());
