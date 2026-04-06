@@ -64,11 +64,6 @@ public class ContainerCollectionResolver {
         return ServiceCollector.create(project).getNames();
     }
 
-    public static boolean hasServiceNames(@NotNull Project project, @NotNull String serviceName) {
-        // @TODO: we dont need a collection here; stop on first match
-        return ServiceCollector.create(project).getNames().contains(serviceName);
-    }
-
     public static boolean hasServiceName(@NotNull LazyServiceCollector lazyServiceCollector, @NotNull String serviceName) {
         // @TODO: we dont need a collection here; stop on first match
         return lazyServiceCollector.getCollector().getNames().contains(serviceName);

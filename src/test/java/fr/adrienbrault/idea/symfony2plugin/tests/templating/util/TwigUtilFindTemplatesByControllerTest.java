@@ -10,7 +10,6 @@ import java.util.*;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#findTemplatesByControllers
- * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil#findTemplatesByController
  */
 public class TwigUtilFindTemplatesByControllerTest extends SymfonyLightCodeInsightFixtureTestCase {
 
@@ -91,10 +90,10 @@ public class TwigUtilFindTemplatesByControllerTest extends SymfonyLightCodeInsig
             "}"
         );
 
-        Set<String> templates = TwigUtil.findTemplatesByController(
+        Set<String> templates = TwigUtil.findTemplatesByControllers(
             getProject(),
-            "App\\Controller\\NonExistentController::action"
-        );
+            Collections.singleton("App\\Controller\\NonExistentController::action")
+        ).getOrDefault("App\\Controller\\NonExistentController.action", Collections.emptySet());
 
         assertTrue(templates.isEmpty());
     }
@@ -113,10 +112,10 @@ public class TwigUtilFindTemplatesByControllerTest extends SymfonyLightCodeInsig
         );
 
         // Should handle leading backslash gracefully
-        Set<String> templates = TwigUtil.findTemplatesByController(
+        Set<String> templates = TwigUtil.findTemplatesByControllers(
             getProject(),
-            "\\App\\Controller\\BackslashController::test"
-        );
+            Collections.singleton("\\App\\Controller\\BackslashController::test")
+        ).getOrDefault("App\\Controller\\BackslashController.test", Collections.emptySet());
 
         assertContainsElements(templates, "backslash/test.html.twig");
     }

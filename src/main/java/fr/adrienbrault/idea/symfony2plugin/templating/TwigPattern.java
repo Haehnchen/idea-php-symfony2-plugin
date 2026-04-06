@@ -1798,13 +1798,6 @@ public class TwigPattern {
         return CACHED_FOR_TAG_IN_VARIABLE_REFERENCE_PATTERN;
     }
 
-    public static ElementPattern<PsiElement> getForTagInVariablePattern() {
-        // {% for key, user in "users" %}
-        // {% for user in "users" %}
-        // {% for user in "users"|slice(0, 10) %}
-        return CACHED_FOR_TAG_IN_VARIABLE_PATTERN;
-    }
-
     public static ElementPattern<PsiElement> getTwigTagUseNamePattern() {
         return CACHED_TWI_TAG_USE_NAME_PATTERN;
     }

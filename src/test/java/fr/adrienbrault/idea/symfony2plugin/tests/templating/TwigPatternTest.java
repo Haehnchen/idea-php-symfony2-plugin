@@ -452,18 +452,18 @@ public class TwigPatternTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertTrue(TwigPattern.getTranslationKeyPattern("trans").accepts(findElementAt(TwigFileType.INSTANCE, "{{ 'f<caret>oo'|trans('foobar') }}")));
     }
 
-    public void testGetForTagInVariablePattern() {
+    public void testGetVariableTypePatternMatchesForTagInVariableCases() {
         PsiElement elementAt = findElementAt(TwigFileType.INSTANCE, "{% for user in <caret> %}");
-        assertTrue(TwigPattern.getForTagInVariablePattern().accepts(elementAt));
+        assertTrue(TwigPattern.getVariableTypePattern().accepts(elementAt));
 
         PsiElement elementAt2 = findElementAt(TwigFileType.INSTANCE, "{% for user in te<caret>st %}");
-        assertTrue(TwigPattern.getForTagInVariablePattern().accepts(elementAt2));
+        assertTrue(TwigPattern.getVariableTypePattern().accepts(elementAt2));
 
         PsiElement elementAt3 = findElementAt(TwigFileType.INSTANCE, "{% for key, user in <caret> %}");
-        assertTrue(TwigPattern.getForTagInVariablePattern().accepts(elementAt3));
+        assertTrue(TwigPattern.getVariableTypePattern().accepts(elementAt3));
 
         PsiElement elementAt4 = findElementAt(TwigFileType.INSTANCE, "{% for key, user in <caret>|test('test') %}");
-        assertTrue(TwigPattern.getForTagInVariablePattern().accepts(elementAt4));
+        assertTrue(TwigPattern.getVariableTypePattern().accepts(elementAt4));
     }
 
     public void testGetFilterPattern() {
