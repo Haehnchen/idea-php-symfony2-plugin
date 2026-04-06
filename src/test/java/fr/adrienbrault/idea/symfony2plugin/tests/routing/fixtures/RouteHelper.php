@@ -89,5 +89,10 @@ namespace MyFooBarBundle\Controller
         public function fooAction()
         {
         }
+
+         #[Route(path: '/class-like-route', name: 'App\Controller\ClassLikeRoute')]
+        public function classLikeRouteAction()
+        {
+        }
     }
 }
