@@ -6,6 +6,8 @@ import com.intellij.util.indexing.FileBasedIndex
 import com.intellij.psi.PsiManager
 import com.jetbrains.twig.TwigFile
 import com.jetbrains.twig.TwigFileType
+import fr.adrienbrault.idea.symfony2plugin.mcp.McpGlobMatcher
+import fr.adrienbrault.idea.symfony2plugin.mcp.McpPathUtil
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpTwigTemplateUsageStubIndex
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigBlockIndexExtension
@@ -35,26 +37,65 @@ class TwigTemplateUsageCollector(private val project: Project) {
      *    if a file is found, its logical template names (via TwigUtil.getTemplateNamesForFile)
      *    are added as exact matches.  This handles inputs like "templates/home/index.html.twig"
      *    whose template name is just "home/index.html.twig".
+     * 3. Optional file-glob filtering — resolved template files can be constrained by
+     *    project-relative Ant-style glob patterns.
      *
      * Returns a CSV string with columns: template,controller,twig_include,twig_embed,twig_extends,twig_import,twig_use,twig_form_theme
      */
-    fun collect(templateFilter: String): String {
+    fun collect(templateFilter: String?, fileGlob: String? = null): String {
         val index = FileBasedIndex.getInstance()
         val scope = GlobalSearchScope.allScope(project)
-        val filterLower = templateFilter.lowercase()
+        val filterLower = templateFilter?.lowercase()
+        val normalizedFileGlob = fileGlob?.trim()?.takeIf { it.isNotBlank() }
+        val globMatchedTemplatesFromPathInput = linkedSetOf<String>()
 
         // Collect all matching template names using the internal template map
         val matchingTemplates = sortedSetOf<String>()
 
         // Strategy 1: partial template-name match using internal template map
-        TwigUtil.getTemplateMap(project).keys.filterTo(matchingTemplates) { filterLower in it.lowercase() }
+        TwigUtil.getTemplateMap(project).keys.filterTo(matchingTemplates) { templateName ->
+            filterLower == null || filterLower in templateName.lowercase()
+        }
 
         // Strategy 2: resolve input as a file path relative to the project root and add its
         // logical template names (e.g. "templates/home/index.html.twig" → "home/index.html.twig")
-        ProjectUtil.getProjectDir(project)
-            ?.findFileByRelativePath(templateFilter)
-            ?.let { TwigUtil.getTemplateNamesForFile(project, it) }
-            ?.forEach { matchingTemplates.add(it) }
+        if (templateFilter != null) {
+            ProjectUtil.getProjectDir(project)
+                ?.findFileByRelativePath(templateFilter)
+                ?.let { virtualFile ->
+                    val templateNames = TwigUtil.getTemplateNamesForFile(project, virtualFile)
+                    templateNames.forEach { matchingTemplates.add(it) }
+
+                    if (normalizedFileGlob != null) {
+                        val relativePath = McpPathUtil.getRelativeProjectPath(project, virtualFile)
+                        if (relativePath.isNotBlank() && McpGlobMatcher.matches(relativePath, normalizedFileGlob)) {
+                            globMatchedTemplatesFromPathInput.addAll(templateNames)
+                        }
+                    }
+                }
+        }
+
+        if (normalizedFileGlob != null) {
+            val projectDir = ProjectUtil.getProjectDir(project)
+            matchingTemplates.removeIf { templateName ->
+                if (globMatchedTemplatesFromPathInput.contains(templateName)) {
+                    return@removeIf false
+                }
+
+                val candidateFiles = linkedSetOf<com.intellij.openapi.vfs.VirtualFile>()
+                candidateFiles.addAll(TwigUtil.getTemplateMap(project)[templateName].orEmpty())
+                projectDir?.findFileByRelativePath(templateName)?.let { candidateFiles.add(it) }
+                projectDir?.findFileByRelativePath("templates/$templateName")?.let { candidateFiles.add(it) }
+
+                candidateFiles.none { virtualFile ->
+                    val relativePath = McpPathUtil.getRelativeProjectPath(project, virtualFile)
+                    if (relativePath.isBlank()) {
+                        return@none false
+                    }
+                    McpGlobMatcher.matches(relativePath, normalizedFileGlob)
+                }
+            }
+        }
 
         // Pre-scan {% use %} tags across all twig files for a reverse map:
         // usedTemplateName -> set of file paths that {% use %} it
@@ -62,7 +103,7 @@ class TwigTemplateUsageCollector(private val project: Project) {
         index.processValues(TwigBlockIndexExtension.KEY, "use", null, { file, templateSet ->
             val callerPath = VfsExUtil.getRelativeProjectPath(project, file) ?: return@processValues true
             for (usedTemplate in templateSet) {
-                if (filterLower in usedTemplate.lowercase()) {
+                if (filterLower == null || filterLower in usedTemplate.lowercase()) {
                     matchingTemplates.add(usedTemplate)
                     useReverseMap.getOrPut(usedTemplate) { sortedSetOf() }.add(callerPath)
                 }

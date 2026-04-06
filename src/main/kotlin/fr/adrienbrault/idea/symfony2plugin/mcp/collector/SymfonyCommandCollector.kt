@@ -4,16 +4,17 @@ import com.intellij.openapi.project.Project
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.jetbrains.php.PhpIndex
-import fr.adrienbrault.idea.symfony2plugin.mcp.McpPathUtil
 import fr.adrienbrault.idea.symfony2plugin.mcp.McpCsvUtil
+import fr.adrienbrault.idea.symfony2plugin.mcp.McpGlobMatcher
+import fr.adrienbrault.idea.symfony2plugin.mcp.McpPathUtil
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyCommandUtil
 
 class SymfonyCommandCollector(private val project: Project) {
-    fun collect(): String = buildString {
+    fun collect(fileGlob: String? = null): String = buildString {
         appendLine("name,className,filePath,options,arguments")
 
-        collectCommandRows().forEach { command ->
+        collectCommandRows(fileGlob).forEach { command ->
             appendLine(
                 listOf(
                     command.name,
@@ -26,8 +27,9 @@ class SymfonyCommandCollector(private val project: Project) {
         }
     }
 
-    private fun collectCommandRows(): List<CommandRow> {
+    private fun collectCommandRows(fileGlob: String?): List<CommandRow> {
         val phpIndex = PhpIndex.getInstance(project)
+        val normalizedFileGlob = fileGlob?.trim()?.takeIf { it.isNotBlank() }
 
         return SymfonyCommandUtil.getCommands(project).map { command ->
             val phpClass = PhpElementsUtil.getClassInterface(project, command.fqn)
@@ -43,6 +45,8 @@ class SymfonyCommandCollector(private val project: Project) {
                 options = if (phpClass != null) SymfonyCommandUtil.getCommandOptions(phpClass) else emptyMap(),
                 arguments = if (phpClass != null) SymfonyCommandUtil.getCommandArguments(phpClass) else emptyMap(),
             )
+        }.filter { command ->
+            normalizedFileGlob == null || McpGlobMatcher.matches(command.filePath, normalizedFileGlob)
         }.sortedBy { it.name }
     }
 

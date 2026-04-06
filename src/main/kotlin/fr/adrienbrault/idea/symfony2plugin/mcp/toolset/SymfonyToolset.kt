@@ -51,15 +51,17 @@ class SymfonyToolset : McpToolset {
         app_user_list,App\Controller\UserController::list,/users,src/Controller/UserController.php,42,user/list.html.twig;user/_pagination.html.twig
     """)
     suspend fun list_symfony_routes_url_controllers(
-        @McpDescription("Optional: Filter by route name (partial matching, case-insensitive)")
+        @McpDescription("""Optional route-name filter (partial matching, case-insensitive). Examples: 'admin_dashboard', 'my_car_foo_stuff', 'App\Controller\ClassLikeRoute'""")
         routeName: String? = null,
-        @McpDescription("Optional: Filter by controller class or method (partial matching, case-insensitive)")
+        @McpDescription("""Optional controller filter (partial matching, case-insensitive). Valid examples: 'FooController', 'FooController::method', 'App\Controller\FooController::method'""")
         controller: String? = null,
-        @McpDescription("Optional: Filter by route path (edit/{id}) or url with reverse placeholder matching (edit/12) (all partial matching)")
+        @McpDescription("Optional route-path or request-URL filter (partial matching). Examples: '/edit/{id}', '/edit/12', '/admin/users'")
         urlPath: String? = null,
+        @McpDescription("Optional Ant-style glob on the controller file path relative to the project root. Example: 'src/Controller/**/*Admin*.php'")
+        fileGlob: String? = null,
     ): String = withSymfonyProject { project ->
         readAction {
-            SymfonyRouteCollector(project).collect(routeName, controller, urlPath)
+            SymfonyRouteCollector(project).collect(routeName, controller, urlPath, fileGlob)
         }
     }
 
@@ -78,9 +80,12 @@ class SymfonyToolset : McpToolset {
         name,className,filePath,options,arguments
         cache:clear,\App\Command\CacheClearCommand,src/Command/CacheClearCommand.php,,
     """)
-    suspend fun list_symfony_commands(): String = withSymfonyProject { project ->
+    suspend fun list_symfony_commands(
+        @McpDescription("Optional Ant-style glob on the command class file path relative to the project root. Example: 'src/Command/**/*.php'")
+        fileGlob: String? = null,
+    ): String = withSymfonyProject { project ->
         readAction {
-            SymfonyCommandCollector(project).collect()
+            SymfonyCommandCollector(project).collect(fileGlob)
         }
     }
 
@@ -125,7 +130,10 @@ class SymfonyToolset : McpToolset {
         status,status,string,,,\App\Enum\Status,\App\Enum\Status
         orders,orders,,App\Entity\Order,OneToMany,,
     """)
-    suspend fun list_doctrine_entity_fields(className: String): String = withSymfonyProject { project ->
+    suspend fun list_doctrine_entity_fields(
+        @McpDescription("""Doctrine entity FQN. Valid examples: 'App\Entity\User', '\App\Entity\User'""")
+        className: String,
+    ): String = withSymfonyProject { project ->
         if (className.isBlank()) {
             mcpFail("className parameter is required.")
         }
@@ -189,7 +197,7 @@ class SymfonyToolset : McpToolset {
         url: String? = null,
         @McpDescription("Optional profiler token partial match, case-insensitive. Example: '18e6b8'")
         hash: String? = null,
-        @McpDescription("Optional controller partial match, case-insensitive. Example: 'UserController' or '::show'")
+        @McpDescription("""Optional controller partial match, case-insensitive. Valid examples: 'UserController', 'UserController::showAction', 'App\Controller\UserController::showAction'""")
         controller: String? = null,
         @McpDescription("Optional route partial match, case-insensitive. Example: 'user_show'")
         route: String? = null,
@@ -236,7 +244,7 @@ class SymfonyToolset : McpToolset {
         data,DEFAULT,Symfony\Component\Form\Extension\Core\Type\FormType
     """)
     suspend fun list_symfony_form_options(
-        @McpDescription("Form type name or FQN (e.g., 'text', 'Symfony\\Component\\Form\\Extension\\Core\\Type\\TextType')")
+        @McpDescription("""Form type name or FQN. Valid examples: 'text', 'App\Form\UserType', 'Symfony\Component\Form\Extension\Core\Type\TextType'""")
         formType: String,
     ): String = withSymfonyProject { project ->
         if (formType.isBlank()) {
@@ -271,7 +279,10 @@ class SymfonyToolset : McpToolset {
         app.service.my_service,\App\Service\MyService,config/services.yaml,15
         app.my_service_alias,\App\Service\MyService,config/services.yaml,25
     """)
-    suspend fun locate_symfony_service(identifier: String): String = withSymfonyProject { project ->
+    suspend fun locate_symfony_service(
+        @McpDescription("""Service ID or fully qualified class name. Examples: 'app.service.my_service', 'twig', '\App\Service\MyService'""")
+        identifier: String,
+    ): String = withSymfonyProject { project ->
         if (identifier.isBlank()) {
             mcpFail("identifier parameter is required.")
         }
@@ -308,7 +319,7 @@ class SymfonyToolset : McpToolset {
     """
     )
     suspend fun generate_symfony_service_definition(
-        @McpDescription("Fully qualified class name for the service, or a comma-separated list of class names (e.g., '\\App\\Service\\EmailService')")
+        @McpDescription("""Fully qualified class name for the service, or a comma-separated list of class names. Valid examples: '\App\Service\EmailService', '\App\Service\EmailService,\App\Service\SmsService'""")
         className: String,
         @McpDescription("Output format: 'yaml' (default), 'xml', 'fluent' or 'phparray'")
         format: String = "yaml",
@@ -334,7 +345,7 @@ class SymfonyToolset : McpToolset {
 
     @McpTool
     @McpDescription("""
-        Lists usages of Twig templates. Accepts a partial template name or a project-relative file path (e.g. "templates/home/index.html.twig" → resolves to relative template "home/index.html.twig").
+        Lists usages of Twig templates. Accepts a partial template name and can optionally constrain resolved template files with a project-relative Ant-style glob.
 
         CSV columns (values semicolon-separated): template,controller,twig_include,twig_embed,twig_extends,twig_import,twig_use,twig_form_theme,twig_component,route_name,route_path
         - template: logical template name (e.g. "home/index.html.twig")
@@ -355,11 +366,20 @@ class SymfonyToolset : McpToolset {
         layouts/base.html.twig,,,,,templates/pages/home.html.twig;templates/pages/about.html.twig,,,,
     """)
     suspend fun list_twig_template_usages(
-        @McpDescription("Partial template name or project-relative file path")
-        template: String,
+        @McpDescription("Optional partial template name. Example: 'home/index.html.twig'")
+        template: String? = null,
+        @McpDescription("Optional Ant-style glob on resolved template file paths relative to the project root. Examples: 'templates/home/index.html.twig', 'templates/admin/**/*.html.twig'")
+        fileGlob: String? = null,
     ): String = withSymfonyProject { project ->
+        val normalizedTemplate = template?.trim()?.takeIf { it.isNotBlank() }
+        val normalizedFileGlob = fileGlob?.trim()?.takeIf { it.isNotBlank() }
+
+        if (normalizedTemplate == null && normalizedFileGlob == null) {
+            mcpFail("At least one of 'template' or 'fileGlob' must be provided.")
+        }
+
         readAction {
-            TwigTemplateUsageCollector(project).collect(template)
+            TwigTemplateUsageCollector(project).collect(normalizedTemplate, normalizedFileGlob)
         }
     }
 
@@ -382,7 +402,7 @@ class SymfonyToolset : McpToolset {
         - template_blocks: block names provided by component template
     """)
     suspend fun list_twig_components(
-        @McpDescription("Optional partial component name filter (case-insensitive)")
+        @McpDescription("Optional partial component-name filter (case-insensitive). Examples: 'Alert', 'Admin:Card'")
         search: String? = null,
     ): String = withSymfonyProject { project ->
         readAction {
@@ -393,7 +413,7 @@ class SymfonyToolset : McpToolset {
     @McpTool
     @McpDescription("""
         Lists all variables available in a Twig template with their PHP types and first-level accessible properties.
-        Accepts a template name or a project-relative file path (e.g. "templates/home/index.html.twig" → resolves to "home/index.html.twig").
+        Accepts a logical template name and can optionally filter resolved template files by project-relative path glob.
 
         CSV columns:
         - variable: Twig variable name
@@ -407,11 +427,13 @@ class SymfonyToolset : McpToolset {
         products,\App\Entity\Product[],"id,title,price,category,isActive"
     """)
     suspend fun list_twig_template_variables(
-        @McpDescription("Template name (e.g. 'home/index.html.twig') or project-relative path (e.g. 'templates/home/index.html.twig')")
+        @McpDescription("Logical template name. Example: 'home/index.html.twig'")
         template: String,
+        @McpDescription("Optional Ant-style glob on the resolved template file path relative to the project root. Example: 'templates/home/index.html.twig' or 'templates/admin/**/*.html.twig'.")
+        fileGlob: String? = null,
     ): String = withSymfonyProject { project ->
         readAction {
-            TwigTemplateVariablesCollector(project).collect(template)
+            TwigTemplateVariablesCollector(project).collect(template, fileGlob)
         }
     }
 

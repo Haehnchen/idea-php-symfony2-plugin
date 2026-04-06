@@ -95,4 +95,13 @@ class SymfonyCommandCollectorTest : McpCollectorTestCase() {
         assertTrue("Must contain argument description 'The username'", result.contains("\"\"description\"\":\"\"The username\"\""))
         assertTrue("Must contain argument default value ''default123''", result.contains("\"\"defaultValue\"\":\"\"'default123'\"\""))
     }
+
+    fun testCollectCanFilterByCommandFileGlob() {
+        val result = SymfonyCommandCollector(project).collect("**/SymfonyCommandUtilTest.php")
+
+        assertTrue("CSV must start with header", result.startsWith("name,className,filePath,options,arguments"))
+        assertTrue("Must contain command name 'foo'", result.contains("foo"))
+        assertTrue("Must contain source file path", result.contains("src/Command/SymfonyCommandUtilTest.php"))
+        assertUsesRealLineBreaks(result)
+    }
 }

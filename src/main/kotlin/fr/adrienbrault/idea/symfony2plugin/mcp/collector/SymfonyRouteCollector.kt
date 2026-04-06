@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.mcp.collector
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import fr.adrienbrault.idea.symfony2plugin.mcp.McpCsvUtil
+import fr.adrienbrault.idea.symfony2plugin.mcp.McpGlobMatcher
 import fr.adrienbrault.idea.symfony2plugin.mcp.McpPathUtil
 import com.jetbrains.php.PhpIndex
 import com.jetbrains.php.lang.psi.elements.Method
@@ -12,7 +13,12 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil
 import org.apache.commons.lang3.StringUtils
 
 class SymfonyRouteCollector(private val project: Project) {
-    fun collect(routeName: String? = null, controller: String? = null, urlPath: String? = null): String = buildString {
+    fun collect(
+        routeName: String? = null,
+        controller: String? = null,
+        urlPath: String? = null,
+        fileGlob: String? = null
+    ): String = buildString {
         val allRoutes = RouteHelper.getAllRoutes(project)
         val phpIndex = PhpIndex.getInstance(project)
         val normalizedUrlPath = urlPath?.trim()?.takeIf { it.isNotBlank() }
@@ -60,6 +66,11 @@ class SymfonyRouteCollector(private val project: Project) {
                     ?.virtualFile
                     ?.let { McpPathUtil.getRelativeProjectPath(project, it) }
             } ?: ""
+
+            val normalizedFileGlob = fileGlob?.trim()?.takeIf { it.isNotBlank() }
+            if (normalizedFileGlob != null && !McpGlobMatcher.matches(filePath, normalizedFileGlob)) {
+                return@forEach
+            }
 
             val lineNumber = controllerMethod?.let { getLineNumber(it).toString() } ?: ""
 

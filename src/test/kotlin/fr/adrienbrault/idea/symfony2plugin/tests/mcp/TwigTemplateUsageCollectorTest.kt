@@ -138,4 +138,21 @@ class TwigTemplateUsageCollectorTest : SymfonyLightCodeInsightFixtureTestCase() 
         assertTrue("Unexpected CSV:\n$result", result.contains("templates/import_page.html.twig,"))
         assertTrue("Unexpected CSV:\n$result", result.contains("templates/form_theme.html.twig,"))
     }
+
+    fun testReturnsEmptyWhenTemplateFileGlobDoesNotMatch() {
+        myFixture.addFileToProject("templates/base.html.twig", "")
+        myFixture.addFileToProject("src/Controller/HomeController.php",
+            "<?php\nnamespace App\\Controller;\n" +
+                "class HomeController {\n" +
+                "    public function index() { \$this->render('base.html.twig'); }\n" +
+                "}\n"
+        )
+
+        val result = TwigTemplateUsageCollector(project).collect("base.html.twig", "templates/admin/**/*.html.twig")
+
+        assertEquals(
+            "template,controller,twig_include,twig_embed,twig_extends,twig_import,twig_use,twig_form_theme,twig_component,route_name,route_path\n",
+            result
+        )
+    }
 }

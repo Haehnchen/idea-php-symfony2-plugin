@@ -145,4 +145,45 @@ class TwigTemplateVariablesCollectorTest : SymfonyLightCodeInsightFixtureTestCas
             result.contains("\"number,total\"") || result.contains("\"total,number\"")
         )
     }
+
+    fun testTemplateVariablesCanFilterByMatchingFileGlob() {
+        myFixture.addFileToProject("src/Entity/Article.php",
+            "<?php\nnamespace App\\Entity;\n" +
+                "class Article {\n" +
+                "    public function getTitle(): string {}\n" +
+                "}\n"
+        )
+        myFixture.addFileToProject("templates/blog/show.html.twig",
+            "{# @var article \\App\\Entity\\Article #}\n" +
+                "{{ article.title }}"
+        )
+
+        val result = TwigTemplateVariablesCollector(project).collect(
+            "blog/show.html.twig",
+            "**/show.html.twig"
+        )
+
+        assertTrue("Should find article variable\n$result", result.contains("article,\\App\\Entity\\Article,"))
+        assertTrue("Should list 'title' property\n$result", result.contains("title"))
+    }
+
+    fun testTemplateVariablesReturnEmptyWhenFileGlobDoesNotMatch() {
+        myFixture.addFileToProject("src/Entity/Article.php",
+            "<?php\nnamespace App\\Entity;\n" +
+                "class Article {\n" +
+                "    public function getTitle(): string {}\n" +
+                "}\n"
+        )
+        myFixture.addFileToProject("templates/blog/show.html.twig",
+            "{# @var article \\App\\Entity\\Article #}\n" +
+                "{{ article.title }}"
+        )
+
+        val result = TwigTemplateVariablesCollector(project).collect(
+            "blog/show.html.twig",
+            "templates/admin/**/*.html.twig"
+        )
+
+        assertEquals("variable,type,properties\n", result)
+    }
 }
