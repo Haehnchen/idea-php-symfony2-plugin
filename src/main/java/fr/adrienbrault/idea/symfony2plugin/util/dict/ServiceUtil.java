@@ -8,7 +8,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.NotNullLazyValue;
-import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -30,7 +29,6 @@ import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.DefaultServic
 import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.JavascriptServiceNameStrategy;
 import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.ServiceNameStrategyInterface;
 import fr.adrienbrault.idea.symfony2plugin.action.generator.naming.ServiceNameStrategyParameter;
-import fr.adrienbrault.idea.symfony2plugin.dic.ClassServiceDefinitionTargetLazyValue;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlTagParser;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
@@ -741,16 +739,8 @@ public class ServiceUtil {
     }
 
     public static boolean isPhpClassAService(@NotNull PhpClass phpClass) {
-        Set<String> serviceNames = ContainerCollectionResolver.ServiceCollector.create(phpClass.getProject()).convertClassNameToServices(phpClass.getFQN());
-        if (!serviceNames.isEmpty()) {
-            return true;
-        }
-
-        Pair<ClassServiceDefinitionTargetLazyValue, Collection<ContainerService>> serviceDefinitionsOfResource = ServiceIndexUtil.findServiceDefinitionsOfResourceLazy(phpClass);
-        if (serviceDefinitionsOfResource != null) {
-            return true;
-        }
-
-        return false;
+        return !ContainerCollectionResolver.ServiceCollector.create(phpClass.getProject())
+            .convertClassNameToServices(phpClass.getFQN())
+            .isEmpty();
     }
 }

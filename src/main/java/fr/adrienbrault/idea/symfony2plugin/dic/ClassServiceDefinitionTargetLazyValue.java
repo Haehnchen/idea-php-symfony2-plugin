@@ -46,6 +46,14 @@ public class ClassServiceDefinitionTargetLazyValue implements Supplier<Collectio
 
             for (String serviceName: serviceNames) {
                 psiElements.addAll(ServiceIndexUtil.findServiceDefinitions(project, serviceName));
+
+                // A class can point to both its direct service id and one or more resource/prototype ids.
+                ContainerService containerService = serviceCollector.getServices().get(serviceName);
+                if (containerService != null) {
+                    for (String resourceServiceId : containerService.getResourceServiceIds()) {
+                        psiElements.addAll(ServiceIndexUtil.findServiceDefinitions(project, resourceServiceId));
+                    }
+                }
             }
         }
 
