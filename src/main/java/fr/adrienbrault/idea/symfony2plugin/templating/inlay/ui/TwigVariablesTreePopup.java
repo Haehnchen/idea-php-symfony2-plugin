@@ -7,6 +7,7 @@ import com.intellij.icons.AllIcons;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationGroupManager;
 import com.intellij.notification.NotificationType;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
@@ -163,7 +164,7 @@ public class TwigVariablesTreePopup {
                     return;
                 }
 
-                Navigatable target = findNavigationTarget(file.getProject(), data, variableTypes);
+                Navigatable target = ReadAction.compute(() -> findNavigationTarget(file.getProject(), data, variableTypes));
                 if (target != null) {
                     target.navigate(true);
                     if (popupRef[0] != null) {
