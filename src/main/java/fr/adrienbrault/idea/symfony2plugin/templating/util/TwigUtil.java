@@ -3379,20 +3379,6 @@ public class TwigUtil {
         return result;
     }
 
-    /**
-     * Convenience method for a single controller.
-     * For multiple controllers, use findTemplatesByControllers() for better performance.
-     */
-    @NotNull
-    public static Set<String> findTemplatesByController(
-        @NotNull Project project,
-        @NotNull String controllerFqn
-    ) {
-        Map<String, Set<String>> result = findTemplatesByControllers(project, Collections.singleton(controllerFqn));
-        String normalized = StringUtils.stripStart(controllerFqn, "\\").replace("::", ".");
-        return result.getOrDefault(normalized, Collections.emptySet());
-    }
-
     public static class DomainScope {
         @NotNull
         private final String defaultDomain;

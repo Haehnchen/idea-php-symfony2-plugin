@@ -74,8 +74,8 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
         assertEquals("DateTime", ContainerCollectionResolver.getService(getProject(), "foo").getClassName());
         assertEquals("DateTime", ContainerCollectionResolver.getService(getProject(), "foo_upper").getClassName());
         assertEquals("DateTime", ContainerCollectionResolver.getService(getProject(), "Foo").getClassName());
-        assertTrue(ContainerCollectionResolver.hasServiceNames(getProject(), "foo"));
-        assertTrue(ContainerCollectionResolver.hasServiceNames(getProject(), "Foo"));
+        assertNotNull(ContainerCollectionResolver.getService(getProject(), "foo"));
+        assertNotNull(ContainerCollectionResolver.getService(getProject(), "Foo"));
     }
 
     public void testCaseInsensitiveParameter() {
@@ -107,8 +107,8 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
                 "        class: DateTime\n"
         );
 
-        assertTrue(ContainerCollectionResolver.hasServiceNames(getProject(), "foo_as_alias"));
-        assertTrue(ContainerCollectionResolver.hasServiceNames(getProject(), "foo"));
+        assertNotNull(ContainerCollectionResolver.getService(getProject(), "foo_as_alias"));
+        assertNotNull(ContainerCollectionResolver.getService(getProject(), "foo"));
         assertEquals("DateTime", ContainerCollectionResolver.getService(getProject(), "foo_as_alias").getClassName());
         assertEquals("DateTime", ContainerCollectionResolver.getService(getProject(), "foo").getClassName());
     }
@@ -148,7 +148,7 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
         PsiFile psiFile = PsiManager.getInstance(getProject()).findFile(virtualFile);
         assertNotNull(psiFile);
 
-        assertTrue(ContainerCollectionResolver.hasServiceNames(getProject(), "App\\Service\\ResourceFooService"));
+        assertNotNull(ContainerCollectionResolver.getService(getProject(), "App\\Service\\ResourceFooService"));
 
         ContainerService service = ContainerCollectionResolver.getService(getProject(), "App\\Service\\ResourceFooService");
         assertNotNull(service);
@@ -168,7 +168,7 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
         myFixture.copyFileToProject("ExcludedService.php", "Service/ExcludedService.php");
         myFixture.copyFileToProject("resource_based_services.yml", "config/services.yml");
 
-        assertFalse(ContainerCollectionResolver.hasServiceNames(getProject(), "App\\Service\\ExcludedService"));
+        assertNull(ContainerCollectionResolver.getService(getProject(), "App\\Service\\ExcludedService"));
         assertNull(ContainerCollectionResolver.getService(getProject(), "App\\Service\\ExcludedService"));
     }
 
@@ -176,7 +176,7 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
         myFixture.copyFileToProject("ResourceFooService.php", "Service/ResourceFooService.php");
         myFixture.copyFileToProject("resource_based_services.php", "config/services.php");
 
-        assertTrue(ContainerCollectionResolver.hasServiceNames(getProject(), "App\\Service\\ResourceFooService"));
+        assertNotNull(ContainerCollectionResolver.getService(getProject(), "App\\Service\\ResourceFooService"));
 
         ContainerService service = ContainerCollectionResolver.getService(getProject(), "App\\Service\\ResourceFooService");
         assertNotNull(service);
@@ -193,7 +193,7 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
         myFixture.copyFileToProject("ResourceFooService.php", "Service/ResourceFooService.php");
         myFixture.copyFileToProject("resource_based_services.xml", "config/services.xml");
 
-        assertTrue(ContainerCollectionResolver.hasServiceNames(getProject(), "App\\Service\\ResourceFooService"));
+        assertNotNull(ContainerCollectionResolver.getService(getProject(), "App\\Service\\ResourceFooService"));
 
         ContainerService service = ContainerCollectionResolver.getService(getProject(), "App\\Service\\ResourceFooService");
         assertNotNull(service);
@@ -208,7 +208,7 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
         myFixture.copyFileToProject("ResourceFooService.php", "Service/ResourceFooService.php");
         myFixture.copyFileToProject("resource_based_services_autowire_false.php", "config/services.php");
 
-        assertFalse(ContainerCollectionResolver.hasServiceNames(getProject(), "App\\Service\\ResourceFooService"));
+        assertNull(ContainerCollectionResolver.getService(getProject(), "App\\Service\\ResourceFooService"));
         assertNull(ContainerCollectionResolver.getService(getProject(), "App\\Service\\ResourceFooService"));
     }
 
@@ -216,7 +216,7 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
         myFixture.copyFileToProject("DirectResourceFooService.php", "DirectService/DirectResourceFooService.php");
         myFixture.copyFileToProject("direct_resource_based_services.php", "config/services.php");
 
-        assertTrue(ContainerCollectionResolver.hasServiceNames(getProject(), "App\\DirectService\\DirectResourceFooService"));
+        assertNotNull(ContainerCollectionResolver.getService(getProject(), "App\\DirectService\\DirectResourceFooService"));
         assertNotNull(ContainerCollectionResolver.getService(getProject(), "App\\DirectService\\DirectResourceFooService"));
     }
 
@@ -224,7 +224,7 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
         myFixture.copyFileToProject("ClosureResourceFooService.php", "ClosureService/ClosureResourceFooService.php");
         myFixture.copyFileToProject("closure_resource_based_services.php", "config/services.php");
 
-        assertTrue(ContainerCollectionResolver.hasServiceNames(getProject(), "App\\ClosureService\\ClosureResourceFooService"));
+        assertNotNull(ContainerCollectionResolver.getService(getProject(), "App\\ClosureService\\ClosureResourceFooService"));
         assertNotNull(ContainerCollectionResolver.getService(getProject(), "App\\ClosureService\\ClosureResourceFooService"));
     }
 
@@ -235,7 +235,7 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
             "    App\\Service\\ExcludedService: ~\n"
         );
 
-        assertFalse(ContainerCollectionResolver.hasServiceNames(getProject(), "App\\Service\\ExcludedService"));
+        assertNull(ContainerCollectionResolver.getService(getProject(), "App\\Service\\ExcludedService"));
     }
 
     @NotNull

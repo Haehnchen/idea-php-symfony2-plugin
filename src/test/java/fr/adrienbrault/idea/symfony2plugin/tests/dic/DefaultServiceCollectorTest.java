@@ -17,7 +17,6 @@ public class DefaultServiceCollectorTest extends SymfonyLightCodeInsightFixtureT
      * @see DefaultServiceCollector#collectIds
      */
     public void testDefaultServiceAreInsideContainer() {
-        assertTrue(ContainerCollectionResolver.hasServiceNames(getProject(), "service_container"));
         ContainerService servicContainer = ContainerCollectionResolver.getService(getProject(), "service_container");
 
         assertNotNull(servicContainer);
@@ -29,7 +28,7 @@ public class DefaultServiceCollectorTest extends SymfonyLightCodeInsightFixtureT
      * @see DefaultServiceCollector#collectIds
      */
     public void testThatDeprecatesRequestIsOnlyAvailableInSupportedVersion() {
-        assertFalse(ContainerCollectionResolver.hasServiceNames(getProject(), "request"));
+        assertNull(ContainerCollectionResolver.getService(getProject(), "request"));
 
         myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
             "namespace Symfony\\Component\\HttpKernel {\n" +
@@ -44,6 +43,6 @@ public class DefaultServiceCollectorTest extends SymfonyLightCodeInsightFixtureT
         assertNotNull(serviceContainer);
         assertEquals("Symfony\\Component\\HttpFoundation\\Request", serviceContainer.getClassName());
 
-        assertTrue(ContainerCollectionResolver.hasServiceNames(getProject(), "request"));
+        assertNotNull(ContainerCollectionResolver.getService(getProject(), "request"));
     }
 }

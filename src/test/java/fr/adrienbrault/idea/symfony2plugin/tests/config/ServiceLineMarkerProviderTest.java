@@ -262,7 +262,7 @@ public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtur
                 "    resource: ../Service/*\n"
         ).getVirtualFile());
 
-        assertTrue(ContainerCollectionResolver.hasServiceNames(getProject(), "App\\Service\\ResourceFooService"));
+        assertNotNull(ContainerCollectionResolver.getService(getProject(), "App\\Service\\ResourceFooService"));
 
         myFixture.configureFromExistingVirtualFile(phpFile.getVirtualFile());
         assertLineMarker(myFixture.getFile(), new LineMarker.ToolTipEqualsAssert("Navigate to definition"));

@@ -15,6 +15,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 
@@ -157,14 +158,14 @@ public class ServiceIndexUtilTest extends SymfonyLightCodeInsightFixtureTestCase
 
     public void testFindServiceDefinitionsForPhpClassAsLazyInsideYml() {
         assertNotNull(ContainerUtil.find(
-            ServiceIndexUtil.findServiceDefinitionsLazy(PhpElementsUtil.getClass(getProject(),"My\\Foo\\Service\\Targets")).get(),
+            Arrays.asList(ServiceIndexUtil.findServiceDefinitions(PhpElementsUtil.getClass(getProject(),"My\\Foo\\Service\\Targets"))),
             new MyYamlKeyValueCondition("foo.yml_id"))
         );
     }
 
     public void testFindServiceDefinitionsForPhpClassAsLazyInsideXml() {
         assertNotNull(ContainerUtil.find(
-            ServiceIndexUtil.findServiceDefinitionsLazy(PhpElementsUtil.getClass(getProject(),"My\\Foo\\Service\\Targets")).get(),
+            Arrays.asList(ServiceIndexUtil.findServiceDefinitions(PhpElementsUtil.getClass(getProject(),"My\\Foo\\Service\\Targets"))),
             new MyXmlTagCondition("foo.xml_id"))
         );
     }

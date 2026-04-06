@@ -177,21 +177,6 @@ public class ServiceIndexUtil {
         return psiElements.toArray(new PsiElement[0]);
     }
 
-    @Nullable
-    public static ClassServiceDefinitionTargetLazyValue findServiceDefinitionsLazy(@Nullable PhpClass phpClass) {
-        if(phpClass == null) {
-            return null;
-        }
-
-        String phpClassName = phpClass.getPresentableFQN();
-        Set<String> serviceNames = ContainerCollectionResolver.ServiceCollector.create(phpClass.getProject()).convertClassNameToServices(phpClassName);
-        if(serviceNames.isEmpty()) {
-            return null;
-        }
-
-        return new ClassServiceDefinitionTargetLazyValue(phpClass.getProject(), phpClassName);
-    }
-
     /**
      * Lazy values for linemarker
      */
