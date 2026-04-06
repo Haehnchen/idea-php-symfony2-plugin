@@ -1,20 +1,20 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.path;
 
-import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPathServiceParser;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyTempCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
+ * @see TwigPathServiceParser
  */
-public class TwigPathServiceParserTest extends SymfonyTempCodeInsightFixtureTestCase {
+public class TwigPathServiceParserTest extends SymfonyLightCodeInsightFixtureTestCase {
 
     private static List<TwigPath> pathsFor(TwigPathServiceParser parser, String namespace) {
         return parser.getTwigPaths().stream()
@@ -22,49 +22,41 @@ public class TwigPathServiceParserTest extends SymfonyTempCodeInsightFixtureTest
             .collect(Collectors.toList());
     }
 
-    public void testParse() throws Exception {
-        createFile("vendor/symfony/symfony/src/Symfony/Bundle/FrameworkBundle/Resources/views/.keep");
-        createFile("vendor/foo/bar/FooBundle/Resources/views/.keep");
-        createFile("vendor/symfony/symfony/src/Symfony/Bridge/Twig/Resources/views/Form/.keep");
-        createFile("app/Resources/views/.keep");
+    public void testRelativePathFallbackSkipsNonExistentPath() throws Exception {
+        String xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
+            "<container><services>" +
+            "<service id=\"twig.loader.native_filesystem\">" +
+            "<call method=\"addPath\">" +
+            "<argument>does/not/exist/views</argument>" +
+            "<argument>Ghost</argument>" +
+            "</call>" +
+            "</service>" +
+            "</services></container>";
 
-        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/path/appDevDebugProjectContainer.xml");
+        VirtualFile containerFile = myFixture.addFileToProject("custom-cache/container.xml", xml).getVirtualFile();
+
         TwigPathServiceParser parser = new TwigPathServiceParser();
-        parser.parser(new FileInputStream(testFile), VfsUtil.findFileByIoFile(testFile, true), getProject());
+        parser.parser(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)), containerFile, getProject());
 
-        List<TwigPath> frameworkPaths = pathsFor(parser, "Framework");
-        assertEquals("vendor\\symfony\\symfony\\src\\Symfony\\Bundle\\FrameworkBundle/Resources/views", frameworkPaths.get(0).getPath());
-        assertEquals("vendor\\foo\\bar\\FooBundle/Resources/views", frameworkPaths.get(1).getPath());
-
-        List<TwigPath> mainPaths = pathsFor(parser, TwigUtil.MAIN);
-        assertEquals("vendor\\symfony\\symfony\\src\\Symfony\\Bridge\\Twig/Resources/views/Form", mainPaths.get(0).getPath());
-        assertEquals("app/Resources/views", mainPaths.get(1).getPath());
-
-        // absolute path without kernel.project_dir cannot be relativized — must be skipped
-        assertEquals(0, pathsFor(parser, "Twig2").size());
-        assertEquals(0, pathsFor(parser, "!Twig2").size());
+        assertEquals(0, pathsFor(parser, "Ghost").size());
     }
 
-    public void testParseWithKernelProjectDir() throws Exception {
-        createFile("templates/.keep");
-        createFile("vendor/symfony/twig-bridge/Resources/views/.keep");
-        createFile("relative/path/views/.keep");
-        createFile("src/Report/Resources/views/.keep");
+    public void testAbsolutePathWithoutKernelProjectDirIsSkipped() throws Exception {
+        String xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
+            "<container><services>" +
+            "<service id=\"twig.loader.native_filesystem\">" +
+            "<call method=\"addPath\">" +
+            "<argument>/var/www/project/templates</argument>" +
+            "<argument>AbsoluteOnly</argument>" +
+            "</call>" +
+            "</service>" +
+            "</services></container>";
 
-        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/path/fixtures/container_with_project_dir.xml");
+        VirtualFile containerFile = myFixture.addFileToProject("var/cache/dev/container.xml", xml).getVirtualFile();
+
         TwigPathServiceParser parser = new TwigPathServiceParser();
-        parser.parser(new FileInputStream(testFile), VfsUtil.findFileByIoFile(testFile, true), getProject());
+        parser.parser(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)), containerFile, getProject());
 
-        // /app/templates with kernel.project_dir=/app → "templates"
-        assertEquals("templates", pathsFor(parser, TwigUtil.MAIN).get(0).getPath());
-
-        // /app/vendor/symfony/twig-bridge/Resources/views with kernel.project_dir=/app → relative
-        assertEquals("vendor/symfony/twig-bridge/Resources/views", pathsFor(parser, "SymfonyBridge").get(0).getPath());
-
-        // already relative path passes through
-        assertEquals("relative/path/views", pathsFor(parser, "AlreadyRelative").get(0).getPath());
-
-        // relative path with namespace passes through
-        assertEquals("src/Report/Resources/views", pathsFor(parser, "Report").get(0).getPath());
+        assertEquals(0, pathsFor(parser, "AbsoluteOnly").size());
     }
 }

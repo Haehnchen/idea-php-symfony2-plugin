@@ -25,7 +25,7 @@ public class ContainerFile extends AbstractUiFilePath {
     @Nullable
     public VirtualFile getVirtualFile(Project project) {
         if (!FileUtil.isAbsolute(this.path)) {
-            return VfsUtil.findRelativeFile(this.path, ProjectUtil.getProjectDir(project));
+            return VfsUtil.findRelativeFile(ProjectUtil.getProjectDir(project), this.path.replace("\\", "/").split("/"));
         }
 
         VirtualFile virtualFile = VfsUtil.findFileByIoFile(new java.io.File(this.path), false);

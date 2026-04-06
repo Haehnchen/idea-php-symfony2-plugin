@@ -107,45 +107,4 @@ public class TwigPathServiceParserTempTest extends SymfonyTempCodeInsightFixture
     /**
      * When var/ is not found and the relative path does NOT exist under the IntelliJ project root, skip it.
      */
-    public void testRelativePathFallbackSkipsNonExistentPath() throws Exception {
-        String xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-            "<container><services>" +
-            "<service id=\"twig.loader.native_filesystem\">" +
-            "<call method=\"addPath\">" +
-            "<argument>does/not/exist/views</argument>" +
-            "<argument>Ghost</argument>" +
-            "</call>" +
-            "</service>" +
-            "</services></container>";
-
-        VirtualFile containerFile = createFile("custom-cache/container.xml", xml);
-        // path "does/not/exist/views" is NOT created in the project
-
-        TwigPathServiceParser parser = new TwigPathServiceParser();
-        parser.parser(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)), containerFile, getProject());
-
-        assertEquals(0, pathsFor(parser,"Ghost").size());
-    }
-
-    /**
-     * Absolute path without kernel.project_dir must be skipped entirely.
-     */
-    public void testAbsolutePathWithoutKernelProjectDirIsSkipped() throws Exception {
-        String xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-            "<container><services>" +
-            "<service id=\"twig.loader.native_filesystem\">" +
-            "<call method=\"addPath\">" +
-            "<argument>/var/www/project/templates</argument>" +
-            "<argument>AbsoluteOnly</argument>" +
-            "</call>" +
-            "</service>" +
-            "</services></container>";
-
-        VirtualFile containerFile = createFile("var/cache/dev/container.xml", xml);
-
-        TwigPathServiceParser parser = new TwigPathServiceParser();
-        parser.parser(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)), containerFile, getProject());
-
-        assertEquals(0, pathsFor(parser,"AbsoluteOnly").size());
-    }
 }
