@@ -1,10 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.translation.parser;
 
-import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
 
-import java.io.File;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -17,8 +16,11 @@ public class TranslationPsiParserTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public void testCompiledTranslationParser() {
+        VirtualFile catalogueFile = myFixture.copyFileToProject("catalogue.af.X7ow_p+.php", "translations/catalogue.af.X7ow_p+.php");
+        myFixture.copyFileToProject("classes.php");
+
         TranslationStringMap translationStringMap = TranslationStringMap.create(List.of(
-            VfsUtil.findFileByIoFile(new File(getTestDataPath()), true)
+            catalogueFile.getParent()
         ));
 
         assertTrue(!translationStringMap.getDomainMap("security").isEmpty());
@@ -33,9 +35,12 @@ public class TranslationPsiParserTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public void testCompiledTranslationParserOnBackgroundThread() throws Exception {
+        VirtualFile catalogueFile = myFixture.copyFileToProject("catalogue.af.X7ow_p+.php", "translations/catalogue.af.X7ow_p+.php");
+        myFixture.copyFileToProject("classes.php");
+
         TranslationStringMap translationStringMap = CompletableFuture
             .supplyAsync(() -> TranslationStringMap.create(List.of(
-                VfsUtil.findFileByIoFile(new File(getTestDataPath()), true)
+                catalogueFile.getParent()
             )))
             .get();
 

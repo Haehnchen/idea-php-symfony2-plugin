@@ -1,19 +1,25 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.config.component.parser;
 
-import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyTempCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.Map;
 
-public class ParameterServiceParserTest extends SymfonyTempCodeInsightFixtureTestCase {
+public class ParameterServiceParserTest extends SymfonyLightCodeInsightFixtureTestCase {
+
+    @Override
+    protected String getTestDataPath() {
+        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/config/component/parser";
+    }
 
     public void testParse() throws Exception {
-        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/config/component/parser/appDevDebugProjectContainer.xml");
+        VirtualFile testFile = myFixture.copyFileToProject("appDevDebugProjectContainer.xml");
         ParameterServiceParser parameterServiceParser = new ParameterServiceParser();
-        parameterServiceParser.parser(new FileInputStream(testFile), VfsUtil.findFileByIoFile(testFile, true), getProject());
+        try (InputStream inputStream = testFile.getInputStream()) {
+            parameterServiceParser.parser(inputStream, testFile, getProject());
+        }
 
         Map<String, String> map = parameterServiceParser.getParameterMap();
 

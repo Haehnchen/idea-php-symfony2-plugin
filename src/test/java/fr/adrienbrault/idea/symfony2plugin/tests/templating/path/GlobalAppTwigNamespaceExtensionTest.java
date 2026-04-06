@@ -5,7 +5,7 @@ import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtensionParam
 import fr.adrienbrault.idea.symfony2plugin.templating.path.GlobalAppTwigNamespaceExtension;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyTempCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.util.Collection;
 
@@ -13,10 +13,10 @@ import java.util.Collection;
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see fr.adrienbrault.idea.symfony2plugin.templating.path.GlobalAppTwigNamespaceExtension
  */
-public class GlobalAppTwigNamespaceExtensionTest extends SymfonyTempCodeInsightFixtureTestCase {
+    public class GlobalAppTwigNamespaceExtensionTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void testThatBundleNamespacesAreAdded() {
-        createFile("app/Resources/views/foo.html.twig");
-        createFile("templates/foo.html.twig");
+        myFixture.addFileToProject("app/Resources/views/foo.html.twig", "");
+        myFixture.addFileToProject("templates/foo.html.twig", "");
 
         Collection<TwigPath> namespaces = new GlobalAppTwigNamespaceExtension()
             .getNamespaces(new TwigNamespaceExtensionParameter(getProject()));
@@ -34,7 +34,7 @@ public class GlobalAppTwigNamespaceExtensionTest extends SymfonyTempCodeInsightF
 
     public void testThatCustomAppDirectoryIsSupported() {
         Settings.getInstance(getProject()).directoryToApp = "foo/app";
-        createFile("foo/app/Resources/views/foo.html.twig");
+        myFixture.addFileToProject("foo/app/Resources/views/foo.html.twig", "");
 
         Collection<TwigPath> namespaces = new GlobalAppTwigNamespaceExtension()
             .getNamespaces(new TwigNamespaceExtensionParameter(getProject()));
@@ -47,7 +47,7 @@ public class GlobalAppTwigNamespaceExtensionTest extends SymfonyTempCodeInsightF
 
     public void testThatCustomAppDirectoryIsSupportedForWindows() {
         Settings.getInstance(getProject()).directoryToApp = "foo\\app";
-        createFile("foo/app/Resources/views/foo.html.twig");
+        myFixture.addFileToProject("foo/app/Resources/views/foo.html.twig", "");
 
         Collection<TwigPath> namespaces = new GlobalAppTwigNamespaceExtension()
             .getNamespaces(new TwigNamespaceExtensionParameter(getProject()));
@@ -60,7 +60,7 @@ public class GlobalAppTwigNamespaceExtensionTest extends SymfonyTempCodeInsightF
 
     public void testThatAppDirectoryInRootIsAlwaysSupported() {
         Settings.getInstance(getProject()).directoryToApp = "foo\\app";
-        createFile("app/Resources/views/foo.html.twig");
+        myFixture.addFileToProject("app/Resources/views/foo.html.twig", "");
 
         Collection<TwigPath> namespaces = new GlobalAppTwigNamespaceExtension()
             .getNamespaces(new TwigNamespaceExtensionParameter(getProject()));

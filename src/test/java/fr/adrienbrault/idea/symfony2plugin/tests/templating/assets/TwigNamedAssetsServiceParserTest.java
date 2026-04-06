@@ -1,24 +1,30 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.assets;
 
-import com.intellij.openapi.vfs.VfsUtil;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyTempCodeInsightFixtureTestCase;
+import com.intellij.openapi.vfs.VirtualFile;
+import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.twig.assets.TwigNamedAssetsServiceParser;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Map;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class TwigNamedAssetsServiceParserTest extends SymfonyTempCodeInsightFixtureTestCase {
+public class TwigNamedAssetsServiceParserTest extends SymfonyLightCodeInsightFixtureTestCase {
+
+    @Override
+    protected String getTestDataPath() {
+        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/assets";
+    }
 
     public void testParse() throws Exception {
-        File testFile = new File("src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/assets/appDevDebugProjectContainer.xml");
+        VirtualFile testFile = myFixture.copyFileToProject("appDevDebugProjectContainer.xml");
 
         TwigNamedAssetsServiceParser parser = new TwigNamedAssetsServiceParser();
-        parser.parser(new FileInputStream(testFile), VfsUtil.findFileByIoFile(testFile, true), getProject());
+        try (InputStream inputStream = testFile.getInputStream()) {
+            parser.parser(inputStream, testFile, getProject());
+        }
 
         Map<String, String[]> namedAssets = parser.getNamedAssets();
         assertNotNull(namedAssets.get("jquery_js"));
