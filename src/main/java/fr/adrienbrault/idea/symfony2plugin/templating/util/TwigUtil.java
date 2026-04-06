@@ -2431,7 +2431,7 @@ public class TwigUtil {
             }
 
             twigChild.add(myVirtualFile);
-            getTemplatesExtendingFile(project, myVirtualFile, twigChild, --depth);
+            getTemplatesExtendingFile(project, myVirtualFile, twigChild, depth - 1);
         }
     }
 
