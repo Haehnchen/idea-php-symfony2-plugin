@@ -3,12 +3,14 @@ package fr.adrienbrault.idea.symfony2plugin.tests.templating;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.daemon.LineMarkerProviders;
+import com.intellij.patterns.PatternCondition;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiRecursiveElementVisitor;
+import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.twig.TwigLanguage;
@@ -104,6 +106,43 @@ public class TwigLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTe
 
         // Should have line markers for block overrides
         assertFalse("Should have block override line markers", lineMarkers.isEmpty());
+    }
+
+    public void testBlockImplementationLineMarkerForIndirectExtends() {
+        PsiFile baseFile = myFixture.addFileToProject(
+            "templates/implementation_base.html.twig",
+            "{% block content %}Base{% endblock %}"
+        );
+
+        for (int i = 0; i < 7; i++) {
+            myFixture.addFileToProject(
+                "templates/implementation_sibling_" + i + ".html.twig",
+                "{% extends 'implementation_base.html.twig' %}\n"
+            );
+        }
+
+        myFixture.addFileToProject(
+            "templates/implementation_child.html.twig",
+            "{% extends 'implementation_base.html.twig' %}\n"
+        );
+
+        myFixture.addFileToProject(
+            "templates/implementation_grandchild.html.twig",
+            "{% extends 'implementation_child.html.twig' %}\n" +
+            "{% block content %}Grandchild{% endblock %}"
+        );
+
+        assertLineMarker(baseFile, new LineMarker.ToolTipEqualsAssert("Implementations"));
+        assertLineMarker(baseFile, new LineMarker.TargetAcceptsPattern(
+            "Implementations",
+            PlatformPatterns.psiElement().with(new PatternCondition<>("implementation_grandchild") {
+                @Override
+                public boolean accepts(@NotNull PsiElement psiElement, ProcessingContext processingContext) {
+                    PsiFile containingFile = psiElement.getContainingFile();
+                    return containingFile != null && "implementation_grandchild.html.twig".equals(containingFile.getName());
+                }
+            })
+        ));
     }
 
     /**
