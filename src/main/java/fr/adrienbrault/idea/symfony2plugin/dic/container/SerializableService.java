@@ -39,6 +39,10 @@ public class SerializableService implements ServiceSerializable {
     @Nullable
     private Boolean isAutowire;
 
+    @SerializedName("autoconfigure")
+    @Nullable
+    private Boolean isAutoconfigure;
+
     @SerializedName("deprecated")
     @Nullable
     private Boolean isDeprecated;
@@ -141,6 +145,21 @@ public class SerializableService implements ServiceSerializable {
 
     public SerializableService setIsAutowire(@Nullable Boolean isAutowire) {
         this.isAutowire = isAutowire;
+        return this;
+    }
+
+    @Override
+    public boolean isAutoconfigure() {
+        return isAutoconfigure != null ? isAutoconfigure : false;
+    }
+
+    @Nullable
+    public Boolean isAutoconfigureNullable() {
+        return isAutoconfigure;
+    }
+
+    public SerializableService setIsAutoconfigure(@Nullable Boolean isAutoconfigure) {
+        this.isAutoconfigure = isAutoconfigure;
         return this;
     }
 
@@ -251,6 +270,7 @@ public class SerializableService implements ServiceSerializable {
             .append(this.isLazy)
             .append(this.isAbstract)
             .append(this.isAutowire)
+            .append(this.isAutoconfigure)
             .append(this.isDeprecated)
             .append(this.alias)
             .append(this.decorates)
@@ -272,6 +292,7 @@ public class SerializableService implements ServiceSerializable {
             Objects.equals(((SerializableService) obj).isLazy, this.isLazy) &&
             Objects.equals(((SerializableService) obj).isAbstract, this.isAbstract) &&
             Objects.equals(((SerializableService) obj).isAutowire, this.isAutowire) &&
+            Objects.equals(((SerializableService) obj).isAutoconfigure, this.isAutoconfigure) &&
             Objects.equals(((SerializableService) obj).isDeprecated, this.isDeprecated) &&
             Objects.equals(((SerializableService) obj).alias, this.alias) &&
             Objects.equals(((SerializableService) obj).decorates, this.decorates) &&

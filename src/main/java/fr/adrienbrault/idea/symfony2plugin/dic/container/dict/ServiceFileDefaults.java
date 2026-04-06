@@ -15,14 +15,19 @@ public class ServiceFileDefaults {
     @Nullable
     final private Boolean isAutowire;
 
+    @Nullable
+    final private Boolean isAutoconfigure;
+
     private ServiceFileDefaults() {
         isPublic = null;
         isAutowire = null;
+        isAutoconfigure = null;
     }
 
-    public ServiceFileDefaults(@Nullable Boolean isPublic, @Nullable Boolean isAutowire) {
+    public ServiceFileDefaults(@Nullable Boolean isPublic, @Nullable Boolean isAutowire, @Nullable Boolean isAutoconfigure) {
         this.isPublic = isPublic;
         this.isAutowire = isAutowire;
+        this.isAutoconfigure = isAutoconfigure;
     }
 
     @Nullable
@@ -33,5 +38,10 @@ public class ServiceFileDefaults {
     @Nullable
     public Boolean isAutowire() {
         return isAutowire;
+    }
+
+    @Nullable
+    public Boolean isAutoconfigure() {
+        return isAutoconfigure;
     }
 }

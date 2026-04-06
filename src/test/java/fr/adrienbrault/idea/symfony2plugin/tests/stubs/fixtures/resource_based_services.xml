@@ -1,0 +1,6 @@
+<container>
+    <services>
+        <defaults autowire="true" autoconfigure="true" />
+        <prototype namespace="App\Service\" resource="../Service/*" />
+    </services>
+</container>

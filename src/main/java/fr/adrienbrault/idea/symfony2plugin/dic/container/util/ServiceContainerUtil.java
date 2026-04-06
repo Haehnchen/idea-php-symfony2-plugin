@@ -120,6 +120,7 @@ public class ServiceContainerUtil {
                                 new SerializableService(serviceConsumer.getServiceId())
                                     .setAlias(valueText.substring(1))
                                     .setIsAutowire(serviceConsumer.getDefaults().isAutowire())
+                                    .setIsAutoconfigure(serviceConsumer.getDefaults().isAutoconfigure())
                                     .setIsPublic(serviceConsumer.getDefaults().isPublic())
                             );
                             return;
@@ -164,7 +165,8 @@ public class ServiceContainerUtil {
         if(yamlKeyValueDefaults != null) {
             return new ServiceFileDefaults(
                 YamlHelper.getYamlKeyValueAsBoolean(yamlKeyValueDefaults, "public"),
-                YamlHelper.getYamlKeyValueAsBoolean(yamlKeyValueDefaults, "autowire")
+                YamlHelper.getYamlKeyValueAsBoolean(yamlKeyValueDefaults, "autowire"),
+                YamlHelper.getYamlKeyValueAsBoolean(yamlKeyValueDefaults, "autoconfigure")
             );
         }
 
@@ -214,6 +216,7 @@ public class ServiceContainerUtil {
             .setParent(attributes.getString("parent"))
             .setIsAbstract(anAbstract)
             .setIsAutowire(attributes.getBoolean("autowire", serviceConsumer.getDefaults().isAutowire()))
+            .setIsAutoconfigure(attributes.getBoolean("autoconfigure", serviceConsumer.getDefaults().isAutoconfigure()))
             .setIsLazy(attributes.getBoolean("lazy"))
             .setIsPublic(attributes.getBoolean("public", serviceConsumer.getDefaults().isPublic()))
             .setResource(attributes.getStringArray("resource"))
@@ -601,19 +604,21 @@ public class ServiceContainerUtil {
         for (MethodReference defaultsRef : PhpElementsUtil.collectMethodReferencesInsideControlFlow(function, "defaults")) {
             Boolean isPublic = null;
             Boolean isAutowire = null;
+            Boolean isAutoconfigure = null;
 
             PsiElement parent = defaultsRef.getParent();
             while (parent instanceof MethodReference chainedMethod) {
                 PsiElement[] params = chainedMethod.getParameters();
                 switch (StringUtils.defaultString(chainedMethod.getName())) {
                     case "autowire" -> isAutowire = extractFluentBooleanParam(params, true);
+                    case "autoconfigure" -> isAutoconfigure = extractFluentBooleanParam(params, true);
                     case "public" -> isPublic = extractFluentBooleanParam(params, true);
                     case "private" -> isPublic = false;
                 }
                 parent = parent.getParent();
             }
 
-            return new ServiceFileDefaults(isPublic, isAutowire);
+            return new ServiceFileDefaults(isPublic, isAutowire, isAutoconfigure);
         }
 
         return ServiceFileDefaults.EMPTY;
@@ -705,6 +710,7 @@ public class ServiceContainerUtil {
                 case "public" -> keyValue.put("public", String.valueOf(extractFluentBooleanParam(params, true)));
                 case "private" -> keyValue.put("public", "false");
                 case "autowire" -> keyValue.put("autowire", String.valueOf(extractFluentBooleanParam(params, true)));
+                case "autoconfigure" -> keyValue.put("autoconfigure", String.valueOf(extractFluentBooleanParam(params, true)));
                 case "lazy" -> keyValue.put("lazy", "true");
                 case "abstract" -> keyValue.put("abstract", "true");
                 case "deprecated" -> keyValue.put("deprecated", "true");
@@ -828,7 +834,8 @@ public class ServiceContainerUtil {
 
         return new ServiceFileDefaults(
             PhpElementsUtil.getArrayValueBool(defaultsArray, "public"),
-            PhpElementsUtil.getArrayValueBool(defaultsArray, "autowire")
+            PhpElementsUtil.getArrayValueBool(defaultsArray, "autowire"),
+            PhpElementsUtil.getArrayValueBool(defaultsArray, "autoconfigure")
         );
     }
 
@@ -876,11 +883,13 @@ public class ServiceContainerUtil {
             PsiElement value = hashElement.getValue();
             SerializableService serializableService = new SerializableService(serviceId)
                 .setIsAutowire(defaults.isAutowire())
+                .setIsAutoconfigure(defaults.isAutoconfigure())
                 .setIsPublic(defaults.isPublic());
 
             if (value instanceof ArrayCreationExpression arrayCreationExpression) {
                 Boolean isAbstract = PhpElementsUtil.getArrayValueBool(arrayCreationExpression, "abstract");
                 Boolean isAutowire = PhpElementsUtil.getArrayValueBool(arrayCreationExpression, "autowire");
+                Boolean isAutoconfigure = PhpElementsUtil.getArrayValueBool(arrayCreationExpression, "autoconfigure");
                 Boolean isPublic = PhpElementsUtil.getArrayValueBool(arrayCreationExpression, "public");
                 String className = StringUtils.stripStart(getPhpArrayValueString(arrayCreationExpression, "class"), "\\");
                 if (className == null && isPhpArrayServiceIdAsClassSupported(arrayCreationExpression, isAbstract)) {
@@ -900,6 +909,7 @@ public class ServiceContainerUtil {
                     .setParent(getPhpArrayValueString(arrayCreationExpression, "parent"))
                     .setIsAbstract(isAbstract)
                     .setIsAutowire(isAutowire != null ? isAutowire : defaults.isAutowire())
+                    .setIsAutoconfigure(isAutoconfigure != null ? isAutoconfigure : defaults.isAutoconfigure())
                     .setIsLazy(PhpElementsUtil.getArrayValueBool(arrayCreationExpression, "lazy"))
                     .setIsPublic(isPublic != null ? isPublic : defaults.isPublic())
                     .setIsDeprecated(PhpElementsUtil.getArrayValueBool(arrayCreationExpression, "deprecated"))
@@ -1077,7 +1087,8 @@ public class ServiceContainerUtil {
 
         return new ServiceFileDefaults(
             getBooleanValueOf(xmlDefaults.getAttributeValue("public")),
-            getBooleanValueOf(xmlDefaults.getAttributeValue("autowire"))
+            getBooleanValueOf(xmlDefaults.getAttributeValue("autowire")),
+            getBooleanValueOf(xmlDefaults.getAttributeValue("autoconfigure"))
         );
     }
 

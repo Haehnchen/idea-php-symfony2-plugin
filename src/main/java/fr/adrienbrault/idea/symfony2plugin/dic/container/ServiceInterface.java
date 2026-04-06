@@ -22,6 +22,8 @@ public interface ServiceInterface {
 
     boolean isAutowire();
 
+    boolean isAutoconfigure();
+
     boolean isDeprecated();
 
     boolean isPublic();
