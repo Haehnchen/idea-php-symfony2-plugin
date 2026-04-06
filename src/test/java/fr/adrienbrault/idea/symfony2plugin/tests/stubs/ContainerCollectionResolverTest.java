@@ -2,10 +2,13 @@ package fr.adrienbrault.idea.symfony2plugin.tests.stubs;
 
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerServiceMetadata;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
 
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -138,7 +141,14 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
         myFixture.copyFileToProject("resource_based_services.yml", "config/services.yml");
 
         assertTrue(ContainerCollectionResolver.hasServiceNames(getProject(), "App\\Service\\ResourceFooService"));
-        assertNotNull(ContainerCollectionResolver.getService(getProject(), "App\\Service\\ResourceFooService"));
+
+        ContainerService service = ContainerCollectionResolver.getService(getProject(), "App\\Service\\ResourceFooService");
+        assertNotNull(service);
+        assertTrue(service.isAutowireEnabled());
+        ContainerServiceMetadata metadata = getResourcePrototypeMetadata(service, "App\\Service\\");
+        assertTrue(metadata.autoconfigure());
+        assertContainsElements(metadata.resource(), "../Service/*");
+        assertEmpty(metadata.exclude());
     }
 
     public void testThatResourceBasedServiceWithExcludeAttributeIsFiltered() {
@@ -159,6 +169,26 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
         assertNotNull(service);
         assertEquals("App\\Service\\ResourceFooService", service.getClassName());
         assertTrue(service.isWeak());
+        assertTrue(service.isAutowireEnabled());
+        ContainerServiceMetadata metadata = getResourcePrototypeMetadata(service, "App\\Service\\");
+        assertTrue(metadata.autoconfigure());
+        assertContainsElements(metadata.resource(), "../Service/*");
+        assertEmpty(metadata.exclude());
+    }
+
+    public void testThatXmlResourceBasedServicesAreResolved() {
+        myFixture.copyFileToProject("ResourceFooService.php", "Service/ResourceFooService.php");
+        myFixture.copyFileToProject("resource_based_services.xml", "config/services.xml");
+
+        assertTrue(ContainerCollectionResolver.hasServiceNames(getProject(), "App\\Service\\ResourceFooService"));
+
+        ContainerService service = ContainerCollectionResolver.getService(getProject(), "App\\Service\\ResourceFooService");
+        assertNotNull(service);
+        assertTrue(service.isAutowireEnabled());
+        ContainerServiceMetadata metadata = getResourcePrototypeMetadata(service, "App\\Service\\");
+        assertTrue(metadata.autoconfigure());
+        assertContainsElements(metadata.resource(), "../Service/*");
+        assertEmpty(metadata.exclude());
     }
 
     public void testThatPhpArrayResourceBasedServicesRespectPerEntryAutowireOverride() {
@@ -193,5 +223,13 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
         );
 
         assertFalse(ContainerCollectionResolver.hasServiceNames(getProject(), "App\\Service\\ExcludedService"));
+    }
+
+    @NotNull
+    private static ContainerServiceMetadata getResourcePrototypeMetadata(@NotNull ContainerService service, @NotNull String resourceServiceId) {
+        return service.getMetadata().stream()
+            .filter(metadata -> Objects.equals(resourceServiceId, metadata.resourceServiceId()))
+            .findFirst()
+            .orElseThrow();
     }
 }

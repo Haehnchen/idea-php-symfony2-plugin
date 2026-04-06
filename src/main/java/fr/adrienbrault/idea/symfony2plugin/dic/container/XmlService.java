@@ -63,6 +63,11 @@ public class XmlService implements ServiceInterface {
     }
 
     @Override
+    public boolean isAutoconfigure() {
+        return false;
+    }
+
+    @Override
     public boolean isDeprecated() {
         return false;
     }

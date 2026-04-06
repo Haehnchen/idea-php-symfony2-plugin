@@ -13,6 +13,7 @@ import com.intellij.util.indexing.FileBasedIndex;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerServiceMetadata;
 import fr.adrienbrault.idea.symfony2plugin.dic.XmlServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceSerializable;
@@ -29,7 +30,6 @@ import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUt
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -145,7 +145,16 @@ public class ContainerCollectionResolver {
 
                 for (String phpClass : phpClasses) {
                     String fqn = StringUtils.stripStart(phpClass, "\\");
-                    services.put(fqn, new ContainerService(fqn, fqn, true));
+                    ContainerService containerService = services.computeIfAbsent(fqn, key -> new ContainerService(fqn, fqn, true));
+                    containerService.addMetadata(new ContainerServiceMetadata(
+                        service.getId(),
+                        service.isAutowire(),
+                        service.isAutoconfigure(),
+                        service.getTags(),
+                        service.getResource(),
+                        service.getExclude(),
+                        ContainerServiceMetadata.SourceKind.RESOURCE_PROTOTYPE
+                    ));
                 }
             }
         }
@@ -366,9 +375,12 @@ public class ContainerCollectionResolver {
                             }
                         }
 
-                        // compiled container done have a value
+                        // Replace the weak synthetic resource-expanded placeholder with the indexed service,
+                        // but keep the metadata that was already attached while expanding the resource definition.
                         if (containerService.getService() == null) {
-                            services.put(serviceName, new ContainerService(service, classValueResolve));
+                            ContainerService resolvedService = new ContainerService(service, classValueResolve);
+                            resolvedService.addMetadata(containerService.getMetadata());
+                            services.put(serviceName, resolvedService);
                         }
 
                         continue;

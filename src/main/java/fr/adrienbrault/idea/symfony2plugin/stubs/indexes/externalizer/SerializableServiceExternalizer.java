@@ -29,6 +29,7 @@ public class SerializableServiceExternalizer implements DataExternalizer<Service
         writeNullableBoolean(out, service.isLazyNullable());
         writeNullableBoolean(out, service.isAbstractNullable());
         writeNullableBoolean(out, service.isAutowireNullable());
+        writeNullableBoolean(out, service.isAutoconfigureNullable());
         writeNullableBoolean(out, service.isDeprecatedNullable());
         writeNullableString(out, service.getAlias());
         writeNullableString(out, service.getDecorates());
@@ -47,6 +48,7 @@ public class SerializableServiceExternalizer implements DataExternalizer<Service
         service.setIsLazy(readNullableBoolean(in));
         service.setIsAbstract(readNullableBoolean(in));
         service.setIsAutowire(readNullableBoolean(in));
+        service.setIsAutoconfigure(readNullableBoolean(in));
         service.setIsDeprecated(readNullableBoolean(in));
         service.setAlias(readNullableString(in));
         service.setDecorates(readNullableString(in));

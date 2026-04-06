@@ -18,6 +18,7 @@ public class MemoryReducedCollectionService implements ServiceInterface {
     private final boolean lazy;
     private final boolean isAbstract;
     private final boolean autowire;
+    private final boolean autoconfigure;
     private final Collection<String> tags;
     private final Collection<String> exclude;
     private final Collection<String> resource;
@@ -40,6 +41,7 @@ public class MemoryReducedCollectionService implements ServiceInterface {
         this.lazy = serviceInterface.isLazy();
         this.isAbstract = serviceInterface.isAbstract();
         this.autowire = serviceInterface.isAutowire();
+        this.autoconfigure = serviceInterface.isAutoconfigure();
         this.decorationInnerName = serviceInterface.getDecorationInnerName();
         this.decorates = serviceInterface.getDecorates();
         this.parent = serviceInterface.getParent();
@@ -80,6 +82,11 @@ public class MemoryReducedCollectionService implements ServiceInterface {
     @Override
     public boolean isAutowire() {
         return this.autowire;
+    }
+
+    @Override
+    public boolean isAutoconfigure() {
+        return this.autoconfigure;
     }
 
     @Override

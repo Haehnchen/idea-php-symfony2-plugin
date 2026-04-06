@@ -7,6 +7,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -23,8 +25,11 @@ public class ContainerService {
     private boolean isPrivate = false;
     private boolean isWeak = false;
     private final Set<String> classVariants = new HashSet<>();
+    private final Set<ContainerServiceMetadata> metadata = new LinkedHashSet<>();
     @Nullable
     private Set<String> cachedClassNames;
+    @Nullable
+    private Boolean cachedMetadataAutowire;
 
     public ContainerService(@NotNull ServiceInterface service, @Nullable String classResolved) {
         this.service = new MemoryReducedCollectionService(service);
@@ -63,6 +68,18 @@ public class ContainerService {
         this.cachedClassNames = null;
     }
 
+    public void addMetadata(@NotNull ContainerServiceMetadata metadata) {
+        if (this.metadata.add(metadata)) {
+            this.cachedMetadataAutowire = null;
+        }
+    }
+
+    public void addMetadata(@NotNull Iterable<ContainerServiceMetadata> metadata) {
+        for (ContainerServiceMetadata containerServiceMetadata : metadata) {
+            addMetadata(containerServiceMetadata);
+        }
+    }
+
     @NotNull
     public Set<String> getClassNames() {
         if (cachedClassNames != null) {
@@ -93,6 +110,29 @@ public class ContainerService {
         return name;
     }
 
+    @NotNull
+    public List<ContainerServiceMetadata> getMetadata() {
+        return List.copyOf(metadata);
+    }
+
+    public boolean isAutowireEnabled() {
+        if (service != null && service.isAutowire()) {
+            return true;
+        }
+
+        if (cachedMetadataAutowire != null) {
+            return cachedMetadataAutowire;
+        }
+
+        for (ContainerServiceMetadata containerServiceMetadata : metadata) {
+            if (containerServiceMetadata.autowire()) {
+                return cachedMetadataAutowire = true;
+            }
+        }
+
+        return cachedMetadataAutowire = false;
+    }
+
     /**
      * legacy support
      */
@@ -101,4 +141,3 @@ public class ContainerService {
         return service;
     }
 }
-

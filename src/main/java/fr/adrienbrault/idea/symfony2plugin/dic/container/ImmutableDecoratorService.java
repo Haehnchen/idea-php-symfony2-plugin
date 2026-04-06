@@ -46,6 +46,11 @@ public class ImmutableDecoratorService implements ServiceInterface {
     }
 
     @Override
+    public boolean isAutoconfigure() {
+        return service.isAutoconfigure();
+    }
+
+    @Override
     public boolean isDeprecated() {
         return service.isDeprecated();
     }
