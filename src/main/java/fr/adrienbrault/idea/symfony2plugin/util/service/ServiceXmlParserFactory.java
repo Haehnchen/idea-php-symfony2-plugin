@@ -14,6 +14,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,7 +56,7 @@ public class ServiceXmlParserFactory {
         }
 
         Collection<VirtualFile> settingsServiceFiles = Symfony2ProjectComponent.getContainerFiles(project);
-        for (VirtualFile vf : settingsServiceFiles) {
+        for (VirtualFile vf : new ArrayList<>(settingsServiceFiles).stream().sorted(Comparator.comparing(VirtualFile::getPath)).toList()) {
             if (vf == null || !vf.exists()) {
                 continue;
             }
