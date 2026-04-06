@@ -214,8 +214,10 @@ public final class TemplateMoveRenameUtil {
         }
 
         int leafStart = leaf.getTextOffset();
+        PsiDocumentManager psiDocumentManager = PsiDocumentManager.getInstance(project);
+        psiDocumentManager.doPostponedOperationsAndUnblockDocument(document);
         document.replaceString(leafStart, leafStart + leaf.getTextLength(), newTemplateName);
-        PsiDocumentManager.getInstance(project).commitDocument(document);
+        psiDocumentManager.commitDocument(document);
 
         return true;
     }
