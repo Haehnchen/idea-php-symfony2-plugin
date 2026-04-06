@@ -30,6 +30,10 @@ public class ContainerService {
     private Set<String> cachedClassNames;
     @Nullable
     private Boolean cachedMetadataAutowire;
+    @Nullable
+    private Boolean cachedResourcePrototypeMetadata;
+    @Nullable
+    private Set<String> cachedResourceServiceIds;
 
     public ContainerService(@NotNull ServiceInterface service, @Nullable String classResolved) {
         this.service = new MemoryReducedCollectionService(service);
@@ -71,6 +75,8 @@ public class ContainerService {
     public void addMetadata(@NotNull ContainerServiceMetadata metadata) {
         if (this.metadata.add(metadata)) {
             this.cachedMetadataAutowire = null;
+            this.cachedResourcePrototypeMetadata = null;
+            this.cachedResourceServiceIds = null;
         }
     }
 
@@ -131,6 +137,37 @@ public class ContainerService {
         }
 
         return cachedMetadataAutowire = false;
+    }
+
+    public boolean hasResourcePrototypeMetadata() {
+        if (cachedResourcePrototypeMetadata != null) {
+            return cachedResourcePrototypeMetadata;
+        }
+
+        for (ContainerServiceMetadata containerServiceMetadata : metadata) {
+            if (containerServiceMetadata.sourceKind() == ContainerServiceMetadata.SourceKind.RESOURCE_PROTOTYPE) {
+                return cachedResourcePrototypeMetadata = true;
+            }
+        }
+
+        return cachedResourcePrototypeMetadata = false;
+    }
+
+    @NotNull
+    public Set<String> getResourceServiceIds() {
+        if (cachedResourceServiceIds != null) {
+            return cachedResourceServiceIds;
+        }
+
+        Set<String> resourceServiceIds = new LinkedHashSet<>();
+        for (ContainerServiceMetadata containerServiceMetadata : metadata) {
+            String resourceServiceId = containerServiceMetadata.resourceServiceId();
+            if (resourceServiceId != null) {
+                resourceServiceIds.add(resourceServiceId);
+            }
+        }
+
+        return cachedResourceServiceIds = Collections.unmodifiableSet(resourceServiceIds);
     }
 
     /**

@@ -8,6 +8,7 @@ import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
@@ -245,6 +246,26 @@ public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtur
         ), new LineMarker.TargetAcceptsPattern("Symfony: <a href=\"https://symfony.com/doc/current/service_container/autowiring.html\">Autowire available</a>",
             PlatformPatterns.psiElement(StringLiteralExpression.class).withText("'App\\\\'")
         ));
+    }
+
+    public void testThatYamlResourceClassIsGivenADefinitionLineMarker() {
+        var phpFile = myFixture.addFileToProject("Service/ResourceFooService.php", "<?php\n" +
+            "namespace App\\Service {\n" +
+            "    class ResourceFooService {}\n" +
+            "}\n"
+        );
+        myFixture.configureFromExistingVirtualFile(myFixture.addFileToProject("config/services.yml",
+            "services:\n" +
+                "  _defaults:\n" +
+                "    autowire: true\n" +
+                "  App\\Service\\:\n" +
+                "    resource: ../Service/*\n"
+        ).getVirtualFile());
+
+        assertTrue(ContainerCollectionResolver.hasServiceNames(getProject(), "App\\Service\\ResourceFooService"));
+
+        myFixture.configureFromExistingVirtualFile(phpFile.getVirtualFile());
+        assertLineMarker(myFixture.getFile(), new LineMarker.ToolTipEqualsAssert("Navigate to definition"));
     }
 
     public void testNavigateToTranslationForConstraintMessage() {

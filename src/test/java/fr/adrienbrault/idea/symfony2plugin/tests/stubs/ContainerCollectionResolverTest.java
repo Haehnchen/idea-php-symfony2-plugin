@@ -1,5 +1,10 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.stubs;
 
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
+import fr.adrienbrault.idea.symfony2plugin.dic.ClassServiceDefinitionTargetLazyValue;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerServiceMetadata;
@@ -8,6 +13,7 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 
@@ -138,7 +144,9 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
 
     public void testThatResourceBasedServicesAreResolved() {
         myFixture.copyFileToProject("ResourceFooService.php", "Service/ResourceFooService.php");
-        myFixture.copyFileToProject("resource_based_services.yml", "config/services.yml");
+        VirtualFile virtualFile = myFixture.copyFileToProject("resource_based_services.yml", "config/services.yml");
+        PsiFile psiFile = PsiManager.getInstance(getProject()).findFile(virtualFile);
+        assertNotNull(psiFile);
 
         assertTrue(ContainerCollectionResolver.hasServiceNames(getProject(), "App\\Service\\ResourceFooService"));
 
@@ -149,6 +157,11 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
         assertTrue(metadata.autoconfigure());
         assertContainsElements(metadata.resource(), "../Service/*");
         assertEmpty(metadata.exclude());
+
+        Collection<? extends PsiElement> targets = new ClassServiceDefinitionTargetLazyValue(getProject(), "\\App\\Service\\ResourceFooService").get();
+        assertTrue(targets.stream().anyMatch(target ->
+            psiFile.equals(target.getContainingFile()) && target.getText().contains("App\\Service\\")
+        ));
     }
 
     public void testThatResourceBasedServiceWithExcludeAttributeIsFiltered() {
