@@ -7,6 +7,7 @@ import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.ProjectActivity;
 import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
@@ -19,7 +20,6 @@ import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -51,7 +51,7 @@ public class Symfony2ProjectComponent {
         return LOG;
     }
 
-    public static Collection<File> getContainerFiles(@NotNull Project project) {
+    public static Collection<VirtualFile> getContainerFiles(@NotNull Project project) {
         Collection<ContainerFile> containerFiles = new ArrayList<>();
 
         List<ContainerFile> settingsContainerFiles = Settings.getInstance(project).containerFiles;
@@ -61,16 +61,17 @@ public class Symfony2ProjectComponent {
                 .toList());
         }
 
-        if(containerFiles.isEmpty()) {
+        if (containerFiles.isEmpty()) {
             for (String s : ServiceContainerUtil.getContainerFiles(project)) {
                 containerFiles.add(new ContainerFile(s));
             }
         }
 
-        Collection<File> validFiles = new ArrayList<>();
-        for(ContainerFile containerFile : containerFiles) {
-            if(containerFile.exists(project)) {
-                validFiles.add(containerFile.getFile(project));
+        Collection<VirtualFile> validFiles = new ArrayList<>();
+        for (ContainerFile containerFile : containerFiles) {
+            VirtualFile virtualFile = containerFile.getVirtualFile(project);
+            if (virtualFile != null && virtualFile.exists()) {
+                validFiles.add(virtualFile);
             }
         }
 

@@ -9,8 +9,6 @@ import fr.adrienbrault.idea.symfony2plugin.ui.dict.AbstractUiFilePath;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
-
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -25,21 +23,16 @@ public class ContainerFile extends AbstractUiFilePath {
     }
 
     @Nullable
-    public File getFile(Project project) {
+    public VirtualFile getVirtualFile(Project project) {
         if (!FileUtil.isAbsolute(this.path)) {
-            VirtualFile virtualFile = VfsUtil.findRelativeFile(this.path, ProjectUtil.getProjectDir(project));
-            if(virtualFile == null) {
-                return null;
-            }
-
-            return VfsUtil.virtualToIoFile(virtualFile);
+            return VfsUtil.findRelativeFile(this.path, ProjectUtil.getProjectDir(project));
         }
 
-        File file = new File(this.path);
-        if(!file.exists()) {
-           return null;
+        VirtualFile virtualFile = VfsUtil.findFileByIoFile(new java.io.File(this.path), false);
+        if (virtualFile == null || !virtualFile.exists()) {
+            return null;
         }
 
-        return file;
+        return virtualFile;
     }
 }
