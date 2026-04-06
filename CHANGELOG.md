@@ -23,6 +23,17 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2026.1.297
+* Add Ant-style fileGlob filtering to MCP collectors (Daniel Espendiller)
+* Merge multiple compiled XML containers (Daniel Espendiller)
+* Migrate container file handling from java.io.File to VirtualFile (Daniel Espendiller)
+* Resolve resource service definitions via metadata in line markers (Daniel Espendiller)
+* Attach metadata to resource-based services in resolver, Pipe autoconfigure flag (Daniel Espendiller)
+* Replace NIO PathMatcher with regex in ServiceResourceGlobMatcher (Daniel Espendiller)
+* Bump IntelliJ platform version to 2026.1 (Daniel Espendiller)
+* Consolidate MCP toolsets into single SymfonyToolset class for respecting mcp server tooling ui (Daniel Espendiller)
+* Remove custom MCP tools management, it's now inside "com.intellij.mcpServer" itself via "Exposed Tools" (Daniel Espendiller)
+
 ## 2026.1.296
 * MCP: Merge Symfony MCP route tools into unified URL/controller listing with linenumber and reverse url matching (Daniel Espendiller)
 * MCP: Improve Symfony service definition generation output with new per-argument suggestions (Daniel Espendiller)
