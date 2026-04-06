@@ -12,9 +12,8 @@ import fr.adrienbrault.idea.symfony2plugin.util.SymfonyVarDirectoryWatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyVarDirectoryWatcherKt;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,15 +53,15 @@ public class ServiceXmlParserFactory {
             throw new IllegalStateException("Failed to instantiate service parser: " + serviceParser.getName(), e);
         }
 
-        Collection<File> settingsServiceFiles = Symfony2ProjectComponent.getContainerFiles(project);
-        for (File settingsServiceFile : settingsServiceFiles) {
-            VirtualFile vf = VfsUtil.findFileByIoFile(settingsServiceFile, false);
+        Collection<VirtualFile> settingsServiceFiles = Symfony2ProjectComponent.getContainerFiles(project);
+        for (VirtualFile vf : settingsServiceFiles) {
             if (vf == null || !vf.exists()) {
                 continue;
             }
-            try {
-                parserInstance.parser(new FileInputStream(settingsServiceFile), vf, project);
-            } catch (FileNotFoundException ignored) {
+
+            try (InputStream inputStream = vf.getInputStream()) {
+                parserInstance.parser(inputStream, vf, project);
+            } catch (IOException ignored) {
             }
         }
 
