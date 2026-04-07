@@ -21,6 +21,7 @@ import java.util.List;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TwigUtilTempTest extends SymfonyTempCodeInsightFixtureTestCase {
+
     /**
      * @see TwigUtil#getPresentableTemplateName
      */

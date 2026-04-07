@@ -3,11 +3,14 @@ package fr.adrienbrault.idea.symfony2plugin.tests.templating.util;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiFile;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
+import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -20,7 +23,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void testGetTemplatePsiElements() {
         myFixture.addFileToProject("res/foo.html.twig", "");
 
-        Settings.getInstance(getProject()).twigNamespaces.addAll(TwigUtilTempTest.createTwigNamespaceSettings());
+        Settings.getInstance(getProject()).twigNamespaces.addAll(createTwigNamespaceSettings());
 
         String[] strings = {
             "@Foo/foo.html.twig", "@!Foo/foo.html.twig", "foo.html.twig", ":foo.html.twig", "@Foo\\foo.html.twig", "::foo.html.twig"
@@ -38,7 +41,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
      * @see TwigUtil#getTemplateNamesForFile
      */
     public void testGetTemplateNamesForFile() {
-        Settings.getInstance(getProject()).twigNamespaces.addAll(TwigUtilTempTest.createTwigNamespaceSettings());
+        Settings.getInstance(getProject()).twigNamespaces.addAll(createTwigNamespaceSettings());
 
         assertContainsElements(
             TwigUtil.getTemplateNamesForFile(getProject(), myFixture.addFileToProject("res/test.html.twig", "").getVirtualFile()),
@@ -57,7 +60,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void testGetTemplateNavigationOnOffset() {
         myFixture.addFileToProject("res/foobar/foo.html.twig", "");
 
-        Settings.getInstance(getProject()).twigNamespaces.addAll(TwigUtilTempTest.createTwigNamespaceSettings());
+        Settings.getInstance(getProject()).twigNamespaces.addAll(createTwigNamespaceSettings());
 
         assertTrue(TwigUtil.getTemplateNavigationOnOffset(getProject(), "foobar/foo.html.twig", 3).stream().anyMatch(psiElement -> psiElement instanceof PsiDirectory && "foobar".equals(((PsiDirectory) psiElement).getName())));
         assertTrue(TwigUtil.getTemplateNavigationOnOffset(getProject(), ":foobar:foo.html.twig", 3).stream().anyMatch(psiElement -> psiElement instanceof PsiDirectory && "foobar".equals(((PsiDirectory) psiElement).getName())));
@@ -74,7 +77,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         myFixture.addFileToProject("res/foobar/foo.html.twig", "");
         myFixture.addFileToProject("res/foobar/apple/foo.html.twig", "");
 
-        Settings.getInstance(getProject()).twigNamespaces.addAll(TwigUtilTempTest.createTwigNamespaceSettings());
+        Settings.getInstance(getProject()).twigNamespaces.addAll(createTwigNamespaceSettings());
 
         assertIsDirectoryAtOffset("@Foo/foobar/foo.html.twig", 2, "res");
         assertIsDirectoryAtOffset("@Foo/foobar\\foo.html.twig", 6, "foobar");
@@ -102,5 +105,15 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
     private void assertIsDirectoryAtOffset(@NotNull String templateName, int offset, @NotNull String directory) {
         assertTrue(TwigUtil.getTemplateTargetOnOffset(getProject(), templateName, offset).stream().anyMatch(psiElement -> psiElement instanceof PsiDirectory && directory.equals(((PsiDirectory) psiElement).getName())));
+    }
+
+    @NotNull
+    private static List<TwigNamespaceSetting> createTwigNamespaceSettings() {
+        return Arrays.asList(
+            new TwigNamespaceSetting("Foo", "res", true, TwigUtil.NamespaceType.ADD_PATH, true),
+            new TwigNamespaceSetting(TwigUtil.MAIN, "res", true, TwigUtil.NamespaceType.ADD_PATH, true),
+            new TwigNamespaceSetting(TwigUtil.MAIN, "res", true, TwigUtil.NamespaceType.BUNDLE, true),
+            new TwigNamespaceSetting("FooBundle", "res", true, TwigUtil.NamespaceType.BUNDLE, true)
+        );
     }
 }
