@@ -51,4 +51,15 @@ public class ConfigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
             psiElement instanceof StringLiteralExpression && ((StringLiteralExpression) psiElement).getContents().equals("foobar_root")
         ));
     }
+
+    /**
+     * @see ConfigUtil#getConfigurations
+     */
+    public void testGetConfigurations() {
+        createFileInProjectRoot("config/packages/twig.yml", "");
+        createFileInProjectRoot("config/packages/twig/config.yaml", "");
+        createFileInProjectRoot("app/config/config_dev.yml", "");
+
+        assertEquals(3, ConfigUtil.getConfigurations(getProject(), "twig").size());
+    }
 }
