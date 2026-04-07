@@ -26,6 +26,7 @@ import java.util.List;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 @SuppressWarnings("deprecation")
+@Deprecated
 abstract public class SymfonyTempCodeInsightFixtureTestCase extends UsefulTestCase {
     private Project project;
 
