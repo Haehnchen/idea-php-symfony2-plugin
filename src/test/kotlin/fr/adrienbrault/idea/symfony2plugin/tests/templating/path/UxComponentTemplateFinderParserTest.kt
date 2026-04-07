@@ -9,12 +9,59 @@ import java.io.ByteArrayInputStream
  * @see UxComponentTemplateFinderParser
  */
 class UxComponentTemplateFinderParserTest : SymfonyLightCodeInsightFixtureTestCase() {
-
-    fun testAbsolutePathWithoutKernelProjectDirIsSkipped() {
-        val xml = UxComponentTemplateFinderParserTempTest.xml("""
+    fun testRelativeDirectoryIsExtracted() {
+        val xml = xml("""
             <service id="ux.twig_component.component_template_finder">
                 <argument type="service" id="twig.loader.native_filesystem"/>
-                <argument>/var/www/project/foobar-ux/</argument>
+                <argument>relative-foobar-ux/</argument>
+            </service>
+        """)
+
+        createFileInProjectRoot("relative-foobar-ux/.keep", "")
+        val containerFile = ensureProjectRootFile("var/cache/dev/container.xml", xml)
+
+        val parser = parse(xml, containerFile)
+
+        assertTrue(parser.templateDirectories.contains("relative-foobar-ux"))
+    }
+
+    fun testNestedSymfonyRootPrefixIsApplied() {
+        val xml = xml("""
+            <service id="ux.twig_component.component_template_finder">
+                <argument type="service" id="twig.loader.native_filesystem"/>
+                <argument>nested-foobar-ux/</argument>
+            </service>
+        """)
+
+        createFileInProjectRoot("symfony-app/nested-foobar-ux/.keep", "")
+        val containerFile = ensureProjectRootFile("symfony-app/var/cache/dev/container.xml", xml)
+
+        val parser = parse(xml, containerFile)
+
+        assertTrue(parser.templateDirectories.contains("symfony-app/nested-foobar-ux"))
+    }
+
+    fun testAbsolutePathIsResolvedViaKernelProjectDir() {
+        val xml = xml("""
+            <service id="ux.twig_component.component_template_finder">
+                <argument type="service" id="twig.loader.native_filesystem"/>
+                <argument>/app/absolute-foobar-ux/</argument>
+            </service>
+        """, kernelProjectDir = "/app")
+
+        createFileInProjectRoot("absolute-foobar-ux/.keep", "")
+        val containerFile = ensureProjectRootFile("var/cache/dev/container.xml", xml)
+
+        val parser = parse(xml, containerFile)
+
+        assertTrue(parser.templateDirectories.contains("absolute-foobar-ux"))
+    }
+
+    fun testAbsolutePathWithoutKernelProjectDirIsSkipped() {
+        val xml = xml("""
+            <service id="ux.twig_component.component_template_finder">
+                <argument type="service" id="twig.loader.native_filesystem"/>
+                <argument>/var/www/project/missing-absolute-foobar-ux/</argument>
             </service>
         """)
 
@@ -26,10 +73,10 @@ class UxComponentTemplateFinderParserTest : SymfonyLightCodeInsightFixtureTestCa
     }
 
     fun testNonExistentPathIsSkipped() {
-        val xml = UxComponentTemplateFinderParserTempTest.xml("""
+        val xml = xml("""
             <service id="ux.twig_component.component_template_finder">
                 <argument type="service" id="twig.loader.native_filesystem"/>
-                <argument>foobar-ux/</argument>
+                <argument>missing-relative-foobar-ux/</argument>
             </service>
         """)
 
@@ -38,6 +85,21 @@ class UxComponentTemplateFinderParserTest : SymfonyLightCodeInsightFixtureTestCa
         val parser = parse(xml, containerFile)
 
         assertTrue(parser.templateDirectories.isEmpty())
+    }
+
+    companion object {
+        fun xml(services: String, kernelProjectDir: String? = null): String {
+            val params = if (kernelProjectDir != null)
+                "<parameters><parameter key=\"kernel.project_dir\">$kernelProjectDir</parameter></parameters>"
+            else ""
+
+            return """<?xml version="1.0" encoding="utf-8"?><container>$params<services>$services</services></container>"""
+        }
+    }
+
+    private fun ensureProjectRootFile(path: String, content: String): com.intellij.openapi.vfs.VirtualFile {
+        createFileInProjectRoot(path, content)
+        return project.baseDir.findFileByRelativePath(path)!!
     }
 
     private fun parse(xml: String, containerFile: com.intellij.openapi.vfs.VirtualFile): UxComponentTemplateFinderParser {
