@@ -1,7 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.translation;
 
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.testFramework.VfsTestUtil;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyTempCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationIndex;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
 
@@ -9,7 +11,7 @@ import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringM
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see TranslationIndex#getTranslationMap
  */
-public class TranslationIndexTest extends SymfonyTempCodeInsightFixtureTestCase {
+public class TranslationIndexTest extends SymfonyLightCodeInsightFixtureTestCase {
 
     // Uses FQN directly so no class definition stub is needed for PHP type resolution
     private static final String CATALOGUE_CONTENT = "<?php\n" +
@@ -29,7 +31,16 @@ public class TranslationIndexTest extends SymfonyTempCodeInsightFixtureTestCase 
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        createFile("translations/catalogue.en.php", CATALOGUE_CONTENT);
+        VirtualFile translationsDirectory = getProject().getBaseDir().findChild("translations");
+        if (translationsDirectory == null) {
+            translationsDirectory = VfsTestUtil.createDir(getProject().getBaseDir(), "translations");
+        }
+
+        VirtualFile catalogueFile = translationsDirectory.findChild("catalogue.en.php");
+        if (catalogueFile == null) {
+            VfsTestUtil.createFile(translationsDirectory, "catalogue.en.php", CATALOGUE_CONTENT);
+        }
+
         Settings.getInstance(getProject()).pathToTranslation = "translations";
     }
 
