@@ -1,15 +1,15 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.translation;
 
-import fr.adrienbrault.idea.symfony2plugin.Settings;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyTempCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationIndex;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.TranslationStringMap;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyVarDirectoryWatcherKt;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see TranslationIndex#getTranslationMap
  */
-public class TranslationIndexTest extends SymfonyTempCodeInsightFixtureTestCase {
+public class TranslationIndexTest extends SymfonyLightCodeInsightFixtureTestCase {
 
     // Uses FQN directly so no class definition stub is needed for PHP type resolution
     private static final String CATALOGUE_CONTENT = "<?php\n" +
@@ -29,8 +29,8 @@ public class TranslationIndexTest extends SymfonyTempCodeInsightFixtureTestCase 
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        createFile("translations/catalogue.en.php", CATALOGUE_CONTENT);
-        Settings.getInstance(getProject()).pathToTranslation = "translations";
+        createFileInProjectRoot("var/cache/dev/translations/catalogue.en.php", CATALOGUE_CONTENT);
+        SymfonyVarDirectoryWatcherKt.getSymfonyVarDirectoryWatcher(getProject()).reloadConfiguration();
     }
 
     public void testGetTranslationMapReturnsDomains() {

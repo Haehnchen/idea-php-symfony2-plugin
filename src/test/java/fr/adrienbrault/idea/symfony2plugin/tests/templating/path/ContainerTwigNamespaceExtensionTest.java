@@ -1,20 +1,15 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.path;
 
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VirtualFile;
 import fr.adrienbrault.idea.symfony2plugin.extension.TwigNamespaceExtensionParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.ContainerTwigNamespaceExtension;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyVarDirectoryWatcherKt;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Collection;
 
 /**
@@ -55,28 +50,5 @@ public class ContainerTwigNamespaceExtensionTest extends SymfonyLightCodeInsight
         assertFalse(namespaces.stream().anyMatch(p ->
             "Twig2".equals(p.getNamespace())
         ));
-    }
-
-    /**
-     * Creates a file directly under project.getBaseDir() so that plugin code using
-     * project.getBaseDir() for path resolution can find it (unlike myFixture.addFileToProject
-     * which targets the module source root).
-     */
-    private void createFileInProjectRoot(String relativePath, String content) {
-        ApplicationManager.getApplication().runWriteAction(() -> {
-            try {
-                String[] parts = relativePath.split("/");
-                VirtualFile baseDir = getProject().getBaseDir();
-                VirtualFile dir = VfsUtil.createDirectoryIfMissing(
-                    baseDir,
-                    StringUtils.join(Arrays.copyOf(parts, parts.length - 1), "/")
-                );
-                VirtualFile file = dir.createChildData(this, parts[parts.length - 1]);
-                if (content != null) {
-                    file.setBinaryContent(content.getBytes());
-                }
-            } catch (IOException ignored) {
-            }
-        });
     }
 }

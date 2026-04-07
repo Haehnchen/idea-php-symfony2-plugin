@@ -14,14 +14,15 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.codeInspection.*;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.lang.javascript.inspections.JSInspection;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.openapi.command.CommandProcessor;
-import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.LanguageFileType;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.TextRange;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
@@ -38,8 +39,10 @@ import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpReference;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -138,6 +141,28 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
         }
     }
 
+    protected void createFileInProjectRoot(@NotNull String relativePath, String content) {
+        VirtualFile[] created = new VirtualFile[1];
+
+        ApplicationManager.getApplication().runWriteAction(() -> {
+            try {
+                String[] parts = relativePath.split("/");
+                VirtualFile baseDir = getProject().getBaseDir();
+                VirtualFile directory = VfsUtil.createDirectoryIfMissing(
+                    baseDir,
+                    StringUtils.join(Arrays.copyOf(parts, parts.length - 1), "/")
+                );
+
+                created[0] = directory.createChildData(this, parts[parts.length - 1]);
+                if (content != null) {
+                    created[0].setBinaryContent(content.getBytes());
+                }
+            } catch (IOException ignored) {
+            }
+        });
+
+    }
+
     private void completionContainsAssert(String[] lookupStrings) {
         if(lookupStrings.length == 0) {
             fail("No lookup element given");
@@ -148,7 +173,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
             fail(String.format("failed that empty completion contains %s", Arrays.toString(lookupStrings)));
         }
 
-        for (String s : Arrays.asList(lookupStrings)) {
+        for (String s : lookupStrings) {
             if(!lookupElements.contains(s)) {
                 fail(String.format("failed that completion contains %s in %s", s, lookupElements.toString()));
             }
