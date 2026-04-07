@@ -1,13 +1,14 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.util;
 
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyTempCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyCommandUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyVarDirectoryWatcherKt;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyCommand;
 
-import java.util.Collection;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Collection;
 
 /**
  * Tests command fallback from compiled container XML via {@link SymfonyCommandUtil}.
@@ -15,7 +16,7 @@ import java.nio.file.Paths;
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see SymfonyCommandUtil#getCommands
  */
-public class SymfonyCommandUtilCompiledContainerTest extends SymfonyTempCodeInsightFixtureTestCase {
+public class SymfonyCommandUtilCompiledContainerTest extends SymfonyLightCodeInsightFixtureTestCase {
 
     private static final String FIXTURE_PATH = "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/util/fixtures/SymfonyCommandUtilCompiledContainerTest.xml";
 
@@ -32,7 +33,8 @@ public class SymfonyCommandUtilCompiledContainerTest extends SymfonyTempCodeInsi
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        createFile("var/cache/dev/App_KernelDevDebugContainer.xml", xml);
+        createFileInProjectRoot("var/cache/dev/App_KernelDevDebugContainer.xml", xml);
+        SymfonyVarDirectoryWatcherKt.getSymfonyVarDirectoryWatcher(getProject()).reloadConfiguration();
 
         Collection<SymfonyCommand> commands = SymfonyCommandUtil.getCommands(getProject());
 
@@ -59,7 +61,8 @@ public class SymfonyCommandUtilCompiledContainerTest extends SymfonyTempCodeInsi
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        createFile("var/cache/dev/App_KernelDevDebugContainer.xml", xml);
+        createFileInProjectRoot("var/cache/dev/App_KernelDevDebugContainer.xml", xml);
+        SymfonyVarDirectoryWatcherKt.getSymfonyVarDirectoryWatcher(getProject()).reloadConfiguration();
 
         Collection<SymfonyCommand> commands = SymfonyCommandUtil.getCommands(getProject());
 
