@@ -7,7 +7,6 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.CachedValue;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
-import com.intellij.psi.util.PsiModificationTracker;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.util.indexing.FileBasedIndex;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
@@ -21,12 +20,15 @@ import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ContainerBuilderCa
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollectorParameter;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceParameterCollector;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceParameterCollectorParameter;
+import com.jetbrains.php.lang.psi.stubs.indexes.PhpClassFqnIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerBuilderStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerParameterStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyVarDirectoryWatcher;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyVarDirectoryWatcherKt;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -91,6 +93,8 @@ public class ContainerCollectionResolver {
             () -> CachedValueProvider.Result.create(
                 getResourceBasedServicesInner(project),
                 FileIndexCaches.getModificationTrackerForIndexId(project, ServicesDefinitionStubIndex.KEY),
+                // Resource prototypes also depend on PHP class FQNs, not only on VFS structure changes.
+                FileIndexCaches.getModificationTrackerForIndexId(project, PhpClassFqnIndex.KEY),
                 VirtualFileManager.VFS_STRUCTURE_MODIFICATIONS
             ),
             false
@@ -535,7 +539,14 @@ public class ContainerCollectionResolver {
             return CachedValuesManager.getManager(project).getCachedValue(
                 project,
                 SYMFONY_SERVICE_COLLECTOR_CACHE,
-                () -> CachedValueProvider.Result.create(new ServiceCollector(project), PsiModificationTracker.MODIFICATION_COUNT),
+                () -> CachedValueProvider.Result.create(
+                    new ServiceCollector(project),
+                    // Keep this cache tied to concrete service data sources instead of broad PSI invalidation.
+                    FileIndexCaches.getModificationTrackerForIndexId(project, ServicesDefinitionStubIndex.KEY),
+                    FileIndexCaches.getModificationTrackerForIndexId(project, PhpAttributeIndex.KEY),
+                    SymfonyVarDirectoryWatcherKt.getSymfonyVarDirectoryWatcher(project).getModificationTracker(SymfonyVarDirectoryWatcher.Scope.CONTAINER),
+                    VirtualFileManager.VFS_STRUCTURE_MODIFICATIONS
+                ),
                 false
             );
         }
@@ -556,7 +567,14 @@ public class ContainerCollectionResolver {
             return CachedValuesManager.getManager(project).getCachedValue(
                 project,
                 SYMFONY_PARAMETER_COLLECTOR_CACHE,
-                () -> CachedValueProvider.Result.create(new ParameterCollector(project), PsiModificationTracker.MODIFICATION_COUNT),
+                () -> CachedValueProvider.Result.create(
+                    new ParameterCollector(project),
+                    // Keep invalidation at index/VFS granularity; finer PHP PSI tracking stays in narrower inner caches.
+                    FileIndexCaches.getModificationTrackerForIndexId(project, ContainerParameterStubIndex.KEY),
+                    FileIndexCaches.getModificationTrackerForIndexId(project, ContainerBuilderStubIndex.KEY),
+                    FileIndexCaches.getModificationTrackerForIndexId(project, PhpClassFqnIndex.KEY),
+                    SymfonyVarDirectoryWatcherKt.getSymfonyVarDirectoryWatcher(project).getModificationTracker(SymfonyVarDirectoryWatcher.Scope.CONTAINER)
+                ),
                 false
             );
         }
