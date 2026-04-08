@@ -96,6 +96,16 @@ public class ServiceIndexUtil {
     }
 
     public static List<PsiElement> findServiceDefinitions(@NotNull Project project, @NotNull String serviceName) {
+        return findServiceDefinitions(project, serviceName, false);
+    }
+
+    @NotNull
+    public static List<PsiElement> findServiceDefinitionBlocks(@NotNull Project project, @NotNull String serviceName) {
+        return findServiceDefinitions(project, serviceName, true);
+    }
+
+    @NotNull
+    private static List<PsiElement> findServiceDefinitions(@NotNull Project project, @NotNull String serviceName, boolean usePhpAttributePsi) {
 
         List<PsiElement> items = new ArrayList<>();
 
@@ -117,7 +127,7 @@ public class ServiceIndexUtil {
             } else if(psiFile instanceof PhpFile) {
                 ServiceContainerUtil.visitFile((PhpFile) psiFile, service -> {
                     if (serviceName.equalsIgnoreCase(service.getServiceId())) {
-                        items.add(service.getPsiElement());
+                        items.add(usePhpAttributePsi ? service.attributes().getPsiElement() : service.getPsiElement());
                     }
                 });
             }
