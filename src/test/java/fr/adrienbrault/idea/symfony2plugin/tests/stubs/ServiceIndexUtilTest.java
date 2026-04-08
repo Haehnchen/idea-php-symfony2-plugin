@@ -6,6 +6,8 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.containers.ContainerUtil;
+import com.jetbrains.php.lang.psi.elements.ArrayHashElement;
+import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceSerializable;
@@ -239,7 +241,19 @@ public class ServiceIndexUtilTest extends SymfonyLightCodeInsightFixtureTestCase
 
         @Override
         public boolean value(PsiElement psiElement) {
-            return psiElement instanceof StringLiteralExpression && this.id.equalsIgnoreCase(((StringLiteralExpression) psiElement).getContents());
+            if (psiElement instanceof StringLiteralExpression) {
+                return this.id.equalsIgnoreCase(((StringLiteralExpression) psiElement).getContents());
+            }
+
+            if (psiElement instanceof MethodReference) {
+                return psiElement.getText().contains("'" + this.id + "'");
+            }
+
+            if (psiElement instanceof ArrayHashElement) {
+                return psiElement.getText().contains("'" + this.id + "'");
+            }
+
+            return false;
         }
     }
 }
