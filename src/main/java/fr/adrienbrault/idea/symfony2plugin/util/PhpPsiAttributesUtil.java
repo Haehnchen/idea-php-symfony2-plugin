@@ -32,6 +32,17 @@ public class PhpPsiAttributesUtil {
     }
 
     public static String getAttributeValueByNameAsString(@NotNull PhpAttribute attribute, int parameter, @NotNull String attributeName) {
+        PsiElement nextSibling = getAttributeValuePsiElement(attribute, parameter, attributeName);
+
+        if (nextSibling != null) {
+            return getAttributeString(attribute, nextSibling);
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public static PsiElement getAttributeValuePsiElement(@NotNull PhpAttribute attribute, int parameter, @NotNull String attributeName) {
         PsiElement nextSibling = findAttributeByName(attribute, attributeName);
 
         //  Workaround: to find / resolve non named argument attribute: "#[Route('/attributesWithoutName', "")]"
@@ -45,11 +56,7 @@ public class PhpPsiAttributesUtil {
             }
         }
 
-        if (nextSibling != null) {
-            return getAttributeString(attribute, nextSibling);
-        }
-
-        return null;
+        return nextSibling;
     }
 
     /**

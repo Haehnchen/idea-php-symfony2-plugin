@@ -1269,7 +1269,15 @@ public class RouteHelper {
                 for (PhpClass phpClass : PhpPsiUtil.findAllClasses((PhpFile) psiFile)) {
                     new AnnotationRouteElementVisitor(pair -> {
                         if (routeName.equalsIgnoreCase(pair.getFirst())) {
-                            targets.add(pair.getSecond());
+                            PsiElement target = pair.getSecond();
+                            if (target instanceof PhpAttribute attribute) {
+                                PsiElement namePsi = PhpPsiAttributesUtil.getAttributeValuePsiElement(attribute, 1, "name");
+                                if (namePsi != null) {
+                                    target = namePsi;
+                                }
+                            }
+
+                            targets.add(target);
                         }
                     }).visitFile(phpClass);
                 }
