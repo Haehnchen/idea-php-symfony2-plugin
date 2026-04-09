@@ -562,12 +562,16 @@ public class FileResourceUtil {
 
         }
 
-        Path normalize = Paths.get(parent.getPath() + File.separatorChar + StringUtils.stripStart(glob, "\\/")).normalize();
-        Pair<String, String> globalPatternDirectory = getGlobalPatternDirectory(normalize.toString());
+        Pair<Path, String> globalPatternDirectory;
+        try {
+            globalPatternDirectory = getGlobRootPath(Paths.get(parent.getPath()), glob);
+        } catch (InvalidPathException ignored) {
+            return Collections.emptyList();
+        }
 
         Collection<VirtualFile> files = new HashSet<>();
         if (globalPatternDirectory.getSecond() == null) {
-            VirtualFile target = VfsUtil.findFile(Paths.get(globalPatternDirectory.getFirst()), false);
+            VirtualFile target = VfsUtil.findFile(globalPatternDirectory.getFirst(), false);
             if (target != null) {
                 files.add(target);
             }
@@ -576,15 +580,23 @@ public class FileResourceUtil {
         }
 
         try {
-            for (Path file : Files.newDirectoryStream(Paths.get(globalPatternDirectory.getFirst()), globalPatternDirectory.getSecond())) {
+            for (Path file : Files.newDirectoryStream(globalPatternDirectory.getFirst(), globalPatternDirectory.getSecond())) {
                 VirtualFile target = VfsUtil.findFile(file, false);
                 if (target != null) {
                     files.add(target);
                 }
             }
-        } catch (PatternSyntaxException | IOException ignored) {
+        } catch (PatternSyntaxException | IOException | InvalidPathException ignored) {
         }
 
         return files;
+    }
+
+    @NotNull
+    public static Pair<Path, String> getGlobRootPath(@NotNull Path parentPath, @NotNull String glob) {
+        String resourcePath = StringUtils.stripStart(glob, "\\/").replace("\\", "/");
+        Pair<String, String> globalPatternDirectory = getGlobalPatternDirectory(resourcePath);
+
+        return new Pair<>(parentPath.resolve(globalPatternDirectory.getFirst()).normalize(), globalPatternDirectory.getSecond());
     }
 }

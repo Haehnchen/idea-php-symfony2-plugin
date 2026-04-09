@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 
 /**
@@ -64,6 +65,16 @@ public class FileResourceUtilTest extends SymfonyLightCodeInsightFixtureTestCase
         globalPatternDirectory = FileResourceUtil.getGlobalPatternDirectory("src/");
         assertEquals("src/", globalPatternDirectory.getFirst());
         assertNull(globalPatternDirectory.getSecond());
+    }
+
+    public void testGetGlobRootPathForMixedSeparators() {
+        Pair<Path, String> globRootPath = FileResourceUtil.getGlobRootPath(
+            Paths.get("//wsl.localhost/Ubuntu-24.04/var/www/oldjit/jit-old/new-jit/config"),
+            "..\\src/AppBundle/Command/*"
+        );
+
+        assertEquals(Paths.get("//wsl.localhost/Ubuntu-24.04/var/www/oldjit/jit-old/new-jit/src/AppBundle/Command"), globRootPath.getFirst());
+        assertEquals("*", globRootPath.getSecond());
     }
 
     public void testFileResources() {
@@ -158,6 +169,22 @@ public class FileResourceUtilTest extends SymfonyLightCodeInsightFixtureTestCase
         assertTrue(FileResourceUtil.hasFileResourceTargets(getProject(), configFile, "./legacy_config_*.php"));
 
         Collection<PsiElement> targets = FileResourceUtil.getFileResourceTargets(getProject(), configFile, "./legacy_config_*.php");
+        assertTrue(targets.stream().anyMatch(psiElement -> psiElement instanceof PsiFile psiFile && "legacy_config_one.php".equals(psiFile.getName())));
+    }
+
+    public void testGetFileResourceTargetsForPhpGlobWithBackslashes() throws IOException {
+        Path root = Files.createTempDirectory("symfony-resource-php-backslash");
+
+        createLocalFile(root.resolve("config/packages/config.php"), "<?php return [];\n");
+        createLocalFile(root.resolve("config/packages/legacy_config_one.php"), "<?php return [];\n");
+        createLocalFile(root.resolve("config/packages/legacy_config_two.php"), "<?php return [];\n");
+
+        PsiFile configFile = getPsiFile(root.resolve("config/packages/config.php"));
+        assertNotNull(configFile);
+
+        assertTrue(FileResourceUtil.hasFileResourceTargets(getProject(), configFile, ".\\legacy_config_*.php"));
+
+        Collection<PsiElement> targets = FileResourceUtil.getFileResourceTargets(getProject(), configFile, ".\\legacy_config_*.php");
         assertTrue(targets.stream().anyMatch(psiElement -> psiElement instanceof PsiFile psiFile && "legacy_config_one.php".equals(psiFile.getName())));
     }
 
