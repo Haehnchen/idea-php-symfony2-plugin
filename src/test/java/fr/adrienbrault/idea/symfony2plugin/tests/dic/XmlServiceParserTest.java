@@ -19,6 +19,11 @@ public class XmlServiceParserTest extends SymfonyLightCodeInsightFixtureTestCase
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?><container><service id=\"kernel.service\" class=\"App\\\\Kernel\\\\KernelService\"/></container>"
         ).getVirtualFile();
 
+        VirtualFile appContainer = myFixture.addFileToProject(
+            "var/cache/dev/Project_Core_AppDevDebugContainer.xml",
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?><container><service id=\"app.flags\" class=\"App\\\\Flags\\\\Service\" autowire=\"true\" autoconfigure=\"true\" lazy=\"true\" abstract=\"true\"/></container>"
+        ).getVirtualFile();
+
         XmlServiceParser parser = new XmlServiceParser();
 
         try (InputStream inputStream = installerContainer.getInputStream()) {
@@ -29,8 +34,23 @@ public class XmlServiceParserTest extends SymfonyLightCodeInsightFixtureTestCase
             parser.parser(inputStream, kernelContainer, getProject());
         }
 
+        try (InputStream inputStream = appContainer.getInputStream()) {
+            parser.parser(inputStream, appContainer, getProject());
+        }
+
         assertTrue(parser.getServiceMap().getIds().contains("installer.service"));
         assertTrue(parser.getServiceMap().getIds().contains("kernel.service"));
-        assertEquals(2, parser.getServiceMap().getServices().size());
+        assertTrue(parser.getServiceMap().getIds().contains("app.flags"));
+        assertEquals(3, parser.getServiceMap().getServices().size());
+
+        var flaggedService = parser.getServiceMap().getServices().stream()
+            .filter(service -> "app.flags".equals(service.getId()))
+            .findFirst()
+            .orElseThrow();
+
+        assertTrue(flaggedService.isAutowire());
+        assertTrue(flaggedService.isAutoconfigure());
+        assertTrue(flaggedService.isLazy());
+        assertTrue(flaggedService.isAbstract());
     }
 }
