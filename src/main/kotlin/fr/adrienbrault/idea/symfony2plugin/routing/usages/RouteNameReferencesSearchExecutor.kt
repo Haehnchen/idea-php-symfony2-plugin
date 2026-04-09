@@ -23,6 +23,7 @@ import com.jetbrains.twig.TwigFile
 import com.jetbrains.twig.TwigFileType
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteReference
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigRouteUsageStubIndex
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.getTwigRouteUsages
 
 /**
  * Collects route usages for Find Usages.
@@ -71,7 +72,7 @@ class RouteNameReferencesSearchExecutor : QueryExecutor<PsiReference, References
                 return@processValues true
             }
 
-            for (usage in TwigRouteUsageStubIndex.getRouteUsages(psiFile, setOf(routeName))) {
+            for (usage in getTwigRouteUsages(psiFile, setOf(routeName))) {
                 if (!processed.add(usage.target)) {
                     continue
                 }

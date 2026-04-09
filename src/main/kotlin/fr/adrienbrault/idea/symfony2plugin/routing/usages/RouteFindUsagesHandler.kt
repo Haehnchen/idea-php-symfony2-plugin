@@ -30,7 +30,7 @@ class RouteFindUsagesHandler(psiElement: PsiElement) : FindUsagesHandler(psiElem
         element: PsiElement,
         processor: Processor<in UsageInfo>,
         options: FindUsagesOptions,
-    ): Boolean = super.processElementUsages(unwrap(element), processor, options)
+    ): Boolean = super.processElementUsages(unwrapRouteFindUsagesElement(element), processor, options)
 
     /**
      * Applies the same unwrap logic for text usage searching.
@@ -39,7 +39,7 @@ class RouteFindUsagesHandler(psiElement: PsiElement) : FindUsagesHandler(psiElem
         element: PsiElement,
         processor: Processor<in UsageInfo>,
         searchScope: GlobalSearchScope,
-    ): Boolean = super.processUsagesInText(unwrap(element), processor, searchScope)
+    ): Boolean = super.processUsagesInText(unwrapRouteFindUsagesElement(element), processor, searchScope)
 
     /**
      * Presentation-only wrapper for the top Find Usages node of a route declaration.
@@ -59,17 +59,15 @@ class RouteFindUsagesHandler(psiElement: PsiElement) : FindUsagesHandler(psiElem
             override fun getIcon(open: Boolean): Icon = this@RouteFindUsagesNavigationItem.getIcon(open)
         }
     }
+}
 
-    companion object {
-        /**
-         * Converts the synthetic navigation item back into the underlying declaration PSI.
-         */
-        private fun unwrap(element: PsiElement): PsiElement {
-            return if (element is RouteFindUsagesNavigationItem) {
-                element.delegate
-            } else {
-                element
-            }
-        }
+/**
+ * Converts the synthetic navigation item back into the underlying declaration PSI.
+ */
+private fun unwrapRouteFindUsagesElement(element: PsiElement): PsiElement {
+    return if (element is RouteFindUsagesHandler.RouteFindUsagesNavigationItem) {
+        element.delegate
+    } else {
+        element
     }
 }
