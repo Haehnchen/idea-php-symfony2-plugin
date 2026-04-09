@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<container>
+    <service id="App\Service\ResourceFooService"
+             class="App\Service\ResourceFooService"
+             public="false"
+             lazy="true"
+             abstract="true"
+             autowire="true">
+        <tag name="compiled_tag"/>
+    </service>
+</container>

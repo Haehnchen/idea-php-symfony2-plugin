@@ -145,20 +145,40 @@ public class ContainerCollectionResolver {
                 for (String phpClass : phpClasses) {
                     String fqn = StringUtils.stripStart(phpClass, "\\");
                     ContainerService containerService = services.computeIfAbsent(fqn, key -> new ContainerService(fqn, fqn, true));
-                    containerService.addMetadata(new ContainerServiceMetadata(
-                        service.getId(),
-                        service.isAutowire(),
-                        service.isAutoconfigure(),
-                        service.getTags(),
-                        service.getResource(),
-                        service.getExclude(),
-                        ContainerServiceMetadata.SourceKind.RESOURCE_PROTOTYPE
-                    ));
+                    containerService.addMetadata(toMetadata(service, ContainerServiceMetadata.SourceKind.RESOURCE_PROTOTYPE));
                 }
             }
         }
 
         return services;
+    }
+
+    @NotNull
+    private static ContainerServiceMetadata toMetadata(@NotNull ServiceInterface service, @NotNull ContainerServiceMetadata.SourceKind sourceKind) {
+        return new ContainerServiceMetadata(
+            service.getId().endsWith("\\") ? service.getId() : null,
+            service.isLazy(),
+            service.isAbstract(),
+            service.isAutowire(),
+            service.isAutoconfigure(),
+            service.getTags(),
+            service.getResource(),
+            service.getExclude(),
+            sourceKind
+        );
+    }
+
+    private static void addCompiledContainerService(@NotNull Map<String, ContainerService> services, @NotNull ServiceInterface entry) {
+        if (entry.getClassName() == null) {
+            return;
+        }
+
+        ContainerService containerService = services.computeIfAbsent(
+            entry.getId(),
+            key -> new ContainerService(entry.getId(), entry.getClassName(), false, !entry.isPublic())
+        );
+
+        containerService.addMetadata(toMetadata(entry, ContainerServiceMetadata.SourceKind.COMPILED_CONTAINER));
     }
 
     @Nullable
@@ -315,13 +335,16 @@ public class ContainerCollectionResolver {
             for(ServiceInterface entry: ServiceXmlParserFactory.getInstance(project, XmlServiceParser.class).getServiceMap().getServices()) {
                 // compiled container owns all class names in resolved state
                 // api safe check
-                if(entry.getClassName() != null) {
-                    services.put(entry.getId(), new ContainerService(entry.getId(), entry.getClassName()));
-                }
+                addCompiledContainerService(services, entry);
             }
 
             // Add resource-based services (auto-loaded from namespace patterns)
-            services.putAll(getResourceBasedServices(project));
+            for (Map.Entry<String, ContainerService> entry : getResourceBasedServices(project).entrySet()) {
+                ContainerService existing = services.putIfAbsent(entry.getKey(), entry.getValue());
+                if (existing != null) {
+                    existing.addMetadata(entry.getValue().getMetadata());
+                }
+            }
 
             Collection<ServiceInterface> aliases = new ArrayList<>();
             Collection<ServiceInterface> decorated = new ArrayList<>();
@@ -360,6 +383,8 @@ public class ContainerCollectionResolver {
                     // duplicate services
                     ContainerService containerService = services.get(serviceName);
                     if (containerService != null) {
+                        containerService.addMetadata(toMetadata(service, ContainerServiceMetadata.SourceKind.INDEXED_SERVICE));
+
                         if(classValue == null) {
                             continue;
                         }
@@ -400,7 +425,9 @@ public class ContainerCollectionResolver {
                     }
 
                     // @TODO: legacy bridge; replace this with ServiceInterface
-                    services.put(serviceName, new ContainerService(service, classValue));
+                    ContainerService indexedService = new ContainerService(service, classValue);
+                    indexedService.addMetadata(toMetadata(service, ContainerServiceMetadata.SourceKind.INDEXED_SERVICE));
+                    services.put(serviceName, indexedService);
                 }
             }
 

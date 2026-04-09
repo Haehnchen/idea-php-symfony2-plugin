@@ -31,9 +31,13 @@ public class ContainerService {
     @Nullable
     private Boolean cachedMetadataAutowire;
     @Nullable
+    private Boolean cachedMetadataAutoconfigure;
+    @Nullable
     private Boolean cachedResourcePrototypeMetadata;
     @Nullable
     private Set<String> cachedResourceServiceIds;
+    @Nullable
+    private Set<String> cachedTags;
 
     public ContainerService(@NotNull ServiceInterface service, @Nullable String classResolved) {
         this.service = new MemoryReducedCollectionService(service);
@@ -75,8 +79,10 @@ public class ContainerService {
     public void addMetadata(@NotNull ContainerServiceMetadata metadata) {
         if (this.metadata.add(metadata)) {
             this.cachedMetadataAutowire = null;
+            this.cachedMetadataAutoconfigure = null;
             this.cachedResourcePrototypeMetadata = null;
             this.cachedResourceServiceIds = null;
+            this.cachedTags = null;
         }
     }
 
@@ -139,6 +145,24 @@ public class ContainerService {
         return cachedMetadataAutowire = false;
     }
 
+    public boolean isAutoconfigureEnabled() {
+        if (service != null && service.isAutoconfigure()) {
+            return true;
+        }
+
+        if (cachedMetadataAutoconfigure != null) {
+            return cachedMetadataAutoconfigure;
+        }
+
+        for (ContainerServiceMetadata containerServiceMetadata : metadata) {
+            if (containerServiceMetadata.autoconfigure()) {
+                return cachedMetadataAutoconfigure = true;
+            }
+        }
+
+        return cachedMetadataAutoconfigure = false;
+    }
+
     public boolean hasResourcePrototypeMetadata() {
         if (cachedResourcePrototypeMetadata != null) {
             return cachedResourcePrototypeMetadata;
@@ -168,6 +192,24 @@ public class ContainerService {
         }
 
         return cachedResourceServiceIds = Collections.unmodifiableSet(resourceServiceIds);
+    }
+
+    @NotNull
+    public Set<String> getTags() {
+        if (cachedTags != null) {
+            return cachedTags;
+        }
+
+        Set<String> tags = new LinkedHashSet<>();
+        if (service != null) {
+            tags.addAll(service.getTags());
+        }
+
+        for (ContainerServiceMetadata containerServiceMetadata : metadata) {
+            tags.addAll(containerServiceMetadata.tags());
+        }
+
+        return cachedTags = Collections.unmodifiableSet(tags);
     }
 
     /**
