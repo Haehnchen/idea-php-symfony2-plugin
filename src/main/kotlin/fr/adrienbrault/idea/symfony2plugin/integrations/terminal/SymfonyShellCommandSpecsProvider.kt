@@ -1,6 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.integrations.terminal
 
-import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.terminal.completion.spec.ShellRuntimeContext
 import fr.adrienbrault.idea.symfony2plugin.Settings
@@ -83,7 +83,7 @@ private suspend fun ShellChildCommandsContext.addSymfonyCommands(runtimeCtx: She
             for (arg in data.arguments.values) {
                 argument {
                     displayName(arg.name())
-                    isOptional = true
+                    optional()
                 }
             }
         }
@@ -91,7 +91,7 @@ private suspend fun ShellChildCommandsContext.addSymfonyCommands(runtimeCtx: She
 }
 
 internal fun collectCommandData(project: Project): List<CommandData> =
-    ReadAction.compute<List<CommandData>, RuntimeException> {
+    ApplicationManager.getApplication().runReadAction<List<CommandData>> {
         SymfonyCommandUtil.getCommands(project).map { command ->
             val phpClass = PhpElementsUtil.getClassInterface(project, command.fqn)
             CommandData(
