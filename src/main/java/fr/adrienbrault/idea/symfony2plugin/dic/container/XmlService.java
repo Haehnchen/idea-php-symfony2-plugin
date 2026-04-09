@@ -25,6 +25,10 @@ public class XmlService implements ServiceInterface {
     private String className = null;
 
     private boolean isPublic = true;
+    private boolean lazy = false;
+    private boolean isAbstract = false;
+    private boolean autowire = false;
+    private boolean autoconfigure = false;
 
     private String alias = null;
 
@@ -49,22 +53,22 @@ public class XmlService implements ServiceInterface {
 
     @Override
     public boolean isLazy() {
-        return false;
+        return lazy;
     }
 
     @Override
     public boolean isAbstract() {
-        return false;
+        return isAbstract;
     }
 
     @Override
     public boolean isAutowire() {
-        return false;
+        return autowire;
     }
 
     @Override
     public boolean isAutoconfigure() {
-        return false;
+        return autoconfigure;
     }
 
     @Override
@@ -158,6 +162,11 @@ public class XmlService implements ServiceInterface {
             xmlService.isPublic = false;
         }
 
+        xmlService.lazy = "true".equalsIgnoreCase(node.getAttribute("lazy"));
+        xmlService.isAbstract = "true".equalsIgnoreCase(node.getAttribute("abstract"));
+        xmlService.autowire = "true".equalsIgnoreCase(node.getAttribute("autowire"));
+        xmlService.autoconfigure = "true".equalsIgnoreCase(node.getAttribute("autoconfigure"));
+
         String alias = node.getAttribute("alias");
         if(StringUtils.isNotBlank(alias)) {
             xmlService.alias = alias;
@@ -184,11 +193,15 @@ public class XmlService implements ServiceInterface {
     }
 
     @NotNull
-    public static XmlService create(@NotNull String id, @NotNull String className, boolean isPublic) {
+    public static XmlService create(@NotNull String id, @NotNull String className, boolean isPublic, boolean lazy, boolean anAbstract, boolean autowire, boolean autoconfigure) {
         XmlService xmlService = new XmlService(id);
 
         xmlService.className = className;
         xmlService.isPublic = isPublic;
+        xmlService.lazy = lazy;
+        xmlService.isAbstract = anAbstract;
+        xmlService.autowire = autowire;
+        xmlService.autoconfigure = autoconfigure;
 
         return xmlService;
     }

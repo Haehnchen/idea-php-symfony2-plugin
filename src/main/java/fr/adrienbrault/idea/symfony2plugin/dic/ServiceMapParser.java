@@ -73,7 +73,11 @@ public class ServiceMapParser {
                     XmlService v = XmlService.create(
                         service.getId(),
                         className,
-                        service.isPublic()
+                        service.isPublic(),
+                        service.isLazy(),
+                        service.isAbstract(),
+                        service.isAutowire(),
+                        service.isAutoconfigure()
                     );
                     services.put(service.getId(), v);
                 }
