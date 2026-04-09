@@ -1,0 +1,9 @@
+services:
+    App\Service\ResourceFooService:
+        class: App\Service\ResourceFooService
+        lazy: true
+        abstract: true
+        autowire: false
+        autoconfigure: false
+        tags:
+            - { name: indexed_tag }

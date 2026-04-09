@@ -1,19 +1,28 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.stubs;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
+import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.dic.ClassServiceDefinitionTargetLazyValue;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerServiceMetadata;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyVarDirectoryWatcherKt;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -204,6 +213,81 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
         assertEmpty(metadata.exclude());
     }
 
+    public void testThatCompiledContainerMetadataIsMergedIntoExistingService() throws IOException {
+        myFixture.copyFileToProject("ResourceFooService.php", "Service/ResourceFooService.php");
+        myFixture.copyFileToProject("resource_based_services_merge.yml", "config/services.yml");
+        String containerXml = new String(Files.readAllBytes(Paths.get(
+            "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/stubs/fixtures/compiled_container_merge.xml"
+        )));
+        createFileInProjectRoot("var/cache/dev/App_KernelDevDebugContainer.xml", containerXml);
+        Settings settings = Settings.getInstance(getProject());
+        List<ContainerFile> previousContainerFiles = settings.containerFiles;
+        try {
+            settings.containerFiles = List.of(new ContainerFile("var/cache/dev/App_KernelDevDebugContainer.xml"));
+            SymfonyVarDirectoryWatcherKt.getSymfonyVarDirectoryWatcher(getProject()).reloadConfiguration();
+
+            ContainerService merged = ContainerCollectionResolver.getService(getProject(), "App\\Service\\ResourceFooService");
+            assertNotNull(merged);
+            assertEquals("App\\Service\\ResourceFooService", merged.getClassName());
+            assertTrue(merged.isAutowireEnabled());
+            assertTrue(merged.isAutoconfigureEnabled());
+            assertContainsElements(merged.getTags(), "resource_tag", "compiled_tag");
+            assertEquals(2, merged.getMetadata().size());
+            assertTrue(merged.getMetadata().stream().anyMatch(metadata -> metadata.sourceKind() == ContainerServiceMetadata.SourceKind.RESOURCE_PROTOTYPE));
+            ContainerServiceMetadata compiledMetadata = merged.getMetadata().stream()
+                .filter(metadata -> metadata.sourceKind() == ContainerServiceMetadata.SourceKind.COMPILED_CONTAINER)
+                .findFirst()
+                .orElseThrow();
+            assertTrue(compiledMetadata.lazy());
+            assertTrue(compiledMetadata.abstractDefinition());
+            assertContainsElements(compiledMetadata.tags(), "compiled_tag");
+
+            ContainerServiceMetadata resourceMetadata = getResourcePrototypeMetadata(merged, "App\\Service\\");
+            assertTrue(resourceMetadata.autoconfigure());
+            assertContainsElements(resourceMetadata.resource(), "../Service/*");
+            assertContainsElements(resourceMetadata.tags(), "resource_tag");
+        } finally {
+            settings.containerFiles = previousContainerFiles != null ? previousContainerFiles : new ArrayList<>();
+
+            VirtualFile compiledFile = getProject().getBaseDir().findFileByRelativePath("var/cache/dev/App_KernelDevDebugContainer.xml");
+            if (compiledFile != null) {
+                ApplicationManager.getApplication().runWriteAction(() -> {
+                    try {
+                        compiledFile.delete(this);
+                    } catch (IOException ignored) {
+                    }
+                });
+            }
+
+            SymfonyVarDirectoryWatcherKt.getSymfonyVarDirectoryWatcher(getProject()).reloadConfiguration();
+        }
+    }
+
+    public void testThatIndexedServiceMetadataIsMergedIntoExistingResourceService() {
+        myFixture.copyFileToProject("ResourceFooService.php", "Service/ResourceFooService.php");
+        myFixture.copyFileToProject("resource_based_services_merge.yml", "config/services.yml");
+        myFixture.copyFileToProject("indexed_service_merge.yml", "config/services_merge.yml");
+
+        ContainerService merged = ContainerCollectionResolver.getService(getProject(), "App\\Service\\ResourceFooService");
+        assertNotNull(merged);
+        assertEquals("App\\Service\\ResourceFooService", merged.getClassName());
+        assertTrue(merged.isAutowireEnabled());
+        assertTrue(merged.isAutoconfigureEnabled());
+        assertContainsElements(merged.getTags(), "resource_tag", "indexed_tag");
+
+        ContainerServiceMetadata resourceMetadata = getResourcePrototypeMetadata(merged, "App\\Service\\");
+        assertTrue(resourceMetadata.autoconfigure());
+        assertContainsElements(resourceMetadata.resource(), "../Service/*");
+        assertContainsElements(resourceMetadata.tags(), "resource_tag");
+
+        ContainerServiceMetadata indexedMetadata = getMetadataBySourceKind(merged, ContainerServiceMetadata.SourceKind.INDEXED_SERVICE);
+        assertTrue(indexedMetadata.lazy());
+        assertTrue(indexedMetadata.abstractDefinition());
+        assertFalse(indexedMetadata.autowire());
+        assertFalse(indexedMetadata.autoconfigure());
+        assertContainsElements(indexedMetadata.tags(), "indexed_tag");
+    }
+
     public void testThatPhpArrayResourceBasedServicesRespectPerEntryAutowireOverride() {
         myFixture.copyFileToProject("ResourceFooService.php", "Service/ResourceFooService.php");
         myFixture.copyFileToProject("resource_based_services_autowire_false.php", "config/services.php");
@@ -242,6 +326,14 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
     private static ContainerServiceMetadata getResourcePrototypeMetadata(@NotNull ContainerService service, @NotNull String resourceServiceId) {
         return service.getMetadata().stream()
             .filter(metadata -> Objects.equals(resourceServiceId, metadata.resourceServiceId()))
+            .findFirst()
+            .orElseThrow();
+    }
+
+    @NotNull
+    private static ContainerServiceMetadata getMetadataBySourceKind(@NotNull ContainerService service, @NotNull ContainerServiceMetadata.SourceKind sourceKind) {
+        return service.getMetadata().stream()
+            .filter(metadata -> metadata.sourceKind() == sourceKind)
             .findFirst()
             .orElseThrow();
     }

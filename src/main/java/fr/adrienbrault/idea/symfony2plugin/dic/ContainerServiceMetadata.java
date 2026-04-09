@@ -17,6 +17,8 @@ import java.util.Set;
 public record ContainerServiceMetadata(
     // Optional resource/prototype definition id that expanded this class, eg "App\\"
     @Nullable String resourceServiceId,
+    boolean lazy,
+    boolean abstractDefinition,
     boolean autowire,
     boolean autoconfigure,
     @NotNull Set<String> tags,
@@ -28,6 +30,8 @@ public record ContainerServiceMetadata(
 ) {
     public ContainerServiceMetadata(
         @Nullable String resourceServiceId,
+        boolean lazy,
+        boolean abstractDefinition,
         boolean autowire,
         boolean autoconfigure,
         @NotNull Collection<String> tags,
@@ -37,6 +41,8 @@ public record ContainerServiceMetadata(
     ) {
         this(
             resourceServiceId,
+            lazy,
+            abstractDefinition,
             autowire,
             autoconfigure,
             normalize(tags),
@@ -53,6 +59,8 @@ public record ContainerServiceMetadata(
     }
 
     public enum SourceKind {
-        RESOURCE_PROTOTYPE
+        RESOURCE_PROTOTYPE,
+        COMPILED_CONTAINER,
+        INDEXED_SERVICE
     }
 }
