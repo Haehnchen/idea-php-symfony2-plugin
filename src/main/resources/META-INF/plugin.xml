@@ -290,6 +290,7 @@
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.SerializerClassUsageStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.UxTemplateStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigComponentUsageStubIndex"/>
+        <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigRouteUsageStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigBlockEmbedIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ConfigStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeIndex"/>
@@ -810,6 +811,12 @@
             <className>fr.adrienbrault.idea.symfony2plugin.intentions.php.TwigExtensionToAttributeIntention</className>
             <category>Symfony</category>
         </intentionAction>
+
+        <!-- route name targets on twig, yaml, php -->
+        <usageTargetProvider implementation="fr.adrienbrault.idea.symfony2plugin.routing.usages.RouteUsageTargetProvider"/>
+        <findUsagesHandlerFactory implementation="fr.adrienbrault.idea.symfony2plugin.routing.usages.RouteFindUsagesHandlerFactory"/>
+        <usageTypeProvider implementation="fr.adrienbrault.idea.symfony2plugin.routing.usages.RouteUsageTypeProvider"/>
+        <referencesSearch implementation="fr.adrienbrault.idea.symfony2plugin.routing.usages.RouteNameReferencesSearchExecutor"/>
 
         <referencesSearch implementation="fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigTemplateReferencesSearchExecutor"/>
         <usageTypeProvider implementation="fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigTemplateUsageTypeProvider"/>
