@@ -9,7 +9,7 @@ import com.intellij.ide.actions.runAnything.items.RunAnythingItem
 import com.intellij.ide.actions.runAnything.items.RunAnythingItemBase
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
-import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.application.ApplicationManager
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
 import fr.adrienbrault.idea.symfony2plugin.dic.command.SymfonyCommandRunConfiguration
@@ -36,7 +36,7 @@ class SymfonyConsoleRunAnythingProvider : RunAnythingProviderBase<SymfonyCommand
 
         val lowerPattern = pattern.lowercase().trim()
 
-        return ReadAction.compute<Collection<SymfonyCommand>, RuntimeException> {
+        return ApplicationManager.getApplication().runReadAction<Collection<SymfonyCommand>> {
             SymfonyCommandUtil.getCommands(project!!)
                 .filter { lowerPattern in it.name.lowercase() }
         }
