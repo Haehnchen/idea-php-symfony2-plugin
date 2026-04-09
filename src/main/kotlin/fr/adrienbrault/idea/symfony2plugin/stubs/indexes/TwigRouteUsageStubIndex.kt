@@ -34,7 +34,7 @@ class TwigRouteUsageStubIndex : FileBasedIndexExtension<String, Set<String>>() {
             return@DataIndexer map
         }
 
-        for (usage in getRouteUsages(psiFile)) {
+        for (usage in collectTwigRouteUsages(psiFile)) {
             map.putIfAbsent(usage.routeName, hashSetOf())
             map[usage.routeName]!!.add(usage.kind.name.lowercase(Locale.ROOT))
         }
@@ -68,98 +68,96 @@ class TwigRouteUsageStubIndex : FileBasedIndexExtension<String, Set<String>>() {
 
         private val KEY_DESCRIPTOR: KeyDescriptor<String> = EnumeratorStringDescriptor()
         private val DATA_EXTERNALIZER: DataExternalizer<Set<String>> = StringSetDataExternalizer()
+    }
+}
 
-        @JvmStatic
-        fun getRouteUsages(twigFile: TwigFile, routeNames: Collection<String>): Collection<Usage> {
-            if (routeNames.isEmpty()) {
-                return emptyList()
-            }
+fun getTwigRouteUsages(twigFile: TwigFile, routeNames: Collection<String>): Collection<TwigRouteUsageStubIndex.Usage> {
+    if (routeNames.isEmpty()) {
+        return emptyList()
+    }
 
-            val routeNameSet = routeNames.toHashSet()
-            val usages = LinkedHashSet<Usage>()
-            for (usage in getRouteUsages(twigFile)) {
-                if (routeNameSet.contains(usage.routeName)) {
+    val routeNameSet = routeNames.toHashSet()
+    val usages = LinkedHashSet<TwigRouteUsageStubIndex.Usage>()
+    for (usage in collectTwigRouteUsages(twigFile)) {
+        if (routeNameSet.contains(usage.routeName)) {
+            usages.add(usage)
+        }
+    }
+
+    return usages
+}
+
+fun getTwigRouteUsageKind(element: PsiElement): TwigRouteUsageStubIndex.UsageKind? {
+    if (element.node == null ||
+        element.node.elementType != TwigTokenTypes.STRING_TEXT ||
+        !TwigUtil.isValidStringWithoutInterpolatedOrConcat(element)
+    ) {
+        return null
+    }
+
+    if (TwigPattern.getAutocompletableRoutePattern().accepts(element)) {
+        return getTwigFunctionUsage(element)?.kind
+    }
+
+    if (TwigPattern.getTwigRouteComparePattern().accepts(element) && TwigPattern.isRouteCompareContext(element)) {
+        return TwigRouteUsageStubIndex.UsageKind.COMPARE
+    }
+
+    if (TwigPattern.getTwigRouteSameAsPattern().accepts(element) && TwigPattern.isRouteCompareContext(element)) {
+        return TwigRouteUsageStubIndex.UsageKind.SAME_AS
+    }
+
+    if (TwigPattern.getTwigRouteInArrayPattern().accepts(element) && TwigPattern.isRouteCompareContext(element)) {
+        return TwigRouteUsageStubIndex.UsageKind.IN_ARRAY
+    }
+
+    return null
+}
+
+private fun collectTwigRouteUsages(twigFile: TwigFile): Collection<TwigRouteUsageStubIndex.Usage> {
+    val usages = LinkedHashSet<TwigRouteUsageStubIndex.Usage>()
+    twigFile.accept(object : PsiRecursiveElementVisitor() {
+        override fun visitElement(element: PsiElement) {
+            if (element.node != null && element.node.elementType == TwigTokenTypes.STRING_TEXT) {
+                val usageKind = getTwigRouteUsageKind(element)
+                val usage = usageKind?.let { TwigRouteUsageStubIndex.Usage(element.text, element, it) }
+                if (usage != null && StringUtils.isNotBlank(usage.routeName)) {
                     usages.add(usage)
                 }
             }
 
-            return usages
+            super.visitElement(element)
         }
+    })
 
-        @JvmStatic
-        fun getUsageKind(element: PsiElement): UsageKind? {
-            if (element.node == null ||
-                element.node.elementType != TwigTokenTypes.STRING_TEXT ||
-                !TwigUtil.isValidStringWithoutInterpolatedOrConcat(element)
-            ) {
-                return null
-            }
+    return usages
+}
 
-            if (TwigPattern.getAutocompletableRoutePattern().accepts(element)) {
-                return getFunctionUsage(element)?.kind
-            }
-
-            if (TwigPattern.getTwigRouteComparePattern().accepts(element) && TwigPattern.isRouteCompareContext(element)) {
-                return UsageKind.COMPARE
-            }
-
-            if (TwigPattern.getTwigRouteSameAsPattern().accepts(element) && TwigPattern.isRouteCompareContext(element)) {
-                return UsageKind.SAME_AS
-            }
-
-            if (TwigPattern.getTwigRouteInArrayPattern().accepts(element) && TwigPattern.isRouteCompareContext(element)) {
-                return UsageKind.IN_ARRAY
-            }
-
-            return null
-        }
-
-        private fun getRouteUsages(twigFile: TwigFile): Collection<Usage> {
-            val usages = LinkedHashSet<Usage>()
-            twigFile.accept(object : PsiRecursiveElementVisitor() {
-                override fun visitElement(element: PsiElement) {
-                    if (element.node != null && element.node.elementType == TwigTokenTypes.STRING_TEXT) {
-                        val usageKind = getUsageKind(element)
-                        val usage = usageKind?.let { Usage(element.text, element, it) }
-                        if (usage != null && StringUtils.isNotBlank(usage.routeName)) {
-                            usages.add(usage)
-                        }
-                    }
-
-                    super.visitElement(element)
-                }
-            })
-
-            return usages
-        }
-
-        private fun getFunctionUsage(element: PsiElement): Usage? {
-            return when (getPrecedingFunctionName(element)) {
-                "path" -> Usage(element.text, element, UsageKind.PATH)
-                "url" -> Usage(element.text, element, UsageKind.URL)
-                else -> null
-            }
-        }
-
-        private fun getPrecedingFunctionName(element: PsiElement): String? {
-            var prev = PsiTreeUtil.prevLeaf(element)
-            while (prev != null) {
-                if (prev.node == null) {
-                    prev = PsiTreeUtil.prevLeaf(prev)
-                    continue
-                }
-
-                if (prev.node.elementType == TwigTokenTypes.IDENTIFIER) {
-                    val text = prev.text
-                    if (text == "path" || text == "url") {
-                        return text
-                    }
-                }
-
-                prev = PsiTreeUtil.prevLeaf(prev)
-            }
-
-            return null
-        }
+private fun getTwigFunctionUsage(element: PsiElement): TwigRouteUsageStubIndex.Usage? {
+    return when (getTwigPrecedingFunctionName(element)) {
+        "path" -> TwigRouteUsageStubIndex.Usage(element.text, element, TwigRouteUsageStubIndex.UsageKind.PATH)
+        "url" -> TwigRouteUsageStubIndex.Usage(element.text, element, TwigRouteUsageStubIndex.UsageKind.URL)
+        else -> null
     }
+}
+
+private fun getTwigPrecedingFunctionName(element: PsiElement): String? {
+    var prev = PsiTreeUtil.prevLeaf(element)
+    while (prev != null) {
+        if (prev.node == null) {
+            prev = PsiTreeUtil.prevLeaf(prev)
+            continue
+        }
+
+        if (prev.node.elementType == TwigTokenTypes.IDENTIFIER) {
+            val text = prev.text
+            if (text == "path" || text == "url") {
+                return text
+            }
+        }
+
+        prev = PsiTreeUtil.prevLeaf(prev)
+    }
+
+    return null
 }

@@ -6,7 +6,7 @@ import com.intellij.usages.UsageTarget
 import com.intellij.usages.impl.rules.UsageType
 import com.intellij.usages.impl.rules.UsageTypeProviderEx
 import com.jetbrains.php.lang.psi.PhpFile
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigRouteUsageStubIndex
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.getTwigRouteUsageKind
 
 /**
  * Groups route usages in the Usage View into the user-facing buckets shown in the tree.
@@ -24,7 +24,7 @@ class RouteUsageTypeProvider : UsageTypeProviderEx {
      * Classifies each route usage only when the current search target is a route declaration.
      */
     override fun getUsageType(element: PsiElement, targets: Array<out UsageTarget>): UsageType? {
-        if (!isRouteDeclarationTarget(targets)) {
+        if (!isRouteDeclarationTargetForUsageType(targets)) {
             return null
         }
 
@@ -32,41 +32,39 @@ class RouteUsageTypeProvider : UsageTypeProviderEx {
             return PHP
         }
 
-        return if (TwigRouteUsageStubIndex.getUsageKind(element) != null) TWIG else null
+        return if (getTwigRouteUsageKind(element) != null) TWIG else null
+    }
+}
+
+private val TWIG = UsageType { "Twig" }
+private val PHP = UsageType { "PHP" }
+
+/**
+ * Confirms that the current Usage View really belongs to a route declaration target.
+ */
+private fun isRouteDeclarationTargetForUsageType(targets: Array<out UsageTarget>): Boolean {
+    for (target in targets) {
+        val element = getRouteUsageTargetElement(target)
+        if (element != null && RouteUsageUtil.getRouteNameForDeclaration(element) != null) {
+            return true
+        }
     }
 
-    companion object {
-        private val TWIG = UsageType { "Twig" }
-        private val PHP = UsageType { "PHP" }
+    return false
+}
 
-        /**
-         * Confirms that the current Usage View really belongs to a route declaration target.
-         */
-        private fun isRouteDeclarationTarget(targets: Array<out UsageTarget>): Boolean {
-            for (target in targets) {
-                val element = getTargetElement(target)
-                if (element != null && RouteUsageUtil.getRouteNameForDeclaration(element) != null) {
-                    return true
-                }
-            }
+/**
+ * Unwraps synthetic usage targets back to the declaration PSI used by the search.
+ */
+private fun getRouteUsageTargetElement(target: UsageTarget): PsiElement? {
+    if (target !is PsiElementUsageTarget) {
+        return null
+    }
 
-            return false
-        }
-
-        /**
-         * Unwraps synthetic usage targets back to the declaration PSI used by the search.
-         */
-        private fun getTargetElement(target: UsageTarget): PsiElement? {
-            if (target !is PsiElementUsageTarget) {
-                return null
-            }
-
-            val element = target.element
-            return if (element is RouteFindUsagesHandler.RouteFindUsagesNavigationItem) {
-                element.delegate
-            } else {
-                element
-            }
-        }
+    val element = target.element
+    return if (element is RouteFindUsagesHandler.RouteFindUsagesNavigationItem) {
+        element.delegate
+    } else {
+        element
     }
 }
