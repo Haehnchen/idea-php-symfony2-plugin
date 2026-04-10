@@ -38,12 +38,16 @@ public class XmlServiceTest extends Assert {
         );
 
         ServiceInterface flaggedService = createServiceFromTag(
-            "<service id=\"foobar\" autowire=\"true\" autoconfigure=\"true\" lazy=\"true\" abstract=\"true\"/>"
+            "<service id=\"foobar\" autowire=\"true\" autoconfigure=\"true\" lazy=\"true\" abstract=\"true\" deprecated=\"true\" parent=\"parent.service\" decorates=\"decorated.service\" decoration-inner-name=\"decorated.inner\"/>"
         );
         assertTrue(flaggedService.isAutowire());
         assertTrue(flaggedService.isAutoconfigure());
         assertTrue(flaggedService.isLazy());
         assertTrue(flaggedService.isAbstract());
+        assertTrue(flaggedService.isDeprecated());
+        assertEquals("parent.service", flaggedService.getParent());
+        assertEquals("decorated.service", flaggedService.getDecorates());
+        assertEquals("decorated.inner", flaggedService.getDecorationInnerName());
 
         assertFalse(
             createServiceFromTag("<service id=\"foobar\" public=\"false\"/>").isPublic()

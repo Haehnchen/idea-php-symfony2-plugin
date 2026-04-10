@@ -219,11 +219,12 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
         String containerXml = new String(Files.readAllBytes(Paths.get(
             "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/stubs/fixtures/compiled_container_merge.xml"
         )));
-        createFileInProjectRoot("var/cache/dev/App_KernelDevDebugContainer.xml", containerXml);
+        String containerPath = "var/cache/dev/" + getTestName(false) + "App_KernelDevDebugContainer.xml";
+        createFileInProjectRoot(containerPath, containerXml);
         Settings settings = Settings.getInstance(getProject());
         List<ContainerFile> previousContainerFiles = settings.containerFiles;
         try {
-            settings.containerFiles = List.of(new ContainerFile("var/cache/dev/App_KernelDevDebugContainer.xml"));
+            settings.containerFiles = List.of(new ContainerFile(containerPath));
             SymfonyVarDirectoryWatcherKt.getSymfonyVarDirectoryWatcher(getProject()).reloadConfiguration();
 
             ContainerService merged = ContainerCollectionResolver.getService(getProject(), "App\\Service\\ResourceFooService");
@@ -249,7 +250,7 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
         } finally {
             settings.containerFiles = previousContainerFiles != null ? previousContainerFiles : new ArrayList<>();
 
-            VirtualFile compiledFile = getProject().getBaseDir().findFileByRelativePath("var/cache/dev/App_KernelDevDebugContainer.xml");
+            VirtualFile compiledFile = getProject().getBaseDir().findFileByRelativePath(containerPath);
             if (compiledFile != null) {
                 ApplicationManager.getApplication().runWriteAction(() -> {
                     try {
@@ -286,6 +287,60 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
         assertFalse(indexedMetadata.autowire());
         assertFalse(indexedMetadata.autoconfigure());
         assertContainsElements(indexedMetadata.tags(), "indexed_tag");
+    }
+
+    public void testThatScalarMetadataUsesIndexedPrecedenceAndPluralAccessorsKeepAllValues() throws IOException {
+        myFixture.addFileToProject("config/services.yml", "" +
+            "services:\n" +
+            "    app.conflict:\n" +
+            "        class: DateTime\n" +
+            "        parent: indexed.parent\n" +
+            "        decorates: indexed.decorates\n" +
+            "        decoration_inner_name: indexed.inner\n"
+        );
+
+        String containerPath = "var/cache/dev/" + getTestName(false) + "App_KernelDevDebugContainer.xml";
+        createFileInProjectRoot(containerPath, "" +
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<container>\n" +
+            "    <service id=\"app.conflict\"\n" +
+            "             class=\"DateTime\"\n" +
+            "             parent=\"compiled.parent\"\n" +
+            "             decorates=\"compiled.decorates\"\n" +
+            "             decoration-inner-name=\"compiled.inner\"\n" +
+            "             deprecated=\"true\"/>\n" +
+            "</container>\n"
+        );
+        Settings settings = Settings.getInstance(getProject());
+        List<ContainerFile> previousContainerFiles = settings.containerFiles;
+        try {
+            settings.containerFiles = List.of(new ContainerFile(containerPath));
+            SymfonyVarDirectoryWatcherKt.getSymfonyVarDirectoryWatcher(getProject()).reloadConfiguration();
+
+            ContainerService merged = ContainerCollectionResolver.getService(getProject(), "app.conflict");
+            assertNotNull(merged);
+            assertContainsElements(merged.getParents(), "indexed.parent", "compiled.parent");
+            assertEquals("indexed.parent", new ArrayList<>(merged.getParents()).get(0));
+            assertContainsElements(merged.getDecoratesValues(), "indexed.decorates", "compiled.decorates");
+            assertEquals("indexed.decorates", new ArrayList<>(merged.getDecoratesValues()).get(0));
+            assertContainsElements(merged.getDecorationInnerNames(), "indexed.inner", "compiled.inner");
+            assertEquals("indexed.inner", new ArrayList<>(merged.getDecorationInnerNames()).get(0));
+            assertFalse(merged.getMetadata().get(0).deprecated());
+        } finally {
+            settings.containerFiles = previousContainerFiles != null ? previousContainerFiles : new ArrayList<>();
+
+            VirtualFile compiledFile = getProject().getBaseDir().findFileByRelativePath(containerPath);
+            if (compiledFile != null) {
+                ApplicationManager.getApplication().runWriteAction(() -> {
+                    try {
+                        compiledFile.delete(this);
+                    } catch (IOException ignored) {
+                    }
+                });
+            }
+
+            SymfonyVarDirectoryWatcherKt.getSymfonyVarDirectoryWatcher(getProject()).reloadConfiguration();
+        }
     }
 
     public void testThatPhpArrayResourceBasedServicesRespectPerEntryAutowireOverride() {

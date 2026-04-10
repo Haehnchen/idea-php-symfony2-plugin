@@ -1,29 +1,33 @@
 package fr.adrienbrault.idea.symfony2plugin.dic;
 
-import fr.adrienbrault.idea.symfony2plugin.dic.container.MemoryReducedCollectionService;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class ContainerService {
-
-    @Nullable
-    private ServiceInterface service;
+    private static final Comparator<ContainerServiceMetadata> METADATA_PRIORITY = Comparator.comparingInt(
+        metadata -> switch (metadata.sourceKind()) {
+            case INDEXED_SERVICE -> 0;
+            case COMPILED_CONTAINER -> 1;
+            case RESOURCE_PROTOTYPE -> 2;
+        }
+    );
 
     final private String name;
 
     final private String className;
-    private boolean isPrivate = false;
-    private boolean isWeak = false;
+    private final boolean fallbackPrivate;
+    private final boolean fallbackWeak;
     private final Set<String> classVariants = new HashSet<>();
     private final Set<ContainerServiceMetadata> metadata = new LinkedHashSet<>();
     @Nullable
@@ -38,28 +42,35 @@ public class ContainerService {
     private Set<String> cachedResourceServiceIds;
     @Nullable
     private Set<String> cachedTags;
-
-    public ContainerService(@NotNull ServiceInterface service, @Nullable String classResolved) {
-        this.service = new MemoryReducedCollectionService(service);
-        this.name = service.getId();
-        this.className = classResolved != null ? classResolved : service.getClassName();
-        this.isPrivate = !service.isPublic();
-        this.isWeak = true;
-    }
+    @Nullable
+    private Boolean cachedDeprecated;
+    @Nullable
+    private Boolean cachedPrivate;
+    @Nullable
+    private Boolean cachedWeak;
+    @Nullable
+    private Set<String> cachedParents;
+    @Nullable
+    private Set<String> cachedDecorates;
+    @Nullable
+    private Set<String> cachedDecorationInnerNames;
 
     public ContainerService(@NotNull String name, @Nullable String className) {
         this.name = name;
         this.className = className;
+        this.fallbackPrivate = false;
+        this.fallbackWeak = false;
     }
 
     public ContainerService(@NotNull String name, @Nullable String className, boolean isWeak) {
-        this(name, className);
-        this.isWeak = isWeak;
+        this(name, className, isWeak, false);
     }
 
     public ContainerService(@NotNull String name, @Nullable String className, boolean isWeak, boolean isPrivate) {
-        this(name, className, isWeak);
-        this.isPrivate = isPrivate;
+        this.name = name;
+        this.className = className;
+        this.fallbackWeak = isWeak;
+        this.fallbackPrivate = isPrivate;
     }
 
     /**
@@ -83,6 +94,12 @@ public class ContainerService {
             this.cachedResourcePrototypeMetadata = null;
             this.cachedResourceServiceIds = null;
             this.cachedTags = null;
+            this.cachedDeprecated = null;
+            this.cachedPrivate = null;
+            this.cachedWeak = null;
+            this.cachedParents = null;
+            this.cachedDecorates = null;
+            this.cachedDecorationInnerNames = null;
         }
     }
 
@@ -110,11 +127,24 @@ public class ContainerService {
     }
 
     public boolean isWeak() {
-        return isWeak;
+        if (cachedWeak != null) {
+            return cachedWeak;
+        }
+
+        if (!metadata.isEmpty()) {
+            return cachedWeak = !hasSourceKind(ContainerServiceMetadata.SourceKind.COMPILED_CONTAINER);
+        }
+
+        return cachedWeak = fallbackWeak;
     }
 
     public boolean isPrivate() {
-        return isPrivate;
+        if (cachedPrivate != null) {
+            return cachedPrivate;
+        }
+
+        ContainerServiceMetadata metadata = getPrimaryMetadata();
+        return cachedPrivate = metadata != null ? !metadata.publicService() : fallbackPrivate;
     }
 
     @NotNull
@@ -124,14 +154,10 @@ public class ContainerService {
 
     @NotNull
     public List<ContainerServiceMetadata> getMetadata() {
-        return List.copyOf(metadata);
+        return metadata.stream().sorted(METADATA_PRIORITY).toList();
     }
 
     public boolean isAutowireEnabled() {
-        if (service != null && service.isAutowire()) {
-            return true;
-        }
-
         if (cachedMetadataAutowire != null) {
             return cachedMetadataAutowire;
         }
@@ -146,10 +172,6 @@ public class ContainerService {
     }
 
     public boolean isAutoconfigureEnabled() {
-        if (service != null && service.isAutoconfigure()) {
-            return true;
-        }
-
         if (cachedMetadataAutoconfigure != null) {
             return cachedMetadataAutoconfigure;
         }
@@ -201,10 +223,6 @@ public class ContainerService {
         }
 
         Set<String> tags = new LinkedHashSet<>();
-        if (service != null) {
-            tags.addAll(service.getTags());
-        }
-
         for (ContainerServiceMetadata containerServiceMetadata : metadata) {
             tags.addAll(containerServiceMetadata.tags());
         }
@@ -212,11 +230,67 @@ public class ContainerService {
         return cachedTags = Collections.unmodifiableSet(tags);
     }
 
-    /**
-     * legacy support
-     */
+    @NotNull
+    public Set<String> getParents() {
+        if (cachedParents != null) {
+            return cachedParents;
+        }
+
+        return cachedParents = collectScalarValues(ContainerServiceMetadata::parent);
+    }
+
+    @NotNull
+    public Set<String> getDecoratesValues() {
+        if (cachedDecorates != null) {
+            return cachedDecorates;
+        }
+
+        return cachedDecorates = collectScalarValues(ContainerServiceMetadata::decorates);
+    }
+
+    @NotNull
+    public Set<String> getDecorationInnerNames() {
+        if (cachedDecorationInnerNames != null) {
+            return cachedDecorationInnerNames;
+        }
+
+        return cachedDecorationInnerNames = collectScalarValues(ContainerServiceMetadata::decorationInnerName);
+    }
+
+    public boolean isDeprecated() {
+        if (cachedDeprecated != null) {
+            return cachedDeprecated;
+        }
+
+        ContainerServiceMetadata metadata = getPrimaryMetadata();
+        return cachedDeprecated = metadata != null && metadata.deprecated();
+    }
+
+    public boolean hasSourceKind(@NotNull ContainerServiceMetadata.SourceKind sourceKind) {
+        for (ContainerServiceMetadata containerServiceMetadata : metadata) {
+            if (containerServiceMetadata.sourceKind() == sourceKind) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     @Nullable
-    public ServiceInterface getService() {
-        return service;
+    private ContainerServiceMetadata getPrimaryMetadata() {
+        return metadata.stream().min(METADATA_PRIORITY).orElse(null);
+    }
+
+    @NotNull
+    private Set<String> collectScalarValues(@NotNull Function<ContainerServiceMetadata, String> extractor) {
+        Set<String> values = new LinkedHashSet<>();
+        for (ContainerServiceMetadata containerServiceMetadata : getMetadata()) {
+            String value = extractor.apply(containerServiceMetadata);
+            if (value != null && !value.isBlank()) {
+                values.add(value);
+            }
+        }
+
+        return Collections.unmodifiableSet(values);
     }
 }
