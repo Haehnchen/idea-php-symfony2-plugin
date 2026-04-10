@@ -26,8 +26,6 @@ public class ContainerService {
     final private String name;
 
     final private String className;
-    private final boolean fallbackPrivate;
-    private final boolean fallbackWeak;
     private final Set<String> classVariants = new HashSet<>();
     private final Set<ContainerServiceMetadata> metadata = new LinkedHashSet<>();
     @Nullable
@@ -55,22 +53,10 @@ public class ContainerService {
     @Nullable
     private Set<String> cachedDecorationInnerNames;
 
-    public ContainerService(@NotNull String name, @Nullable String className) {
+    public ContainerService(@NotNull String name, @Nullable String className, @NotNull ContainerServiceMetadata metadata) {
         this.name = name;
         this.className = className;
-        this.fallbackPrivate = false;
-        this.fallbackWeak = false;
-    }
-
-    public ContainerService(@NotNull String name, @Nullable String className, boolean isWeak) {
-        this(name, className, isWeak, false);
-    }
-
-    public ContainerService(@NotNull String name, @Nullable String className, boolean isWeak, boolean isPrivate) {
-        this.name = name;
-        this.className = className;
-        this.fallbackWeak = isWeak;
-        this.fallbackPrivate = isPrivate;
+        addMetadata(metadata);
     }
 
     /**
@@ -103,12 +89,6 @@ public class ContainerService {
         }
     }
 
-    public void addMetadata(@NotNull Iterable<ContainerServiceMetadata> metadata) {
-        for (ContainerServiceMetadata containerServiceMetadata : metadata) {
-            addMetadata(containerServiceMetadata);
-        }
-    }
-
     @NotNull
     public Set<String> getClassNames() {
         if (cachedClassNames != null) {
@@ -135,7 +115,7 @@ public class ContainerService {
             return cachedWeak = !hasSourceKind(ContainerServiceMetadata.SourceKind.COMPILED_CONTAINER);
         }
 
-        return cachedWeak = fallbackWeak;
+        return cachedWeak = false;
     }
 
     public boolean isPrivate() {
@@ -144,7 +124,7 @@ public class ContainerService {
         }
 
         ContainerServiceMetadata metadata = getPrimaryMetadata();
-        return cachedPrivate = metadata != null ? !metadata.publicService() : fallbackPrivate;
+        return cachedPrivate = metadata != null && !metadata.publicService();
     }
 
     @NotNull

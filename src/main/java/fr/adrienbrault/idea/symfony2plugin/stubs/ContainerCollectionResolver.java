@@ -185,10 +185,11 @@ public class ContainerCollectionResolver {
 
         ContainerService containerService = services.computeIfAbsent(
             entry.getId(),
-            key -> new ContainerService(entry.getId(), entry.getClassName(), false, !entry.isPublic())
+            key -> new ContainerService(entry.getId(), entry.getClassName(), toMetadata(entry, ContainerServiceMetadata.SourceKind.COMPILED_CONTAINER))
         );
-
-        containerService.addMetadata(toMetadata(entry, ContainerServiceMetadata.SourceKind.COMPILED_CONTAINER));
+        if (!containerService.hasSourceKind(ContainerServiceMetadata.SourceKind.COMPILED_CONTAINER)) {
+            containerService.addMetadata(toMetadata(entry, ContainerServiceMetadata.SourceKind.COMPILED_CONTAINER));
+        }
     }
 
     @Nullable
@@ -372,26 +373,17 @@ public class ContainerCollectionResolver {
 
             if(!exps.isEmpty()) {
                 exps.forEach(service -> {
-                    ContainerService containerService = new ContainerService(service.getId(), service.getClassName(), true, !service.isPublic());
-                    containerService.addMetadata(toMetadata(service, ContainerServiceMetadata.SourceKind.INDEXED_SERVICE));
-                    services.put(service.getId(), containerService);
+                    services.put(
+                        service.getId(),
+                        new ContainerService(service.getId(), service.getClassName(), toMetadata(service, ContainerServiceMetadata.SourceKind.INDEXED_SERVICE))
+                    );
                 });
             }
 
             for (Map.Entry<String, List<ServiceSerializable>> entry : FileIndexCaches.getSetDataCache(project, SERVICE_CONTAINER_INDEX, SERVICE_CONTAINER_INDEX_NAMES, ServicesDefinitionStubIndex.KEY, ServiceIndexUtil.getRestrictedFileTypesScope(project)).entrySet()) {
-
-                // dont work twice on service;
-                // @TODO: to need to optimize this to decorate as much service data as possible
                 String serviceName = entry.getKey();
 
-                // fake empty service, case which is not allowed by catch it
-                List<ServiceSerializable> servicesValues = entry.getValue();
-                if(services.isEmpty()) {
-                    services.put(serviceName, new ContainerService(serviceName, null, true));
-                    continue;
-                }
-
-                for(ServiceInterface service: servicesValues) {
+                for (ServiceInterface service: entry.getValue()) {
                     String classValue = service.getClassName();
 
                     // duplicate services
@@ -403,13 +395,11 @@ public class ContainerCollectionResolver {
                             continue;
                         }
 
-                        String classValueResolve = classValue;
                         String compiledClassName = containerService.getClassName();
                         if(!classValue.equalsIgnoreCase(compiledClassName)) {
                             String resolvedClassValue = getParameterCollector().resolve(classValue);
                             if(resolvedClassValue != null && !StringUtils.isBlank(classValue) && !resolvedClassValue.equalsIgnoreCase(compiledClassName)) {
                                 containerService.addClassName(resolvedClassValue);
-                                classValueResolve = resolvedClassValue;
                             }
                         }
 
@@ -430,9 +420,10 @@ public class ContainerCollectionResolver {
                         classValue = getParameterCollector().resolve(classValue);
                     }
 
-                    ContainerService indexedService = new ContainerService(service.getId(), classValue, true, !service.isPublic());
-                    indexedService.addMetadata(toMetadata(service, ContainerServiceMetadata.SourceKind.INDEXED_SERVICE));
-                    services.put(serviceName, indexedService);
+                    services.put(
+                        serviceName,
+                        new ContainerService(service.getId(), classValue, toMetadata(service, ContainerServiceMetadata.SourceKind.INDEXED_SERVICE))
+                    );
                 }
             }
 
@@ -493,8 +484,7 @@ public class ContainerCollectionResolver {
                     continue;
                 }
 
-                // @TODO: migrate constructor to ServiceInterface and decorate
-                ContainerService value = new ContainerService(decorationInnerName, origin.getClassName(), origin.isWeak(), true);
+                ContainerService value = new ContainerService(decorationInnerName, origin.getClassName(), ContainerServiceMetadata.empty(ContainerServiceMetadata.SourceKind.INDEXED_SERVICE));
                 origin.getClassNames().forEach(value::addClassName);
 
                 items.put(decorationInnerName, value);
@@ -585,9 +575,7 @@ public class ContainerCollectionResolver {
 
         @NotNull
         private static ContainerService toContainerService(@NotNull ResourceBasedService service) {
-            ContainerService containerService = new ContainerService(service.id(), service.className(), true);
-            containerService.addMetadata(service.metadata());
-            return containerService;
+            return new ContainerService(service.id(), service.className(), service.metadata());
         }
     }
 
