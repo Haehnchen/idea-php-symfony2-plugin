@@ -15,8 +15,7 @@ import java.util.Collections;
 public class ServiceStringLookupElementTest extends SymfonyLightCodeInsightFixtureTestCase {
 
     public void testServiceLookupPresentableRendering() {
-        ContainerService service = new ContainerService("foo", "DateTime", true);
-        service.addMetadata(new ContainerServiceMetadata(
+        ContainerService service = new ContainerService("foo", "DateTime", new ContainerServiceMetadata(
             null,
             false,
             false,
@@ -45,7 +44,11 @@ public class ServiceStringLookupElementTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testServiceLookupPresentableRenderingLegacy() {
-        ServiceStringLookupElement element = new ServiceStringLookupElement(new ContainerService("foo", "DateTime"));
+        ServiceStringLookupElement element = new ServiceStringLookupElement(new ContainerService(
+            "foo",
+            "DateTime",
+            ContainerServiceMetadata.empty(ContainerServiceMetadata.SourceKind.INDEXED_SERVICE)
+        ));
         assertEquals("foo", element.getLookupString());
 
         LookupElementPresentation presentation = new LookupElementPresentation();

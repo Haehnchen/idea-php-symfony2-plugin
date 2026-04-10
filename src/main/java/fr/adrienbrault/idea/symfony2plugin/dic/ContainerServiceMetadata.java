@@ -86,6 +86,27 @@ public record ContainerServiceMetadata(
         return trimmed.isEmpty() ? null : trimmed;
     }
 
+    @NotNull
+    public static ContainerServiceMetadata empty(@NotNull SourceKind sourceKind) {
+        return new ContainerServiceMetadata(
+            null,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            null,
+            null,
+            null,
+            null,
+            Collections.emptySet(),
+            Collections.emptySet(),
+            Collections.emptySet(),
+            sourceKind
+        );
+    }
+
     public enum SourceKind {
         RESOURCE_PROTOTYPE,
         COMPILED_CONTAINER,
