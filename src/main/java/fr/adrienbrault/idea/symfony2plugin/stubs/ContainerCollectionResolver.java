@@ -50,7 +50,7 @@ public class ContainerCollectionResolver {
     private static final Key<CachedValue<Set<String>>> SERVICE_PARAMETER_INDEX_NAMES = new Key<>("SERVICE_PARAMETER_INDEX_NAMES");
 
     private static final Key<CachedValue<ServiceCollector>> SYMFONY_SERVICE_COLLECTOR_CACHE = new Key<>("SYMFONY_SERVICE_COLLECTOR_CACHE");
-    private static final Key<CachedValue<Map<String, ContainerService>>> RESOURCE_BASED_SERVICES_CACHE = new Key<>("SYMFONY_RESOURCE_BASED_SERVICES_CACHE");
+    private static final Key<CachedValue<Map<String, ResourceBasedService>>> RESOURCE_BASED_SERVICES_CACHE = new Key<>("SYMFONY_RESOURCE_BASED_SERVICES_CACHE");
     private static final Key<CachedValue<ParameterCollector>> SYMFONY_PARAMETER_COLLECTOR_CACHE = new Key<>("SYMFONY_PARAMETER_COLLECTOR_CACHE");
     private static final Key<CachedValue<Set<String>>> EXCLUDED_CLASSES_CACHE = new Key<>("SYMFONY_EXCLUDED_CLASSES_CACHE");
 
@@ -86,7 +86,7 @@ public class ContainerCollectionResolver {
      * These are auto-loaded services that should be available for autocompletion and type providers.
      */
     @NotNull
-    private static Map<String, ContainerService> getResourceBasedServices(@NotNull Project project) {
+    private static Map<String, ResourceBasedService> getResourceBasedServices(@NotNull Project project) {
         return CachedValuesManager.getManager(project).getCachedValue(
             project,
             RESOURCE_BASED_SERVICES_CACHE,
@@ -102,8 +102,8 @@ public class ContainerCollectionResolver {
     }
 
     @NotNull
-    private static Map<String, ContainerService> getResourceBasedServicesInner(@NotNull Project project) {
-        Map<String, ContainerService> services = new HashMap<>();
+    private static Map<String, ResourceBasedService> getResourceBasedServicesInner(@NotNull Project project) {
+        Map<String, ResourceBasedService> services = new HashMap<>();
 
         // Collect keys first to avoid nested index access inside processAllKeys
         List<String> resourceServiceIds = new ArrayList<>();
@@ -142,10 +142,14 @@ public class ContainerCollectionResolver {
                     service.getExclude()
                 );
 
+                ContainerServiceMetadata metadata = toMetadata(service, ContainerServiceMetadata.SourceKind.RESOURCE_PROTOTYPE);
                 for (String phpClass : phpClasses) {
                     String fqn = StringUtils.stripStart(phpClass, "\\");
-                    ContainerService containerService = services.computeIfAbsent(fqn, key -> new ContainerService(fqn, fqn, true));
-                    containerService.addMetadata(toMetadata(service, ContainerServiceMetadata.SourceKind.RESOURCE_PROTOTYPE));
+                    services.put(fqn, new ResourceBasedService(
+                        fqn,
+                        fqn,
+                        metadata
+                    ));
                 }
             }
         }
@@ -161,6 +165,12 @@ public class ContainerCollectionResolver {
             service.isAbstract(),
             service.isAutowire(),
             service.isAutoconfigure(),
+            service.isDeprecated(),
+            service.isPublic(),
+            service.getAlias(),
+            service.getParent(),
+            service.getDecorates(),
+            service.getDecorationInnerName(),
             service.getTags(),
             service.getResource(),
             service.getExclude(),
@@ -339,10 +349,10 @@ public class ContainerCollectionResolver {
             }
 
             // Add resource-based services (auto-loaded from namespace patterns)
-            for (Map.Entry<String, ContainerService> entry : getResourceBasedServices(project).entrySet()) {
-                ContainerService existing = services.putIfAbsent(entry.getKey(), entry.getValue());
+            for (Map.Entry<String, ResourceBasedService> entry : getResourceBasedServices(project).entrySet()) {
+                ContainerService existing = services.putIfAbsent(entry.getKey(), toContainerService(entry.getValue()));
                 if (existing != null) {
-                    existing.addMetadata(entry.getValue().getMetadata());
+                    existing.addMetadata(entry.getValue().metadata());
                 }
             }
 
@@ -361,7 +371,11 @@ public class ContainerCollectionResolver {
             }
 
             if(!exps.isEmpty()) {
-                exps.forEach(service -> services.put(service.getId(), new ContainerService(service, null)));
+                exps.forEach(service -> {
+                    ContainerService containerService = new ContainerService(service.getId(), service.getClassName(), true, !service.isPublic());
+                    containerService.addMetadata(toMetadata(service, ContainerServiceMetadata.SourceKind.INDEXED_SERVICE));
+                    services.put(service.getId(), containerService);
+                });
             }
 
             for (Map.Entry<String, List<ServiceSerializable>> entry : FileIndexCaches.getSetDataCache(project, SERVICE_CONTAINER_INDEX, SERVICE_CONTAINER_INDEX_NAMES, ServicesDefinitionStubIndex.KEY, ServiceIndexUtil.getRestrictedFileTypesScope(project)).entrySet()) {
@@ -399,14 +413,6 @@ public class ContainerCollectionResolver {
                             }
                         }
 
-                        // Replace the weak synthetic resource-expanded placeholder with the indexed service,
-                        // but keep the metadata that was already attached while expanding the resource definition.
-                        if (containerService.getService() == null) {
-                            ContainerService resolvedService = new ContainerService(service, classValueResolve);
-                            resolvedService.addMetadata(containerService.getMetadata());
-                            services.put(serviceName, resolvedService);
-                        }
-
                         continue;
                     }
 
@@ -424,8 +430,7 @@ public class ContainerCollectionResolver {
                         classValue = getParameterCollector().resolve(classValue);
                     }
 
-                    // @TODO: legacy bridge; replace this with ServiceInterface
-                    ContainerService indexedService = new ContainerService(service, classValue);
+                    ContainerService indexedService = new ContainerService(service.getId(), classValue, true, !service.isPublic());
                     indexedService.addMetadata(toMetadata(service, ContainerServiceMetadata.SourceKind.INDEXED_SERVICE));
                     services.put(serviceName, indexedService);
                 }
@@ -577,6 +582,20 @@ public class ContainerCollectionResolver {
                 false
             );
         }
+
+        @NotNull
+        private static ContainerService toContainerService(@NotNull ResourceBasedService service) {
+            ContainerService containerService = new ContainerService(service.id(), service.className(), true);
+            containerService.addMetadata(service.metadata());
+            return containerService;
+        }
+    }
+
+    private record ResourceBasedService(
+        @NotNull String id,
+        @Nullable String className,
+        @NotNull ContainerServiceMetadata metadata
+    ) {
     }
 
     public static class ParameterCollector {

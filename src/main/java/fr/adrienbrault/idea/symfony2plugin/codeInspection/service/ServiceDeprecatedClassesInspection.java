@@ -15,7 +15,6 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -234,8 +233,7 @@ public class ServiceDeprecatedClassesInspection {
                 return;
             }
 
-            ServiceInterface serviceDef = services.get(serviceName).getService();
-            if(serviceDef == null || !serviceDef.isDeprecated()) {
+            if(!services.get(serviceName).isDeprecated()) {
                 return;
             }
 

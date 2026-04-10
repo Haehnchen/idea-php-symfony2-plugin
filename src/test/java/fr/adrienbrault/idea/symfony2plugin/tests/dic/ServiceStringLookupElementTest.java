@@ -2,9 +2,11 @@ package fr.adrienbrault.idea.symfony2plugin.tests.dic;
 
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerServiceMetadata;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceStringLookupElement;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.SerializableService;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+
+import java.util.Collections;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -13,11 +15,26 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
 public class ServiceStringLookupElementTest extends SymfonyLightCodeInsightFixtureTestCase {
 
     public void testServiceLookupPresentableRendering() {
-        SerializableService service = new SerializableService("foo");
-        service.setClassName("DateTime");
-        service.setIsDeprecated(true);
+        ContainerService service = new ContainerService("foo", "DateTime", true);
+        service.addMetadata(new ContainerServiceMetadata(
+            null,
+            false,
+            false,
+            false,
+            false,
+            true,
+            true,
+            null,
+            null,
+            null,
+            null,
+            Collections.emptySet(),
+            Collections.emptySet(),
+            Collections.emptySet(),
+            ContainerServiceMetadata.SourceKind.INDEXED_SERVICE
+        ));
 
-        ServiceStringLookupElement element = new ServiceStringLookupElement(new ContainerService(service, null));
+        ServiceStringLookupElement element = new ServiceStringLookupElement(service);
         assertEquals("foo", element.getLookupString());
 
         LookupElementPresentation presentation = new LookupElementPresentation();

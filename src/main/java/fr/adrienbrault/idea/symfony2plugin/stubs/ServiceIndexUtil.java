@@ -207,20 +207,9 @@ public class ServiceIndexUtil {
         Map<String, Collection<ContainerService>> services = new HashMap<>();
 
         for (ContainerService containerService : ContainerCollectionResolver.getServices(project).values()) {
-            if(containerService.getService() == null) {
-                continue;
+            for (String decorates : containerService.getDecoratesValues()) {
+                services.computeIfAbsent(decorates, key -> new ArrayList<>()).add(containerService);
             }
-
-            String decorates = containerService.getService().getDecorates();
-            if(decorates == null) {
-                continue;
-            }
-
-            if(!services.containsKey(decorates)) {
-                services.put(decorates, new ArrayList<>());
-            }
-
-            services.get(decorates).add(containerService);
         }
 
         return services;
@@ -247,20 +236,9 @@ public class ServiceIndexUtil {
         Map<String, Collection<ContainerService>> services = new HashMap<>();
 
         for (ContainerService containerService : ContainerCollectionResolver.getServices(project).values()) {
-            if(containerService.getService() == null) {
-                continue;
+            for (String parent : containerService.getParents()) {
+                services.computeIfAbsent(parent, key -> new ArrayList<>()).add(containerService);
             }
-
-            String parent = containerService.getService().getParent();
-            if(parent == null) {
-                continue;
-            }
-
-            if(!services.containsKey(parent)) {
-                services.put(parent, new ArrayList<>());
-            }
-
-            services.get(parent).add(containerService);
         }
 
         return services;

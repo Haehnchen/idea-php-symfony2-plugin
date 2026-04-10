@@ -29,8 +29,12 @@ public class XmlService implements ServiceInterface {
     private boolean isAbstract = false;
     private boolean autowire = false;
     private boolean autoconfigure = false;
+    private boolean deprecated = false;
 
     private String alias = null;
+    private String parent = null;
+    private String decorates = null;
+    private String decorationInnerName = null;
 
     private Collection<String> tags;
 
@@ -73,7 +77,7 @@ public class XmlService implements ServiceInterface {
 
     @Override
     public boolean isDeprecated() {
-        return false;
+        return deprecated;
     }
 
     @Override
@@ -90,19 +94,19 @@ public class XmlService implements ServiceInterface {
     @Nullable
     @Override
     public String getParent() {
-        return null;
+        return parent;
     }
 
     @Nullable
     @Override
     public String getDecorates() {
-        return null;
+        return decorates;
     }
 
     @Nullable
     @Override
     public String getDecorationInnerName() {
-        return null;
+        return decorationInnerName;
     }
 
     @NotNull
@@ -166,10 +170,26 @@ public class XmlService implements ServiceInterface {
         xmlService.isAbstract = "true".equalsIgnoreCase(node.getAttribute("abstract"));
         xmlService.autowire = "true".equalsIgnoreCase(node.getAttribute("autowire"));
         xmlService.autoconfigure = "true".equalsIgnoreCase(node.getAttribute("autoconfigure"));
+        xmlService.deprecated = "true".equalsIgnoreCase(node.getAttribute("deprecated"));
 
         String alias = node.getAttribute("alias");
         if(StringUtils.isNotBlank(alias)) {
             xmlService.alias = alias;
+        }
+
+        String parent = node.getAttribute("parent");
+        if (StringUtils.isNotBlank(parent)) {
+            xmlService.parent = parent;
+        }
+
+        String decorates = node.getAttribute("decorates");
+        if (StringUtils.isNotBlank(decorates)) {
+            xmlService.decorates = decorates;
+        }
+
+        String decorationInnerName = node.getAttribute("decoration-inner-name");
+        if (StringUtils.isNotBlank(decorationInnerName)) {
+            xmlService.decorationInnerName = decorationInnerName;
         }
 
         // <tag name="xml_type_tag"/>

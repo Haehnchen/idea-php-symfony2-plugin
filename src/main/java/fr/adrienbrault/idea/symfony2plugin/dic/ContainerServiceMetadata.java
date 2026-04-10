@@ -21,6 +21,12 @@ public record ContainerServiceMetadata(
     boolean abstractDefinition,
     boolean autowire,
     boolean autoconfigure,
+    boolean deprecated,
+    boolean publicService,
+    @Nullable String alias,
+    @Nullable String parent,
+    @Nullable String decorates,
+    @Nullable String decorationInnerName,
     @NotNull Set<String> tags,
     // Raw resource glob patterns from the contributing resource/prototype definition
     @NotNull Set<String> resource,
@@ -34,6 +40,12 @@ public record ContainerServiceMetadata(
         boolean abstractDefinition,
         boolean autowire,
         boolean autoconfigure,
+        boolean deprecated,
+        boolean publicService,
+        @Nullable String alias,
+        @Nullable String parent,
+        @Nullable String decorates,
+        @Nullable String decorationInnerName,
         @NotNull Collection<String> tags,
         @NotNull Collection<String> resource,
         @NotNull Collection<String> exclude,
@@ -45,6 +57,12 @@ public record ContainerServiceMetadata(
             abstractDefinition,
             autowire,
             autoconfigure,
+            deprecated,
+            publicService,
+            normalizeNullable(alias),
+            normalizeNullable(parent),
+            normalizeNullable(decorates),
+            normalizeNullable(decorationInnerName),
             normalize(tags),
             normalize(resource),
             normalize(exclude),
@@ -56,6 +74,16 @@ public record ContainerServiceMetadata(
         return values.isEmpty()
             ? Collections.emptySet()
             : Collections.unmodifiableSet(new LinkedHashSet<>(values));
+    }
+
+    @Nullable
+    private static String normalizeNullable(@Nullable String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     public enum SourceKind {

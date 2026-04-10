@@ -22,7 +22,6 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.ClassServiceDefinitionTargetLazyValue;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerServiceMetadata;
-import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
@@ -125,14 +124,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
                 continue;
             }
 
-            ServiceInterface service = containerService.getService();
-            if (service != null) {
-                tags.addAll(service.getTags());
-            }
-
-            for (ContainerServiceMetadata metadata : containerService.getMetadata()) {
-                tags.addAll(metadata.tags());
-            }
+            tags.addAll(containerService.getTags());
         }
 
         if (!tags.isEmpty()) {

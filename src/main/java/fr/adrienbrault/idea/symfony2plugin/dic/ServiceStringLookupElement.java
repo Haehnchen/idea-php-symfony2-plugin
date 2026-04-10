@@ -61,9 +61,7 @@ public class ServiceStringLookupElement extends LookupElement {
             presentation.setItemTextUnderlined(true);
         }
 
-        if(containerService.getService() != null) {
-            presentation.setStrikeout(containerService.getService().isDeprecated());
-        }
+        presentation.setStrikeout(containerService.isDeprecated());
     }
 
     @Nullable
