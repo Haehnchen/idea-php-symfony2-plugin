@@ -426,6 +426,229 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
         assertImplicitUsage(multiAttributeTwigExtensionClass.findOwnMethodByName("callableMethod"));
     }
 
+    public void testClassLevelFrameworkAttributesAreMarkedUsed() {
+        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Usage;\n" +
+            "\n" +
+            "use Doctrine\\Bundle\\DoctrineBundle\\Attribute\\AsDoctrineListener;\n" +
+            "use Doctrine\\ORM\\Events;\n" +
+            "use Symfony\\Component\\Console\\Attribute\\AsCommand;\n" +
+            "use Symfony\\Component\\DependencyInjection\\Attribute\\AutoconfigureTag;\n" +
+            "use Symfony\\Component\\EventDispatcher\\Attribute\\AsEventListener;\n" +
+            "use Symfony\\Component\\HttpKernel\\KernelEvents;\n" +
+            "use Symfony\\Component\\Messenger\\Attribute\\AsMessageHandler;\n" +
+            "use Symfony\\Component\\Scheduler\\Attribute\\AsSchedule;\n" +
+            "use Symfony\\Component\\Validator\\Constraints as Assert;\n" +
+            "use Symfony\\Component\\Workflow\\Attribute\\AsAnnounceListener;\n" +
+            "use Symfony\\Component\\Workflow\\Attribute\\AsCompletedListener;\n" +
+            "use Symfony\\Component\\Workflow\\Attribute\\AsEnterListener;\n" +
+            "use Symfony\\Component\\Workflow\\Attribute\\AsEnteredListener;\n" +
+            "use Symfony\\Component\\Workflow\\Attribute\\AsGuardListener;\n" +
+            "use Symfony\\Component\\Workflow\\Attribute\\AsLeaveListener;\n" +
+            "use Symfony\\Component\\Workflow\\Attribute\\AsTransitionListener;\n" +
+            "use Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n" +
+            "\n" +
+            "#[AsCommand(name: 'app:usage:interactive')]\n" +
+            "#[AsEventListener(event: KernelEvents::EXCEPTION, method: 'onKernelException')]\n" +
+            "#[AsMessageHandler]\n" +
+            "#[AsSchedule('usage')]\n" +
+            "#[AsAnnounceListener]\n" +
+            "#[AsCompletedListener]\n" +
+            "#[AsEnterListener]\n" +
+            "#[AsEnteredListener]\n" +
+            "#[AsGuardListener]\n" +
+            "#[AsLeaveListener]\n" +
+            "#[AsTransitionListener]\n" +
+            "#[AsTwigComponent('usage_status_badge')]\n" +
+            "#[Assert\\Callback('validateShippingWindow')]\n" +
+            "#[AsDoctrineListener(event: Events::preFlush)]\n" +
+            "#[AutoconfigureTag('doctrine.event_listener', ['event' => 'postPersist'])]\n" +
+            "class UsageAttributes\n" +
+            "{\n" +
+            "    public function validateShippingWindow() {}\n" +
+            "    public function onKernelException() {}\n" +
+            "    public function unrelated() {}\n" +
+            "}"
+        );
+
+        PhpClass phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
+
+        assertImplicitUsage(phpClass);
+        assertImplicitUsage(phpClass.findOwnMethodByName("validateShippingWindow"));
+        assertImplicitUsage(phpClass.findOwnMethodByName("onKernelException"));
+        assertNotImplicitUsage(phpClass.findOwnMethodByName("unrelated"));
+    }
+
+    public void testMcpCapabilitiesAreMarkedUsed() {
+        PsiFile invokableCapabilityPsiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Mcp;\n" +
+            "\n" +
+            "use Mcp\\Capability\\Attribute\\McpTool;\n" +
+            "\n" +
+            "#[McpTool(name: 'current-time')]\n" +
+            "final class CurrentTimeTool\n" +
+            "{\n" +
+            "    public function __invoke(string $format = 'Y-m-d H:i:s'): string\n" +
+            "    {\n" +
+            "        return 'now';\n" +
+            "    }\n" +
+            "\n" +
+            "    public function unused(): string\n" +
+            "    {\n" +
+            "        return 'unused';\n" +
+            "    }\n" +
+            "}"
+        );
+
+        PhpClass invokableCapabilityClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) invokableCapabilityPsiFile.getContainingFile());
+        assertImplicitUsage(invokableCapabilityClass);
+        assertImplicitUsage(invokableCapabilityClass.findOwnMethodByName("__invoke"));
+        assertNotImplicitUsage(invokableCapabilityClass.findOwnMethodByName("unused"));
+
+        PsiFile methodCapabilityPsiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Mcp;\n" +
+            "\n" +
+            "use Mcp\\Capability\\Attribute\\McpPrompt;\n" +
+            "use Mcp\\Capability\\Attribute\\McpResource;\n" +
+            "use Mcp\\Capability\\Attribute\\McpResourceTemplate;\n" +
+            "\n" +
+            "final class TimeCapabilities\n" +
+            "{\n" +
+            "    #[McpPrompt(name: 'time-analysis')]\n" +
+            "    public function timeAnalysis(): array\n" +
+            "    {\n" +
+            "        return [];\n" +
+            "    }\n" +
+            "\n" +
+            "    #[McpResource(uri: 'time://current', name: 'current-time')]\n" +
+            "    public function currentTime(): array\n" +
+            "    {\n" +
+            "        return [];\n" +
+            "    }\n" +
+            "\n" +
+            "    #[McpResourceTemplate(uriTemplate: 'time://{timezone}', name: 'time-by-timezone')]\n" +
+            "    public function timeByTimezone(string $timezone): array\n" +
+            "    {\n" +
+            "        return [];\n" +
+            "    }\n" +
+            "\n" +
+            "    public function unused(): array\n" +
+            "    {\n" +
+            "        return [];\n" +
+            "    }\n" +
+            "}"
+        );
+
+        PhpClass methodCapabilityClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) methodCapabilityPsiFile.getContainingFile());
+        assertNotImplicitUsage(methodCapabilityClass);
+        assertImplicitUsage(methodCapabilityClass.findOwnMethodByName("timeAnalysis"));
+        assertImplicitUsage(methodCapabilityClass.findOwnMethodByName("currentTime"));
+        assertImplicitUsage(methodCapabilityClass.findOwnMethodByName("timeByTimezone"));
+        assertNotImplicitUsage(methodCapabilityClass.findOwnMethodByName("unused"));
+    }
+
+    public void testAutoconfigureTagIsMarkedUsedForNamedAndDefaultFqcnForms() {
+        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Usage;\n" +
+            "\n" +
+            "use Symfony\\Component\\DependencyInjection\\Attribute\\AutoconfigureTag;\n" +
+            "\n" +
+            "#[AutoconfigureTag('app.other_tag')]\n" +
+            "class NamedAutoconfigureTagUsage\n" +
+            "{\n" +
+            "}"
+        );
+
+        PhpClass phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
+        assertImplicitUsage(phpClass);
+
+        PsiFile defaultPsiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Usage;\n" +
+            "\n" +
+            "use Symfony\\Component\\DependencyInjection\\Attribute\\AutoconfigureTag;\n" +
+            "\n" +
+            "#[AutoconfigureTag]\n" +
+            "interface DefaultAutoconfigureTagUsage\n" +
+            "{\n" +
+            "}"
+        );
+
+        PhpClass defaultPhpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) defaultPsiFile.getContainingFile());
+        assertImplicitUsage(defaultPhpClass);
+    }
+
+    public void testDoctrineLifecycleMethodsAreMarkedUsedOnEntities() {
+        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Entity;\n" +
+            "\n" +
+            "use Doctrine\\ORM\\Event\\PostLoadEventArgs;\n" +
+            "use Doctrine\\ORM\\Event\\PreFlushEventArgs;\n" +
+            "use Doctrine\\ORM\\Event\\PrePersistEventArgs;\n" +
+            "use Doctrine\\ORM\\Mapping as ORM;\n" +
+            "\n" +
+            "#[ORM\\Entity]\n" +
+            "class LifecycleEntity\n" +
+            "{\n" +
+            "    #[ORM\\PrePersist]\n" +
+            "    public function beforePersist(PrePersistEventArgs $event): void\n" +
+            "    {\n" +
+            "    }\n" +
+            "\n" +
+            "    #[ORM\\PreFlush]\n" +
+            "    public function beforeFlush(PreFlushEventArgs $event): void\n" +
+            "    {\n" +
+            "    }\n" +
+            "\n" +
+            "    #[ORM\\PostLoad]\n" +
+            "    public function afterLoad(PostLoadEventArgs $event): void\n" +
+            "    {\n" +
+            "    }\n" +
+            "\n" +
+            "    public function unrelated(): void\n" +
+            "    {\n" +
+            "    }\n" +
+            "}"
+        );
+
+        PhpClass phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
+
+        assertImplicitUsage(phpClass.findOwnMethodByName("beforePersist"));
+        assertImplicitUsage(phpClass.findOwnMethodByName("beforeFlush"));
+        assertImplicitUsage(phpClass.findOwnMethodByName("afterLoad"));
+        assertNotImplicitUsage(phpClass.findOwnMethodByName("unrelated"));
+    }
+
+    public void testDoctrineAsEntityListenerMethodIsMarkedUsed() {
+        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "declare(strict_types=1);\n" +
+            "\n" +
+            "namespace App\\Usage\\Doctrine;\n" +
+            "\n" +
+            "use Doctrine\\Bundle\\DoctrineBundle\\Attribute\\AsEntityListener;\n" +
+            "use Doctrine\\ORM\\Event\\PostPersistEventArgs;\n" +
+            "use Doctrine\\ORM\\Events;\n" +
+            "use App\\Entity\\FooEntity;\n" +
+            "\n" +
+            "#[AsEntityListener(event: Events::postPersist, method: 'whenPostPersist', entity: FooEntity::class)]\n" +
+            "final class AsEntityListenerFixture\n" +
+            "{\n" +
+            "    public function whenPostPersist(FooEntity $entity, PostPersistEventArgs $event): void\n" +
+            "    {\n" +
+            "    }\n" +
+            "\n" +
+            "    public function unrelated(): void\n" +
+            "    {\n" +
+            "    }\n" +
+            "}"
+        );
+
+        PhpClass phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
+
+        assertImplicitUsage(phpClass);
+        assertImplicitUsage(phpClass.findOwnMethodByName("whenPostPersist"));
+        assertNotImplicitUsage(phpClass.findOwnMethodByName("unrelated"));
+    }
+
     private PhpClass createPhpControllerClassWithRouteContent(@NotNull String content) {
         return createPhpControllerClassWithRouteContent("\\App\\Controller\\FooController", content);
     }
