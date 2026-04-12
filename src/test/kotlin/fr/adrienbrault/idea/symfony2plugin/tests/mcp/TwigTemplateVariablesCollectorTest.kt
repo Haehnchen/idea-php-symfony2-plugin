@@ -167,7 +167,7 @@ class TwigTemplateVariablesCollectorTest : SymfonyLightCodeInsightFixtureTestCas
         assertTrue("Should list 'title' property\n$result", result.contains("title"))
     }
 
-    fun testTemplateVariablesReturnEmptyWhenFileGlobDoesNotMatch() {
+    fun testTemplateVariablesUseOrSemanticsForTemplateAndFileGlob() {
         myFixture.addFileToProject("src/Entity/Article.php",
             "<?php\nnamespace App\\Entity;\n" +
                 "class Article {\n" +
@@ -184,6 +184,60 @@ class TwigTemplateVariablesCollectorTest : SymfonyLightCodeInsightFixtureTestCas
             "templates/admin/**/*.html.twig"
         )
 
-        assertEquals("variable,type,properties\n", result)
+        assertTrue("Template match should still return variables even when fileGlob does not match\n$result",
+            result.contains("article,\\App\\Entity\\Article,")
+        )
+    }
+
+    fun testTemplateVariablesSupportCommaSeparatedTemplateList() {
+        myFixture.addFileToProject("src/Entity/Article.php",
+            "<?php\nnamespace App\\Entity;\n" +
+                "class Article {\n" +
+                "    public function getTitle(): string {}\n" +
+                "}\n"
+        )
+        myFixture.addFileToProject("src/Entity/User.php",
+            "<?php\nnamespace App\\Entity;\n" +
+                "class User {\n" +
+                "    public function getEmail(): string {}\n" +
+                "}\n"
+        )
+        myFixture.addFileToProject("templates/blog/show.html.twig",
+            "{# @var article \\App\\Entity\\Article #}\n" +
+                "{{ article.title }}"
+        )
+        myFixture.addFileToProject("templates/user/profile.html.twig",
+            "{# @var user \\App\\Entity\\User #}\n" +
+                "{{ user.email }}"
+        )
+
+        val result = TwigTemplateVariablesCollector(project).collect(
+            "blog/show.html.twig, user/profile.html.twig"
+        )
+
+        assertTrue("Should include first template header\n$result", result.contains("template: blog/show.html.twig => (file: templates/blog/show.html.twig)"))
+        assertTrue("Should include second template header\n$result", result.contains("template: user/profile.html.twig => (file: templates/user/profile.html.twig)"))
+        assertTrue("Should include article row\n$result", result.contains("article,\\App\\Entity\\Article,"))
+        assertTrue("Should include user row\n$result", result.contains("user,\\App\\Entity\\User,"))
+    }
+
+    fun testTemplateVariablesSupportFileGlobWithoutTemplateInput() {
+        myFixture.addFileToProject("src/Entity/Article.php",
+            "<?php\nnamespace App\\Entity;\n" +
+                "class Article {\n" +
+                "    public function getTitle(): string {}\n" +
+                "}\n"
+        )
+        myFixture.addFileToProject("templates/blog/show.html.twig",
+            "{# @var article \\App\\Entity\\Article #}\n" +
+                "{{ article.title }}"
+        )
+
+        val result = TwigTemplateVariablesCollector(project).collect(
+            fileGlob = "templates/blog/**/*.html.twig"
+        )
+
+        assertTrue("Should resolve template via file glob\n$result", result.contains("article,\\App\\Entity\\Article,"))
+        assertTrue("Should include title property\n$result", result.contains("title"))
     }
 }
