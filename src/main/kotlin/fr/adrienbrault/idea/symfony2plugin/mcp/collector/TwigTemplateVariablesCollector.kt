@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.mcp.collector
 
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiManager
+import com.intellij.psi.PsiFile
 import com.jetbrains.php.lang.psi.elements.PhpClass
 import com.jetbrains.php.lang.psi.resolve.types.PhpType
 import fr.adrienbrault.idea.symfony2plugin.mcp.McpCsvUtil
@@ -10,6 +11,8 @@ import fr.adrienbrault.idea.symfony2plugin.mcp.McpPathUtil
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil
+import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil
+import fr.adrienbrault.idea.symfony2plugin.util.VfsExUtil
 
 /**
  * Collects all Twig variables available in a template with their PHP types and
@@ -19,39 +22,75 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil
  */
 class TwigTemplateVariablesCollector(private val project: Project) {
 
-    /**
-     * Resolves the given logical template name and returns a CSV string:
-     *   variable,type,properties
-     */
-    fun collect(templateInput: String, fileGlob: String? = null): String {
+    fun collect(templateInput: String? = null, fileGlob: String? = null): String {
         val psiManager = PsiManager.getInstance(project)
-        val psiFiles = linkedSetOf<com.intellij.psi.PsiFile>()
+        val resolvedTemplates = linkedMapOf<String, PsiFile>()
         val normalizedFileGlob = fileGlob?.trim()?.takeIf { it.isNotBlank() }
 
-        TwigUtil.getTemplateFiles(project, templateInput)
-            .filter { virtualFile ->
-                normalizedFileGlob == null || McpGlobMatcher.matches(
-                    McpPathUtil.getRelativeProjectPath(project, virtualFile),
-                    normalizedFileGlob
-                )
+        templateInput
+            ?.split(",")
+            ?.map { it.trim() }
+            ?.filter { it.isNotBlank() }
+            ?.forEach { templateName ->
+                TwigUtil.getTemplateFiles(project, templateName)
+                    .mapNotNull { psiManager.findFile(it) }
+                    .firstOrNull()
+                    ?.let { resolvedTemplates.putIfAbsent(templateName, it) }
+
+                ProjectUtil.getProjectDir(project)
+                    ?.findFileByRelativePath(templateName)
+                    ?.let { virtualFile ->
+                        val psiFile = psiManager.findFile(virtualFile) ?: return@let
+                        TwigUtil.getTemplateNamesForFile(project, virtualFile).forEach { logicalTemplateName ->
+                            resolvedTemplates.putIfAbsent(logicalTemplateName, psiFile)
+                        }
+                    }
             }
-            .mapNotNull { psiManager.findFile(it) }
-            .forEach { psiFiles.add(it) }
 
-        val psiFile = psiFiles.firstOrNull()
-            ?: return "variable,type,properties\n"
+        if (normalizedFileGlob != null) {
+            TwigUtil.getTemplateMap(project)
+                .toSortedMap()
+                .forEach { (templateName, virtualFiles) ->
+                    val matchingFile = virtualFiles.firstOrNull { virtualFile ->
+                        val relativePath = getDisplayPath(virtualFile)
+                        relativePath.isNotBlank() && McpGlobMatcher.matches(relativePath, normalizedFileGlob)
+                    } ?: return@forEach
 
+                    psiManager.findFile(matchingFile)?.let { resolvedTemplates.putIfAbsent(templateName, it) }
+                }
+        }
+
+        if (resolvedTemplates.isEmpty()) {
+            return emptyCsv()
+        }
+
+        if (resolvedTemplates.size == 1) {
+            return renderCsv(resolvedTemplates.values.first())
+        }
+
+        return buildString {
+            resolvedTemplates.entries.forEachIndexed { index, (templateName, psiFile) ->
+                val filePath = psiFile.virtualFile?.let { getDisplayPath(it) }.orEmpty()
+                append("template: ").append(templateName)
+                if (filePath.isNotBlank()) {
+                    append(" => (file: ").append(filePath).append(")")
+                }
+                append('\n')
+                append(renderCsv(psiFile))
+                if (index < resolvedTemplates.size - 1) {
+                    append('\n')
+                }
+            }
+        }
+    }
+
+    private fun renderCsv(psiFile: PsiFile): String {
         val variables = TwigTypeResolveUtil.collectScopeVariables(psiFile)
-
-        val csv = StringBuilder("variable,type,properties\n")
+        val csv = StringBuilder(emptyCsv())
 
         for ((varName, psiVariable) in variables.entries.sortedBy { it.key }) {
-            val types = psiVariable.types
-
-            val typeStr = types.joinToString("|")
-
-            val properties = collectProperties(types)
-            val propertiesStr = properties.joinToString(",")
+            val typeStr = psiVariable.types.joinToString("|")
+            val propertiesStr = collectProperties(psiVariable.types).joinToString(",")
 
             csv.append("${McpCsvUtil.escape(varName)},")
                 .append("${McpCsvUtil.escape(typeStr)},")
@@ -59,6 +98,17 @@ class TwigTemplateVariablesCollector(private val project: Project) {
         }
 
         return csv.toString()
+    }
+
+    private fun emptyCsv(): String {
+        return "variable,type,properties\n"
+    }
+
+    private fun getDisplayPath(virtualFile: com.intellij.openapi.vfs.VirtualFile): String {
+        return (
+            VfsExUtil.getRelativeProjectPathStrict(project, virtualFile)
+                ?: McpPathUtil.getRelativeProjectPath(project, virtualFile)
+            ).replace('\\', '/')
     }
 
     /**

@@ -403,27 +403,32 @@ class SymfonyToolset : McpToolset {
     @McpTool
     @McpDescription("""
         Lists all variables available in a Twig template with their PHP types and first-level accessible properties.
-        Accepts a logical template name and can optionally filter resolved template files by project-relative path glob.
+        Accepts comma-separated templates or project-relative path glob.
 
         CSV columns:
         - variable: Twig variable name
         - type: PHP FQN(s) joined with "|" (may include "[]" suffix for arrays)
         - properties: comma-separated first-level Twig-accessible names (get/is/has shortcut methods + public fields)
 
-        Example:
+        template: home/index.html.twig => (file: templates/home/index.html.twig)
         variable,type,properties
-        user,\App\Entity\User,"id,email,name,roles,createdAt"
-        app,\Symfony\Bridge\Twig\AppVariable,"user,request,session,environment,debug,token,flashes"
-        products,\App\Entity\Product[],"id,title,price,category,isActive"
+        user,\App\Entity\User,"id,email,name"
     """)
     suspend fun list_twig_template_variables(
-        @McpDescription("Logical template name. Example: 'home/index.html.twig'")
-        template: String,
-        @McpDescription("Optional Ant-style glob on the resolved template file path relative to the project root. Example: 'templates/home/index.html.twig' or 'templates/admin/**/*.html.twig'.")
+        @McpDescription("Optional logical template name or comma-separated list of logical template names. Example: 'home/index.html.twig' or 'home/index.html.twig,admin/dashboard.html.twig'")
+        template: String? = null,
+        @McpDescription("Optional Ant-style glob on template file paths relative to the project root. Example: 'templates/home/index.html.twig' or 'templates/admin/**/*.html.twig'")
         fileGlob: String? = null,
     ): String = withSymfonyProject { project ->
+        val normalizedTemplate = template?.trim()?.takeIf { it.isNotBlank() }
+        val normalizedFileGlob = fileGlob?.trim()?.takeIf { it.isNotBlank() }
+
+        if (normalizedTemplate == null && normalizedFileGlob == null) {
+            mcpFail("At least one of 'template' or 'fileGlob' must be provided.")
+        }
+
         readAction {
-            TwigTemplateVariablesCollector(project).collect(template, fileGlob)
+            TwigTemplateVariablesCollector(project).collect(normalizedTemplate, normalizedFileGlob)
         }
     }
 
