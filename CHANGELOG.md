@@ -23,6 +23,16 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2026.1.298
+* Support multiple templates and fileGlob-only in Twig variables tool (Daniel Espendiller)
+* Service locator MCP output to structured text format (Daniel Espendiller)
+* Refactor service creation to unify metadata handling (Daniel Espendiller)
+* Merge compiled container, resource-based and indexed services metadata (Daniel Espendiller)
+* Add support for finding Twig route usages (Daniel Espendiller)
+* Add support for lazy, abstract, autowire, and autoconfigure attributes in XmlService parsing and tests (Daniel Espendiller)
+* Smarter cache value modification trackers in ContainerCollectionResolver (Daniel Espendiller)
+* Fix for block implementation line marker on indirect extends (Daniel Espendiller)
+
 ## 2026.1.297
 * Add Ant-style fileGlob filtering to MCP collectors (Daniel Espendiller)
 * Merge multiple compiled XML containers (Daniel Espendiller)
