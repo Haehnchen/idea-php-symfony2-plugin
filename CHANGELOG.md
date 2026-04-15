@@ -23,6 +23,12 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2026.1.299
+* Add Twig type usage target provider for "Find Usages" functionality (Daniel Espendiller)
+* Add Twig method and property usage detection and grouping in "Find Usages" (Daniel Espendiller)
+* Fix glob resolution for relative paths on Windows and WSL (Daniel Espendiller)
+* Add more implicit usage detection for PHP 8 attributes of Symfony components and Doctrine (Daniel Espendiller)
+
 ## 2026.1.298
 * Support multiple templates and fileGlob-only in Twig variables tool (Daniel Espendiller)
 * Service locator MCP output to structured text format (Daniel Espendiller)
