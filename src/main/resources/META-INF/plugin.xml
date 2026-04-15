@@ -818,6 +818,10 @@
         <usageTypeProvider implementation="fr.adrienbrault.idea.symfony2plugin.routing.usages.RouteUsageTypeProvider"/>
         <referencesSearch implementation="fr.adrienbrault.idea.symfony2plugin.routing.usages.RouteNameReferencesSearchExecutor"/>
 
+        <!-- resolve references from twig to php: foo.id => function getId() -->
+        <referencesSearch implementation="fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigMethodReferencesSearchExecutor"/>
+        <usageTypeProvider implementation="fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigMethodUsageTypeProvider"/>
+
         <referencesSearch implementation="fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigTemplateReferencesSearchExecutor"/>
         <usageTypeProvider implementation="fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigTemplateUsageTypeProvider"/>
         <moveFileHandler implementation="fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigMoveFileHandler"/>
