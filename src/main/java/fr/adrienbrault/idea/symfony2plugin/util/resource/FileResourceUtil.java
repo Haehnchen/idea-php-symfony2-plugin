@@ -307,7 +307,7 @@ public class FileResourceUtil {
             try {
                 Files.walkFileTree(Paths.get(path), new SimpleFileVisitor<>() {
                     @Override
-                    public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) {
+                    public @NotNull FileVisitResult visitFile(@NotNull Path path, @NotNull BasicFileAttributes attrs) {
                         if (pathMatcher.matches(path)) {
                             files.add(path.toString());
                         }
@@ -315,7 +315,7 @@ public class FileResourceUtil {
                     }
 
                     @Override
-                    public FileVisitResult visitFileFailed(Path file, IOException exc) {
+                    public @NotNull FileVisitResult visitFileFailed(@NotNull Path file, @NotNull IOException exc) {
                         return FileVisitResult.CONTINUE;
                     }
                 });
@@ -459,9 +459,24 @@ public class FileResourceUtil {
     }
 
     /**
+     * Resolve a relative resource glob against a concrete base path without ever passing the glob segment to {@link Path#of(String, String...)}.
+     * This keeps Windows and WSL paths safe because wildcard characters are only applied after the non-glob root has been normalized.
+     */
+    @NotNull
+    public static Pair<String, String> getGlobalPatternDirectory(@NotNull Path parentPath, @NotNull String resourcePath) {
+        Pair<String, String> globalPatternDirectory = getGlobalPatternDirectory(
+            StringUtils.stripStart(resourcePath.replace("\\", "/"), "/")
+        );
+
+        String rootPath = globalPatternDirectory.getFirst();
+        Path resolvedPath = parentPath.resolve(rootPath.isEmpty() ? "." : rootPath).normalize();
+
+        return Pair.create(resolvedPath.toString(), globalPatternDirectory.getSecond());
+    }
+
+    /**
      * controllers:
      *    resource: '../../src/Controller/'
-     *
      * controllers:
      *     resource:
      *         path: ../src/Controller/
@@ -562,12 +577,12 @@ public class FileResourceUtil {
 
         }
 
-        Path normalize = Paths.get(parent.getPath() + File.separatorChar + StringUtils.stripStart(glob, "\\/")).normalize();
-        Pair<String, String> globalPatternDirectory = getGlobalPatternDirectory(normalize.toString());
+        Pair<String, String> globalPatternDirectory = getGlobalPatternDirectory(Path.of(parent.getPath()), glob);
+        Path rootPath = Path.of(globalPatternDirectory.getFirst());
 
         Collection<VirtualFile> files = new HashSet<>();
         if (globalPatternDirectory.getSecond() == null) {
-            VirtualFile target = VfsUtil.findFile(Paths.get(globalPatternDirectory.getFirst()), false);
+            VirtualFile target = VfsUtil.findFile(rootPath, false);
             if (target != null) {
                 files.add(target);
             }
@@ -575,8 +590,8 @@ public class FileResourceUtil {
             return files;
         }
 
-        try {
-            for (Path file : Files.newDirectoryStream(Paths.get(globalPatternDirectory.getFirst()), globalPatternDirectory.getSecond())) {
+        try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(rootPath, globalPatternDirectory.getSecond())) {
+            for (Path file : directoryStream) {
                 VirtualFile target = VfsUtil.findFile(file, false);
                 if (target != null) {
                     files.add(target);

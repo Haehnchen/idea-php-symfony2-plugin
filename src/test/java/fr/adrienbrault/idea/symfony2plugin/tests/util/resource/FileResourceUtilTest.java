@@ -66,6 +66,18 @@ public class FileResourceUtilTest extends SymfonyLightCodeInsightFixtureTestCase
         assertNull(globalPatternDirectory.getSecond());
     }
 
+    public void testGetGlobalPatternDirectoryResolvesRelativeGlobAgainstBasePath() {
+        Path parentPath = Path.of("//wsl$/Ubuntu/home/example/project/config");
+
+        Pair<String, String> globalPatternDirectory = FileResourceUtil.getGlobalPatternDirectory(parentPath, "../src/*");
+        assertEquals(parentPath.resolve("../src").normalize().toString(), globalPatternDirectory.getFirst());
+        assertEquals("*", globalPatternDirectory.getSecond());
+
+        globalPatternDirectory = FileResourceUtil.getGlobalPatternDirectory(parentPath, "..\\src\\*");
+        assertEquals(parentPath.resolve("../src").normalize().toString(), globalPatternDirectory.getFirst());
+        assertEquals("*", globalPatternDirectory.getSecond());
+    }
+
     public void testFileResources() {
         VirtualFile services = myFixture.copyFileToProject("services.xml", "config/services.xml");
         VirtualFile virtualFile = myFixture.copyFileToProject("classes.php", "src/Test.php");
@@ -159,6 +171,22 @@ public class FileResourceUtilTest extends SymfonyLightCodeInsightFixtureTestCase
 
         Collection<PsiElement> targets = FileResourceUtil.getFileResourceTargets(getProject(), configFile, "./legacy_config_*.php");
         assertTrue(targets.stream().anyMatch(psiElement -> psiElement instanceof PsiFile psiFile && "legacy_config_one.php".equals(psiFile.getName())));
+    }
+
+    public void testGetFileResourceTargetsForParentDirectoryGlob() throws IOException {
+        Path root = Files.createTempDirectory("symfony-resource-parent-glob");
+
+        createLocalFile(root.resolve("config/services.yaml"), "imports:\n  - { resource: '../src/*' }\n");
+        createLocalFile(root.resolve("src/Foo.php"), "<?php\n");
+        createLocalFile(root.resolve("src/Bar.php"), "<?php\n");
+
+        PsiFile configFile = getPsiFile(root.resolve("config/services.yaml"));
+        assertNotNull(configFile);
+
+        assertTrue(FileResourceUtil.hasFileResourceTargets(getProject(), configFile, "../src/*"));
+
+        Collection<PsiElement> targets = FileResourceUtil.getFileResourceTargets(getProject(), configFile, "../src/*");
+        assertTrue(targets.stream().anyMatch(psiElement -> psiElement instanceof PsiFile psiFile && "Foo.php".equals(psiFile.getName())));
     }
 
     public void testHasFileResourceTargetsForMissingGlob() throws IOException {
