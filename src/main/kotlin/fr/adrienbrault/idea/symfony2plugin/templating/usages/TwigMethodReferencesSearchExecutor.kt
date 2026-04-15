@@ -40,7 +40,9 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
         consumer: Processor<in PsiReference>,
     ): Boolean {
         val target = queryParameters.elementToSearch
-        val targetMember = getTwigTargetMember(target) ?: return true
+        val targetMember = ApplicationManager.getApplication().runReadAction<PhpNamedElement?> {
+            getTwigTargetMember(target)
+        } ?: return true
 
         ApplicationManager.getApplication().runReadAction {
             doSearch(targetMember.project, targetMember, queryParameters, consumer)
