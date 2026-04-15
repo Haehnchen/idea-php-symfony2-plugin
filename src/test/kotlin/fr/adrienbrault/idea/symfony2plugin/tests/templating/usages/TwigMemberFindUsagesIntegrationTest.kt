@@ -11,6 +11,10 @@ import com.intellij.usageView.UsageInfo
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.php.lang.psi.elements.Field
 import com.jetbrains.php.lang.psi.elements.Method
+import com.jetbrains.php.lang.psi.elements.PhpClass
+import com.jetbrains.twig.elements.TwigFieldReference
+import com.jetbrains.twig.elements.TwigVariableReference
+import fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigTypeFindUsagesHandler
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
 
 class TwigMemberFindUsagesIntegrationTest : SymfonyLightCodeInsightFixtureTestCase() {
@@ -67,6 +71,97 @@ class TwigMemberFindUsagesIntegrationTest : SymfonyLightCodeInsightFixtureTestCa
 
         assertContainsUsageFile(usages, "templates/field.html.twig")
         assertNotContainsUsageFile(usages, "templates/other.html.twig")
+    }
+
+    fun testPlatformFindUsagesTriggeredFromTwigMethodDelegatesToPhpMethod() {
+        myFixture.addFileToProject(
+            "src/Bar.php",
+            """
+            <?php
+            namespace Foo;
+            class Bar {
+                public function getId() {}
+            }
+            """.trimIndent()
+        )
+
+        myFixture.addFileToProject("templates/secondary.html.twig", "{# @var test \\Foo\\Bar #} {{ test.getId() }}")
+
+        val psiFile = configureByProjectPath("templates/index.html.twig", "{# @var test \\Foo\\Bar #} {{ test.i<caret>d }}")
+        val twigElement = PsiTreeUtil.getParentOfType(psiFile.findElementAt(myFixture.caretOffset), TwigFieldReference::class.java, false)
+        assertNotNull(twigElement)
+
+        val handler = getPlatformFindUsagesHandler(twigElement!!)
+        assertInstanceOf(handler, TwigTypeFindUsagesHandler::class.java)
+
+        val primaryElements = handler!!.primaryElements
+        assertEquals(1, primaryElements.size)
+        assertInstanceOf(primaryElements[0], Method::class.java)
+
+        val usages = findUsagesFromPlatform(twigElement)
+
+        assertContainsUsageFile(usages, "templates/index.html.twig")
+        assertContainsUsageFile(usages, "templates/secondary.html.twig")
+    }
+
+    fun testPlatformFindUsagesTriggeredFromTwigPropertyDelegatesToPhpField() {
+        myFixture.addFileToProject(
+            "src/Bar.php",
+            $$"""
+            <?php
+            namespace Foo;
+            class Bar {
+                public function __construct(
+                    public string $primaryValue,
+                    public string $secondaryValue,
+                ) {}
+            }
+            """.trimIndent()
+        )
+
+        myFixture.addFileToProject("templates/secondary.html.twig", "{# @var test \\Foo\\Bar #} {{ test.primaryValue|upper }}")
+        myFixture.addFileToProject("templates/other.html.twig", "{# @var test \\Foo\\Bar #} {{ test.secondaryValue }}")
+
+        val psiFile = configureByProjectPath("templates/index.html.twig", "{# @var test \\Foo\\Bar #} {{ test.primary<caret>Value }}")
+        val twigElement = PsiTreeUtil.getParentOfType(psiFile.findElementAt(myFixture.caretOffset), TwigFieldReference::class.java, false)
+        assertNotNull(twigElement)
+
+        val handler = getPlatformFindUsagesHandler(twigElement!!)
+        assertInstanceOf(handler, TwigTypeFindUsagesHandler::class.java)
+
+        val primaryElements = handler!!.primaryElements
+        assertEquals(1, primaryElements.size)
+        assertInstanceOf(primaryElements[0], Field::class.java)
+
+        val usages = findUsagesFromPlatform(twigElement)
+
+        assertContainsUsageFile(usages, "templates/index.html.twig")
+        assertContainsUsageFile(usages, "templates/secondary.html.twig")
+        assertNotContainsUsageFile(usages, "templates/other.html.twig")
+    }
+
+    fun testPlatformFindUsagesTriggeredFromTwigBaseVariableDelegatesToPhpClass() {
+        myFixture.addFileToProject(
+            "src/Bar.php",
+            """
+            <?php
+            namespace Foo;
+            class Bar {
+                public function getId() {}
+            }
+            """.trimIndent()
+        )
+
+        val psiFile = configureByProjectPath("templates/index.html.twig", "{# @var foo \\Foo\\Bar #} {{ fo<caret>o.id }}")
+        val twigElement = PsiTreeUtil.getParentOfType(psiFile.findElementAt(myFixture.caretOffset), TwigVariableReference::class.java, false)
+        assertNotNull(twigElement)
+
+        val handler = getPlatformFindUsagesHandler(twigElement!!)
+        assertInstanceOf(handler, TwigTypeFindUsagesHandler::class.java)
+
+        val primaryElements = handler!!.primaryElements
+        assertEquals(1, primaryElements.size)
+        assertInstanceOf(primaryElements[0], PhpClass::class.java)
     }
 
     private fun findUsagesFromPlatform(targetElement: PsiElement): List<UsageInfo> {
