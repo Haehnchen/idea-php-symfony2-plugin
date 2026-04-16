@@ -43,6 +43,10 @@ public class PhpRouteReferenceContributor extends PsiReferenceContributor {
         new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "forward"),
     };
 
+    private static final MethodMatcher.CallToSignature[] ROUTE_CONTROLLER_SIGNATURES = new MethodMatcher.CallToSignature[] {
+        new MethodMatcher.CallToSignature("\\Symfony\\Component\\Routing\\Loader\\Configurator\\Traits\\RouteTrait", "controller"),
+    };
+
     @Override
     public void registerReferenceProviders(@NotNull PsiReferenceRegistrar psiReferenceRegistrar) {
         psiReferenceRegistrar.registerReferenceProvider(
@@ -82,6 +86,27 @@ public class PhpRouteReferenceContributor extends PsiReferenceContributor {
                 public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
 
                     if (MethodMatcher.getMatchedSignatureWithDepth(psiElement, FORWARD_SIGNATURES) == null) {
+                        return new PsiReference[0];
+                    }
+
+                    return new PsiReference[]{ new ControllerReference((StringLiteralExpression) psiElement) };
+                }
+
+                @Override
+                public boolean acceptsTarget(@NotNull PsiElement target) {
+                    return Symfony2ProjectComponent.isEnabled(target);
+                }
+            }
+        );
+
+        psiReferenceRegistrar.registerReferenceProvider(
+            PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern(),
+            new PsiReferenceProvider() {
+                @NotNull
+                @Override
+                public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+
+                    if (MethodMatcher.getMatchedSignatureWithDepth(psiElement, ROUTE_CONTROLLER_SIGNATURES) == null) {
                         return new PsiReference[0];
                     }
 
