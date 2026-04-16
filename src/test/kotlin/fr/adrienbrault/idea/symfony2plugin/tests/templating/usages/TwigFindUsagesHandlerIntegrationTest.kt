@@ -344,8 +344,7 @@ class TwigFindUsagesHandlerIntegrationTest : SymfonyLightCodeInsightFixtureTestC
 
         val primaryElements = handler!!.primaryElements
         assertEquals(1, primaryElements.size)
-        assertInstanceOf(primaryElements[0], Method::class.java)
-        assertEquals("formatProductNumberFunction", (primaryElements[0] as Method).name)
+        assertEquals("product_number_function", primaryElements[0].text)
 
         val usages = findUsagesFromPlatform(twigElement)
 
@@ -365,13 +364,34 @@ class TwigFindUsagesHandlerIntegrationTest : SymfonyLightCodeInsightFixtureTestC
 
         val primaryElements = handler!!.primaryElements
         assertEquals(1, primaryElements.size)
-        assertInstanceOf(primaryElements[0], Method::class.java)
-        assertEquals("formatProductNumberFilter", (primaryElements[0] as Method).name)
+        assertEquals("product_number_filter", primaryElements[0].text)
 
         val usages = findUsagesFromPlatform(twigElement)
 
         assertContainsUsageFile(usages, "templates/index.html.twig")
         assertContainsUsageFile(usages, "templates/secondary.html.twig")
+    }
+
+    fun testPlatformFindUsagesTriggeredFromNodeClassTwigFunctionSearchesExactSymbolUsages() {
+        myFixture.addFileToProject("templates/secondary.html.twig", "{{ form_start() }}")
+        myFixture.addFileToProject("templates/other.html.twig", "{{ form() }} {{ form_end() }}")
+
+        val psiFile = configureByProjectPath("templates/index.html.twig", "{{ form_st<caret>art() }}")
+        val twigElement = psiFile.findElementAt(myFixture.caretOffset)
+        assertNotNull(twigElement)
+
+        val handler = getPlatformFindUsagesHandler(twigElement!!)
+        assertInstanceOf(handler, TwigFindUsagesHandler::class.java)
+
+        val primaryElements = handler!!.primaryElements
+        assertEquals(1, primaryElements.size)
+        assertEquals("form_start", primaryElements[0].text)
+
+        val usages = findUsagesFromPlatform(twigElement)
+
+        assertContainsUsageFile(usages, "templates/index.html.twig")
+        assertContainsUsageFile(usages, "templates/secondary.html.twig")
+        assertNotContainsUsageFile(usages, "templates/other.html.twig")
     }
 
     private fun findUsagesFromPlatform(targetElement: PsiElement): List<UsageInfo> {

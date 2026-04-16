@@ -100,6 +100,16 @@ public class TwigExtensionParserTest extends SymfonyLightCodeInsightFixtureTestC
             "#M#C\\Twig\\Extensions.parseAttributeFunction",
             functions.get("attribute_parser_callable").getSignature()
         );
+
+        assertEquals(
+            "#M#C\\Symfony\\Bridge\\Twig\\Node\\RenderBlockNode.compile",
+            functions.get("form_start").getSignature()
+        );
+
+        assertEquals(
+            "#M#C\\My_Filter_Node.compile",
+            filters.get("node_class_filter").getSignature()
+        );
     }
 
     public void testExtensionAreCollectedForDeprecated() {

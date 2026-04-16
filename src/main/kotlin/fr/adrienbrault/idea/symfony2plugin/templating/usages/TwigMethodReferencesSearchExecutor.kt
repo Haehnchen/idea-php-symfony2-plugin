@@ -346,8 +346,7 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
                 if (functionNames.isNotEmpty() &&
                     TwigPattern.getPrintBlockFunctionPattern().accepts(element) &&
                     functionNames.any { it.equals(element.text, ignoreCase = true) } &&
-                    processed.add(element) &&
-                    TwigExtensionUsageUtil.getFunctionTargets(element).any { isTargetMethod(it, targetMethod) }
+                    processed.add(element)
                 ) {
                     consumer.process(TwigMethodUsageReference(element, targetMethod, TextRange(0, element.textLength)))
                 }
@@ -372,8 +371,7 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
                 if (filterNames.isNotEmpty() &&
                     (TwigPattern.getFilterPattern().accepts(element) || TwigPattern.getApplyFilterPattern().accepts(element)) &&
                     filterNames.any { it.equals(element.text, ignoreCase = true) } &&
-                    processed.add(element) &&
-                    TwigExtensionUsageUtil.getFilterTargets(element).any { isTargetMethod(it, targetMethod) }
+                    processed.add(element)
                 ) {
                     consumer.process(TwigMethodUsageReference(element, targetMethod, TextRange(0, element.textLength)))
                 }

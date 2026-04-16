@@ -202,8 +202,7 @@ class TwigFindUsagesHandlerFactoryTest : SymfonyLightCodeInsightFixtureTestCase(
         val handler = TwigFindUsagesHandlerFactory().createFindUsagesHandler(twigElement!!, false)
         assertInstanceOf(handler, TwigFindUsagesHandler::class.java)
         assertEquals(1, handler!!.primaryElements.size)
-        assertInstanceOf(handler.primaryElements[0], Method::class.java)
-        assertEquals("formatProductNumberFunction", (handler.primaryElements[0] as Method).name)
+        assertEquals("product_number_function", handler.primaryElements[0].text)
     }
 
     fun testCreateFindUsagesHandlerOnTwigFilterUsageReturnsPhpMethodPrimaryElement() {
@@ -214,8 +213,18 @@ class TwigFindUsagesHandlerFactoryTest : SymfonyLightCodeInsightFixtureTestCase(
         val handler = TwigFindUsagesHandlerFactory().createFindUsagesHandler(twigElement!!, false)
         assertInstanceOf(handler, TwigFindUsagesHandler::class.java)
         assertEquals(1, handler!!.primaryElements.size)
-        assertInstanceOf(handler.primaryElements[0], Method::class.java)
-        assertEquals("formatProductNumberFilter", (handler.primaryElements[0] as Method).name)
+        assertEquals("product_number_filter", handler.primaryElements[0].text)
+    }
+
+    fun testCreateFindUsagesHandlerOnNodeClassTwigFunctionUsageReturnsTwigSymbolPrimaryElement() {
+        val psiFile = configureByProjectPath("templates/index.html.twig", "{{ form_st<caret>art() }}")
+        val twigElement = psiFile.findElementAt(myFixture.caretOffset)
+        assertNotNull(twigElement)
+
+        val handler = TwigFindUsagesHandlerFactory().createFindUsagesHandler(twigElement!!, false)
+        assertInstanceOf(handler, TwigFindUsagesHandler::class.java)
+        assertEquals(1, handler!!.primaryElements.size)
+        assertEquals("form_start", handler.primaryElements[0].text)
     }
 
     fun testGetTargetsOnTwigConstantEnumCaseReturnsPhpEnumCaseUsageTarget() {

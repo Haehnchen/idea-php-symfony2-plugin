@@ -22,8 +22,6 @@ object TwigUsageTargetUtil {
     fun getTwigFindUsagesTargets(element: PsiElement): List<PsiElement> {
         val targets = linkedSetOf<PsiElement>()
 
-        targets.addAll(TwigExtensionUsageUtil.getFunctionTargets(element))
-        targets.addAll(TwigExtensionUsageUtil.getFilterTargets(element))
         targets.addAll(TwigTemplateGoToDeclarationHandler.getTypeGoto(element))
         targets.addAll(getConstantTargets(element))
         targets.addAll(getEnumTargets(element))

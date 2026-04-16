@@ -13,6 +13,15 @@ import fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigMethodUsageType
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
 
 class TwigMethodUsageTypeProviderTest : SymfonyLightCodeInsightFixtureTestCase() {
+    override fun setUp() {
+        super.setUp()
+        myFixture.copyFileToProject("twig_extensions.php")
+    }
+
+    override fun getTestDataPath(): String {
+        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/util/fixtures"
+    }
+
     fun testClassifiesTwigMethodUsages() {
         val method = getMethodUnderCaret(
             """
@@ -57,6 +66,34 @@ class TwigMethodUsageTypeProviderTest : SymfonyLightCodeInsightFixtureTestCase()
         assertEquals("Twig", usageType.toString())
     }
 
+    fun testClassifiesTwigFunctionSymbolUsages() {
+        val twigFile = configureByProjectPath("templates/index.html.twig", "{{ form_st<caret>art() }}")
+        val element = twigFile.findElementAt(myFixture.caretOffset)
+        assertNotNull(element)
+
+        val usageType: UsageType? = TwigMethodUsageTypeProvider().getUsageType(
+            element!!,
+            arrayOf<UsageTarget>(PsiElement2UsageTargetAdapter(element, true))
+        )
+
+        assertNotNull(usageType)
+        assertEquals("Twig", usageType.toString())
+    }
+
+    fun testClassifiesTwigFilterSymbolUsages() {
+        val twigFile = configureByProjectPath("templates/index.html.twig", "{{ value|product_number_fi<caret>lter }}")
+        val element = twigFile.findElementAt(myFixture.caretOffset)
+        assertNotNull(element)
+
+        val usageType: UsageType? = TwigMethodUsageTypeProvider().getUsageType(
+            element!!,
+            arrayOf<UsageTarget>(PsiElement2UsageTargetAdapter(element, true))
+        )
+
+        assertNotNull(usageType)
+        assertEquals("Twig", usageType.toString())
+    }
+
     private fun getMethodUnderCaret(content: String): Method {
         val psiFile = myFixture.configureByText("Bar.php", content)
         val element = psiFile.findElementAt(myFixture.caretOffset)
@@ -71,5 +108,16 @@ class TwigMethodUsageTypeProviderTest : SymfonyLightCodeInsightFixtureTestCase()
         val field = PsiTreeUtil.getParentOfType(element, Field::class.java, false)
         assertNotNull(field)
         return field!!
+    }
+
+    private fun configureByProjectPath(filePath: String, content: String): com.intellij.psi.PsiFile {
+        val caretOffset = content.indexOf("<caret>")
+        assertTrue("Missing <caret> marker", caretOffset >= 0)
+
+        myFixture.addFileToProject(filePath, content.replace("<caret>", ""))
+        myFixture.configureFromExistingVirtualFile(myFixture.findFileInTempDir(filePath))
+        myFixture.editor.caretModel.moveToOffset(caretOffset)
+
+        return myFixture.file
     }
 }

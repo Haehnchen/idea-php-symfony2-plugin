@@ -322,6 +322,24 @@ public class TwigExtensionParser  {
         return null;
     }
 
+    /**
+     * Resolves `node_class` options like `['node_class' => RenderBlockNode::class]` to the node `compile()` method signature.
+     */
+    @Nullable
+    private static String getNodeClassCompileSignature(PsiElement[] psiElement) {
+        if (psiElement.length <= 2 || !(psiElement[2] instanceof ArrayCreationExpression arrayCreationExpression)) {
+            return null;
+        }
+
+        PhpPsiElement nodeClassValue = PhpElementsUtil.getArrayValue(arrayCreationExpression, "node_class");
+        String nodeClass = nodeClassValue != null ? PhpElementsUtil.getStringValue(nodeClassValue) : null;
+        if (StringUtils.isBlank(nodeClass)) {
+            return null;
+        }
+
+        return String.format("#M#C\\%s.%s", StringUtils.stripStart(nodeClass, "\\"), "compile");
+    }
+
     private static void parseOperators(@NotNull Method method, @NotNull Map<String, TwigExtension> filters) {
         final PhpClass containingClass = method.getContainingClass();
         if (containingClass == null) {
@@ -431,6 +449,11 @@ public class TwigExtensionParser  {
                         String signature = null;
                         if (psiElement.length > 1) {
                             signature = getCallableSignature(psiElement[1], method);
+                        }
+
+                        // `['node_class' => RenderBlockNode::class]`
+                        if (signature == null) {
+                            signature = getNodeClassCompileSignature(psiElement);
                         }
 
                         // creation options like: needs_environment
@@ -553,6 +576,11 @@ public class TwigExtensionParser  {
                         String signature = null;
                         if (psiElement.length > 1) {
                             signature = getCallableSignature(psiElement[1], method);
+                        }
+
+                        // `['node_class' => RenderBlockNode::class]`
+                        if (signature == null) {
+                            signature = getNodeClassCompileSignature(psiElement);
                         }
 
                         if (signature == null && psiElement.length > 2 && psiElement[2] instanceof ArrayCreationExpression arrayCreationExpression) {
