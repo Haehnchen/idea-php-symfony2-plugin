@@ -4,6 +4,9 @@ namespace
 {
     function foo_test() {}
     class My_Node_Test {}
+    class My_Filter_Node {
+        public function compile() {}
+    }
 
     class ClassInstance {
         public function getFoobar() {}
@@ -91,6 +94,7 @@ namespace Twig
                 new \Twig_Filter('trans_2', [$this, 'foobar']),
                 new TwigFilter('trans_3', [$this, 'foobar']),
                 new TwigFilter('default', [self::class, 'default'], ['node_class' => DefaultFilter::class]),
+                new TwigFilter('node_class_filter', null, ['node_class' => \My_Filter_Node::class]),
                 new TwigFilter('spaceless_deprecation_info', [self::class, 'spaceless'], ['is_safe' => ['html'], 'deprecation_info' => new \Twig\DeprecatedCallableInfo('twig/twig', '3.12')]),
                 new TwigFilter('spaceless_deprecation_deprecated', [self::class, 'spaceless'], ['is_safe' => ['html'], 'deprecated' => 12.12]),
             ];
@@ -122,6 +126,9 @@ namespace Twig
                 new TwigFunction('class_php_callable_method_foobar', $this->getFoobar(...)),
                 new TwigFunction('class_php_callable_function_foobar', max(...)),
                 new TwigFunction('attribute_parser_callable', null, ['parser_callable' => [self::class, 'parseAttributeFunction']]),
+                new TwigFunction('form', null, ['node_class' => \Symfony\Bridge\Twig\Node\RenderBlockNode::class]),
+                new TwigFunction('form_start', null, ['node_class' => \Symfony\Bridge\Twig\Node\RenderBlockNode::class]),
+                new TwigFunction('form_end', null, ['node_class' => \Symfony\Bridge\Twig\Node\RenderBlockNode::class]),
                 new TwigFunction('deprecated_function_info', [self::class, 'deprecatedFunctionInfo'], ['deprecation_info' => new \Twig\DeprecatedCallableInfo('twig/twig', '3.12')]),
                 new TwigFunction('deprecated_function', [self::class, 'deprecatedFunction'], ['deprecated' => 12.12]),
             ];
@@ -148,6 +155,15 @@ namespace Twig
         }
 
         public function foobar()
+        {
+        }
+    }
+}
+
+namespace Symfony\Bridge\Twig\Node {
+    class RenderBlockNode
+    {
+        public function compile()
         {
         }
     }

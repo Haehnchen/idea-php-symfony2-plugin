@@ -28,10 +28,12 @@ import com.jetbrains.twig.TwigFileType
  */
 class TwigFindUsagesHandlerFactory : FindUsagesHandlerFactory(), UsageTargetProvider {
     /**
-     * Allows Find Usages to start directly on Twig usage PSI by first exposing the resolved PHP targets.
+     * Allows Find Usages to start directly on Twig usage PSI by exposing either Twig symbol targets
+     * or delegated PHP targets depending on the resolved usage identity.
      */
     override fun getTargets(element: PsiElement): Array<UsageTarget> {
-        val usageTargets: Array<UsageTarget> = getTwigFindUsagesPhpTargets(element)
+        val target = getTwigFindUsagesTarget(element) ?: return UsageTarget.EMPTY_ARRAY
+        val usageTargets: Array<UsageTarget> = target.primaryElements
             .map { PsiElement2UsageTargetAdapter(it, true) }
             .toTypedArray()
 
@@ -47,33 +49,35 @@ class TwigFindUsagesHandlerFactory : FindUsagesHandlerFactory(), UsageTargetProv
     }
 
     /**
-     * Activates the custom handler only when the Twig caret resolves to PHP class/member targets.
+     * Activates the custom handler only when the Twig caret resolves to a supported Twig/PHP usage identity.
      */
-    override fun canFindUsages(element: PsiElement): Boolean = getTwigFindUsagesPhpTargets(element).isNotEmpty()
+    override fun canFindUsages(element: PsiElement): Boolean = getTwigFindUsagesTarget(element) != null
 
     /**
-     * Stores the PHP delegation targets that should be searched instead of the raw Twig PSI.
+     * Stores the effective Twig or PHP search targets for the Find Usages session.
      */
     override fun createFindUsagesHandler(element: PsiElement, forHighlightUsages: Boolean): FindUsagesHandler? {
-        val targets = getTwigFindUsagesPhpTargets(element)
-
-        return targets.takeIf { it.isNotEmpty() }?.let { TwigFindUsagesHandler(element, it) }
+        return getTwigFindUsagesTarget(element)?.let { TwigFindUsagesHandler(it) }
     }
 }
 
 /**
- * Reuses Twig goto resolution and keeps only PHP Find Usages targets.
- * Twig member lookups can arrive on a composite field reference, so nearby leaf candidates are probed as well.
+ * Resolves the Find Usages identity for one Twig caret position.
+ * Extension symbols stay Twig-symbol based, while all other cases keep delegating to PHP.
  */
-private fun getTwigFindUsagesPhpTargets(element: PsiElement): List<PsiElement> {
+private fun getTwigFindUsagesTarget(element: PsiElement): TwigFindUsagesTarget? {
     if (element.containingFile?.fileType != TwigFileType.INSTANCE) {
-        return emptyList()
+        return null
     }
 
     val resolvedCandidates = mutableListOf<Pair<PsiElement, List<PsiElement>>>()
     val candidateElements = getTwigFindUsagesCaretElement(element)?.let(::listOf) ?: listOf(element)
 
     for (candidate in candidateElements) {
+        TwigExtensionUsageUtil.getTwigExtensionSymbol(candidate)?.let { symbol ->
+            return TwigExtensionSymbolFindUsagesTarget(candidate, symbol)
+        }
+
         val resolvedTargets = TwigUsageTargetUtil.getTwigFindUsagesTargets(candidate)
             .filter { it is PhpClass || it is Method || it is Field || it is PhpEnumCase }
 
@@ -82,15 +86,12 @@ private fun getTwigFindUsagesPhpTargets(element: PsiElement): List<PsiElement> {
         }
     }
 
-    val preferredTargets = resolvedCandidates
+    return resolvedCandidates
         .maxWithOrNull(compareBy<Pair<PsiElement, List<PsiElement>>>(
             { it.first.textOffset },
             { if (it.second.any { target -> target !is PhpClass }) 1 else 0 },
         ))
-        ?.second
-        ?: emptyList()
-
-    return preferredTargets
+        ?.let { TwigPhpFindUsagesTarget(it.first, it.second) }
 }
 
 /**

@@ -45,6 +45,11 @@ private fun isTwigUsageTarget(targets: Array<out UsageTarget>): Boolean {
             continue
         }
 
+        // Symbol-based Twig extension usage targets like `form_start` in `{{ form_start() }}` should stay in the Twig bucket.
+        if (target.element.containingFile is TwigFile && TwigExtensionUsageUtil.getTwigExtensionSymbol(target.element) != null) {
+            return true
+        }
+
         // Limit Twig usage grouping to the concrete PHP symbol kinds supported by the Twig search executor.
         if (target.element is Method || target.element is Field || target.element is PhpEnumCase || target.element is PhpClass) {
             return true
