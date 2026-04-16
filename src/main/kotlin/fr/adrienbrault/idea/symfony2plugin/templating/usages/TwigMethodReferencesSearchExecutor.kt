@@ -51,7 +51,7 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
 
         ApplicationManager.getApplication().runReadAction {
             when {
-                target is Method && TwigTypeResolveUtil.isTwigAccessibleMethod(target) ->
+                target is Method && (TwigTypeResolveUtil.isTwigAccessibleMethod(target) || TwigExtensionUsageUtil.hasExtensionNames(target)) ->
                     doMethodSearch(target.project, target, queryParameters, consumer)
 
                 target is Field && isTwigAccessibleField(target) ->
@@ -87,14 +87,35 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
         queryParameters: ReferencesSearch.SearchParameters,
         consumer: Processor<in PsiReference>,
     ) {
-        val processed = HashSet<PsiElement>()
-        val searchWords = getTwigMethodSearchWords(targetMethod)
+        val processedMemberUsages = HashSet<PsiElement>()
+        val processedFunctionUsages = HashSet<PsiElement>()
+        val processedFilterUsages = HashSet<PsiElement>()
+        val memberSearchWords = if (TwigTypeResolveUtil.isTwigAccessibleMethod(targetMethod)) getTwigMethodSearchWords(targetMethod) else emptySet()
+        val functionNames = TwigExtensionUsageUtil.getFunctionNames(targetMethod)
+        val filterNames = TwigExtensionUsageUtil.getFilterNames(targetMethod)
+        val searchWords = linkedSetOf<String>().apply {
+            addAll(memberSearchWords)
+            addAll(functionNames)
+            addAll(filterNames)
+        }
+
         if (searchWords.isEmpty()) {
             return
         }
 
         searchTwigFiles(project, queryParameters, searchWords) { twigPsiFile ->
-            findTwigMethodUsages(twigPsiFile, targetMethod, processed, consumer)
+            if (memberSearchWords.isNotEmpty()) {
+                findTwigMethodUsages(twigPsiFile, targetMethod, processedMemberUsages, consumer)
+            }
+
+            if (functionNames.isNotEmpty()) {
+                findTwigFunctionUsages(twigPsiFile, targetMethod, functionNames, processedFunctionUsages, consumer)
+            }
+
+            if (filterNames.isNotEmpty()) {
+                findTwigFilterUsages(twigPsiFile, targetMethod, filterNames, processedFilterUsages, consumer)
+            }
+
             true
         }
     }
@@ -301,6 +322,58 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
                     isTwigMethodCandidate(element, methodNames) &&
                     processed.add(element) &&
                     resolvesToTargetMethod(element, targetMethod)
+                ) {
+                    consumer.process(TwigMethodUsageReference(element, targetMethod, TextRange(0, element.textLength)))
+                }
+
+                super.visitElement(element)
+            }
+        })
+    }
+
+    /**
+     * Walks a candidate Twig file and emits synthetic references for Twig function usages backed by a PHP method.
+     */
+    private fun findTwigFunctionUsages(
+        twigFile: TwigFile,
+        targetMethod: Method,
+        functionNames: Set<String>,
+        processed: MutableSet<PsiElement>,
+        consumer: Processor<in PsiReference>,
+    ) {
+        twigFile.accept(object : PsiRecursiveElementWalkingVisitor() {
+            override fun visitElement(element: PsiElement) {
+                if (functionNames.isNotEmpty() &&
+                    TwigPattern.getPrintBlockFunctionPattern().accepts(element) &&
+                    functionNames.any { it.equals(element.text, ignoreCase = true) } &&
+                    processed.add(element) &&
+                    TwigExtensionUsageUtil.getFunctionTargets(element).any { isTargetMethod(it, targetMethod) }
+                ) {
+                    consumer.process(TwigMethodUsageReference(element, targetMethod, TextRange(0, element.textLength)))
+                }
+
+                super.visitElement(element)
+            }
+        })
+    }
+
+    /**
+     * Walks a candidate Twig file and emits synthetic references for Twig filter usages backed by a PHP method.
+     */
+    private fun findTwigFilterUsages(
+        twigFile: TwigFile,
+        targetMethod: Method,
+        filterNames: Set<String>,
+        processed: MutableSet<PsiElement>,
+        consumer: Processor<in PsiReference>,
+    ) {
+        twigFile.accept(object : PsiRecursiveElementWalkingVisitor() {
+            override fun visitElement(element: PsiElement) {
+                if (filterNames.isNotEmpty() &&
+                    (TwigPattern.getFilterPattern().accepts(element) || TwigPattern.getApplyFilterPattern().accepts(element)) &&
+                    filterNames.any { it.equals(element.text, ignoreCase = true) } &&
+                    processed.add(element) &&
+                    TwigExtensionUsageUtil.getFilterTargets(element).any { isTargetMethod(it, targetMethod) }
                 ) {
                     consumer.process(TwigMethodUsageReference(element, targetMethod, TextRange(0, element.textLength)))
                 }

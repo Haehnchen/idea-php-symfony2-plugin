@@ -13,6 +13,15 @@ import fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigMethodReference
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
 
 class TwigMethodReferencesSearchExecutorTest : SymfonyLightCodeInsightFixtureTestCase() {
+    override fun setUp() {
+        super.setUp()
+        myFixture.copyFileToProject("twig_extensions.php")
+    }
+
+    override fun getTestDataPath(): String {
+        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/util/fixtures"
+    }
+
     fun testFindsTwigUsagesForShortcutAndMethodName() {
         val method = getMethodUnderCaret(
             """
@@ -306,6 +315,100 @@ class TwigMethodReferencesSearchExecutorTest : SymfonyLightCodeInsightFixtureTes
 
         assertContainsSourceFile(references, "templates/multiline.html.twig")
         assertNotContainsSourceFile(references, "templates/multiline_other.html.twig")
+    }
+
+    fun testFindsTwigUsagesForAttributeTwigFunctionMethod() {
+        val method = getMethodUnderCaret(
+            $$"""
+            <?php
+            namespace App\Twig;
+            class AppExtension
+            {
+                public function formatProductNumberFu<caret>nction(string $number): string
+                {
+                }
+            }
+            """.trimIndent()
+        )
+
+        myFixture.addFileToProject("templates/function.html.twig", "{{ product_number_function('123') }}")
+        myFixture.addFileToProject("templates/other.html.twig", "{{ product_number_filter('123') }}")
+        myFixture.addFileToProject("templates/unknown.html.twig", "{{ unknown_function('123') }}")
+
+        val references = getTwigMethodUsageReferences(method)
+
+        assertContainsSourceFile(references, "templates/function.html.twig")
+        assertNotContainsSourceFile(references, "templates/other.html.twig")
+        assertNotContainsSourceFile(references, "templates/unknown.html.twig")
+    }
+
+    fun testFindsTwigUsagesForClassicTwigFunctionMethod() {
+        val method = getMethodUnderCaret(
+            """
+            <?php
+            namespace Twig;
+            class Extensions {
+                public function foob<caret>ar()
+                {
+                }
+            }
+            """.trimIndent()
+        )
+
+        myFixture.addFileToProject("templates/function.html.twig", "{{ hwi_oauth_login_url() }}")
+        myFixture.addFileToProject("templates/other.html.twig", "{{ product_number_function('123') }}")
+
+        val references = getTwigMethodUsageReferences(method)
+
+        assertContainsSourceFile(references, "templates/function.html.twig")
+        assertNotContainsSourceFile(references, "templates/other.html.twig")
+    }
+
+    fun testFindsTwigUsagesForAttributeTwigFilterMethodAndApplyTag() {
+        val method = getMethodUnderCaret(
+            $$"""
+            <?php
+            namespace App\Twig;
+            class AppExtension
+            {
+                public function formatProductNumberFi<caret>lter(string $number): string
+                {
+                }
+            }
+            """.trimIndent()
+        )
+
+        myFixture.addFileToProject("templates/filter.html.twig", "{{ price|product_number_filter }}")
+        myFixture.addFileToProject("templates/apply.html.twig", "{% apply product_number_filter %}{{ price }}{% endapply %}")
+        myFixture.addFileToProject("templates/other.html.twig", "{{ product_number_function('123') }}")
+
+        val references = getTwigMethodUsageReferences(method)
+
+        assertContainsSourceFile(references, "templates/filter.html.twig")
+        assertContainsSourceFile(references, "templates/apply.html.twig")
+        assertNotContainsSourceFile(references, "templates/other.html.twig")
+    }
+
+    fun testFindsTwigUsagesForClassicTwigFilterMethod() {
+        val method = getMethodUnderCaret(
+            """
+            <?php
+            namespace Twig;
+            class Extensions {
+                public function foob<caret>ar()
+                {
+                }
+            }
+            """.trimIndent()
+        )
+
+        myFixture.addFileToProject("templates/filter.html.twig", "{{ value|trans }}")
+        myFixture.addFileToProject("templates/other.html.twig", "{{ value|product_number_filter }}")
+
+        val references = getTwigMethodUsageReferences(method)
+
+        assertContainsSourceFile(references, "templates/filter.html.twig")
+        assertNotContainsSourceFile(references, "templates/other.html.twig")
     }
 
     private fun getMethodUnderCaret(content: String): Method {

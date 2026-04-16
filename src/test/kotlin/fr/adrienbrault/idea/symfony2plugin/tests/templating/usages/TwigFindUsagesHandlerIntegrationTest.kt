@@ -18,6 +18,15 @@ import fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigFindUsagesHandl
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
 
 class TwigFindUsagesHandlerIntegrationTest : SymfonyLightCodeInsightFixtureTestCase() {
+    override fun setUp() {
+        super.setUp()
+        myFixture.copyFileToProject("twig_extensions.php")
+    }
+
+    override fun getTestDataPath(): String {
+        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/util/fixtures"
+    }
+
     fun testPlatformFindUsagesForMethodIncludesTwigGetterUsages() {
         val psiFile = configureByProjectPath(
             "src/Bar.php",
@@ -256,6 +265,108 @@ class TwigFindUsagesHandlerIntegrationTest : SymfonyLightCodeInsightFixtureTestC
         val primaryElements = handler!!.primaryElements
         assertEquals(1, primaryElements.size)
         assertInstanceOf(primaryElements[0], PhpClass::class.java)
+
+        val usages = findUsagesFromPlatform(twigElement)
+
+        assertContainsUsageFile(usages, "templates/index.html.twig")
+        assertContainsUsageFile(usages, "templates/secondary.html.twig")
+    }
+
+    fun testPlatformFindUsagesForAttributeTwigFunctionMethodIncludesTwigFunctionUsages() {
+        val psiFile = configureByProjectPath(
+            "src/AppExtension.php",
+            $$"""
+            <?php
+            namespace App\Twig;
+            class AppExtension
+            {
+                public function formatProductNumberFu<caret>nction(string $number): string
+                {
+                }
+            }
+            """.trimIndent()
+        )
+
+        myFixture.addFileToProject("templates/index.html.twig", "{{ product_number_function('123') }}")
+        myFixture.addFileToProject("templates/secondary.html.twig", "{{ product_number_function('456') }}")
+        myFixture.addFileToProject("templates/other.html.twig", "{{ value|product_number_filter }}")
+
+        val element = psiFile.findElementAt(myFixture.caretOffset)
+        val method = PsiTreeUtil.getParentOfType(element, Method::class.java, false)
+        assertNotNull(method)
+
+        val usages = findUsagesFromPlatform(method!!)
+
+        assertContainsUsageFile(usages, "templates/index.html.twig")
+        assertContainsUsageFile(usages, "templates/secondary.html.twig")
+        assertNotContainsUsageFile(usages, "templates/other.html.twig")
+    }
+
+    fun testPlatformFindUsagesForAttributeTwigFilterMethodIncludesTwigFilterUsages() {
+        val psiFile = configureByProjectPath(
+            "src/AppExtension.php",
+            $$"""
+            <?php
+            namespace App\Twig;
+            class AppExtension
+            {
+                public function formatProductNumberFi<caret>lter(string $number): string
+                {
+                }
+            }
+            """.trimIndent()
+        )
+
+        myFixture.addFileToProject("templates/filter.html.twig", "{{ value|product_number_filter }}")
+        myFixture.addFileToProject("templates/apply.html.twig", "{% apply product_number_filter %}{{ value }}{% endapply %}")
+        myFixture.addFileToProject("templates/other.html.twig", "{{ product_number_function('123') }}")
+
+        val element = psiFile.findElementAt(myFixture.caretOffset)
+        val method = PsiTreeUtil.getParentOfType(element, Method::class.java, false)
+        assertNotNull(method)
+
+        val usages = findUsagesFromPlatform(method!!)
+
+        assertContainsUsageFile(usages, "templates/filter.html.twig")
+        assertContainsUsageFile(usages, "templates/apply.html.twig")
+        assertNotContainsUsageFile(usages, "templates/other.html.twig")
+    }
+
+    fun testPlatformFindUsagesTriggeredFromTwigFunctionDelegatesToPhpMethod() {
+        myFixture.addFileToProject("templates/secondary.html.twig", "{{ product_number_function('456') }}")
+
+        val psiFile = configureByProjectPath("templates/index.html.twig", "{{ product_number_fu<caret>nction('123') }}")
+        val twigElement = psiFile.findElementAt(myFixture.caretOffset)
+        assertNotNull(twigElement)
+
+        val handler = getPlatformFindUsagesHandler(twigElement!!)
+        assertInstanceOf(handler, TwigFindUsagesHandler::class.java)
+
+        val primaryElements = handler!!.primaryElements
+        assertEquals(1, primaryElements.size)
+        assertInstanceOf(primaryElements[0], Method::class.java)
+        assertEquals("formatProductNumberFunction", (primaryElements[0] as Method).name)
+
+        val usages = findUsagesFromPlatform(twigElement)
+
+        assertContainsUsageFile(usages, "templates/index.html.twig")
+        assertContainsUsageFile(usages, "templates/secondary.html.twig")
+    }
+
+    fun testPlatformFindUsagesTriggeredFromTwigFilterDelegatesToPhpMethod() {
+        myFixture.addFileToProject("templates/secondary.html.twig", "{% apply product_number_filter %}{{ value }}{% endapply %}")
+
+        val psiFile = configureByProjectPath("templates/index.html.twig", "{{ value|product_number_fi<caret>lter }}")
+        val twigElement = psiFile.findElementAt(myFixture.caretOffset)
+        assertNotNull(twigElement)
+
+        val handler = getPlatformFindUsagesHandler(twigElement!!)
+        assertInstanceOf(handler, TwigFindUsagesHandler::class.java)
+
+        val primaryElements = handler!!.primaryElements
+        assertEquals(1, primaryElements.size)
+        assertInstanceOf(primaryElements[0], Method::class.java)
+        assertEquals("formatProductNumberFilter", (primaryElements[0] as Method).name)
 
         val usages = findUsagesFromPlatform(twigElement)
 
