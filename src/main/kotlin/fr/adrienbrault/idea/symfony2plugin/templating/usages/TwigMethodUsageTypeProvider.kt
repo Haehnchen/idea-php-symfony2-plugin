@@ -7,10 +7,12 @@ import com.intellij.usages.impl.rules.UsageType
 import com.intellij.usages.impl.rules.UsageTypeProviderEx
 import com.jetbrains.php.lang.psi.elements.Field
 import com.jetbrains.php.lang.psi.elements.Method
+import com.jetbrains.php.lang.psi.elements.PhpClass
+import com.jetbrains.php.lang.psi.elements.PhpEnumCase
 import com.jetbrains.twig.TwigFile
 
 /**
- * Groups Twig member usages under a dedicated "Twig" bucket when Find Usages runs on a PHP method or property.
+ * Groups synthetic Twig usages under a dedicated "Twig" bucket for PHP symbol searches.
  *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -24,7 +26,7 @@ class TwigMethodUsageTypeProvider : UsageTypeProviderEx {
      * Marks Twig hits only when the current Usage View belongs to a PHP member search.
      */
     override fun getUsageType(element: PsiElement, targets: Array<out UsageTarget>): UsageType? {
-        if (!isMethodTarget(targets)) {
+        if (!isTwigUsageTarget(targets)) {
             return null
         }
 
@@ -35,11 +37,16 @@ class TwigMethodUsageTypeProvider : UsageTypeProviderEx {
 private val TWIG = UsageType { "Twig" }
 
 /**
- * Restricts this provider to method/field Find Usages sessions.
+ * Restricts this provider to PHP Find Usages sessions that can produce Twig synthetic references.
  */
-private fun isMethodTarget(targets: Array<out UsageTarget>): Boolean {
+private fun isTwigUsageTarget(targets: Array<out UsageTarget>): Boolean {
     for (target in targets) {
-        if (target is PsiElementUsageTarget && (target.element is Method || target.element is Field)) {
+        if (target !is PsiElementUsageTarget) {
+            continue
+        }
+
+        // Limit Twig usage grouping to the concrete PHP symbol kinds supported by the Twig search executor.
+        if (target.element is Method || target.element is Field || target.element is PhpEnumCase || target.element is PhpClass) {
             return true
         }
     }

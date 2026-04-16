@@ -17,6 +17,7 @@ import com.intellij.util.Processor
 import com.intellij.util.QueryExecutor
 import com.jetbrains.php.lang.psi.elements.Field
 import com.jetbrains.php.lang.psi.elements.Method
+import com.jetbrains.php.lang.psi.elements.PhpEnumCase
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement
 import com.jetbrains.php.lang.psi.elements.PhpClass
 import com.jetbrains.twig.TwigFile
@@ -26,7 +27,14 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil
 
 /**
- * Adds Twig variable-path usages to Find Usages for PHP methods and public properties.
+ * Adds Twig usages to Find Usages for PHP symbols that are referenced from Twig.
+ *
+ * Search paths are kept explicit inside one executor so the plugin only needs a single Twig
+ * `referencesSearch` registration:
+ * 1. Twig member paths like `foo.id`, `foo.getId()`, or `foo.primaryValue`
+ * 2. Twig `constant('Foo\\Bar::BAZ')` calls for class constants and enum cases
+ * 3. Twig class-name usages like `enum(...)`, `enum_cases(...)`, and `@var ... Class`
+ *
  * Candidate files are prefetched via the word index and then resolved with the same Twig type pipeline.
  *
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -40,30 +48,27 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
         consumer: Processor<in PsiReference>,
     ): Boolean {
         val target = queryParameters.elementToSearch
-        val targetMember = ApplicationManager.getApplication().runReadAction<PhpNamedElement?> {
-            getTwigTargetMember(target)
-        } ?: return true
 
         ApplicationManager.getApplication().runReadAction {
-            doSearch(targetMember.project, targetMember, queryParameters, consumer)
+            when {
+                target is Method && TwigTypeResolveUtil.isTwigAccessibleMethod(target) ->
+                    doMethodSearch(target.project, target, queryParameters, consumer)
+
+                target is Field && isTwigAccessibleField(target) ->
+                    doFieldSearch(target.project, target, queryParameters, consumer)
+
+                target is Field && target.isConstant ->
+                    doConstantFieldSearch(target.project, target, queryParameters, consumer)
+
+                target is PhpEnumCase ->
+                    doEnumCaseSearch(target.project, target, queryParameters, consumer)
+
+                target is PhpClass ->
+                    doClassSearch(target.project, target, queryParameters, consumer)
+            }
         }
 
         return true
-    }
-
-    /**
-     * Narrows the search target to PHP members that can actually be referenced from Twig.
-     */
-    private fun getTwigTargetMember(target: PsiElement): PhpNamedElement? {
-        if (target is Method && TwigTypeResolveUtil.isTwigAccessibleMethod(target)) {
-            return target
-        }
-
-        if (target is Field && isTwigAccessibleField(target)) {
-            return target
-        }
-
-        return null
     }
 
     /**
@@ -74,28 +79,166 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
     }
 
     /**
-     * Uses the word index as a cheap prefilter before resolving concrete Twig member accesses.
+     * Searches Twig method usages including property shortcuts like `foo.id` for `getId()`.
      */
-    private fun doSearch(
+    private fun doMethodSearch(
         project: Project,
-        targetMember: PhpNamedElement,
+        targetMethod: Method,
         queryParameters: ReferencesSearch.SearchParameters,
         consumer: Processor<in PsiReference>,
     ) {
-        val searchScope: SearchScope = queryParameters.effectiveSearchScope
-        val scope = searchScope as? GlobalSearchScope ?: GlobalSearchScope.projectScope(project)
-        val twigScope = GlobalSearchScope.getScopeRestrictedByFileTypes(scope, TwigFileType.INSTANCE)
-        val psiManager = PsiManager.getInstance(project)
         val processed = HashSet<PsiElement>()
-        val twigNames = getTwigMemberNames(targetMember)
-        if (twigNames.isEmpty()) {
+        val searchWords = getTwigMethodSearchWords(targetMethod)
+        if (searchWords.isEmpty()) {
             return
         }
 
+        searchTwigFiles(project, queryParameters, searchWords) { twigPsiFile ->
+            findTwigMethodUsages(twigPsiFile, targetMethod, processed, consumer)
+            true
+        }
+    }
+
+    /**
+     * Searches Twig property usages backed by public PHP fields.
+     */
+    private fun doFieldSearch(
+        project: Project,
+        targetField: Field,
+        queryParameters: ReferencesSearch.SearchParameters,
+        consumer: Processor<in PsiReference>,
+    ) {
+        val processed = HashSet<PsiElement>()
+        val searchWords = getTwigFieldSearchWords(targetField)
+        if (searchWords.isEmpty()) {
+            return
+        }
+
+        searchTwigFiles(project, queryParameters, searchWords) { twigPsiFile ->
+            findTwigFieldUsages(twigPsiFile, targetField, processed, consumer)
+            true
+        }
+    }
+
+    /**
+     * Searches Twig `constant(...)` calls for PHP class constants.
+     */
+    private fun doConstantFieldSearch(
+        project: Project,
+        target: Field,
+        queryParameters: ReferencesSearch.SearchParameters,
+        consumer: Processor<in PsiReference>,
+    ) {
+        val processed = HashSet<PsiElement>()
+        val searchWords = TwigUsageTargetUtil.getTwigConstantFieldSearchWords(target)
+        if (searchWords.isEmpty()) {
+            return
+        }
+
+        searchTwigFiles(project, queryParameters, searchWords) { twigPsiFile ->
+            twigPsiFile.accept(object : PsiRecursiveElementWalkingVisitor() {
+                override fun visitElement(element: PsiElement) {
+                    if (TwigPattern.getPrintBlockOrTagFunctionPattern("constant").accepts(element) &&
+                        processed.add(element) &&
+                        TwigUsageTargetUtil.resolvesToTwigConstantField(element, target)
+                    ) {
+                        consumer.process(TwigMethodUsageReference(element, target, TextRange(0, element.textLength)))
+                    }
+
+                    super.visitElement(element)
+                }
+            })
+
+            true
+        }
+    }
+
+    /**
+     * Searches Twig `constant(...)` calls for PHP enum cases.
+     */
+    private fun doEnumCaseSearch(
+        project: Project,
+        target: PhpEnumCase,
+        queryParameters: ReferencesSearch.SearchParameters,
+        consumer: Processor<in PsiReference>,
+    ) {
+        val processed = HashSet<PsiElement>()
+        val searchWords = TwigUsageTargetUtil.getTwigEnumCaseSearchWords(target)
+        if (searchWords.isEmpty()) {
+            return
+        }
+
+        searchTwigFiles(project, queryParameters, searchWords) { twigPsiFile ->
+            twigPsiFile.accept(object : PsiRecursiveElementWalkingVisitor() {
+                override fun visitElement(element: PsiElement) {
+                    if (TwigPattern.getPrintBlockOrTagFunctionPattern("constant").accepts(element) &&
+                        processed.add(element) &&
+                        TwigUsageTargetUtil.resolvesToTwigEnumCase(element, target)
+                    ) {
+                        consumer.process(TwigMethodUsageReference(element, target, TextRange(0, element.textLength)))
+                    }
+
+                    super.visitElement(element)
+                }
+            })
+
+            true
+        }
+    }
+
+    /**
+     * Searches Twig class-name usages that spell the PHP class directly.
+     */
+    private fun doClassSearch(
+        project: Project,
+        targetClass: PhpClass,
+        queryParameters: ReferencesSearch.SearchParameters,
+        consumer: Processor<in PsiReference>,
+    ) {
+        val shortName = targetClass.name
+        searchTwigFiles(project, queryParameters, setOf(shortName)) { twigPsiFile ->
+            twigPsiFile.accept(object : PsiRecursiveElementWalkingVisitor() {
+                override fun visitElement(element: PsiElement) {
+                    // Match direct class-name usages in Twig enum helpers like `enum(...)` and `enum_cases(...)`.
+                    if (TwigPattern.getPrintBlockOrTagFunctionPattern("enum", "enum_cases").accepts(element)) {
+                        val fullRange = TextRange(0, element.textLength)
+                        if (TwigUsageTargetUtil.getEnumTargets(element).any { TwigUsageTargetUtil.isClassTarget(it, targetClass) }) {
+                            consumer.process(TwigMethodUsageReference(element, targetClass, fullRange))
+                        }
+                    }
+
+                    for (match in TwigUsageTargetUtil.getVarClassMatches(element)) {
+                        if (!TwigUsageTargetUtil.isClassTarget(match.targetClass, targetClass)) {
+                            continue
+                        }
+
+                        consumer.process(TwigMethodUsageReference(element, targetClass, match.rangeInElement))
+                    }
+
+                    super.visitElement(element)
+                }
+            })
+
+            true
+        }
+    }
+
+    /**
+     * Shared word-index prefilter for Twig files. Each search path keeps its own visitor logic,
+     * while scope restriction and file resolution stay centralized here.
+     */
+    private fun searchTwigFiles(
+        project: Project,
+        queryParameters: ReferencesSearch.SearchParameters,
+        searchWords: Set<String>,
+        visitor: (TwigFile) -> Boolean,
+    ) {
+        val twigScope = getTwigSearchScope(project, queryParameters)
+        val psiManager = PsiManager.getInstance(project)
         val searchHelper = PsiSearchHelper.getInstance(project)
-        for (twigName in twigNames) {
-            searchHelper.processAllFilesWithWord(twigName, twigScope, { psiFile: PsiFile ->
-                // The word prefilter may still return non-Twig files from the wider scope.
+
+        for (searchWord in searchWords) {
+            searchHelper.processAllFilesWithWord(searchWord, twigScope, { psiFile: PsiFile ->
                 if (psiFile !is TwigFile) {
                     return@processAllFilesWithWord true
                 }
@@ -105,29 +248,39 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
                     return@processAllFilesWithWord true
                 }
 
-                findTwigMethodUsages(twigPsiFile, twigNames, targetMember, processed, consumer)
-                true
+                visitor(twigPsiFile)
             }, false)
         }
     }
 
+    private fun getTwigSearchScope(
+        project: Project,
+        queryParameters: ReferencesSearch.SearchParameters,
+    ): GlobalSearchScope {
+        val searchScope: SearchScope = queryParameters.effectiveSearchScope
+        val scope = searchScope as? GlobalSearchScope ?: GlobalSearchScope.projectScope(project)
+        return GlobalSearchScope.getScopeRestrictedByFileTypes(scope, TwigFileType.INSTANCE)
+    }
+
     /**
-     * Walks a candidate Twig file and emits synthetic references for matching member accesses.
+     * Walks a candidate Twig file and emits synthetic references for matching method usages.
      */
     private fun findTwigMethodUsages(
         twigFile: TwigFile,
-        twigNames: Set<String>,
-        targetMember: PhpNamedElement,
+        targetMethod: Method,
         processed: MutableSet<PsiElement>,
         consumer: Processor<in PsiReference>,
     ) {
+        val methodNames = getTwigMethodNames(targetMethod)
+
         twigFile.accept(object : PsiRecursiveElementWalkingVisitor() {
             override fun visitElement(element: PsiElement) {
-                if (isTwigMethodCandidate(element, twigNames) &&
+                if (methodNames.isNotEmpty() &&
+                    isTwigMethodCandidate(element, methodNames) &&
                     processed.add(element) &&
-                    resolvesToTargetMember(element, targetMember)
+                    resolvesToTargetMethod(element, targetMethod)
                 ) {
-                    consumer.process(TwigMethodUsageReference(element, targetMember, TextRange(0, element.textLength)))
+                    consumer.process(TwigMethodUsageReference(element, targetMethod, TextRange(0, element.textLength)))
                 }
 
                 super.visitElement(element)
@@ -136,7 +289,37 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
     }
 
     /**
-     * Filters down to Twig member leaves that textually match one of the supported names.
+     * Walks a candidate Twig file and emits synthetic references for matching field usages.
+     */
+    private fun findTwigFieldUsages(
+        twigFile: TwigFile,
+        targetField: Field,
+        processed: MutableSet<PsiElement>,
+        consumer: Processor<in PsiReference>,
+    ) {
+        val fieldNames = getTwigFieldNames(targetField)
+
+        twigFile.accept(object : PsiRecursiveElementWalkingVisitor() {
+            override fun visitElement(element: PsiElement) {
+                if (fieldNames.isNotEmpty() &&
+                    isTwigMethodCandidate(element, fieldNames) &&
+                    processed.add(element) &&
+                    resolvesToTargetField(element, targetField)
+                ) {
+                    consumer.process(TwigMethodUsageReference(element, targetField, TextRange(0, element.textLength)))
+                }
+
+                super.visitElement(element)
+            }
+        })
+    }
+
+    /**
+     * Filters down to Twig member leaves that textually match one of the supported method or field names.
+     *
+     * Examples:
+     * `{{ bar.foo }}` -> leaf `foo`
+     * `{{ bar.getFoo() }}` -> leaf `getFoo`
      */
     private fun isTwigMethodCandidate(element: PsiElement, twigNames: Set<String>): Boolean {
         if (!TwigPattern.getTypeCompletionPattern().accepts(element)) {
@@ -148,9 +331,9 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
     }
 
     /**
-     * Reuses Twig type resolution so only real, typed member accesses count as usages.
+     * Reuses Twig type resolution so only real, typed method accesses count as usages.
      */
-    private fun resolvesToTargetMember(element: PsiElement, targetMember: PhpNamedElement): Boolean {
+    private fun resolvesToTargetMethod(element: PsiElement, targetMethod: Method): Boolean {
         val beforeLeaf = TwigTypeResolveUtil.formatPsiTypeName(element)
         if (beforeLeaf.isEmpty()) {
             return false
@@ -168,7 +351,7 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
             }
 
             for (target in TwigTypeResolveUtil.getTwigPhpNameTargets(phpNamedElement, element.text)) {
-                if (isTargetMember(target, targetMember)) {
+                if (isTargetMethod(target, targetMethod)) {
                     return true
                 }
             }
@@ -178,20 +361,62 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
     }
 
     /**
-     * Compares resolved Twig targets against the original PHP declaration.
+     * Reuses Twig type resolution so only real, typed field accesses count as usages.
      */
-    private fun isTargetMember(candidate: PhpNamedElement, targetMember: PhpNamedElement): Boolean {
-        if (candidate.isEquivalentTo(targetMember)) {
+    private fun resolvesToTargetField(element: PsiElement, targetField: Field): Boolean {
+        val beforeLeaf = TwigTypeResolveUtil.formatPsiTypeName(element)
+        if (beforeLeaf.isEmpty()) {
+            return false
+        }
+
+        val types = TwigTypeResolveUtil.resolveTwigMethodName(element, beforeLeaf)
+        if (types.isEmpty()) {
+            return false
+        }
+
+        for (twigTypeContainer in types) {
+            val phpNamedElement = twigTypeContainer.phpNamedElement ?: continue
+            if (phpNamedElement is PhpClass && isWeakPhpClass(phpNamedElement)) {
+                continue
+            }
+
+            for (target in TwigTypeResolveUtil.getTwigPhpNameTargets(phpNamedElement, element.text)) {
+                if (isTargetField(target, targetField)) {
+                    return true
+                }
+            }
+        }
+
+        return false
+    }
+
+    /**
+     * Compares resolved Twig targets against the original PHP method declaration.
+     */
+    private fun isTargetMethod(candidate: PhpNamedElement, targetMethod: Method): Boolean {
+        if (candidate.isEquivalentTo(targetMethod)) {
             return true
         }
 
-        return when (candidate) {
-            is Method if targetMember is Method -> candidate.fqn == targetMember.fqn
-            is Field if targetMember is Field ->
-                candidate.name == targetMember.name && candidate.containingClass?.fqn == targetMember.containingClass?.fqn
+        return candidate is Method && candidate.fqn == targetMethod.fqn
+    }
 
-            else -> false
+    /**
+     * Compares resolved Twig targets against the original PHP field declaration.
+     */
+    private fun isTargetField(candidate: PhpNamedElement, targetField: Field): Boolean {
+        if (candidate.isEquivalentTo(targetField)) {
+            return true
         }
+
+        if (candidate !is Field || candidate.name != targetField.name) {
+            return false
+        }
+
+        val candidateClass = candidate.containingClass ?: return false
+        val targetClass = targetField.containingClass ?: return false
+
+        return candidateClass.isEquivalentTo(targetClass) || candidateClass.fqn == targetClass.fqn
     }
 
     /**
@@ -202,18 +427,46 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
     }
 
     /**
-     * Collects all Twig-visible names for a PHP member, including getter shortcuts.
+     * Collects all Twig-visible names for a PHP method, including getter shortcuts.
      */
-    private fun getTwigMemberNames(member: PhpNamedElement): Set<String> {
+    private fun getTwigMethodNames(method: Method): Set<String> {
         val names = linkedSetOf<String>()
 
-        when (member) {
-            is Method -> {
-                names.add(member.name)
-                names.add(TwigTypeResolveUtil.getPropertyShortcutMethodName(member))
-            }
-            is Field -> names.add(member.name)
-        }
+        names.add(method.name)
+        names.add(TwigTypeResolveUtil.getPropertyShortcutMethodName(method))
+
+        return names.filter { it.isNotBlank() }.toCollection(linkedSetOf())
+    }
+
+    /**
+     * Collects the Twig-visible property name for a public PHP field.
+     */
+    private fun getTwigFieldNames(field: Field): Set<String> {
+        val names = linkedSetOf<String>()
+
+        names.add(field.name)
+
+        return names
+    }
+
+    /**
+     * Prefetch words for Twig method search paths.
+     */
+    private fun getTwigMethodSearchWords(method: Method): Set<String> {
+        val names = linkedSetOf<String>()
+
+        names.addAll(getTwigMethodNames(method))
+
+        return names.filter { it.isNotBlank() }.toCollection(linkedSetOf())
+    }
+
+    /**
+     * Prefetch words for Twig field search paths.
+     */
+    private fun getTwigFieldSearchWords(field: Field): Set<String> {
+        val names = linkedSetOf<String>()
+
+        names.addAll(getTwigFieldNames(field))
 
         return names.filter { it.isNotBlank() }.toCollection(linkedSetOf())
     }
@@ -223,7 +476,7 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
      */
     class TwigMethodUsageReference(
         sourceElement: PsiElement,
-        private val targetElement: PhpNamedElement,
+        private val targetElement: PsiElement,
         rangeInElement: TextRange,
     ) : PsiReferenceBase<PsiElement>(sourceElement, rangeInElement, false) {
         /**

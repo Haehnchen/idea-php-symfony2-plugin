@@ -14,10 +14,10 @@ import com.jetbrains.php.lang.psi.elements.Method
 import com.jetbrains.php.lang.psi.elements.PhpClass
 import com.jetbrains.twig.elements.TwigFieldReference
 import com.jetbrains.twig.elements.TwigVariableReference
-import fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigTypeFindUsagesHandler
+import fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigFindUsagesHandler
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
 
-class TwigMemberFindUsagesIntegrationTest : SymfonyLightCodeInsightFixtureTestCase() {
+class TwigFindUsagesHandlerIntegrationTest : SymfonyLightCodeInsightFixtureTestCase() {
     fun testPlatformFindUsagesForMethodIncludesTwigGetterUsages() {
         val psiFile = configureByProjectPath(
             "src/Bar.php",
@@ -92,7 +92,7 @@ class TwigMemberFindUsagesIntegrationTest : SymfonyLightCodeInsightFixtureTestCa
         assertNotNull(twigElement)
 
         val handler = getPlatformFindUsagesHandler(twigElement!!)
-        assertInstanceOf(handler, TwigTypeFindUsagesHandler::class.java)
+        assertInstanceOf(handler, TwigFindUsagesHandler::class.java)
 
         val primaryElements = handler!!.primaryElements
         assertEquals(1, primaryElements.size)
@@ -127,7 +127,7 @@ class TwigMemberFindUsagesIntegrationTest : SymfonyLightCodeInsightFixtureTestCa
         assertNotNull(twigElement)
 
         val handler = getPlatformFindUsagesHandler(twigElement!!)
-        assertInstanceOf(handler, TwigTypeFindUsagesHandler::class.java)
+        assertInstanceOf(handler, TwigFindUsagesHandler::class.java)
 
         val primaryElements = handler!!.primaryElements
         assertEquals(1, primaryElements.size)
@@ -157,11 +157,110 @@ class TwigMemberFindUsagesIntegrationTest : SymfonyLightCodeInsightFixtureTestCa
         assertNotNull(twigElement)
 
         val handler = getPlatformFindUsagesHandler(twigElement!!)
-        assertInstanceOf(handler, TwigTypeFindUsagesHandler::class.java)
+        assertInstanceOf(handler, TwigFindUsagesHandler::class.java)
 
         val primaryElements = handler!!.primaryElements
         assertEquals(1, primaryElements.size)
         assertInstanceOf(primaryElements[0], PhpClass::class.java)
+    }
+
+    fun testPlatformFindUsagesTriggeredFromTwigConstantDelegatesToPhpConstant() {
+        myFixture.addFileToProject(
+            "src/FooConst.php",
+            """
+            <?php
+            namespace Foo;
+            class FooConst {
+                public const BAR = 'bar';
+            }
+            """.trimIndent(),
+        )
+
+        myFixture.addFileToProject("templates/secondary.html.twig", "{{ constant('Foo\\\\FooConst::BAR') }}")
+
+        val psiFile = configureByProjectPath("templates/index.html.twig", "{{ constant('Foo\\\\FooConst::B<caret>AR') }}")
+        val twigElement = psiFile.findElementAt(myFixture.caretOffset)
+        assertNotNull(twigElement)
+
+        val handler = getPlatformFindUsagesHandler(twigElement!!)
+        assertInstanceOf(handler, TwigFindUsagesHandler::class.java)
+
+        val primaryElements = handler!!.primaryElements
+        assertEquals(1, primaryElements.size)
+        assertInstanceOf(primaryElements[0], Field::class.java)
+
+        val usages = findUsagesFromPlatform(twigElement)
+
+        assertContainsUsageFile(usages, "templates/index.html.twig")
+        assertContainsUsageFile(usages, "templates/secondary.html.twig")
+    }
+
+    fun testPlatformFindUsagesTriggeredFromTwigEnumCasesDelegatesToPhpEnumClass() {
+        myFixture.addFileToProject(
+            "src/CardSuite.php",
+            """
+            <?php
+            namespace Foo;
+            enum CardSuite {
+                case CLUBS;
+                case SPADES;
+            }
+            """.trimIndent(),
+        )
+
+        myFixture.addFileToProject(
+            "templates/secondary.html.twig",
+            """
+            {% for case in enum_cases('Foo\\CardSuite') %}
+                {{ case.value }}
+            {% endfor %}
+            """.trimIndent(),
+        )
+
+        val psiFile = configureByProjectPath("templates/index.html.twig", "{{ enum_cases('Foo\\\\Card<caret>Suite') }}")
+        val twigElement = psiFile.findElementAt(myFixture.caretOffset)
+        assertNotNull(twigElement)
+
+        val handler = getPlatformFindUsagesHandler(twigElement!!)
+        assertInstanceOf(handler, TwigFindUsagesHandler::class.java)
+
+        val primaryElements = handler!!.primaryElements
+        assertEquals(1, primaryElements.size)
+        assertInstanceOf(primaryElements[0], PhpClass::class.java)
+
+        val usages = findUsagesFromPlatform(twigElement)
+
+        assertContainsUsageFile(usages, "templates/index.html.twig")
+        assertContainsUsageFile(usages, "templates/secondary.html.twig")
+    }
+
+    fun testPlatformFindUsagesTriggeredFromTwigVarCommentDelegatesToPhpClass() {
+        myFixture.addFileToProject(
+            "src/CardSuite.php",
+            """
+            <?php
+            namespace Foo;
+            class CardSuite {}
+            """.trimIndent(),
+        )
+
+        myFixture.addFileToProject("templates/secondary.html.twig", "{# @var cardSuite \\Foo\\CardSuite #}")
+
+        val psiFile = configureByProjectPath("templates/index.html.twig", "{# @var \\Foo\\Card<caret>Suite cardSuite #}")
+        val twigElement = psiFile.findElementAt(myFixture.caretOffset)
+        assertNotNull(twigElement)
+
+        val handler = getPlatformFindUsagesHandler(twigElement!!)
+        assertInstanceOf(handler, TwigFindUsagesHandler::class.java)
+
+        val primaryElements = handler!!.primaryElements
+        assertEquals(1, primaryElements.size)
+        assertInstanceOf(primaryElements[0], PhpClass::class.java)
+
+        val usages = findUsagesFromPlatform(twigElement)
+
+        assertContainsUsageFile(usages, "templates/index.html.twig")
+        assertContainsUsageFile(usages, "templates/secondary.html.twig")
     }
 
     private fun findUsagesFromPlatform(targetElement: PsiElement): List<UsageInfo> {

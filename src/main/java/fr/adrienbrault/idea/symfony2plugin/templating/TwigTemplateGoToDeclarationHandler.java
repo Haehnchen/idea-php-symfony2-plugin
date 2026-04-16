@@ -23,6 +23,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.assetMapper.AssetMapperUtil;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigConstantEnumResolver;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
@@ -396,51 +397,12 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
 
     @NotNull
     private Collection<PsiElement> getConstantGoto(@NotNull PsiElement psiElement) {
-        String contents = psiElement.getText();
-        if(StringUtils.isBlank(contents)) {
-            return Collections.emptyList();
-        }
-
-        // global constant
-        if(!contents.contains(":")) {
-            return new ArrayList<>(PhpIndex.getInstance(psiElement.getProject()).getConstantsByName(contents));
-        }
-
-        // resolve class constants
-        String[] parts = contents.split("::");
-        if(parts.length != 2) {
-            return Collections.emptyList();
-        }
-
-        PhpClass phpClass = PhpElementsUtil.getClassInterface(psiElement.getProject(), parts[0].replace("\\\\", "\\"));
-        if (phpClass == null) {
-            return Collections.emptyList();
-        }
-
-        Collection<PsiElement> targetPsiElements = new ArrayList<>();
-        Field field = phpClass.findFieldByName(parts[1], true);
-        if(field != null) {
-            targetPsiElements.add(field);
-        }
-
-        targetPsiElements.addAll(phpClass.getEnumCases().stream().filter(e -> parts[1].equals(e.getName())).toList());
-
-        return targetPsiElements;
+        return TwigConstantEnumResolver.getConstantTargets(psiElement);
     }
 
     @NotNull
     private Collection<PsiElement> getEnumGoto(@NotNull PsiElement psiElement) {
-        String contents = psiElement.getText();
-        if(StringUtils.isBlank(contents)) {
-            return Collections.emptyList();
-        }
-
-        PhpClass phpClass = PhpElementsUtil.getClassInterface(psiElement.getProject(), contents.replace("\\\\", "\\"));
-        if (phpClass == null || !phpClass.isEnum()) {
-            return Collections.emptyList();
-        }
-
-        return Collections.singletonList(phpClass);
+        return new ArrayList<>(TwigConstantEnumResolver.getEnumTargets(psiElement));
     }
 
     /**

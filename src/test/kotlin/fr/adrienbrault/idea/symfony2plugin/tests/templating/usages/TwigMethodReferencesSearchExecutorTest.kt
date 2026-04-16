@@ -6,6 +6,8 @@ import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.php.lang.psi.elements.Field
 import com.jetbrains.php.lang.psi.elements.Method
+import com.jetbrains.php.lang.psi.elements.PhpClass
+import com.jetbrains.php.lang.psi.elements.PhpNamedElement
 import fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigMethodReferencesSearchExecutor
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
 
@@ -140,6 +142,144 @@ class TwigMethodReferencesSearchExecutorTest : SymfonyLightCodeInsightFixtureTes
         assertNotContainsSourceFile(references, "templates/other.html.twig")
     }
 
+    fun testFindsTwigUsagesForClassConstants() {
+        val target = getNamedElementUnderCaret(
+            """
+            <?php
+            namespace Foo;
+            class CardSuite {
+                public const CL<caret>UBS = 'clubs';
+                public const SPADES = 'spades';
+            }
+            """.trimIndent()
+        )
+
+        myFixture.addFileToProject("templates/constant.html.twig", "{{ constant('Foo\\\\CardSuite::CLUBS') }}")
+        myFixture.addFileToProject("templates/other.html.twig", "{{ constant('Foo\\\\CardSuite::SPADES') }}")
+
+        val references = getTwigUsageReferences(target)
+
+        assertContainsSourceFile(references, "templates/constant.html.twig")
+        assertNotContainsSourceFile(references, "templates/other.html.twig")
+    }
+
+    fun testFindsTwigUsagesForEnumCases() {
+        val target = getNamedElementUnderCaret(
+            """
+            <?php
+            namespace Foo;
+            enum CardSuite {
+                case CL<caret>UBS;
+                case SPADES;
+            }
+            """.trimIndent()
+        )
+
+        myFixture.addFileToProject("templates/case.html.twig", "{{ constant('Foo\\\\CardSuite::CLUBS') }}")
+        myFixture.addFileToProject("templates/other.html.twig", "{{ constant('Foo\\\\CardSuite::SPADES') }}")
+
+        val references = getTwigUsageReferences(target)
+
+        assertContainsSourceFile(references, "templates/case.html.twig")
+        assertNotContainsSourceFile(references, "templates/other.html.twig")
+    }
+
+    fun testFindsTwigUsagesForEnumFunctionsAndVarComments() {
+        val phpClass = getPhpClassUnderCaret(
+            """
+            <?php
+            namespace Foo;
+            enum Card<caret>Suite {
+                case CLUBS;
+                case SPADES;
+            }
+            """.trimIndent()
+        )
+
+        myFixture.addFileToProject("templates/enum.html.twig", "{{ enum('Foo\\\\CardSuite') }}")
+        myFixture.addFileToProject(
+            "templates/enum_cases.html.twig",
+            """
+            {% for case in enum_cases('Foo\\CardSuite') %}
+                {{ case.value }}
+            {% endfor %}
+            """.trimIndent(),
+        )
+        myFixture.addFileToProject("templates/var_first.html.twig", "{# @var cardSuite \\Foo\\CardSuite #}")
+        myFixture.addFileToProject("templates/class_first.html.twig", "{# @var \\Foo\\CardSuite cardSuite #}")
+        myFixture.addFileToProject("templates/other.html.twig", "{{ enum('Foo\\\\OtherSuite') }}")
+
+        myFixture.addFileToProject(
+            "src/OtherSuite.php",
+            """
+            <?php
+            namespace Foo;
+            enum OtherSuite {
+                case HEARTS;
+            }
+            """.trimIndent(),
+        )
+
+        val references = getTwigUsageReferences(phpClass)
+
+        assertContainsSourceFile(references, "templates/enum.html.twig")
+        assertContainsSourceFile(references, "templates/enum_cases.html.twig")
+        assertContainsSourceFile(references, "templates/var_first.html.twig")
+        assertContainsSourceFile(references, "templates/class_first.html.twig")
+        assertNotContainsSourceFile(references, "templates/other.html.twig")
+    }
+
+    fun testFindsTwigUsagesForMultilineVarComments() {
+        val phpClass = getPhpClassUnderCaret(
+            """
+            <?php
+            namespace Foo;
+            class Card<caret>Suite {}
+            """.trimIndent()
+        )
+
+        myFixture.addFileToProject(
+            "templates/multiline.html.twig",
+            """
+            {#
+               @var otherSuite \Foo\OtherSuite
+               @var \Foo\CardSuite cardSuite
+               @var \Foo\CardSuite2 cardSuite2
+            #}
+            """.trimIndent(),
+        )
+        myFixture.addFileToProject(
+            "templates/multiline_other.html.twig",
+            """
+            {#
+               @var \Foo\OtherSuite otherSuite
+            #}
+            """.trimIndent(),
+        )
+
+        myFixture.addFileToProject(
+            "src/OtherSuite.php",
+            """
+            <?php
+            namespace Foo;
+            class OtherSuite {}
+            """.trimIndent(),
+        )
+        myFixture.addFileToProject(
+            "src/CardSuite2.php",
+            """
+            <?php
+            namespace Foo;
+            class CardSuite2 {}
+            """.trimIndent(),
+        )
+
+        val references = getTwigUsageReferences(phpClass)
+
+        assertContainsSourceFile(references, "templates/multiline.html.twig")
+        assertNotContainsSourceFile(references, "templates/multiline_other.html.twig")
+    }
+
     private fun getMethodUnderCaret(content: String): Method {
         val psiFile = myFixture.configureByText("Bar.php", content)
         val element = psiFile.findElementAt(myFixture.caretOffset)
@@ -156,8 +296,31 @@ class TwigMethodReferencesSearchExecutorTest : SymfonyLightCodeInsightFixtureTes
         return field!!
     }
 
-    private fun getTwigMethodUsageReferences(member: Any): Collection<TwigMethodReferencesSearchExecutor.TwigMethodUsageReference> {
-        val references: Collection<PsiReference> = ReferencesSearch.search(member as com.intellij.psi.PsiElement, GlobalSearchScope.projectScope(project)).findAll()
+    private fun getNamedElementUnderCaret(content: String): com.intellij.psi.PsiElement {
+        val psiFile = myFixture.configureByText("Bar.php", content)
+        val element = psiFile.findElementAt(myFixture.caretOffset)
+        assertNotNull(element)
+
+        return generateSequence(element) { it.parent }
+            .firstOrNull { it is PhpNamedElement }
+            ?: element!!
+    }
+
+    private fun getPhpClassUnderCaret(content: String): PhpClass {
+        val psiFile = myFixture.configureByText("Bar.php", content)
+        val element = psiFile.findElementAt(myFixture.caretOffset)
+        val phpClass = PsiTreeUtil.getParentOfType(element, PhpClass::class.java, false)
+        assertNotNull(phpClass)
+        return phpClass!!
+    }
+
+    private fun getTwigMethodUsageReferences(member: com.intellij.psi.PsiElement): Collection<TwigMethodReferencesSearchExecutor.TwigMethodUsageReference> {
+        val references: Collection<PsiReference> = ReferencesSearch.search(member, GlobalSearchScope.projectScope(project)).findAll()
+        return references.filterIsInstance<TwigMethodReferencesSearchExecutor.TwigMethodUsageReference>()
+    }
+
+    private fun getTwigUsageReferences(target: com.intellij.psi.PsiElement): Collection<TwigMethodReferencesSearchExecutor.TwigMethodUsageReference> {
+        val references: Collection<PsiReference> = ReferencesSearch.search(target, GlobalSearchScope.projectScope(project)).findAll()
         return references.filterIsInstance<TwigMethodReferencesSearchExecutor.TwigMethodUsageReference>()
     }
 

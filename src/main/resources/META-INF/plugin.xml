@@ -818,10 +818,11 @@
         <usageTypeProvider implementation="fr.adrienbrault.idea.symfony2plugin.routing.usages.RouteUsageTypeProvider"/>
         <referencesSearch implementation="fr.adrienbrault.idea.symfony2plugin.routing.usages.RouteNameReferencesSearchExecutor"/>
 
-        <!-- delegated usages from Twig types to php type (class, fields, method, ...): foo.id => function getId() -->
-        <findUsagesHandlerFactory implementation="fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigTypeFindUsagesHandlerFactory"/>
+        <!-- delegated Find Usages from Twig to resolved php targets: foo.id => getId(), constant('Foo\\Bar::BAZ') => Foo\Bar::BAZ -->
+        <usageTargetProvider implementation="fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigFindUsagesHandlerFactory"/>
+        <findUsagesHandlerFactory implementation="fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigFindUsagesHandlerFactory"/>
 
-        <!-- resolve references from twig to php: foo.id => function getId() -->
+        <!-- resolve references from twig to php symbols: foo.id => function getId(), twig functions, constant(...), enum(...), @var -->
         <referencesSearch implementation="fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigMethodReferencesSearchExecutor"/>
         <usageTypeProvider implementation="fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigMethodUsageTypeProvider"/>
 
