@@ -235,11 +235,15 @@ public class RoutesStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase 
             "    trait RouteTrait\n" +
             "    {\n" +
             "        final public function controller(callable|string|array $controller): static {}\n" +
+            "        final public function defaults(array $defaults): static {}\n" +
+            "        final public function methods(array $methods): static {}\n" +
             "    }\n" +
             "\n" +
             "    trait AddTrait\n" +
             "    {\n" +
             "        public function add(string $name, string|array $path): RouteConfigurator {}\n" +
+            "        public function prefix(string $prefix): static {}\n" +
+            "        public function namePrefix(string $namePrefix): static {}\n" +
             "    }\n" +
             "}\n");
 
@@ -255,7 +259,22 @@ public class RoutesStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase 
             "\n" +
             "    $routes->add('app_array_route', '/array')\n" +
             "        ->controller([\\App\\Controller\\MyController::class, 'detail']);\n" +
+            "\n" +
+            "    $group = $routes->namePrefix('admin_')->prefix('/admin');\n" +
+            "    $group->add('app_default_route', '/defaults/{id}')\n" +
+            "        ->defaults(['_controller' => [\\App\\Controller\\MyController::class, 'detail']])\n" +
+            "        ->methods(['GET', 'HEAD']);\n" +
+            "\n" +
+            "    $group->namePrefix('api_')->prefix('/api')->add('dashboard', '/dashboard');\n" +
             "};");
+
+        myFixture.addFileToProject("src/MyController.php", "<?php\n" +
+            "namespace App\\Controller;\n" +
+            "class MyController\n" +
+            "{\n" +
+            "    public function __invoke() {}\n" +
+            "    public function detail() {}\n" +
+            "}\n");
 
         myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n");
 
@@ -271,6 +290,19 @@ public class RoutesStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase 
 
         assertIndexContainsKeyWithValue(RoutesStubIndex.KEY, "app_array_route",
             value -> "App\\Controller\\MyController::detail".equals(value.getController())
+        );
+
+        assertIndexContainsKeyWithValue(RoutesStubIndex.KEY, "admin_app_default_route",
+            value -> "admin_app_default_route".equals(value.getName()) &&
+                "/admin/defaults/{id}".equals(value.getPath()) &&
+                "App\\Controller\\MyController::detail".equals(value.getController()) &&
+                value.getMethods().contains("get") &&
+                value.getMethods().contains("head")
+        );
+
+        assertIndexContainsKeyWithValue(RoutesStubIndex.KEY, "admin_api_dashboard",
+            value -> "admin_api_dashboard".equals(value.getName()) &&
+                "/admin/api/dashboard".equals(value.getPath())
         );
     }
 
