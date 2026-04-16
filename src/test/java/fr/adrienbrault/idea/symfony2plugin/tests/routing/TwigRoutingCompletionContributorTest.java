@@ -38,6 +38,53 @@ public class TwigRoutingCompletionContributorTest extends SymfonyLightCodeInsigh
         assertCompletionLookupTailEquals(TwigFileType.INSTANCE, "{{ path('<caret>') }}", "xml_route", "(slug)");
     }
 
+    public void testTwigPathParameterTailCompletionForPhpFluentRoutes() {
+        myFixture.addFileToProject("routing/classes.php", "<?php\n" +
+            "namespace Symfony\\Component\\Routing\\Loader\\Configurator\n" +
+            "{\n" +
+            "    use Symfony\\Component\\Routing\\Loader\\Configurator\\Traits\\AddTrait;\n" +
+            "    use Symfony\\Component\\Routing\\Loader\\Configurator\\Traits\\RouteTrait;\n" +
+            "\n" +
+            "    class RouteConfigurator\n" +
+            "    {\n" +
+            "        use AddTrait;\n" +
+            "        use RouteTrait;\n" +
+            "    }\n" +
+            "\n" +
+            "    class RoutingConfigurator\n" +
+            "    {\n" +
+            "        use AddTrait;\n" +
+            "    }\n" +
+            "}\n" +
+            "\n" +
+            "namespace Symfony\\Component\\Routing\\Loader\\Configurator\\Traits\n" +
+            "{\n" +
+            "    use Symfony\\Component\\Routing\\Loader\\Configurator\\RouteConfigurator;\n" +
+            "\n" +
+            "    trait RouteTrait\n" +
+            "    {\n" +
+            "        final public function methods(array $methods): static {}\n" +
+            "    }\n" +
+            "\n" +
+            "    trait AddTrait\n" +
+            "    {\n" +
+            "        public function add(string $name, string|array $path): RouteConfigurator {}\n" +
+            "        public function prefix(string $prefix): static {}\n" +
+            "        public function namePrefix(string $namePrefix): static {}\n" +
+            "    }\n" +
+            "}\n");
+
+        myFixture.addFileToProject("config/routes.php", "<?php\n" +
+            "use Symfony\\Component\\Routing\\Loader\\Configurator\\RoutingConfigurator;\n" +
+            "\n" +
+            "return static function (RoutingConfigurator $routes): void {\n" +
+            "    $routes->namePrefix('api_')->prefix('/api')->add('posts_show', '/posts/{id}')\n" +
+            "        ->methods(['GET', 'HEAD']);\n" +
+            "};");
+
+        assertCompletionLookupTailEquals(TwigFileType.INSTANCE, "{{ path('<caret>') }}", "api_posts_show", "(GET|HEAD, id)");
+    }
+
     /*
     @TODO: not working: pattern changes
     public void testTwigPathParameterCompletion() {

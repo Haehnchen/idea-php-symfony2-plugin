@@ -1138,7 +1138,11 @@ public class RouteHelper {
             return null;
         }
 
-        PsiElement parameter = parameters[0];
+        return getPhpControllerShortcut(parameters[0]);
+    }
+
+    @Nullable
+    private static String getPhpControllerShortcut(@Nullable PsiElement parameter) {
         if (parameter instanceof StringLiteralExpression) {
             String contents = ((StringLiteralExpression) parameter).getContents();
             return StringUtils.isNotBlank(contents) ? contents : null;
@@ -1221,22 +1225,40 @@ public class RouteHelper {
                     continue;
                 }
 
-                MethodReference addMethodReference = getRoutingAddMethodReference(methodReference.getClassReference(), function, routingParameters, new HashSet<>());
-                if (addMethodReference == null) {
+                PhpFluentRouteDefinition definition = getOrCreatePhpFluentRouteDefinition(methodReference, function, routingParameters, definitions);
+                if (definition == null) {
                     continue;
                 }
 
-                PhpFluentRouteDefinition definition = definitions.get(addMethodReference);
-                if (definition == null) {
-                    definition = createPhpFluentRouteDefinition(addMethodReference, function, routingParameters);
-                    if (definition == null) {
-                        continue;
-                    }
+                definition.route.setController(normalizeRouteController(controller));
+            }
 
-                    definitions.put(addMethodReference, definition);
+            for (MethodReference methodReference : PhpElementsUtil.collectMethodReferencesInsideControlFlow(function, "defaults")) {
+                String controller = getPhpRouteDefaultControllerShortcut(methodReference);
+                if (StringUtils.isBlank(controller)) {
+                    continue;
+                }
+
+                PhpFluentRouteDefinition definition = getOrCreatePhpFluentRouteDefinition(methodReference, function, routingParameters, definitions);
+                if (definition == null) {
+                    continue;
                 }
 
                 definition.route.setController(normalizeRouteController(controller));
+            }
+
+            for (MethodReference methodReference : PhpElementsUtil.collectMethodReferencesInsideControlFlow(function, "methods")) {
+                Collection<String> methods = getPhpRouteMethods(methodReference);
+                if (methods.isEmpty()) {
+                    continue;
+                }
+
+                PhpFluentRouteDefinition definition = getOrCreatePhpFluentRouteDefinition(methodReference, function, routingParameters, definitions);
+                if (definition == null) {
+                    continue;
+                }
+
+                definition.route.setMethods(methods);
             }
 
             routes.addAll(definitions.values());
@@ -1245,6 +1267,43 @@ public class RouteHelper {
         return routes;
     }
 
+    /**
+     * Resolve a fluent route modifier like ->controller(), ->defaults(), or ->methods()
+     * back to the originating ->add('route_name', ...) call.
+     */
+    @Nullable
+    private static PhpFluentRouteDefinition getOrCreatePhpFluentRouteDefinition(
+        @NotNull MethodReference methodReference,
+        @NotNull Function function,
+        @NotNull Set<String> routingParameters,
+        @NotNull Map<MethodReference, PhpFluentRouteDefinition> definitions
+    ) {
+        MethodReference addMethodReference = getRoutingAddMethodReference(methodReference.getClassReference(), function, routingParameters, new HashSet<>());
+        if (addMethodReference == null) {
+            return null;
+        }
+
+        PhpFluentRouteDefinition definition = definitions.get(addMethodReference);
+        if (definition != null) {
+            return definition;
+        }
+
+        definition = createPhpFluentRouteDefinition(addMethodReference, function, routingParameters);
+        if (definition != null) {
+            definitions.put(addMethodReference, definition);
+        }
+
+        return definition;
+    }
+
+    /**
+     * Build one index-safe fluent route definition.
+     *
+     * Supported examples:
+     * $routes->add('dashboard', '/dashboard');
+     * $routes->namePrefix('admin_')->add('dashboard', '/dashboard');
+     * $routes->prefix('/admin')->add('dashboard', '/dashboard');
+     */
     @Nullable
     private static PhpFluentRouteDefinition createPhpFluentRouteDefinition(
         @NotNull MethodReference methodReference,
@@ -1261,9 +1320,19 @@ public class RouteHelper {
             return null;
         }
 
-        StubIndexedRoute route = new StubIndexedRoute(routeName);
+        String routeNamePrefix = StringUtils.join(
+            getRoutingConfiguratorChainLiteralValues(methodReference.getClassReference(), function, routingParameters, "namePrefix", new HashSet<>()),
+            ""
+        );
+
+        StubIndexedRoute route = new StubIndexedRoute(routeNamePrefix + routeName);
 
         String routePath = getPhpRouteLiteralValue(PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 1));
+        List<String> pathPrefixes = getRoutingConfiguratorChainLiteralValues(methodReference.getClassReference(), function, routingParameters, "prefix", new HashSet<>());
+        for (int i = pathPrefixes.size() - 1; i >= 0; i--) {
+            routePath = mergeRoutePaths(routePath, pathPrefixes.get(i));
+        }
+
         if (StringUtils.isNotBlank(routePath)) {
             route.setPath(routePath);
         }
@@ -1392,6 +1461,116 @@ public class RouteHelper {
         }
 
         return null;
+    }
+
+    /**
+     * Extract a controller shortcut from defaults([...]).
+     *
+     * Example:
+     * $routes->add('blog_show', '/blog/{id}')
+     *     ->defaults(['_controller' => [BlogController::class, 'show']]);
+     */
+    @Nullable
+    private static String getPhpRouteDefaultControllerShortcut(@NotNull MethodReference methodReference) {
+        PsiElement[] parameters = methodReference.getParameters();
+        if (parameters.length != 1 || !(parameters[0] instanceof ArrayCreationExpression arrayCreationExpression)) {
+            return null;
+        }
+
+        return getPhpControllerShortcut(PhpElementsUtil.getArrayValue(arrayCreationExpression, "_controller"));
+    }
+
+    /**
+     * Extract normalized HTTP methods from ->methods(...).
+     *
+     * ->methods(['GET', 'HEAD'])
+     */
+    @NotNull
+    private static Collection<String> getPhpRouteMethods(@NotNull MethodReference methodReference) {
+        PsiElement[] parameters = methodReference.getParameters();
+        if (parameters.length != 1 || !(parameters[0] instanceof ArrayCreationExpression arrayCreationExpression)) {
+            return Collections.emptyList();
+        }
+
+        Set<String> methods = new LinkedHashSet<>();
+        for (PsiElement methodParameter : PhpElementsUtil.getArrayValues(arrayCreationExpression)) {
+            String method = PhpElementsUtil.getStringValue(methodParameter);
+            if (StringUtils.isNotBlank(method)) {
+                methods.add(method.toLowerCase(Locale.ROOT));
+            }
+        }
+
+        return methods;
+    }
+
+    /**
+     * Walk back through a configurator chain and local variable assignments.
+     *
+     * Example:
+     * $group = $routes->namePrefix('admin_')->prefix('/admin');
+     * $group->namePrefix('api_')->add('dashboard', '/dashboard');
+     */
+    @NotNull
+    private static List<String> getRoutingConfiguratorChainLiteralValues(
+        @Nullable PsiElement psiElement,
+        @NotNull Function function,
+        @NotNull Set<String> routingParameters,
+        @NotNull String methodName,
+        @NotNull Set<PsiElement> visited
+    ) {
+        if (psiElement == null || !visited.add(psiElement)) {
+            return Collections.emptyList();
+        }
+
+        if (psiElement instanceof Variable variable) {
+            PsiElement assignedValue = getPreviousVariableAssignmentValue(variable, function);
+            return assignedValue != null
+                ? getRoutingConfiguratorChainLiteralValues(assignedValue, function, routingParameters, methodName, visited)
+                : Collections.emptyList();
+        }
+
+        if (!(psiElement instanceof MethodReference methodReference)) {
+            return Collections.emptyList();
+        }
+
+        List<String> values = new ArrayList<>(
+            getRoutingConfiguratorChainLiteralValues(methodReference.getClassReference(), function, routingParameters, methodName, visited)
+        );
+
+        if (methodName.equals(methodReference.getName()) && isRoutingConfiguratorReference(methodReference.getClassReference(), function, routingParameters, new HashSet<>())) {
+            String value = getPhpRouteLiteralValue(PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 0));
+            if (StringUtils.isNotBlank(value)) {
+                values.add(value);
+            }
+        }
+
+        return values;
+    }
+
+    /**
+     * Merge one collected prefix into the current route path.
+     * Prefixes are applied by the caller from inner to outer so '/admin', '/api', '/posts'
+     * becomes '/admin/api/posts'.
+     */
+    @Nullable
+    private static String mergeRoutePaths(@Nullable String routePath, @NotNull String pathPrefix) {
+        if (StringUtils.isBlank(pathPrefix)) {
+            return routePath;
+        }
+
+        if (StringUtils.isBlank(routePath)) {
+            return pathPrefix;
+        }
+
+        if (routePath.startsWith("/") && pathPrefix.endsWith("/")) {
+            return pathPrefix.substring(0, pathPrefix.length() - 1) + routePath;
+        }
+
+        if (!routePath.startsWith("/") && !pathPrefix.endsWith("/")) {
+            return pathPrefix + "/" + routePath;
+        }
+
+        return pathPrefix + routePath;
     }
 
     private static class PhpFluentRouteDefinition {

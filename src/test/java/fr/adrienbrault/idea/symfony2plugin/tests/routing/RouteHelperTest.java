@@ -595,6 +595,75 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     /**
+     * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#getPhpRouteDefinitions
+     */
+    public void testGetPhpRouteDefinitionsWithMethodsDefaultsAndPrefixes() {
+        myFixture.addFileToProject("config/routing_classes.php", "<?php\n" +
+            "namespace Symfony\\Component\\Routing\\Loader\\Configurator\n" +
+            "{\n" +
+            "    use Symfony\\Component\\Routing\\Loader\\Configurator\\Traits\\AddTrait;\n" +
+            "    use Symfony\\Component\\Routing\\Loader\\Configurator\\Traits\\RouteTrait;\n" +
+            "\n" +
+            "    class RouteConfigurator\n" +
+            "    {\n" +
+            "        use AddTrait;\n" +
+            "        use RouteTrait;\n" +
+            "    }\n" +
+            "\n" +
+            "    class RoutingConfigurator\n" +
+            "    {\n" +
+            "        use AddTrait;\n" +
+            "    }\n" +
+            "}\n" +
+            "\n" +
+            "namespace Symfony\\Component\\Routing\\Loader\\Configurator\\Traits\n" +
+            "{\n" +
+            "    use Symfony\\Component\\Routing\\Loader\\Configurator\\RouteConfigurator;\n" +
+            "\n" +
+            "    trait RouteTrait\n" +
+            "    {\n" +
+            "        final public function controller(callable|string|array $controller): static {}\n" +
+            "        final public function defaults(array $defaults): static {}\n" +
+            "        final public function methods(array $methods): static {}\n" +
+            "    }\n" +
+            "\n" +
+            "    trait AddTrait\n" +
+            "    {\n" +
+            "        public function add(string $name, string|array $path): RouteConfigurator {}\n" +
+            "        public function prefix(string $prefix): static {}\n" +
+            "        public function namePrefix(string $namePrefix): static {}\n" +
+            "    }\n" +
+            "}\n");
+
+        myFixture.addFileToProject("src/MyController.php", "<?php\n" +
+            "namespace App\\Controller;\n" +
+            "class MyController\n" +
+            "{\n" +
+            "    public function detail() {}\n" +
+            "}\n");
+
+        PhpFile phpFile = (PhpFile) myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "use Symfony\\Component\\Routing\\Loader\\Configurator\\RoutingConfigurator;\n" +
+            "\n" +
+            "return static function (RoutingConfigurator $routes): void {\n" +
+            "    $group = $routes->namePrefix('admin_')->prefix('/admin');\n" +
+            "    $route = $group->namePrefix('api_')->prefix('/api')->add('default_route', '/default/{id}');\n" +
+            "    $route->defaults(['_controller' => [\\App\\Controller\\MyController::class, 'detail']]);\n" +
+            "    $route->methods(['GET', 'HEAD']);\n" +
+            "};");
+
+        StubIndexedRoute route = ContainerUtil.find(
+            RouteHelper.getPhpRouteDefinitions(phpFile),
+            new MyEqualStubIndexedRouteCondition("admin_api_default_route")
+        );
+
+        assertNotNull(route);
+        assertEquals("/admin/api/default/{id}", route.getPath());
+        assertEquals("App\\Controller\\MyController::detail", route.getController());
+        assertContainsElements(route.getMethods(), "get", "head");
+    }
+
+    /**
      * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#isServiceController
      */
     public void testIsServiceController() {
