@@ -7,10 +7,10 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.usageView.UsageInfo
 import com.jetbrains.php.lang.psi.elements.Method
 import com.jetbrains.twig.elements.TwigFieldReference
-import fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigTypeFindUsagesHandler
+import fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigFindUsagesHandler
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
 
-class TwigTypeFindUsagesHandlerTest : SymfonyLightCodeInsightFixtureTestCase() {
+class TwigFindUsagesHandlerTest : SymfonyLightCodeInsightFixtureTestCase() {
     fun testPrimaryElementsExposeResolvedPhpTargets() {
         val phpFile = configureByProjectPath(
             "src/Bar.php",
@@ -30,7 +30,7 @@ class TwigTypeFindUsagesHandlerTest : SymfonyLightCodeInsightFixtureTestCase() {
         val twigElement = PsiTreeUtil.getParentOfType(twigFile.findElementAt(myFixture.caretOffset), TwigFieldReference::class.java, false)
         assertNotNull(twigElement)
 
-        val handler = TwigTypeFindUsagesHandler(twigElement!!, listOf(method!!))
+        val handler = TwigFindUsagesHandler(twigElement!!, listOf(method!!))
 
         assertEquals(1, handler.primaryElements.size)
         assertSame(method, handler.primaryElements[0])
@@ -57,7 +57,7 @@ class TwigTypeFindUsagesHandlerTest : SymfonyLightCodeInsightFixtureTestCase() {
         val twigElement = PsiTreeUtil.getParentOfType(twigFile.findElementAt(myFixture.caretOffset), TwigFieldReference::class.java, false)
         assertNotNull(twigElement)
 
-        val handler = TwigTypeFindUsagesHandler(twigElement!!, listOf(method!!))
+        val handler = TwigFindUsagesHandler(twigElement!!, listOf(method!!))
         val options: FindUsagesOptions = handler.findUsagesOptions
         options.searchScope = GlobalSearchScope.projectScope(project)
         options.isSearchForTextOccurrences = false

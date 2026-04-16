@@ -12,7 +12,7 @@ import com.intellij.util.Processor
  *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-class TwigTypeFindUsagesHandler(
+class TwigFindUsagesHandler(
     twigElement: PsiElement,
     private val phpTargets: List<PsiElement>,
 ) : FindUsagesHandler(twigElement) {
