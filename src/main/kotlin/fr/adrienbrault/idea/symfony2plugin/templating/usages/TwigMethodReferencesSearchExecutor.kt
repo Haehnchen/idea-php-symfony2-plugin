@@ -234,23 +234,45 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
         visitor: (TwigFile) -> Boolean,
     ) {
         val twigScope = getTwigSearchScope(project, queryParameters)
+        for (twigFile in collectTwigFiles(project, twigScope, searchWords)) {
+            if (!visitor(twigFile)) {
+                return
+            }
+        }
+    }
+
+    /**
+     * Collects candidate Twig files for a set of indexed words while visiting each file only once.
+     * This keeps getter shortcuts like `getFoo` + `foo` from rescanning the same template.
+     */
+    internal fun collectTwigFiles(
+        project: Project,
+        twigScope: GlobalSearchScope,
+        searchWords: Set<String>,
+    ): List<TwigFile> {
         val psiManager = PsiManager.getInstance(project)
         val searchHelper = PsiSearchHelper.getInstance(project)
+        val visitedFiles = linkedSetOf<com.intellij.openapi.vfs.VirtualFile>()
+        val twigFiles = ArrayList<TwigFile>()
 
         for (searchWord in searchWords) {
             searchHelper.processAllFilesWithWord(searchWord, twigScope, { psiFile: PsiFile ->
-                if (psiFile !is TwigFile) {
+                val virtualFile = psiFile.virtualFile ?: return@processAllFilesWithWord true
+                val twigPsiFile = when (psiFile) {
+                    is TwigFile -> psiFile
+                    else -> psiManager.findFile(virtualFile) as? TwigFile
+                } ?: return@processAllFilesWithWord true
+
+                if (!visitedFiles.add(twigPsiFile.virtualFile)) {
                     return@processAllFilesWithWord true
                 }
 
-                val twigPsiFile = psiManager.findFile(psiFile.virtualFile)
-                if (twigPsiFile !is TwigFile) {
-                    return@processAllFilesWithWord true
-                }
-
-                visitor(twigPsiFile)
+                twigFiles.add(twigPsiFile)
+                true
             }, false)
         }
+
+        return twigFiles
     }
 
     private fun getTwigSearchScope(

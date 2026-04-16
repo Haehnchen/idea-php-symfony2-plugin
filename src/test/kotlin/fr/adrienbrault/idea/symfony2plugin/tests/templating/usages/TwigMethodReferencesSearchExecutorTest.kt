@@ -4,6 +4,7 @@ import com.intellij.psi.PsiReference
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.PsiTreeUtil
+import com.jetbrains.twig.TwigFileType
 import com.jetbrains.php.lang.psi.elements.Field
 import com.jetbrains.php.lang.psi.elements.Method
 import com.jetbrains.php.lang.psi.elements.PhpClass
@@ -84,6 +85,33 @@ class TwigMethodReferencesSearchExecutorTest : SymfonyLightCodeInsightFixtureTes
 
         assertContainsSourceFile(references, "templates/property_method.html.twig")
         assertContainsSourceFile(references, "templates/call_method.html.twig")
+    }
+
+    fun testCollectTwigFilesVisitsEachTemplateOnlyOnceAcrossGetterSearchWords() {
+        getMethodUnderCaret(
+            """
+            <?php
+            namespace Foo;
+            class Bar {
+                public function getFo<caret>o() {}
+            }
+            """.trimIndent()
+        )
+
+        myFixture.addFileToProject("templates/dedup.html.twig", "{# @var bar \\Foo\\Bar #} {{ bar.foo }} {{ bar.getFoo() }}")
+        myFixture.addFileToProject("templates/shortcut_only.html.twig", "{# @var bar \\Foo\\Bar #} {{ bar.foo }}")
+        myFixture.addFileToProject("templates/method_only.html.twig", "{# @var bar \\Foo\\Bar #} {{ bar.getFoo() }}")
+
+        val twigScope = GlobalSearchScope.getScopeRestrictedByFileTypes(
+            GlobalSearchScope.projectScope(project),
+            TwigFileType.INSTANCE,
+        )
+
+        val files = TwigMethodReferencesSearchExecutor().collectTwigFiles(project, twigScope, linkedSetOf("getFoo", "foo"))
+        val dedupMatches = files.count { it.virtualFile.path.endsWith("templates/dedup.html.twig") }
+
+        assertEquals(1, dedupMatches)
+        assertEquals(3, files.size)
     }
 
     fun testFindsTwigUsagesForPublicField() {
