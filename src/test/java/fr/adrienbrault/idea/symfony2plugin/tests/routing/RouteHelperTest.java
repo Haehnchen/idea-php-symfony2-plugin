@@ -4,11 +4,16 @@ import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.util.Condition;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFileFactory;
+import com.intellij.psi.PsiManager;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.PhpFileType;
+import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
+import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.routing.Route;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
@@ -456,6 +461,137 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         element = RouteHelper.getRouteNameTarget(getProject(), "foobar_my_foo").iterator().next();
         assertNotNull(element);
+    }
+
+    public void testPhpFluentRoutingProvidesRouteTargetsAndControllerMatches() {
+        myFixture.addFileToProject("config/routing_classes.php", "<?php\n" +
+            "namespace Symfony\\Component\\Routing\\Loader\\Configurator\n" +
+            "{\n" +
+            "    use Symfony\\Component\\Routing\\Loader\\Configurator\\Traits\\AddTrait;\n" +
+            "    use Symfony\\Component\\Routing\\Loader\\Configurator\\Traits\\RouteTrait;\n" +
+            "\n" +
+            "    class RouteConfigurator\n" +
+            "    {\n" +
+            "        use AddTrait;\n" +
+            "        use RouteTrait;\n" +
+            "    }\n" +
+            "\n" +
+            "    class RoutingConfigurator\n" +
+            "    {\n" +
+            "        use AddTrait;\n" +
+            "    }\n" +
+            "}\n" +
+            "\n" +
+            "namespace Symfony\\Component\\Routing\\Loader\\Configurator\\Traits\n" +
+            "{\n" +
+            "    use Symfony\\Component\\Routing\\Loader\\Configurator\\RouteConfigurator;\n" +
+            "\n" +
+            "    trait RouteTrait\n" +
+            "    {\n" +
+            "        final public function controller(callable|string|array $controller): static {}\n" +
+            "    }\n" +
+            "\n" +
+            "    trait AddTrait\n" +
+            "    {\n" +
+            "        public function add(string $name, string|array $path): RouteConfigurator {}\n" +
+            "    }\n" +
+            "}\n");
+
+        myFixture.addFileToProject("config/routes.php", "<?php\n" +
+            "use Symfony\\Component\\Routing\\Loader\\Configurator\\RoutingConfigurator;\n" +
+            "\n" +
+            "return static function (RoutingConfigurator $routes): void {\n" +
+            "    $route = $routes->add('_profiler_home', '/');\n" +
+            "    $route->controller('web_profiler.controller.profiler::homeAction');\n" +
+            "};");
+
+        myFixture.addFileToProject("config/services.xml", "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+            "<container>\n" +
+            "    <services>\n" +
+            "        <service id=\"web_profiler.controller.profiler\" class=\"App\\Controller\\ProfilerController\"/>\n" +
+            "    </services>\n" +
+            "</container>\n");
+
+        myFixture.addFileToProject("src/ProfilerController.php", "<?php\n" +
+            "namespace App\\Controller;\n" +
+            "class ProfilerController\n" +
+            "{\n" +
+            "    public function homeAction() {}\n" +
+            "}\n");
+
+        Method homeAction = PhpElementsUtil.getClassMethod(getProject(), "App\\Controller\\ProfilerController", "homeAction");
+        assertNotNull(homeAction);
+
+        assertNotNull(ContainerUtil.find(RouteHelper.getRoutesOnControllerAction(homeAction), route ->
+            "_profiler_home".equals(route.getName()) &&
+                "web_profiler.controller.profiler::homeAction".equals(route.getController())
+        ));
+
+        PsiElement target = RouteHelper.getPhpRouteNameTarget((PhpFile) PsiManager.getInstance(getProject()).findFile(myFixture.findFileInTempDir("config/routes.php")), "_profiler_home");
+        assertNotNull(target);
+        assertEquals("'_profiler_home'", target.getText());
+
+        PsiElement routeNameTarget = RouteHelper.getRouteNameTarget(getProject(), "_profiler_home").iterator().next();
+        assertEquals("'_profiler_home'", routeNameTarget.getText());
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#getPhpControllerShortcut
+     */
+    public void testGetPhpControllerShortcut() {
+        myFixture.addFileToProject("config/routing_classes.php", "<?php\n" +
+            "namespace Symfony\\Component\\Routing\\Loader\\Configurator\n" +
+            "{\n" +
+            "    use Symfony\\Component\\Routing\\Loader\\Configurator\\Traits\\AddTrait;\n" +
+            "    use Symfony\\Component\\Routing\\Loader\\Configurator\\Traits\\RouteTrait;\n" +
+            "\n" +
+            "    class RouteConfigurator\n" +
+            "    {\n" +
+            "        use AddTrait;\n" +
+            "        use RouteTrait;\n" +
+            "    }\n" +
+            "\n" +
+            "    class RoutingConfigurator\n" +
+            "    {\n" +
+            "        use AddTrait;\n" +
+            "    }\n" +
+            "}\n" +
+            "\n" +
+            "namespace Symfony\\Component\\Routing\\Loader\\Configurator\\Traits\n" +
+            "{\n" +
+            "    use Symfony\\Component\\Routing\\Loader\\Configurator\\RouteConfigurator;\n" +
+            "\n" +
+            "    trait RouteTrait\n" +
+            "    {\n" +
+            "        final public function controller(callable|string|array $controller): static {}\n" +
+            "    }\n" +
+            "\n" +
+            "    trait AddTrait\n" +
+            "    {\n" +
+            "        public function add(string $name, string|array $path): RouteConfigurator {}\n" +
+            "    }\n" +
+            "}\n");
+
+        PhpFile phpFile = (PhpFile) myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "use Symfony\\Component\\Routing\\Loader\\Configurator\\RoutingConfigurator;\n" +
+            "\n" +
+            "return static function (RoutingConfigurator $routes): void {\n" +
+            "    $routes->add('string_route', '/string')->controller('web_profiler.controller.profiler::homeAction');\n" +
+            "    $routes->add('class_route', '/class')->controller(\\App\\Controller\\MyController::class);\n" +
+            "    $routes->add('array_route', '/array')->controller([\\App\\Controller\\MyController::class, 'detail']);\n" +
+            "};");
+
+        Collection<MethodReference> methodReferences = PhpElementsUtil.collectMethodReferencesInsideControlFlow(
+            PsiTreeUtil.findChildOfType(phpFile, Function.class),
+            "controller"
+        );
+
+        assertSize(3, methodReferences);
+
+        Iterator<MethodReference> iterator = methodReferences.iterator();
+        assertEquals("web_profiler.controller.profiler::homeAction", RouteHelper.getPhpControllerShortcut(iterator.next()));
+        assertEquals("App\\Controller\\MyController", RouteHelper.getPhpControllerShortcut(iterator.next()));
+        assertEquals("App\\Controller\\MyController::detail", RouteHelper.getPhpControllerShortcut(iterator.next()));
     }
 
     /**

@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.stubs.indexes;
 
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.indexing.FileBasedIndex;
+import com.jetbrains.php.lang.PhpFileType;
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.RouteInterface;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
@@ -206,6 +207,71 @@ public class RoutesStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase 
         RouteInterface route2 = getFirstValue("attributeinvoke_noname__invoke");
         assertEquals("/foo-attributes/no-name", route2.getPath());
         assertEquals("AttributeInvoke\\NoNameController::__invoke", route2.getController());
+    }
+
+    public void testThatPhpFluentRoutesAreIndexed() {
+        myFixture.addFileToProject("routing/classes.php", "<?php\n" +
+            "namespace Symfony\\Component\\Routing\\Loader\\Configurator\n" +
+            "{\n" +
+            "    use Symfony\\Component\\Routing\\Loader\\Configurator\\Traits\\AddTrait;\n" +
+            "    use Symfony\\Component\\Routing\\Loader\\Configurator\\Traits\\RouteTrait;\n" +
+            "\n" +
+            "    class RouteConfigurator\n" +
+            "    {\n" +
+            "        use AddTrait;\n" +
+            "        use RouteTrait;\n" +
+            "    }\n" +
+            "\n" +
+            "    class RoutingConfigurator\n" +
+            "    {\n" +
+            "        use AddTrait;\n" +
+            "    }\n" +
+            "}\n" +
+            "\n" +
+            "namespace Symfony\\Component\\Routing\\Loader\\Configurator\\Traits\n" +
+            "{\n" +
+            "    use Symfony\\Component\\Routing\\Loader\\Configurator\\RouteConfigurator;\n" +
+            "\n" +
+            "    trait RouteTrait\n" +
+            "    {\n" +
+            "        final public function controller(callable|string|array $controller): static {}\n" +
+            "    }\n" +
+            "\n" +
+            "    trait AddTrait\n" +
+            "    {\n" +
+            "        public function add(string $name, string|array $path): RouteConfigurator {}\n" +
+            "    }\n" +
+            "}\n");
+
+        myFixture.addFileToProject("config/routes.php", "<?php\n" +
+            "use Symfony\\Component\\Routing\\Loader\\Configurator\\RoutingConfigurator;\n" +
+            "\n" +
+            "return static function (RoutingConfigurator $routes): void {\n" +
+            "    $route = $routes->add('_profiler_home', '/');\n" +
+            "    $route->controller('web_profiler.controller.profiler::homeAction');\n" +
+            "\n" +
+            "    $routes->add('app_class_route', '/class')\n" +
+            "        ->controller(\\App\\Controller\\MyController::class);\n" +
+            "\n" +
+            "    $routes->add('app_array_route', '/array')\n" +
+            "        ->controller([\\App\\Controller\\MyController::class, 'detail']);\n" +
+            "};");
+
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n");
+
+        assertIndexContainsKeyWithValue(RoutesStubIndex.KEY, "_profiler_home",
+            value -> "_profiler_home".equals(value.getName()) &&
+                "/".equals(value.getPath()) &&
+                "web_profiler.controller.profiler::homeAction".equals(value.getController())
+        );
+
+        assertIndexContainsKeyWithValue(RoutesStubIndex.KEY, "app_class_route",
+            value -> "App\\Controller\\MyController".equals(value.getController())
+        );
+
+        assertIndexContainsKeyWithValue(RoutesStubIndex.KEY, "app_array_route",
+            value -> "App\\Controller\\MyController::detail".equals(value.getController())
+        );
     }
 
     @NotNull

@@ -78,7 +78,7 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, StubIndexed
                     }
                 }
             } else if(psiFile instanceof PhpFile) {
-                // @Route(), #[Route]
+                // @Route(), #[Route], RoutingConfigurator fluent routes
                 if(!isValidForIndex(inputData, psiFile)) {
                     return map;
                 }
@@ -86,6 +86,13 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, StubIndexed
                 AnnotationRouteElementVisitor visitor = new AnnotationRouteElementVisitor(map);
                 for (PhpClass phpClass : PhpPsiUtil.findAllClasses((PhpFile) psiFile)) {
                     visitor.visitFile(phpClass);
+                }
+
+                for (StubIndexedRoute indexedRoutes : RouteHelper.getPhpRouteDefinitions((PhpFile) psiFile)) {
+                    String name = indexedRoutes.getName();
+                    if (name.length() < 255) {
+                        map.put(name, indexedRoutes);
+                    }
                 }
             }
 
@@ -119,7 +126,7 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, StubIndexed
 
     @Override
     public int getVersion() {
-        return 5;
+        return 6;
     }
 
     private static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {
@@ -143,6 +150,5 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, StubIndexed
         return true;
     }
 }
-
 
 

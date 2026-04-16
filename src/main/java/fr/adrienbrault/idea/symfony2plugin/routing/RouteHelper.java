@@ -68,6 +68,8 @@ import java.util.stream.StreamSupport;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class RouteHelper {
+    private static final String ROUTING_CONFIGURATOR_FQN = "Symfony\\Component\\Routing\\Loader\\Configurator\\RoutingConfigurator";
+
     public static final String[] ROUTE_ANNOTATIONS = new String[] {
         "\\Symfony\\Component\\Routing\\Annotation\\Route",
         "\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Route",
@@ -1121,40 +1123,287 @@ public class RouteHelper {
      */
     @NotNull
     public static PsiElement[] getPhpController(@NotNull MethodReference methodCall) {
-        PsiElement[] parameters = methodCall.getParameters();
-        if (parameters.length == 1 && parameters[0] instanceof StringLiteralExpression) {
-            // 'FooController::method'
-            String contents = ((StringLiteralExpression) parameters[0]).getContents();
-            if (StringUtils.isNotBlank(contents)) {
-                return RouteHelper.getMethodsOnControllerShortcut(methodCall.getProject(), contents);
-            }
-
-            return new PsiElement[0];
-        } else if (parameters.length == 1 && parameters[0] instanceof ClassConstantReference) {
-            // FooController::class
-            String classConstantPhpFqn = PhpElementsUtil.getClassConstantPhpFqn((ClassConstantReference) parameters[0]);
-            if (StringUtils.isNotBlank(classConstantPhpFqn)) {
-                return RouteHelper.getMethodsOnControllerShortcut(methodCall.getProject(), classConstantPhpFqn);
-            }
-
-            return new PsiElement[0];
-        } else if (parameters.length == 1 && parameters[0] instanceof ArrayCreationExpression) {
-            // [FooController::class, 'method']
-            PsiElement[] elements = PhpElementsUtil.getArrayValues((ArrayCreationExpression) parameters[0]);
-            if (elements.length == 2) {
-                String className = PhpElementsUtil.getStringValue(elements[0]);
-                if (StringUtils.isNotBlank(className)) {
-                    String method = PhpElementsUtil.getStringValue(elements[1]);
-                    if (method != null) {
-                        return RouteHelper.getMethodsOnControllerShortcut(methodCall.getProject(), className + "::" + method);
-                    }
-                }
-            }
-
+        String controller = getPhpControllerShortcut(methodCall);
+        if (StringUtils.isBlank(controller)) {
             return new PsiElement[0];
         }
 
-        return new PsiElement[0];
+        return RouteHelper.getMethodsOnControllerShortcut(methodCall.getProject(), controller);
+    }
+
+    @Nullable
+    public static String getPhpControllerShortcut(@NotNull MethodReference methodCall) {
+        PsiElement[] parameters = methodCall.getParameters();
+        if (parameters.length != 1) {
+            return null;
+        }
+
+        PsiElement parameter = parameters[0];
+        if (parameter instanceof StringLiteralExpression) {
+            String contents = ((StringLiteralExpression) parameter).getContents();
+            return StringUtils.isNotBlank(contents) ? contents : null;
+        }
+
+        if (parameter instanceof ClassConstantReference) {
+            String classConstantPhpFqn = PhpElementsUtil.getClassConstantPhpFqn((ClassConstantReference) parameter);
+            return StringUtils.isNotBlank(classConstantPhpFqn) ? classConstantPhpFqn : null;
+        }
+
+        if (parameter instanceof ArrayCreationExpression) {
+            PsiElement[] elements = PhpElementsUtil.getArrayValues((ArrayCreationExpression) parameter);
+            if (elements.length == 2) {
+                String className = PhpElementsUtil.getStringValue(elements[0]);
+                String method = PhpElementsUtil.getStringValue(elements[1]);
+                if (StringUtils.isNotBlank(className) && StringUtils.isNotBlank(method)) {
+                    return className + "::" + method;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Extract syntax-only route definitions from Symfony PHP routing configurator files.
+     *
+     * This is intentionally used by {@link fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex}
+     * and therefore must stay index-safe:
+     *
+     * - no PhpIndex lookups
+     * - no dynamic type inference
+     * - no service/reference resolution
+     *
+     * Matching is anchored on a declared RoutingConfigurator parameter and local fluent PSI chain walking.
+     */
+    @NotNull
+    public static Collection<StubIndexedRoute> getPhpRouteDefinitions(@NotNull PhpFile psiFile) {
+        Collection<StubIndexedRoute> routes = new ArrayList<>();
+
+        for (PhpFluentRouteDefinition definition : getPhpFluentRouteDefinitions(psiFile)) {
+            routes.add(definition.route);
+        }
+
+        return routes;
+    }
+
+    @Nullable
+    public static PsiElement getPhpRouteNameTarget(@NotNull PhpFile psiFile, @NotNull String routeName) {
+        for (PhpFluentRouteDefinition definition : getPhpFluentRouteDefinitions(psiFile)) {
+            if (routeName.equalsIgnoreCase(definition.route.getName())) {
+                return definition.nameTarget;
+            }
+        }
+
+        return null;
+    }
+
+    @NotNull
+    private static Collection<PhpFluentRouteDefinition> getPhpFluentRouteDefinitions(@NotNull PhpFile psiFile) {
+        Collection<PhpFluentRouteDefinition> routes = new ArrayList<>();
+
+        for (Function function : PsiTreeUtil.findChildrenOfType(psiFile, Function.class)) {
+            Set<String> routingParameters = getRoutingConfiguratorParameterNames(function);
+            if (routingParameters.isEmpty()) {
+                continue;
+            }
+
+            Map<MethodReference, PhpFluentRouteDefinition> definitions = new LinkedHashMap<>();
+            for (MethodReference methodReference : PhpElementsUtil.collectMethodReferencesInsideControlFlow(function, "add")) {
+                PhpFluentRouteDefinition definition = createPhpFluentRouteDefinition(methodReference, function, routingParameters);
+                if (definition != null) {
+                    definitions.put(methodReference, definition);
+                }
+            }
+
+            for (MethodReference methodReference : PhpElementsUtil.collectMethodReferencesInsideControlFlow(function, "controller")) {
+                String controller = getPhpControllerShortcut(methodReference);
+                if (StringUtils.isBlank(controller)) {
+                    continue;
+                }
+
+                MethodReference addMethodReference = getRoutingAddMethodReference(methodReference.getClassReference(), function, routingParameters, new HashSet<>());
+                if (addMethodReference == null) {
+                    continue;
+                }
+
+                PhpFluentRouteDefinition definition = definitions.get(addMethodReference);
+                if (definition == null) {
+                    definition = createPhpFluentRouteDefinition(addMethodReference, function, routingParameters);
+                    if (definition == null) {
+                        continue;
+                    }
+
+                    definitions.put(addMethodReference, definition);
+                }
+
+                definition.route.setController(normalizeRouteController(controller));
+            }
+
+            routes.addAll(definitions.values());
+        }
+
+        return routes;
+    }
+
+    @Nullable
+    private static PhpFluentRouteDefinition createPhpFluentRouteDefinition(
+        @NotNull MethodReference methodReference,
+        @NotNull Function function,
+        @NotNull Set<String> routingParameters
+    ) {
+        if (!"add".equals(methodReference.getName()) || !isRoutingConfiguratorReference(methodReference.getClassReference(), function, routingParameters, new HashSet<>())) {
+            return null;
+        }
+
+        PsiElement routeNameElement = PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 0);
+        String routeName = getPhpRouteLiteralValue(routeNameElement);
+        if (StringUtils.isBlank(routeName)) {
+            return null;
+        }
+
+        StubIndexedRoute route = new StubIndexedRoute(routeName);
+
+        String routePath = getPhpRouteLiteralValue(PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 1));
+        if (StringUtils.isNotBlank(routePath)) {
+            route.setPath(routePath);
+        }
+
+        return new PhpFluentRouteDefinition(route, routeNameElement != null ? routeNameElement : methodReference);
+    }
+
+    @Nullable
+    private static MethodReference getRoutingAddMethodReference(
+        @Nullable PsiElement psiElement,
+        @NotNull Function function,
+        @NotNull Set<String> routingParameters,
+        @NotNull Set<PsiElement> visited
+    ) {
+        if (psiElement == null || !visited.add(psiElement)) {
+            return null;
+        }
+
+        if (psiElement instanceof MethodReference methodReference) {
+            if ("add".equals(methodReference.getName()) && isRoutingConfiguratorReference(methodReference.getClassReference(), function, routingParameters, new HashSet<>())) {
+                return methodReference;
+            }
+
+            return getRoutingAddMethodReference(methodReference.getClassReference(), function, routingParameters, visited);
+        }
+
+        if (psiElement instanceof Variable variable) {
+            PsiElement assignedValue = getPreviousVariableAssignmentValue(variable, function);
+            if (assignedValue != null) {
+                return getRoutingAddMethodReference(assignedValue, function, routingParameters, visited);
+            }
+        }
+
+        return null;
+    }
+
+    private static boolean isRoutingConfiguratorReference(
+        @Nullable PsiElement psiElement,
+        @NotNull Function function,
+        @NotNull Set<String> routingParameters,
+        @NotNull Set<PsiElement> visited
+    ) {
+        if (psiElement == null || !visited.add(psiElement)) {
+            return false;
+        }
+
+        if (psiElement instanceof Variable variable) {
+            if (routingParameters.contains(variable.getName())) {
+                return true;
+            }
+
+            PsiElement assignedValue = getPreviousVariableAssignmentValue(variable, function);
+            return assignedValue != null && isRoutingConfiguratorReference(assignedValue, function, routingParameters, visited);
+        }
+
+        if (psiElement instanceof MethodReference methodReference) {
+            return isRoutingConfiguratorReference(methodReference.getClassReference(), function, routingParameters, visited);
+        }
+
+        return false;
+    }
+
+    @NotNull
+    private static Set<String> getRoutingConfiguratorParameterNames(@NotNull Function function) {
+        Set<String> parameterNames = new HashSet<>();
+
+        for (Parameter parameter : function.getParameters()) {
+            String parameterName = parameter.getName();
+            if (StringUtils.isBlank(parameterName)) {
+                continue;
+            }
+
+            if (parameter.getDeclaredType().getTypes().stream().anyMatch(RouteHelper::isRoutingConfiguratorType)) {
+                parameterNames.add(parameterName);
+                continue;
+            }
+
+            PhpTypeDeclaration typeDeclaration = parameter.getTypeDeclaration();
+            if (typeDeclaration != null && isRoutingConfiguratorType(typeDeclaration.getText())) {
+                parameterNames.add(parameterName);
+            }
+        }
+
+        return parameterNames;
+    }
+
+    private static boolean isRoutingConfiguratorType(@Nullable String type) {
+        if (StringUtils.isBlank(type)) {
+            return false;
+        }
+
+        String normalizedType = StringUtils.stripStart(type, "\\");
+        return ROUTING_CONFIGURATOR_FQN.equals(normalizedType) || "RoutingConfigurator".equals(normalizedType);
+    }
+
+    @Nullable
+    private static PsiElement getPreviousVariableAssignmentValue(@NotNull Variable variable, @NotNull Function scope) {
+        String variableName = variable.getName();
+        if (StringUtils.isBlank(variableName)) {
+            return null;
+        }
+
+        AssignmentExpression latestAssignment = null;
+        int variableOffset = variable.getTextOffset();
+
+        for (AssignmentExpression assignmentExpression : PsiTreeUtil.collectElementsOfType(scope, AssignmentExpression.class)) {
+            if (assignmentExpression.getTextOffset() >= variableOffset) {
+                continue;
+            }
+
+            if (!(assignmentExpression.getVariable() instanceof Variable assignedVariable) || !variableName.equals(assignedVariable.getName())) {
+                continue;
+            }
+
+            latestAssignment = assignmentExpression;
+        }
+
+        return latestAssignment != null ? latestAssignment.getValue() : null;
+    }
+
+    @Nullable
+    private static String getPhpRouteLiteralValue(@Nullable PsiElement psiElement) {
+        if (psiElement instanceof StringLiteralExpression) {
+            String contents = ((StringLiteralExpression) psiElement).getContents();
+            return StringUtils.isNotBlank(contents) ? contents : null;
+        }
+
+        return null;
+    }
+
+    private static class PhpFluentRouteDefinition {
+        @NotNull
+        private final StubIndexedRoute route;
+        @NotNull
+        private final PsiElement nameTarget;
+
+        private PhpFluentRouteDefinition(@NotNull StubIndexedRoute route, @NotNull PsiElement nameTarget) {
+            this.route = route;
+            this.nameTarget = nameTarget;
+        }
     }
 
     @Nullable
@@ -1248,6 +1497,8 @@ public class RouteHelper {
      */
     @NotNull
     public static Collection<PsiElement> getRouteNameTarget(@NotNull Project project, @NotNull String routeName) {
+        Collection<PsiElement> phpTargets = new ArrayList<>();
+
         for(VirtualFile virtualFile: RouteHelper.getRouteDefinitionInsideFile(project, routeName)) {
             PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
 
@@ -1282,11 +1533,16 @@ public class RouteHelper {
                     }).visitFile(phpClass);
                 }
 
-                return targets;
+                PsiElement target = RouteHelper.getPhpRouteNameTarget((PhpFile) psiFile, routeName);
+                if (target != null) {
+                    targets.add(target);
+                }
+
+                phpTargets.addAll(targets);
             }
         }
 
-        return Collections.emptyList();
+        return phpTargets;
     }
 
     /**

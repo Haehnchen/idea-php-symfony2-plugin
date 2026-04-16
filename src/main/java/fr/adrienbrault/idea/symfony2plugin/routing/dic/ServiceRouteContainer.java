@@ -51,11 +51,12 @@ public class ServiceRouteContainer  {
         for (Route route : routes) {
             String controller = route.getController();
             if (controller == null) continue;
-            // controller format: "service_id:methodName"
-            int colon = controller.indexOf(':');
-            if (colon > 0 && colon < controller.length() - 1) {
-                String serviceId = controller.substring(0, colon);
-                String methodName = controller.substring(colon + 1);
+            // controller format: "service_id:methodName" or "service_id::methodName"
+            String normalizedController = controller.replace("::", ":");
+            int colon = normalizedController.indexOf(':');
+            if (colon > 0 && colon < normalizedController.length() - 1) {
+                String serviceId = normalizedController.substring(0, colon);
+                String methodName = normalizedController.substring(colon + 1);
                 index.computeIfAbsent(methodName, k -> new ArrayList<>()).add(new RouteEntry(serviceId, methodName, route));
             }
         }

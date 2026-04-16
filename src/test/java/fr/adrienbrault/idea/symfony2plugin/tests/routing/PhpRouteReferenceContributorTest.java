@@ -1,6 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.routing;
 
+import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.PhpFileType;
+import com.jetbrains.php.lang.psi.elements.Method;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.util.ArrayList;
@@ -44,5 +46,55 @@ public class PhpRouteReferenceContributorTest extends SymfonyLightCodeInsightFix
             );
         }
 
+    }
+
+    public void testRoutingConfiguratorControllerProvidesNavigation() {
+        myFixture.addFileToProject("routing/classes.php", "<?php\n" +
+            "namespace Symfony\\Component\\Routing\\Loader\\Configurator\n" +
+            "{\n" +
+            "    use Symfony\\Component\\Routing\\Loader\\Configurator\\Traits\\AddTrait;\n" +
+            "    use Symfony\\Component\\Routing\\Loader\\Configurator\\Traits\\RouteTrait;\n" +
+            "\n" +
+            "    class RouteConfigurator\n" +
+            "    {\n" +
+            "        use AddTrait;\n" +
+            "        use RouteTrait;\n" +
+            "    }\n" +
+            "\n" +
+            "    class RoutingConfigurator\n" +
+            "    {\n" +
+            "        use AddTrait;\n" +
+            "    }\n" +
+            "}\n" +
+            "\n" +
+            "namespace Symfony\\Component\\Routing\\Loader\\Configurator\\Traits\n" +
+            "{\n" +
+            "    use Symfony\\Component\\Routing\\Loader\\Configurator\\RouteConfigurator;\n" +
+            "\n" +
+            "    trait RouteTrait\n" +
+            "    {\n" +
+            "        final public function controller(callable|string|array $controller): static {}\n" +
+            "    }\n" +
+            "\n" +
+            "    trait AddTrait\n" +
+            "    {\n" +
+            "        public function add(string $name, string|array $path): RouteConfigurator {}\n" +
+            "    }\n" +
+            "}\n");
+
+        myFixture.addFileToProject("src/MyController.php", "<?php\n" +
+            "namespace App\\Controller;\n" +
+            "class MyController\n" +
+            "{\n" +
+            "    public function detailAction() {}\n" +
+            "}\n");
+
+        assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
+            "use Symfony\\Component\\Routing\\Loader\\Configurator\\RoutingConfigurator;\n" +
+            "\n" +
+            "return static function (RoutingConfigurator $routes): void {\n" +
+            "    $routes->add('app_array_route', '/array')\n" +
+            "        ->controller('App\\\\Controller\\\\MyCont<caret>roller::detailAction');\n" +
+            "};", PlatformPatterns.psiElement(Method.class).withName("detailAction"));
     }
 }
