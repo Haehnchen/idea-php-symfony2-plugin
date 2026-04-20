@@ -39,6 +39,6 @@ public class EventSubscriberUtilTest extends SymfonyLightCodeInsightFixtureTestC
      * @see EventSubscriberUtil#getTaggedEventMethodParameter
      */
     public void testGetTaggedEventMethodParameterWithIndexEventAnnotation() {
-        assertEquals(Collections.singletonList("Foo\\Event\\MyEvent"), EventSubscriberUtil.getTaggedEventMethodParameter(getProject(), "my.foo.event"));
+        assertEquals(Collections.singletonList("\\Foo\\Event\\MyEvent"), EventSubscriberUtil.getTaggedEventMethodParameter(getProject(), "my.foo.event"));
     }
 }

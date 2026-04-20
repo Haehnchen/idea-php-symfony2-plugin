@@ -143,6 +143,9 @@ public class AnnotationBackportUtil {
      */
     @Nullable
     public static String getQualifiedName(@NotNull PsiElement psiElement, @NotNull String fqn) {
+        if (!fqn.startsWith("\\")) {
+            fqn = "\\" + fqn;
+        }
 
         PhpPsiElement scopeForUseOperator = PhpCodeInsightUtil.findScopeForUseOperator(psiElement);
         if (scopeForUseOperator == null) {

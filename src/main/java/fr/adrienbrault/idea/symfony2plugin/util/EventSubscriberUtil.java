@@ -21,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -65,7 +66,7 @@ public class EventSubscriberUtil {
         );
 
         if(dispatcherEvent != null && StringUtils.isNotBlank(dispatcherEvent.getInstance())) {
-            return Collections.singletonList(dispatcherEvent.getInstance());
+            return normalizeFqns(Collections.singletonList(dispatcherEvent.getInstance()));
         }
 
         // Extract from directly from EventSubscriberInterface
@@ -122,5 +123,13 @@ public class EventSubscriberUtil {
         }
 
         return Collections.emptyList();
+    }
+
+    @NotNull
+    private static Collection<String> normalizeFqns(@NotNull Collection<String> values) {
+        return values.stream()
+            .filter(StringUtils::isNotBlank)
+            .map(value -> value.startsWith("\\") ? value : "\\" + value)
+            .collect(Collectors.toList());
     }
 }
