@@ -31,24 +31,9 @@ class RouteUsageUtil private constructor() {
          */
         @JvmStatic
         fun getRouteDeclarationTarget(element: PsiElement): PsiElement? {
-            val yamlKeyValue = PsiTreeUtil.getParentOfType(element, YAMLKeyValue::class.java, false)
-            if (yamlKeyValue != null &&
-                StringUtils.isNotBlank(yamlKeyValue.keyText) &&
-                yamlKeyValue.value is YAMLCompoundValue
-            ) {
-                return yamlKeyValue
-            }
-
-            val xmlAttribute = PsiTreeUtil.getParentOfType(element, XmlAttribute::class.java, false)
-            if (isXmlRouteIdAttribute(xmlAttribute)) {
-                return xmlAttribute
-            }
-
-            val phpAttribute = PsiTreeUtil.getParentOfType(element, PhpAttribute::class.java, false)
-            if (phpAttribute != null && isSupportedPhpAttributeDeclaration(element, phpAttribute)) {
-                return getPhpRouteNameLiteral(element)
-            }
-
+            getYamlRouteDeclarationTarget(element)?.let { return it }
+            getXmlRouteDeclarationTarget(element)?.let { return it }
+            getPhpRouteDeclarationTarget(element)?.let { return it }
             return null
         }
 
@@ -148,6 +133,11 @@ class RouteUsageUtil private constructor() {
         private fun getCandidateElements(element: PsiElement): Collection<PsiElement> {
             val elements = linkedSetOf(element)
             element.parent?.let(elements::add)
+
+            if (element.containingFile == null || element.node == null) {
+                return ArrayList(elements)
+            }
+
             PsiTreeUtil.prevLeaf(element)?.let(elements::add)
             PsiTreeUtil.nextLeaf(element)?.let(elements::add)
             return ArrayList(elements)
@@ -163,6 +153,35 @@ class RouteUsageUtil private constructor() {
 
             val parent = xmlAttribute.parent
             return parent != null && parent.name == "route"
+        }
+
+        private fun getYamlRouteDeclarationTarget(element: PsiElement): YAMLKeyValue? {
+            val yamlKeyValue = when (element) {
+                is YAMLKeyValue -> element
+                else -> element.parent as? YAMLKeyValue
+            }
+
+            return yamlKeyValue?.takeIf {
+                StringUtils.isNotBlank(it.keyText) && it.value is YAMLCompoundValue
+            }
+        }
+
+        private fun getXmlRouteDeclarationTarget(element: PsiElement): XmlAttribute? {
+            val xmlAttribute = when (element) {
+                is XmlAttribute -> element
+                else -> element.parent as? XmlAttribute
+            }
+
+            return xmlAttribute?.takeIf(::isXmlRouteIdAttribute)
+        }
+
+        private fun getPhpRouteDeclarationTarget(element: PsiElement): StringLiteralExpression? {
+            val literalExpression = getPhpRouteNameLiteral(element) ?: return null
+            val phpAttribute = PsiTreeUtil.getParentOfType(literalExpression, PhpAttribute::class.java, false) ?: return null
+
+            return literalExpression.takeIf {
+                isSupportedPhpAttributeDeclaration(literalExpression, phpAttribute)
+            }
         }
 
         /**

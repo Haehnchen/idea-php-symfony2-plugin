@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.routing.usages
 
+import com.intellij.psi.JavaPsiFacade
 import com.intellij.usages.PsiElementUsageTarget
 import com.intellij.usages.UsageTarget
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression
@@ -75,5 +76,21 @@ class RouteUsageTargetProviderTest : SymfonyLightCodeInsightFixtureTestCase() {
         val targets: Array<UsageTarget> = RouteUsageTargetProvider().getTargets(element!!)
         assertEquals(1, targets.size)
         assertTrue(targets[0].isValid)
+    }
+
+    fun testReturnsNoTargetsForPsiPackage() {
+        myFixture.addFileToProject(
+            "foo/Bar.java",
+            """
+            package foo;
+            class Bar {}
+            """.trimIndent()
+        )
+
+        val psiPackage = JavaPsiFacade.getInstance(project).findPackage("foo")
+        assertNotNull(psiPackage)
+
+        val targets: Array<UsageTarget> = RouteUsageTargetProvider().getTargets(psiPackage!!)
+        assertEquals(0, targets.size)
     }
 }
