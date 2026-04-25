@@ -28,6 +28,10 @@ public class DomainMappingsTest extends SymfonyLightCodeInsightFixtureTestCase {
         Collection<DomainFileMap> domainFileMaps = domainMappings.getDomainFileMaps();
 
         assertEquals(16, domainFileMaps.size());
+        assertTrue(domainMappings.hasDomain("CraueFormFlowBundle"));
+        assertFalse(domainMappings.hasDomain("missing_domain"));
+        assertTrue(domainMappings.getDomains().contains("foobar_domain1"));
+        assertEquals(1, domainMappings.getDomainFileMaps("foobar_domain1").size());
 
         DomainFileMap craueFormFlowBundle = domainFileMaps.stream().filter(domainFileMap -> domainFileMap.getDomain().equals("CraueFormFlowBundle")).findFirst().get();
 

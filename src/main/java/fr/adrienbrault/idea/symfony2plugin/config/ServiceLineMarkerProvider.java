@@ -341,9 +341,8 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         PsiElement parent = psiElement.getParent();
         if (parent instanceof StringLiteralExpression && TranslationUtil.isConstraintPropertyField((StringLiteralExpression) parent)) {
             String contents = ((StringLiteralExpression) parent).getContents();
-            PsiElement[] validators = TranslationUtil.getTranslationPsiElements(psiElement.getProject(), contents, "validators");
 
-            if (validators.length > 0) {
+            if (TranslationUtil.hasTranslationKey(psiElement.getProject(), contents, "validators")) {
                 NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.TRANSLATION)
                     .setTargets(NotNullLazyValue.lazy(() -> Arrays.asList(TranslationUtil.getTranslationPsiElements(psiElement.getProject(), contents, "validators"))))
                     .setTooltipText("Navigate to translation");

@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.translation.parser;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.DomainFileMap;
 import fr.adrienbrault.idea.symfony2plugin.util.service.AbstractServiceParser;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -12,6 +13,9 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -20,6 +24,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class DomainMappings extends AbstractServiceParser {
 
     protected final List<DomainFileMap> domainFileMaps = new CopyOnWriteArrayList<>();
+    private final Map<String, List<DomainFileMap>> domainFileMapsByDomain = new ConcurrentHashMap<>();
+    private final Set<String> domains = ConcurrentHashMap.newKeySet();
 
     @Override
     public String getXPathFilter() {
@@ -51,7 +57,7 @@ public class DomainMappings extends AbstractServiceParser {
                     }
 
                     if (StringUtils.isNotBlank(domain)) {
-                        this.domainFileMaps.add(new DomainFileMap(
+                        this.addDomainFileMap(new DomainFileMap(
                             arguments.item(0).getTextContent(),
                             arguments.item(1).getTextContent(),
                             arguments.item(2).getTextContent(),
@@ -78,7 +84,7 @@ public class DomainMappings extends AbstractServiceParser {
                         }
 
                         if (StringUtils.isNotBlank(split[0])) {
-                            this.domainFileMaps.add(new DomainFileMap(split[2], path, split[1], split[0]));
+                            this.addDomainFileMap(new DomainFileMap(split[2], path, split[1], split[0]));
                         }
                     }
                 }
@@ -88,5 +94,25 @@ public class DomainMappings extends AbstractServiceParser {
 
     public Collection<DomainFileMap> getDomainFileMaps() {
         return Collections.synchronizedList(domainFileMaps);
+    }
+
+    public Collection<DomainFileMap> getDomainFileMaps(@NotNull String domainName) {
+        return domainFileMapsByDomain.getOrDefault(domainName, Collections.emptyList());
+    }
+
+    public boolean hasDomain(@NotNull String domainName) {
+        return domains.contains(domainName);
+    }
+
+    public Collection<String> getDomains() {
+        return Collections.unmodifiableSet(domains);
+    }
+
+    private void addDomainFileMap(@NotNull DomainFileMap domainFileMap) {
+        this.domainFileMaps.add(domainFileMap);
+        this.domains.add(domainFileMap.getDomain());
+        this.domainFileMapsByDomain
+            .computeIfAbsent(domainFileMap.getDomain(), ignored -> new CopyOnWriteArrayList<>())
+            .add(domainFileMap);
     }
 }

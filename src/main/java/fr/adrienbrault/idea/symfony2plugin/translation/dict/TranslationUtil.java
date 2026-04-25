@@ -86,12 +86,10 @@ public class TranslationUtil {
         DomainMappings domainMappings = ServiceXmlParserFactory.getInstance(project, DomainMappings.class);
         Collection<VirtualFile> virtualFiles = new ArrayList<>();
 
-        for(DomainFileMap domain: domainMappings.getDomainFileMaps()) {
-            if(domain.getDomain().equals(domainName)) {
-                VirtualFile virtualFile = domain.getFile();
-                if(virtualFile != null) {
-                    virtualFiles.add(virtualFile);
-                }
+        for(DomainFileMap domain: domainMappings.getDomainFileMaps(domainName)) {
+            VirtualFile virtualFile = domain.getFile();
+            if(virtualFile != null) {
+                virtualFiles.add(virtualFile);
             }
         }
 
@@ -116,21 +114,13 @@ public class TranslationUtil {
 
     public static boolean hasDomainInsideCompiledContainer(@NotNull Project project, @NotNull String domainName) {
         DomainMappings domainMappings = ServiceXmlParserFactory.getInstance(project, DomainMappings.class);
-        for(DomainFileMap domain: domainMappings.getDomainFileMaps()) {
-            if(domain.getDomain().equals(domainName)) {
-                return true;
-            }
-        }
-
-        return false;
+        return domainMappings.hasDomain(domainName);
     }
 
     static public Collection<String> getDomainsFromContainer(@NotNull Project project) {
         DomainMappings domainMappings = ServiceXmlParserFactory.getInstance(project, DomainMappings.class);
 
-        return domainMappings.getDomainFileMaps().stream()
-            .map(DomainFileMap::getDomain)
-            .collect(Collectors.toSet());
+        return domainMappings.getDomains();
     }
 
     /**
@@ -263,10 +253,6 @@ public class TranslationUtil {
     }
 
     public static boolean hasTranslationKey(@NotNull Project project, String keyName, String domainName) {
-        if(!hasDomain(project, domainName)) {
-            return false;
-        }
-
         return Arrays.stream(getTranslationProviders())
             .anyMatch(translatorProvider -> translatorProvider.hasTranslationKey(project, keyName, domainName));
     }
