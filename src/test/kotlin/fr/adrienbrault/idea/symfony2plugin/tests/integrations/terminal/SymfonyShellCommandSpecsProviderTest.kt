@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.integrations.terminal
 
+import com.intellij.testFramework.DumbModeTestUtils
 import fr.adrienbrault.idea.symfony2plugin.integrations.terminal.SymfonyShellCommandSpecsProvider
 import fr.adrienbrault.idea.symfony2plugin.integrations.terminal.collectCommandData
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
@@ -83,6 +84,37 @@ class SymfonyShellCommandSpecsProviderTest : SymfonyLightCodeInsightFixtureTestC
         assertTrue("terminal:with-options should be collected", "terminal:with-options" in names)
         assertTrue("terminal:with-args should be collected", "terminal:with-args" in names)
         assertTrue("terminal:modern-options should be collected", "terminal:modern-options" in names)
+    }
+
+    fun testCollectCommandDataInvalidatesOnPhpModification() {
+        val before = collectCommandData(project).map { it.name }
+        assertFalse("terminal:after-cache should not exist before adding the PHP file", "terminal:after-cache" in before)
+
+        myFixture.addFileToProject(
+            "src/Command/AfterCacheCommand.php",
+            """
+            <?php
+
+            namespace TerminalFixtures;
+
+            use Symfony\Component\Console\Attribute\AsCommand;
+            use Symfony\Component\Console\Command\Command;
+
+            #[AsCommand(name: 'terminal:after-cache')]
+            class AfterCacheCommand extends Command {}
+            """.trimIndent()
+        )
+
+        val after = collectCommandData(project).map { it.name }
+        assertTrue("terminal:after-cache should be collected after the PHP modification", "terminal:after-cache" in after)
+    }
+
+    fun testCollectCommandDataReturnsEmptyInDumbMode() {
+        DumbModeTestUtils.runInDumbModeSynchronously(project) {
+            val data = collectCommandData(project)
+
+            assertTrue(data.isEmpty())
+        }
     }
 
     /**

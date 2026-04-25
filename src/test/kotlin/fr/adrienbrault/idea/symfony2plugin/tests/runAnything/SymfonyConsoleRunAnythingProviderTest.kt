@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.runAnything
 import com.intellij.ide.actions.runAnything.items.RunAnythingItemBase
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext
+import com.intellij.testFramework.DumbModeTestUtils
 import fr.adrienbrault.idea.symfony2plugin.runAnything.SymfonyConsoleRunAnythingProvider
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyCommand
@@ -69,6 +70,34 @@ class SymfonyConsoleRunAnythingProviderTest : SymfonyLightCodeInsightFixtureTest
         val values = provider.getValues(createDataContext(), "CACHE")
 
         assertTrue(values.any { it.name == "cache:clear" })
+    }
+
+    fun testGetValuesInvalidatesOnPhpModification() {
+        val before = provider.getValues(createDataContext(), "app:after-cache").map { it.name }
+        assertFalse("app:after-cache should not exist before adding the PHP file", "app:after-cache" in before)
+
+        myFixture.addFileToProject(
+            "src/Command/AfterCacheCommand.php",
+            """
+            <?php
+            use Symfony\Component\Console\Attribute\AsCommand;
+            use Symfony\Component\Console\Command\Command;
+
+            #[AsCommand(name: 'app:after-cache')]
+            class AfterCacheCommand extends Command {}
+            """.trimIndent()
+        )
+
+        val after = provider.getValues(createDataContext(), "app:after-cache").map { it.name }
+        assertTrue("app:after-cache should be collected after the PHP modification", "app:after-cache" in after)
+    }
+
+    fun testGetValuesReturnsEmptyInDumbMode() {
+        DumbModeTestUtils.runInDumbModeSynchronously(project) {
+            val values = provider.getValues(createDataContext(), "cache")
+
+            assertTrue(values.isEmpty())
+        }
     }
 
     // --- getMainListItem ---

@@ -9,7 +9,15 @@ import com.intellij.ide.actions.runAnything.items.RunAnythingItem
 import com.intellij.ide.actions.runAnything.items.RunAnythingItemBase
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
-import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.project.DumbService
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Key
+import com.intellij.psi.util.CachedValue
+import com.intellij.psi.util.CachedValueProvider
+import com.intellij.psi.util.CachedValuesManager
+import com.intellij.psi.util.PsiModificationTracker
+import com.jetbrains.php.lang.PhpLanguage
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
 import fr.adrienbrault.idea.symfony2plugin.dic.command.SymfonyCommandRunConfiguration
@@ -18,6 +26,8 @@ import fr.adrienbrault.idea.symfony2plugin.dic.command.SymfonyCommandTestRunLine
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyCommandUtil
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyCommand
 import javax.swing.Icon
+
+private val COMMAND_CACHE = Key.create<CachedValue<List<SymfonyCommand>>>("SYMFONY_RUN_ANYTHING_COMMANDS")
 
 /**
  * Run Anything provider for Symfony console commands.
@@ -31,16 +41,28 @@ import javax.swing.Icon
 class SymfonyConsoleRunAnythingProvider : RunAnythingProviderBase<SymfonyCommand>() {
 
     override fun getValues(dataContext: DataContext, pattern: String): Collection<SymfonyCommand> {
-        val project = CommonDataKeys.PROJECT.getData(dataContext)
-        if (!Symfony2ProjectComponent.isEnabled(project)) return emptyList()
+        val project = CommonDataKeys.PROJECT.getData(dataContext) ?: return emptyList()
+        if (!Symfony2ProjectComponent.isEnabled(project) || DumbService.isDumb(project)) return emptyList()
 
         val lowerPattern = pattern.lowercase().trim()
 
-        return ApplicationManager.getApplication().runReadAction<Collection<SymfonyCommand>> {
-            SymfonyCommandUtil.getCommands(project!!)
-                .filter { lowerPattern in it.name.lowercase() }
-        }
+        return getCommands(project).filter { lowerPattern in it.name.lowercase() }
     }
+
+    private fun getCommands(project: Project): List<SymfonyCommand> =
+        CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            COMMAND_CACHE,
+            {
+                ReadAction.nonBlocking<CachedValueProvider.Result<List<SymfonyCommand>>> {
+                    CachedValueProvider.Result.create(
+                        SymfonyCommandUtil.getCommands(project).toList(),
+                        PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE)
+                    )
+                }.expireWhen { project.isDisposed }.executeSynchronously()
+            },
+            false
+        )
 
     override fun execute(dataContext: DataContext, value: SymfonyCommand) {
         val project = CommonDataKeys.PROJECT.getData(dataContext) ?: return

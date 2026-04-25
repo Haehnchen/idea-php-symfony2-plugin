@@ -1,8 +1,15 @@
 package fr.adrienbrault.idea.symfony2plugin.integrations.terminal
 
-import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Key
+import com.intellij.psi.util.CachedValue
+import com.intellij.psi.util.CachedValueProvider
+import com.intellij.psi.util.CachedValuesManager
+import com.intellij.psi.util.PsiModificationTracker
 import com.intellij.terminal.completion.spec.ShellRuntimeContext
+import com.jetbrains.php.lang.PhpLanguage
 import fr.adrienbrault.idea.symfony2plugin.Settings
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyCommandUtil
@@ -15,6 +22,8 @@ import org.jetbrains.plugins.terminal.block.completion.spec.ShellCommandSpecInfo
 import org.jetbrains.plugins.terminal.block.completion.spec.ShellCommandSpecsProvider
 import org.jetbrains.plugins.terminal.block.completion.spec.dsl.ShellChildCommandsContext
 import org.jetbrains.plugins.terminal.block.completion.spec.project
+
+private val COMMAND_DATA_CACHE = Key.create<CachedValue<List<CommandData>>>("SYMFONY_TERMINAL_COMMAND_DATA")
 
 /**
  * Provides terminal completion for Symfony console commands.
@@ -90,16 +99,32 @@ private suspend fun ShellChildCommandsContext.addSymfonyCommands(runtimeCtx: She
     }
 }
 
-internal fun collectCommandData(project: Project): List<CommandData> =
-    ApplicationManager.getApplication().runReadAction<List<CommandData>> {
-        SymfonyCommandUtil.getCommands(project).map { command ->
-            val phpClass = PhpElementsUtil.getClassInterface(project, command.fqn)
-            CommandData(
-                name = command.name,
-                options = if (phpClass != null) SymfonyCommandUtil.getCommandOptions(phpClass) else emptyMap(),
-                arguments = if (phpClass != null) SymfonyCommandUtil.getCommandArguments(phpClass) else emptyMap(),
-            )
-        }
+internal fun collectCommandData(project: Project): List<CommandData> {
+    if (DumbService.isDumb(project)) return emptyList()
+
+    return CachedValuesManager.getManager(project).getCachedValue(
+        project,
+        COMMAND_DATA_CACHE,
+        {
+            ReadAction.nonBlocking<CachedValueProvider.Result<List<CommandData>>> {
+                CachedValueProvider.Result.create(
+                    collectCommandDataInner(project),
+                    PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE)
+                )
+            }.expireWhen { project.isDisposed }.executeSynchronously()
+        },
+        false
+    )
+}
+
+private fun collectCommandDataInner(project: Project): List<CommandData> =
+    SymfonyCommandUtil.getCommands(project).map { command ->
+        val phpClass = PhpElementsUtil.getClassInterface(project, command.fqn)
+        CommandData(
+            name = command.name,
+            options = if (phpClass != null) SymfonyCommandUtil.getCommandOptions(phpClass) else emptyMap(),
+            arguments = if (phpClass != null) SymfonyCommandUtil.getCommandArguments(phpClass) else emptyMap(),
+        )
     }
 
 internal data class CommandData(
