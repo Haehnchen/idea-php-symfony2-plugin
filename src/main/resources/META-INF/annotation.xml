@@ -16,7 +16,7 @@
         <!-- @IsGranted -->
         <PhpAnnotationReferenceProvider implementation="fr.adrienbrault.idea.symfony2plugin.security.IsGrantedAnnotationReferences"/>
 
-        <!-- @FooConstraint(message="sss") -->
+        <!-- @FooConstraint(message="sss") / #[FooConstraint(message: "sss")] -->
         <PhpAnnotationCompletionProvider implementation="fr.adrienbrault.idea.symfony2plugin.translation.ConstraintMessageGotoCompletionRegistrar$ConstraintMessageAnnotationCompletionProvider"/>
     </extensions>
 </idea-plugin>

@@ -69,6 +69,100 @@ public class ConstraintMessageGotoCompletionRegistrarTest extends SymfonyLightCo
         );
     }
 
+    public void testThatPhpAttributeMessageProvidesMessageCompletion() {
+        assertCompletionContains(
+            PhpFileType.INSTANCE,
+            "<?php\n" +
+                "use Symfony\\Component\\Validator\\Constraints\\NotBlank;\n" +
+                "\n" +
+                "#[NotBlank(message: '<caret>')]\n" +
+                "class Foo {}\n",
+            "validator_message"
+        );
+
+        assertCompletionContains(
+            PhpFileType.INSTANCE,
+            "<?php\n" +
+                "use Symfony\\Component\\Validator\\Constraints\\Length;\n" +
+                "\n" +
+                "#[Length(minMessage: '<caret>')]\n" +
+                "class Foo {}\n",
+            "validator_message"
+        );
+
+        assertCompletionContains(
+            PhpFileType.INSTANCE,
+            "<?php\n" +
+                "use Symfony\\Component\\Validator\\Constraints as Assert;\n" +
+                "\n" +
+                "#[Assert\\NotBlank(message: '<caret>')]\n" +
+                "class Foo {}\n",
+            "validator_message"
+        );
+    }
+
+    public void testThatPhpAttributeOptionsArrayMessageProvidesMessageCompletionAndNavigation() {
+        assertCompletionContains(
+            PhpFileType.INSTANCE,
+            "<?php\n" +
+                "use Symfony\\Component\\Validator\\Constraints\\NotBlank;\n" +
+                "\n" +
+                "#[NotBlank(['message' => '<caret>'])]\n" +
+                "class Foo {}\n",
+            "validator_message"
+        );
+
+        assertCompletionContains(
+            PhpFileType.INSTANCE,
+            "<?php\n" +
+                "use Symfony\\Component\\Validator\\Constraints as Assert;\n" +
+                "\n" +
+                "#[Assert\\NotBlank(['message' => '<caret>'])]\n" +
+                "class Foo {}\n",
+            "validator_message"
+        );
+
+        assertCompletionContains(
+            PhpFileType.INSTANCE,
+            "<?php\n" +
+                "use Symfony\\Component\\Validator\\Constraints\\Length;\n" +
+                "\n" +
+                "#[Length(['minMessage' => '<caret>'])]\n" +
+                "class Foo {}\n",
+            "validator_message"
+        );
+
+        assertNavigationMatch(
+            PhpFileType.INSTANCE,
+            "<?php\n" +
+                "use Symfony\\Component\\Validator\\Constraints\\NotBlank;\n" +
+                "\n" +
+                "#[NotBlank(['message' => 'validator<caret>_message'])]\n" +
+                "class Foo {}\n",
+            PlatformPatterns.psiElement()
+        );
+
+        assertNavigationMatch(
+            PhpFileType.INSTANCE,
+            "<?php\n" +
+                "use Symfony\\Component\\Validator\\Constraints as Assert;\n" +
+                "\n" +
+                "#[Assert\\NotBlank(['message' => 'validator<caret>_message'])]\n" +
+                "class Foo {}\n",
+            PlatformPatterns.psiElement()
+        );
+
+        assertNavigationMatch(
+            PhpFileType.INSTANCE,
+            "<?php\n" +
+                "use Symfony\\Component\\Validator\\Constraints\\Length;\n" +
+                "\n" +
+                "#[Length(['minMessage' => 'validator<caret>_message'])]\n" +
+                "class Foo {}\n",
+            PlatformPatterns.psiElement()
+        );
+    }
+
     public void testThatPropertyStartingWithMessageInsideConstraintImplementationProvidesMessageNavigation() {
         assertNavigationMatch(
             PhpFileType.INSTANCE,
@@ -116,6 +210,21 @@ public class ConstraintMessageGotoCompletionRegistrarTest extends SymfonyLightCo
                 "    class Foo {}\n" +
                 "}\n",
             PlatformPatterns.psiElement()
+        );
+    }
+
+    public void testThatPhpAttributeOptionsArrayMessageNavigationIsNotGivenForNonConstraintAttribute() {
+        assertNavigationIsEmpty(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App {\n" +
+            "    class NotBlank { public $message; }\n" +
+            "}\n" +
+            "\n" +
+            "namespace {\n" +
+            "    use App\\NotBlank;\n" +
+            "\n" +
+            "    #[NotBlank(['message' => 'validator<caret>_message'])]\n" +
+            "    class Foo {}\n" +
+            "}\n"
         );
     }
 
