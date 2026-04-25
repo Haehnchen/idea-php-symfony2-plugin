@@ -6,6 +6,7 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Ref;
+import com.intellij.openapi.util.TextRange;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PatternCondition;
 import com.intellij.patterns.PlatformPatterns;
@@ -17,6 +18,7 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.CachedValue;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
+import com.intellij.psi.util.PsiModificationTracker;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.intellij.util.Processor;
@@ -78,6 +80,8 @@ public class PhpElementsUtil {
      * Cache for class/interface existence checks to avoid repeated PhpIndex queries
      */
     private static final Key<CachedValue<Map<String, Boolean>>> CLASS_EXISTS_CACHE = new Key<>("SYMFONY_PHP_CLASS_EXISTS_CACHE");
+    // File-held cache for MethodReference instance checks; the result depends on PHP type resolution.
+    private static final Key<CachedValue<Map<String, Boolean>>> METHOD_REFERENCE_INSTANCE_OF_ON_FILE = new Key<>("SYMFONY_PHP_METHOD_REFERENCE_INSTANCE_OF_ON_FILE");
 
     /**
      * Only parameter on first index or named: "a('caret'), a(test: 'caret')"
@@ -1747,6 +1751,27 @@ public class PhpElementsUtil {
      * Try to find method matching on any "className::method" giving
      */
     public static boolean isMethodReferenceInstanceOf(@NotNull MethodReference methodReference, @NotNull MethodMatcher.CallToSignature... signatures) {
+        PsiFile containingFile = methodReference.getContainingFile();
+        Project project = methodReference.getProject();
+        // Use one map per file and invalidate on PHP PSI changes, as receiver types may live in other PHP files.
+        Map<String, Boolean> cachedReferences = CachedValuesManager.getManager(project)
+            .getCachedValue(
+                containingFile,
+                METHOD_REFERENCE_INSTANCE_OF_ON_FILE,
+                () -> CachedValueProvider.Result.create(
+                    new ConcurrentHashMap<>(),
+                    PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE)
+                ),
+                false
+            );
+
+        return cachedReferences.computeIfAbsent(
+            getMethodReferenceInstanceOfCacheKey(methodReference.getTextRange(), signatures),
+            ignored -> isMethodReferenceInstanceOfUncached(methodReference, signatures)
+        );
+    }
+
+    private static boolean isMethodReferenceInstanceOfUncached(@NotNull MethodReference methodReference, @NotNull MethodMatcher.CallToSignature... signatures) {
         for (MethodMatcher.CallToSignature method : signatures) {
             if (isMethodReferenceInstanceOf(methodReference, method.getInstance(), method.getMethod())) {
                 return true;
@@ -1754,6 +1779,20 @@ public class PhpElementsUtil {
         }
 
         return false;
+    }
+
+    @NotNull
+    private static String getMethodReferenceInstanceOfCacheKey(@NotNull TextRange textRange, @NotNull MethodMatcher.CallToSignature... signatures) {
+        StringBuilder cacheKey = new StringBuilder(textRange.toString());
+        for (MethodMatcher.CallToSignature signature : signatures) {
+            cacheKey
+                .append('|')
+                .append(signature.getInstance())
+                .append('#')
+                .append(signature.getMethod());
+        }
+
+        return cacheKey.toString();
     }
 
     public static boolean isMethodInstanceOf(@NotNull Method method, @NotNull String clazz, @NotNull String methodName) {
