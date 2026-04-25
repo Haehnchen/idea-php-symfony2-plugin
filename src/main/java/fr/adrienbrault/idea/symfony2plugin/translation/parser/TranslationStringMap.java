@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.translation.parser;
 
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.PhpCatalogueParser.ArrayEntry;
@@ -10,8 +11,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Stream;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -45,15 +44,24 @@ public class TranslationStringMap {
 
     @NotNull
     public static TranslationStringMap create(@NotNull Collection<VirtualFile> translationDirectories) {
-        List<FileData> perFileData = translationDirectories.stream()
-            .flatMap((Function<VirtualFile, Stream<VirtualFile>>) dir -> {
-                VirtualFile[] children = dir.getChildren();
-                if (children == null) return Stream.empty();
-                return Arrays.stream(children).filter(f -> isCatalogueFile(f.getName()));
-            })
-            .parallel()
-            .map(FileData::parse)
-            .toList();
+        List<FileData> perFileData = new ArrayList<>();
+
+        for (VirtualFile dir : translationDirectories) {
+            ProgressManager.checkCanceled();
+
+            VirtualFile[] children = dir.getChildren();
+            if (children == null) {
+                continue;
+            }
+
+            for (VirtualFile child : children) {
+                ProgressManager.checkCanceled();
+
+                if (isCatalogueFile(child.getName())) {
+                    perFileData.add(FileData.parse(child));
+                }
+            }
+        }
 
         return merge(perFileData);
     }
@@ -82,12 +90,16 @@ public class TranslationStringMap {
     private record FileData(@NotNull Map<String, Set<String>> domainMap) {
         @NotNull
         static FileData parse(@NotNull VirtualFile file) {
+            ProgressManager.checkCanceled();
+
             String content;
             try {
                 content = VfsUtil.loadText(file);
             } catch (IOException e) {
                 return empty();
             }
+
+            ProgressManager.checkCanceled();
 
             Map<String, Set<String>> data = new HashMap<>();
 
