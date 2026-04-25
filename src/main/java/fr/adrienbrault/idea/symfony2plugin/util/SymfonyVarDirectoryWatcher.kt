@@ -12,6 +12,7 @@ import com.intellij.openapi.vfs.newvfs.events.VFilePropertyChangeEvent
 import com.intellij.util.Alarm
 import com.intellij.util.messages.MessageBusConnection
 import fr.adrienbrault.idea.symfony2plugin.Settings
+import fr.adrienbrault.idea.symfony2plugin.translation.TranslationIndex
 import java.util.Collections
 import java.util.EnumSet
 
@@ -48,6 +49,7 @@ class SymfonyVarDirectoryWatcher(private val project: Project) : Disposable {
     private var listenerConnection: MessageBusConnection? = null
 
     private val debounceAlarm = Alarm(Alarm.ThreadToUse.POOLED_THREAD, this)
+    private val translationWarmupAlarm = Alarm(Alarm.ThreadToUse.POOLED_THREAD, this)
     private val pendingScopes: MutableSet<Scope> = Collections.synchronizedSet(EnumSet.noneOf(Scope::class.java))
 
     init {
@@ -126,6 +128,7 @@ class SymfonyVarDirectoryWatcher(private val project: Project) : Disposable {
 
     private fun refreshSubscription() {
         debounceAlarm.cancelAllRequests()
+        translationWarmupAlarm.cancelAllRequests()
         listenerConnection?.disconnect()
         listenerConnection = null
 
@@ -143,6 +146,24 @@ class SymfonyVarDirectoryWatcher(private val project: Project) : Disposable {
 
     private fun invalidate(scope: Scope) {
         trackers.getValue(scope).incModificationCount()
+        if (scope == Scope.TRANSLATIONS) {
+            scheduleTranslationWarmup()
+        }
+    }
+
+    private fun scheduleTranslationWarmup() {
+        if (project.isDisposed || !Settings.getInstance(project).pluginEnabled) {
+            return
+        }
+
+        translationWarmupAlarm.cancelAllRequests()
+        translationWarmupAlarm.addRequest({
+            if (project.isDisposed || !Settings.getInstance(project).pluginEnabled) {
+                return@addRequest
+            }
+
+            TranslationIndex.warmUp(project)
+        }, 100)
     }
 }
 

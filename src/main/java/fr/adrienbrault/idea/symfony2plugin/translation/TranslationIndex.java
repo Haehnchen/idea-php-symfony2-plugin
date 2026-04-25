@@ -51,6 +51,10 @@ public class TranslationIndex {
         );
     }
 
+    public static void warmUp(@NotNull Project project) {
+        getTranslationMap(project);
+    }
+
     /**
      * Discovers compiled translation catalogue directories from var/cache and app/cache
      * "dev" directories, the configured pathToTranslation setting, and sibling translations/
