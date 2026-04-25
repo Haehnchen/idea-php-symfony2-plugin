@@ -79,6 +79,7 @@ import org.jetbrains.yaml.psi.*;
 import java.io.File;
 import java.text.Collator;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -121,6 +122,8 @@ public class TwigUtil {
     private static final Key<CachedValue<List<String>>> SYMFONY_TEMPLATE_INCLUDE_LIST = new Key<>("SYMFONY_TEMPLATE_INCLUDE_LIST");
     private static final Key<CachedValue<List<String>>> SYMFONY_TEMPLATE_EMBED_LIST = new Key<>("SYMFONY_TEMPLATE_EMBED_LIST");
     private static final Key<CachedValue<List<String>>> SYMFONY_TEMPLATE_EXTENDS_LIST = new Key<>("SYMFONY_TEMPLATE_EXTENDS_LIST");
+    // File-held cache for trans_default_domain lookups; TextRange separates file and embed scopes.
+    private static final Key<CachedValue<Map<TextRange, Optional<String>>>> TWIG_TRANS_DEFAULT_DOMAIN_ON_SCOPE = new Key<>("TWIG_TRANS_DEFAULT_DOMAIN_ON_SCOPE");
 
     private static final Key<CachedValue<List<String>>> SYMFONY_TEMPLATE_FORM_THEME_LIST = new Key<>("SYMFONY_TEMPLATE_FORM_THEME_LIST");
 
@@ -327,15 +330,15 @@ public class TwigUtil {
     public static String getTransDefaultDomainOnScope(@NotNull PsiElement position) {
         // {% embed 'foo.html.twig' with { foo: '<caret>'|trans } %}
         PsiElement parent = position.getParent();
-        if(parent != null && parent.getNode().getElementType() == TwigElementTypes.LITERAL) {
+        if (parent != null && parent.getNode().getElementType() == TwigElementTypes.LITERAL) {
             PsiElement parent2 = parent.getParent();
-            if(parent2 != null && parent2.getNode().getElementType() == TwigElementTypes.EMBED_TAG) {
+            if (parent2 != null && parent2.getNode().getElementType() == TwigElementTypes.EMBED_TAG) {
                 PsiElement firstParent = PsiTreeUtil.findFirstParent(parent, true, psiElement -> {
                     IElementType elementType = psiElement.getNode().getElementType();
                     return elementType != TwigElementTypes.EMBED_TAG && elementType != TwigElementTypes.EMBED_STATEMENT;
                 });
 
-                if(firstParent != null) {
+                if (firstParent != null) {
                     position = firstParent;
                 }
             }
@@ -343,22 +346,49 @@ public class TwigUtil {
 
         // find embed or file scope
         PsiElement scope = getTransDefaultDomainScope(position);
-        if(scope == null) {
+        if (scope == null) {
             return null;
         }
 
+        // Store one cache map on the file; a file may contain multiple embed scopes.
+        PsiFile containingFile = scope.getContainingFile();
+        Map<TextRange, Optional<String>> cachedDomains = CachedValuesManager.getManager(scope.getProject())
+            .getCachedValue(
+                containingFile,
+                TWIG_TRANS_DEFAULT_DOMAIN_ON_SCOPE,
+                () -> CachedValueProvider.Result.create(
+                    new ConcurrentHashMap<>(),
+                    PsiModificationTracker.getInstance(scope.getProject()).forLanguage(TwigLanguage.INSTANCE)
+                ),
+                false
+            );
+
+        // Use the scope range as key, so the file scope and each embed block can cache different domains.
+        Optional<String> cachedDomain = cachedDomains.computeIfAbsent(
+            scope.getTextRange(),
+            ignored -> Optional.ofNullable(computeTransDefaultDomainOnScope(scope))
+        );
+
+        return cachedDomain.orElse(null);
+    }
+
+    /**
+     * Fetches the first default translation domain in a Twig file/embed scope.
+     * Example: {% trans_default_domain "validators" %} resolves to "validators".
+     * Embed: {% embed "card.html.twig" %}{% trans_default_domain "admin" %}{% endembed %} resolves to "admin" inside the embed block.
+     */
+    @Nullable
+    private static String computeTransDefaultDomainOnScope(@NotNull PsiElement scope) {
         for (PsiElement psiElement : scope.getChildren()) {
-
             // filter parent trans_default_domain, it should be in file context
-            if(psiElement instanceof TwigCompositeElement && psiElement.getNode().getElementType() == TwigElementTypes.TAG) {
-
+            if (psiElement instanceof TwigCompositeElement && psiElement.getNode().getElementType() == TwigElementTypes.TAG) {
                 final String[] fileTransDomain = {null};
                 psiElement.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
                     @Override
                     public void visitElement(PsiElement element) {
-                        if(TwigPattern.getTransDefaultDomainPattern().accepts(element)) {
+                        if (TwigPattern.getTransDefaultDomainPattern().accepts(element)) {
                             String text = PsiElementUtils.trimQuote(element.getText());
-                            if(StringUtils.isNotBlank(text)) {
+                            if (StringUtils.isNotBlank(text)) {
                                 fileTransDomain[0] = text;
                             }
                         }
@@ -366,10 +396,9 @@ public class TwigUtil {
                     }
                 });
 
-                if(fileTransDomain[0] != null) {
+                if (fileTransDomain[0] != null) {
                     return fileTransDomain[0];
                 }
-
             }
         }
 
@@ -394,23 +423,6 @@ public class TwigUtil {
         TwigVariableReference childOfType1 = PsiTreeUtil.findChildOfType(psiElement, TwigVariableReference.class);
         if (childOfType1 != null) {
             return childOfType1.getFirstChild();
-        }
-
-        return null;
-    }
-
-    /**
-     * Search Twig element to find use trans_default_domain and returns given string parameter
-     */
-    @Nullable
-    public static String getTransDefaultDomainOnScopeOrInjectedElement(@NotNull PsiElement position) {
-        if(position.getContainingFile().getContainingFile().getFileType() == TwigFileType.INSTANCE) {
-            return getTransDefaultDomainOnScope(position);
-        }
-
-        PsiElement element = getElementOnTwigViewProvider(position);
-        if(element != null) {
-            return getTransDefaultDomainOnScope(element);
         }
 
         return null;
