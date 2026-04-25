@@ -11,7 +11,6 @@ import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormFieldNameReference;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
-import fr.adrienbrault.idea.symfony2plugin.translation.TranslationReference;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -73,18 +72,6 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                         }
 
                         String keyString = key.getContents();
-
-                        // @TODO: how to handle custom bundle fields like help_block
-                        if(keyString.equals("label") || keyString.equals("help_block") || keyString.equals("help_inline") || keyString.equals("placeholder") || keyString.equals("help")) {
-                            // translation_domain in current array block
-
-                            String translationDomain = FormOptionsUtil.getTranslationFromScope(arrayCreation);
-                            if(translationDomain == null) {
-                                translationDomain = "messages";
-                            }
-
-                            return new PsiReference[]{ new TranslationReference((StringLiteralExpression) psiElement, translationDomain) };
-                        }
 
                         if(keyString.equals("class")) {
                             return new PsiReference[]{ new EntityReference((StringLiteralExpression) psiElement, true)};

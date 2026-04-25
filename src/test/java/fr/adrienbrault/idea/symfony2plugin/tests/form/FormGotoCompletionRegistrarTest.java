@@ -84,6 +84,43 @@ public class FormGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixt
         }
     }
 
+    public void testFormOptionTranslationsUseMessagesFallback() {
+        for (String option : new String[] {"label", "help", "help_block", "help_inline", "placeholder"}) {
+            String template = "<?php\n" +
+                "/** @var $builder \\Symfony\\Component\\Form\\FormBuilderInterface */\n" +
+                "$builder->add('foo', null, [\n" +
+                "  '" + option + "' => '<caret>'\n" +
+                "]);";
+
+            assertCompletionContains(PhpFileType.INSTANCE, template, "yaml_weak.symfony.great");
+            assertNavigationMatch(PhpFileType.INSTANCE, template.replace("<caret>", "yaml_<caret>weak.symfony.great"));
+        }
+    }
+
+    public void testFormOptionTranslationsUseConfiguredDomain() {
+        String template = "<?php\n" +
+            "/** @var $builder \\Symfony\\Component\\Form\\FormBuilderInterface */\n" +
+            "$builder->add('foo', null, [\n" +
+            "  'translation_domain' => 'foo',\n" +
+            "  'label' => '<caret>'\n" +
+            "]);";
+
+        assertCompletionContains(PhpFileType.INSTANCE, template, "foo.symfony.great");
+        assertNavigationMatch(PhpFileType.INSTANCE, template.replace("<caret>", "foo<caret>.symfony.great"));
+    }
+
+    public void testFormOptionTranslationsUseChoiceTranslationDomain() {
+        String template = "<?php\n" +
+            "/** @var $builder \\Symfony\\Component\\Form\\FormBuilderInterface */\n" +
+            "$builder->add('foo', null, [\n" +
+            "  'choice_translation_domain' => 'foo',\n" +
+            "  'label' => '<caret>'\n" +
+            "]);";
+
+        assertCompletionContains(PhpFileType.INSTANCE, template, "foo.symfony.great");
+        assertNavigationMatch(PhpFileType.INSTANCE, template.replace("<caret>", "foo<caret>.symfony.great"));
+    }
+
     public void testFormChoicesTranslations() {
         String template = "<?php\n" +
             "/** @var $builder \\Symfony\\Component\\Form\\FormBuilderInterface\n */\n" +

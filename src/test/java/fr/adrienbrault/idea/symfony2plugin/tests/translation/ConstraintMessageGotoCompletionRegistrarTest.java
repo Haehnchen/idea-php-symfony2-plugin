@@ -31,6 +31,44 @@ public class ConstraintMessageGotoCompletionRegistrarTest extends SymfonyLightCo
         );
     }
 
+    public void testThatAnnotationMessageProvidesMessageCompletion() {
+        assertCompletionContains(
+            PhpFileType.INSTANCE,
+            "<?php\n" +
+                "namespace Symfony\\Component\\Validator\\Constraints {\n" +
+                "    class Email extends \\Symfony\\Component\\Validator\\Constraint {}\n" +
+                "}\n" +
+                "\n" +
+                "namespace {\n" +
+                "    use Symfony\\Component\\Validator\\Constraints as Assert;\n" +
+                "\n" +
+                "    /**\n" +
+                "     * @Assert\\Email(message=\"validator<caret>\")\n" +
+                "     */\n" +
+                "    class Foo {}\n" +
+                "}\n",
+            "validator_message"
+        );
+
+        assertCompletionContains(
+            PhpFileType.INSTANCE,
+            "<?php\n" +
+                "namespace Symfony\\Component\\Validator\\Constraints {\n" +
+                "    class Email extends \\Symfony\\Component\\Validator\\Constraint {}\n" +
+                "}\n" +
+                "\n" +
+                "namespace {\n" +
+                "    use Symfony\\Component\\Validator\\Constraints as Assert;\n" +
+                "\n" +
+                "    /**\n" +
+                "     * @Assert\\Email(messages=\"validator<caret>\")\n" +
+                "     */\n" +
+                "    class Foo {}\n" +
+                "}\n",
+            "validator_message"
+        );
+    }
+
     public void testThatPropertyStartingWithMessageInsideConstraintImplementationProvidesMessageNavigation() {
         assertNavigationMatch(
             PhpFileType.INSTANCE,
@@ -40,6 +78,57 @@ public class ConstraintMessageGotoCompletionRegistrarTest extends SymfonyLightCo
                 "    public $message = 'validato<caret>r_message';\n" +
                 "}",
             PlatformPatterns.psiElement()
+        );
+    }
+
+    public void testThatAnnotationMessageProvidesMessageNavigation() {
+        assertNavigationMatch(
+            PhpFileType.INSTANCE,
+            "<?php\n" +
+                "namespace Symfony\\Component\\Validator\\Constraints {\n" +
+                "    class Email extends \\Symfony\\Component\\Validator\\Constraint {}\n" +
+                "}\n" +
+                "\n" +
+                "namespace {\n" +
+                "    use Symfony\\Component\\Validator\\Constraints as Assert;\n" +
+                "\n" +
+                "    /**\n" +
+                "     * @Assert\\Email(message=\"validator<caret>_message\")\n" +
+                "     */\n" +
+                "    class Foo {}\n" +
+                "}\n",
+            PlatformPatterns.psiElement()
+        );
+
+        assertNavigationMatch(
+            PhpFileType.INSTANCE,
+            "<?php\n" +
+                "namespace Symfony\\Component\\Validator\\Constraints {\n" +
+                "    class Email extends \\Symfony\\Component\\Validator\\Constraint {}\n" +
+                "}\n" +
+                "\n" +
+                "namespace {\n" +
+                "    use Symfony\\Component\\Validator\\Constraints as Assert;\n" +
+                "\n" +
+                "    /**\n" +
+                "     * @Assert\\Email(messages=\"validator<caret>_message\")\n" +
+                "     */\n" +
+                "    class Foo {}\n" +
+                "}\n",
+            PlatformPatterns.psiElement()
+        );
+    }
+
+    public void testThatAnnotationMessageNavigationIsNotGivenForNonConstraintAnnotation() {
+        assertNavigationIsEmpty(PhpFileType.INSTANCE, "<?php\n" +
+            "class Email\n" +
+            "{\n" +
+            "}\n" +
+            "\n" +
+            "/**\n" +
+            " * @Email(message=\"validator<caret>_message\")\n" +
+            " */\n" +
+            "class Foo {}\n"
         );
     }
 }

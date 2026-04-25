@@ -33,6 +33,13 @@ import java.util.Collections;
  * @author Daniel Espendiller <daniel@espendiller.net>
   */
 public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
+    private static final String[] TRANSLATION_TEXT_OPTIONS = {
+        "label",
+        "help",
+        "help_block",
+        "help_inline",
+        "placeholder"
+    };
 
     private static final PhpPsiMatcher.ArrayValueWithKeyAndMethod.Matcher CHOICE_TRANSLATION_DOMAIN_MATCHER = new PhpPsiMatcher.ArrayValueWithKeyAndMethod.Matcher(
         new String[] {"choice_translation_domain", "translation_domain"},
@@ -166,6 +173,37 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
             }
 
             return new TranslationDomainGotoCompletionProvider(psiElement);
+        });
+
+        /*
+         * $builder->add('foo', null, [
+         *    'label' => '<caret>',
+         *    'help' => '<caret>',
+         *    'placeholder' => '<caret>',
+         * ]);
+         */
+        registrar.register(PhpPsiMatcher.ArrayValueWithKeyAndMethod.pattern().withLanguage(PhpLanguage.INSTANCE), psiElement -> {
+            PsiElement parent = psiElement.getParent();
+            if(!(parent instanceof StringLiteralExpression)) {
+                return null;
+            }
+
+            PhpPsiMatcher.ArrayValueWithKeyAndMethod.Result result = PhpPsiMatcher.match(parent, new PhpPsiMatcher.ArrayValueWithKeyAndMethod.Matcher(
+                TRANSLATION_TEXT_OPTIONS,
+                new PhpMethodReferenceCall("Symfony\\Component\\Form\\FormBuilderInterface", 2, "add", "create"),
+                new PhpMethodReferenceCall("Symfony\\Component\\Form\\FormInterface", 2, "add", "create")
+            ));
+
+            if(result == null) {
+                return null;
+            }
+
+            ArrayCreationExpression arrayCreation = PsiTreeUtil.getParentOfType(parent, ArrayCreationExpression.class);
+            if(arrayCreation == null) {
+                return null;
+            }
+
+            return new TranslationGotoCompletionProvider(psiElement, getTranslationDomainFromScope(arrayCreation));
         });
 
         /*
@@ -358,7 +396,7 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
                 if(PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) methodReference, "\\Symfony\\Component\\Form\\FormBuilderInterface", "add") ||
                     PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) methodReference, "\\Symfony\\Component\\Form\\FormBuilderInterface", "create")
                     ) {
-                    return new TranslationGotoCompletionProvider(psiElement, extractTranslationDomainFromScope((ArrayCreationExpression) arrayCreation));
+                    return new TranslationGotoCompletionProvider(psiElement, getTranslationDomainFromScope((ArrayCreationExpression) arrayCreation));
                 }
             }
         }
@@ -366,24 +404,21 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
         return null;
     }
 
+    /**
+     * Returns the form translation domain, falling back to Symfony's default domain.
+     */
     @NotNull
-    private String extractTranslationDomainFromScope(@NotNull ArrayCreationExpression arrayCreation) {
-        String domain = "messages";
+    private String getTranslationDomainFromScope(@NotNull ArrayCreationExpression arrayCreation) {
         PhpPsiElement value = PhpElementsUtil.getArrayValue(arrayCreation, "choice_translation_domain");
 
         if(value instanceof StringLiteralExpression) {
             String contents = PhpElementsUtil.getStringValue(value);
             if(contents != null) {
-                domain = contents;
-            }
-        } else {
-            // translation_domain in current array block
-            String translationDomain = FormOptionsUtil.getTranslationFromScope(arrayCreation);
-            if(translationDomain != null) {
-                domain = translationDomain;
+                return contents;
             }
         }
 
-        return domain;
+        String translationDomain = FormOptionsUtil.getTranslationFromScope(arrayCreation);
+        return translationDomain == null ? "messages" : translationDomain;
     }
 }
