@@ -125,6 +125,23 @@ public class FormFieldResolver implements TwigTypeResolver {
         return phpClasses;
     }
 
+    /**
+     * Resolves form type FQNs for a form reference such as {@code $form->createView()}.
+     *
+     * <p>This is the primitive counterpart of {@link #getFormTypeFromFormFactory(PsiElement)}. It may still use PSI
+     * internally, but it returns only normalized FQN strings with a leading backslash.</p>
+     */
+    @NotNull
+    public static Set<String> getFormTypeFqnsFromFormFactory(@NotNull PsiElement formReference) {
+        Set<String> formTypeFqns = new LinkedHashSet<>();
+
+        for (PhpClass phpClass : getFormTypeFromFormFactory(formReference)) {
+            formTypeFqns.add(phpClass.getFQN());
+        }
+
+        return formTypeFqns;
+    }
+
     @Nullable
     private static PhpClass resolveCall(@NotNull MethodReference methodReference) {
         int index = -1;
@@ -157,49 +174,55 @@ public class FormFieldResolver implements TwigTypeResolver {
     }
 
     @NotNull
-    private static List<TwigTypeContainer> getTwigTypeContainer(@NotNull Method method, @NotNull PhpClass formTypClass) {
-        List<TwigTypeContainer> twigTypeContainers = new ArrayList<>();
+    private static List<TwigFormField> getTwigFormFields(@NotNull Method method, @NotNull PhpClass formTypeClass) {
+        List<TwigFormField> twigFormFields = new ArrayList<>();
 
         for(MethodReference methodReference: FormUtil.getFormBuilderTypes(method)) {
 
             String fieldName = PsiElementUtils.getMethodParameterAt(methodReference, 0);
+            if (fieldName == null) {
+                continue;
+            }
+
             PsiElement psiElement = PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 1);
-            TwigTypeContainer twigTypeContainer = new TwigTypeContainer(fieldName);
+            String fieldTypeFqn = null;
 
             // find form field type
             if(psiElement != null) {
-                PhpClass fieldType = FormUtil.getFormTypeClassOnParameter(psiElement);
-                if(fieldType != null) {
-                    twigTypeContainer.withDataHolder(new FormDataHolder(fieldType, formTypClass));
-                }
+                fieldTypeFqn = FormUtil.getFormTypeFqnOnParameter(psiElement);
             }
 
-            twigTypeContainers.add(twigTypeContainer);
+            twigFormFields.add(new TwigFormField(fieldName, fieldTypeFqn, formTypeClass.getFQN()));
         }
 
-        return twigTypeContainers;
+        return twigFormFields;
     }
 
     /**
      * Search and resolve: "$form->createView()" to its PhpClass which is a form type
      */
     public static void visitFormReferencesFields(@NotNull PsiElement formReference, @NotNull Consumer<TwigTypeContainer> consumer) {
-        visitFormReferencesFields(formReference.getProject(), getFormTypeFromFormFactory(formReference), consumer);
+        visitFormFields(formReference.getProject(), getFormTypeFqnsFromFormFactory(formReference), field -> consumer.accept(toTwigTypeContainer(field)));
     }
 
     /**
      * Visit all form fields in given PhpClass which are already a form type
      */
     public static void visitFormReferencesFields(@NotNull PhpClass phpClass, @NotNull Consumer<TwigTypeContainer> consumer) {
-        visitFormReferencesFields(phpClass.getProject(), Collections.singleton(phpClass), consumer);
+        visitFormFields(phpClass.getProject(), Collections.singleton(phpClass.getFQN()), field -> consumer.accept(toTwigTypeContainer(field)));
     }
 
-    private static void visitFormReferencesFields(@NotNull Project project, @NotNull Collection<PhpClass> phpClasses, @NotNull Consumer<TwigTypeContainer> consumer) {
+    public static void visitFormFields(@NotNull Project project, @NotNull Collection<String> formTypeFqns, @NotNull Consumer<TwigFormField> consumer) {
         FormUtil.FormTypeCollector collector = null;
 
         Collection<Method> methods = new HashSet<>();
 
-        for (PhpClass phpClass : phpClasses) {
+        for (String formTypeFqn : formTypeFqns) {
+            PhpClass phpClass = PhpElementsUtil.getClassInterface(project, formTypeFqn);
+            if (phpClass == null) {
+                continue;
+            }
+
             Method method = phpClass.findMethodByName("buildForm");
             if (method != null) {
                 methods.add(method);
@@ -225,14 +248,19 @@ public class FormFieldResolver implements TwigTypeResolver {
         }
     }
 
-    private static void consumeFieldType(@NotNull PhpClass phpClass, @NotNull Consumer<TwigTypeContainer> consumer) {
+    @NotNull
+    private static TwigTypeContainer toTwigTypeContainer(@NotNull TwigFormField field) {
+        return new TwigTypeContainer(field.name()).withDataHolder(new FormDataHolder(field.fieldTypeFqn(), field.ownerFormTypeFqn()));
+    }
+
+    private static void consumeFieldType(@NotNull PhpClass phpClass, @NotNull Consumer<TwigFormField> consumer) {
         Method method = phpClass.findMethodByName("buildForm");
         if (method == null) {
             return;
         }
 
-        for (TwigTypeContainer twigTypeContainer : getTwigTypeContainer(method, phpClass)) {
-            consumer.accept(twigTypeContainer);
+        for (TwigFormField twigFormField : getTwigFormFields(method, phpClass)) {
+            consumer.accept(twigFormField);
         }
     }
 }

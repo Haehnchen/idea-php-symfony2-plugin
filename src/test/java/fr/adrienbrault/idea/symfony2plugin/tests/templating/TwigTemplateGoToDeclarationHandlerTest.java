@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.templating;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
@@ -113,6 +114,49 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
             .collect(Collectors.toSet());
 
         assertContainsElements(methodNames, "getFoobar");
+    }
+
+    public void testFormFieldGotoUsesPrimitiveFormDataHolderOwnerFormTypeFqn() {
+        myFixture.copyFileToProject("ide-twig.json");
+
+        myFixture.addFileToProject(
+            "src/Controller/FormGotoController.php",
+            "<?php\n" +
+                "namespace Symfony\\Component\\Form {\n" +
+                "  interface FormTypeInterface {}\n" +
+                "  interface FormBuilderInterface { public function add(); }\n" +
+                "  class FormView {}\n" +
+                "  interface FormInterface { public function createView(): FormView; }\n" +
+                "}\n" +
+                "namespace Symfony\\Component\\Form\\Extension\\Core\\Type { class TextType implements \\Symfony\\Component\\Form\\FormTypeInterface {} }\n" +
+                "namespace Symfony\\Bundle\\FrameworkBundle\\Controller {\n" +
+                "  abstract class AbstractController {\n" +
+                "    public function createForm($type): \\Symfony\\Component\\Form\\FormInterface {}\n" +
+                "    public function render($template, array $parameters = []) {}\n" +
+                "  }\n" +
+                "}\n" +
+                "namespace App\\Form {\n" +
+                "  class ProductType implements \\Symfony\\Component\\Form\\FormTypeInterface {\n" +
+                "    public function buildForm(\\Symfony\\Component\\Form\\FormBuilderInterface $builder, array $options) {\n" +
+                "      $builder->add('title', \\Symfony\\Component\\Form\\Extension\\Core\\Type\\TextType::class);\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n" +
+                "namespace App\\Controller {\n" +
+                "  class FormGotoController extends \\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController {\n" +
+                "    public function index() {\n" +
+                "      $form = $this->createForm(\\App\\Form\\ProductType::class);\n" +
+                "      return $this->render('form/goto.html.twig', ['form' => $form->createView()]);\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n"
+        );
+
+        PsiFile templateFile = myFixture.addFileToProject("templates/form/goto.html.twig", "{{ form.title }}");
+        myFixture.configureFromExistingVirtualFile(templateFile.getVirtualFile());
+        myFixture.getEditor().getCaretModel().moveToOffset("{{ form.ti".length());
+
+        assertNavigationMatch(PlatformPatterns.psiElement(PhpClass.class).withName("ProductType"));
     }
 
     public void testSeeTagGoto() {

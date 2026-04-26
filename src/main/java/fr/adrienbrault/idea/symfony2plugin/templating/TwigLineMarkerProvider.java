@@ -333,8 +333,11 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
 
         for (TwigTypeContainer twigTypeContainer : twigTypeContainers) {
             Object dataHolder = twigTypeContainer.getDataHolder();
-            if (dataHolder instanceof FormDataHolder && PhpElementsUtil.isInstanceOf(((FormDataHolder) dataHolder).getFormType(), "\\Symfony\\Component\\Form\\FormTypeInterface")) {
-                phpClasses.add(((FormDataHolder) dataHolder).getFormType());
+            if (dataHolder instanceof FormDataHolder formDataHolder) {
+                PhpClass phpClass = PhpElementsUtil.getClassInterface(psiElement.getProject(), formDataHolder.ownerFormTypeFqn());
+                if (phpClass != null && PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Form\\FormTypeInterface")) {
+                    phpClasses.add(phpClass);
+                }
             }
         }
 

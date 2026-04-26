@@ -1,30 +1,27 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder;
 
-import com.jetbrains.php.lang.psi.elements.PhpClass;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
+ * UI metadata for a Symfony form field without holding PSI objects.
+ *
+ * @param fieldTypeFqn explicit normalized field form type FQN, or {@code null} when the builder call has no type parameter
+ * @param ownerFormTypeFqn normalized FQN of the form type whose {@code buildForm()} contributed this field
+ *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class FormDataHolder {
-    @NotNull
-    private final PhpClass phpClass;
+public record FormDataHolder(
+    @Nullable String fieldTypeFqn,
+    @NotNull String ownerFormTypeFqn
+) {
+    public FormDataHolder {
+        if (fieldTypeFqn != null && !fieldTypeFqn.startsWith("\\")) {
+            throw new IllegalArgumentException("fieldTypeFqn must be normalized with a leading backslash");
+        }
 
-    @NotNull
-    private final PhpClass formType;
-
-    public FormDataHolder(@NotNull PhpClass phpClass, @NotNull PhpClass formType) {
-        this.phpClass = phpClass;
-        this.formType = formType;
-    }
-
-    @NotNull
-    public PhpClass getPhpClass() {
-        return phpClass;
-    }
-
-    @NotNull
-    public PhpClass getFormType() {
-        return formType;
+        if (!ownerFormTypeFqn.startsWith("\\")) {
+            throw new IllegalArgumentException("ownerFormTypeFqn must be normalized with a leading backslash");
+        }
     }
 }

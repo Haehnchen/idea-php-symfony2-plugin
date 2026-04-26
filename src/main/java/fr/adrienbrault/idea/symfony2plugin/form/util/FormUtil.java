@@ -251,21 +251,40 @@ public class FormUtil {
      */
     @Nullable
     public static PhpClass getFormTypeClassOnParameter(@NotNull PsiElement psiElement) {
-
-        if (psiElement instanceof StringLiteralExpression) {
-            return getFormTypeToClass(psiElement.getProject(), ((StringLiteralExpression) psiElement).getContents());
-        }
-
-        if (psiElement instanceof ClassConstantReference) {
-            return PhpElementsUtil.getClassConstantPhpClass((ClassConstantReference) psiElement);
-        }
-
-        if (psiElement instanceof PhpTypedElement) {
-            String typeName = ((PhpTypedElement) psiElement).getType().toString();
-            return getFormTypeToClass(psiElement.getProject(), typeName);
+        switch (psiElement) {
+            case StringLiteralExpression stringLiteralExpression -> {
+                return getFormTypeToClass(psiElement.getProject(), stringLiteralExpression.getContents());
+            }
+            case ClassConstantReference classConstantReference -> {
+                return PhpElementsUtil.getClassConstantPhpClass(classConstantReference);
+            }
+            case PhpTypedElement phpTypedElement -> {
+                String typeName = phpTypedElement.getType().toString();
+                return getFormTypeToClass(psiElement.getProject(), typeName);
+            }
+            default -> {
+            }
         }
 
         return null;
+    }
+
+    /**
+     * Resolves a Symfony form type parameter to a normalized FQN string without exposing the resolved {@link PhpClass}.
+     *
+     * <p>Supported inputs match {@link #getFormTypeClassOnParameter(PsiElement)}: string literals, class constants,
+     * and typed expressions such as {@code new FooType()}.</p>
+     *
+     * @return normalized class FQN with a leading backslash, or {@code null} when the parameter cannot be resolved
+     */
+    @Nullable
+    public static String getFormTypeFqnOnParameter(@NotNull PsiElement psiElement) {
+        PhpClass phpClass = getFormTypeClassOnParameter(psiElement);
+        if (phpClass == null) {
+            return null;
+        }
+
+        return phpClass.getFQN();
     }
 
     @NotNull

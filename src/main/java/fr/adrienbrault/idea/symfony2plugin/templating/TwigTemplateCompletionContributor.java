@@ -57,6 +57,7 @@ import icons.TwigIcons;
 import org.apache.commons.lang3.StringUtils;
 import org.intellij.lang.annotations.RegExp;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Function;
@@ -755,11 +756,8 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
                     // form
                     Object dataHolder = twigTypeContainer.getDataHolder();
-                    if (dataHolder instanceof FormDataHolder) {
-                        lookupElement = lookupElement.withIcon(Symfony2Icons.FORM_TYPE);
-
-                        lookupElement = lookupElement.withTypeText(((FormDataHolder) dataHolder).getPhpClass().getName());
-                        lookupElement = lookupElement.withTailText("(" + ((FormDataHolder) dataHolder).getFormType().getName() + ")", true);
+                    if (dataHolder instanceof FormDataHolder formDataHolder) {
+                        lookupElement = decorateFormFieldLookupElement(lookupElement, formDataHolder);
                     }
 
                     resultSet.addElement(lookupElement);
@@ -976,7 +974,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                     String typeText = null;
 
                     if (twigTypeContainers.getDataHolder() instanceof FormDataHolder formDataHolder) {
-                        typeText = formDataHolder.getPhpClass().getName();
+                        typeText = getFormTypeShortName(formDataHolder.fieldTypeFqn());
                     }
 
                     for (String s : new String[]{"form_row", "form_widget", "form_label", "form_errors", "form_help"}) {
@@ -990,6 +988,28 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 });
             }
         }
+    }
+
+    @Nullable
+    private static String getFormTypeShortName(@Nullable String fqn) {
+        if (fqn == null || fqn.isBlank()) {
+            return null;
+        }
+
+        int index = fqn.lastIndexOf('\\');
+        return index >= 0 ? fqn.substring(index + 1) : fqn;
+    }
+
+    @NotNull
+    public static LookupElementBuilder decorateFormFieldLookupElement(@NotNull LookupElementBuilder lookupElement, @NotNull FormDataHolder formDataHolder) {
+        lookupElement = lookupElement.withIcon(Symfony2Icons.FORM_TYPE);
+
+        String fieldTypeShortName = getFormTypeShortName(formDataHolder.fieldTypeFqn());
+        if (fieldTypeShortName != null) {
+            lookupElement = lookupElement.withTypeText(fieldTypeShortName);
+        }
+
+        return lookupElement.withTailText("(" + getFormTypeShortName(formDataHolder.ownerFormTypeFqn()) + ")", true);
     }
 
     private class IncompleteFormPrintBlockCompletionProvider extends CompletionProvider<CompletionParameters> {
@@ -1028,9 +1048,9 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 }
 
                 String typeText = null;
-                Collection<PhpClass> formTypeFromFormFactory = FormFieldResolver.getFormTypeFromFormFactory(element);
-                if (!formTypeFromFormFactory.isEmpty()) {
-                    typeText = StringUtils.stripStart(formTypeFromFormFactory.iterator().next().getFQN(), "\\");
+                Set<String> formTypeFqnsFromFormFactory = FormFieldResolver.getFormTypeFqnsFromFormFactory(element);
+                if (!formTypeFqnsFromFormFactory.isEmpty()) {
+                    typeText = StringUtils.stripStart(formTypeFqnsFromFormFactory.iterator().next(), "\\");
                 }
 
                 for (String s : new String[]{"form_start", "form_rest", "form_end", "form_errors"}) {
@@ -1082,9 +1102,9 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 }
 
                 String typeText = null;
-                Collection<PhpClass> formTypeFromFormFactory = FormFieldResolver.getFormTypeFromFormFactory(element);
-                if (!formTypeFromFormFactory.isEmpty()) {
-                    typeText = StringUtils.stripStart(formTypeFromFormFactory.iterator().next().getFQN(), "\\");
+                Set<String> formTypeFqnsFromFormFactory = FormFieldResolver.getFormTypeFqnsFromFormFactory(element);
+                if (!formTypeFqnsFromFormFactory.isEmpty()) {
+                    typeText = StringUtils.stripStart(formTypeFqnsFromFormFactory.iterator().next(), "\\");
                 }
 
                 if (orderedList == null) {

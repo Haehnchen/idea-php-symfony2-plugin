@@ -267,7 +267,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
         }
     }
 
-    private void assertNavigationMatch(ElementPattern<?> pattern) {
+    public void assertNavigationMatch(ElementPattern<?> pattern) {
 
         PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
 

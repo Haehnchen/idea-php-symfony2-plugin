@@ -49,6 +49,24 @@ public class FormUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         ).getFQN());
     }
 
+    public void testGetFormTypeFqnOnParameter() {
+        assertEquals("\\Form\\FormType\\Foo", FormUtil.getFormTypeFqnOnParameter(
+            PhpPsiElementFactory.createPhpPsiFromText(getProject(), PhpTypedElementImpl.class, "<?php new \\Form\\FormType\\Foo();")
+        ));
+
+        assertEquals("\\Form\\FormType\\Foo", FormUtil.getFormTypeFqnOnParameter(
+            PhpPsiElementFactory.createPhpPsiFromText(getProject(), StringLiteralExpressionImpl.class, "<?php '\\Form\\FormType\\Foo'")
+        ));
+
+        assertEquals("\\Form\\FormType\\Foo", FormUtil.getFormTypeFqnOnParameter(
+            PhpPsiElementFactory.createPhpPsiFromText(getProject(), StringLiteralExpressionImpl.class, "<?php 'Form\\FormType\\Foo'")
+        ));
+
+        assertEquals("\\Form\\FormType\\Foo", FormUtil.getFormTypeFqnOnParameter(
+            PhpPsiElementFactory.createPhpPsiFromText(getProject(), ClassConstantReferenceImpl.class, "<?php Form\\FormType\\Foo::class")
+        ));
+    }
+
     @SuppressWarnings({"ConstantConditions"})
     public void testGetFormTypeClasses() {
         Map<String, FormTypeClass> formTypeClasses = FormUtil.getFormTypeClasses(getProject());
