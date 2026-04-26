@@ -5,11 +5,14 @@ import com.intellij.patterns.ElementPattern;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
+import com.intellij.psi.impl.source.tree.LeafPsiElement;
+import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * asset('<caret>')
@@ -36,7 +39,12 @@ public class TwigAssetMissingInspection extends LocalInspectionTool {
         }
 
         @Override
-        public void visitElement(PsiElement element) {
+        public void visitElement(@NonNull PsiElement element) {
+            if (!(element instanceof LeafPsiElement) || element.getNode().getElementType() != TwigTokenTypes.STRING_TEXT) {
+                super.visitElement(element);
+                return;
+            }
+
             if(getAssetPattern().accepts(element) && TwigUtil.isValidStringWithoutInterpolatedOrConcat(element)) {
                 invoke(element, holder);
             }

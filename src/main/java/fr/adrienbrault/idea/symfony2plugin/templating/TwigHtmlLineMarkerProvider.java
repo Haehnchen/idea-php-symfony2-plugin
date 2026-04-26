@@ -25,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -32,14 +33,16 @@ import java.util.function.Supplier;
 public class TwigHtmlLineMarkerProvider implements LineMarkerProvider {
     @Override
     public void collectSlowLineMarkers(@NotNull List<? extends PsiElement> psiElements, @NotNull Collection<? super LineMarkerInfo<?>> results) {
-        if (psiElements.isEmpty() || !Symfony2ProjectComponent.isEnabled(psiElements.get(0))) {
+        if (psiElements.isEmpty() || !Symfony2ProjectComponent.isEnabled(psiElements.getFirst())) {
             return;
         }
 
-        PsiFile file = psiElements.get(0).getContainingFile();
+        PsiFile file = psiElements.getFirst().getContainingFile();
         if (!isSupportedFile(file)) {
             return;
         }
+
+        Map<String, Boolean> componentBlockExistsCache = new HashMap<>();
 
         for (PsiElement psiElement : psiElements) {
             if (!(psiElement instanceof XmlToken xmlToken) || xmlToken.getNode().getElementType() != XmlTokenType.XML_ATTRIBUTE_VALUE_TOKEN) {
@@ -50,7 +53,7 @@ public class TwigHtmlLineMarkerProvider implements LineMarkerProvider {
                 continue;
             }
 
-            LineMarkerInfo<?> blockOverride = attachTwigComponentBlockOverride(xmlAttributeValue, xmlToken);
+            LineMarkerInfo<?> blockOverride = attachTwigComponentBlockOverride(xmlAttributeValue, xmlToken, componentBlockExistsCache);
             if (blockOverride != null) {
                 results.add(blockOverride);
             }
@@ -68,7 +71,7 @@ public class TwigHtmlLineMarkerProvider implements LineMarkerProvider {
     }
 
     @Nullable
-    protected LineMarkerInfo<?> attachTwigComponentBlockOverride(@NotNull XmlAttributeValue xmlAttributeValue, @NotNull PsiElement lineMarkerTarget) {
+    protected LineMarkerInfo<?> attachTwigComponentBlockOverride(@NotNull XmlAttributeValue xmlAttributeValue, @NotNull PsiElement lineMarkerTarget, @NotNull Map<String, Boolean> componentBlockExistsCache) {
         if (!(xmlAttributeValue.getParent() instanceof XmlAttribute xmlAttribute) || !"name".equals(xmlAttribute.getName())) {
             return null;
         }
@@ -100,7 +103,8 @@ public class TwigHtmlLineMarkerProvider implements LineMarkerProvider {
         }
 
         Project project = xmlAttributeValue.getProject();
-        if (!hasComponentBlock(project, componentName, blockName)) {
+        String cacheKey = componentName + "\0" + blockName;
+        if (!componentBlockExistsCache.computeIfAbsent(cacheKey, ignored -> hasComponentBlock(project, componentName, blockName))) {
             return null;
         }
 
@@ -109,6 +113,11 @@ public class TwigHtmlLineMarkerProvider implements LineMarkerProvider {
             .setTooltipText("Navigate to block");
 
         return builder.createLineMarkerInfo(lineMarkerTarget);
+    }
+
+    @Nullable
+    protected LineMarkerInfo<?> attachTwigComponentBlockOverride(@NotNull XmlAttributeValue xmlAttributeValue, @NotNull PsiElement lineMarkerTarget) {
+        return attachTwigComponentBlockOverride(xmlAttributeValue, lineMarkerTarget, new HashMap<>());
     }
 
     @Nullable

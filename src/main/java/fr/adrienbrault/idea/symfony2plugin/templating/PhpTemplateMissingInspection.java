@@ -35,18 +35,16 @@ public class PhpTemplateMissingInspection extends LocalInspectionTool {
         return new PsiElementVisitor() {
             @Override
             public void visitElement(@NotNull PsiElement element) {
-                invoke(holder, element);
+                if (element instanceof StringLiteralExpression stringLiteralExpression) {
+                    invoke(holder, stringLiteralExpression);
+                }
                 super.visitElement(element);
             }
         };
     }
 
-    private void invoke(@NotNull ProblemsHolder holder, @NotNull PsiElement psiElement) {
-        if (!(psiElement instanceof StringLiteralExpression)) {
-            return;
-        }
-
-        String templateNameIfMissing = getTemplateNameIfMissing((StringLiteralExpression) psiElement);
+    private void invoke(@NotNull ProblemsHolder holder, @NotNull StringLiteralExpression psiElement) {
+        String templateNameIfMissing = getTemplateNameIfMissing(psiElement);
         if(templateNameIfMissing == null) {
             return;
         }

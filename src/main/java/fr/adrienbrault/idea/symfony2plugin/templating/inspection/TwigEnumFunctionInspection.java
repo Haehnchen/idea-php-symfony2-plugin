@@ -4,6 +4,7 @@ import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.codeInspection.ProblemsHolder;
+import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
@@ -51,7 +52,13 @@ public class TwigEnumFunctionInspection extends LocalInspectionTool {
         @Override
         public void visitElement(@NotNull PsiElement element) {
             // Fast pre-filter: only STRING_TEXT elements can be enum/enum_cases arguments
-            if (element instanceof LeafPsiElement && element.getNode() == null || element.getNode().getElementType() != TwigTokenTypes.STRING_TEXT) {
+            if (!(element instanceof LeafPsiElement)) {
+                super.visitElement(element);
+                return;
+            }
+
+            ASTNode node = element.getNode();
+            if (node == null || node.getElementType() != TwigTokenTypes.STRING_TEXT) {
                 super.visitElement(element);
                 return;
             }

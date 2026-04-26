@@ -137,11 +137,11 @@ public class CommandInvokeParameterIntention extends PsiElementBaseIntentionActi
             return false;
         }
 
-        if (PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Console\\Command\\Command")) {
+        if (phpClass.getAttributes(AS_COMMAND_ATTRIBUTE).isEmpty()) {
             return false;
         }
 
-        if (phpClass.getAttributes(AS_COMMAND_ATTRIBUTE).isEmpty()) {
+        if (PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Console\\Command\\Command")) {
             return false;
         }
 

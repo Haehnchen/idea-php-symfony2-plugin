@@ -36,13 +36,15 @@ public class PhpTranslationDomainInspection extends LocalInspectionTool {
         return new PsiElementVisitor() {
             @Override
             public void visitElement(@NotNull PsiElement element) {
-                invoke(holder, element);
+                if (element instanceof StringLiteralExpression stringLiteralExpression) {
+                    invoke(holder, stringLiteralExpression);
+                }
                 super.visitElement(element);
             }
         };
     }
 
-    private void invoke(@NotNull ProblemsHolder holder, @NotNull PsiElement psiElement) {
+    private void invoke(@NotNull ProblemsHolder holder, @NotNull StringLiteralExpression psiElement) {
         ParameterListOwner methodReferenceOrNewExpression = TranslationUtil.getTranslationFunctionContext(psiElement);
         if (methodReferenceOrNewExpression == null) {
             return;
@@ -58,7 +60,7 @@ public class PhpTranslationDomainInspection extends LocalInspectionTool {
                     && TranslationUtil.isTranslationReference(methodReferenceOrNewExpression);
 
                 if (isSupportedAttributeInsideContext) {
-                    annotateTranslationDomain((StringLiteralExpression) psiElement, holder);
+                    annotateTranslationDomain(psiElement, holder);
                 }
             }
 
@@ -70,7 +72,7 @@ public class PhpTranslationDomainInspection extends LocalInspectionTool {
         if (domainParameter >= 0) {
             ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(psiElement);
             if(currentIndex != null && currentIndex.getIndex() == domainParameter) {
-                annotateTranslationDomain((StringLiteralExpression) psiElement, holder);
+                annotateTranslationDomain(psiElement, holder);
             }
         }
     }

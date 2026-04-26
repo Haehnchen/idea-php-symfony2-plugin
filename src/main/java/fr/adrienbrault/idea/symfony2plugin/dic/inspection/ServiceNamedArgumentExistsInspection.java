@@ -31,6 +31,7 @@ public class ServiceNamedArgumentExistsInspection extends LocalInspectionTool {
 
     private static class MyPsiElementVisitor extends PsiElementVisitor {
         @NotNull private final ProblemsHolder holder;
+        private ContainerCollectionResolver.LazyServiceCollector lazyServiceCollector;
         private ElementPattern<?> namedArgumentPattern;
 
         MyPsiElementVisitor(@NotNull ProblemsHolder holder) {
@@ -40,12 +41,16 @@ public class ServiceNamedArgumentExistsInspection extends LocalInspectionTool {
         @Override
         public void visitElement(@NotNull PsiElement element) {
             if (getNamedArgumentPattern().accepts(element)) {
-                if (isSupportedDefinition(element) && ServiceContainerUtil.hasMissingYamlNamedArgumentForInspection(element, new ContainerCollectionResolver.LazyServiceCollector(holder.getProject()))) {
+                if (isSupportedDefinition(element) && ServiceContainerUtil.hasMissingYamlNamedArgumentForInspection(element, getLazyServiceCollector())) {
                     holder.registerProblem(element, INSPECTION_MESSAGE, ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
                 }
             }
 
             super.visitElement(element);
+        }
+
+        private ContainerCollectionResolver.LazyServiceCollector getLazyServiceCollector() {
+            return lazyServiceCollector != null ? lazyServiceCollector : (lazyServiceCollector = new ContainerCollectionResolver.LazyServiceCollector(holder.getProject()));
         }
 
         private ElementPattern<?> getNamedArgumentPattern() {

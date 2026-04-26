@@ -8,6 +8,7 @@ import com.intellij.lang.javascript.psi.JSFile
 import com.intellij.lang.javascript.psi.JSProperty
 import com.intellij.openapi.util.NotNullLazyValue
 import com.intellij.openapi.vfs.VfsUtil
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 import com.intellij.psi.search.GlobalSearchScope
@@ -49,16 +50,24 @@ class ViteJavaScriptLineMarkerProvider : LineMarkerProvider {
             return
         }
 
+        var viteConfigFiles: Collection<VirtualFile>? = null
+
         for (element in elements) {
             // Only fire once per file — match on the JSFile node itself
             if (element !is JSFile) continue
 
-            val project = element.project
             val virtualFile = element.virtualFile ?: continue
+            val project = element.project
+            val configs = viteConfigFiles ?: ViteUtil.getViteConfigFiles(project).also {
+                if (it.isEmpty()) {
+                    return
+                }
+                viteConfigFiles = it
+            }
 
             val entryNames = mutableSetOf<String>()
 
-            for (configVirtualFile in ViteUtil.getViteConfigFiles(project)) {
+            for (configVirtualFile in configs) {
                 val configDir = configVirtualFile.parent ?: continue
                 val relPath = VfsUtil.getRelativePath(virtualFile, configDir, '/') ?: continue
                 val normalized = relPath.removePrefix("./").removePrefix("/")

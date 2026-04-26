@@ -42,7 +42,8 @@ public class PhpAssetMissingInspection extends LocalInspectionTool {
         public void visitElement(@NotNull PsiElement element) {
             if (element instanceof StringLiteralExpression) {
                 MethodReference methodReference = PsiElementUtils.getMethodReferenceWithFirstStringParameter((StringLiteralExpression) element);
-                if (methodReference != null && (PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "\\Symfony\\Component\\Asset\\Packages", "getUrl")
+                String methodName = methodReference != null ? methodReference.getName() : null;
+                if (methodName != null && ("getUrl".equals(methodName) || "getVersion".equals(methodName)) && (PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "\\Symfony\\Component\\Asset\\Packages", "getUrl")
                     || PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "\\Symfony\\Component\\Asset\\Packages", "getVersion")
                     || PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "\\Symfony\\Component\\Asset\\PackageInterface", "getUrl")
                     || PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "\\Symfony\\Component\\Asset\\PackageInterface", "getVersion")

@@ -6,6 +6,7 @@ import com.intellij.patterns.ElementPattern;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
+import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.routing.PhpRouteReferenceContributor;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
@@ -38,7 +39,7 @@ public class PhpRouteMissingInspection extends LocalInspectionTool {
 
         @Override
         public void visitElement(@NotNull PsiElement element) {
-            if(getMethodWithFirstStringPattern().accepts(element)) {
+            if(element instanceof StringLiteralExpression && getMethodWithFirstStringPattern().accepts(element)) {
                 String contents = PhpElementsUtil.getStringValue(element);
                 if(StringUtils.isNotBlank(contents)) {
                     invoke(contents, element, holder);

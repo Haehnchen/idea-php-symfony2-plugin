@@ -8,6 +8,8 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
+import com.intellij.psi.impl.source.tree.LeafPsiElement;
+import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
@@ -48,6 +50,11 @@ public class TwigTemplateMissingInspection extends LocalInspectionTool {
 
         @Override
         public void visitElement(PsiElement element) {
+            if (!(element instanceof LeafPsiElement) || element.getNode().getElementType() != TwigTokenTypes.STRING_TEXT) {
+                super.visitElement(element);
+                return;
+            }
+
             if((getTemplateFileReferencePattern().accepts(element) || getIncludeFunctionPattern().accepts(element)) && TwigUtil.isValidStringWithoutInterpolatedOrConcat(element)) {
                 invoke(element, holder);
             }

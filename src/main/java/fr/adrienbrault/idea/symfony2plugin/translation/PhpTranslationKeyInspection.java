@@ -24,20 +24,22 @@ public class PhpTranslationKeyInspection extends LocalInspectionTool {
     @NotNull
     @Override
     public PsiElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
-        if(!Symfony2ProjectComponent.isEnabled(holder.getProject())) {
+        if (!Symfony2ProjectComponent.isEnabled(holder.getProject())) {
             return super.buildVisitor(holder, isOnTheFly);
         }
 
         return new PsiElementVisitor() {
             @Override
             public void visitElement(@NotNull PsiElement element) {
-                invoke(holder, element);
+                if (element instanceof StringLiteralExpression stringLiteralExpression) {
+                    invoke(holder, stringLiteralExpression);
+                }
                 super.visitElement(element);
             }
         };
     }
 
-    private void invoke(@NotNull ProblemsHolder holder, @NotNull PsiElement psiElement) {
+    private void invoke(@NotNull ProblemsHolder holder, @NotNull StringLiteralExpression psiElement) {
         ParameterListOwner methodReferenceOrNewExpression = TranslationUtil.getTranslationFunctionContext(psiElement);
         if (methodReferenceOrNewExpression == null) {
             return;
@@ -55,12 +57,12 @@ public class PhpTranslationKeyInspection extends LocalInspectionTool {
         PsiElement domainElement = parameterList.getParameter("domain", PhpTranslationDomainInspection.getDomainParameter(methodReferenceOrNewExpression));
         if(domainElement == null) {
             // no domain found; fallback to default domain
-            annotateTranslationKey((StringLiteralExpression) psiElement, "messages", holder);
+            annotateTranslationKey(psiElement, "messages", holder);
         } else {
             // resolve string in parameter
             String domain = PhpElementsUtil.getStringValue(domainElement);
             if(domain != null) {
-                annotateTranslationKey((StringLiteralExpression) psiElement, domain, holder);
+                annotateTranslationKey(psiElement, domain, holder);
             }
         }
     }

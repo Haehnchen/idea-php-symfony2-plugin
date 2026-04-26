@@ -29,6 +29,10 @@ import java.util.*;
 public class TemplateMissingAnnotationPhpAttributeLocalInspection extends LocalInspectionTool {
     @NotNull
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
+        if (!Symfony2ProjectComponent.isEnabled(holder.getProject())) {
+            return super.buildVisitor(holder, isOnTheFly);
+        }
+
         return new PsiElementVisitor() {
             @Override
             public void visitElement(@NotNull PsiElement element) {
@@ -38,7 +42,7 @@ public class TemplateMissingAnnotationPhpAttributeLocalInspection extends LocalI
 
                 if (element instanceof PhpAttribute) {
                     String fqn = ((PhpAttribute) element).getFQN();
-                    if (fqn != null && Arrays.stream(TwigUtil.TEMPLATE_ANNOTATION_CLASS).anyMatch(s -> PhpElementsUtil.isInstanceOf(element.getProject(), fqn, s))) {
+                    if (fqn != null && PhpElementsUtil.isEqualClassName(fqn, TwigUtil.TEMPLATE_ANNOTATION_CLASS)) {
                         annotate((PhpAttribute) element, holder);
                     }
                 }
@@ -74,10 +78,6 @@ public class TemplateMissingAnnotationPhpAttributeLocalInspection extends LocalI
     }
 
     private void annotate(@NotNull PhpDocTag phpDocTag, @NotNull ProblemsHolder holder) {
-        if(!Symfony2ProjectComponent.isEnabled(phpDocTag.getProject())) {
-            return;
-        }
-
         PhpDocTagAnnotation phpDocAnnotationContainer = AnnotationUtil.getPhpDocAnnotationContainer(phpDocTag);
         if (phpDocAnnotationContainer == null || !PhpElementsUtil.isEqualClassName(phpDocAnnotationContainer.getPhpClass(), TwigUtil.TEMPLATE_ANNOTATION_CLASS)) {
             return;
