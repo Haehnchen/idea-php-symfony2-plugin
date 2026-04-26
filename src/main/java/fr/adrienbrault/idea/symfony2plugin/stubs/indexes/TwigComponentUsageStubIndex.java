@@ -142,7 +142,7 @@ public class TwigComponentUsageStubIndex extends FileBasedIndexExtension<String,
         twigFile.acceptChildren(new PsiRecursiveElementVisitor() {
             @Override
             public void visitElement(@NotNull PsiElement element) {
-                if (componentPattern.accepts(element)) {
+                if (element.getNode() != null && element.getNode().getElementType() == TwigTokenTypes.STRING_TEXT && componentPattern.accepts(element)) {
                     String componentName = PsiElementUtils.trimQuote(element.getText());
                     if (StringUtils.isNotBlank(componentName)) {
                         usages.add(new Usage(componentName, element, UsageType.FUNCTION));

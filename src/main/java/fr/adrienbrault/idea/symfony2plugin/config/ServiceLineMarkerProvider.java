@@ -67,6 +67,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         var classNamePattern = PhpElementsUtil.getClassNamePattern();
         var classMethodNamePattern = PhpElementsUtil.getClassMethodNamePattern();
         var constraintMessagePattern = ConstraintMessageGotoCompletionRegistrar.getConstraintPropertyMessagePattern();
+        Supplier<ContainerCollectionResolver.ServiceCollector> serviceCollectorSupplier = null;
 
         for(PsiElement psiElement: psiElements) {
             if(methodReturnPattern.accepts(psiElement)) {
@@ -74,7 +75,11 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
             }
 
             if(classNamePattern.accepts(psiElement)) {
-                this.classNameMarker(project, psiElement, results);
+                if (serviceCollectorSupplier == null) {
+                    serviceCollectorSupplier = new LazyServiceCollector(project);
+                }
+
+                this.classNameMarker(project, psiElement, results, serviceCollectorSupplier);
                 this.entityClassMarker(project, psiElement, results);
                 this.repositoryClassMarker(project, psiElement, results);
                 this.validatorClassMarker(project, psiElement, results);
@@ -82,7 +87,11 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
             }
 
             if(classMethodNamePattern.accepts(psiElement)) {
-                this.autowireConstructorMarker(project, psiElement, results);
+                if (serviceCollectorSupplier == null) {
+                    serviceCollectorSupplier = new LazyServiceCollector(project);
+                }
+
+                this.autowireConstructorMarker(project, psiElement, results, serviceCollectorSupplier);
             }
 
             // public $message = 'This value should not be blank.';
@@ -92,21 +101,21 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         }
     }
 
-    private void classNameMarker(@NotNull Project project, @NotNull PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo<?>> result) {
+    private void classNameMarker(@NotNull Project project, @NotNull PsiElement psiElement, Collection<? super RelatedItemLineMarkerInfo<?>> result, @NotNull Supplier<ContainerCollectionResolver.ServiceCollector> serviceCollectorSupplier) {
         PsiElement phpClassContext = psiElement.getContext();
         if(!(phpClassContext instanceof PhpClass) || ((PhpClass) phpClassContext).isAbstract()) {
+            return;
+        }
+
+        ContainerCollectionResolver.ServiceCollector serviceCollector = serviceCollectorSupplier.get();
+        Set<String> serviceNames = serviceCollector.convertClassNameToServices(((PhpClass) phpClassContext).getFQN());
+        if (serviceNames.isEmpty()) {
             return;
         }
 
         Icon serviceLineMarker = ExternalSystemIcons.Task;
         Collection<ClassServiceDefinitionTargetLazyValue> targets = new ArrayList<>();
         Collection<String> tags = new HashSet<>();
-        ContainerCollectionResolver.ServiceCollector serviceCollector = ContainerCollectionResolver.ServiceCollector.create(project);
-        Set<String> serviceNames = serviceCollector.convertClassNameToServices(((PhpClass) phpClassContext).getFQN());
-        if (serviceNames.isEmpty()) {
-            return;
-        }
-
         targets.add(new ClassServiceDefinitionTargetLazyValue(project, ((PhpClass) phpClassContext).getFQN()));
 
         if (hasResourcePrototypeMetadata(serviceNames, serviceCollector)) {
@@ -283,7 +292,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         results.add(builder.createLineMarkerInfo(psiElement));
     }
 
-    private void autowireConstructorMarker(@NotNull Project project, @NotNull PsiElement psiElement, Collection<? super LineMarkerInfo<?>> results) {
+    private void autowireConstructorMarker(@NotNull Project project, @NotNull PsiElement psiElement, Collection<? super LineMarkerInfo<?>> results, @NotNull Supplier<ContainerCollectionResolver.ServiceCollector> serviceCollectorSupplier) {
         PsiElement method = psiElement.getParent();
         if (!(method instanceof Method)) {
             return;
@@ -301,7 +310,7 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
         boolean isAutowire = false;
 
         Collection<ClassServiceDefinitionTargetLazyValue> targets = new ArrayList<>();
-        ContainerCollectionResolver.ServiceCollector serviceCollector = ContainerCollectionResolver.ServiceCollector.create(project);
+        ContainerCollectionResolver.ServiceCollector serviceCollector = serviceCollectorSupplier.get();
         for (String convertClassNameToService : serviceCollector.convertClassNameToServices(phpClass.getFQN())) {
             ContainerService containerService = serviceCollector.getServices().get(convertClassNameToService);
             if (containerService == null) {
@@ -364,6 +373,24 @@ public class ServiceLineMarkerProvider implements LineMarkerProvider {
                 .map((Function<ClassServiceDefinitionTargetLazyValue, Collection<? extends PsiElement>>) ClassServiceDefinitionTargetLazyValue::get)
                 .forEach(myTargets::addAll);
             return myTargets;
+        }
+    }
+
+    private static final class LazyServiceCollector implements Supplier<ContainerCollectionResolver.ServiceCollector> {
+        private final Project project;
+        private ContainerCollectionResolver.ServiceCollector serviceCollector;
+
+        private LazyServiceCollector(@NotNull Project project) {
+            this.project = project;
+        }
+
+        @Override
+        public @NotNull ContainerCollectionResolver.ServiceCollector get() {
+            if (serviceCollector == null) {
+                serviceCollector = ContainerCollectionResolver.ServiceCollector.create(project);
+            }
+
+            return serviceCollector;
         }
     }
 }
