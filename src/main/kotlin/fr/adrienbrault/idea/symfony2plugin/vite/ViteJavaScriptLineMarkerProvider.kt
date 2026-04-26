@@ -57,8 +57,7 @@ class ViteJavaScriptLineMarkerProvider : LineMarkerProvider {
             if (element !is JSFile) continue
 
             val virtualFile = element.virtualFile ?: continue
-            val project = element.project
-            val configs = viteConfigFiles ?: ViteUtil.getViteConfigFiles(project).also {
+            val configs = viteConfigFiles ?: ViteUtil.getViteConfigFiles(element.project).also {
                 if (it.isEmpty()) {
                     return
                 }
@@ -73,7 +72,7 @@ class ViteJavaScriptLineMarkerProvider : LineMarkerProvider {
                 val normalized = relPath.removePrefix("./").removePrefix("/")
 
                 FileBasedIndex.getInstance()
-                    .getValues(VITE_ENTRY_STUB_INDEX_KEY, normalized, GlobalSearchScope.fileScope(project, configVirtualFile))
+                    .getValues(VITE_ENTRY_STUB_INDEX_KEY, normalized, GlobalSearchScope.fileScope(element.project, configVirtualFile))
                     .forEach { entryNames.add(it) }
             }
 
