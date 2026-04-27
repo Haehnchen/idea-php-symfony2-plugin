@@ -355,6 +355,7 @@ public class TwigTypeResolveUtil {
             controllerVars1.forEach((s, psiVariable) -> {
                 controllerVars.putIfAbsent(s, new PsiVariable());
                 controllerVars.get(s).addTypes(psiVariable.getTypes());
+                controllerVars.get(s).addFormTypeFqns(psiVariable.getFormTypeFqns());
 
                 PsiElement context = psiVariable.getElement();
                 if (context != null) {
@@ -363,13 +364,14 @@ public class TwigTypeResolveUtil {
             });
         }
 
-        // globals first
+        // globals first @var first
         Collection<Map<String, String>> vars = Arrays.asList(
             findInlineStatementVariableDocBlock(psiElement, TwigElementTypes.BLOCK_STATEMENT, true),
             findInlineStatementVariableDocBlock(psiElement, TwigElementTypes.MACRO_STATEMENT, false),
             findInlineStatementVariableDocBlock(psiElement, TwigElementTypes.FOR_STATEMENT, false)
         );
 
+        // Inline Twig docs only provide type strings, e.g. "{# @var form \Symfony\Component\Form\FormView #}".
         for (Map<String, String> entry : vars) {
             entry.forEach((s, s2) -> {
                 controllerVars.putIfAbsent(s, new PsiVariable());
@@ -769,4 +771,3 @@ public class TwigTypeResolveUtil {
         return TwigTypeResolveUtil.formatPsiTypeName(afterInVarPsiElement);
     }
 }
-

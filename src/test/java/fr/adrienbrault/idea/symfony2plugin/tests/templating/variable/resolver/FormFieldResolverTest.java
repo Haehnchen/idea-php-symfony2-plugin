@@ -4,8 +4,12 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormFieldResolver;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.TwigFormField;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder.FormFieldDataHolder;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder.FormViewDataHolder;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
@@ -74,6 +78,43 @@ public class FormFieldResolverTest extends SymfonyLightCodeInsightFixtureTestCas
 
         assertNull(plain.fieldTypeFqn());
         assertEquals("\\App\\Form\\ProductType", plain.ownerFormTypeFqn());
+    }
+
+    public void testResolveUsesPrimitiveFormTypeFqnsWithoutPsiElement() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace Symfony\\Component\\Form { class FormView {} interface FormTypeInterface {} interface FormBuilderInterface { public function add(); } }\n" +
+            "namespace Symfony\\Component\\Form\\Extension\\Core\\Type { class TextType implements \\Symfony\\Component\\Form\\FormTypeInterface {} }\n" +
+            "namespace App\\Form {\n" +
+            "  class ProductType implements \\Symfony\\Component\\Form\\FormTypeInterface {\n" +
+            "    public function buildForm(\\Symfony\\Component\\Form\\FormBuilderInterface $builder, array $options) {\n" +
+            "      $builder->add('title', \\Symfony\\Component\\Form\\Extension\\Core\\Type\\TextType::class);\n" +
+            "    }\n" +
+            "  }\n" +
+            "}\n"
+        );
+
+        PsiVariable rootVariable = new PsiVariable("\\Symfony\\Component\\Form\\FormView");
+        rootVariable.addFormTypeFqns(Collections.singleton("\\App\\Form\\ProductType"));
+
+        Collection<TwigTypeContainer> targets = TwigTypeContainer.fromCollection(getProject(), Collections.singleton(rootVariable));
+        assertSize(1, targets);
+
+        TwigTypeContainer rootContainer = targets.iterator().next();
+        FormViewDataHolder rootFormDataHolder = rootContainer.getFormViewDataHolder();
+        assertNotNull(rootFormDataHolder);
+        assertContainsElements(rootFormDataHolder.formTypeFqns(), "\\App\\Form\\ProductType");
+
+        new FormFieldResolver().resolve(targets, targets, "form", new ArrayList<>(), null);
+
+        TwigTypeContainer title = targets.stream()
+            .filter(twigTypeContainer -> "title".equals(twigTypeContainer.getStringElement()))
+            .findFirst()
+            .orElseThrow();
+
+        FormFieldDataHolder formFieldDataHolder = title.getFormFieldDataHolder();
+        assertNotNull(formFieldDataHolder);
+        assertEquals("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\TextType", formFieldDataHolder.fieldTypeFqn());
+        assertEquals("\\App\\Form\\ProductType", formFieldDataHolder.ownerFormTypeFqn());
     }
 
     @NotNull

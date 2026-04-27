@@ -6,7 +6,7 @@ import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder.FormDataHolder;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder.FormFieldDataHolder;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
@@ -68,7 +68,7 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
     public void testFormFieldCompletionUsesPrimitiveFormDataHolderPresentation() {
         LookupElement lookupElement = TwigTemplateCompletionContributor.decorateFormFieldLookupElement(
             LookupElementBuilder.create("title"),
-            new FormDataHolder("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\TextType", "\\App\\Form\\ProductType")
+            new FormFieldDataHolder("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\TextType", "\\App\\Form\\ProductType")
         );
 
         LookupElementPresentation presentation = new LookupElementPresentation();

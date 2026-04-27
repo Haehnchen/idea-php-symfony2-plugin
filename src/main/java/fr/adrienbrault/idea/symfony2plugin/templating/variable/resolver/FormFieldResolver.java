@@ -12,7 +12,8 @@ import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder.FormDataHolder;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder.FormFieldDataHolder;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder.FormViewDataHolder;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -28,16 +29,18 @@ import java.util.function.Consumer;
 public class FormFieldResolver implements TwigTypeResolver {
 
     public void resolve(Collection<TwigTypeContainer> targets, Collection<TwigTypeContainer> previousElement, String typeName, Collection<List<TwigTypeContainer>> previousElements, @Nullable Collection<PsiVariable> psiVariables) {
-        if (targets.isEmpty() || psiVariables == null || psiVariables.isEmpty() || previousElements == null || !previousElements.isEmpty()) {
+        if (targets.isEmpty() || previousElements == null || !previousElements.isEmpty()) {
             return;
         }
 
         TwigTypeContainer twigTypeContainer = targets.iterator().next();
-        if (twigTypeContainer.getPhpNamedElement() instanceof PhpClass phpClass && isFormView(phpClass)) {
-            PsiElement element = psiVariables.iterator().next().getElement();
-            if (element != null) {
-                visitFormReferencesFields(element, targets::add);
-            }
+        if (
+            twigTypeContainer.getPhpNamedElement() instanceof PhpClass phpClass &&
+                isFormView(phpClass) &&
+                twigTypeContainer.getFormViewDataHolder() instanceof FormViewDataHolder formViewDataHolder &&
+                !formViewDataHolder.formTypeFqns().isEmpty()
+        ) {
+            visitFormFields(phpClass.getProject(), formViewDataHolder.formTypeFqns(), field -> targets.add(toTwigTypeContainer(field)));
         }
     }
 
@@ -250,7 +253,7 @@ public class FormFieldResolver implements TwigTypeResolver {
 
     @NotNull
     private static TwigTypeContainer toTwigTypeContainer(@NotNull TwigFormField field) {
-        return new TwigTypeContainer(field.name()).withDataHolder(new FormDataHolder(field.fieldTypeFqn(), field.ownerFormTypeFqn()));
+        return new TwigTypeContainer(field.name(), new FormFieldDataHolder(field.fieldTypeFqn(), field.ownerFormTypeFqn()));
     }
 
     private static void consumeFieldType(@NotNull PhpClass phpClass, @NotNull Consumer<TwigFormField> consumer) {

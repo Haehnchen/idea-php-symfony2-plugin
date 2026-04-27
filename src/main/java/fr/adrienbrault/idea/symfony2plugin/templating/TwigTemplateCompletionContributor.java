@@ -41,7 +41,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormFieldResolver;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder.FormDataHolder;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder.FormFieldDataHolder;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigFileUtil;
 import fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.ControllerDocVariableCollector;
@@ -755,9 +755,9 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                     LookupElementBuilder lookupElement = LookupElementBuilder.create(twigTypeContainer.getStringElement());
 
                     // form
-                    Object dataHolder = twigTypeContainer.getDataHolder();
-                    if (dataHolder instanceof FormDataHolder formDataHolder) {
-                        lookupElement = decorateFormFieldLookupElement(lookupElement, formDataHolder);
+                    FormFieldDataHolder formFieldDataHolder = twigTypeContainer.getFormFieldDataHolder();
+                    if (formFieldDataHolder != null) {
+                        lookupElement = decorateFormFieldLookupElement(lookupElement, formFieldDataHolder);
                     }
 
                     resultSet.addElement(lookupElement);
@@ -973,8 +973,9 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 FormFieldResolver.visitFormReferencesFields(element1, twigTypeContainers -> {
                     String typeText = null;
 
-                    if (twigTypeContainers.getDataHolder() instanceof FormDataHolder formDataHolder) {
-                        typeText = getFormTypeShortName(formDataHolder.fieldTypeFqn());
+                    FormFieldDataHolder formFieldDataHolder = twigTypeContainers.getFormFieldDataHolder();
+                    if (formFieldDataHolder != null) {
+                        typeText = getFormTypeShortName(formFieldDataHolder.fieldTypeFqn());
                     }
 
                     for (String s : new String[]{"form_row", "form_widget", "form_label", "form_errors", "form_help"}) {
@@ -1001,7 +1002,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
     }
 
     @NotNull
-    public static LookupElementBuilder decorateFormFieldLookupElement(@NotNull LookupElementBuilder lookupElement, @NotNull FormDataHolder formDataHolder) {
+    public static LookupElementBuilder decorateFormFieldLookupElement(@NotNull LookupElementBuilder lookupElement, @NotNull FormFieldDataHolder formDataHolder) {
         lookupElement = lookupElement.withIcon(Symfony2Icons.FORM_TYPE);
 
         String fieldTypeShortName = getFormTypeShortName(formDataHolder.fieldTypeFqn());

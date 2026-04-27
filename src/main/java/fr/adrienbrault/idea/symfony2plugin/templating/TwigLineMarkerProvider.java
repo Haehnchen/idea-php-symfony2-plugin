@@ -38,7 +38,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigIncludeStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder.FormDataHolder;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder.FormFieldDataHolder;
 import fr.adrienbrault.idea.symfony2plugin.twig.loader.FileImplementsLazyLoader;
 import fr.adrienbrault.idea.symfony2plugin.twig.loader.FileOverwritesLazyLoader;
 import fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigBlockUtil;
@@ -332,9 +332,9 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
         Collection<PhpClass> phpClasses = new HashSet<>();
 
         for (TwigTypeContainer twigTypeContainer : twigTypeContainers) {
-            Object dataHolder = twigTypeContainer.getDataHolder();
-            if (dataHolder instanceof FormDataHolder formDataHolder) {
-                PhpClass phpClass = PhpElementsUtil.getClassInterface(psiElement.getProject(), formDataHolder.ownerFormTypeFqn());
+            FormFieldDataHolder formFieldDataHolder = twigTypeContainer.getFormFieldDataHolder();
+            if (formFieldDataHolder != null) {
+                PhpClass phpClass = PhpElementsUtil.getClassInterface(psiElement.getProject(), formFieldDataHolder.ownerFormTypeFqn());
                 if (phpClass != null && PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Form\\FormTypeInterface")) {
                     phpClasses.add(phpClass);
                 }

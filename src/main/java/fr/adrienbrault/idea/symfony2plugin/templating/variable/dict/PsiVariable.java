@@ -18,9 +18,17 @@ public class PsiVariable {
     @NotNull
     final private Collection<PsiElement> psiElements = new HashSet<>();
 
+    @NotNull
+    final private Set<String> formTypeFqns = new HashSet<>();
+
     public PsiVariable(@NotNull Set<String> types, @Nullable PsiElement psiElement) {
+        this(types, psiElement, Set.of());
+    }
+
+    public PsiVariable(@NotNull Set<String> types, @Nullable PsiElement psiElement, @NotNull Collection<String> formTypeFqns) {
         this.types.addAll(types);
         this.psiElements.add(psiElement);
+        this.formTypeFqns.addAll(formTypeFqns);
     }
 
     public PsiVariable(@NotNull Set<String> types) {
@@ -37,6 +45,11 @@ public class PsiVariable {
     @NotNull
     public Set<String> getTypes() {
         return types;
+    }
+
+    @NotNull
+    public Set<String> getFormTypeFqns() {
+        return formTypeFqns;
     }
 
     @Nullable
@@ -58,5 +71,9 @@ public class PsiVariable {
 
     public void addType(@NotNull String type) {
         this.types.add(type);
+    }
+
+    public void addFormTypeFqns(@NotNull Collection<String> formTypeFqns) {
+        this.formTypeFqns.addAll(formTypeFqns);
     }
 }

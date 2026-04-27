@@ -1,10 +1,14 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.util;
 
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.Function;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.PhpMethodVariableResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
@@ -66,6 +70,30 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
     /**
      * @see PhpMethodVariableResolveUtil#collectMethodVariables
      */
+    public void testCollectMethodVariablesCarriesPrimitiveFormTypeFqns() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace Symfony\\Component\\Form { interface FormTypeInterface {} }\n" +
+            "namespace Symfony\\Bundle\\FrameworkBundle\\Controller { class AbstractController { public function createForm($type) {} } }\n" +
+            "namespace App\\Form { class ProductType implements \\Symfony\\Component\\Form\\FormTypeInterface {} }\n" +
+            "namespace App\\Controller {\n" +
+            "  class ProductController extends \\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController {\n" +
+            "    public function index() {\n" +
+            "      $form = $this->createForm(\\App\\Form\\ProductType::class);\n" +
+            "      return $this->render('product.html.twig', ['form' => $form->createView()]);\n" +
+            "    }\n" +
+            "  }\n" +
+            "}\n"
+        );
+
+        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(findFunction("index"));
+
+        assertContainsElements(vars.keySet(), "form");
+        assertContainsElements(vars.get("form").getFormTypeFqns(), "\\App\\Form\\ProductType");
+    }
+
+    /**
+     * @see PhpMethodVariableResolveUtil#collectMethodVariables
+     */
     public void testCollectMethodVariablesForArrayMerge() {
         Function function = PhpPsiElementFactory.createFunction(getProject(), "function foobar() {\n" +
             "$myVar = new \\MyVars\\MyVar();\n" +
@@ -81,6 +109,19 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
 
         assertContainsElements(vars.keySet(), "foobar");
         assertContainsElements(vars.keySet(), "foobar1");
+    }
+
+    @NotNull
+    private Function findFunction(@NotNull String name) {
+        for (PsiElement psiElement : PsiTreeUtil.collectElementsOfType(myFixture.getFile(), Function.class)) {
+            Function function = (Function) psiElement;
+            if (name.equals(function.getName())) {
+                return function;
+            }
+        }
+
+        fail("Function not found: " + name);
+        throw new IllegalStateException(name);
     }
 
     /**

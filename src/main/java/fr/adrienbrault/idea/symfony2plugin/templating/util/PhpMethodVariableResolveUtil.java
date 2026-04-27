@@ -17,6 +17,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtension;
 import fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtensionParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormFieldResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpPsiAttributesUtil;
@@ -242,7 +243,11 @@ public class PhpMethodVariableResolveUtil {
                     variableTypes.addAll(((PhpTypedElement) arrayValue).getType().getTypes());
                 }
 
-                return Pair.create(variableName, new PsiVariable(variableTypes, ((AssignmentExpression) parent).getValue()));
+                return Pair.create(variableName, new PsiVariable(
+                    variableTypes,
+                    arrayValue,
+                    arrayValue == null ? Collections.emptySet() : FormFieldResolver.getFormTypeFqnsFromFormFactory(arrayValue)
+                ));
             } else {
                 return Pair.create(variableName, new PsiVariable(variableTypes));
             }
@@ -261,12 +266,17 @@ public class PhpMethodVariableResolveUtil {
             if(arrayHashElement.getKey() instanceof StringLiteralExpression) {
                 String variableName = ((StringLiteralExpression) arrayHashElement.getKey()).getContents();
                 Set<String> variableTypes = new HashSet<>();
+                PsiElement arrayValue = arrayHashElement.getValue();
 
-                if(arrayHashElement.getValue() instanceof PhpTypedElement) {
-                    variableTypes.addAll(((PhpTypedElement) arrayHashElement.getValue()).getType().getTypes());
+                if(arrayValue instanceof PhpTypedElement) {
+                    variableTypes.addAll(((PhpTypedElement) arrayValue).getType().getTypes());
                 }
 
-                collectedTypes.put(variableName, new PsiVariable(variableTypes, arrayHashElement.getValue()));
+                collectedTypes.put(variableName, new PsiVariable(
+                    variableTypes,
+                    arrayValue,
+                    arrayValue == null ? Collections.emptySet() : FormFieldResolver.getFormTypeFqnsFromFormFactory(arrayValue)
+                ));
             }
         }
 

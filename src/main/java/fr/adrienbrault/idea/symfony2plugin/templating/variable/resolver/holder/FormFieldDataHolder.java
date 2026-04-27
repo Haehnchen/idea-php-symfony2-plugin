@@ -4,18 +4,18 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * UI metadata for a Symfony form field without holding PSI objects.
+ * Metadata for a Symfony form field exposed in Twig, for example {@code form.title}.
  *
  * @param fieldTypeFqn explicit normalized field form type FQN, or {@code null} when the builder call has no type parameter
  * @param ownerFormTypeFqn normalized FQN of the form type whose {@code buildForm()} contributed this field
  *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public record FormDataHolder(
+public record FormFieldDataHolder(
     @Nullable String fieldTypeFqn,
     @NotNull String ownerFormTypeFqn
 ) {
-    public FormDataHolder {
+    public FormFieldDataHolder {
         if (fieldTypeFqn != null && !fieldTypeFqn.startsWith("\\")) {
             throw new IllegalArgumentException("fieldTypeFqn must be normalized with a leading backslash");
         }
