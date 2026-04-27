@@ -104,7 +104,7 @@ public class FormFieldResolverTest extends SymfonyLightCodeInsightFixtureTestCas
         assertNotNull(rootFormDataHolder);
         assertContainsElements(rootFormDataHolder.formTypeFqns(), "\\App\\Form\\ProductType");
 
-        new FormFieldResolver().resolve(targets, targets, "form", new ArrayList<>(), null);
+        new FormFieldResolver().resolve(getProject(), targets, targets, "form", new ArrayList<>(), null);
 
         TwigTypeContainer title = targets.stream()
             .filter(twigTypeContainer -> "title".equals(twigTypeContainer.getStringElement()))
@@ -115,6 +115,28 @@ public class FormFieldResolverTest extends SymfonyLightCodeInsightFixtureTestCas
         assertNotNull(formFieldDataHolder);
         assertEquals("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\TextType", formFieldDataHolder.fieldTypeFqn());
         assertEquals("\\App\\Form\\ProductType", formFieldDataHolder.ownerFormTypeFqn());
+    }
+
+    public void testResolveDoesNotUseFormViewClassWithoutFormViewDataHolder() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace Symfony\\Component\\Form { class FormView {} interface FormTypeInterface {} interface FormBuilderInterface { public function add(); } }\n" +
+            "namespace App\\Form {\n" +
+            "  class ProductType implements \\Symfony\\Component\\Form\\FormTypeInterface {\n" +
+            "    public function buildForm(\\Symfony\\Component\\Form\\FormBuilderInterface $builder, array $options) {\n" +
+            "      $builder->add('title');\n" +
+            "    }\n" +
+            "  }\n" +
+            "}\n"
+        );
+
+        Collection<TwigTypeContainer> targets = TwigTypeContainer.fromCollection(
+            getProject(),
+            Collections.singleton(new PsiVariable("\\Symfony\\Component\\Form\\FormView"))
+        );
+
+        new FormFieldResolver().resolve(getProject(), targets, targets, "form", new ArrayList<>(), null);
+
+        assertFalse(targets.stream().anyMatch(twigTypeContainer -> "title".equals(twigTypeContainer.getStringElement())));
     }
 
     @NotNull

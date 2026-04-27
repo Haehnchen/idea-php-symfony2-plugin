@@ -143,22 +143,24 @@ public class TwigTypeResolveUtil {
 
         String rootType = types.iterator().next();
         Collection<PsiVariable> rootVariables = getRootVariableByName(psiElement, rootType);
-        if(types.size() == 1) {
-            Collection<TwigTypeContainer> twigTypeContainers = TwigTypeContainer.fromCollection(psiElement.getProject(), rootVariables);
+        if (types.size() == 1) {
+            Project project = psiElement.getProject();
+            Collection<TwigTypeContainer> twigTypeContainers = TwigTypeContainer.fromCollection(project, rootVariables);
             for(TwigTypeResolver twigTypeResolver: TWIG_TYPE_RESOLVERS) {
-                twigTypeResolver.resolve(twigTypeContainers, twigTypeContainers, rootType, new ArrayList<>(), rootVariables);
+                twigTypeResolver.resolve(project, twigTypeContainers, twigTypeContainers, rootType, new ArrayList<>(), rootVariables);
             }
 
             return twigTypeContainers;
         }
 
-        Collection<TwigTypeContainer> type = TwigTypeContainer.fromCollection(psiElement.getProject(), rootVariables);
+        Project project = psiElement.getProject();
+        Collection<TwigTypeContainer> type = TwigTypeContainer.fromCollection(project, rootVariables);
         Collection<List<TwigTypeContainer>> previousElements = new ArrayList<>();
         previousElements.add(new ArrayList<>(type));
 
         String[] typeNames = types.toArray(new String[0]);
         for (int i = 1; i <= typeNames.length - 1; i++ ) {
-            type = resolveTwigMethodName(type, typeNames[i], previousElements);
+            type = resolveTwigMethodName(project, type, typeNames[i], previousElements);
             previousElements.add(new ArrayList<>(type));
 
             // we can stop on empty list
@@ -538,7 +540,7 @@ public class TwigTypeResolveUtil {
         return phpNamedElements;
     }
 
-    private static Collection<TwigTypeContainer> resolveTwigMethodName(Collection<TwigTypeContainer> previousElement, String typeName, Collection<List<TwigTypeContainer>> twigTypeContainer) {
+    private static Collection<TwigTypeContainer> resolveTwigMethodName(@NotNull Project project, Collection<TwigTypeContainer> previousElement, String typeName, Collection<List<TwigTypeContainer>> twigTypeContainer) {
 
         ArrayList<TwigTypeContainer> phpNamedElements = new ArrayList<>();
 
@@ -565,7 +567,7 @@ public class TwigTypeResolveUtil {
             }
 
             for(TwigTypeResolver twigTypeResolver: TWIG_TYPE_RESOLVERS) {
-                twigTypeResolver.resolve(phpNamedElements, previousElement, typeName, twigTypeContainer, null);
+                twigTypeResolver.resolve(project, phpNamedElements, previousElement, typeName, twigTypeContainer, null);
             }
 
         }

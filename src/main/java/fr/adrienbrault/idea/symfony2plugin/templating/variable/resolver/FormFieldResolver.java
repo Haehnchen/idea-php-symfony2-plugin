@@ -28,25 +28,18 @@ import java.util.function.Consumer;
  */
 public class FormFieldResolver implements TwigTypeResolver {
 
-    public void resolve(Collection<TwigTypeContainer> targets, Collection<TwigTypeContainer> previousElement, String typeName, Collection<List<TwigTypeContainer>> previousElements, @Nullable Collection<PsiVariable> psiVariables) {
+    public void resolve(@NotNull Project project, Collection<TwigTypeContainer> targets, Collection<TwigTypeContainer> previousElement, String typeName, Collection<List<TwigTypeContainer>> previousElements, @Nullable Collection<PsiVariable> psiVariables) {
         if (targets.isEmpty() || previousElements == null || !previousElements.isEmpty()) {
             return;
         }
 
         TwigTypeContainer twigTypeContainer = targets.iterator().next();
-        if (
-            twigTypeContainer.getPhpNamedElement() instanceof PhpClass phpClass &&
-                isFormView(phpClass) &&
-                twigTypeContainer.getFormViewDataHolder() instanceof FormViewDataHolder formViewDataHolder &&
-                !formViewDataHolder.formTypeFqns().isEmpty()
-        ) {
-            visitFormFields(phpClass.getProject(), formViewDataHolder.formTypeFqns(), field -> targets.add(toTwigTypeContainer(field)));
+        FormViewDataHolder formViewDataHolder = twigTypeContainer.getFormViewDataHolder();
+        if (formViewDataHolder == null || formViewDataHolder.formTypeFqns().isEmpty()) {
+            return;
         }
-    }
 
-    public static boolean isFormView(@NotNull PhpClass phpClass) {
-        return PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Form\\FormView") ||
-            PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Form\\FormInterface"); // form view is create converting by Symfony on template render
+        visitFormFields(project, formViewDataHolder.formTypeFqns(), field -> targets.add(toTwigTypeContainer(field)));
     }
 
     public static boolean isFormView(@NotNull PhpType phpType) {
