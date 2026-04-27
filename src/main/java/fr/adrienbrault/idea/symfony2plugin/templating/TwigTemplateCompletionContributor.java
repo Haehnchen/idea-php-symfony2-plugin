@@ -735,15 +735,14 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
             // find core function for that
             for(TwigTypeContainer twigTypeContainer: TwigTypeResolveUtil.resolveTwigMethodName(psiElement, possibleTypes)) {
-                if(twigTypeContainer.getPhpNamedElement() instanceof PhpClass) {
-
-                    for(Method method: ((PhpClass) twigTypeContainer.getPhpNamedElement()).getMethods()) {
+                for (PhpClass phpClass : TwigTypeResolveUtil.resolveTwigTypeClasses(psiElement.getProject(), twigTypeContainer)) {
+                    for(Method method: phpClass.getMethods()) {
                         if(TwigTypeResolveUtil.isTwigAccessibleMethod(method)) {
                             resultSet.addElement(new PhpTwigMethodLookupElement(method));
                         }
                     }
 
-                    for(Field field: ((PhpClass) twigTypeContainer.getPhpNamedElement()).getFields()) {
+                    for(Field field: phpClass.getFields()) {
                         if(field.getModifier().isPublic()) {
                             resultSet.addElement(new PhpTwigMethodLookupElement(field));
                         }

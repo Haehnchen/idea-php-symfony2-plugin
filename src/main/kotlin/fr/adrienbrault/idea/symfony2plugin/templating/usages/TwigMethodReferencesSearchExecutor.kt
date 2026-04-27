@@ -24,7 +24,6 @@ import com.jetbrains.twig.TwigFile
 import com.jetbrains.twig.TwigFileType
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil
 
 /**
  * Adds Twig usages to Find Usages for PHP symbols that are referenced from Twig.
@@ -438,14 +437,15 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
         }
 
         for (twigTypeContainer in types) {
-            val phpNamedElement = twigTypeContainer.phpNamedElement ?: continue
-            if (phpNamedElement is PhpClass && isWeakPhpClass(phpNamedElement)) {
-                continue
-            }
+            for (phpClass in TwigTypeResolveUtil.resolveTwigTypeClasses(element.project, twigTypeContainer)) {
+                if (TwigTypeResolveUtil.isWeakCollectionLikeClass(phpClass)) {
+                    continue
+                }
 
-            for (target in TwigTypeResolveUtil.getTwigPhpNameTargets(phpNamedElement, element.text)) {
-                if (isTargetMethod(target, targetMethod)) {
-                    return true
+                for (target in TwigTypeResolveUtil.getTwigPhpNameTargets(phpClass, element.text)) {
+                    if (isTargetMethod(target, targetMethod)) {
+                        return true
+                    }
                 }
             }
         }
@@ -468,14 +468,15 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
         }
 
         for (twigTypeContainer in types) {
-            val phpNamedElement = twigTypeContainer.phpNamedElement ?: continue
-            if (phpNamedElement is PhpClass && isWeakPhpClass(phpNamedElement)) {
-                continue
-            }
+            for (phpClass in TwigTypeResolveUtil.resolveTwigTypeClasses(element.project, twigTypeContainer)) {
+                if (TwigTypeResolveUtil.isWeakCollectionLikeClass(phpClass)) {
+                    continue
+                }
 
-            for (target in TwigTypeResolveUtil.getTwigPhpNameTargets(phpNamedElement, element.text)) {
-                if (isTargetField(target, targetField)) {
-                    return true
+                for (target in TwigTypeResolveUtil.getTwigPhpNameTargets(phpClass, element.text)) {
+                    if (isTargetField(target, targetField)) {
+                        return true
+                    }
                 }
             }
         }
@@ -510,13 +511,6 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
         val targetClass = targetField.containingClass ?: return false
 
         return candidateClass.isEquivalentTo(targetClass) || candidateClass.fqn == targetClass.fqn
-    }
-
-    /**
-     * Weak collection-like classes intentionally skip strict member validation in Twig-related inspections.
-     */
-    private fun isWeakPhpClass(phpClass: PhpClass): Boolean {
-        return PhpElementsUtil.isInstanceOf(phpClass, "ArrayAccess") || PhpElementsUtil.isInstanceOf(phpClass, "Iterator")
     }
 
     /**

@@ -520,9 +520,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         if(beforeLeaf.isEmpty()) {
             Collection<TwigTypeContainer> twigTypeContainers = TwigTypeResolveUtil.resolveTwigMethodName(psiElement, TwigTypeResolveUtil.formatPsiTypeNameWithCurrent(psiElement));
             for(TwigTypeContainer twigTypeContainer: twigTypeContainers) {
-                if(twigTypeContainer.getPhpNamedElement() != null) {
-                    targetPsiElements.add(twigTypeContainer.getPhpNamedElement());
-                }
+                targetPsiElements.addAll(TwigTypeResolveUtil.resolveTwigTypeClasses(psiElement.getProject(), twigTypeContainer));
             }
 
         } else {
@@ -531,9 +529,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             if(StringUtils.isNotBlank(text)) {
                 // provide method / field goto
                 for(TwigTypeContainer twigTypeContainer: types) {
-                    if(twigTypeContainer.getPhpNamedElement() != null) {
-                        targetPsiElements.addAll(TwigTypeResolveUtil.getTwigPhpNameTargets(twigTypeContainer.getPhpNamedElement(), text));
-                    }
+                    targetPsiElements.addAll(TwigTypeResolveUtil.getTwigPhpNameTargets(psiElement.getProject(), twigTypeContainer, text));
 
                     // form
                     // @TODO: provide extension

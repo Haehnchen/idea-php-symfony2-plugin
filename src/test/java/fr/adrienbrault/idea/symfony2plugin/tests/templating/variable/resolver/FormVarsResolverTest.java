@@ -1,12 +1,10 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.variable.resolver;
 
 import com.jetbrains.php.lang.PhpFileType;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormVarsResolver;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder.FormViewDataHolder;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -70,12 +68,11 @@ public class FormVarsResolverTest extends SymfonyLightCodeInsightFixtureTestCase
     }
 
     private TwigTypeContainer createRootFormViewContainer(boolean withFormViewDataHolder) {
-        PhpClass phpClass = PhpElementsUtil.getClass(getProject(), "\\Symfony\\Component\\Form\\FormView");
-        assertNotNull(phpClass);
+        PsiVariable rootVariable = new PsiVariable("\\Symfony\\Component\\Form\\FormView");
+        if (withFormViewDataHolder) {
+            rootVariable.addFormTypeFqns(Collections.singleton("\\App\\Form\\ProductType"));
+        }
 
-        return new TwigTypeContainer(
-            phpClass,
-            withFormViewDataHolder ? new FormViewDataHolder(Collections.singleton("\\App\\Form\\ProductType")) : null
-        );
+        return TwigTypeContainer.fromCollection(Collections.singleton(rootVariable)).iterator().next();
     }
 }

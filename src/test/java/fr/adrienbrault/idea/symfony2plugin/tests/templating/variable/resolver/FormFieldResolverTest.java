@@ -96,7 +96,7 @@ public class FormFieldResolverTest extends SymfonyLightCodeInsightFixtureTestCas
         PsiVariable rootVariable = new PsiVariable("\\Symfony\\Component\\Form\\FormView");
         rootVariable.addFormTypeFqns(Collections.singleton("\\App\\Form\\ProductType"));
 
-        Collection<TwigTypeContainer> targets = TwigTypeContainer.fromCollection(getProject(), Collections.singleton(rootVariable));
+        Collection<TwigTypeContainer> targets = TwigTypeContainer.fromCollection(Collections.singleton(rootVariable));
         assertSize(1, targets);
 
         TwigTypeContainer rootContainer = targets.iterator().next();
@@ -129,10 +129,7 @@ public class FormFieldResolverTest extends SymfonyLightCodeInsightFixtureTestCas
             "}\n"
         );
 
-        Collection<TwigTypeContainer> targets = TwigTypeContainer.fromCollection(
-            getProject(),
-            Collections.singleton(new PsiVariable("\\Symfony\\Component\\Form\\FormView"))
-        );
+        Collection<TwigTypeContainer> targets = TwigTypeContainer.fromCollection(Collections.singleton(new PsiVariable("\\Symfony\\Component\\Form\\FormView")));
 
         new FormFieldResolver().resolve(getProject(), targets, targets, "form", new ArrayList<>(), null);
 

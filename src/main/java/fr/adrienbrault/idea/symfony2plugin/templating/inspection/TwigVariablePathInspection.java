@@ -7,13 +7,12 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;
 
@@ -42,7 +41,7 @@ public class TwigVariablePathInspection extends LocalInspectionTool {
         }
 
         @Override
-        public void visitElement(PsiElement element) {
+        public void visitElement(@NonNull PsiElement element) {
             if(getTypeCompletionPattern().accepts(element)) {
                 visit(element);
             }
@@ -56,34 +55,29 @@ public class TwigVariablePathInspection extends LocalInspectionTool {
             }
 
             Collection<TwigTypeContainer> types = TwigTypeResolveUtil.resolveTwigMethodName(element, beforeLeaf);
-            if(types.isEmpty()) {
+            if (types.isEmpty()) {
                 return;
             }
 
-            for(TwigTypeContainer twigTypeContainer: types) {
-                PhpNamedElement phpNamedElement = twigTypeContainer.getPhpNamedElement();
-                if(phpNamedElement == null) {
-                    continue;
-                }
-
-                if(isWeakPhpClass(phpNamedElement)) {
-                    return;
-                }
-
+            for (TwigTypeContainer twigTypeContainer: types) {
                 String text = element.getText();
-                if(!TwigTypeResolveUtil.getTwigPhpNameTargets(phpNamedElement, text).isEmpty()) {
+                Collection<PhpClass> phpClasses = TwigTypeResolveUtil.resolveTwigTypeClasses(element.getProject(), twigTypeContainer);
+                if (phpClasses.isEmpty()) {
                     return;
+                }
+
+                for (PhpClass phpClass : phpClasses) {
+                    if(TwigTypeResolveUtil.isWeakCollectionLikeClass(phpClass)) {
+                        return;
+                    }
+
+                    if (!TwigTypeResolveUtil.getTwigPhpNameTargets(phpClass, text).isEmpty()) {
+                        return;
+                    }
                 }
             }
 
             this.holder.registerProblem(element, "Field or method not found", ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
-        }
-
-        private boolean isWeakPhpClass(PhpNamedElement phpNamedElement) {
-            return phpNamedElement instanceof PhpClass && (
-                PhpElementsUtil.isInstanceOf((PhpClass) phpNamedElement, "ArrayAccess") ||
-                PhpElementsUtil.isInstanceOf((PhpClass) phpNamedElement, "Iterator")
-            );
         }
 
         private ElementPattern<PsiElement> getTypeCompletionPattern() {

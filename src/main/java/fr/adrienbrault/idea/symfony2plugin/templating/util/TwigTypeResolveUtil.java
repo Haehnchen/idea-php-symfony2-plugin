@@ -145,7 +145,7 @@ public class TwigTypeResolveUtil {
         Collection<PsiVariable> rootVariables = getRootVariableByName(psiElement, rootType);
         if (types.size() == 1) {
             Project project = psiElement.getProject();
-            Collection<TwigTypeContainer> twigTypeContainers = TwigTypeContainer.fromCollection(project, rootVariables);
+            Collection<TwigTypeContainer> twigTypeContainers = TwigTypeContainer.fromCollection(rootVariables);
             for(TwigTypeResolver twigTypeResolver: TWIG_TYPE_RESOLVERS) {
                 twigTypeResolver.resolve(project, twigTypeContainers, twigTypeContainers, rootType, new ArrayList<>(), rootVariables);
             }
@@ -154,7 +154,7 @@ public class TwigTypeResolveUtil {
         }
 
         Project project = psiElement.getProject();
-        Collection<TwigTypeContainer> type = TwigTypeContainer.fromCollection(project, rootVariables);
+        Collection<TwigTypeContainer> type = TwigTypeContainer.fromCollection(rootVariables);
         Collection<List<TwigTypeContainer>> previousElements = new ArrayList<>();
         previousElements.add(new ArrayList<>(type));
 
@@ -546,23 +546,18 @@ public class TwigTypeResolveUtil {
 
         for(TwigTypeContainer phpNamedElement: previousElement) {
 
-            if(phpNamedElement.getPhpNamedElement() != null) {
-                for(PhpNamedElement target : getTwigPhpNameTargets(phpNamedElement.getPhpNamedElement(), typeName)) {
-                    PhpType phpType = target.getType();
+            for(PhpNamedElement target : getTwigPhpNameTargets(project, phpNamedElement, typeName)) {
+                PhpType phpType = target.getType();
 
-                    // @TODO: provide extension
-                    // custom resolving for Twig here: "app.user" => can also be a general solution just support the "getToken()->getUser()"
-                    if (target instanceof Method && StaticVariableCollector.isUserMethod((Method) target)) {
-                        phpNamedElements.addAll(getApplicationUserImplementations(target.getProject()));
-                    }
+                // @TODO: provide extension
+                // custom resolving for Twig here: "app.user" => can also be a general solution just support the "getToken()->getUser()"
+                if (target instanceof Method && StaticVariableCollector.isUserMethod((Method) target)) {
+                    phpNamedElements.addAll(getApplicationUserImplementations(project));
+                }
 
-                    // @TODO: use full resolving for object, that would allow using TypeProviders and core PhpStorm feature
-                    for (String typeString: phpType.filterPrimitives().getTypes()) {
-                        PhpClass phpClass = PhpElementsUtil.getClassInterface(phpNamedElement.getPhpNamedElement().getProject(), typeString);
-                        if(phpClass != null) {
-                            phpNamedElements.add(new TwigTypeContainer(phpClass));
-                        }
-                    }
+                Set<String> types = phpType.filterPrimitives().getTypes();
+                if (!types.isEmpty()) {
+                    phpNamedElements.add(new TwigTypeContainer(types));
                 }
             }
 
@@ -584,7 +579,7 @@ public class TwigTypeResolveUtil {
             .getAllSubclasses(project, "\\Symfony\\Component\\Security\\Core\\User\\UserInterface")
             .stream()
             .filter(phpClass -> !phpClass.isInterface()) // filter out implementation like AdvancedUserInterface
-            .map(TwigTypeContainer::new)
+            .map(phpClass -> new TwigTypeContainer(Collections.singleton(phpClass.getFQN())))
             .collect(Collectors.toList());
     }
 
@@ -630,6 +625,26 @@ public class TwigTypeResolveUtil {
                 }
             }
 
+        }
+
+        return targets;
+    }
+
+    @NotNull
+    public static Collection<PhpClass> resolveTwigTypeClasses(@NotNull Project project, @NotNull TwigTypeContainer twigTypeContainer) {
+        if (twigTypeContainer.getTypes().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return PhpElementsUtil.getClassFromPhpTypeSet(project, twigTypeContainer.getTypes());
+    }
+
+    @NotNull
+    public static Collection<? extends PhpNamedElement> getTwigPhpNameTargets(@NotNull Project project, @NotNull TwigTypeContainer twigTypeContainer, @NotNull String variableName) {
+        Collection<PhpNamedElement> targets = new ArrayList<>();
+
+        for (PhpClass phpClass : resolveTwigTypeClasses(project, twigTypeContainer)) {
+            targets.addAll(getTwigPhpNameTargets(phpClass, variableName));
         }
 
         return targets;
@@ -683,6 +698,10 @@ public class TwigTypeResolveUtil {
 
         String name = method.getName();
         return !name.startsWith("set") && !name.startsWith("__");
+    }
+
+    public static boolean isWeakCollectionLikeClass(@NotNull PhpClass phpClass) {
+        return PhpElementsUtil.isInstanceOf(phpClass, "ArrayAccess") || PhpElementsUtil.isInstanceOf(phpClass, "Iterator");
     }
 
     public static boolean isPropertyShortcutMethod(String methodName) {

@@ -15,6 +15,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;
 
@@ -43,35 +44,33 @@ public class TwigVariableDeprecatedInspection extends LocalInspectionTool {
         }
 
         @Override
-        public void visitElement(PsiElement element) {
-            if(getTypeCompletionPattern().accepts(element)) {
+        public void visitElement(@NonNull PsiElement element) {
+            if (getTypeCompletionPattern().accepts(element)) {
                 visit(element);
             }
+
             super.visitElement(element);
         }
 
         private void visit(@NotNull PsiElement element) {
             Collection<String> beforeLeaf = TwigTypeResolveUtil.formatPsiTypeName(element);
-            if(beforeLeaf.isEmpty()) {
+            if (beforeLeaf.isEmpty()) {
                 return;
             }
 
             Collection<TwigTypeContainer> types = TwigTypeResolveUtil.resolveTwigMethodName(element, beforeLeaf);
-            if(types.isEmpty()) {
+            if (types.isEmpty()) {
                 return;
             }
 
-            for(TwigTypeContainer twigTypeContainer: types) {
-                PhpNamedElement phpClass = twigTypeContainer.getPhpNamedElement();
-                if(!(phpClass instanceof PhpClass)) {
-                    continue;
-                }
+            for (TwigTypeContainer twigTypeContainer: types) {
+                for (PhpClass phpClass : TwigTypeResolveUtil.resolveTwigTypeClasses(element.getProject(), twigTypeContainer)) {
+                    String text = element.getText();
 
-                String text = element.getText();
-
-                for (PhpNamedElement namedElement : TwigTypeResolveUtil.getTwigPhpNameTargets(phpClass, text)) {
-                    if(namedElement instanceof Method method && PhpElementsUtil.isClassOrFunctionDeprecated(method)) {
-                        this.holder.registerProblem(element, String.format("Method '%s::%s' is deprecated", phpClass.getName(), namedElement.getName()), ProblemHighlightType.LIKE_DEPRECATED);
+                    for (PhpNamedElement namedElement : TwigTypeResolveUtil.getTwigPhpNameTargets(phpClass, text)) {
+                        if (namedElement instanceof Method method && PhpElementsUtil.isClassOrFunctionDeprecated(method)) {
+                            this.holder.registerProblem(element, String.format("Method '%s::%s' is deprecated", phpClass.getName(), namedElement.getName()), ProblemHighlightType.LIKE_DEPRECATED);
+                        }
                     }
                 }
             }
