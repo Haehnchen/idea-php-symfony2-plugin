@@ -27,6 +27,20 @@ public class FileDocVariableCollectorTest extends SymfonyLightCodeInsightFixture
             "  public function getNested() {}\n" +
             "  /** @return FooClass[] */\n" +
             "  public function getIterator() {}\n" +
+            "}\n" +
+            "\n" +
+            "namespace Foo\\Dto;\n" +
+            "class FooDto {\n" +
+            "  public function __construct(public FoobarDto $foobar) {}\n" +
+            "}\n" +
+            "class FoobarDto {\n" +
+            "  /**\n" +
+            "   * @param BarDto[] $bars\n" +
+            "   */\n" +
+            "  public function __construct(public array $bars) {}\n" +
+            "}\n" +
+            "class BarDto {\n" +
+            "  public function getBaz() {}\n" +
             "}"
         );
     }
@@ -57,7 +71,7 @@ public class FileDocVariableCollectorTest extends SymfonyLightCodeInsightFixture
 
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil#collectForArrayScopeVariables
-     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil#getForTagIdentifierAsString
+     * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil#getForTagScope
      */
     public void testVarArrayIteration() {
 
@@ -179,6 +193,16 @@ public class FileDocVariableCollectorTest extends SymfonyLightCodeInsightFixture
             , "fooBar"
         );
 
+    }
+
+    public void testVarChainArrayIterationUsesPromotedConstructorParamArrayType() {
+        assertCompletionContains(TwigFileType.INSTANCE, "" +
+                "{# @var foo \\Foo\\Dto\\FooDto #}\n" +
+                "{% for bar in foo.foobar.bars %}\n" +
+                "  {{ bar.<caret> }}\n" +
+                "{% endfor %}\n"
+            , "baz"
+        );
     }
 
     /**

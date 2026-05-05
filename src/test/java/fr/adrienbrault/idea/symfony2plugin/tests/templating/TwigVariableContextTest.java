@@ -546,4 +546,46 @@ public class TwigVariableContextTest extends SymfonyLightCodeInsightFixtureTestC
             "ready", "readyStatus"
         );
     }
+
+    public void testControllerVariableForLoopCompletionUsesPromotedConstructorParamArrayType() {
+        myFixture.copyFileToProject("ide-twig.json");
+
+        myFixture.addFileToProject(
+            "src/Controller/FooController.php",
+            "<?php\n" +
+            "namespace App\\Controller;\n" +
+            "\n" +
+            "class FooController\n" +
+            "{\n" +
+            "    public function fooAction()\n" +
+            "    {\n" +
+            "        return $this->render('foo/index.html.twig', [\n" +
+            "            'foo' => new \\Foo\\Dto\\FooDto(new \\Foo\\Dto\\FoobarDto([])),\n" +
+            "        ]);\n" +
+            "    }\n" +
+            "}\n" +
+            "\n" +
+            "namespace Foo\\Dto;\n" +
+            "class FooDto {\n" +
+            "  public function __construct(public FoobarDto $foobar) {}\n" +
+            "}\n" +
+            "class FoobarDto {\n" +
+            "  /**\n" +
+            "   * @param BarDto[] $bars\n" +
+            "   */\n" +
+            "  public function __construct(public array $bars) {}\n" +
+            "}\n" +
+            "class BarDto {\n" +
+            "  public function getBaz() {}\n" +
+            "}\n"
+        );
+
+        assertPathCompletionContains(
+            "templates/foo/index.html.twig",
+            "{% for bar in foo.foobar.bars %}\n" +
+            "  {{ bar.<caret> }}\n" +
+            "{% endfor %}",
+            "baz"
+        );
+    }
 }

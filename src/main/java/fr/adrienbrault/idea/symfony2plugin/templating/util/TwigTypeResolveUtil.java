@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
 import com.intellij.lang.ASTNode;
 import com.intellij.openapi.extensions.ExtensionPointName;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
@@ -21,7 +22,6 @@ import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
-import com.jetbrains.twig.elements.TwigVariableReference;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
@@ -451,9 +451,7 @@ public class TwigTypeResolveUtil {
     private static void collectForArrayScopeVariables(@NotNull PsiElement psiElement, @NotNull Map<String, PsiVariable> globalVars) {
         PsiElement twigCompositeElement = PsiTreeUtil.findFirstParent(psiElement, psiElement1 -> {
             if (psiElement1 instanceof TwigCompositeElement) {
-                if (PlatformPatterns.psiElement(TwigElementTypes.FOR_STATEMENT).accepts(psiElement1)) {
-                    return true;
-                }
+                return PlatformPatterns.psiElement(TwigElementTypes.FOR_STATEMENT).accepts(psiElement1);
             }
             return false;
         });
@@ -462,33 +460,19 @@ public class TwigTypeResolveUtil {
             return;
         }
 
-        // {% for user in "users" %}
         PsiElement forTag = twigCompositeElement.getFirstChild();
-        PsiElement inVariable = PsiElementUtils.getChildrenOfType(forTag, TwigPattern.getForTagInVariableReferencePattern());
-        inVariable = inVariable instanceof TwigVariableReference ? inVariable : PsiTreeUtil.getChildOfType(inVariable, TwigVariableReference.class);
-        if(inVariable == null) {
-            return;
-        }
-
-        String variableName = inVariable.getText();
-        if(!globalVars.containsKey(variableName)) {
-            return;
-        }
-
-        // {% for "user" in users %}
-        PsiElement forScopeVariable = PsiElementUtils.getChildrenOfType(forTag, TwigPattern.getForTagVariablePattern());
-        if(forScopeVariable == null) {
+        Pair<String, List<String>> forTagScope = getForTagScope(forTag);
+        if (forTagScope == null) {
             return;
         }
 
         PhpType phpType = new PhpType();
+        List<String> forTagInIdentifierString = forTagScope.getSecond();
 
-        Collection<String> forTagInIdentifierString = getForTagIdentifierAsString(forTag);
         // {% for coolBar in coolBars.foos %}
         if (forTagInIdentifierString.size() > 1) {
-
             // nested resolve
-            String rootElement = forTagInIdentifierString.iterator().next();
+            String rootElement = forTagInIdentifierString.getFirst();
             if(globalVars.containsKey(rootElement)) {
                 PsiVariable psiVariable = globalVars.get(rootElement);
                 for (String arrayType : collectForArrayScopeVariablesFoo(psiElement.getProject(), forTagInIdentifierString, psiVariable)) {
@@ -497,13 +481,16 @@ public class TwigTypeResolveUtil {
             }
 
         } else {
+            String variableName = forTagInIdentifierString.getFirst();
+            if(!globalVars.containsKey(variableName)) {
+                return;
+            }
+
             // add single "for" var
             for (String s : globalVars.get(variableName).getTypes()) {
                 phpType.add(s);
             }
         }
-
-        String scopeVariable = forScopeVariable.getText();
 
         // find array types; since they are phptypes they ends with []
         Set<String> types = new HashSet<>();
@@ -514,6 +501,7 @@ public class TwigTypeResolveUtil {
         }
 
         // we already have same variable in scope, so merge types
+        String scopeVariable = forTagScope.getFirst();
         PsiVariable psiVariable = globalVars.get(scopeVariable);
         if (psiVariable != null) {
             psiVariable.addTypes(types);
@@ -582,11 +570,9 @@ public class TwigTypeResolveUtil {
 
         Set<String> types = new HashSet<>();
 
-        for(String prevClass: previousElement) {
-            for (PhpClass phpClass : PhpElementsUtil.getClassesInterface(project, prevClass)) {
-                for(PhpNamedElement target : getTwigPhpNameTargets(phpClass, typeName)) {
-                    types.addAll(target.getType().getTypes());
-                }
+        for (PhpClass phpClass : PhpElementsUtil.getClassFromPhpTypeSet(project, new HashSet<>(previousElement))) {
+            for(PhpNamedElement target : getTwigPhpNameTargets(phpClass, typeName)) {
+                types.addAll(target.getType().getTypes());
             }
         }
 
@@ -717,6 +703,31 @@ public class TwigTypeResolveUtil {
         }
 
         return false;
+    }
+
+    /**
+     * Extracts the loop variable and iterable path from a Twig for tag.
+     *
+     * {% for entry in root.children.entries %}
+     * => ("entry", ["root", "children", "entries"])
+     */
+    @Nullable
+    public static Pair<String, List<String>> getForTagScope(@Nullable PsiElement forTag) {
+        if (forTag == null || forTag.getNode().getElementType() != TwigElementTypes.FOR_TAG) {
+            return null;
+        }
+
+        PsiElement forScopeVariable = PsiElementUtils.getChildrenOfType(forTag, TwigPattern.getForTagVariablePattern());
+        if (forScopeVariable == null) {
+            return null;
+        }
+
+        List<String> path = new ArrayList<>(getForTagIdentifierAsString(forTag));
+        if (path.isEmpty()) {
+            return null;
+        }
+
+        return Pair.create(forScopeVariable.getText(), Collections.unmodifiableList(path));
     }
 
     /**

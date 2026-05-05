@@ -3,16 +3,21 @@ package fr.adrienbrault.idea.symfony2plugin.tests.templating.util;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.openapi.util.Pair;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.TwigLanguage;
+import com.jetbrains.twig.elements.TwigCompositeElement;
+import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -115,6 +120,48 @@ public class TwigTypeResolveUtilTest extends SymfonyLightCodeInsightFixtureTestC
 
         assertContainsElements(stringPsiVariableMap.get("a").getTypes(), "\\Foo\\Bar");
         assertContainsElements(stringPsiVariableMap.get("b").getTypes(), "\\Foo\\Bar");
+    }
+
+    public void testGetForTagScopeExtractsSingleVariablePathFromAst() {
+        myFixture.configureByText(TwigFileType.INSTANCE, "{% for entry in entries %}{{ entry }}{% endfor %}");
+
+        Pair<String, java.util.List<String>> forTagScope = TwigTypeResolveUtil.getForTagScope(findForTag());
+
+        assertNotNull(forTagScope);
+        assertEquals("entry", forTagScope.getFirst());
+        assertEquals(Arrays.asList("entries"), forTagScope.getSecond());
+    }
+
+    public void testGetForTagScopeExtractsNestedVariablePathFromAst() {
+        myFixture.configureByText(TwigFileType.INSTANCE, "{% for entry in root.children.entries %}{{ entry }}{% endfor %}");
+
+        Pair<String, java.util.List<String>> forTagScope = TwigTypeResolveUtil.getForTagScope(findForTag());
+
+        assertNotNull(forTagScope);
+        assertEquals("entry", forTagScope.getFirst());
+        assertEquals(Arrays.asList("root", "children", "entries"), forTagScope.getSecond());
+    }
+
+    public void testGetForTagScopeStopsNestedVariablePathBeforeFilter() {
+        myFixture.configureByText(TwigFileType.INSTANCE, "{% for entry in root.children.entries | filter %}{{ entry }}{% endfor %}");
+
+        Pair<String, java.util.List<String>> forTagScope = TwigTypeResolveUtil.getForTagScope(findForTag());
+
+        assertNotNull(forTagScope);
+        assertEquals("entry", forTagScope.getFirst());
+        assertEquals(Arrays.asList("root", "children", "entries"), forTagScope.getSecond());
+    }
+
+    @NotNull
+    private PsiElement findForTag() {
+        for (TwigCompositeElement twigCompositeElement : PsiTreeUtil.findChildrenOfType(myFixture.getFile(), TwigCompositeElement.class)) {
+            if (twigCompositeElement.getNode().getElementType() == TwigElementTypes.FOR_TAG) {
+                return twigCompositeElement;
+            }
+        }
+
+        fail("FOR_TAG not found");
+        throw new AssertionError("unreachable");
     }
 
     private void assertMatches(@NotNull String content, @NotNull String... regularExpressions) {
