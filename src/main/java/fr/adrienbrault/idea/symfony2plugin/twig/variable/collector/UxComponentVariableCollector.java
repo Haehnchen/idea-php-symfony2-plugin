@@ -25,7 +25,7 @@ public class UxComponentVariableCollector implements TwigFileVariableCollector {
         }
 
         for (PhpClass phpClass : UxUtil.getComponentClassesForTemplateFile(parameter.getProject(), psiFile)) {
-            UxUtil.visitComponentVariables(phpClass, pair -> variables.put(pair.getFirst(), new PsiVariable(pair.getSecond().getType().getTypes(), pair.getSecond())));
+            UxUtil.visitComponentVariables(phpClass, pair -> variables.put(pair.getFirst(), new PsiVariable(pair.getSecond().getType().getTypes())));
         }
     }
 }

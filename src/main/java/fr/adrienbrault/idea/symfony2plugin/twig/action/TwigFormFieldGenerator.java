@@ -19,6 +19,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormFieldResolver;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -50,7 +51,15 @@ public class TwigFormFieldGenerator extends CodeInsightAction {
 
         return TwigTypeResolveUtil.collectScopeVariables(psiElement).entrySet()
             .stream()
-            .anyMatch(entry -> FormFieldResolver.isFormView(PhpIndex.getInstance(project).completeType(project, PhpType.from(entry.getValue().getTypes().toArray(new String[0])), new HashSet<>())));
+            .anyMatch(entry -> {
+                PsiVariable variable = entry.getValue();
+                if (variable.getFormTypeFqns().isEmpty()) {
+                    return false;
+                }
+
+                PhpType phpType = PhpIndex.getInstance(project).completeType(project, PhpType.from(variable.getTypes().toArray(new String[0])), new HashSet<>());
+                return FormFieldResolver.isFormView(phpType);
+            });
     }
 
     protected CodeInsightActionHandler getHandler() {
@@ -68,18 +77,21 @@ public class TwigFormFieldGenerator extends CodeInsightAction {
             Collection<JBFormFieldItem> phpClasses = new ArrayList<>();
 
             for (Map.Entry<String, PsiVariable> entry : TwigTypeResolveUtil.collectScopeVariables(psiElement).entrySet()) {
-                PhpType phpType = PhpIndex.getInstance(project).completeType(project, PhpType.from(entry.getValue().getTypes().toArray(new String[0])), new HashSet<>());
+                PsiVariable variable = entry.getValue();
+                if (variable.getFormTypeFqns().isEmpty()) {
+                    continue;
+                }
+
+                PhpType phpType = PhpIndex.getInstance(project).completeType(project, PhpType.from(variable.getTypes().toArray(new String[0])), new HashSet<>());
                 if (!FormFieldResolver.isFormView(phpType)) {
                     continue;
                 }
 
-                PsiElement element = entry.getValue().getElement();
-                if (element == null)  {
-                    continue;
-                }
-
-                for (PhpClass phpClass : FormFieldResolver.getFormTypeFromFormFactory(element)) {
-                    phpClasses.add(new JBFormFieldItem(entry.getKey(), phpClass));
+                for (String formTypeFqn : variable.getFormTypeFqns()) {
+                    PhpClass phpClass = PhpElementsUtil.getClassInterface(project, formTypeFqn);
+                    if (phpClass != null) {
+                        phpClasses.add(new JBFormFieldItem(entry.getKey(), phpClass));
+                    }
                 }
             }
 

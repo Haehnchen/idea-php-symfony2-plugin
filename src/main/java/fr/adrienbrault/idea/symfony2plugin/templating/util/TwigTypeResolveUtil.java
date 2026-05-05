@@ -358,11 +358,6 @@ public class TwigTypeResolveUtil {
                 controllerVars.putIfAbsent(s, new PsiVariable());
                 controllerVars.get(s).addTypes(psiVariable.getTypes());
                 controllerVars.get(s).addFormTypeFqns(psiVariable.getFormTypeFqns());
-
-                PsiElement context = psiVariable.getElement();
-                if (context != null) {
-                    controllerVars.get(s).addElements(context);
-                }
             });
         }
 
