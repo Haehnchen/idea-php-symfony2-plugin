@@ -68,10 +68,12 @@ public class FormVarsResolverTest extends SymfonyLightCodeInsightFixtureTestCase
     }
 
     private TwigTypeContainer createRootFormViewContainer(boolean withFormViewDataHolder) {
-        PsiVariable rootVariable = new PsiVariable("\\Symfony\\Component\\Form\\FormView");
-        if (withFormViewDataHolder) {
-            rootVariable.addFormTypeFqns(Collections.singleton("\\App\\Form\\ProductType"));
-        }
+        PsiVariable rootVariable = withFormViewDataHolder
+            ? new PsiVariable(
+                Collections.singleton("\\Symfony\\Component\\Form\\FormView"),
+                Collections.singleton("\\App\\Form\\ProductType")
+            )
+            : new PsiVariable("\\Symfony\\Component\\Form\\FormView");
 
         return TwigTypeContainer.fromCollection(Collections.singleton(rootVariable)).iterator().next();
     }

@@ -337,7 +337,7 @@ public class TwigTypeResolveUtil {
 
         visitedFiles.add(virtualFile);
 
-        Map<String, PsiVariable> controllerVars = new HashMap<>();
+        Map<String, VariableData> controllerVars = new HashMap<>();
 
         TwigFileVariableCollectorParameter collectorParameter = new TwigFileVariableCollectorParameter(psiElement, visitedFiles);
         for(TwigFileVariableCollector collector: TWIG_FILE_VARIABLE_COLLECTORS.getExtensions()) {
@@ -345,20 +345,13 @@ public class TwigTypeResolveUtil {
             collector.collect(collectorParameter, globalVarsScope);
 
             // @TODO: resolve this in change extension point, so that its only possible to provide data and dont give full scope to break / overwrite other variables
-            globalVarsScope.forEach((s, strings) -> {
-                controllerVars.putIfAbsent(s, new PsiVariable());
-                controllerVars.get(s).addTypes(strings);
-            });
+            globalVarsScope.forEach((s, strings) -> controllerVars.merge(s, VariableData.fromTypes(strings), VariableData::merge));
 
             // merging elements
             Map<String, PsiVariable> controllerVars1 = new HashMap<>();
             collector.collectPsiVariables(collectorParameter, controllerVars1);
 
-            controllerVars1.forEach((s, psiVariable) -> {
-                controllerVars.putIfAbsent(s, new PsiVariable());
-                controllerVars.get(s).addTypes(psiVariable.getTypes());
-                controllerVars.get(s).addFormTypeFqns(psiVariable.getFormTypeFqns());
-            });
+            controllerVars1.forEach((s, psiVariable) -> controllerVars.merge(s, VariableData.fromPsiVariable(psiVariable), VariableData::merge));
         }
 
         // globals first @var first
@@ -370,22 +363,19 @@ public class TwigTypeResolveUtil {
 
         // Inline Twig docs only provide type strings, e.g. "{# @var form \Symfony\Component\Form\FormView #}".
         for (Map<String, String> entry : vars) {
-            entry.forEach((s, s2) -> {
-                controllerVars.putIfAbsent(s, new PsiVariable());
-                controllerVars.get(s).addType(s2);
-            });
+            entry.forEach((s, s2) -> controllerVars.merge(s, VariableData.fromType(s2), VariableData::merge));
         }
 
         // collect iterator
-        for(Map.Entry<String, PsiVariable> entry: controllerVars.entrySet()) {
-            PsiVariable psiVariable = entry.getValue();
-            psiVariable.addTypes(collectIteratorReturns(psiElement, psiVariable.getTypes()));
-        }
+        controllerVars.replaceAll((s, psiVariable) -> psiVariable.withTypes(collectIteratorReturns(psiElement, psiVariable.types())));
 
         // check if we are in "for" scope and resolve types ending with []
         collectForArrayScopeVariables(psiElement, controllerVars);
 
-        return controllerVars;
+        Map<String, PsiVariable> result = new HashMap<>();
+        controllerVars.forEach((s, variableData) -> result.put(s, variableData.toPsiVariable()));
+
+        return result;
     }
 
     /**
@@ -431,8 +421,8 @@ public class TwigTypeResolveUtil {
     }
 
     @NotNull
-    private static Collection<String> collectForArrayScopeVariablesFoo(@NotNull Project project, @NotNull Collection<String> typeName, @NotNull PsiVariable psiVariable) {
-        Collection<String> previousElements = psiVariable.getTypes();
+    private static Collection<String> collectForArrayScopeVariablesFoo(@NotNull Project project, @NotNull Collection<String> typeName, @NotNull VariableData variableData) {
+        Collection<String> previousElements = variableData.types();
 
         String[] strings = typeName.toArray(new String[0]);
 
@@ -448,7 +438,7 @@ public class TwigTypeResolveUtil {
         return previousElements;
     }
 
-    private static void collectForArrayScopeVariables(@NotNull PsiElement psiElement, @NotNull Map<String, PsiVariable> globalVars) {
+    private static void collectForArrayScopeVariables(@NotNull PsiElement psiElement, @NotNull Map<String, VariableData> globalVars) {
         PsiElement twigCompositeElement = PsiTreeUtil.findFirstParent(psiElement, psiElement1 -> {
             if (psiElement1 instanceof TwigCompositeElement) {
                 return PlatformPatterns.psiElement(TwigElementTypes.FOR_STATEMENT).accepts(psiElement1);
@@ -474,8 +464,8 @@ public class TwigTypeResolveUtil {
             // nested resolve
             String rootElement = forTagInIdentifierString.getFirst();
             if(globalVars.containsKey(rootElement)) {
-                PsiVariable psiVariable = globalVars.get(rootElement);
-                for (String arrayType : collectForArrayScopeVariablesFoo(psiElement.getProject(), forTagInIdentifierString, psiVariable)) {
+                VariableData variableData = globalVars.get(rootElement);
+                for (String arrayType : collectForArrayScopeVariablesFoo(psiElement.getProject(), forTagInIdentifierString, variableData)) {
                     phpType.add(arrayType);
                 }
             }
@@ -487,7 +477,7 @@ public class TwigTypeResolveUtil {
             }
 
             // add single "for" var
-            for (String s : globalVars.get(variableName).getTypes()) {
+            for (String s : globalVars.get(variableName).types()) {
                 phpType.add(s);
             }
         }
@@ -502,11 +492,49 @@ public class TwigTypeResolveUtil {
 
         // we already have same variable in scope, so merge types
         String scopeVariable = forTagScope.getFirst();
-        PsiVariable psiVariable = globalVars.get(scopeVariable);
-        if (psiVariable != null) {
-            psiVariable.addTypes(types);
-        } else {
-            globalVars.put(scopeVariable, new PsiVariable(types));
+        globalVars.merge(scopeVariable, VariableData.fromTypes(types), VariableData::merge);
+    }
+
+    private record VariableData(@NotNull Set<String> types, @NotNull Set<String> formTypeFqns) {
+        private VariableData {
+            types = Set.copyOf(types);
+            formTypeFqns = Set.copyOf(formTypeFqns);
+        }
+
+        @NotNull
+        private static VariableData fromPsiVariable(@NotNull PsiVariable psiVariable) {
+            return new VariableData(psiVariable.getTypes(), psiVariable.getFormTypeFqns());
+        }
+
+        @NotNull
+        private static VariableData fromTypes(@NotNull Collection<String> types) {
+            return new VariableData(new HashSet<>(types), Collections.emptySet());
+        }
+
+        @NotNull
+        private static VariableData fromType(@NotNull String type) {
+            return fromTypes(Collections.singleton(type));
+        }
+
+        @NotNull
+        private VariableData withTypes(@NotNull Collection<String> types) {
+            return merge(fromTypes(types));
+        }
+
+        @NotNull
+        private VariableData merge(@NotNull VariableData variableData) {
+            Set<String> types = new HashSet<>(this.types);
+            types.addAll(variableData.types);
+
+            Set<String> formTypeFqns = new HashSet<>(this.formTypeFqns);
+            formTypeFqns.addAll(variableData.formTypeFqns);
+
+            return new VariableData(types, formTypeFqns);
+        }
+
+        @NotNull
+        private PsiVariable toPsiVariable() {
+            return new PsiVariable(types, formTypeFqns);
         }
     }
 
