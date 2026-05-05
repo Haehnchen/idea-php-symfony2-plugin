@@ -1112,6 +1112,26 @@ public class PhpElementsUtil {
         return getStringValue(psiElement, 0);
     }
 
+    /**
+     * Resolve only syntax-local string values.
+     *
+     * This variant is safe for FileBasedIndex indexers because it never resolves references
+     * or asks PhpIndex/stub indexes for non-indexed file data.
+     */
+    @Nullable
+    public static String getStringValueIndexSafe(@Nullable PsiElement psiElement) {
+        if (psiElement instanceof StringLiteralExpression) {
+            String resolvedString = ((StringLiteralExpression) psiElement).getContents();
+            return StringUtils.isEmpty(resolvedString) ? null : resolvedString;
+        }
+
+        if (psiElement instanceof ClassConstantReference classConstantReference && "class".equals(classConstantReference.getName())) {
+            return getClassConstantPhpFqn(classConstantReference);
+        }
+
+        return null;
+    }
+
     @Nullable
     private static String getStringValue(@Nullable PsiElement psiElement, int depth) {
         if(psiElement == null || ++depth > 5) {

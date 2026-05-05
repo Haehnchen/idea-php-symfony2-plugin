@@ -649,7 +649,7 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
             "    $group = $routes->namePrefix('admin_')->prefix('/admin');\n" +
             "    $route = $group->namePrefix('api_')->prefix('/api')->add('default_route', '/default/{id}');\n" +
             "    $route->defaults(['_controller' => [\\App\\Controller\\MyController::class, 'detail']]);\n" +
-            "    $route->methods(['GET', 'HEAD']);\n" +
+            "    $route->methods(['GET', \\Symfony\\Component\\HttpFoundation\\Request::METHOD_POST, 'HEAD']);\n" +
             "};");
 
         StubIndexedRoute route = ContainerUtil.find(
@@ -661,6 +661,7 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertEquals("/admin/api/default/{id}", route.getPath());
         assertEquals("App\\Controller\\MyController::detail", route.getController());
         assertContainsElements(route.getMethods(), "get", "head");
+        assertFalse(route.getMethods().contains("post"));
     }
 
     /**
