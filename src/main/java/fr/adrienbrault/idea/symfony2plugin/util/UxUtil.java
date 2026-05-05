@@ -61,6 +61,7 @@ public class UxUtil {
     private static final String ATTRIBUTE_EXPOSE_IN_TEMPLATE = "\\Symfony\\UX\\TwigComponent\\Attribute\\ExposeInTemplate";
 
     private static final Key<CachedValue<Collection<TwigComponentNamespace>>> TWIG_COMPONENTS_NAMESPACES = new Key<>("SYMFONY_TWIG_COMPONENTS_NAMESPACES");
+    private static final Key<CachedValue<Collection<String>>> COMPONENT_CLASS_FQNS_FOR_TEMPLATE_FILE = new Key<>("SYMFONY_UX_COMPONENT_CLASS_FQNS_FOR_TEMPLATE_FILE");
 
     public static Collection<TwigComponentNamespace> getNamespaces(@NotNull Project project) {
         return CachedValuesManager.getManager(project).getCachedValue(
@@ -472,22 +473,43 @@ public class UxUtil {
 
     @NotNull
     public static Collection<PhpClass> getComponentClassesForTemplateFile(@NotNull Project project, @NotNull PsiFile psiFile) {
+        Collection<String> phpClassFqns = CachedValuesManager.getCachedValue(
+            psiFile,
+            COMPONENT_CLASS_FQNS_FOR_TEMPLATE_FILE,
+            () -> CachedValueProvider.Result.create(
+                Collections.unmodifiableCollection(getComponentClassFqnsForTemplateFileInner(project, psiFile)),
+                psiFile,
+                FileIndexCaches.getModificationTrackerForIndexId(project, UxTemplateStubIndex.KEY),
+                FileIndexCaches.getModificationTrackerForIndexId(project, ConfigStubIndex.KEY)
+            )
+        );
+
         Collection<PhpClass> phpClasses = new HashSet<>();
+        for (String phpClassFqn : phpClassFqns) {
+            PhpClass classInterface = PhpElementsUtil.getClassInterface(project, phpClassFqn);
+            if (classInterface != null) {
+                phpClasses.add(classInterface);
+            }
+        }
+
+        return phpClasses;
+    }
+
+    @NotNull
+    private static Collection<String> getComponentClassFqnsForTemplateFileInner(@NotNull Project project, @NotNull PsiFile psiFile) {
+        Collection<String> phpClassFqns = new HashSet<>();
 
         for (String template : TwigUtil.getTemplateNamesForFile(psiFile)) {
             // attribute: template: "foo.html.twig"
-            Collection<PhpClass> phpClassesTemplateMatch = new HashSet<>();
+            Collection<String> phpClassFqnsTemplateMatch = new HashSet<>();
             for (UxComponent uxComponent : getComponentsWithTemplates(project)) {
                 if (template.equals(uxComponent.template()))  {
-                    PhpClass classInterface = PhpElementsUtil.getClassInterface(project, uxComponent.phpClass());
-                    if (classInterface != null) {
-                        phpClassesTemplateMatch.add(classInterface);
-                    }
+                    phpClassFqnsTemplateMatch.add(uxComponent.phpClass());
                 }
             }
 
-            if (!phpClassesTemplateMatch.isEmpty()) {
-                phpClasses.addAll(phpClassesTemplateMatch);
+            if (!phpClassFqnsTemplateMatch.isEmpty()) {
+                phpClassFqns.addAll(phpClassFqnsTemplateMatch);
                 break;
             }
 
@@ -509,15 +531,12 @@ public class UxUtil {
                     String phpClassFqn = "\\" + (StringUtils.stripEnd(twigComponentNamespace.namespace(), "\\") + "\\" + s)
                         .replace(".html.twig", "");
 
-                    PhpClass classInterface = PhpElementsUtil.getClassInterface(project, phpClassFqn);
-                    if (classInterface != null) {
-                        phpClasses.add(classInterface);
-                    }
+                    phpClassFqns.add(phpClassFqn);
                 }
             }
         }
 
-        return phpClasses;
+        return phpClassFqns;
     }
 
     public static Set<PhpClass> getTwigComponentAllTargets(@NotNull Project project) {

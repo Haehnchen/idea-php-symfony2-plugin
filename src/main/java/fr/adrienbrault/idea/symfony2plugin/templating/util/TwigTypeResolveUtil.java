@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
 import com.intellij.lang.ASTNode;
 import com.intellij.openapi.extensions.ExtensionPointName;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -11,6 +12,9 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.formatter.FormatterUtil;
 import com.intellij.psi.tree.IElementType;
+import com.intellij.psi.util.CachedValue;
+import com.intellij.psi.util.CachedValueProvider;
+import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.elements.Field;
@@ -86,6 +90,8 @@ public class TwigTypeResolveUtil {
     private static final ExtensionPointName<TwigFileVariableCollector> TWIG_FILE_VARIABLE_COLLECTORS = new ExtensionPointName<>(
         "fr.adrienbrault.idea.symfony2plugin.extension.TwigVariableCollector"
     );
+
+    private static final Key<CachedValue<Map<String, String>>> FILE_VARIABLE_DOC_BLOCK_CACHE = new Key<>("TWIG_FILE_VARIABLE_DOC_BLOCK");
 
     private static final TwigTypeResolver[] TWIG_TYPE_RESOLVERS = new TwigTypeResolver[] {
         new FormVarsResolver(),
@@ -210,6 +216,18 @@ public class TwigTypeResolveUtil {
      * - "{% types {...} %}"
      */
     public static Map<String, String> findFileVariableDocBlock(@NotNull TwigFile twigFile) {
+        return new HashMap<>(CachedValuesManager.getCachedValue(
+            twigFile,
+            FILE_VARIABLE_DOC_BLOCK_CACHE,
+            () -> CachedValueProvider.Result.create(
+                Collections.unmodifiableMap(findFileVariableDocBlockInner(twigFile)),
+                twigFile
+            )
+        ));
+    }
+
+    @NotNull
+    private static Map<String, String> findFileVariableDocBlockInner(@NotNull TwigFile twigFile) {
         return new HashMap<>() {{
             putAll(getInlineCommentDocsVars(twigFile));
             putAll(getTypesTagVars(twigFile));
