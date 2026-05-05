@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.variable.collector;
 
+import com.intellij.psi.PsiFile;
 import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
@@ -14,10 +15,12 @@ import java.util.*;
 public class FileDocVariableCollector implements TwigFileVariableCollector {
     @Override
     public void collect(@NotNull TwigFileVariableCollectorParameter parameter, @NotNull Map<String, Set<String>> variables) {
-        if(!(parameter.getElement().getContainingFile() instanceof TwigFile)) {
+        PsiFile containingFile = parameter.getElement().getContainingFile();
+        if(!(containingFile instanceof TwigFile)) {
             return;
         }
-        variables.putAll(convertHashMapToTypeSet(TwigTypeResolveUtil.findFileVariableDocBlock((TwigFile) parameter.getElement().getContainingFile())));
+
+        variables.putAll(convertHashMapToTypeSet(TwigTypeResolveUtil.findFileVariableDocBlock((TwigFile) containingFile)));
     }
 
     private static Map<String, Set<String>> convertHashMapToTypeSet(@NotNull Map<String, String> hashMap) {
