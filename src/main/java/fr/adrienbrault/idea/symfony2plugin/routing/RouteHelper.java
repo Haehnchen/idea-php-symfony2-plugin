@@ -1220,7 +1220,7 @@ public class RouteHelper {
             }
 
             for (MethodReference methodReference : PhpElementsUtil.collectMethodReferencesInsideControlFlow(function, "controller")) {
-                String controller = getPhpControllerShortcut(methodReference);
+                String controller = getPhpControllerShortcutIndexSafe(methodReference);
                 if (StringUtils.isBlank(controller)) {
                     continue;
                 }
@@ -1477,7 +1477,43 @@ public class RouteHelper {
             return null;
         }
 
-        return getPhpControllerShortcut(PhpElementsUtil.getArrayValue(arrayCreationExpression, "_controller"));
+        return getPhpControllerShortcutIndexSafe(PhpElementsUtil.getArrayValue(arrayCreationExpression, "_controller"));
+    }
+
+    @Nullable
+    private static String getPhpControllerShortcutIndexSafe(@NotNull MethodReference methodCall) {
+        PsiElement[] parameters = methodCall.getParameters();
+        if (parameters.length != 1) {
+            return null;
+        }
+
+        return getPhpControllerShortcutIndexSafe(parameters[0]);
+    }
+
+    @Nullable
+    private static String getPhpControllerShortcutIndexSafe(@Nullable PsiElement parameter) {
+        String controller = PhpElementsUtil.getStringValueIndexSafe(parameter);
+        if (StringUtils.isNotBlank(controller)) {
+            return controller;
+        }
+
+        if (parameter instanceof ArrayCreationExpression arrayCreationExpression) {
+            PsiElement[] elements = PhpElementsUtil.getArrayValues(arrayCreationExpression);
+            if (elements.length == 2) {
+                String className = getPhpControllerClassShortcutIndexSafe(elements[0]);
+                String method = getPhpRouteLiteralValue(elements[1]);
+                if (StringUtils.isNotBlank(className) && StringUtils.isNotBlank(method)) {
+                    return className + "::" + method;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    private static String getPhpControllerClassShortcutIndexSafe(@Nullable PsiElement parameter) {
+        return PhpElementsUtil.getStringValueIndexSafe(parameter);
     }
 
     /**
@@ -1494,7 +1530,11 @@ public class RouteHelper {
 
         Set<String> methods = new LinkedHashSet<>();
         for (PsiElement methodParameter : PhpElementsUtil.getArrayValues(arrayCreationExpression)) {
-            String method = PhpElementsUtil.getStringValue(methodParameter);
+            if (!(methodParameter instanceof StringLiteralExpression stringLiteralExpression)) {
+                continue;
+            }
+
+            String method = stringLiteralExpression.getContents();
             if (StringUtils.isNotBlank(method)) {
                 methods.add(method.toLowerCase(Locale.ROOT));
             }

@@ -294,19 +294,10 @@ public class ServiceContainerUtil {
 
     @Nullable
     private static String getStringValueIndexSafe(@Nullable PsiElement psiElement) {
-        if (psiElement == null) {
-            return null;
-        }
-
-        String serviceClass = null;
-        if (psiElement instanceof StringLiteralExpression) {
-            serviceClass = normalizePhpStringValue(((StringLiteralExpression) psiElement).getContents());
-        } else if(psiElement instanceof ClassConstantReference) {
-            serviceClass = PhpElementsUtil.getClassConstantPhpFqn((ClassConstantReference) psiElement);
-        }
+        String serviceClass = PhpElementsUtil.getStringValueIndexSafe(psiElement);
 
         return StringUtils.isNotBlank(serviceClass)
-            ? serviceClass
+            ? normalizePhpStringValue(serviceClass)
             : null;
     }
 
