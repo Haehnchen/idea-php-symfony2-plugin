@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.templating.variable.dict;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,25 +12,26 @@ import java.util.Set;
  */
 public class PsiVariable {
     @NotNull
-    final private Set<String> types = new HashSet<>();
+    final private Set<String> types;
 
     @NotNull
-    final private Set<String> formTypeFqns = new HashSet<>();
+    final private Set<String> formTypeFqns;
 
     public PsiVariable(@NotNull Set<String> types, @NotNull Collection<String> formTypeFqns) {
-        this.types.addAll(types);
-        this.formTypeFqns.addAll(formTypeFqns);
+        this.types = Collections.unmodifiableSet(new HashSet<>(types));
+        this.formTypeFqns = Collections.unmodifiableSet(new HashSet<>(formTypeFqns));
     }
 
     public PsiVariable(@NotNull Set<String> types) {
-        this.types.addAll(types);
+        this(types, Collections.emptySet());
     }
 
     public PsiVariable(@NotNull String type) {
-        this.types.add(type);
+        this(Collections.singleton(type));
     }
 
     public PsiVariable() {
+        this(Collections.emptySet());
     }
 
     @NotNull
@@ -40,17 +42,5 @@ public class PsiVariable {
     @NotNull
     public Set<String> getFormTypeFqns() {
         return formTypeFqns;
-    }
-
-    public void addTypes(@NotNull Collection<String> types) {
-        this.types.addAll(types);
-    }
-
-    public void addType(@NotNull String type) {
-        this.types.add(type);
-    }
-
-    public void addFormTypeFqns(@NotNull Collection<String> formTypeFqns) {
-        this.formTypeFqns.addAll(formTypeFqns);
     }
 }
