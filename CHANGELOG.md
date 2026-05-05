@@ -23,6 +23,16 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2026.1.302
+* Cache template variable lookups using CachedValuesManager (Daniel Espendiller)
+* Cache controller template variables as immutable maps (Daniel Espendiller)
+* Add Twig type resolve for-loop path resolution `{% for entry in root.children.entries %}` (Daniel Espendiller)
+* Routing index should be index-safe string resolution (Daniel Espendiller)
+* [paid] Add Doctrine Table attribute (indexes, uniqueConstraints) deprecated properties inspection (Daniel Espendiller)
+* Optimize service collector and component index pattern (Daniel Espendiller)
+* Optimize performance for inspection iteration (Daniel Espendiller)
+* Update `hasTranslationKey` to use project-specific translation providers
+
 ## 2026.1.301
 * Optimize Symfony command inside terminal plugin caching and ensure proper invalidation on PHP modifications and dumb mode handling. (Daniel Espendiller)
 * [#2756](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2756) fix freezing under parsing translation files during wsl (Daniel Espendiller)
