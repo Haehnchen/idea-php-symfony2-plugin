@@ -119,6 +119,7 @@ public class TwigUtil {
     private static final Key<CachedValue<Map<String, Set<VirtualFile>>>> TEMPLATE_CACHE_TWIG = new Key<>("TEMPLATE_CACHE_TWIG");
 
     private static final Key<CachedValue<Map<String, Set<VirtualFile>>>> TEMPLATE_CACHE_ALL = new Key<>("TEMPLATE_CACHE_ALL");
+    private static final Key<CachedValue<Map<String, Map<String, PsiVariable>>>> CONTROLLER_TEMPLATE_VARIABLES_CACHE = new Key<>("TWIG_CONTROLLER_TEMPLATE_VARIABLES_CACHE");
     private static final Key<CachedValue<List<String>>> SYMFONY_TEMPLATE_INCLUDE_LIST = new Key<>("SYMFONY_TEMPLATE_INCLUDE_LIST");
     private static final Key<CachedValue<List<String>>> SYMFONY_TEMPLATE_EMBED_LIST = new Key<>("SYMFONY_TEMPLATE_EMBED_LIST");
     private static final Key<CachedValue<List<String>>> SYMFONY_TEMPLATE_EXTENDS_LIST = new Key<>("SYMFONY_TEMPLATE_EXTENDS_LIST");
@@ -936,7 +937,30 @@ public class TwigUtil {
         return methods;
     }
 
+    @NotNull
     public static Map<String, PsiVariable> collectControllerTemplateVariables(@NotNull TwigFile twigFile) {
+        VirtualFile virtualFile = twigFile.getVirtualFile();
+        if (virtualFile == null) {
+            return collectControllerTemplateVariablesInner(twigFile);
+        }
+
+        Project project = twigFile.getProject();
+        Map<String, Map<String, PsiVariable>> cache = CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            CONTROLLER_TEMPLATE_VARIABLES_CACHE,
+            () -> CachedValueProvider.Result.create(
+                new ConcurrentHashMap<>(),
+                PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE),
+                FileIndexCaches.getModificationTrackerForIndexId(project, PhpTwigTemplateUsageStubIndex.KEY)
+            ),
+            false
+        );
+
+        return cache.computeIfAbsent(virtualFile.getUrl(), ignored -> Collections.unmodifiableMap(collectControllerTemplateVariablesInner(twigFile)));
+    }
+
+    @NotNull
+    private static Map<String, PsiVariable> collectControllerTemplateVariablesInner(@NotNull TwigFile twigFile) {
         Map<String, PsiVariable> vars = new HashMap<>();
 
         for (Method method : findTwigFileController(twigFile)) {
