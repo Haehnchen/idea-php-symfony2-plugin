@@ -959,26 +959,21 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             Project project = completionParameters.getPosition().getProject();
 
             for (Map.Entry<String, PsiVariable> entry : TwigTypeResolveUtil.collectScopeVariables(originalPosition).entrySet()) {
-                PhpType phpType = PhpIndex.getInstance(project).completeType(project, PhpType.from(entry.getValue().getTypes().toArray(new String[0])), new HashSet<>());
+                PsiVariable variable = entry.getValue();
+                if (variable.getFormTypeFqns().isEmpty()) {
+                    continue;
+                }
+
+                PhpType phpType = PhpIndex.getInstance(project).completeType(project, PhpType.from(variable.getTypes().toArray(new String[0])), new HashSet<>());
                 if (!FormFieldResolver.isFormView(phpType)) {
                     continue;
                 }
 
-                PsiElement element1 = entry.getValue().getElement();
-                if (element1 == null) {
-                    continue;
-                }
-
-                FormFieldResolver.visitFormReferencesFields(element1, twigTypeContainers -> {
-                    String typeText = null;
-
-                    FormFieldDataHolder formFieldDataHolder = twigTypeContainers.getFormFieldDataHolder();
-                    if (formFieldDataHolder != null) {
-                        typeText = getFormTypeShortName(formFieldDataHolder.fieldTypeFqn());
-                    }
+                FormFieldResolver.visitFormFields(project, variable.getFormTypeFqns(), field -> {
+                    String typeText = getFormTypeShortName(field.fieldTypeFqn());
 
                     for (String s : new String[]{"form_row", "form_widget", "form_label", "form_errors", "form_help"}) {
-                        LookupElementBuilder element = LookupElementBuilder.create(s + "(" + entry.getKey() + "." + twigTypeContainers.getStringElement() + ")")
+                        LookupElementBuilder element = LookupElementBuilder.create(s + "(" + entry.getKey() + "." + field.name() + ")")
                             .withTypeText(typeText)
                             .withBoldness(true)
                             .withIcon(Symfony2Icons.FORM_TYPE);
@@ -998,6 +993,15 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
         int index = fqn.lastIndexOf('\\');
         return index >= 0 ? fqn.substring(index + 1) : fqn;
+    }
+
+    @Nullable
+    private static String getFirstFormTypeText(@NotNull Collection<String> formTypeFqns) {
+        if (formTypeFqns.isEmpty()) {
+            return null;
+        }
+
+        return StringUtils.stripStart(formTypeFqns.iterator().next(), "\\");
     }
 
     @NotNull
@@ -1037,21 +1041,17 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
             Project project = completionParameters.getPosition().getProject();
             for (Map.Entry<String, PsiVariable> entry : TwigTypeResolveUtil.collectScopeVariables(originalPosition).entrySet()) {
-                PhpType phpType = PhpIndex.getInstance(project).completeType(project, PhpType.from(entry.getValue().getTypes().toArray(new String[0])), new HashSet<>());
+                PsiVariable variable = entry.getValue();
+                if (variable.getFormTypeFqns().isEmpty()) {
+                    continue;
+                }
+
+                PhpType phpType = PhpIndex.getInstance(project).completeType(project, PhpType.from(variable.getTypes().toArray(new String[0])), new HashSet<>());
                 if (!FormFieldResolver.isFormView(phpType)) {
                     continue;
                 }
 
-                PsiElement element = entry.getValue().getElement();
-                if (element == null)  {
-                    continue;
-                }
-
-                String typeText = null;
-                Set<String> formTypeFqnsFromFormFactory = FormFieldResolver.getFormTypeFqnsFromFormFactory(element);
-                if (!formTypeFqnsFromFormFactory.isEmpty()) {
-                    typeText = StringUtils.stripStart(formTypeFqnsFromFormFactory.iterator().next(), "\\");
-                }
+                String typeText = getFirstFormTypeText(variable.getFormTypeFqns());
 
                 for (String s : new String[]{"form_start", "form_rest", "form_end", "form_errors"}) {
                     LookupElementBuilder lookupElement = LookupElementBuilder.create(s + "(" + entry.getKey() + ")")
@@ -1091,21 +1091,17 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
             Project project = completionParameters.getPosition().getProject();
             for (Map.Entry<String, PsiVariable> entry : TwigTypeResolveUtil.collectScopeVariables(originalPosition).entrySet()) {
-                PhpType phpType = PhpIndex.getInstance(project).completeType(project, PhpType.from(entry.getValue().getTypes().toArray(new String[0])), new HashSet<>());
+                PsiVariable variable = entry.getValue();
+                if (variable.getFormTypeFqns().isEmpty()) {
+                    continue;
+                }
+
+                PhpType phpType = PhpIndex.getInstance(project).completeType(project, PhpType.from(variable.getTypes().toArray(new String[0])), new HashSet<>());
                 if (!FormFieldResolver.isFormView(phpType)) {
                     continue;
                 }
 
-                PsiElement element = entry.getValue().getElement();
-                if (element == null)  {
-                    continue;
-                }
-
-                String typeText = null;
-                Set<String> formTypeFqnsFromFormFactory = FormFieldResolver.getFormTypeFqnsFromFormFactory(element);
-                if (!formTypeFqnsFromFormFactory.isEmpty()) {
-                    typeText = StringUtils.stripStart(formTypeFqnsFromFormFactory.iterator().next(), "\\");
-                }
+                String typeText = getFirstFormTypeText(variable.getFormTypeFqns());
 
                 if (orderedList == null) {
                     orderedList = TwigUtil.getFormThemeTemplateUsageAsOrderedList(completionParameters.getPosition().getProject());

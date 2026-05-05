@@ -79,6 +79,26 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         assertEquals("(ProductType)", presentation.getTailText());
     }
 
+    public void testIncompleteFormFieldCompletionUsesPrimitiveFormTypeFqnsFromControllerRender() {
+        addFormControllerFixture();
+
+        myFixture.addFileToProject("templates/form/completion.html.twig", "{{ form<caret> }}");
+        myFixture.configureFromTempProjectFile("templates/form/completion.html.twig");
+        myFixture.completeBasic();
+
+        assertContainsElements(myFixture.getLookupElementStrings(), "form_row(form.title)");
+    }
+
+    public void testIncompleteFormStartCompletionUsesPrimitiveFormTypeFqnsFromControllerRender() {
+        addFormControllerFixture();
+
+        myFixture.addFileToProject("templates/form/completion.html.twig", "{{ form<caret> }}");
+        myFixture.configureFromTempProjectFile("templates/form/completion.html.twig");
+        myFixture.completeBasic();
+
+        assertContainsElements(myFixture.getLookupElementStrings(), "form_start(form)");
+    }
+
     public void testThatConstantProvidesCompletionForClassConstant() {
         assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('<caret>') }}", "CONST_FOO");
         assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('<caret>') }}", "FooConst::CAR", "FooEnum::FOOBAR");
@@ -217,6 +237,11 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
                 "{{ _self.f<caret>o }}",
             "foobar"
         );
+    }
+
+    private void addFormControllerFixture() {
+        myFixture.copyFileToProject("ide-twig.json");
+        myFixture.copyFileToProject("FormControllerTemplateVariables.php");
     }
 
     public void testThatEnumProvidesCompletionForEnumClasses() {

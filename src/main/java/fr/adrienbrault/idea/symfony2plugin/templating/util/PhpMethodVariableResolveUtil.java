@@ -245,7 +245,6 @@ public class PhpMethodVariableResolveUtil {
 
                 return Pair.create(variableName, new PsiVariable(
                     variableTypes,
-                    arrayValue,
                     arrayValue == null ? Collections.emptySet() : FormFieldResolver.getFormTypeFqnsFromFormFactory(arrayValue)
                 ));
             } else {
@@ -274,7 +273,6 @@ public class PhpMethodVariableResolveUtil {
 
                 collectedTypes.put(variableName, new PsiVariable(
                     variableTypes,
-                    arrayValue,
                     arrayValue == null ? Collections.emptySet() : FormFieldResolver.getFormTypeFqnsFromFormFactory(arrayValue)
                 ));
             }

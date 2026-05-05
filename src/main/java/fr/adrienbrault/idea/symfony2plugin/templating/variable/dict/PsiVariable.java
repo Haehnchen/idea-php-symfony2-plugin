@@ -1,8 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.variable.dict;
 
-import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -16,18 +14,10 @@ public class PsiVariable {
     final private Set<String> types = new HashSet<>();
 
     @NotNull
-    final private Collection<PsiElement> psiElements = new HashSet<>();
-
-    @NotNull
     final private Set<String> formTypeFqns = new HashSet<>();
 
-    public PsiVariable(@NotNull Set<String> types, @Nullable PsiElement psiElement) {
-        this(types, psiElement, Set.of());
-    }
-
-    public PsiVariable(@NotNull Set<String> types, @Nullable PsiElement psiElement, @NotNull Collection<String> formTypeFqns) {
+    public PsiVariable(@NotNull Set<String> types, @NotNull Collection<String> formTypeFqns) {
         this.types.addAll(types);
-        this.psiElements.add(psiElement);
         this.formTypeFqns.addAll(formTypeFqns);
     }
 
@@ -50,19 +40,6 @@ public class PsiVariable {
     @NotNull
     public Set<String> getFormTypeFqns() {
         return formTypeFqns;
-    }
-
-    @Nullable
-    public PsiElement getElement() {
-        if (!psiElements.isEmpty()) {
-            return psiElements.iterator().next();
-        }
-
-        return null;
-    }
-
-    public void addElements(@NotNull PsiElement psiElement) {
-        this.psiElements.add(psiElement);
     }
 
     public void addTypes(@NotNull Collection<String> types) {
