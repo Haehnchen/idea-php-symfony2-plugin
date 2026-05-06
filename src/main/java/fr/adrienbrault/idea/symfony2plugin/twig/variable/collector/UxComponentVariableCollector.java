@@ -19,7 +19,7 @@ import java.util.Map;
  */
 public class UxComponentVariableCollector implements TwigFileVariableCollector {
     public void collectPsiVariables(@NotNull TwigFileVariableCollectorParameter parameter, @NotNull Map<String, PsiVariable> variables) {
-        PsiFile psiFile = parameter.getElement().getContainingFile();
+        PsiFile psiFile = parameter.getContainingFile();
         if (!(psiFile instanceof TwigFile)) {
             return;
         }

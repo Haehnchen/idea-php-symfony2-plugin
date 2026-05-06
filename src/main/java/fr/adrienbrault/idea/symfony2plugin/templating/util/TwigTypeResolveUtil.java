@@ -9,6 +9,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiComment;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.formatter.FormatterUtil;
 import com.intellij.psi.tree.IElementType;
@@ -348,8 +349,9 @@ public class TwigTypeResolveUtil {
 
     @NotNull
     public static Map<String, PsiVariable> collectScopeVariables(@NotNull PsiElement psiElement, @NotNull Set<VirtualFile> visitedFiles) {
-        VirtualFile virtualFile = psiElement.getContainingFile().getVirtualFile();
-        if(visitedFiles.contains(virtualFile)) {
+        PsiFile containingFile = psiElement.getContainingFile();
+        VirtualFile virtualFile = containingFile.getVirtualFile();
+        if (visitedFiles.contains(virtualFile)) {
             return Collections.emptyMap();
         }
 
@@ -357,8 +359,8 @@ public class TwigTypeResolveUtil {
 
         Map<String, VariableData> controllerVars = new HashMap<>();
 
-        TwigFileVariableCollectorParameter collectorParameter = new TwigFileVariableCollectorParameter(psiElement, visitedFiles);
-        for(TwigFileVariableCollector collector: TWIG_FILE_VARIABLE_COLLECTORS.getExtensions()) {
+        TwigFileVariableCollectorParameter collectorParameter = new TwigFileVariableCollectorParameter(psiElement, containingFile, visitedFiles);
+        for (TwigFileVariableCollector collector: TWIG_FILE_VARIABLE_COLLECTORS.getExtensions()) {
             Map<String, Set<String>> globalVarsScope = new HashMap<>();
             collector.collect(collectorParameter, globalVarsScope);
 
