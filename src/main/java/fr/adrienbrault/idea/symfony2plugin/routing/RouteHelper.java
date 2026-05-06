@@ -1706,7 +1706,7 @@ public class RouteHelper {
         }
 
         // search for services
-        routes.addAll(ServiceRouteContainer.build(project).getMethodMatches(method));
+        routes.addAll(ServiceRouteContainer.getMethodMatchesForRouteController(method));
 
         return routes;
     }
