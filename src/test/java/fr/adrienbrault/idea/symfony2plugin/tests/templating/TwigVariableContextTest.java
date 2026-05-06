@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating;
 
+import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -10,7 +11,9 @@ import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -53,6 +56,93 @@ public class TwigVariableContextTest extends SymfonyLightCodeInsightFixtureTestC
         );
     }
 
+    public void testTagIncludeDynamicTargetsInheritParentVariablesForEveryResolvedTemplate() {
+        myFixture.addFileToProject(
+            "templates/parent_ternary_include.html.twig",
+            "{# @var user \\App\\Entity\\User #}\n" +
+            "{% include ajax ? 'ajax.html.twig' : 'not_ajax.html.twig' %}\n"
+        );
+
+        myFixture.addFileToProject(
+            "templates/parent_ternary_ignore_missing_include.html.twig",
+            "{# @var user \\App\\Entity\\User #}\n" +
+            "{% include ajax ? 'ajax_ignore_missing.html.twig' : 'not_ajax_ignore_missing.html.twig' ignore missing %}\n"
+        );
+
+        myFixture.addFileToProject(
+            "templates/parent_ternary_ignore_missing_only_include.html.twig",
+            "{# @var user \\App\\Entity\\User #}\n" +
+            "{% include ajax ? 'ajax_ignore_missing_only.html.twig' : 'not_ajax_ignore_missing_only.html.twig' ignore missing only %}\n"
+        );
+
+        assertPathScopeContains("templates/ajax.html.twig", "{{ <caret> }}", "user");
+        assertPathScopeContains("templates/not_ajax.html.twig", "{{ <caret> }}", "user");
+        assertPathScopeContains("templates/ajax_ignore_missing.html.twig", "{{ <caret> }}", "user");
+        assertPathScopeContains("templates/not_ajax_ignore_missing.html.twig", "{{ <caret> }}", "user");
+        assertPathScopeNotContains("templates/ajax_ignore_missing_only.html.twig", "{{ <caret> }}", "user");
+        assertPathScopeNotContains("templates/not_ajax_ignore_missing_only.html.twig", "{{ <caret> }}", "user");
+    }
+
+    public void testTagIncludeArrayTargetsInheritParentVariablesForEveryResolvedTemplate() {
+        myFixture.addFileToProject(
+            "templates/parent_array_include.html.twig",
+            "{# @var page \\App\\Entity\\Page #}\n" +
+            "{% include ['page_detailed.html.twig', 'page.html.twig'] %}\n"
+        );
+
+        myFixture.addFileToProject(
+            "templates/parent_array_ignore_missing_include.html.twig",
+            "{# @var page \\App\\Entity\\Page #}\n" +
+            "{% include ['page_detailed_ignore_missing.html.twig', 'page_ignore_missing.html.twig'] ignore missing %}\n"
+        );
+
+        myFixture.addFileToProject(
+            "templates/parent_array_ignore_missing_only_include.html.twig",
+            "{# @var page \\App\\Entity\\Page #}\n" +
+            "{% include ['page_detailed_ignore_missing_only.html.twig', 'page_ignore_missing_only.html.twig'] ignore missing only %}\n"
+        );
+
+        assertPathScopeContains("templates/page_detailed.html.twig", "{{ <caret> }}", "page");
+        assertPathScopeContains("templates/page.html.twig", "{{ <caret> }}", "page");
+        assertPathScopeContains("templates/page_detailed_ignore_missing.html.twig", "{{ <caret> }}", "page");
+        assertPathScopeContains("templates/page_ignore_missing.html.twig", "{{ <caret> }}", "page");
+        assertPathScopeNotContains("templates/page_detailed_ignore_missing_only.html.twig", "{{ <caret> }}", "page");
+        assertPathScopeNotContains("templates/page_ignore_missing_only.html.twig", "{{ <caret> }}", "page");
+    }
+
+    public void testTagIncludeIgnoreMissingAndOnlyContextVariants() {
+        myFixture.addFileToProject(
+            "templates/parent_only_without_with.html.twig",
+            "{# @var user \\App\\Entity\\User #}\n" +
+            "{# @var title string #}\n" +
+            "{# no variables will be accessible #}\n" +
+            "{% include 'template_only.html.twig' only %}\n"
+        );
+
+        myFixture.addFileToProject(
+            "templates/parent_ignore_missing.html.twig",
+            "{# @var user \\App\\Entity\\User #}\n" +
+            "{% include 'sidebar_ignore_missing.html.twig' ignore missing %}\n"
+        );
+
+        myFixture.addFileToProject(
+            "templates/parent_ignore_missing_with.html.twig",
+            "{# @var user \\App\\Entity\\User #}\n" +
+            "{% include 'sidebar_ignore_missing_with.html.twig' ignore missing with {'name': 'Fabien'} %}\n"
+        );
+
+        myFixture.addFileToProject(
+            "templates/parent_ignore_missing_only.html.twig",
+            "{# @var user \\App\\Entity\\User #}\n" +
+            "{% include 'sidebar_ignore_missing_only.html.twig' ignore missing only %}\n"
+        );
+
+        assertPathScopeNotContains("templates/template_only.html.twig", "{{ <caret> }}", "user", "title");
+        assertPathScopeContains("templates/sidebar_ignore_missing.html.twig", "{{ <caret> }}", "user");
+        assertPathScopeContains("templates/sidebar_ignore_missing_with.html.twig", "{{ <caret> }}", "user", "name");
+        assertPathScopeNotContains("templates/sidebar_ignore_missing_only.html.twig", "{{ <caret> }}", "user");
+    }
+
     /**
      * Test function-style include with with_context = false.
      */
@@ -88,6 +178,300 @@ public class TwigVariableContextTest extends SymfonyLightCodeInsightFixtureTestC
             "{# Template: partials/_isolated_card.html.twig #}\n" +
             "{% block content %}{{ <caret> }}{% endblock %}",
             "article"
+        );
+    }
+
+    public void testTagIncludeWithLiteralParameterProvidesChildVariable() {
+        myFixture.addFileToProject(
+            "templates/parent_literal.html.twig",
+            "{% include 'partials/_card.html.twig' with {'title': 'Example'} %}\n"
+        );
+
+        assertPathCompletionContains(
+            "templates/partials/_card.html.twig",
+            "{{ <caret> }}",
+            "title"
+        );
+    }
+
+    public void testTagIncludeOnlyKeepsExplicitLiteralParameter() {
+        addProductFixture();
+        myFixture.addFileToProject(
+            "templates/parent_literal_only.html.twig",
+            "{# @var item \\App\\Entity\\Product #}\n" +
+            "{% include 'partials/_card.html.twig' with {'title': 'Example'} only %}\n"
+        );
+
+        assertPathCompletionContainsAndNotContains(
+            "templates/partials/_card.html.twig",
+            "{{ <caret> }}",
+            new String[] {"title"},
+            new String[] {"item"}
+        );
+    }
+
+    public void testTagIncludeOnlyKeepsAliasWithoutParentContext() {
+        addProductFixture();
+        myFixture.addFileToProject(
+            "templates/parent_alias_only.html.twig",
+            "{# @var item \\App\\Entity\\Product #}\n" +
+            "{% include 'partials/_card.html.twig' with {itemAlias: item} only %}\n"
+        );
+
+        assertPathCompletionContainsAndNotContains(
+            "templates/partials/_card.html.twig",
+            "{{ <caret> }}",
+            new String[] {"itemAlias"},
+            new String[] {"item"}
+        );
+    }
+
+    public void testTagIncludeSupportsQuotedAliasKeys() {
+        addProductFixture();
+        myFixture.addFileToProject(
+            "templates/parent_quoted_aliases.html.twig",
+            "{# @var item \\App\\Entity\\Product #}\n" +
+            "{% include 'partials/_card.html.twig' with {'itemAlias': item} %}\n" +
+            "{% include 'partials/_card.html.twig' with {\"itemLabel\": item} %}\n"
+        );
+
+        assertPathCompletionContains(
+            "templates/partials/_card.html.twig",
+            "{{ <caret> }}",
+            "itemAlias",
+            "itemLabel"
+        );
+    }
+
+    public void testFunctionIncludeWithLiteralParameterProvidesChildVariable() {
+        myFixture.addFileToProject(
+            "templates/parent_function_literal.html.twig",
+            "{{ include('partials/_card.html.twig', {title: 'Example'}) }}\n"
+        );
+
+        assertPathCompletionContains(
+            "templates/partials/_card.html.twig",
+            "{{ <caret> }}",
+            "title"
+        );
+    }
+
+    public void testFunctionIncludeWithContextFalseKeepsExplicitLiteralParameter() {
+        addProductFixture();
+        myFixture.addFileToProject(
+            "templates/parent_function_literal_isolated.html.twig",
+            "{# @var item \\App\\Entity\\Product #}\n" +
+            "{{ include('partials/_card.html.twig', {title: 'Example'}, with_context: false) }}\n"
+        );
+
+        assertPathCompletionContainsAndNotContains(
+            "templates/partials/_card.html.twig",
+            "{{ <caret> }}",
+            new String[] {"title"},
+            new String[] {"item"}
+        );
+    }
+
+    public void testFunctionIncludeWithContextFalseWithoutParametersBlocksParentContext() {
+        addProductFixture();
+        myFixture.addFileToProject(
+            "templates/parent_function_without_params.html.twig",
+            "{# @var item \\App\\Entity\\Product #}\n" +
+            "{{ include('partials/_card.html.twig', with_context: false) }}\n"
+        );
+
+        assertPathCompletionNotContains(
+            "templates/partials/_card.html.twig",
+            "{{ <caret> }}",
+            "item"
+        );
+    }
+
+    public void testFunctionIncludeWithContextFalseEqualsWithoutParametersBlocksParentContext() {
+        addProductFixture();
+        myFixture.addFileToProject(
+            "templates/parent_function_without_params_equals.html.twig",
+            "{# @var item \\App\\Entity\\Product #}\n" +
+            "{{ include('partials/_card.html.twig', with_context = false) }}\n"
+        );
+
+        assertPathCompletionNotContains(
+            "templates/partials/_card.html.twig",
+            "{{ <caret> }}",
+            "item"
+        );
+    }
+
+    public void testFunctionIncludeSupportsMixedParameters() {
+        addProductFixture();
+        myFixture.addFileToProject(
+            "templates/parent_function_mixed.html.twig",
+            "{# @var item \\App\\Entity\\Product #}\n" +
+            "{# @var itemCollection \\App\\Entity\\Product[] #}\n" +
+            "{{ include('partials/_card.html.twig', {\n" +
+            "    item: item,\n" +
+            "    itemAlias: item,\n" +
+            "    itemCollection: itemCollection,\n" +
+            "    currentView: 'current'\n" +
+            "}) }}\n"
+        );
+
+        assertPathCompletionContains(
+            "templates/partials/_card.html.twig",
+            "{{ <caret> }}",
+            "item",
+            "itemAlias",
+            "itemCollection",
+            "currentView"
+        );
+    }
+
+    /**
+     * Function include keeps complex explicit values visible as untyped child variables.
+     */
+    public void testFunctionIncludeSupportsComplexParameterValues() {
+        addProductFixture();
+        myFixture.addFileToProject(
+            "templates/parent_function_complex_values.html.twig",
+            "{# @var item \\App\\Entity\\Product #}\n" +
+            "{{ include('partials/_card.html.twig', {\n" +
+            "    product: item,\n" +
+            "    title: 'Current ' ~ item.name,\n" +
+            "    options: {label: item.name, flags: {'active': true}}\n" +
+            "}, with_context: false) }}\n"
+        );
+
+        assertPathCompletionContainsAndNotContains(
+            "templates/partials/_card.html.twig",
+            "{{ <caret> }}",
+            new String[] {"product", "title", "options"},
+            new String[] {"item"}
+        );
+    }
+
+    public void testFunctionIncludeSupportsQuotedAliasKeys() {
+        addProductFixture();
+        myFixture.addFileToProject(
+            "templates/parent_function_quoted_aliases.html.twig",
+            "{# @var item \\App\\Entity\\Product #}\n" +
+            "{{ include('partials/_card.html.twig', {'itemAlias': item}) }}\n" +
+            "{{ include('partials/_card.html.twig', {\"itemLabel\": item}) }}\n"
+        );
+
+        assertPathCompletionContains(
+            "templates/partials/_card.html.twig",
+            "{{ <caret> }}",
+            "itemAlias",
+            "itemLabel"
+        );
+    }
+
+    public void testTagIncludeAliasKeepsParentVariableType() {
+        addProductFixture();
+        myFixture.addFileToProject(
+            "templates/parent_tag_alias_type.html.twig",
+            "{# @var item \\App\\Entity\\Product #}\n" +
+            "{% include 'partials/_card.html.twig' with {'product': item} %}\n"
+        );
+
+        assertPathCompletionContains(
+            "templates/partials/_card.html.twig",
+            "{{ product.<caret> }}",
+            "name",
+            "sku"
+        );
+    }
+
+    public void testFunctionIncludeAliasKeepsParentVariableType() {
+        addProductFixture();
+        myFixture.addFileToProject(
+            "templates/parent_function_alias_type.html.twig",
+            "{# @var item \\App\\Entity\\Product #}\n" +
+            "{{ include('partials/_card.html.twig', {product: item}) }}\n"
+        );
+
+        assertPathCompletionContains(
+            "templates/partials/_card.html.twig",
+            "{{ product.<caret> }}",
+            "name",
+            "sku"
+        );
+    }
+
+    public void testFunctionIncludePropertyPathKeepsResolvedType() {
+        addProductFixture();
+        myFixture.addFileToProject(
+            "templates/parent_function_property_path.html.twig",
+            "{# @var item \\App\\Entity\\OrderItem #}\n" +
+            "{{ include('partials/_card.html.twig', {product: item.product}) }}\n"
+        );
+
+        assertPathCompletionContains(
+            "templates/partials/_card.html.twig",
+            "{{ product.<caret> }}",
+            "name",
+            "sku"
+        );
+    }
+
+    public void testTagIncludePropertyPathKeepsResolvedType() {
+        addProductFixture();
+        myFixture.addFileToProject(
+            "templates/parent_tag_property_path.html.twig",
+            "{# @var item \\App\\Entity\\OrderItem #}\n" +
+            "{% include 'partials/_card.html.twig' with {product: item.product} %}\n"
+        );
+
+        assertPathCompletionContains(
+            "templates/partials/_card.html.twig",
+            "{{ product.<caret> }}",
+            "name",
+            "sku"
+        );
+    }
+
+    public void testTagIncludeAliasTypeNavigatesToPhpMethod() {
+        addProductFixture();
+        myFixture.addFileToProject(
+            "templates/parent_tag_alias_navigation.html.twig",
+            "{# @var item \\App\\Entity\\Product #}\n" +
+            "{% include 'partials/_card.html.twig' with {'product': item} %}\n"
+        );
+
+        assertPathNavigationMatch(
+            "templates/partials/_card.html.twig",
+            "{{ product.getNa<caret>me() }}",
+            PlatformPatterns.psiElement(Method.class).withName("getName")
+        );
+    }
+
+    public void testFunctionIncludeAliasTypeNavigatesToPhpMethod() {
+        addProductFixture();
+        myFixture.addFileToProject(
+            "templates/parent_function_alias_navigation.html.twig",
+            "{# @var item \\App\\Entity\\Product #}\n" +
+            "{{ include('partials/_card.html.twig', {'product': item}) }}\n"
+        );
+
+        assertPathNavigationMatch(
+            "templates/partials/_card.html.twig",
+            "{{ product.getSk<caret>u() }}",
+            PlatformPatterns.psiElement(Method.class).withName("getSku")
+        );
+    }
+
+    public void testFunctionIncludePropertyPathTypeNavigatesToPhpMethod() {
+        addProductFixture();
+        myFixture.addFileToProject(
+            "templates/parent_function_property_navigation.html.twig",
+            "{# @var item \\App\\Entity\\OrderItem #}\n" +
+            "{{ include('partials/_card.html.twig', {product: item.product}) }}\n"
+        );
+
+        assertPathNavigationMatch(
+            "templates/partials/_card.html.twig",
+            "{{ product.getNa<caret>me() }}",
+            PlatformPatterns.psiElement(Method.class).withName("getName")
         );
     }
 
@@ -430,6 +814,99 @@ public class TwigVariableContextTest extends SymfonyLightCodeInsightFixtureTestC
         myFixture.configureFromExistingVirtualFile(file.getVirtualFile());
         myFixture.completeBasic();
         assertContainsElements(myFixture.getLookupElementStrings(), expected);
+    }
+
+    /**
+     * Creates a Twig file at a template path and asserts root completion exclusions.
+     */
+    private void assertPathCompletionNotContains(String path, String content, String... unexpected) {
+        PsiFile file = myFixture.addFileToProject(path, content);
+        myFixture.configureFromExistingVirtualFile(file.getVirtualFile());
+        myFixture.completeBasic();
+        assertCompletionResultsDoNotContain(unexpected);
+    }
+
+    /**
+     * Creates a Twig file at a template path and checks include-visible and isolated variables.
+     */
+    private void assertPathCompletionContainsAndNotContains(String path, String content, String[] expected, String[] unexpected) {
+        PsiFile file = myFixture.addFileToProject(path, content);
+        myFixture.configureFromExistingVirtualFile(file.getVirtualFile());
+        myFixture.completeBasic();
+        assertContainsElements(myFixture.getLookupElementStrings(), expected);
+        assertCompletionResultsDoNotContain(unexpected);
+    }
+
+    /**
+     * Creates a Twig file at a template path and asserts variables collected for its current scope.
+     */
+    private void assertPathScopeContains(String path, String content, String... expected) {
+        assertContainsElements(collectPathScopeVariables(path, content).keySet(), expected);
+    }
+
+    /**
+     * Creates a Twig file at a template path and asserts variables are absent from its current scope.
+     */
+    private void assertPathScopeNotContains(String path, String content, String... unexpected) {
+        Map<String, PsiVariable> vars = collectPathScopeVariables(path, content);
+        for (String item: unexpected) {
+            assertFalse("Scope should not contain: " + item, vars.containsKey(item));
+        }
+    }
+
+    /**
+     * Creates a Twig file at a template path and returns variables collected for its current scope.
+     */
+    @NotNull
+    private Map<String, PsiVariable> collectPathScopeVariables(String path, String content) {
+        PsiFile file = myFixture.addFileToProject(path, content);
+        myFixture.configureFromExistingVirtualFile(file.getVirtualFile());
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        return TwigTypeResolveUtil.collectScopeVariables(psiElement);
+    }
+
+    /**
+     * Asserts that current lookup results do not contain specific variable names.
+     */
+    private void assertCompletionResultsDoNotContain(String... unexpected) {
+        List<String> lookupElementStrings = myFixture.getLookupElementStrings();
+        if (lookupElementStrings == null) {
+            return;
+        }
+
+        for (String item: unexpected) {
+            assertFalse("Completion should not contain: " + item, lookupElementStrings.contains(item));
+        }
+    }
+
+    /**
+     * Creates a Twig file at a template path and asserts goto target matching.
+     */
+    private void assertPathNavigationMatch(String path, String content, ElementPattern<?> pattern) {
+        PsiFile file = myFixture.addFileToProject(path, content);
+        myFixture.configureFromExistingVirtualFile(file.getVirtualFile());
+        assertNavigationMatch(pattern);
+    }
+
+    /**
+     * Adds PHP classes used for include alias type completion and navigation tests.
+     */
+    private void addProductFixture() {
+        myFixture.addFileToProject("src/Entity/Product.php", "<?php\n" +
+            "namespace App\\Entity;\n" +
+            "\n" +
+            "class Product\n" +
+            "{\n" +
+            "    public function getName(): string {}\n" +
+            "    public function getSku(): string {}\n" +
+            "}\n" +
+            "\n" +
+            "class OrderItem\n" +
+            "{\n" +
+            "    public function getProduct(): Product {}\n" +
+            "}\n"
+        );
     }
 
     /**
