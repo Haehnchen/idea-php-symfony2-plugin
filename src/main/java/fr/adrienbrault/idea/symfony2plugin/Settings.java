@@ -57,6 +57,7 @@ public class Settings implements PersistentStateComponent<Settings> {
     public boolean codeFoldingTwigTemplate = true;
     public boolean codeFoldingTwigConstant = true;
     public boolean featureTwigIcon = true;
+    public boolean featurePhpClassIcon = true;
     public boolean featureTypeProvider = true;
 
     public boolean featurePropertyInjection = true;
@@ -113,4 +114,3 @@ public class Settings implements PersistentStateComponent<Settings> {
         XmlSerializerUtil.copyBean(settings, this);
     }
 }
-

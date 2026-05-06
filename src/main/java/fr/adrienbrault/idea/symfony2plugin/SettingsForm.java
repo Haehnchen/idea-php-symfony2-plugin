@@ -65,6 +65,7 @@ public class SettingsForm implements Configurable {
 
     private JButton buttonReindex;
     private JCheckBox featureTwigIcon;
+    private JCheckBox featurePhpClassIcon;
     private JButton buttonBuyLicense;
     private JButton buttonAutoConfigure;
     private JCheckBox featureTypeProvider;
@@ -126,6 +127,7 @@ public class SettingsForm implements Configurable {
         codeFoldingTwigTemplate = new JCheckBox("Template (Twig)");
         codeFoldingTwigConstant = new JCheckBox("Constant (Twig)");
         featureTwigIcon = new JCheckBox("Twig Icon Decoration");
+        featurePhpClassIcon = new JCheckBox("PHP Class Icon Decoration");
         dismissYamlSchemaNotification = new JCheckBox("Dismiss YAML Schema Notification");
         featurePropertyInjection = new JCheckBox("Service Property Injection");
         featureTypeProvider = new JCheckBox("Type Provider");
@@ -213,6 +215,7 @@ public class SettingsForm implements Configurable {
 
         Object[][] featureItems = {
             {featureTwigIcon,                "Overlay Twig file icons with a badge indicating usage: extends, include, controller, ..."},
+            {featurePhpClassIcon,            "Overlay Symfony-related PHP class file icons with badges"},
             {dismissYamlSchemaNotification,  "Suppress the banner suggesting to add a YAML schema hint for out-of-box Symfony service completion"},
             {featurePropertyInjection,       "Autocomplete properties in service and auto injection class via constructor"},
             {featureTypeProvider,            "Resolve return types for container calls like ContainerInterface::get() and EntityManager::find()"},
@@ -421,6 +424,7 @@ public class SettingsForm implements Configurable {
                 || !codeFoldingTwigTemplate.isSelected() == getSettings().codeFoldingTwigTemplate
                 || !codeFoldingTwigConstant.isSelected() == getSettings().codeFoldingTwigConstant
                 || !featureTwigIcon.isSelected() == getSettings().featureTwigIcon
+                || !featurePhpClassIcon.isSelected() == getSettings().featurePhpClassIcon
                 || !featureTypeProvider.isSelected() == getSettings().featureTypeProvider
                 || !featurePropertyInjection.isSelected() == getSettings().featurePropertyInjection
                 || !dismissYamlSchemaNotification.isSelected() == getSettings().dismissYamlSchemaNotification
@@ -443,6 +447,7 @@ public class SettingsForm implements Configurable {
         getSettings().codeFoldingTwigTemplate = codeFoldingTwigTemplate.isSelected();
         getSettings().codeFoldingTwigConstant = codeFoldingTwigConstant.isSelected();
         getSettings().featureTwigIcon = featureTwigIcon.isSelected();
+        getSettings().featurePhpClassIcon = featurePhpClassIcon.isSelected();
         getSettings().featureTypeProvider = featureTypeProvider.isSelected();
         getSettings().featurePropertyInjection = featurePropertyInjection.isSelected();
         getSettings().dismissYamlSchemaNotification = dismissYamlSchemaNotification.isSelected();
@@ -478,6 +483,7 @@ public class SettingsForm implements Configurable {
         codeFoldingTwigTemplate.setSelected(getSettings().codeFoldingTwigTemplate);
         codeFoldingTwigConstant.setSelected(getSettings().codeFoldingTwigConstant);
         featureTwigIcon.setSelected(getSettings().featureTwigIcon);
+        featurePhpClassIcon.setSelected(getSettings().featurePhpClassIcon);
         featureTypeProvider.setSelected(getSettings().featureTypeProvider);
         featurePropertyInjection.setSelected(getSettings().featurePropertyInjection);
         dismissYamlSchemaNotification.setSelected(getSettings().dismissYamlSchemaNotification);
