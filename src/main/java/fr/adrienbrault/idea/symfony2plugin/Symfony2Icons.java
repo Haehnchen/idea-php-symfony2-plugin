@@ -33,6 +33,8 @@ public class Symfony2Icons {
     public static final Icon SYMFONY_TOOL_WINDOW = IconLoader.getIcon("/icons/symfony_tool_window.png", Symfony2Icons.class);
     public static final Icon DOCTRINE = IconLoader.getIcon("/icons/doctrine.png", Symfony2Icons.class);
     public static final Icon DOCTRINE_LINE_MARKER = IconLoader.getIcon("/icons/doctrine_line_marker.png", Symfony2Icons.class);
+    public static final Icon DOCTRINE_ENTITY_FILE = IconLoader.getIcon("/icons/doctrine_entity_file.svg", Symfony2Icons.class);
+    public static final Icon DOCTRINE_REPOSITORY_FILE = IconLoader.getIcon("/icons/doctrine_repository_file.svg", Symfony2Icons.class);
     public static final Icon DOCTRINE_WEAK = IconLoader.getIcon("/icons/doctrine_weak.png", Symfony2Icons.class);
     public static final Icon NO_SQL = IconLoader.getIcon("/icons/no_sql.png", Symfony2Icons.class);
     public static final Icon ROUTE = IconLoader.getIcon("/icons/route.png", Symfony2Icons.class);
@@ -40,6 +42,7 @@ public class Symfony2Icons {
     public static final Icon SERVICE = IconLoader.getIcon("/icons/service.png", Symfony2Icons.class);
     public static final Icon SERVICE_OPACITY = IconLoader.getIcon("/icons/service_opacity.png", Symfony2Icons.class);
     public static final Icon FORM_TYPE = IconLoader.getIcon("/icons/form_type.png", Symfony2Icons.class);
+    public static final Icon FORM_TYPE_FILE = IconLoader.getIcon("/icons/form_type_file.svg", Symfony2Icons.class);
     public static final Icon FORM_TYPE_WEAK = IconLoader.getIcon("/icons/form_type_weak.png", Symfony2Icons.class);
     public static final Icon TRANSLATION = IconLoader.getIcon("/icons/translation.png", Symfony2Icons.class);
     public static final Icon TRANSLATION_WEAK = IconLoader.getIcon("/icons/translation_weak.png", Symfony2Icons.class);
@@ -79,6 +82,7 @@ public class Symfony2Icons {
     public static final Icon SYMFONY_AI = IconLoader.getIcon("/icons/symfony_ai.png", Symfony2Icons.class);
     public static final Icon SYMFONY_AI_OPACITY = IconLoader.getIcon("/icons/symfony_ai_opacity.png", Symfony2Icons.class);
     public static final Icon SYMFONY_ATTRIBUTE = IconLoader.getIcon("/icons/symfony_attribute.svg", Symfony2Icons.class);
+    public static final Icon SYMFONY_COMMAND_FILE = IconLoader.getIcon("/icons/symfony_command_file.svg", Symfony2Icons.class);
 
     public static Image getImage(Icon icon) {
 
@@ -94,4 +98,3 @@ public class Symfony2Icons {
         return image;
     }
 }
-
