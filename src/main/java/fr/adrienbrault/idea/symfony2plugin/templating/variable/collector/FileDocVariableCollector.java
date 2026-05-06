@@ -15,7 +15,7 @@ import java.util.*;
 public class FileDocVariableCollector implements TwigFileVariableCollector {
     @Override
     public void collect(@NotNull TwigFileVariableCollectorParameter parameter, @NotNull Map<String, Set<String>> variables) {
-        PsiFile containingFile = parameter.getElement().getContainingFile();
+        PsiFile containingFile = parameter.getContainingFile();
         if(!(containingFile instanceof TwigFile)) {
             return;
         }

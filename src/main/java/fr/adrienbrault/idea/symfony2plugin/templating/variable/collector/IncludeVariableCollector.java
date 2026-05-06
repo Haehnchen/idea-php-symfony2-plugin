@@ -54,7 +54,7 @@ public class IncludeVariableCollector implements TwigFileVariableCollector {
 
     @Override
     public void collectPsiVariables(@NotNull final TwigFileVariableCollectorParameter parameter, @NotNull final Map<String, PsiVariable> variables) {
-        PsiFile psiFile = parameter.getElement().getContainingFile();
+        PsiFile psiFile = parameter.getContainingFile();
         if (!(psiFile instanceof TwigFile) || PsiTreeUtil.getChildOfType(psiFile, TwigExtendsTag.class) != null) {
             return;
         }

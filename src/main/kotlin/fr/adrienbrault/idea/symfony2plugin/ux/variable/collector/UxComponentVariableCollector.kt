@@ -14,7 +14,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.UxUtil
 class UxComponentVariableCollector : TwigFileVariableCollector {
     override fun collectPsiVariables(parameter: TwigFileVariableCollectorParameter, variables: MutableMap<String, PsiVariable>) {
         val project = parameter.project
-        val componentClassesForTemplateFile = UxUtil.getComponentClassesForTemplateFile(project, parameter.element.containingFile)
+        val componentClassesForTemplateFile = UxUtil.getComponentClassesForTemplateFile(project, parameter.containingFile)
 
         if (componentClassesForTemplateFile.isNotEmpty()) {
             variables["attributes"] = PsiVariable("\\Symfony\\UX\\TwigComponent\\ComponentAttributes")
