@@ -962,6 +962,46 @@ public class TwigVariableContextTest extends SymfonyLightCodeInsightFixtureTestC
     }
 
     /**
+     * Test that template rendered by controller inherits variables from spread context arrays.
+     */
+    public void testControllerRenderVariableInheritanceWithArraySpreadViaIndex() {
+        myFixture.copyFileToProject("ide-twig.json");
+
+        myFixture.addFileToProject(
+            "src/Controller/ProductController.php",
+            "<?php\n" +
+            "class ProductController\n" +
+            "{\n" +
+            "    public function showAction()\n" +
+            "    {\n" +
+            "        $item = new \\App\\Entity\\Product();\n" +
+            "        $baseData = [\n" +
+            "            'item' => $item,\n" +
+            "        ];\n" +
+            "\n" +
+            "        return $this->render('product/show.html.twig', [\n" +
+            "            'headline' => 'Product',\n" +
+            "            ...$baseData,\n" +
+            "        ]);\n" +
+            "    }\n" +
+            "}\n" +
+            "\n" +
+            "namespace App\\Entity;\n" +
+            "class Product\n" +
+            "{\n" +
+            "    public function getName(): string {}\n" +
+            "}\n"
+        );
+
+        assertPathCompletionContains(
+            "templates/product/show.html.twig",
+            "{{ <caret> }}",
+            "headline",
+            "item"
+        );
+    }
+
+    /**
      * Test that @Template annotation provides variable context.
      */
     public void testTemplateAnnotationVariableInheritanceViaIndex() {
