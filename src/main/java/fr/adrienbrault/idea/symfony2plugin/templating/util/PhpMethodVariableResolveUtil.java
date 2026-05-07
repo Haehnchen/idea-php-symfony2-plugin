@@ -10,6 +10,7 @@ import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
 import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpCallInstruction;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
+import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.*;
 import de.espend.idea.php.annotation.util.AnnotationUtil;
@@ -39,9 +40,14 @@ import static fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class PhpMethodVariableResolveUtil {
+    private static final int MAX_CONTEXT_RESOLVE_DEPTH = 2;
+    private static final Set<String> ARRAY_CONTEXT_FUNCTIONS = new HashSet<>(Arrays.asList(
+        "array_merge", "array_merge_recursive", "array_push", "array_replace"
+    ));
+
     /**
      * search for twig template variable on common use cases
-     *
+     * <p>
      * $this->render('foobar.html.twig', $foobar)
      * $this->render('foobar.html.twig', ['foobar' => $var]))
      * $this->render('foobar.html.twig', array_merge($foobar, ['foobar' => $var]))
@@ -54,77 +60,152 @@ public class PhpMethodVariableResolveUtil {
     public static Map<String, PsiVariable> collectMethodVariables(@NotNull Function method) {
 
         Map<String, PsiVariable> collectedTypes = new HashMap<>();
+        ResolveContext context = new ResolveContext();
 
         for(PsiElement var: collectPossibleTemplateArrays(method)) {
-            if(var instanceof ArrayCreationExpression) {
-                // "return array(...)" we dont need any parsing
-                collectedTypes.putAll(getTypesOnArrayHash((ArrayCreationExpression) var));
-            } else if(var instanceof Variable) {
-                // we need variable declaration line so resolve it and search for references which attach other values to array
-                // find definition and search for references on it
-                PsiElement resolvedVariable = ((Variable) var).resolve();
-                if(resolvedVariable instanceof Variable) {
-                    collectedTypes.putAll(collectOnVariableReferences(method, (Variable) resolvedVariable));
-                }
-            } else if(var instanceof FunctionReference && "array_merge".equalsIgnoreCase(((FunctionReference) var).getName())) {
-                // array_merge($var, ['foobar' => $var]);
-
-                String name = ((FunctionReference) var).getName();
-                if("array_merge".equalsIgnoreCase(name) || "array_merge_recursive".equalsIgnoreCase(name) || "array_push".equalsIgnoreCase(name) || "array_replace".equalsIgnoreCase(name)) {
-                    for (PsiElement psiElement : ((FunctionReference) var).getParameters()) {
-                        collectVariablesForPsiElement(method, collectedTypes, psiElement);
-                    }
-                }
-            } else if(var instanceof BinaryExpression && var.getNode().getElementType() == PhpElementTypes.ADDITIVE_EXPRESSION) {
-                // $var + ['foobar' => $foobar]
-                PsiElement leftOperand = ((BinaryExpression) var).getLeftOperand();
-                if(leftOperand != null) {
-                    collectVariablesForPsiElement(method, collectedTypes, leftOperand);
-                }
-
-                PsiElement rightOperand = ((BinaryExpression) var).getRightOperand();
-                if(rightOperand != null) {
-                    collectVariablesForPsiElement(method, collectedTypes, rightOperand);
-                }
-            } else if(var instanceof SelfAssignmentExpression) {
-                // $var += ['foobar' => $foobar]
-                PhpPsiElement variable = ((SelfAssignmentExpression) var).getVariable();
-                if(variable != null) {
-                    collectVariablesForPsiElement(method, collectedTypes, variable);
-                }
-
-                PhpPsiElement value = ((SelfAssignmentExpression) var).getValue();
-                if(value != null) {
-                    collectVariablesForPsiElement(method, collectedTypes, value);
-                }
-            }
+            collectVariablesForPsiElement(method, collectedTypes, var, 0, context);
         }
 
         return collectedTypes;
     }
 
-    private static void collectVariablesForPsiElement(@NotNull Function method, @NotNull Map<String, PsiVariable> collectedTypes, @NotNull PsiElement psiElement) {
-        if(psiElement instanceof ArrayCreationExpression) {
-            // reuse array collector: ['foobar' => $var]
-            collectedTypes.putAll(getTypesOnArrayHash((ArrayCreationExpression) psiElement));
-        } else if(psiElement instanceof Variable) {
-            // reuse variable collector: [$var]
-            PsiElement resolvedVariable = ((Variable) psiElement).resolve();
-            if(resolvedVariable instanceof Variable) {
-                collectedTypes.putAll(collectOnVariableReferences(method, (Variable) resolvedVariable));
+    private static void collectVariablesForPsiElement(@NotNull Function method, @NotNull Map<String, PsiVariable> collectedTypes, @NotNull PsiElement psiElement, int depth, @NotNull ResolveContext context) {
+        if (depth > MAX_CONTEXT_RESOLVE_DEPTH) {
+            return;
+        }
+
+        if (psiElement instanceof ArrayCreationExpression arrayCreationExpression) {
+            // ['foobar' => $var]
+            collectedTypes.putAll(getTypesOnArrayHash(method, arrayCreationExpression, depth, context));
+        } else if (psiElement instanceof Variable variable) {
+            // $this->render('foo.html.twig', $templateData)
+            PsiElement resolvedVariable = variable.resolve();
+            if (resolvedVariable instanceof Variable resolvedTemplateData) {
+                collectedTypes.putAll(collectOnVariableReferences(method, resolvedTemplateData, depth, context));
+            }
+        } else if (psiElement instanceof FunctionReference functionReference) {
+            if (isArrayContextFunction(functionReference)) {
+                // array_merge($templateData, ['foobar' => $var])
+                // array_replace($templateData, $this->createTemplateData())
+                for (PsiElement parameter : functionReference.getParameters()) {
+                    collectVariablesForPsiElement(method, collectedTypes, parameter, depth, context);
+                }
+            } else {
+                // $this->createTemplateData()
+                collectVariablesForLocalFunctionReference(method, collectedTypes, functionReference, depth, context);
+            }
+        } else if (psiElement instanceof BinaryExpression binaryExpression && psiElement.getNode().getElementType() == PhpElementTypes.ADDITIVE_EXPRESSION) {
+            // $templateData + ['foobar' => $var]
+            PsiElement leftOperand = binaryExpression.getLeftOperand();
+            if (leftOperand != null) {
+                collectVariablesForPsiElement(method, collectedTypes, leftOperand, depth, context);
+            }
+
+            PsiElement rightOperand = binaryExpression.getRightOperand();
+            if (rightOperand != null) {
+                collectVariablesForPsiElement(method, collectedTypes, rightOperand, depth, context);
+            }
+        } else if (psiElement instanceof SelfAssignmentExpression selfAssignmentExpression) {
+            // $templateData += ['foobar' => $var]
+            PhpPsiElement variable = selfAssignmentExpression.getVariable();
+            if (variable != null) {
+                collectVariablesForPsiElement(method, collectedTypes, variable, depth, context);
+            }
+
+            PhpPsiElement value = selfAssignmentExpression.getValue();
+            if (value != null) {
+                collectVariablesForPsiElement(method, collectedTypes, value, depth, context);
+            }
+        } else if (isArrayUnpackValue(psiElement)) {
+            // ...$templateData
+            // ...$this->createTemplateData()
+            PhpPsiElement arrayValue = ((PhpPsiElement) psiElement).getFirstPsiChild();
+            if (arrayValue != null) {
+                collectVariablesForPsiElement(method, collectedTypes, arrayValue, depth, context);
+            }
+        }
+    }
+
+    private static boolean isArrayContextFunction(@NotNull FunctionReference functionReference) {
+        String name = functionReference.getName();
+        return name != null && ARRAY_CONTEXT_FUNCTIONS.contains(name.toLowerCase(Locale.ROOT));
+    }
+
+    private static void collectVariablesForLocalFunctionReference(
+        @NotNull Function method,
+        @NotNull Map<String, PsiVariable> collectedTypes,
+        @NotNull FunctionReference functionReference,
+        int depth,
+        @NotNull ResolveContext context
+    ) {
+        if (depth >= MAX_CONTEXT_RESOLVE_DEPTH) {
+            return;
+        }
+
+        for (PhpNamedElement phpNamedElement : functionReference.resolveLocal()) {
+            if (!(phpNamedElement instanceof Function targetFunction)) {
+                continue;
+            }
+
+            if (targetFunction == method || !isLocalContextFunction(method, functionReference, targetFunction)) {
+                continue;
+            }
+
+            collectVariablesForFunctionReturns(targetFunction, collectedTypes, depth + 1, context);
+        }
+    }
+
+    private static boolean isLocalContextFunction(@NotNull Function method, @NotNull FunctionReference functionReference, @NotNull Function targetFunction) {
+        if (functionReference instanceof MethodReference) {
+            if (!(method instanceof Method sourceMethod) || !(targetFunction instanceof Method targetMethod)) {
+                return false;
+            }
+
+            PhpClass sourceClass = sourceMethod.getContainingClass();
+            PhpClass targetClass = targetMethod.getContainingClass();
+
+            return sourceClass != null && sourceClass.equals(targetClass);
+        }
+
+        return method.getContainingFile() != null && method.getContainingFile().equals(targetFunction.getContainingFile());
+    }
+
+    /**
+     * Resolves local context helper returns.
+     * <pre>$this->render('foo.html.twig', $this->createTemplateData());</pre>
+     */
+    private static void collectVariablesForFunctionReturns(
+        @NotNull Function function,
+        @NotNull Map<String, PsiVariable> collectedTypes,
+        int depth,
+        @NotNull ResolveContext context
+    ) {
+        if (depth > MAX_CONTEXT_RESOLVE_DEPTH || !context.visitFunction(function)) {
+            return;
+        }
+
+        for (PhpReturn phpReturn : PsiTreeUtil.findChildrenOfType(function, PhpReturn.class)) {
+            Function returnScope = PsiTreeUtil.getParentOfType(phpReturn, Function.class);
+            if (!function.equals(returnScope)) {
+                continue;
+            }
+
+            PhpPsiElement returnPsiElement = phpReturn.getFirstPsiChild();
+            if (returnPsiElement != null) {
+                collectVariablesForPsiElement(function, collectedTypes, returnPsiElement, depth, context);
             }
         }
     }
 
     /**
      * Search for PSI elements that can hold Twig template variables in the current method scope.
-     *
+     * <p>
      * Sources:
      * <pre>
      *   - direct return values: return ['foo' => $bar] / return $templateVars
      *   - render-like calls discovered by {@link #visitRenderTemplateFunctions(Function, Consumer)}
      * </pre>
-     *
+     * <p>
      * For render-like calls, the variables argument index depends on the method signature and is
      * resolved via {@link #getTemplateParameterIndex(FunctionReference)}:
      * <pre>
@@ -145,7 +226,7 @@ public class PhpMethodVariableResolveUtil {
             // @TODO: think of support all types here
             // return $template
             // return array('foo' => $var)
-            if(returnPsiElement instanceof Variable || returnPsiElement instanceof ArrayCreationExpression) {
+            if(returnPsiElement instanceof Variable || returnPsiElement instanceof ArrayCreationExpression || returnPsiElement instanceof FunctionReference) {
                 collectedTemplateVariables.add(returnPsiElement);
             }
 
@@ -187,7 +268,7 @@ public class PhpMethodVariableResolveUtil {
      */
     private static int getTemplateParameterIndex(@NotNull FunctionReference methodReference) {
         String methodName = methodReference.getName();
-        if (methodName != null && ("renderBlock".equalsIgnoreCase(methodName) || "renderBlockView".equalsIgnoreCase(methodName))) {
+        if ("renderBlock".equalsIgnoreCase(methodName) || "renderBlockView".equalsIgnoreCase(methodName)) {
             return 2;
         }
 
@@ -202,8 +283,11 @@ public class PhpMethodVariableResolveUtil {
      * @param variable the variable declaration psi $var = array();
      */
     @NotNull
-    private static Map<String, PsiVariable> collectOnVariableReferences(@NotNull Function function, @NotNull Variable variable) {
+    private static Map<String, PsiVariable> collectOnVariableReferences(@NotNull Function function, @NotNull Variable variable, int depth, @NotNull ResolveContext context) {
         Map<String, PsiVariable> collectedTypes = new HashMap<>();
+        if (depth > MAX_CONTEXT_RESOLVE_DEPTH || !context.visitVariable(variable)) {
+            return collectedTypes;
+        }
 
         for (Variable scopeVar : PhpElementsUtil.getVariablesInScopeByName(function, variable.getName())) {
             PsiElement parent = scopeVar.getParent();
@@ -213,11 +297,18 @@ public class PhpMethodVariableResolveUtil {
                 if (pair != null) {
                     collectedTypes.put(pair.getFirst(), pair.getSecond());
                 }
+            } else if (parent instanceof SelfAssignmentExpression) {
+                PhpPsiElement value = ((SelfAssignmentExpression) parent).getValue();
+                PhpPsiElement assignmentVariable = ((SelfAssignmentExpression) parent).getVariable();
+                if (value != null && assignmentVariable == scopeVar) {
+                    collectVariablesForPsiElement(function, collectedTypes, value, depth, context);
+                }
             } else if (parent instanceof AssignmentExpression) {
                 // array('foo' => $var)
                 PhpPsiElement value = ((AssignmentExpression) parent).getValue();
-                if (value instanceof ArrayCreationExpression) {
-                    collectedTypes.putAll(getTypesOnArrayHash((ArrayCreationExpression) value));
+                PhpPsiElement assignmentVariable = ((AssignmentExpression) parent).getVariable();
+                if (value != null && assignmentVariable == scopeVar) {
+                    collectVariablesForPsiElement(function, collectedTypes, value, depth, context);
                 }
             }
         }
@@ -259,22 +350,20 @@ public class PhpMethodVariableResolveUtil {
      *  array('foo' => $var, 'bar' => $bar)
      */
     public static Map<String, PsiVariable> getTypesOnArrayHash(@NotNull ArrayCreationExpression arrayCreationExpression) {
+        return getTypesOnArrayHash(null, arrayCreationExpression, 0, new ResolveContext());
+    }
+
+    private static Map<String, PsiVariable> getTypesOnArrayHash(@Nullable Function method, @NotNull ArrayCreationExpression arrayCreationExpression, int depth, @NotNull ResolveContext context) {
         Map<String, PsiVariable> collectedTypes = new HashMap<>();
 
-        for(ArrayHashElement arrayHashElement: arrayCreationExpression.getHashElements()) {
-            if(arrayHashElement.getKey() instanceof StringLiteralExpression) {
-                String variableName = ((StringLiteralExpression) arrayHashElement.getKey()).getContents();
-                Set<String> variableTypes = new HashSet<>();
-                PsiElement arrayValue = arrayHashElement.getValue();
-
-                if(arrayValue instanceof PhpTypedElement) {
-                    variableTypes.addAll(((PhpTypedElement) arrayValue).getType().getTypes());
+        for (PsiElement child : arrayCreationExpression.getChildren()) {
+            if (child instanceof ArrayHashElement arrayHashElement) {
+                collectArrayHashElementTypes(collectedTypes, arrayHashElement);
+            } else if (method != null && isArrayUnpackValue(child)) {
+                PhpPsiElement arrayValue = ((PhpPsiElement) child).getFirstPsiChild();
+                if (arrayValue != null) {
+                    collectVariablesForPsiElement(method, collectedTypes, arrayValue, depth, context);
                 }
-
-                collectedTypes.put(variableName, new PsiVariable(
-                    variableTypes,
-                    arrayValue == null ? Collections.emptySet() : FormFieldResolver.getFormTypeFqnsFromFormFactory(arrayValue)
-                ));
             }
         }
 
@@ -282,8 +371,52 @@ public class PhpMethodVariableResolveUtil {
     }
 
     /**
+     * Collects direct string-key array entries.
+     * <pre>['foobar' => $var]</pre>
+     */
+    private static void collectArrayHashElementTypes(@NotNull Map<String, PsiVariable> collectedTypes, @NotNull ArrayHashElement arrayHashElement) {
+        if (arrayHashElement.getKey() instanceof StringLiteralExpression stringLiteralExpression) {
+            String variableName = stringLiteralExpression.getContents();
+            Set<String> variableTypes = new HashSet<>();
+            PsiElement arrayValue = arrayHashElement.getValue();
+
+            if (arrayValue instanceof PhpTypedElement phpTypedElement) {
+                variableTypes.addAll(phpTypedElement.getType().getTypes());
+            }
+
+            collectedTypes.put(variableName, new PsiVariable(
+                variableTypes,
+                arrayValue == null ? Collections.emptySet() : FormFieldResolver.getFormTypeFqnsFromFormFactory(arrayValue)
+            ));
+        }
+    }
+
+    /**
+     * Detects PHP array unpack values.
+     * <pre>['headline' => 'Foo', ...$templateData, ...$this->createTemplateData()]</pre>
+     */
+    private static boolean isArrayUnpackValue(@NotNull PsiElement psiElement) {
+        return psiElement instanceof PhpPsiElement &&
+            psiElement.getNode().getElementType() == PhpElementTypes.ARRAY_VALUE &&
+            psiElement.getNode().findChildByType(PhpTokenTypes.opVARIADIC) != null;
+    }
+
+    private static class ResolveContext {
+        private final Set<Variable> variables = Collections.newSetFromMap(new IdentityHashMap<>());
+        private final Set<Function> functions = Collections.newSetFromMap(new IdentityHashMap<>());
+
+        private boolean visitVariable(@NotNull Variable variable) {
+            return variables.add(variable);
+        }
+
+        private boolean visitFunction(@NotNull Function function) {
+            return functions.add(function);
+        }
+    }
+
+    /**
      * Visit method scope for template renders, also via annotation of the method itself
-     *
+     * <p>
      * As annotations are not in scope of the method itself
      */
     public static void visitRenderTemplateFunctions(@NotNull Function function, @NotNull Consumer<Triple<String, PhpNamedElement, FunctionReference>> consumer) {
@@ -371,14 +504,11 @@ public class PhpMethodVariableResolveUtil {
             } else if(parameters[0] instanceof TernaryExpression) {
                 // render(true === true ? 'foo.twig.html' : 'foobar.twig.html')
                 for (PhpPsiElement phpPsiElement : new PhpPsiElement[]{((TernaryExpression) parameters[0]).getTrueVariant(), ((TernaryExpression) parameters[0]).getFalseVariant()}) {
-                    if (phpPsiElement == null) {
-                        continue;
-                    }
-
-                    if (phpPsiElement instanceof StringLiteralExpression) {
-                        addStringLiteralScope(methodReference, (StringLiteralExpression) phpPsiElement, consumer);
-                    } else if(phpPsiElement instanceof PhpReference) {
-                        resolvePhpReference(methodReference, phpPsiElement, consumer);
+                    switch (phpPsiElement) {
+                        case StringLiteralExpression stringLiteralExpression -> addStringLiteralScope(methodReference, stringLiteralExpression, consumer);
+                        case PhpReference phpReference -> resolvePhpReference(methodReference, phpReference, consumer);
+                        case null, default -> {
+                        }
                     }
                 }
             } else if(parameters[0] instanceof AssignmentExpression) {
