@@ -64,6 +64,95 @@ public class PhpTwigTemplateUsageStubIndexTest extends SymfonyLightCodeInsightFi
         );
     }
 
+    public void testThatAdditionalTwigRenderCallsAreInIndex() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "final class PageController\n" +
+            "{\n" +
+            "   public function index(bool $preview, ?string $templateName): void {\n" +
+            "       $template = 'page/local.html.twig';\n" +
+            "       $this->render('page/direct.html.twig');\n" +
+            "       $this->render(view: 'page/named.html.twig', parameters: []);\n" +
+            "       $this->render(parameters: [], view: 'page/reordered.html.twig');\n" +
+            "       $this->renderView('fragment/direct.html.twig');\n" +
+            "       $this->renderView(view: 'fragment/named.html.twig', parameters: []);\n" +
+            "       $this->renderBlock('page/block-direct.html.twig', 'content', []);\n" +
+            "       $this->renderBlock(view: 'page/block-named.html.twig', block: 'content', parameters: []);\n" +
+            "       $this->renderBlock(block: 'content-block.html.twig', parameters: [], view: 'page/block-reordered.html.twig');\n" +
+            "       $this->renderBlockView('page/block-view-direct.html.twig', 'content', []);\n" +
+            "       $this->renderBlockView(view: 'page/block-view-named.html.twig', block: 'content', parameters: []);\n" +
+            "       $this->renderBlockView(block: 'content-block-view.html.twig', parameters: [], view: 'page/block-view-reordered.html.twig');\n" +
+            "       $this->render($template);\n" +
+            "       $this->render($preview ? 'page/preview.html.twig' : 'page/index.html.twig');\n" +
+            "       $this->render($templateName ?? 'page/fallback.html.twig');\n" +
+            "   }\n" +
+            "}\n" +
+            "\n" +
+            "final class TemplateRenderer\n" +
+            "{\n" +
+            "   public function render($twig): void {\n" +
+            "       $twig->render('widget/card.html.twig', []);\n" +
+            "       $twig->render(name: 'widget/card-named.html.twig', context: []);\n" +
+            "       $twig->render(context: [], name: 'widget/card-reordered.html.twig');\n" +
+            "   }\n" +
+            "}\n" +
+            "\n" +
+            "final class MailFactory\n" +
+            "{\n" +
+            "   public function create(): void {\n" +
+            "       $email = new TemplatedEmail();\n" +
+            "       $email->htmlTemplate('email/direct.html.twig');\n" +
+            "       $email->htmlTemplate(template: 'email/named.html.twig');\n" +
+            "       $email->textTemplate('email/direct.txt.twig');\n" +
+            "       $email->textTemplate(template: 'email/named.txt.twig');\n" +
+            "   }\n" +
+            "}\n"
+        );
+
+        assertIndexContains(
+            PhpTwigTemplateUsageStubIndex.KEY,
+            "page/direct.html.twig",
+            "page/named.html.twig",
+            "page/reordered.html.twig",
+            "fragment/direct.html.twig",
+            "fragment/named.html.twig",
+            "page/block-direct.html.twig",
+            "page/block-named.html.twig",
+            "page/block-reordered.html.twig",
+            "page/block-view-direct.html.twig",
+            "page/block-view-named.html.twig",
+            "page/block-view-reordered.html.twig",
+            "page/local.html.twig",
+            "page/preview.html.twig",
+            "page/index.html.twig",
+            "page/fallback.html.twig",
+            "widget/card.html.twig",
+            "widget/card-named.html.twig",
+            "widget/card-reordered.html.twig",
+            "email/direct.html.twig",
+            "email/named.html.twig",
+            "email/direct.txt.twig",
+            "email/named.txt.twig"
+        );
+
+        assertIndexContainsKeyWithValue(PhpTwigTemplateUsageStubIndex.KEY, "page/named.html.twig", value ->
+            "page/named.html.twig".equals(value.getTemplate()) && value.getScopes().contains("PageController.index")
+        );
+
+        assertIndexContainsKeyWithValue(PhpTwigTemplateUsageStubIndex.KEY, "widget/card-named.html.twig", value ->
+            "widget/card-named.html.twig".equals(value.getTemplate()) && value.getScopes().contains("TemplateRenderer.render")
+        );
+
+        assertIndexContainsKeyWithValue(PhpTwigTemplateUsageStubIndex.KEY, "email/named.html.twig", value ->
+            "email/named.html.twig".equals(value.getTemplate()) && value.getScopes().contains("MailFactory.create")
+        );
+
+        assertIndexNotContains(
+            PhpTwigTemplateUsageStubIndex.KEY,
+            "content-block.html.twig",
+            "content-block-view.html.twig"
+        );
+    }
+
     public void testThatDefaultTemplatePropertyAnnotationIsIndexed() {
         myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
             "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;" +

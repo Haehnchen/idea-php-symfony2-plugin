@@ -490,20 +490,102 @@ public class PhpMethodVariableResolveUtil {
                 return;
             }
 
-            if (!methods.get().contains(methodName) && Stream.of("render", "htmltemplate", "texttemplate", "renderblock", "renderblockview").noneMatch(s -> methodName.toLowerCase().contains(s))) {
+            String normalizedMethodName = methodName.toLowerCase(Locale.ROOT);
+            boolean configuredMethod = methods.get().contains(methodName);
+            if (!configuredMethod && Stream.of("render", "htmltemplate", "texttemplate", "renderblock", "renderblockview").noneMatch(normalizedMethodName::contains)) {
                 return;
             }
 
-            PsiElement[] parameters = methodReference.getParameters();
-            if(parameters.length == 0) {
+            Collection<String> namedArguments = getTemplateNamedArguments(methodReference);
+            PsiElement templateParameter = findTemplateParameter(methodReference, namedArguments, configuredMethod && namedArguments.isEmpty());
+            if (templateParameter == null) {
                 return;
             }
 
-            if (parameters[0] instanceof StringLiteralExpression) {
-                addStringLiteralScope(methodReference, (StringLiteralExpression) parameters[0], consumer);
-            } else if(parameters[0] instanceof TernaryExpression) {
+            addTemplateParameterScopes(methodReference, templateParameter, consumer);
+        }
+
+        @Nullable
+        private static PsiElement findTemplateParameter(@NotNull MethodReference methodReference, @NotNull Collection<String> namedArguments, boolean allowNamedFirstParameterFallback) {
+            ParameterList parameterList = methodReference.getParameterList();
+            if (parameterList == null) {
+                return null;
+            }
+
+            for (String namedArgument : namedArguments) {
+                PsiElement namedParameter = findNamedArgument(parameterList, namedArgument);
+                if (namedParameter != null) {
+                    return namedParameter;
+                }
+            }
+
+            PsiElement firstParameter = PsiElementUtils.getMethodParameterPsiElementAt(parameterList, 0);
+            if (firstParameter == null || (!allowNamedFirstParameterFallback && isNamedArgument(firstParameter))) {
+                return null;
+            }
+
+            return firstParameter;
+        }
+
+        @NotNull
+        private static Collection<String> getTemplateNamedArguments(@NotNull MethodReference methodReference) {
+            String methodName = methodReference.getName();
+            if (methodName == null) {
+                return Collections.emptyList();
+            }
+
+            String normalizedMethodName = methodName.toLowerCase(Locale.ROOT);
+            if (normalizedMethodName.contains("htmltemplate") || normalizedMethodName.contains("texttemplate")) {
+                return Collections.singletonList("template");
+            }
+
+            if (normalizedMethodName.contains("renderblock") || normalizedMethodName.contains("renderblockview")) {
+                return Collections.singletonList("view");
+            }
+
+            if (normalizedMethodName.contains("render") || "stream".equalsIgnoreCase(methodName)) {
+                return Arrays.asList("view", "name", "template");
+            }
+
+            return Collections.emptyList();
+        }
+
+        @Nullable
+        private static PsiElement findNamedArgument(@NotNull ParameterList parameterList, @NotNull String argumentName) {
+            for (PsiElement parameter : parameterList.getParameters()) {
+                if (argumentName.equalsIgnoreCase(getNamedArgumentName(parameter))) {
+                    return parameter;
+                }
+            }
+
+            return null;
+        }
+
+        private static boolean isNamedArgument(@NotNull PsiElement parameter) {
+            return getNamedArgumentName(parameter) != null;
+        }
+
+        @Nullable
+        private static String getNamedArgumentName(@NotNull PsiElement parameter) {
+            PsiElement colon = PsiTreeUtil.prevCodeLeaf(parameter);
+            if (colon == null || colon.getNode().getElementType() != PhpTokenTypes.opCOLON) {
+                return null;
+            }
+
+            PsiElement argumentName = PsiTreeUtil.prevCodeLeaf(colon);
+            if (argumentName == null || argumentName.getNode().getElementType() != PhpTokenTypes.IDENTIFIER) {
+                return null;
+            }
+
+            return argumentName.getText();
+        }
+
+        private static void addTemplateParameterScopes(@NotNull MethodReference methodReference, @NotNull PsiElement parameter, Consumer<Triple<String, PhpNamedElement, FunctionReference>> consumer) {
+            if (parameter instanceof StringLiteralExpression) {
+                addStringLiteralScope(methodReference, (StringLiteralExpression) parameter, consumer);
+            } else if(parameter instanceof TernaryExpression) {
                 // render(true === true ? 'foo.twig.html' : 'foobar.twig.html')
-                for (PhpPsiElement phpPsiElement : new PhpPsiElement[]{((TernaryExpression) parameters[0]).getTrueVariant(), ((TernaryExpression) parameters[0]).getFalseVariant()}) {
+                for (PhpPsiElement phpPsiElement : new PhpPsiElement[]{((TernaryExpression) parameter).getTrueVariant(), ((TernaryExpression) parameter).getFalseVariant()}) {
                     switch (phpPsiElement) {
                         case StringLiteralExpression stringLiteralExpression -> addStringLiteralScope(methodReference, stringLiteralExpression, consumer);
                         case PhpReference phpReference -> resolvePhpReference(methodReference, phpReference, consumer);
@@ -511,17 +593,17 @@ public class PhpMethodVariableResolveUtil {
                         }
                     }
                 }
-            } else if(parameters[0] instanceof AssignmentExpression) {
+            } else if(parameter instanceof AssignmentExpression) {
                 // $this->render($template = 'foo.html.twig')
-                PhpPsiElement value = ((AssignmentExpression) parameters[0]).getValue();
+                PhpPsiElement value = ((AssignmentExpression) parameter).getValue();
                 if(value instanceof StringLiteralExpression) {
                     addStringLiteralScope(methodReference, (StringLiteralExpression) value, consumer);
                 }
-            } else if(parameters[0] instanceof PhpReference) {
-                resolvePhpReference(methodReference, parameters[0], consumer);
-            } else if(parameters[0] instanceof BinaryExpression) {
+            } else if(parameter instanceof PhpReference) {
+                resolvePhpReference(methodReference, parameter, consumer);
+            } else if(parameter instanceof BinaryExpression) {
                 // render($foo ?? 'foo.twig.html')
-                PsiElement phpPsiElement = ((BinaryExpression) parameters[0]).getRightOperand();
+                PsiElement phpPsiElement = ((BinaryExpression) parameter).getRightOperand();
 
                 if (phpPsiElement instanceof StringLiteralExpression) {
                     addStringLiteralScope(methodReference, (StringLiteralExpression) phpPsiElement, consumer);
