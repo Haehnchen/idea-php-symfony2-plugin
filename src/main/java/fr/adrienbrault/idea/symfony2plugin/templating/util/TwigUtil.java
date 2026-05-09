@@ -962,13 +962,14 @@ public class TwigUtil {
     @NotNull
     private static Map<String, PsiVariable> collectControllerTemplateVariablesInner(@NotNull TwigFile twigFile) {
         Map<String, PsiVariable> vars = new HashMap<>();
+        Collection<String> templateNames = getTemplateNamesForFile(twigFile);
 
         for (Method method : findTwigFileController(twigFile)) {
-            vars.putAll(PhpMethodVariableResolveUtil.collectMethodVariables(method));
+            vars.putAll(PhpMethodVariableResolveUtil.collectMethodVariables(method, templateNames));
         }
 
-        for(Function methodIndex : getTwigFileMethodUsageOnIndex(twigFile)) {
-            vars.putAll(PhpMethodVariableResolveUtil.collectMethodVariables(methodIndex));
+        for(Function methodIndex : getTwigFileMethodUsageOnIndex(twigFile.getProject(), templateNames)) {
+            vars.putAll(PhpMethodVariableResolveUtil.collectMethodVariables(methodIndex, templateNames));
         }
 
         return vars;

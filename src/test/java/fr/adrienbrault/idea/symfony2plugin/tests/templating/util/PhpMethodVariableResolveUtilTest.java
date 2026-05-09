@@ -10,6 +10,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -42,7 +43,7 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
             "}"
         );
 
-        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(function);
+        Map<String, PsiVariable> vars = collectMethodVariables(function, "foo.html.twig");
 
         assertContainsElements(vars.keySet(), "foobar");
         assertContainsElements(vars.keySet(), "foobar1");
@@ -62,7 +63,7 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
             "}"
         );
 
-        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(function);
+        Map<String, PsiVariable> vars = collectMethodVariables(function, "foo.html.twig");
 
         assertContainsElements(vars.keySet(), "foobar");
     }
@@ -85,7 +86,7 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
             "}\n"
         );
 
-        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(findFunction("index"));
+        Map<String, PsiVariable> vars = collectMethodVariables(findFunction("index"), "product.html.twig");
 
         assertContainsElements(vars.keySet(), "form");
         assertContainsElements(vars.get("form").getFormTypeFqns(), "\\App\\Form\\ProductType");
@@ -105,7 +106,7 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
             "}"
         );
 
-        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(function);
+        Map<String, PsiVariable> vars = collectMethodVariables(function, "foo.html.twig");
 
         assertContainsElements(vars.keySet(), "foobar");
         assertContainsElements(vars.keySet(), "foobar1");
@@ -125,7 +126,7 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
             "}"
         );
 
-        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(function);
+        Map<String, PsiVariable> vars = collectMethodVariables(function, "foo.html.twig");
 
         assertContainsElements(vars.keySet(), "foobar", "foobar1", "foobar2");
     }
@@ -147,7 +148,7 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
             "}"
         );
 
-        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(function);
+        Map<String, PsiVariable> vars = collectMethodVariables(function, "foo.html.twig");
 
         assertContainsElements(vars.keySet(), "headline", "item");
         assertContainsElements(vars.get("item").getTypes(), "\\MyVars\\MyVar");
@@ -179,7 +180,7 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
             "}\n"
         );
 
-        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(findFunction("show"));
+        Map<String, PsiVariable> vars = collectMethodVariables(findFunction("show"), "foo.html.twig");
 
         assertContainsElements(vars.keySet(), "item", "sidebarTitle", "relatedItems");
         assertContainsElements(vars.get("item").getTypes(), "\\MyVars\\MyVar");
@@ -209,7 +210,7 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
             "}\n"
         );
 
-        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(findFunction("show"));
+        Map<String, PsiVariable> vars = collectMethodVariables(findFunction("show"), "foo.html.twig");
 
         assertContainsElements(vars.keySet(), "headline", "details", "activeTab");
     }
@@ -236,7 +237,7 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
             "}\n"
         );
 
-        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(findFunction("index"));
+        Map<String, PsiVariable> vars = collectMethodVariables(findFunction("index"), "foo.html.twig");
 
         assertContainsElements(vars.keySet(), "headline", "items");
     }
@@ -246,8 +247,12 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
      */
     public void testCollectMethodVariablesForLocalMethodControllerReturn() {
         myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;\n" +
             "class ProductController\n" +
             "{\n" +
+            "    /**\n" +
+            "     * @Template(\"product/index.html.twig\")\n" +
+            "     */\n" +
             "    public function index()\n" +
             "    {\n" +
             "        return $this->createTemplateData();\n" +
@@ -260,7 +265,7 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
             "}\n"
         );
 
-        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(findFunction("index"));
+        Map<String, PsiVariable> vars = collectMethodVariables(findFunction("index"), "product/index.html.twig");
 
         assertContainsElements(vars.keySet(), "headline");
     }
@@ -286,7 +291,7 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
             "}\n"
         );
 
-        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(findFunction("index"));
+        Map<String, PsiVariable> vars = collectMethodVariables(findFunction("index"), "foo.html.twig");
 
         assertContainsElements(vars.keySet(), "headline", "table");
     }
@@ -315,7 +320,7 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
             "}\n"
         );
 
-        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(findFunction("index"));
+        Map<String, PsiVariable> vars = collectMethodVariables(findFunction("index"), "foo.html.twig");
 
         assertContainsElements(vars.keySet(), "headline", "items", "contextNotification");
     }
@@ -349,7 +354,7 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
             "}\n"
         );
 
-        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(findFunction("show"));
+        Map<String, PsiVariable> vars = collectMethodVariables(findFunction("show"), "foo.html.twig");
 
         assertContainsElements(vars.keySet(), "item", "previousUrl", "nextUrl", "activeTab");
     }
@@ -372,7 +377,7 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
             "}\n"
         );
 
-        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(findFunction("show"));
+        Map<String, PsiVariable> vars = collectMethodVariables(findFunction("show"), "foo.html.twig");
 
         assertContainsElements(vars.keySet(), "item", "activeTab", "filters");
     }
@@ -393,9 +398,85 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
             "}"
         );
 
-        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(function);
+        Map<String, PsiVariable> vars = collectMethodVariables(function, "foo.html.twig");
 
         assertContainsElements(vars.keySet(), "item", "deleteForm");
+    }
+
+    /**
+     * @see PhpMethodVariableResolveUtil#collectMethodVariables
+     */
+    public void testCollectMethodVariablesFiltersRenderCallsByTemplateName() {
+        Function function = PhpPsiElementFactory.createFunction(getProject(), "function show() {\n" +
+            "$product = new \\MyVars\\MyVar();\n" +
+            "$form = new \\MyVars\\MyVar();\n" +
+            "\n" +
+            "/** @var $x \\Symfony\\Component\\Templating\\EngineInterface */\n" +
+            "$x->render('product/show.html.twig', ['product' => $product]);\n" +
+            "$x->render('product/edit.html.twig', ['form' => $form]);\n" +
+            "\n" +
+            "}"
+        );
+
+        Map<String, PsiVariable> showVars = collectMethodVariables(function, "product/show.html.twig");
+        assertContainsElements(showVars.keySet(), "product");
+        assertFalse(showVars.containsKey("form"));
+
+        Map<String, PsiVariable> editVars = collectMethodVariables(function, "product/edit.html.twig");
+        assertContainsElements(editVars.keySet(), "form");
+        assertFalse(editVars.containsKey("product"));
+    }
+
+    /**
+     * @see PhpMethodVariableResolveUtil#collectMethodVariables
+     */
+    public void testCollectMethodVariablesSharesConditionalRenderCallForAllResolvedTemplates() {
+        Function function = PhpPsiElementFactory.createFunction(getProject(), "function show() {\n" +
+            "$product = new \\MyVars\\MyVar();\n" +
+            "\n" +
+            "/** @var $x \\Symfony\\Component\\Templating\\EngineInterface */\n" +
+            "$x->render($preview ? 'product/preview.html.twig' : 'product/show.html.twig', ['product' => $product]);\n" +
+            "\n" +
+            "}"
+        );
+
+        assertContainsElements(collectMethodVariables(function, "product/preview.html.twig").keySet(), "product");
+        assertContainsElements(collectMethodVariables(function, "product/show.html.twig").keySet(), "product");
+    }
+
+    /**
+     * @see PhpMethodVariableResolveUtil#collectMethodVariables
+     */
+    public void testCollectMethodVariablesSupportsNamedAndReorderedArguments() {
+        Function function = PhpPsiElementFactory.createFunction(getProject(), "function show() {\n" +
+            "$product = new \\MyVars\\MyVar();\n" +
+            "$card = new \\MyVars\\MyVar();\n" +
+            "$value = new \\MyVars\\MyVar();\n" +
+            "\n" +
+            "$this->render(parameters: ['product' => $product], view: 'product/show.html.twig');\n" +
+            "$twig->render(context: ['card' => $card], name: 'widget/card.html.twig');\n" +
+            "$this->renderBlock(parameters: ['blockVar' => $value], block: 'content', view: 'product/block.html.twig');\n" +
+            "$this->renderBlock(block: 'content.html.twig', parameters: ['wrong' => $value], view: 'product/named-block.html.twig');\n" +
+            "\n" +
+            "}"
+        );
+
+        Map<String, PsiVariable> showVars = collectMethodVariables(function, "product/show.html.twig");
+        assertContainsElements(showVars.keySet(), "product");
+        assertFalse(showVars.containsKey("card"));
+        assertFalse(showVars.containsKey("blockVar"));
+
+        Map<String, PsiVariable> cardVars = collectMethodVariables(function, "widget/card.html.twig");
+        assertContainsElements(cardVars.keySet(), "card");
+        assertFalse(cardVars.containsKey("product"));
+
+        assertContainsElements(collectMethodVariables(function, "product/block.html.twig").keySet(), "blockVar");
+        assertFalse(collectMethodVariables(function, "content.html.twig").containsKey("wrong"));
+    }
+
+    @NotNull
+    private Map<String, PsiVariable> collectMethodVariables(@NotNull Function function, @NotNull String... templateNames) {
+        return PhpMethodVariableResolveUtil.collectMethodVariables(function, Arrays.asList(templateNames));
     }
 
     @NotNull
@@ -425,7 +506,7 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
             "}"
         );
 
-        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(function);
+        Map<String, PsiVariable> vars = collectMethodVariables(function, "foo.html.twig");
 
         assertContainsElements(vars.keySet(), "foobar");
         assertContainsElements(vars.keySet(), "foobar1");
@@ -445,7 +526,7 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
             "}"
         );
 
-        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(function);
+        Map<String, PsiVariable> vars = collectMethodVariables(function, "foo.html.twig");
 
         assertContainsElements(vars.keySet(), "foobar");
         assertContainsElements(vars.keySet(), "foobar1");
@@ -465,7 +546,7 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
             "}"
         );
 
-        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(function);
+        Map<String, PsiVariable> vars = collectMethodVariables(function, "foo.html.twig");
 
         assertContainsElements(vars.keySet(), "foobar");
         assertContainsElements(vars.keySet(), "foobar1");
@@ -485,7 +566,7 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
             "}"
         );
 
-        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(function);
+        Map<String, PsiVariable> vars = collectMethodVariables(function, "foo.html.twig");
 
         assertContainsElements(vars.keySet(), "foobar");
         assertContainsElements(vars.keySet(), "foobar1");
@@ -505,7 +586,7 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
             "}"
         );
 
-        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(function);
+        Map<String, PsiVariable> vars = collectMethodVariables(function, "foo.html.twig");
 
         assertContainsElements(vars.keySet(), "foobar");
         assertContainsElements(vars.keySet(), "foobar1");
@@ -525,7 +606,7 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
             "}"
         );
 
-        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(function);
+        Map<String, PsiVariable> vars = collectMethodVariables(function, "foo.html.twig");
 
         assertFalse(vars.containsKey("foobar"));
     }
@@ -541,7 +622,7 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
             "}"
         );
 
-        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(function);
+        Map<String, PsiVariable> vars = collectMethodVariables(function, "foo.html.twig");
 
         assertContainsElements(vars.keySet(), "foobar");
     }
@@ -557,7 +638,7 @@ public class PhpMethodVariableResolveUtilTest extends SymfonyLightCodeInsightFix
             "}"
         );
 
-        Map<String, PsiVariable> vars = PhpMethodVariableResolveUtil.collectMethodVariables(function);
+        Map<String, PsiVariable> vars = collectMethodVariables(function, "foo.html.twig");
 
         assertContainsElements(vars.keySet(), "foobar");
     }

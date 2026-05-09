@@ -10,6 +10,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.PhpMethodVariableResolveUtil;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
@@ -17,6 +18,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.controller.ControllerIndex;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -44,11 +46,12 @@ public class ControllerDocVariableCollector implements TwigFileVariableCollector
             return;
         }
 
+        Collection<String> templateNames = TwigUtil.getTemplateNamesForFile(psiFile);
         ControllerIndex controllerIndex = new ControllerIndex(parameter.getProject());
 
         for(String controllerName: controllerNames) {
             for(Method method : controllerIndex.resolveShortcutName(controllerName)) {
-                variables.putAll(PhpMethodVariableResolveUtil.collectMethodVariables(method));
+                variables.putAll(PhpMethodVariableResolveUtil.collectMethodVariables(method, templateNames));
             }
         }
     }

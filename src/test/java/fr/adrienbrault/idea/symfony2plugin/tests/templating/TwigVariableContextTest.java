@@ -1001,6 +1001,47 @@ public class TwigVariableContextTest extends SymfonyLightCodeInsightFixtureTestC
         );
     }
 
+    public void testControllerRenderVariableInheritanceDoesNotLeakBetweenTemplatesInSameMethod() {
+        myFixture.copyFileToProject("ide-twig.json");
+
+        myFixture.addFileToProject(
+            "src/Controller/ProductController.php",
+            "<?php\n" +
+            "class ProductController\n" +
+            "{\n" +
+            "    public function showAction()\n" +
+            "    {\n" +
+            "        $product = new \\Foo\\Template\\Foobar();\n" +
+            "        $form = new \\Foo\\Template\\Foobar();\n" +
+            "\n" +
+            "        if ($edit) {\n" +
+            "            return $this->render('product/edit.html.twig', [\n" +
+            "                'editForm' => $form,\n" +
+            "            ]);\n" +
+            "        }\n" +
+            "\n" +
+            "        return $this->render('product/show.html.twig', [\n" +
+            "            'product' => $product,\n" +
+            "        ]);\n" +
+            "    }\n" +
+            "}\n"
+        );
+
+        assertPathCompletionContainsAndNotContains(
+            "templates/product/show.html.twig",
+            "{{ <caret> }}",
+            new String[] {"product"},
+            new String[] {"editForm"}
+        );
+
+        assertPathCompletionContainsAndNotContains(
+            "templates/product/edit.html.twig",
+            "{{ <caret> }}",
+            new String[] {"editForm"},
+            new String[] {"product"}
+        );
+    }
+
     /**
      * Test that @Template annotation provides variable context.
      */
