@@ -32,6 +32,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static fr.adrienbrault.idea.symfony2plugin.util.StringUtils.underscore;
@@ -57,12 +58,19 @@ public class PhpMethodVariableResolveUtil {
      * $this->render('foobar.html.twig', $foobar + ['foobar' => $var])
      * $this->render('foobar.html.twig', $foobar += ['foobar' => $var])
      */
-    public static Map<String, PsiVariable> collectMethodVariables(@NotNull Function method) {
+    public static Map<String, PsiVariable> collectMethodVariables(@NotNull Function method, @NotNull Collection<String> templateNames) {
+        if (templateNames.isEmpty()) {
+            return Collections.emptyMap();
+        }
 
         Map<String, PsiVariable> collectedTypes = new HashMap<>();
         ResolveContext context = new ResolveContext();
 
-        for(PsiElement var: collectPossibleTemplateArrays(method)) {
+        Set<String> normalizedTemplateNames = templateNames.stream()
+            .map(TwigUtil::normalizeTemplateName)
+            .collect(Collectors.toSet());
+
+        for(PsiElement var: collectPossibleTemplateArrays(method, normalizedTemplateNames)) {
             collectVariablesForPsiElement(method, collectedTypes, var, 0, context);
         }
 
@@ -202,7 +210,7 @@ public class PhpMethodVariableResolveUtil {
      * <p>
      * Sources:
      * <pre>
-     *   - direct return values: return ['foo' => $bar] / return $templateVars
+     *   - matching annotation/attribute return values: return ['foo' => $bar] / return $templateVars
      *   - render-like calls discovered by {@link #visitRenderTemplateFunctions(Function, Consumer)}
      * </pre>
      * <p>
@@ -214,39 +222,46 @@ public class PhpMethodVariableResolveUtil {
      * </pre>
      */
     @NotNull
-    private static List<PsiElement> collectPossibleTemplateArrays(@NotNull Function method) {
+    private static List<PsiElement> collectPossibleTemplateArrays(@NotNull Function method, @NotNull Set<String> normalizedTemplateNames) {
+        if (normalizedTemplateNames.isEmpty()) {
+            return Collections.emptyList();
+        }
 
         List<PsiElement> collectedTemplateVariables = new ArrayList<>();
-
-        // Annotation controller
-        // @TODO: check for phpdoc tag
-        for(PhpReturn phpReturn : PsiTreeUtil.findChildrenOfType(method, PhpReturn.class)) {
-            PhpPsiElement returnPsiElement = phpReturn.getFirstPsiChild();
-
-            // @TODO: think of support all types here
-            // return $template
-            // return array('foo' => $var)
-            if(returnPsiElement instanceof Variable || returnPsiElement instanceof ArrayCreationExpression || returnPsiElement instanceof FunctionReference) {
-                collectedTemplateVariables.add(returnPsiElement);
-            }
-
-        }
 
         // twig render calls:
         // $twig->render('foo', $vars);
         Set<FunctionReference> references = new HashSet<>();
+        boolean[] collectControllerReturn = new boolean[] { false };
         visitRenderTemplateFunctions(method, triple -> {
+            if (!normalizedTemplateNames.contains(triple.getFirst())) {
+                return;
+            }
+
             FunctionReference functionScope = triple.getThird();
             if (functionScope != null) {
                 references.add(functionScope);
+            } else {
+                collectControllerReturn[0] = true;
             }
         });
 
+        if (collectControllerReturn[0]) {
+            // Annotation / attribute controller
+            for(PhpReturn phpReturn : PsiTreeUtil.findChildrenOfType(method, PhpReturn.class)) {
+                PhpPsiElement returnPsiElement = phpReturn.getFirstPsiChild();
+
+                // @TODO: think of support all types here
+                // return $template
+                // return array('foo' => $var)
+                if(returnPsiElement instanceof Variable || returnPsiElement instanceof ArrayCreationExpression || returnPsiElement instanceof FunctionReference) {
+                    collectedTemplateVariables.add(returnPsiElement);
+                }
+            }
+        }
+
         for(FunctionReference methodReference : references) {
-            PsiElement templateParameter = PsiElementUtils.getMethodParameterPsiElementAt(
-                methodReference.getParameterList(),
-                getTemplateParameterIndex(methodReference)
-            );
+            PsiElement templateParameter = TemplateRenderVisitor.findTemplateContextParameter(methodReference);
             if(templateParameter != null) {
                 collectedTemplateVariables.add(templateParameter);
             }
@@ -525,6 +540,32 @@ public class PhpMethodVariableResolveUtil {
             }
 
             return firstParameter;
+        }
+
+        @Nullable
+        private static PsiElement findTemplateContextParameter(@NotNull FunctionReference methodReference) {
+            ParameterList parameterList = methodReference.getParameterList();
+            if (parameterList == null) {
+                return null;
+            }
+
+            for (String namedArgument : Arrays.asList("parameters", "context")) {
+                PsiElement namedParameter = findNamedArgument(parameterList, namedArgument);
+                if (namedParameter != null) {
+                    return namedParameter;
+                }
+            }
+
+            PsiElement templateParameter = PsiElementUtils.getMethodParameterPsiElementAt(
+                parameterList,
+                getTemplateParameterIndex(methodReference)
+            );
+
+            if (templateParameter == null || isNamedArgument(templateParameter)) {
+                return null;
+            }
+
+            return templateParameter;
         }
 
         @NotNull
