@@ -138,13 +138,12 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
 
     @Override
     public int getVersion() {
-        return 4;
+        return 5;
     }
 
     private static boolean isValidForIndex(FileContent inputData) {
         return inputData.getFile().getLength() < MAX_FILE_BYTE_SIZE;
     }
 }
-
 
 
