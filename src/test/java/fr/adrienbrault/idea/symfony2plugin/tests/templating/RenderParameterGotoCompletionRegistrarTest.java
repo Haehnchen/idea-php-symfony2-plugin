@@ -8,6 +8,8 @@ import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.templating.RenderParameterGotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
+import java.util.List;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see fr.adrienbrault.idea.symfony2plugin.templating.RenderParameterGotoCompletionRegistrar
@@ -111,6 +113,144 @@ public class RenderParameterGotoCompletionRegistrarTest extends SymfonyLightCode
             "email",
             "message"
         );
+    }
+
+    public void testTemplateVariableCompletionOnlyContainsRootVariables() {
+        myFixture.addFileToProject(
+            "templates/list/index.html.twig",
+            "{{ record.title }}\n" +
+            "{{ navigation.items }}\n" +
+            "{{ app.request.get }}\n" +
+            "{% if filter.enabled %}{% endif %}\n" +
+            "{% for item in collection.children %}{% endfor %}"
+        );
+
+        myFixture.configureByText(
+            PhpFileType.INSTANCE,
+            "<?php $this->render('list/index.html.twig', ['<caret>']);"
+        );
+        myFixture.completeBasic();
+
+        List<String> lookupElements = myFixture.getLookupElementStrings();
+        assertNotNull(lookupElements);
+        assertContainsElements(lookupElements, "record", "navigation", "app", "filter", "collection");
+        assertFalse("Completion should not contain dotted variable path", lookupElements.contains("record.title"));
+        assertFalse("Completion should not contain dotted variable path", lookupElements.contains("navigation.items"));
+        assertFalse("Completion should not contain dotted variable path", lookupElements.contains("app.request.get"));
+        assertFalse("Completion should not contain dotted variable path", lookupElements.contains("filter.enabled"));
+        assertFalse("Completion should not contain dotted variable path", lookupElements.contains("collection.children"));
+    }
+
+    public void testTemplateVariableCompletionResolvesTagIncludeWithContext() {
+        myFixture.addFileToProject(
+            "templates/list/_row.html.twig",
+            "{{ provided }}\n" +
+            "{{ mapped.name }}\n" +
+            "{{ inherited.name }}"
+        );
+        myFixture.addFileToProject(
+            "templates/list/with_context.html.twig",
+            "{% include 'list/_row.html.twig' with {'provided': 'literal', mapped: source.child} %}"
+        );
+
+        myFixture.configureByText(
+            PhpFileType.INSTANCE,
+            "<?php $this->render('list/with_context.html.twig', ['<caret>']);"
+        );
+        myFixture.completeBasic();
+
+        List<String> lookupElements = myFixture.getLookupElementStrings();
+        assertNotNull(lookupElements);
+        assertContainsElements(lookupElements, "source", "inherited");
+        assertFalse("Completion should not contain explicitly provided include variables", lookupElements.contains("provided"));
+        assertFalse("Completion should not contain explicitly provided include variables", lookupElements.contains("mapped"));
+        assertFalse("Completion should not contain dotted include argument paths", lookupElements.contains("source.child"));
+    }
+
+    public void testTemplateVariableCompletionResolvesTagIncludeOnlyContext() {
+        myFixture.addFileToProject(
+            "templates/list/_row_only.html.twig",
+            "{{ provided }}\n" +
+            "{{ mapped.name }}\n" +
+            "{{ inherited.name }}"
+        );
+        myFixture.addFileToProject(
+            "templates/list/only_context.html.twig",
+            "{% include 'list/_row_only.html.twig' with {'provided': 'literal', mapped: source.child} only %}"
+        );
+
+        myFixture.configureByText(
+            PhpFileType.INSTANCE,
+            "<?php $this->render('list/only_context.html.twig', ['<caret>']);"
+        );
+        myFixture.completeBasic();
+
+        List<String> lookupElements = myFixture.getLookupElementStrings();
+        assertNotNull(lookupElements);
+        assertContainsElements(lookupElements, "source");
+        assertFalse("Completion should not contain isolated include variables", lookupElements.contains("provided"));
+        assertFalse("Completion should not contain isolated include variables", lookupElements.contains("mapped"));
+        assertFalse("Completion should not contain isolated include variables", lookupElements.contains("inherited"));
+        assertFalse("Completion should not contain dotted include argument paths", lookupElements.contains("source.child"));
+    }
+
+    public void testTemplateVariableCompletionResolvesFunctionIncludeWithoutContext() {
+        myFixture.addFileToProject(
+            "templates/list/_function_row.html.twig",
+            "{{ provided }}\n" +
+            "{{ mapped.name }}\n" +
+            "{{ inherited.name }}"
+        );
+        myFixture.addFileToProject(
+            "templates/list/function_without_context.html.twig",
+            "{{ include('list/_function_row.html.twig', {'provided': 'literal', mapped: source.child}, with_context: false) }}"
+        );
+
+        myFixture.configureByText(
+            PhpFileType.INSTANCE,
+            "<?php $this->render('list/function_without_context.html.twig', ['<caret>']);"
+        );
+        myFixture.completeBasic();
+
+        List<String> lookupElements = myFixture.getLookupElementStrings();
+        assertNotNull(lookupElements);
+        assertContainsElements(lookupElements, "source");
+        assertFalse("Completion should not contain isolated include variables", lookupElements.contains("provided"));
+        assertFalse("Completion should not contain isolated include variables", lookupElements.contains("mapped"));
+        assertFalse("Completion should not contain isolated include variables", lookupElements.contains("inherited"));
+        assertFalse("Completion should not contain dotted include argument paths", lookupElements.contains("source.child"));
+    }
+
+    public void testTemplateVariableCompletionFindsVariablesInFunctionArguments() {
+        myFixture.addFileToProject(
+            "templates/forms/edit.html.twig",
+            "{# Plain Note #}\n" +
+            "{% form_theme form 'form_layout.html.twig' %}\n" +
+            "{{ form_start(form, {attr: {'novalidate': 'novalidate'}}) }}\n" +
+            "{{ form_row(form.file) }}\n" +
+            "{{ form_rest(form.name) }}\n" +
+            "{{ form_rest(form.parent) }}\n" +
+            "{{ form_rest(form) }}"
+        );
+
+        myFixture.configureByText(
+            PhpFileType.INSTANCE,
+            "<?php $this->render('forms/edit.html.twig', ['<caret>']);"
+        );
+        myFixture.completeBasic();
+
+        List<String> lookupElements = myFixture.getLookupElementStrings();
+        assertNotNull(lookupElements);
+        assertContainsElements(lookupElements, "form");
+        assertFalse("Completion should not contain function names", lookupElements.contains("form_start"));
+        assertFalse("Completion should not contain function names", lookupElements.contains("form_row"));
+        assertFalse("Completion should not contain function names", lookupElements.contains("form_rest"));
+        assertFalse("Completion should not contain hash keys", lookupElements.contains("attr"));
+        assertFalse("Completion should not contain plain comment words", lookupElements.contains("Plain"));
+        assertFalse("Completion should not contain plain comment words", lookupElements.contains("Note"));
+        assertFalse("Completion should not contain dotted variable paths", lookupElements.contains("form.file"));
+        assertFalse("Completion should not contain dotted variable paths", lookupElements.contains("form.name"));
+        assertFalse("Completion should not contain dotted variable paths", lookupElements.contains("form.parent"));
     }
 
     /**

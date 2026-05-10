@@ -3038,6 +3038,9 @@ public class TwigUtil {
                 if(!PlatformPatterns.psiElement().beforeLeafSkipping(PlatformPatterns.psiElement(PsiWhiteSpace.class), PlatformPatterns.psiElement(TwigTokenTypes.LBRACE)).accepts(nextSiblingOfType)) {
                     visitTemplateVariablesConsumer(nextSiblingOfType, consumer);
                 }
+
+                visitPrintBlockSourceVariables(psiElement, consumer);
+                visitFunctionIncludeTemplateVariables(psiElement, consumer, includeDepth);
             } else if (elementType == TwigElementTypes.FOR_STATEMENT) {
                 // {% for foo in bar %}{% endfor %}
 
@@ -3059,34 +3062,114 @@ public class TwigUtil {
                 String text = psiElement.getText();
 
                 if(StringUtils.isNotBlank(text)) {
-                    for (Pattern pattern : TwigTypeResolveUtil.INLINE_DOC_REGEX) {
+                    for (Pattern pattern : TwigTypeResolveUtil.INLINE_VAR_DOC_REGEX) {
                         Matcher matcher = pattern.matcher(text);
                         while (matcher.find()) {
-                            consumer.consume(Pair.create(matcher.group("var"), psiElement));
+                            String rootVariableName = StringUtils.trimToNull(matcher.group("var"));
+                            if (rootVariableName != null) {
+                                consumer.consume(Pair.create(rootVariableName, psiElement));
+                            }
                         }
                     }
                 }
-            } else if (psiElement instanceof TwigTagWithFileReference && includeDepth-- >= 0) {
-                // we dont support "with" and "context" modification for now
-                // {% include 'foo.html.twig' only %}
-                // {% include 'foo.html.twig' with {} %}
-
-                if(PsiElementUtils.getChildrenOfType(psiElement, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("with", "only"))) == null) {
-                    // collect includes unique and visit until given "includeDepth"
-
-                    Set<TwigFile> files = getIncludeTagStrings((TwigTagWithFileReference) psiElement).stream()
-                        .map(template -> getTemplatePsiElements(psiElement.getProject(), template))
-                        .filter(psiFile -> psiFile instanceof TwigFile)
-                        .map(psiFile -> (TwigFile) psiFile)
-                        .collect(Collectors.toCollection(ArrayListSet::new));
-
-                    for (TwigFile file : files) {
-                        visitTemplateVariables(file, consumer, includeDepth);
-                    }
-                }
+            } else if (psiElement instanceof TwigTagWithFileReference && includeDepth >= 0) {
+                visitTagIncludeTemplateVariables((TwigTagWithFileReference) psiElement, consumer, includeDepth - 1);
             } else if (elementType == TwigElementTypes.BLOCK_STATEMENT) {
                 // visit block statement
                 visitTemplateVariables(psiElement, consumer, includeDepth);
+            }
+        }
+    }
+
+    private static void visitPrintBlockSourceVariables(
+        @NotNull PsiElement printBlock,
+        @NotNull Consumer<Pair<String, PsiElement>> consumer
+    ) {
+        for (PsiElement sourceVariable : collectSourceRootVariables(Collections.singletonList(printBlock))) {
+            visitTemplateVariablesConsumer(sourceVariable, consumer);
+        }
+    }
+
+    private static void visitTagIncludeTemplateVariables(
+        @NotNull TwigTagWithFileReference includeTag,
+        @NotNull Consumer<Pair<String, PsiElement>> consumer,
+        int includeDepth
+    ) {
+        TwigIncludeContextParser.IncludeContext includeContext = TwigIncludeContextParser.resolveTagIncludeContext(includeTag);
+        visitIncludeArgumentSourceVariables(includeContext, consumer);
+        if (!includeContext.withParentContext()) {
+            return;
+        }
+
+        visitIncludedTemplateVariables(
+            includeTag.getProject(),
+            getIncludeTagStrings(includeTag),
+            includeContext.argumentNames(),
+            consumer,
+            includeDepth
+        );
+    }
+
+    private static void visitFunctionIncludeTemplateVariables(
+        @NotNull PsiElement scope,
+        @NotNull Consumer<Pair<String, PsiElement>> consumer,
+        int includeDepth
+    ) {
+        if (includeDepth < 0) {
+            return;
+        }
+
+        PsiElement[] templateNames = PsiTreeUtil.collectElements(scope, TwigPattern.getPrintBlockOrTagFunctionPattern("include")::accepts);
+        for (PsiElement templateName : templateNames) {
+            if (StringUtils.isBlank(templateName.getText())) {
+                continue;
+            }
+
+            TwigIncludeContextParser.IncludeContext includeContext = TwigIncludeContextParser.resolveFunctionIncludeContext(templateName);
+            visitIncludeArgumentSourceVariables(includeContext, consumer);
+            if (!includeContext.withParentContext()) {
+                continue;
+            }
+
+            visitIncludedTemplateVariables(
+                scope.getProject(),
+                Collections.singleton(templateName.getText()),
+                includeContext.argumentNames(),
+                consumer,
+                includeDepth - 1
+            );
+        }
+    }
+
+    private static void visitIncludedTemplateVariables(
+        @NotNull Project project,
+        @NotNull Collection<String> templateNames,
+        @NotNull Set<String> providedVariables,
+        @NotNull Consumer<Pair<String, PsiElement>> consumer,
+        int includeDepth
+    ) {
+        Set<TwigFile> files = templateNames.stream()
+            .flatMap(template -> getTemplatePsiElements(project, template).stream())
+            .filter(psiFile -> psiFile instanceof TwigFile)
+            .map(psiFile -> (TwigFile) psiFile)
+            .collect(Collectors.toCollection(ArrayListSet::new));
+
+        for (TwigFile file : files) {
+            visitTemplateVariables(file, pair -> {
+                if (!providedVariables.contains(pair.getFirst())) {
+                    consumer.consume(pair);
+                }
+            }, includeDepth);
+        }
+    }
+
+    private static void visitIncludeArgumentSourceVariables(
+        @NotNull TwigIncludeContextParser.IncludeContext includeContext,
+        @NotNull Consumer<Pair<String, PsiElement>> consumer
+    ) {
+        for (TwigIncludeContextParser.IncludeArgument argument : includeContext.arguments()) {
+            for (PsiElement sourceVariable : collectSourceRootVariables(argument.valueElements())) {
+                visitTemplateVariablesConsumer(sourceVariable, consumer);
             }
         }
     }
@@ -3096,11 +3179,67 @@ public class TwigUtil {
      */
     private static void visitTemplateVariablesConsumer(@Nullable PsiElement nextSiblingOfType, @NotNull Consumer<Pair<String, PsiElement>> consumer) {
         if (nextSiblingOfType != null) {
-            String text = nextSiblingOfType.getText();
-            if (StringUtils.isNotBlank(text)) {
-                consumer.consume(Pair.create(text, nextSiblingOfType));
+            String rootVariableName = getTemplateRootVariableName(nextSiblingOfType);
+            if (rootVariableName != null) {
+                consumer.consume(Pair.create(rootVariableName, nextSiblingOfType));
             }
         }
+    }
+
+    @Nullable
+    private static String getTemplateRootVariableName(@NotNull PsiElement variableReference) {
+        PsiElement rootVariable = getTemplateRootVariableReference(variableReference);
+
+        return rootVariable == null ? null : StringUtils.trimToNull(rootVariable.getText());
+    }
+
+    @Nullable
+    private static PsiElement getTemplateRootVariableReference(@NotNull PsiElement variableReference) {
+        if (variableReference instanceof TwigVariableReference) {
+            return variableReference;
+        }
+
+        if (variableReference instanceof TwigFieldReference) {
+            TwigPsiReference owner = ((TwigFieldReference) variableReference).getOwner();
+            return owner == null ? null : getTemplateRootVariableReference(owner);
+        }
+
+        return null;
+    }
+
+    @NotNull
+    private static Collection<PsiElement> collectSourceRootVariables(@NotNull List<PsiElement> valueElements) {
+        Map<String, PsiElement> rootVariables = new LinkedHashMap<>();
+        for (PsiElement valueElement : valueElements) {
+            collectSourceRootVariables(valueElement, rootVariables);
+        }
+
+        return rootVariables.values();
+    }
+
+    private static void collectSourceRootVariables(@NotNull PsiElement element, @NotNull Map<String, PsiElement> rootVariables) {
+        PsiElement rootVariable = getTemplateRootVariableReference(element);
+        if (rootVariable != null) {
+            if (!(element instanceof TwigVariableReference) || !isFunctionCallReference(element)) {
+                rootVariables.putIfAbsent(rootVariable.getText(), rootVariable);
+            }
+
+            return;
+        }
+
+        for (PsiElement child = element.getFirstChild(); child != null; child = child.getNextSibling()) {
+            collectSourceRootVariables(child, rootVariables);
+        }
+    }
+
+    private static boolean isFunctionCallReference(@NotNull PsiElement element) {
+        return PlatformPatterns.psiElement().beforeLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+            ),
+            PlatformPatterns.psiElement(TwigTokenTypes.LBRACE)
+        ).accepts(element);
     }
 
     /**
