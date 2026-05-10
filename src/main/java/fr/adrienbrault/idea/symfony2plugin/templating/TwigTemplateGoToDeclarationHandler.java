@@ -11,13 +11,11 @@ import com.intellij.psi.*;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigBlockTag;
 import com.jetbrains.twig.elements.TwigElementTypes;
-import com.jetbrains.twig.elements.TwigPsiReference;
 import com.jetbrains.twig.elements.TwigVariableReference;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.assetMapper.AssetMapperUtil;
@@ -25,6 +23,7 @@ import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigConstantEnumResolver;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigIncludeContextParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
@@ -76,6 +75,10 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             // provide global twig file resolving
             // just if we dont match against known file references pattern
             targets.addAll(getTwigFiles(psiElement, offset));
+        }
+
+        if (TwigIncludeContextParser.findIncludeKeyContext(psiElement) != null) {
+            targets.addAll(TwigIncludeContextParser.getIncludeWithContextKeyTargets(psiElement));
         }
 
         if (TwigPattern.getAutocompletableRoutePattern().accepts(psiElement)) {

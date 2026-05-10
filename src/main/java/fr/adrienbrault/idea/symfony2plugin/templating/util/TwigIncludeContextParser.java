@@ -1,12 +1,21 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
+import com.intellij.lang.ASTNode;
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.tree.IElementType;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.containers.ArrayListSet;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
+import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigElementTypes;
+import com.jetbrains.twig.elements.TwigTagWithFileReference;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TemplateInclude;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -62,6 +71,125 @@ public final class TwigIncludeContextParser {
         }
 
         return new IncludeContext(includeArguments, withParentContext);
+    }
+
+    /**
+     * Finds a top-level key inside an include/embed context hash.
+     * <p>
+     * Examples:
+     * <ul>
+     *   <li><code>{% include 'card.html.twig' with {'title': item.title} %}</code> matches {@code title}</li>
+     *   <li><code>{{ include('card.html.twig', {"title": item.title}) }}</code> matches {@code title}</li>
+     *   <li><code>{% embed 'card.html.twig' with {title: item.title} %}</code> matches {@code title}</li>
+     * </ul>
+     */
+    @Nullable
+    public static IncludeKeyContext findIncludeKeyContext(@Nullable PsiElement element) {
+        if (element == null) {
+            return null;
+        }
+
+        PsiElement hashLiteral = PsiTreeUtil.findFirstParent(element, true, TwigIncludeContextParser::isHashLiteral);
+        if (hashLiteral == null || !isHashKey(hashLiteral, element)) {
+            return null;
+        }
+
+        PsiElement tag = findTagWithHash(hashLiteral);
+        if (tag != null) {
+            return new IncludeKeyContext(tag, null);
+        }
+
+        PsiElement templateName = findFunctionIncludeTemplateName(hashLiteral);
+        return templateName == null ? null : new IncludeKeyContext(templateName, templateName);
+    }
+
+    /**
+     * Collects variable names from the target template of an include/embed {@code with} hash key.
+     * <p>
+     * Example: for <code>{% include 'card.html.twig' with {'': item} %}</code> and a target
+     * template containing <code>{{ title }}</code>, this returns {@code title} as completion input.
+     */
+    @NotNull
+    public static Collection<IncludeWithContextTemplateVariable> getIncludeWithContextKeyVariables(@Nullable PsiElement element) {
+        IncludeKeyContext context = findIncludeKeyContext(element);
+        if (context == null) {
+            return Collections.emptyList();
+        }
+
+        Collection<IncludeWithContextTemplateVariable> variables = new ArrayList<>();
+        for (String templateName : getIncludeWithContextTemplateNames(context)) {
+            for (PsiFile psiFile : TwigUtil.getTemplatePsiElements(context.sourceElement().getProject(), templateName)) {
+                if (!(psiFile instanceof TwigFile twigFile)) {
+                    continue;
+                }
+
+                Map<TwigFile, String> twigFiles = new LinkedHashMap<>();
+                twigFiles.put(twigFile, templateName);
+                twigFiles.putAll(TwigUtil.getExtendsTemplates(twigFile));
+
+                for (Map.Entry<TwigFile, String> entry : twigFiles.entrySet()) {
+                    TwigUtil.visitTemplateVariables(entry.getKey(), pair ->
+                        variables.add(new IncludeWithContextTemplateVariable(pair.getFirst(), pair.getSecond(), entry.getValue()))
+                    );
+                }
+            }
+        }
+
+        return variables;
+    }
+
+    /**
+     * Collects target PSI elements for the current include/embed {@code with} hash key.
+     * <p>
+     * Example: navigating from <code>{% include 'card.html.twig' with {'tit<caret>le': item.title} %}</code>
+     * returns the {@code title} usage inside {@code card.html.twig}.
+     */
+    @NotNull
+    public static Collection<PsiElement> getIncludeWithContextKeyTargets(@Nullable PsiElement element) {
+        String variableName = element == null ? null : StringUtils.trimToNull(PsiElementUtils.trimQuote(element.getText()));
+        if (StringUtils.isBlank(variableName)) {
+            return Collections.emptyList();
+        }
+
+        Collection<PsiElement> targets = new ArrayList<>();
+        for (IncludeWithContextTemplateVariable variable : getIncludeWithContextKeyVariables(element)) {
+            if (variableName.equals(variable.name())) {
+                targets.add(variable.target());
+            }
+        }
+
+        return targets;
+    }
+
+    /**
+     * Resolves the template names referenced by a matched include/embed {@code with} hash context.
+     * <p>
+     * Examples:
+     * <ul>
+     *   <li><code>{{ include('card.html.twig', {'title': item.title}) }}</code> resolves {@code card.html.twig}</li>
+     *   <li><code>{% include 'card.html.twig' with {'title': item.title} %}</code> resolves {@code card.html.twig}</li>
+     *   <li><code>{% embed 'layout.html.twig' with {'title': item.title} %}</code> resolves {@code layout.html.twig}</li>
+     * </ul>
+     */
+    @NotNull
+    private static Collection<String> getIncludeWithContextTemplateNames(@NotNull IncludeKeyContext context) {
+        if (context.templateName() != null) {
+            return Collections.singleton(context.templateName().getText());
+        }
+
+        Collection<String> templates = new ArrayListSet<>();
+        TwigUtil.visitTemplateIncludes(context.sourceElement(), include -> {
+            TemplateInclude.TYPE type = include.getType();
+            if (type == TemplateInclude.TYPE.INCLUDE || type == TemplateInclude.TYPE.EMBED) {
+                templates.add(include.getTemplateName());
+            }
+        });
+
+        if (templates.isEmpty() && context.sourceElement() instanceof TwigTagWithFileReference twigTagWithFileReference) {
+            templates.addAll(TwigUtil.getIncludeTagStrings(twigTagWithFileReference));
+        }
+
+        return templates;
     }
 
     /**
@@ -196,6 +324,156 @@ public final class TwigIncludeContextParser {
     }
 
     /**
+     * Ensures the caret token belongs to the key side of the current hash entry.
+     * <p>
+     * Examples:
+     * <ul>
+     *   <li><code>{'title': item}</code> matches {@code title}</li>
+     *   <li><code>{'title': item}</code> does not match {@code item}</li>
+     * </ul>
+     */
+    private static boolean isHashKey(@NotNull PsiElement hashLiteral, @NotNull PsiElement element) {
+        PsiElement directChild = getDirectChild(hashLiteral, element);
+        if (directChild == null || !isKeyToken(element, directChild)) {
+            return false;
+        }
+
+        for (PsiElement previous = previousMeaningfulSibling(directChild); previous != null; previous = previousMeaningfulSibling(previous)) {
+            if (isTwigElementType(previous, TwigTokenTypes.COLON)) {
+                return false;
+            }
+
+            if (isTwigElementType(previous, TwigTokenTypes.COMMA) || isTwigElementType(previous, TwigTokenTypes.LBRACE_CURL)) {
+                break;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Returns the direct child of {@code parent} that contains {@code element}.
+     * <p>
+     * Example: inside <code>{'title': item}</code>, a leaf inside {@code title} returns the
+     * top-level hash child for the key.
+     */
+    @Nullable
+    private static PsiElement getDirectChild(@NotNull PsiElement parent, @NotNull PsiElement element) {
+        PsiElement current = element;
+        while (current != null && current.getParent() != parent) {
+            current = current.getParent();
+        }
+
+        return current;
+    }
+
+    /**
+     * Checks whether the current PSI token can represent an include/embed hash key.
+     * <p>
+     * Examples:
+     * <ul>
+     *   <li><code>{title: item}</code> matches {@code title}</li>
+     *   <li><code>{"title": item}</code> matches {@code title} and its quote tokens</li>
+     *   <li><code>{: item}</code> allows completion before the colon</li>
+     * </ul>
+     */
+    private static boolean isKeyToken(@NotNull PsiElement element, @NotNull PsiElement directChild) {
+        return isTwigElementType(element, TwigTokenTypes.STRING_TEXT) ||
+            isTwigElementType(element, TwigTokenTypes.IDENTIFIER) ||
+            isTwigElementType(directChild, TwigElementTypes.VARIABLE_REFERENCE) ||
+            isTwigElementType(directChild, TwigTokenTypes.STRING_TEXT) ||
+            isTwigElementType(directChild, TwigTokenTypes.IDENTIFIER) ||
+            isTwigElementType(directChild, TwigTokenTypes.LBRACE_CURL) ||
+            isTwigElementType(directChild, TwigTokenTypes.COLON) ||
+            isTwigElementType(directChild, TwigTokenTypes.SINGLE_QUOTE) ||
+            isTwigElementType(directChild, TwigTokenTypes.DOUBLE_QUOTE);
+    }
+
+    /**
+     * Finds the include/embed tag that owns a direct {@code with} hash.
+     * <p>
+     * Examples:
+     * <ul>
+     *   <li><code>{% include 'card.html.twig' with {'title': item} %}</code> returns the include tag</li>
+     *   <li><code>{% embed 'card.html.twig' with {'title': item} %}</code> returns the embed tag</li>
+     * </ul>
+     */
+    @Nullable
+    private static PsiElement findTagWithHash(@NotNull PsiElement hashLiteral) {
+        PsiElement tag = PsiTreeUtil.findFirstParent(hashLiteral, false, parent ->
+            isTwigElementType(parent, TwigElementTypes.INCLUDE_TAG) || isTwigElementType(parent, TwigElementTypes.EMBED_TAG)
+        );
+
+        return tag != null && isDirectWithHash(tag, hashLiteral) ? tag : null;
+    }
+
+    /**
+     * Checks whether {@code hashLiteral} is the hash immediately after a tag {@code with}.
+     * <p>
+     * Example: in <code>{% include 'card.html.twig' with {'title': item} %}</code>, the
+     * hash after {@code with} matches.
+     */
+    private static boolean isDirectWithHash(@NotNull PsiElement tag, @NotNull PsiElement hashLiteral) {
+        for (PsiElement child = tag.getFirstChild(); child != null; child = nextMeaningfulSibling(child)) {
+            if (!isWithKeyword(child)) {
+                continue;
+            }
+
+            return nextMeaningfulSibling(child) == hashLiteral;
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks Twig's {@code with} keyword token, with a text fallback for parser variants.
+     * <p>
+     * Example: <code>{% include 'card.html.twig' with {'title': item} %}</code> matches {@code with}.
+     */
+    private static boolean isWithKeyword(@NotNull PsiElement element) {
+        return isTwigElementType(element, TwigTokenTypes.WITH_KEYWORD) || "with".equals(element.getText());
+    }
+
+    /**
+     * Resolves the first template argument when {@code hashLiteral} belongs to an {@code include()} call.
+     * <p>
+     * Examples:
+     * <ul>
+     *   <li><code>{{ include('card.html.twig', {'title': item}) }}</code> returns {@code card.html.twig}</li>
+     *   <li><code>{{ source('card.html.twig', {'title': item}) }}</code> returns {@code null}</li>
+     * </ul>
+     */
+    @Nullable
+    private static PsiElement findFunctionIncludeTemplateName(@NotNull PsiElement hashLiteral) {
+        PsiElement functionCall = PsiElementUtils.getParentOfType(hashLiteral, TwigElementTypes.FUNCTION_CALL);
+        PsiElement functionName = PsiElementUtils.getChildrenOfType(functionCall, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER));
+        if (functionName == null || !"include".equals(functionName.getText())) {
+            return null;
+        }
+
+        List<List<PsiElement>> arguments = splitFunctionArguments(functionCall);
+        if (arguments.size() < 2) {
+            return null;
+        }
+
+        PsiElement templateName = arguments.getFirst().stream()
+            .filter(element -> isTwigElementType(element, TwigTokenTypes.STRING_TEXT))
+            .findFirst()
+            .orElse(null);
+        if (templateName == null) {
+            return null;
+        }
+
+        for (int i = 1; i < arguments.size(); i++) {
+            if (findHashLiteral(arguments.get(i)) == hashLiteral) {
+                return templateName;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Reads hash arguments, e.g. <code>{product: item, title: 'Example'}</code>.
      */
     @NotNull
@@ -285,6 +563,19 @@ public final class TwigIncludeContextParser {
     }
 
     /**
+     * Gets the previous sibling while skipping PSI and Twig whitespace.
+     */
+    @Nullable
+    private static PsiElement previousMeaningfulSibling(@NotNull PsiElement element) {
+        PsiElement previous = element.getPrevSibling();
+        while (previous != null && isWhitespace(previous)) {
+            previous = previous.getPrevSibling();
+        }
+
+        return previous;
+    }
+
+    /**
      * Handles both IntelliJ whitespace PSI and Twig whitespace tokens.
      */
     private static boolean isWhitespace(@NotNull PsiElement element) {
@@ -295,7 +586,8 @@ public final class TwigIncludeContextParser {
      * Compares direct Twig element types, e.g. {@code TwigTokenTypes.COMMA}.
      */
     private static boolean isTwigElementType(@NotNull PsiElement element, @NotNull IElementType elementType) {
-        return element.getNode().getElementType() == elementType;
+        ASTNode node = element.getNode();
+        return node != null && node.getElementType() == elementType;
     }
 
     /**
@@ -323,5 +615,21 @@ public final class TwigIncludeContextParser {
      * Parsed hash key and next token index, e.g. after {@code 'product'}.
      */
     private record KeyResult(@NotNull String name, int nextIndex) {
+    }
+
+    /**
+     * Matched include/embed hash-key context. For function includes, {@code templateName} points to the first argument.
+     */
+    public record IncludeKeyContext(@NotNull PsiElement sourceElement, @Nullable PsiElement templateName) {
+    }
+
+    /**
+     * Template variable exposed for include/embed {@code with} hash-key completion and navigation.
+     *
+     * @param name variable name, e.g. {@code title}
+     * @param target PSI element where the variable was found in the target template
+     * @param templateName target template that contributed the variable, e.g. {@code card.html.twig}
+     */
+    public record IncludeWithContextTemplateVariable(@NotNull String name, @NotNull PsiElement target, @NotNull String templateName) {
     }
 }

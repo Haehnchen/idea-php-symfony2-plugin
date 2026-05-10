@@ -2972,7 +2972,6 @@ public class TwigUtil {
         visitTemplateVariables(scope, consumer, 3);
     }
 
-
     /**
      * Check if Twig pathes should be filled with the Bundle naming strategy "FooBar:Foo:Test"
      */

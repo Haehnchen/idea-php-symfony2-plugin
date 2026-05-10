@@ -4,6 +4,7 @@ import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
+import com.intellij.lang.ASTNode;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.text.StringUtil;
@@ -13,6 +14,7 @@ import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiReference;
+import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.PlatformIcons;
 import com.intellij.util.ProcessingContext;
@@ -22,6 +24,7 @@ import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
+import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
@@ -36,6 +39,7 @@ import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.completion.QuotedInsertionLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigIncludeContextParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
@@ -83,6 +87,32 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             TwigPattern.getIncludeTagArrayPattern(),
             TwigPattern.getTagTernaryPattern(TwigElementTypes.INCLUDE_TAG)
         ), new TemplateCompletionProvider());
+
+        // {% include 'card.html.twig' with {'<caret>': item} %}
+        // {{ include('card.html.twig', {<caret>: item}) }}
+        // {% embed 'card.html.twig' with {"<caret>": item} %}
+        extend(
+            CompletionType.BASIC,
+            PlatformPatterns.psiElement().with(new PatternCondition<PsiElement>("include/embed with hash key") {
+                @Override
+                public boolean accepts(@NotNull PsiElement element, ProcessingContext context) {
+                    ASTNode node = element.getNode();
+                    if (node == null) {
+                        return false;
+                    }
+
+                    IElementType elementType = node.getElementType();
+                    return element.getLanguage().isKindOf(TwigLanguage.INSTANCE) &&
+                        (elementType == TwigTokenTypes.STRING_TEXT ||
+                            elementType == TwigTokenTypes.IDENTIFIER ||
+                            elementType == TwigTokenTypes.LBRACE_CURL ||
+                            elementType == TwigTokenTypes.COLON ||
+                            elementType == TwigElementTypes.VARIABLE_REFERENCE) &&
+                        TwigIncludeContextParser.findIncludeKeyContext(element) != null;
+                }
+            }),
+            new IncludeWithContextKeyCompletionProvider()
+        );
 
         // provides support for 'a<xxx>'|trans({'%foo%' : bar|default}, 'Domain')
         // provides support for 'a<xxx>'|transchoice(2, {'%foo%' : bar|default}, 'Domain')
@@ -761,6 +791,32 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
                     resultSet.addElement(lookupElement);
                 }
+            }
+        }
+    }
+
+    private static class IncludeWithContextKeyCompletionProvider extends CompletionProvider<CompletionParameters> {
+        @Override
+        protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet resultSet) {
+            PsiElement psiElement = parameters.getOriginalPosition();
+            if (psiElement == null) {
+                return;
+            }
+
+            if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
+                return;
+            }
+
+            Map<String, TwigIncludeContextParser.IncludeWithContextTemplateVariable> variables = new LinkedHashMap<>();
+            for (TwigIncludeContextParser.IncludeWithContextTemplateVariable variable : TwigIncludeContextParser.getIncludeWithContextKeyVariables(psiElement)) {
+                variables.putIfAbsent(variable.name(), variable);
+            }
+
+            for (TwigIncludeContextParser.IncludeWithContextTemplateVariable variable : variables.values()) {
+                resultSet.addElement(LookupElementBuilder.create(variable.name())
+                    .withIcon(TwigIcons.TwigFileIcon)
+                    .withTypeText(variable.templateName(), true)
+                );
             }
         }
     }
