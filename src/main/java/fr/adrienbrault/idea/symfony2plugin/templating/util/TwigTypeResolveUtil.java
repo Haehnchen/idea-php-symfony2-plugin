@@ -73,9 +73,33 @@ public class TwigTypeResolveUtil {
      */
     private static final String DOC_TYPE_PATTERN_CLASS_FIRST = "@var\\s+(?<class>[\\w\\\\\\[\\]]+)\\s+(?<var>\\w+)\\s*";
 
-    public static final Pattern[] INLINE_DOC_REGEX = {
+    /**
+     * Matches only Twig {@code @var} docs.
+     * <p>
+     * Examples:
+     * <ul>
+     *   <li>{@code {# @var variable \AppBundle\Entity\Foo #}}</li>
+     *   <li>{@code {# @var \AppBundle\Entity\Foo variable #}}</li>
+     * </ul>
+     */
+    public static final Pattern[] INLINE_VAR_DOC_REGEX = {
         Pattern.compile(DOC_TYPE_PATTERN_CLASS_SECOND, Pattern.MULTILINE),
         Pattern.compile(DOC_TYPE_PATTERN_CLASS_FIRST, Pattern.MULTILINE),
+    };
+
+    /**
+     * Matches Twig {@code @var} docs and the deprecated inline doc syntax.
+     * <p>
+     * Examples:
+     * <ul>
+     *   <li>{@code {# @var variable \AppBundle\Entity\Foo #}}</li>
+     *   <li>{@code {# @var \AppBundle\Entity\Foo variable #}}</li>
+     *   <li>{@code {# variable \AppBundle\Entity\Foo #}}</li>
+     * </ul>
+     */
+    public static final Pattern[] INLINE_DOC_REGEX = {
+        INLINE_VAR_DOC_REGEX[0],
+        INLINE_VAR_DOC_REGEX[1],
         Pattern.compile(DEPRECATED_DOC_TYPE_PATTERN),
     };
 

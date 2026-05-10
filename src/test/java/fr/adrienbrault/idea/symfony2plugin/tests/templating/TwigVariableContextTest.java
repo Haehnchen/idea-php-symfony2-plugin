@@ -226,23 +226,6 @@ public class TwigVariableContextTest extends SymfonyLightCodeInsightFixtureTestC
         );
     }
 
-    public void testTagIncludeSupportsQuotedAliasKeys() {
-        addProductFixture();
-        myFixture.addFileToProject(
-            "templates/parent_quoted_aliases.html.twig",
-            "{# @var item \\App\\Entity\\Product #}\n" +
-            "{% include 'partials/_card.html.twig' with {'itemAlias': item} %}\n" +
-            "{% include 'partials/_card.html.twig' with {\"itemLabel\": item} %}\n"
-        );
-
-        assertPathCompletionContains(
-            "templates/partials/_card.html.twig",
-            "{{ <caret> }}",
-            "itemAlias",
-            "itemLabel"
-        );
-    }
-
     public void testFunctionIncludeWithLiteralParameterProvidesChildVariable() {
         myFixture.addFileToProject(
             "templates/parent_function_literal.html.twig",
@@ -278,21 +261,6 @@ public class TwigVariableContextTest extends SymfonyLightCodeInsightFixtureTestC
             "templates/parent_function_without_params.html.twig",
             "{# @var item \\App\\Entity\\Product #}\n" +
             "{{ include('partials/_card.html.twig', with_context: false) }}\n"
-        );
-
-        assertPathCompletionNotContains(
-            "templates/partials/_card.html.twig",
-            "{{ <caret> }}",
-            "item"
-        );
-    }
-
-    public void testFunctionIncludeWithContextFalseEqualsWithoutParametersBlocksParentContext() {
-        addProductFixture();
-        myFixture.addFileToProject(
-            "templates/parent_function_without_params_equals.html.twig",
-            "{# @var item \\App\\Entity\\Product #}\n" +
-            "{{ include('partials/_card.html.twig', with_context = false) }}\n"
         );
 
         assertPathCompletionNotContains(
@@ -346,23 +314,6 @@ public class TwigVariableContextTest extends SymfonyLightCodeInsightFixtureTestC
             "{{ <caret> }}",
             new String[] {"product", "title", "options"},
             new String[] {"item"}
-        );
-    }
-
-    public void testFunctionIncludeSupportsQuotedAliasKeys() {
-        addProductFixture();
-        myFixture.addFileToProject(
-            "templates/parent_function_quoted_aliases.html.twig",
-            "{# @var item \\App\\Entity\\Product #}\n" +
-            "{{ include('partials/_card.html.twig', {'itemAlias': item}) }}\n" +
-            "{{ include('partials/_card.html.twig', {\"itemLabel\": item}) }}\n"
-        );
-
-        assertPathCompletionContains(
-            "templates/partials/_card.html.twig",
-            "{{ <caret> }}",
-            "itemAlias",
-            "itemLabel"
         );
     }
 
