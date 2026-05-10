@@ -156,6 +156,30 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         assertNavigationMatch(TwigFileType.INSTANCE, "{{ path('xml_route', {sl<caret>ug: 'value'}) }}", PlatformPatterns.psiElement());
     }
 
+    public void testCompletionForIncludeWithHashKeys() {
+        addIncludeWithKeyTargetTemplate();
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{% include 'include/_key_target.html.twig' with {'<caret>': 'asas'} %}", "asas");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ include('include/_key_target.html.twig', {\"<caret>\": asas}) }}", "doubleKey");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% include 'include/_key_target.html.twig' with {plain<caret>Key: asas} %}", "plainKey");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{% include 'include/_key_target.html.twig' with {'provided': 'as<caret>as'} %}", "asas");
+    }
+
+    public void testNavigationForIncludeWithHashKeys() {
+        addIncludeWithKeyTargetTemplate();
+
+        assertNavigationMatch(TwigFileType.INSTANCE, "{% include 'include/_key_target.html.twig' with {'as<caret>as': 'value'} %}", PlatformPatterns.psiElement().withText("asas"));
+        assertNavigationMatch(TwigFileType.INSTANCE, "{{ include('include/_key_target.html.twig', {\"double<caret>Key\": value}) }}", PlatformPatterns.psiElement().withText("doubleKey"));
+        assertNavigationMatch(TwigFileType.INSTANCE, "{% include 'include/_key_target.html.twig' with {plain<caret>Key: value} %}", PlatformPatterns.psiElement().withText("plainKey"));
+    }
+
+    public void testCompletionAndNavigationForEmbedWithHashKeys() {
+        addIncludeWithKeyTargetTemplate();
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{% embed 'include/_key_target.html.twig' with {\"<caret>\": asas} %}{% endembed %}", "embedKey");
+        assertNavigationMatch(TwigFileType.INSTANCE, "{% embed 'include/_key_target.html.twig' with {embed<caret>Key: value} %}{% endembed %}", PlatformPatterns.psiElement().withText("embedKey"));
+    }
+
     public void testCompletionForTwigComponent() {
         assertCompletionContains(TwigFileType.INSTANCE, "{{ component('<caret>'}) }}", "Alert");
     }
@@ -242,6 +266,17 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
     private void addFormControllerFixture() {
         myFixture.copyFileToProject("ide-twig.json");
         myFixture.copyFileToProject("FormControllerTemplateVariables.php");
+    }
+
+    private void addIncludeWithKeyTargetTemplate() {
+        myFixture.copyFileToProject("ide-twig.json", "ide-twig.json");
+        myFixture.addFileToProject(
+            "templates/include/_key_target.html.twig",
+            "{{ asas }}\n" +
+            "{{ doubleKey }}\n" +
+            "{{ plainKey }}\n" +
+            "{{ embedKey }}"
+        );
     }
 
     public void testThatEnumProvidesCompletionForEnumClasses() {
