@@ -261,6 +261,25 @@ public class TwigLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTe
         assertFalse("Should have include line marker", lineMarkers.isEmpty());
     }
 
+    public void testFileLevelLineMarkerUsesFirstContentLineAnchor() {
+        myFixture.addFileToProject(
+            "templates/file_anchor_include.html.twig",
+            "{% include 'file_anchor_target.html.twig' %}"
+        );
+
+        PsiFile targetFile = myFixture.addFileToProject(
+            "templates/file_anchor_target.html.twig",
+            "\n\n<div>\n" +
+            "    <span>Target</span>\n" +
+            "</div>\n"
+        );
+
+        assertLineMarker(
+            targetFile,
+            new LineMarker.ToolTipEqualsAndFileAnchorAssert("Navigate to includes", targetFile)
+        );
+    }
+
     /**
      * Test that controller line marker is attached to templates rendered by controllers.
      * When $this->render('template.html.twig') is called, the template should have

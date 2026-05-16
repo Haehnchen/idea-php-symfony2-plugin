@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.util.resource;
 
+import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -123,8 +124,15 @@ public class FileResourceUtilTest extends SymfonyLightCodeInsightFixtureTestCase
 
     public void testGetFileImplementsLineMarker() {
         myFixture.copyFileToProject("services.xml", "config/services.xml");
-        VirtualFile virtualFile = myFixture.copyFileToProject("classes.php", "src/Test.php");
-        assertNotNull(FileResourceUtil.getFileImplementsLineMarker(PsiElementUtils.virtualFileToPsiFile(getProject(), virtualFile)));
+        PsiFile psiFile = myFixture.addFileToProject(
+            "src/Test.php",
+            "\n\n<?php\n" +
+            "class Test {}\n"
+        );
+
+        LineMarkerInfo<?> lineMarker = FileResourceUtil.getFileImplementsLineMarker(psiFile);
+        assertNotNull(lineMarker);
+        assertTrue(new LineMarker.ToolTipEqualsAndFileAnchorAssert("Navigate to resource", psiFile).match(lineMarker));
     }
 
     public void testGetFileImplementsLineMarkerForGlob() {
