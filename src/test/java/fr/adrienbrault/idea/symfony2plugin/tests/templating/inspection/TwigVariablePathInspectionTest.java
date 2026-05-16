@@ -38,6 +38,25 @@ public class TwigVariablePathInspectionTest extends SymfonyLightCodeInsightFixtu
         assertLocalInspectionNotContains("f.html.twig", "{# @var bar \\Foo\\Bar #} {{ bar.FO<caret>O }}", "Field or method not found");
     }
 
+    public void testThatNestedPathsHighlightFirstUnknownElement() {
+        assertLocalInspectionContains("f.html.twig", "{# @var bar \\Foo\\Bar #} {{ bar.un<caret>known.public }}", "Field or method not found");
+        assertLocalInspectionContains("f.html.twig", "{# @var bar \\Foo\\Bar #} {{ bar.next.un<caret>known.public }}", "Field or method not found");
+        assertLocalInspectionContains("f.html.twig", "{# @var bar \\Foo\\Bar #} {{ bar.ap<caret>ple.public }}", "Field or method not found");
+
+        assertLocalInspectionNotContains("f.html.twig", "{# @var bar \\Foo\\Bar #} {{ bar.next.pub<caret>lic.unknown }}", "Field or method not found");
+        assertLocalInspectionNotContains("f.html.twig", "{# @var foo \\Foo\\Bar #} {{ bar.un<caret>known.public }}", "Field or method not found");
+    }
+
+    public void testThatNestedPathsWithMethodCallsHighlightFirstUnknownElement() {
+        assertLocalInspectionContains("f.html.twig", "{# @var bar \\Foo\\Bar #} {{ bar.getNext().un<caret>known.public }}", "Field or method not found");
+        assertLocalInspectionContains("f.html.twig", "{# @var bar \\Foo\\Bar #} {{ bar.getNext().ap<caret>ple.public }}", "Field or method not found");
+        assertLocalInspectionContains("f.html.twig", "{# @var bar \\Foo\\Bar #} {{ bar.getNext().getNext().un<caret>known.public }}", "Field or method not found");
+        assertLocalInspectionContains("f.html.twig", "{# @var bar \\Foo\\Bar #} {{ bar.getNext().getNext().ap<caret>ple.public }}", "Field or method not found");
+
+        assertLocalInspectionNotContains("f.html.twig", "{# @var bar \\Foo\\Bar #} {{ bar.getNext().pub<caret>lic }}", "Field or method not found");
+        assertLocalInspectionNotContains("f.html.twig", "{# @var bar \\Foo\\Bar #} {{ bar.getNext().getNext().pub<caret>lic }}", "Field or method not found");
+    }
+
     public void testThatArrayAccessAndIteratorImplementationsDontHighlightAtAll() {
         assertLocalInspectionNotContains("f.html.twig", "{# @var bar \\Foo\\BarArrayAccess #} {{ bar.c<caret>ar }}", "Field or method not found");
         assertLocalInspectionNotContains("f.html.twig", "{# @var bar \\Foo\\BarIterator #} {{ bar.c<caret>ar }}", "Field or method not found");

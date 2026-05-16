@@ -519,19 +519,20 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
 
         // class, class.method, class.method.method
         // click on first item is our class name
+        // Method-call chains are handled inside formatPsiTypeName.
         Collection<String> beforeLeaf = TwigTypeResolveUtil.formatPsiTypeName(psiElement);
-        if(beforeLeaf.isEmpty()) {
+        if (beforeLeaf.isEmpty()) {
             Collection<TwigTypeContainer> twigTypeContainers = TwigTypeResolveUtil.resolveTwigMethodName(psiElement, TwigTypeResolveUtil.formatPsiTypeNameWithCurrent(psiElement));
-            for(TwigTypeContainer twigTypeContainer: twigTypeContainers) {
+            for (TwigTypeContainer twigTypeContainer: twigTypeContainers) {
                 targetPsiElements.addAll(TwigTypeResolveUtil.resolveTwigTypeClasses(psiElement.getProject(), twigTypeContainer));
             }
 
         } else {
             Collection<TwigTypeContainer> types = TwigTypeResolveUtil.resolveTwigMethodName(psiElement, beforeLeaf);
             String text = psiElement.getText();
-            if(StringUtils.isNotBlank(text)) {
+            if (StringUtils.isNotBlank(text)) {
                 // provide method / field goto
-                for(TwigTypeContainer twigTypeContainer: types) {
+                for (TwigTypeContainer twigTypeContainer: types) {
                     targetPsiElements.addAll(TwigTypeResolveUtil.getTwigPhpNameTargets(psiElement.getProject(), twigTypeContainer, text));
 
                     // form
