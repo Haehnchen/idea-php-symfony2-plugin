@@ -4,16 +4,15 @@ import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.navigation.GotoRelatedItem;
-import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.psi.PsiElement;
-import com.intellij.util.ConstantFunction;
 import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.psi.elements.Method;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.extension.ControllerActionGotoRelatedCollector;
 import fr.adrienbrault.idea.symfony2plugin.extension.ControllerActionGotoRelatedCollectorParameter;
+import fr.adrienbrault.idea.symfony2plugin.util.FileLineMarkerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -89,13 +88,11 @@ public class ControllerMethodLineMarkerProvider implements LineMarkerProvider {
             return builder.createLineMarkerInfo(psiElement);
         }
 
-        return new LineMarkerInfo<>(
+        return FileLineMarkerUtil.createLineMarkerInfo(
             psiElement,
-            psiElement.getTextRange(),
             Symfony2Icons.SYMFONY_LINE_MARKER,
-            new ConstantFunction<>("Related Files"),
+            "Related Files",
             new RelatedPopupGotoLineMarker.NavigationHandler(gotoRelatedItems),
-            GutterIconRenderer.Alignment.RIGHT,
             () -> "Go to related files"
         );
     }

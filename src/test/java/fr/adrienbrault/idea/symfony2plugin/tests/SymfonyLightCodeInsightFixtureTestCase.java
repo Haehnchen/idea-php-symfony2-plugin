@@ -18,6 +18,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.lang.javascript.inspections.JSInspection;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.openapi.command.CommandProcessor;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.LanguageFileType;
 import com.intellij.openapi.util.Pair;
@@ -39,6 +40,7 @@ import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpReference;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
+import fr.adrienbrault.idea.symfony2plugin.util.FileLineMarkerUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -726,6 +728,35 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
             @Override
             public boolean match(@NotNull LineMarkerInfo markerInfo) {
                 return markerInfo.getLineMarkerTooltip() != null && markerInfo.getLineMarkerTooltip().equals(toolTip);
+            }
+        }
+
+        public static class ToolTipEqualsAndFileAnchorAssert implements Assert {
+            @NotNull
+            private final String toolTip;
+            @NotNull
+            private final PsiFile psiFile;
+
+            public ToolTipEqualsAndFileAnchorAssert(@NotNull String toolTip, @NotNull PsiFile psiFile) {
+                this.toolTip = toolTip;
+                this.psiFile = psiFile;
+            }
+
+            @Override
+            public boolean match(@NotNull LineMarkerInfo markerInfo) {
+                if(markerInfo.getLineMarkerTooltip() == null || !markerInfo.getLineMarkerTooltip().equals(toolTip)) {
+                    return false;
+                }
+
+                FileLineMarkerUtil.LineMarkerAnchor expectedAnchor = FileLineMarkerUtil.getFileLineMarkerAnchor(psiFile);
+                if(markerInfo.getElement() != expectedAnchor.element() || markerInfo.startOffset != expectedAnchor.textRange().getStartOffset() || markerInfo.endOffset != expectedAnchor.textRange().getEndOffset()) {
+                    return false;
+                }
+
+                Document document = PsiDocumentManager.getInstance(psiFile.getProject()).getDocument(psiFile);
+                return document != null
+                    && markerInfo.endOffset > markerInfo.startOffset
+                    && document.getLineNumber(markerInfo.startOffset) == document.getLineNumber(markerInfo.endOffset - 1);
             }
         }
 

@@ -22,6 +22,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.dict.FileResourceContextTypeEnu
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.FileResourcesIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.util.IndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.FileResourceVisitorUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.FileLineMarkerUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyBundleUtil;
@@ -213,7 +214,7 @@ public class FileResourceUtil {
                 .setTargets(NotNullLazyValue.lazy(new FileResourceNotNullLazyValue(project, virtualFile)))
                 .setTooltipText("Navigate to resource");
 
-            return builder.createLineMarkerInfo(psiFile);
+            return FileLineMarkerUtil.createLineMarkerInfo(builder, psiFile);
         }
 
         return null;

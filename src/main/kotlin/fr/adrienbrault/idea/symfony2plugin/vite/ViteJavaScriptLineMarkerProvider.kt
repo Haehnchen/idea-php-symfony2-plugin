@@ -12,11 +12,11 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.indexing.FileBasedIndex
 import com.jetbrains.twig.TwigFile
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
+import fr.adrienbrault.idea.symfony2plugin.util.FileLineMarkerUtil
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil
 import javax.swing.Icon
 
@@ -78,16 +78,13 @@ class ViteJavaScriptLineMarkerProvider : LineMarkerProvider {
 
             if (entryNames.isEmpty()) continue
 
-            val anchor = PsiTreeUtil.getDeepestFirst(element)
+            val builder = NavigationGutterIconBuilder.create(Symfony2Icons.SYMFONY_LINE_MARKER)
+                .setTargets(NotNullLazyValue.lazy { resolveTargets(element, entryNames) })
+                .setTooltipText("Vite entry point")
+                .setPopupTitle("Vite Entry")
+                .setTargetRenderer { ViteEntryTargetRenderer() }
 
-            result.add(
-                NavigationGutterIconBuilder.create(Symfony2Icons.SYMFONY_LINE_MARKER)
-                    .setTargets(NotNullLazyValue.lazy { resolveTargets(element, entryNames) })
-                    .setTooltipText("Vite entry point")
-                    .setPopupTitle("Vite Entry")
-                    .setTargetRenderer { ViteEntryTargetRenderer() }
-                    .createLineMarkerInfo(anchor)
-            )
+            result.add(FileLineMarkerUtil.createLineMarkerInfo(builder, element))
         }
     }
 

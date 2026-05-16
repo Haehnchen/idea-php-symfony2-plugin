@@ -30,10 +30,16 @@ class ViteLineMarkerTest : SymfonyLightCodeInsightFixtureTestCase() {
 
         val appFile = myFixture.addFileToProject(
             "assets/app.js",
-            "console.log('hello');"
+            """
+
+            /*
+             * app bootstrap
+             */
+            console.log('hello');
+            """.trimIndent()
         )
 
-        assertLineMarker(appFile, LineMarker.ToolTipEqualsAssert("Vite entry point"))
+        assertLineMarker(appFile, LineMarker.ToolTipEqualsAndFileAnchorAssert("Vite entry point", appFile))
     }
 
     fun testLineMarkerOnTypeScriptEntryFile() {

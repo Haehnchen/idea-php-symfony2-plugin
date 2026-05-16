@@ -7,7 +7,6 @@ import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.ide.util.PsiElementListCellRenderer;
 import com.intellij.navigation.GotoRelatedItem;
-import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Iconable;
 import com.intellij.openapi.util.NotNullLazyValue;
@@ -20,7 +19,6 @@ import com.intellij.psi.presentation.java.SymbolPresentationUtil;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
-import com.intellij.util.ConstantFunction;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.lang.psi.elements.Function;
@@ -42,6 +40,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder.F
 import fr.adrienbrault.idea.symfony2plugin.twig.loader.FileImplementsLazyLoader;
 import fr.adrienbrault.idea.symfony2plugin.twig.loader.FileOverwritesLazyLoader;
 import fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigBlockUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.FileLineMarkerUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -143,7 +142,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             setTargets(methods).
             setTooltipText("Navigate to controller");
 
-        result.add(builder.createLineMarkerInfo(twigFile));
+        result.add(FileLineMarkerUtil.createLineMarkerInfo(builder, twigFile));
     }
 
     private void attachUxComponentTargets(@NotNull TwigFile twigFile, @NotNull Collection<? super RelatedItemLineMarkerInfo<?>> result) {
@@ -160,7 +159,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             .setTooltipText("Navigate to UX Component")
             .setCellRenderer(UxComponentTargetsPsiElementListCellRenderer::new);
 
-        result.add(builder.createLineMarkerInfo(twigFile));
+        result.add(FileLineMarkerUtil.createLineMarkerInfo(builder, twigFile));
     }
 
     @Nullable
@@ -191,7 +190,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             .setTooltipText("Navigate to includes")
             .setCellRenderer(MyFileReferencePsiElementListCellRenderer::new);
 
-        return builder.createLineMarkerInfo(twigFile);
+        return FileLineMarkerUtil.createLineMarkerInfo(builder, twigFile);
     }
 
     @Nullable
@@ -222,7 +221,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             .setTooltipText("Navigate to extends")
             .setCellRenderer(MyFileReferencePsiElementListCellRenderer::new);
 
-        return builder.createLineMarkerInfo(twigFile);
+        return FileLineMarkerUtil.createLineMarkerInfo(builder, twigFile);
     }
 
     @Nullable
@@ -263,13 +262,11 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             }
         }
 
-        return new LineMarkerInfo<>(
+        return FileLineMarkerUtil.createLineMarkerInfo(
             lineMarkerTarget,
-            lineMarkerTarget.getTextRange(),
             icon,
-            new ConstantFunction<>(title),
+            title,
             new RelatedPopupGotoLineMarker.NavigationHandler(gotoRelatedItems),
-            GutterIconRenderer.Alignment.RIGHT,
             () -> accessibleName
         );
     }
