@@ -734,7 +734,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         @Override
         protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
             PsiElement psiElement = parameters.getOriginalPosition();
-            if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
+            if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
                 return;
             }
 
@@ -757,29 +757,30 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         @Override
         protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext paramProcessingContext, @NotNull CompletionResultSet resultSet) {
             PsiElement psiElement = parameters.getOriginalPosition();
-            if(!Symfony2ProjectComponent.isEnabled(psiElement)) {
+            if (!Symfony2ProjectComponent.isEnabled(psiElement)) {
                 return;
             }
 
+            // Keep dotted paths and method-call chains resolved through one parser.
             Collection<String> possibleTypes = TwigTypeResolveUtil.formatPsiTypeName(psiElement);
 
             // find core function for that
-            for(TwigTypeContainer twigTypeContainer: TwigTypeResolveUtil.resolveTwigMethodName(psiElement, possibleTypes)) {
+            for (TwigTypeContainer twigTypeContainer: TwigTypeResolveUtil.resolveTwigMethodName(psiElement, possibleTypes)) {
                 for (PhpClass phpClass : TwigTypeResolveUtil.resolveTwigTypeClasses(psiElement.getProject(), twigTypeContainer)) {
-                    for(Method method: phpClass.getMethods()) {
-                        if(TwigTypeResolveUtil.isTwigAccessibleMethod(method)) {
+                    for (Method method: phpClass.getMethods()) {
+                        if (TwigTypeResolveUtil.isTwigAccessibleMethod(method)) {
                             resultSet.addElement(new PhpTwigMethodLookupElement(method));
                         }
                     }
 
-                    for(Field field: phpClass.getFields()) {
-                        if(field.getModifier().isPublic()) {
+                    for (Field field: phpClass.getFields()) {
+                        if (field.getModifier().isPublic()) {
                             resultSet.addElement(new PhpTwigMethodLookupElement(field));
                         }
                     }
                 }
 
-                if(twigTypeContainer.getStringElement() != null) {
+                if (twigTypeContainer.getStringElement() != null) {
                     //
                     LookupElementBuilder lookupElement = LookupElementBuilder.create(twigTypeContainer.getStringElement());
 

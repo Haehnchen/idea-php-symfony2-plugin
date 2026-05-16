@@ -18,7 +18,9 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -120,6 +122,73 @@ public class TwigTypeResolveUtilTest extends SymfonyLightCodeInsightFixtureTestC
 
         assertContainsElements(stringPsiVariableMap.get("a").getTypes(), "\\Foo\\Bar");
         assertContainsElements(stringPsiVariableMap.get("b").getTypes(), "\\Foo\\Bar");
+    }
+
+    public void testCollectPsiTypeNameElementsWithCurrent() {
+        myFixture.configureByText(TwigFileType.INSTANCE, "{{ root.children.ent<caret>ries }}");
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        assertNotNull(psiElement);
+
+        List<PsiElement> pathElements = TwigTypeResolveUtil.collectPsiTypeNameElementsWithCurrent(psiElement);
+
+        assertEquals(Arrays.asList("root", "children", "entries"), pathElements.stream().map(PsiElement::getText).collect(Collectors.toList()));
+        assertSame(psiElement, pathElements.get(2));
+    }
+
+    public void testCollectPsiTypeNameElementsWithCurrentSupportsMethodCallAsCurrentElement() {
+        myFixture.configureByText(TwigFileType.INSTANCE, "{{ root.children.ff<caret>f() }}");
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        assertNotNull(psiElement);
+
+        List<PsiElement> pathElements = TwigTypeResolveUtil.collectPsiTypeNameElementsWithCurrent(psiElement);
+
+        assertEquals(Arrays.asList("root", "children", "fff"), pathElements.stream().map(PsiElement::getText).collect(Collectors.toList()));
+        assertSame(psiElement, pathElements.get(2));
+        assertFalse(TwigTypeResolveUtil.hasNextPsiTypeNameElement(psiElement));
+    }
+
+    public void testCollectPsiTypeNameElementsWithCurrentSupportsMethodCallBeforeCurrentElement() {
+        myFixture.configureByText(TwigFileType.INSTANCE, "{{ root.children.fff().b<caret>ar }}");
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        assertNotNull(psiElement);
+
+        List<PsiElement> pathElements = TwigTypeResolveUtil.collectPsiTypeNameElementsWithCurrent(psiElement);
+
+        assertEquals(Arrays.asList("root", "children", "fff", "bar"), pathElements.stream().map(PsiElement::getText).collect(Collectors.toList()));
+        assertSame(psiElement, pathElements.get(3));
+    }
+
+    public void testCollectPsiTypeNameElementsWithCurrentSupportsMultipleMethodCallsBeforeCurrentElement() {
+        myFixture.configureByText(TwigFileType.INSTANCE, "{{ root.getChildren().fff('value').b<caret>ar }}");
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        assertNotNull(psiElement);
+
+        List<PsiElement> pathElements = TwigTypeResolveUtil.collectPsiTypeNameElementsWithCurrent(psiElement);
+
+        assertEquals(Arrays.asList("root", "getChildren", "fff", "bar"), pathElements.stream().map(PsiElement::getText).collect(Collectors.toList()));
+        assertSame(psiElement, pathElements.get(3));
+    }
+
+    public void testHasNextPsiTypeNameElementSupportsMethodCallBeforeMethodCallElement() {
+        myFixture.configureByText(TwigFileType.INSTANCE, "{{ root.getCh<caret>ildren().fff('value').bar }}");
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        assertNotNull(psiElement);
+
+        assertTrue(TwigTypeResolveUtil.hasNextPsiTypeNameElement(psiElement));
+    }
+
+    public void testHasNextPsiTypeNameElementSupportsMethodCallBeforeNextElement() {
+        myFixture.configureByText(TwigFileType.INSTANCE, "{{ root.children.ff<caret>f('value').bar }}");
+
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        assertNotNull(psiElement);
+
+        assertTrue(TwigTypeResolveUtil.hasNextPsiTypeNameElement(psiElement));
     }
 
     public void testGetForTagScopeExtractsSingleVariablePathFromAst() {

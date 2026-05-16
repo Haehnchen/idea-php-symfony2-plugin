@@ -15,15 +15,25 @@ import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
+ * Reports unresolved Twig property or method path segments.
+ *
+ * Examples:
+ * <ul>
+ *   <li>{@code bar.unknown.public} highlights {@code unknown}</li>
+ *   <li>{@code bar.getNext().apple.public} highlights {@code apple}</li>
+ * </ul>
+ *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TwigVariablePathInspection extends LocalInspectionTool {
 
     @NotNull
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, boolean isOnTheFly) {
-        if(!Symfony2ProjectComponent.isEnabled(holder.getProject())) {
+        if (!Symfony2ProjectComponent.isEnabled(holder.getProject())) {
             return super.buildVisitor(holder, isOnTheFly);
         }
 
@@ -42,46 +52,94 @@ public class TwigVariablePathInspection extends LocalInspectionTool {
 
         @Override
         public void visitElement(@NonNull PsiElement element) {
-            if(getTypeCompletionPattern().accepts(element)) {
+            if (getTypeCompletionPattern().accepts(element)) {
                 visit(element);
             }
             super.visitElement(element);
         }
 
         private void visit(@NotNull PsiElement element) {
-            Collection<String> beforeLeaf = TwigTypeResolveUtil.formatPsiTypeName(element);
-            if(beforeLeaf.isEmpty()) {
+            if (TwigTypeResolveUtil.hasNextPsiTypeNameElement(element)) {
                 return;
             }
 
-            Collection<TwigTypeContainer> types = TwigTypeResolveUtil.resolveTwigMethodName(element, beforeLeaf);
-            if (types.isEmpty()) {
+            List<PsiElement> pathElements = TwigTypeResolveUtil.collectPsiTypeNameElementsWithCurrent(element);
+            if (pathElements.size() < 2) {
                 return;
             }
 
-            for (TwigTypeContainer twigTypeContainer: types) {
-                String text = element.getText();
-                Collection<PhpClass> phpClasses = TwigTypeResolveUtil.resolveTwigTypeClasses(element.getProject(), twigTypeContainer);
-                if (phpClasses.isEmpty()) {
+            List<String> pathNames = pathElements.stream().map(PsiElement::getText).collect(Collectors.toList());
+
+            int lastIndex = pathElements.size() - 1;
+            PsiElement lastPathElement = pathElements.get(lastIndex);
+
+            // Fast path: if the tail resolves, all earlier segments are already usable.
+            PathElementState lastState = inspectPathElement(lastPathElement, pathNames.subList(0, lastIndex), lastPathElement.getText());
+            if (lastState == PathElementState.FOUND) {
+                return;
+            }
+
+            if (lastState == PathElementState.MISSING) {
+                this.holder.registerProblem(lastPathElement, "Field or method not found", ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
+                return;
+            }
+
+            // Tail is ambiguous; report the first earlier segment that is known missing.
+            for (int i = 1; i < lastIndex; i++) {
+                PsiElement pathElement = pathElements.get(i);
+                PathElementState state = inspectPathElement(pathElement, pathNames.subList(0, i), pathElement.getText());
+                if (state == PathElementState.MISSING) {
+                    this.holder.registerProblem(pathElement, "Field or method not found", ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
                     return;
                 }
 
+                if (state == PathElementState.UNKNOWN) {
+                    return;
+                }
+            }
+        }
+
+        /**
+         * Resolves the parent path and checks one Twig-visible name.
+         */
+        @NotNull
+        private PathElementState inspectPathElement(@NotNull PsiElement element, @NotNull Collection<String> beforeLeaf, @NotNull String name) {
+            Collection<TwigTypeContainer> types = TwigTypeResolveUtil.resolveTwigMethodName(element, beforeLeaf);
+            if (types.isEmpty()) {
+                return PathElementState.UNKNOWN;
+            }
+
+            for (TwigTypeContainer twigTypeContainer: types) {
+                Collection<PhpClass> phpClasses = TwigTypeResolveUtil.resolveTwigTypeClasses(element.getProject(), twigTypeContainer);
+                if (phpClasses.isEmpty()) {
+                    return PathElementState.UNKNOWN;
+                }
+
                 for (PhpClass phpClass : phpClasses) {
-                    if(TwigTypeResolveUtil.isWeakCollectionLikeClass(phpClass)) {
-                        return;
+                    if (TwigTypeResolveUtil.isWeakCollectionLikeClass(phpClass)) {
+                        return PathElementState.UNKNOWN;
                     }
 
-                    if (!TwigTypeResolveUtil.getTwigPhpNameTargets(phpClass, text).isEmpty()) {
-                        return;
+                    if (!TwigTypeResolveUtil.getTwigPhpNameTargets(phpClass, name).isEmpty()) {
+                        return PathElementState.FOUND;
                     }
                 }
             }
 
-            this.holder.registerProblem(element, "Field or method not found", ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
+            return PathElementState.MISSING;
         }
 
         private ElementPattern<PsiElement> getTypeCompletionPattern() {
             return typeCompletionPattern != null ? typeCompletionPattern : (typeCompletionPattern = TwigPattern.getTypeCompletionPattern());
+        }
+
+        /**
+         * UNKNOWN means no reliable type information, so inspection stays silent.
+         */
+        private enum PathElementState {
+            FOUND,
+            MISSING,
+            UNKNOWN
         }
     }
 }

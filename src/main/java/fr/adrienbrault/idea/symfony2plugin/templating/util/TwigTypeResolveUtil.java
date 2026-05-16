@@ -10,7 +10,6 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiComment;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.formatter.FormatterUtil;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.CachedValue;
@@ -123,41 +122,228 @@ public class TwigTypeResolveUtil {
         new FormFieldResolver(),
     };
 
+    /**
+     * Formats a Twig path including the current element.
+     *
+     * Method calls can appear at any previous segment.
+     * Example: {@code root.getChildren().fff('x').bar} => {@code [root, getChildren, fff, bar]}.
+     */
     @NotNull
     public static Collection<String> formatPsiTypeNameWithCurrent(@NotNull PsiElement psiElement) {
-        Collection<String> strings = new ArrayList<>(formatPsiTypeName(psiElement));
-        strings.add(psiElement.getText());
-        return strings;
+        return collectPsiTypeNameElementsWithCurrent(psiElement)
+            .stream()
+            .map(PsiElement::getText)
+            .collect(Collectors.toList());
     }
 
     /**
-     * Get items before foo.bar.car, foo.bar.car()
+     * Collects PSI path elements including the current element.
      *
-     * ["foo", "bar"]
+     * Examples:
+     * <ul>
+     *   <li>{@code foo.bar.car} => {@code [foo, bar, car]}</li>
+     *   <li>{@code root.getChildren().fff('x').bar} => {@code [root, getChildren, fff, bar]}</li>
+     * </ul>
      */
     @NotNull
-    public static Collection<String> formatPsiTypeName(@NotNull PsiElement psiElement) {
-        String typeNames = PhpElementsUtil.getPrevSiblingAsTextUntil(psiElement, PlatformPatterns.or(
-            PlatformPatterns.psiElement(TwigTokenTypes.LBRACE),
-            PlatformPatterns.psiElement(PsiWhiteSpace.class
-        )));
-
-        if(typeNames.trim().isEmpty()) {
+    public static List<PsiElement> collectPsiTypeNameElementsWithCurrent(@NotNull PsiElement psiElement) {
+        if (!isPsiTypeNameElement(psiElement.getNode())) {
             return Collections.emptyList();
         }
 
-        if(typeNames.endsWith(".")) {
-            typeNames = typeNames.substring(0, typeNames.length() -1);
+        return collectPsiTypeNameElementsEndingAt(psiElement.getNode());
+    }
+
+    /**
+     * Collects the path before the given element.
+     *
+     * Example: {@code root.getChildren().foo.<caret>} => {@code [root, getChildren, foo]}.
+     */
+    @NotNull
+    private static List<PsiElement> collectPsiTypeNameElementsBefore(@NotNull PsiElement psiElement) {
+        ASTNode previousPathElement = isPsiTypeNameElement(psiElement.getNode())
+            ? getPreviousPsiTypeNameElement(psiElement.getNode())
+            : getPreviousPsiTypeNameElementBefore(psiElement.getNode());
+
+        return previousPathElement == null ? Collections.emptyList() : collectPsiTypeNameElementsEndingAt(previousPathElement);
+    }
+
+    /**
+     * Walks a dotted path backwards from one known path element.
+     */
+    @NotNull
+    private static List<PsiElement> collectPsiTypeNameElementsEndingAt(@NotNull ASTNode node) {
+        List<PsiElement> pathElements = new ArrayList<>();
+        PsiElement current = node.getPsi();
+
+        while (current != null) {
+            pathElements.add(0, current);
+
+            ASTNode previousPathElement = getPreviousPsiTypeNameElement(current.getNode());
+            if (previousPathElement == null) {
+                break;
+            }
+
+            current = previousPathElement.getPsi();
         }
 
-        Collection<String> possibleTypes = new ArrayList<>();
-        if(typeNames.contains(".")) {
-            possibleTypes.addAll(Arrays.asList(typeNames.split("\\.")));
-        } else {
-            possibleTypes.add(typeNames);
+        return pathElements;
+    }
+
+    /**
+     * Checks whether another path segment follows this element.
+     *
+     * Example: {@code root.getChildren().fff('x').bar} is true for {@code getChildren} and {@code fff}.
+     */
+    public static boolean hasNextPsiTypeNameElement(@NotNull PsiElement psiElement) {
+        ASTNode next = FormatterUtil.getNextNonWhitespaceLeaf(psiElement.getNode());
+        if (next != null && next.getElementType() == TwigTokenTypes.LBRACE) {
+            next = getNextNodeAfterMethodCall(next);
         }
 
-        return possibleTypes;
+        if (next == null || next.getElementType() != TwigTokenTypes.DOT) {
+            return false;
+        }
+
+        ASTNode afterDot = FormatterUtil.getNextNonWhitespaceLeaf(next);
+        return afterDot != null && isPsiTypeNameElement(afterDot);
+    }
+
+    /**
+     * Finds the previous path element before a named path segment.
+     */
+    @Nullable
+    private static ASTNode getPreviousPsiTypeNameElement(@NotNull ASTNode currentNode) {
+        ASTNode dot = FormatterUtil.getPreviousNonWhitespaceLeaf(currentNode);
+        if (dot == null || dot.getElementType() != TwigTokenTypes.DOT) {
+            return null;
+        }
+
+        return getPsiTypeNameElementBeforeDot(dot);
+    }
+
+    /**
+     * Finds the previous path element before a non-path caret token.
+     */
+    @Nullable
+    private static ASTNode getPreviousPsiTypeNameElementBefore(@NotNull ASTNode currentNode) {
+        ASTNode previous = FormatterUtil.getPreviousNonWhitespaceLeaf(currentNode);
+        if (previous == null) {
+            return null;
+        }
+
+        if (previous.getElementType() == TwigTokenTypes.DOT) {
+            return getPsiTypeNameElementBeforeDot(previous);
+        }
+
+        return toPsiTypeNameElement(previous);
+    }
+
+    /**
+     * Finds a path element directly before a dot.
+     */
+    @Nullable
+    private static ASTNode getPsiTypeNameElementBeforeDot(@NotNull ASTNode dot) {
+        ASTNode previous = FormatterUtil.getPreviousNonWhitespaceLeaf(dot);
+        if (previous == null) {
+            return null;
+        }
+
+        return toPsiTypeNameElement(previous);
+    }
+
+    /**
+     * Converts a name-like or method-call tail node into its path element.
+     */
+    @Nullable
+    private static ASTNode toPsiTypeNameElement(@NotNull ASTNode node) {
+        if (isPsiTypeNameElement(node)) {
+            return node;
+        }
+
+        if (node.getElementType() == TwigTokenTypes.RBRACE) {
+            return getMethodCallNameBeforeLeftBrace(node);
+        }
+
+        return null;
+    }
+
+    /**
+     * Twig uses different PSI element types for names depending on context.
+     *
+     * Examples:
+     * <ul>
+     *   <li>{@code foo.bar}: {@code bar} is usually an {@code IDENTIFIER}</li>
+     *   <li>{@code {% request.isMethod('GET') %}}: {@code request} can be a {@code TAG_NAME}</li>
+     *   <li>{@code {% for x in items %}}: {@code items} can be a {@code VARIABLE_REFERENCE}</li>
+     *   <li>{@code foo.bar} in some Twig PSI trees: {@code bar} can be a {@code FIELD_REFERENCE}</li>
+     * </ul>
+     */
+    private static boolean isPsiTypeNameElement(@NotNull ASTNode node) {
+        IElementType elementType = node.getElementType();
+        return elementType == TwigTokenTypes.IDENTIFIER ||
+            elementType == TwigTokenTypes.TAG_NAME ||
+            elementType == TwigElementTypes.VARIABLE_REFERENCE ||
+            elementType == TwigElementTypes.FIELD_REFERENCE;
+    }
+
+    /**
+     * Finds the method name before the matching opening parenthesis.
+     */
+    @Nullable
+    private static ASTNode getMethodCallNameBeforeLeftBrace(@NotNull ASTNode rightBrace) {
+        int depth = 0;
+        for (ASTNode current = rightBrace; current != null; current = FormatterUtil.getPreviousNonWhitespaceLeaf(current)) {
+            if (current.getElementType() == TwigTokenTypes.RBRACE) {
+                depth++;
+            } else if (current.getElementType() == TwigTokenTypes.LBRACE) {
+                depth--;
+                if (depth == 0) {
+                    ASTNode identifier = FormatterUtil.getPreviousNonWhitespaceLeaf(current);
+                    return identifier != null ? toPsiTypeNameElement(identifier) : null;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Skips a method-call argument list and returns the following leaf.
+     */
+    @Nullable
+    private static ASTNode getNextNodeAfterMethodCall(@NotNull ASTNode leftBrace) {
+        int depth = 0;
+        for (ASTNode current = leftBrace; current != null; current = FormatterUtil.getNextNonWhitespaceLeaf(current)) {
+            if (current.getElementType() == TwigTokenTypes.LBRACE) {
+                depth++;
+            } else if (current.getElementType() == TwigTokenTypes.RBRACE) {
+                depth--;
+                if (depth == 0) {
+                    return FormatterUtil.getNextNonWhitespaceLeaf(current);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Formats a Twig path before the current element.
+     * Method calls can appear anywhere before the current element.
+     *
+     * Examples:
+     * <ul>
+     *   <li>{@code foo.bar.car} at {@code car} => {@code [foo, bar]}</li>
+     *   <li>{@code root.getChildren().fff('x').bar} at {@code bar} => {@code [root, getChildren, fff]}</li>
+     * </ul>
+     */
+    @NotNull
+    public static Collection<String> formatPsiTypeName(@NotNull PsiElement psiElement) {
+        return collectPsiTypeNameElementsBefore(psiElement)
+            .stream()
+            .map(PsiElement::getText)
+            .collect(Collectors.toList());
     }
 
     /**

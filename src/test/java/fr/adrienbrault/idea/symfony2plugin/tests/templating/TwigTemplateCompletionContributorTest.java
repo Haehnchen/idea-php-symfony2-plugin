@@ -233,6 +233,22 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         );
     }
 
+    public void testThatTypeCompletionSupportsMethodCallInPath() {
+        addTwigTypePathFixture();
+
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{# @var root \\Foo\\TypePath\\Root #}{{ root.children.fff('value').<caret> }}",
+            "bar", "baz"
+        );
+
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{# @var root \\Foo\\TypePath\\Root #}{{ root.getChildren().fff('value').<caret> }}",
+            "bar", "baz"
+        );
+    }
+
     public void testThatTwigExtensionStringParameterIsPipedToPhpCompletion() {
         assertCompletionContains(TwigFileType.INSTANCE, "\n" +
                 "{{ 'aaa'|request_filter('<caret>') }}\n",
@@ -276,6 +292,17 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
             "{{ doubleKey }}\n" +
             "{{ plainKey }}\n" +
             "{{ embedKey }}"
+        );
+    }
+
+    private void addTwigTypePathFixture() {
+        myFixture.addFileToProject(
+            "src/Foo/TypePath/Root.php",
+            "<?php\n" +
+                "namespace Foo\\TypePath;\n" +
+                "class Root { public function getChildren(): Children {} }\n" +
+                "class Children { public function fff(string $value): Leaf {} }\n" +
+                "class Leaf { public function getBar(): string {} public function getBaz(): string {} }\n"
         );
     }
 
