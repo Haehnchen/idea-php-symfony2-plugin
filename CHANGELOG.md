@@ -23,6 +23,18 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2026.1.303
+* Add completion for include/embed context hash keys (Daniel Espendiller)
+* Extract TwigIncludeContextParser to fix controller template variable key completion (Daniel Espendiller)
+* Scope template variable resolution to matching template names (Daniel Espendiller)
+* Resolve additional cases for Twig template variables in render calls. (Daniel Espendiller)
+* Invert YAML schema notification setting logic (Daniel Espendiller)
+* Resolve more Twig template variables cases like array spread from php render calls (Daniel Espendiller)
+* Add PHP class icon decoration for Symfony types (Daniel Espendiller)
+* Refactor ServiceRouteContainer to cache routes resolved via services (Daniel Espendiller)
+* Add getContainingFile() to TwigFileVariableCollectorParameter to cache file resolve (Daniel Espendiller)
+* Resolving more Twig `include` tag and function variable context (Daniel Espendiller)
+
 ## 2026.1.302
 * Cache template variable lookups using CachedValuesManager (Daniel Espendiller)
 * Cache controller template variables as immutable maps (Daniel Espendiller)
