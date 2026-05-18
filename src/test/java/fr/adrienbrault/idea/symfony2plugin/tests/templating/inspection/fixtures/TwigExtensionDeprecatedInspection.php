@@ -27,6 +27,15 @@ namespace Twig\TokenParser {
             // parse logic here
         }
     }
+
+    #[\Deprecated]
+    class AttributeDeprecatedTokenParser implements TokenParserInterface
+    {
+        public function getTag()
+        {
+            return 'attribute_deprecated';
+        }
+    }
 }
 
 namespace {

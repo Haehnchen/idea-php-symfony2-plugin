@@ -14,7 +14,6 @@ import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -110,14 +109,14 @@ public class RouteControllerDeprecatedInspection {
                 continue;
             }
 
-            if (psiElement instanceof Method method && PhpElementsUtil.isClassOrFunctionDeprecated(method)) {
+            if (psiElement instanceof Method method && method.isDeprecated()) {
                 holder.registerProblem(element, "Symfony: Controller action is deprecated", ProblemHighlightType.LIKE_DEPRECATED);
                 break;
             }
 
             if (psiElement instanceof PhpClassMember phpClassMember) {
                 PhpClass containingClass = phpClassMember.getContainingClass();
-                if (containingClass != null && PhpElementsUtil.isClassOrFunctionDeprecated(containingClass)) {
+                if (containingClass != null && containingClass.isDeprecated()) {
                     holder.registerProblem(element, "Symfony: Controller action is deprecated", ProblemHighlightType.LIKE_DEPRECATED);
                     break;
                 }

@@ -30,6 +30,14 @@ public class TwigExtensionDeprecatedInspectionTest extends SymfonyLightCodeInsig
         );
     }
 
+    public void testThatAttributeDeprecatedTwigTokenIsDetected() {
+        assertLocalInspectionContains(
+            "test.html.twig",
+            "{% attribute_depre<caret>cated %}",
+            "Deprecated Twig tag"
+        );
+    }
+
     public void testThatTokenParserWithTriggerDeprecationIsDetected() {
         assertLocalInspectionContains(
             "test.html.twig",
