@@ -6,6 +6,7 @@ import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
+import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
@@ -18,6 +19,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -63,17 +66,45 @@ public class TwigVariableDeprecatedInspection extends LocalInspectionTool {
                 return;
             }
 
+            String text = element.getText();
+            Set<String> visitedTargets = new HashSet<>();
+
             for (TwigTypeContainer twigTypeContainer: types) {
                 for (PhpClass phpClass : TwigTypeResolveUtil.resolveTwigTypeClasses(element.getProject(), twigTypeContainer)) {
-                    String text = element.getText();
-
                     for (PhpNamedElement namedElement : TwigTypeResolveUtil.getTwigPhpNameTargets(phpClass, text)) {
-                        if (namedElement instanceof Method method && PhpElementsUtil.isClassOrFunctionDeprecated(method)) {
-                            this.holder.registerProblem(element, String.format("Method '%s::%s' is deprecated", phpClass.getName(), namedElement.getName()), ProblemHighlightType.LIKE_DEPRECATED);
+                        String targetKey = getDeprecatedTargetKind(namedElement) + ":" + phpClass.getFQN() + "::" + namedElement.getName();
+                        if (visitedTargets.add(targetKey) && PhpElementsUtil.isClassOrFunctionDeprecated(namedElement)) {
+                            this.holder.registerProblem(element, getDeprecatedMessage(phpClass, namedElement), ProblemHighlightType.LIKE_DEPRECATED);
                         }
                     }
                 }
             }
+        }
+
+        @NotNull
+        private String getDeprecatedTargetKind(@NotNull PhpNamedElement namedElement) {
+            if (namedElement instanceof Method) {
+                return "method";
+            }
+
+            if (namedElement instanceof Field) {
+                return "field";
+            }
+
+            return "element";
+        }
+
+        @NotNull
+        private String getDeprecatedMessage(@NotNull PhpClass phpClass, @NotNull PhpNamedElement namedElement) {
+            if (namedElement instanceof Method) {
+                return String.format("Method '%s::%s' is deprecated", phpClass.getName(), namedElement.getName());
+            }
+
+            if (namedElement instanceof Field) {
+                return String.format("Field '%s::$%s' is deprecated", phpClass.getName(), namedElement.getName());
+            }
+
+            return String.format("Element '%s::%s' is deprecated", phpClass.getName(), namedElement.getName());
         }
 
         private ElementPattern<PsiElement> getTypeCompletionPattern() {

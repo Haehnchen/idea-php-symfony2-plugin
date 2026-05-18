@@ -13,6 +13,12 @@ namespace Foo
         const FOO = null;
         private $private;
         public $public;
+        /**
+         * @deprecated
+         */
+        public $deprecatedProperty;
+        #[\Deprecated(message: "use safe_replacement() instead", since: "1.5")]
+        public $deprecatedAttributeProperty;
 
         public function getFoo() {}
         public function hasHassers() {}
@@ -31,6 +37,10 @@ namespace Foo
          * @deprecated
          */
         public function getDeprecated() {
+        }
+
+        #[\Deprecated(message: "use safe_replacement() instead", since: "1.5")]
+        public function getAttributeDeprecated() {
         }
     }
 

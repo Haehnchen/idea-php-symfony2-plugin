@@ -497,6 +497,35 @@ public class PhpElementsUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
         assertNull(message);
     }
 
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#isClassOrFunctionDeprecated
+     */
+    public void testIsClassOrFunctionDeprecatedWithAttributeMessageAndSinceOnMethod() {
+        Method method = PhpPsiElementFactory.createMethod(getProject(),
+            "#[\\Deprecated(message: 'use safe_replacement() instead', since: '1.5')]\n" +
+            "public function deprecatedMethod() {}"
+        );
+
+        assertTrue(PhpElementsUtil.isClassOrFunctionDeprecated(method));
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil#isClassOrFunctionDeprecated
+     */
+    public void testIsClassOrFunctionDeprecatedWithAttributeMessageAndSinceOnField() {
+        PhpClass phpClass = PhpPsiElementFactory.createFromText(getProject(), PhpClass.class,
+            "<?php\n" +
+            "class DeprecatedPropertyClass {\n" +
+            "    #[\\Deprecated(message: 'use safe_replacement() instead', since: '1.5')]\n" +
+            "    public $deprecatedProperty;\n" +
+            "}"
+        );
+
+        Field field = phpClass.findFieldByName("deprecatedProperty", false);
+        assertNotNull(field);
+        assertTrue(PhpElementsUtil.isClassOrFunctionDeprecated(field));
+    }
+
     public void testAddParameterToMethodAddsParameter() {
         myFixture.configureByText(
             PhpFileType.INSTANCE,
