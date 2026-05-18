@@ -27,6 +27,7 @@ import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.PhpLanguage;
+import com.jetbrains.php.lang.documentation.PhpNamedElementDocSource;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
@@ -2863,9 +2864,12 @@ public class TwigUtil {
                 PhpClass phpClass = triple.getThird().getContainingClass();
 
                 if (phpClass != null) {
-                    // Check for @deprecated or #[Deprecated]
-                    if (PhpElementsUtil.isClassOrFunctionDeprecated(phpClass)) {
-                        deprecations.put(currentTagName, PhpElementsUtil.getClassDeprecatedMessage(phpClass));
+                    if (phpClass.isDeprecated()) {
+                        String deprecationInfo = new PhpNamedElementDocSource(phpClass, false).getDeprecationInfo();
+                        deprecations.put(
+                            currentTagName,
+                            StringUtils.isNotBlank(deprecationInfo) ? StringUtils.abbreviate("Deprecated: " + deprecationInfo, 100) : null
+                        );
                     } else {
                         // Check for trigger_deprecation() in parse() method
                         Method parseMethod = phpClass.findOwnMethodByName("parse");
