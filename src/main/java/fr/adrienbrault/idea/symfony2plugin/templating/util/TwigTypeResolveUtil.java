@@ -33,6 +33,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableC
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.collector.StaticVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.ForLoopVariableResolver;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormFieldResolver;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormVarsResolver;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.TwigTypeResolver;
@@ -121,6 +122,7 @@ public class TwigTypeResolveUtil {
     private static final TwigTypeResolver[] TWIG_TYPE_RESOLVERS = new TwigTypeResolver[] {
         new FormVarsResolver(),
         new FormFieldResolver(),
+        new ForLoopVariableResolver(),
     };
 
     /**
@@ -773,6 +775,8 @@ public class TwigTypeResolveUtil {
         if(!(twigCompositeElement instanceof TwigCompositeElement)) {
             return;
         }
+
+        globalVars.merge("loop", VariableData.fromType(ForLoopVariableResolver.LOOP_VARIABLE_TYPE), VariableData::merge);
 
         PsiElement forTag = twigCompositeElement.getFirstChild();
         Pair<String, List<String>> forTagScope = getForTagScope(forTag);
