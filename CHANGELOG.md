@@ -23,6 +23,14 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2026.1.304
+* Add for-loop `loop` variable scope with context inheritance (Daniel Espendiller)
+* Remove `getClassDeprecatedMessage()` and `isClassOrFunctionDeprecated()` helper methods in replacement of now working core logic (Daniel Espendiller)
+* Add deprecation handling for PHP fields in inspections and utility methods (Daniel Espendiller)
+* Add type resolution and inspection for Twig function return types, extend method-call chain support for functions and filters, and improve related completions. (Daniel Espendiller)
+* File-based linemarker must be the first leaf element to not trigger in e.g. diff block views (Daniel Espendiller)
+* Allow navigation, inspection, and completion for Twig method-call chains and improve twig types inspection not only supporting last item (Daniel Espendiller)
+
 ## 2026.1.303
 * Add completion for include/embed context hash keys (Daniel Espendiller)
 * Extract TwigIncludeContextParser to fix controller template variable key completion (Daniel Espendiller)
