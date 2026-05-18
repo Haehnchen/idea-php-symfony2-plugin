@@ -198,4 +198,42 @@ public class TwigExtensionParserTest extends SymfonyLightCodeInsightFixtureTestC
             "\\Symfony\\Component\\String\\UnicodeString"
         );
     }
+
+    public void testAttributeFilterReturnTypesAreCollected() {
+        myFixture.addFileToProject(
+            "src/App/Twig/AttributeStringExtension.php",
+            "<?php\n" +
+                "namespace App\\Twig;\n" +
+                "class AttributeStringExtension {\n" +
+                "    #[\\Twig\\Attribute\\AsTwigFilter('attribute_u')]\n" +
+                "    public function createUnicodeString(): \\Symfony\\Component\\String\\UnicodeString {}\n" +
+                "}\n" +
+                "namespace Symfony\\Component\\String;\n" +
+                "class UnicodeString {}\n"
+        );
+
+        assertContainsElements(
+            TwigExtensionParser.getFilters(getProject()).get("attribute_u").getTypes(),
+            "\\Symfony\\Component\\String\\UnicodeString"
+        );
+    }
+
+    public void testAttributeFunctionReturnTypesAreCollected() {
+        myFixture.addFileToProject(
+            "src/App/Twig/AttributeStringExtension.php",
+            "<?php\n" +
+                "namespace App\\Twig;\n" +
+                "class AttributeStringExtension {\n" +
+                "    #[\\Twig\\Attribute\\AsTwigFunction('attribute_ustring')]\n" +
+                "    public function createUnicodeString(): \\Symfony\\Component\\String\\UnicodeString {}\n" +
+                "}\n" +
+                "namespace Symfony\\Component\\String;\n" +
+                "class UnicodeString {}\n"
+        );
+
+        assertContainsElements(
+            TwigExtensionParser.getFunctions(getProject()).get("attribute_ustring").getTypes(),
+            "\\Symfony\\Component\\String\\UnicodeString"
+        );
+    }
 }

@@ -27,6 +27,7 @@ import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigFileVariableCollectorParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
@@ -359,19 +360,21 @@ public class TwigTypeResolveUtil {
         }
 
         String rootType = types.iterator().next();
-        Collection<PsiVariable> rootVariables = getRootVariableByName(psiElement, rootType);
+        RootTypeResolve rootTypeResolve = resolveRootTypeContainers(psiElement, rootType);
         if (types.size() == 1) {
             Project project = psiElement.getProject();
-            Collection<TwigTypeContainer> twigTypeContainers = TwigTypeContainer.fromCollection(rootVariables);
-            for(TwigTypeResolver twigTypeResolver: TWIG_TYPE_RESOLVERS) {
-                twigTypeResolver.resolve(project, twigTypeContainers, twigTypeContainers, rootType, new ArrayList<>(), rootVariables);
+            Collection<TwigTypeContainer> twigTypeContainers = rootTypeResolve.containers();
+            if (!rootTypeResolve.extensionContext()) {
+                for(TwigTypeResolver twigTypeResolver: TWIG_TYPE_RESOLVERS) {
+                    twigTypeResolver.resolve(project, twigTypeContainers, twigTypeContainers, rootType, new ArrayList<>(), rootTypeResolve.rootVariables());
+                }
             }
 
             return twigTypeContainers;
         }
 
         Project project = psiElement.getProject();
-        Collection<TwigTypeContainer> type = TwigTypeContainer.fromCollection(rootVariables);
+        Collection<TwigTypeContainer> type = rootTypeResolve.containers();
         Collection<List<TwigTypeContainer>> previousElements = new ArrayList<>();
         previousElements.add(new ArrayList<>(type));
 
@@ -387,6 +390,97 @@ public class TwigTypeResolveUtil {
         }
 
         return type;
+    }
+
+    @NotNull
+    private static RootTypeResolve resolveRootTypeContainers(@NotNull PsiElement psiElement, @NotNull String rootType) {
+        // {{ title|u.truncate(20) }} and {% apply u.truncate(20) %}: "u" is provided by a Twig filter.
+        if (isTwigFilterChainRoot(psiElement, rootType)) {
+            TwigExtension twigExtension = TwigExtensionParser.getFilters(psiElement.getProject()).get(rootType);
+            if (twigExtension == null || twigExtension.getTypes().isEmpty()) {
+                return new RootTypeResolve(true, Collections.emptyList(), Collections.emptyList());
+            }
+
+            return new RootTypeResolve(true, Collections.singletonList(new TwigTypeContainer(twigExtension.getTypes())), Collections.emptyList());
+        }
+
+        // {{ ustring('Symfony').truncate(20) }}: "ustring" is provided by a Twig function.
+        if (isTwigFunctionChainRoot(psiElement, rootType)) {
+            TwigExtension twigExtension = TwigExtensionParser.getFunctions(psiElement.getProject()).get(rootType);
+            if (twigExtension == null || twigExtension.getTypes().isEmpty()) {
+                return new RootTypeResolve(true, Collections.emptyList(), Collections.emptyList());
+            }
+
+            return new RootTypeResolve(true, Collections.singletonList(new TwigTypeContainer(twigExtension.getTypes())), Collections.emptyList());
+        }
+
+        Collection<PsiVariable> rootVariables = getRootVariableByName(psiElement, rootType);
+        return new RootTypeResolve(false, TwigTypeContainer.fromCollection(rootVariables), rootVariables);
+    }
+
+    private record RootTypeResolve(boolean extensionContext, @NotNull Collection<TwigTypeContainer> containers, @NotNull Collection<PsiVariable> rootVariables) {
+    }
+
+    /**
+     * Detects chains where the first path segment is a filter result.
+     *
+     * Examples:
+     * <ul>
+     *   <li>{@code {{ title|u.truncate(20) }}}: {@code u} is the filter root</li>
+     *   <li>{@code {% apply u.truncate(20) %}}: {@code u} is the filter root</li>
+     * </ul>
+     */
+    private static boolean isTwigFilterChainRoot(@NotNull PsiElement psiElement, @NotNull String rootType) {
+        PsiElement rootElement = findRootPathElement(psiElement, rootType);
+        if (rootElement == null || rootElement.getNode() == null) {
+            return false;
+        }
+
+        ASTNode previous = FormatterUtil.getPreviousNonWhitespaceLeaf(rootElement.getNode());
+        if (previous == null) {
+            return false;
+        }
+
+        if (previous.getElementType() == TwigTokenTypes.FILTER) {
+            return true;
+        }
+
+        return previous.getElementType() == TwigTokenTypes.TAG_NAME && "apply".equalsIgnoreCase(previous.getText());
+    }
+
+    /**
+     * Detects chains where the first path segment is a Twig function return value.
+     *
+     * Example: {@code {{ ustring().truncate(20) }}}.
+     */
+    private static boolean isTwigFunctionChainRoot(@NotNull PsiElement psiElement, @NotNull String rootType) {
+        PsiElement rootElement = findRootPathElement(psiElement, rootType);
+        if (rootElement == null || rootElement.getNode() == null) {
+            return false;
+        }
+
+        ASTNode next = FormatterUtil.getNextNonWhitespaceLeaf(rootElement.getNode());
+        if (next == null || next.getElementType() != TwigTokenTypes.LBRACE) {
+            return false;
+        }
+
+        ASTNode afterCall = getNextNodeAfterMethodCall(next);
+        return afterCall != null && afterCall.getElementType() == TwigTokenTypes.DOT;
+    }
+
+    @Nullable
+    private static PsiElement findRootPathElement(@NotNull PsiElement psiElement, @NotNull String rootType) {
+        List<PsiElement> pathElements = collectPsiTypeNameElementsWithCurrent(psiElement);
+        if (pathElements.isEmpty()) {
+            pathElements = collectPsiTypeNameElementsBefore(psiElement);
+        }
+
+        if (pathElements.isEmpty()) {
+            return null;
+        }
+
+        PsiElement rootElement = pathElements.get(0);
+        return rootType.equals(rootElement.getText()) ? rootElement : null;
     }
 
     /**

@@ -20,4 +20,42 @@ public class TwigVariableDeprecatedInspectionTest extends SymfonyLightCodeInsigh
     public void testThatDeprecatedMethodIsHighlighted() {
         assertLocalInspectionContains("f.html.twig", "{# @var bar \\Foo\\Bar #} {{ bar.next.dep<caret>recated  }}", "Method 'Bar::getDeprecated' is deprecated");
     }
+
+    public void testThatDeprecatedTwigFilterAndFunctionReturnTypeMethodsAreHighlighted() {
+        addTwigStringExtensionFixture();
+
+        assertLocalInspectionContains("f.html.twig", "{{ 'Symfony'|u.dep<caret>recated }}", "Method 'UnicodeString::getDeprecated' is deprecated");
+        assertLocalInspectionContains("f.html.twig", "{{ ustring().dep<caret>recated }}", "Method 'UnicodeString::getDeprecated' is deprecated");
+        assertLocalInspectionContains("f.html.twig", "{{ ustring(ass).dep<caret>recated }}", "Method 'UnicodeString::getDeprecated' is deprecated");
+        assertLocalInspectionContains("f.html.twig", "{{ ustring('aa').dep<caret>recated }}", "Method 'UnicodeString::getDeprecated' is deprecated");
+        assertLocalInspectionContains("f.html.twig", "{{ ustring('aaa').dep<caret>recated }}", "Method 'UnicodeString::getDeprecated' is deprecated");
+        assertLocalInspectionContains("f.html.twig", "{{ ustring(text: 'aaa').dep<caret>recated }}", "Method 'UnicodeString::getDeprecated' is deprecated");
+    }
+
+    private void addTwigStringExtensionFixture() {
+        myFixture.addFileToProject(
+            "src/Twig/StringExtension.php",
+            "<?php\n" +
+                "namespace {\n" +
+                "    interface Twig_ExtensionInterface {}\n" +
+                "    abstract class Twig_Extension implements Twig_ExtensionInterface {}\n" +
+                "    class Twig_SimpleFilter {}\n" +
+                "    class Twig_SimpleFunction {}\n" +
+                "}\n" +
+                "namespace Twig\\Extra\\String {\n" +
+                "    use Symfony\\Component\\String\\UnicodeString;\n" +
+                "    class StringExtension extends \\Twig_Extension {\n" +
+                "        public function getFilters() { return [new \\Twig_SimpleFilter('u', [$this, 'createUnicodeString'])]; }\n" +
+                "        public function getFunctions() { return [new \\Twig_SimpleFunction('ustring', [$this, 'createUnicodeString'])]; }\n" +
+                "        public function createUnicodeString(?string $text): UnicodeString { return new UnicodeString($text ?? ''); }\n" +
+                "    }\n" +
+                "}\n" +
+                "namespace Symfony\\Component\\String {\n" +
+                "    class UnicodeString {\n" +
+                "        /** @deprecated */\n" +
+                "        public function getDeprecated(): static {}\n" +
+                "    }\n" +
+                "}\n"
+        );
+    }
 }

@@ -249,6 +249,58 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         );
     }
 
+    public void testThatTwigFilterReturnTypeProvidesMethodCompletion() {
+        myFixture.copyFileToProject("TwigStringExtension.php");
+
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{{ 'Symfony'|u.<caret> }}",
+            "truncate", "lower"
+        );
+
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{% apply u.<caret> %}{% endapply %}",
+            "truncate", "lower"
+        );
+
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{{ 'Symfony'|u.truncate(8).<caret> }}",
+            "truncate", "lower"
+        );
+
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{{ ustring().<caret> }}",
+            "truncate", "lower"
+        );
+
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{{ ustring(ass).<caret> }}",
+            "truncate", "lower"
+        );
+
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{{ ustring('aa').<caret> }}",
+            "truncate", "lower"
+        );
+
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{{ ustring('aaa').<caret> }}",
+            "truncate", "lower"
+        );
+
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{{ ustring(text: 'aaa').<caret> }}",
+            "truncate", "lower"
+        );
+    }
+
     public void testThatTwigExtensionStringParameterIsPipedToPhpCompletion() {
         assertCompletionContains(TwigFileType.INSTANCE, "\n" +
                 "{{ 'aaa'|request_filter('<caret>') }}\n",
