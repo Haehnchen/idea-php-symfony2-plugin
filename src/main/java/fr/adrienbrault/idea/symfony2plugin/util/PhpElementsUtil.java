@@ -676,10 +676,10 @@ public class PhpElementsUtil {
     }
 
     /**
-     * Check if a PHP class, method or function is deprecated
+     * Check if a PHP class, method, function or field is deprecated
      * Supports both @deprecated annotation and #[Deprecated] attribute
      *
-     * @param phpClassOrFuncRef PHP class, method or function
+     * @param phpClassOrFuncRef PHP class, method, function or field
      */
     public static boolean isClassOrFunctionDeprecated(@NotNull PhpNamedElement phpClassOrFuncRef) {
         // First, check PhpStorm's built-in deprecation check

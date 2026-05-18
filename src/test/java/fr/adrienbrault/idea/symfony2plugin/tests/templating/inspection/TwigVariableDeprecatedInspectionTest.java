@@ -21,6 +21,18 @@ public class TwigVariableDeprecatedInspectionTest extends SymfonyLightCodeInsigh
         assertLocalInspectionContains("f.html.twig", "{# @var bar \\Foo\\Bar #} {{ bar.next.dep<caret>recated  }}", "Method 'Bar::getDeprecated' is deprecated");
     }
 
+    public void testThatDeprecatedFieldIsHighlighted() {
+        assertLocalInspectionContains("f.html.twig", "{# @var bar \\Foo\\Bar #} {{ bar.deprecated<caret>Property  }}", "Field 'Bar::$deprecatedProperty' is deprecated");
+    }
+
+    public void testThatAttributeDeprecatedMethodIsHighlighted() {
+        assertLocalInspectionContains("f.html.twig", "{# @var bar \\Foo\\Bar #} {{ bar.attribute<caret>Deprecated  }}", "Method 'Bar::getAttributeDeprecated' is deprecated");
+    }
+
+    public void testThatAttributeDeprecatedFieldIsHighlighted() {
+        assertLocalInspectionContains("f.html.twig", "{# @var bar \\Foo\\Bar #} {{ bar.deprecatedAttribute<caret>Property  }}", "Field 'Bar::$deprecatedAttributeProperty' is deprecated");
+    }
+
     public void testThatDeprecatedTwigFilterAndFunctionReturnTypeMethodsAreHighlighted() {
         addTwigStringExtensionFixture();
 
