@@ -133,7 +133,7 @@ public class TwigExtensionParser  {
             if (data.size() >= 3) {
                 String filterName = data.get(2);
                 String signature = String.format("#M#C\\%s.%s", data.get(0), data.get(1));
-                extensions.put(filterName, new TwigExtension(TwigExtensionType.FILTER, signature));
+                extensions.put(filterName, new TwigExtension(TwigExtensionType.FILTER, signature, Collections.emptyMap(), getReturnClassTypes(project, signature)));
             }
         }
 
@@ -177,7 +177,7 @@ public class TwigExtensionParser  {
             if (data.size() >= 3) {
                 String functionName = data.get(2);
                 String signature = String.format("#M#C\\%s.%s", data.get(0), data.get(1));
-                extensions.put(functionName, new TwigExtension(TwigExtensionType.FUNCTION_METHOD, signature));
+                extensions.put(functionName, new TwigExtension(TwigExtensionType.FUNCTION_METHOD, signature, Collections.emptyMap(), getReturnClassTypes(project, signature)));
             }
         }
 
@@ -340,6 +340,27 @@ public class TwigExtensionParser  {
         return String.format("#M#C\\%s.%s", StringUtils.stripStart(nodeClass, "\\"), "compile");
     }
 
+    @NotNull
+    private static Collection<String> getReturnClassTypes(@NotNull Project project, @Nullable String signature) {
+        if (signature == null) {
+            return Collections.emptySet();
+        }
+
+        Set<String> types = new HashSet<>();
+        for (PhpNamedElement phpNamedElement : PhpElementsUtil.getPsiElementsBySignature(project, signature)) {
+            if (phpNamedElement != null) {
+                types.addAll(
+                    PhpElementsUtil.getClassFromPhpTypeSet(project, phpNamedElement.getType().getTypes())
+                        .stream()
+                        .map(PhpNamedElement::getFQN)
+                        .toList()
+                );
+            }
+        }
+
+        return types;
+    }
+
     private static void parseOperators(@NotNull Method method, @NotNull Map<String, TwigExtension> filters) {
         final PhpClass containingClass = method.getContainingClass();
         if (containingClass == null) {
@@ -464,17 +485,7 @@ public class TwigExtensionParser  {
                             options = new HashMap<>();
                         }
 
-                        Collection<String> typed = new HashSet<>();
-                        Project project = method.getProject();
-                        if (signature != null) {
-                            for (PhpNamedElement phpNamedElement : PhpElementsUtil.getPsiElementsBySignature(project, signature)) {
-                                if (phpNamedElement instanceof Function) {
-                                    typed.addAll(PhpElementsUtil.getClassFromPhpTypeSet(project, phpNamedElement.getType().getTypes()).stream().map(PhpNamedElement::getFQN).toList());
-                                }
-                            }
-                        }
-
-                        filters.put(funcName, new TwigExtension(TwigExtensionType.FILTER, signature, options, typed));
+                        filters.put(funcName, new TwigExtension(TwigExtensionType.FILTER, signature, options, getReturnClassTypes(method.getProject(), signature)));
                     }
                 }
 
@@ -497,7 +508,7 @@ public class TwigExtensionParser  {
                                 signature = getCallableSignature(parameters[0], method);
                             }
 
-                            filters.put(funcName, new TwigExtension(TwigExtensionType.FILTER, signature));
+                            filters.put(funcName, new TwigExtension(TwigExtensionType.FILTER, signature, Collections.emptyMap(), getReturnClassTypes(method.getProject(), signature)));
                         }
                     }
                 }
@@ -527,7 +538,7 @@ public class TwigExtensionParser  {
                                 }
                             }
 
-                            filters.put(funcName, new TwigExtension(TwigExtensionType.FILTER, signature));
+                            filters.put(funcName, new TwigExtension(TwigExtensionType.FILTER, signature, Collections.emptyMap(), getReturnClassTypes(method.getProject(), signature)));
                         }
                     }
                 }
@@ -598,7 +609,7 @@ public class TwigExtensionParser  {
                             options = new HashMap<>();
                         }
 
-                        filters.put(funcName, new TwigExtension(TwigExtensionType.SIMPLE_FUNCTION, signature, options));
+                        filters.put(funcName, new TwigExtension(TwigExtensionType.SIMPLE_FUNCTION, signature, options, getReturnClassTypes(method.getProject(), signature)));
                     }
                 }
 
@@ -627,7 +638,7 @@ public class TwigExtensionParser  {
                                 }
                             }
 
-                            filters.put(funcName, new TwigExtension(TwigExtensionType.FUNCTION_METHOD, signature));
+                            filters.put(funcName, new TwigExtension(TwigExtensionType.FUNCTION_METHOD, signature, Collections.emptyMap(), getReturnClassTypes(method.getProject(), signature)));
                         }
                     }
                 }

@@ -132,6 +132,47 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
         );
     }
 
+    public void testTypeGotoSupportsTwigFilterReturnTypeMethodCall() {
+        myFixture.copyFileToProject("TwigFilterExtension.php");
+        myFixture.copyFileToProject("TwigStringExtension.php");
+
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{{ 'Symfony'|u.trun<caret>cate(8) }}",
+            PlatformPatterns.psiElement(Method.class).withName("truncate")
+        );
+
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{{ ustring().trun<caret>cate(8) }}",
+            PlatformPatterns.psiElement(Method.class).withName("truncate")
+        );
+
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{{ ustring(ass).trun<caret>cate(8) }}",
+            PlatformPatterns.psiElement(Method.class).withName("truncate")
+        );
+
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{{ ustring('aa').trun<caret>cate(8) }}",
+            PlatformPatterns.psiElement(Method.class).withName("truncate")
+        );
+
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{{ ustring('aaa').trun<caret>cate(8) }}",
+            PlatformPatterns.psiElement(Method.class).withName("truncate")
+        );
+
+        assertNavigationMatch(
+            TwigFileType.INSTANCE,
+            "{{ ustring(text: 'aaa').trun<caret>cate(8) }}",
+            PlatformPatterns.psiElement(Method.class).withName("truncate")
+        );
+    }
+
     public void testFormFieldGotoUsesPrimitiveFormDataHolderOwnerFormTypeFqn() {
         myFixture.copyFileToProject("ide-twig.json");
 

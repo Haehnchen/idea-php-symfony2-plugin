@@ -57,6 +57,21 @@ public class TwigVariablePathInspectionTest extends SymfonyLightCodeInsightFixtu
         assertLocalInspectionNotContains("f.html.twig", "{# @var bar \\Foo\\Bar #} {{ bar.getNext().getNext().pub<caret>lic }}", "Field or method not found");
     }
 
+    public void testTwigFilterAndFunctionReturnTypePathsAreInspected() {
+        addTwigStringExtensionFixture();
+
+        assertLocalInspectionNotContains("f.html.twig", "{{ 'Symfony'|u.trun<caret>cate(8) }}", "Field or method not found");
+        assertLocalInspectionContains("f.html.twig", "{{ 'Symfony'|u.un<caret>known }}", "Field or method not found");
+
+        assertLocalInspectionNotContains("f.html.twig", "{{ ustring().trun<caret>cate(8) }}", "Field or method not found");
+        assertLocalInspectionContains("f.html.twig", "{{ ustring().un<caret>known }}", "Field or method not found");
+        assertLocalInspectionNotContains("f.html.twig", "{{ ustring(ass).trun<caret>cate(8) }}", "Field or method not found");
+        assertLocalInspectionNotContains("f.html.twig", "{{ ustring('aa').trun<caret>cate(8) }}", "Field or method not found");
+        assertLocalInspectionNotContains("f.html.twig", "{{ ustring('aaa').trun<caret>cate(8) }}", "Field or method not found");
+        assertLocalInspectionNotContains("f.html.twig", "{{ ustring(text: 'aaa').trun<caret>cate(8) }}", "Field or method not found");
+        assertLocalInspectionContains("f.html.twig", "{{ ustring(text: 'aaa').un<caret>known }}", "Field or method not found");
+    }
+
     public void testThatArrayAccessAndIteratorImplementationsDontHighlightAtAll() {
         assertLocalInspectionNotContains("f.html.twig", "{# @var bar \\Foo\\BarArrayAccess #} {{ bar.c<caret>ar }}", "Field or method not found");
         assertLocalInspectionNotContains("f.html.twig", "{# @var bar \\Foo\\BarIterator #} {{ bar.c<caret>ar }}", "Field or method not found");
@@ -68,5 +83,31 @@ public class TwigVariablePathInspectionTest extends SymfonyLightCodeInsightFixtu
 
         // 2023.3.4: "Caching disabled due to recursion prevention, please get rid of cyclic dependencies"
         // assertLocalInspectionNotContains("f.html.twig", "{# @var bar \\Foo\\Bar #} {{ bar.array.foo.fo<caret>o }}", "Field or method not found");
+    }
+
+    private void addTwigStringExtensionFixture() {
+        myFixture.addFileToProject(
+            "src/Twig/StringExtension.php",
+            "<?php\n" +
+                "namespace {\n" +
+                "    interface Twig_ExtensionInterface {}\n" +
+                "    abstract class Twig_Extension implements Twig_ExtensionInterface {}\n" +
+                "    class Twig_SimpleFilter {}\n" +
+                "    class Twig_SimpleFunction {}\n" +
+                "}\n" +
+                "namespace Twig\\Extra\\String {\n" +
+                "    use Symfony\\Component\\String\\UnicodeString;\n" +
+                "    class StringExtension extends \\Twig_Extension {\n" +
+                "        public function getFilters() { return [new \\Twig_SimpleFilter('u', [$this, 'createUnicodeString'])]; }\n" +
+                "        public function getFunctions() { return [new \\Twig_SimpleFunction('ustring', [$this, 'createUnicodeString'])]; }\n" +
+                "        public function createUnicodeString(?string $text): UnicodeString { return new UnicodeString($text ?? ''); }\n" +
+                "    }\n" +
+                "}\n" +
+                "namespace Symfony\\Component\\String {\n" +
+                "    class UnicodeString {\n" +
+                "        public function truncate(int $length, string $ellipsis = '', bool $cut = true): static {}\n" +
+                "    }\n" +
+                "}\n"
+        );
     }
 }
