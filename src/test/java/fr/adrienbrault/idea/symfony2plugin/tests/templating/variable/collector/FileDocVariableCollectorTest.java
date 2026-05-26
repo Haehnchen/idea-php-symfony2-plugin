@@ -172,6 +172,35 @@ public class FileDocVariableCollectorTest extends SymfonyLightCodeInsightFixture
         );
     }
 
+    public void testVarArrayIterationViaDoctrineArrayCollectionSubclass() {
+        myFixture.configureByText("issue_1097.php", "<?php\n" +
+            "namespace Doctrine\\Common\\Collections;\n" +
+            "class ArrayCollection {}\n" +
+            "\n" +
+            "namespace AppBundle\\Entity;\n" +
+            "class Provider {\n" +
+            "  public function getName() {}\n" +
+            "}\n" +
+            "\n" +
+            "namespace AppBundle\\Service;\n" +
+            "use AppBundle\\Entity\\Provider;\n" +
+            "use Doctrine\\Common\\Collections\\ArrayCollection;\n" +
+            "/**\n" +
+            " * @method Provider __iterator\n" +
+            " */\n" +
+            "class ProviderCollection extends ArrayCollection {\n" +
+            "}"
+        );
+
+        assertCompletionContains(TwigFileType.INSTANCE, "" +
+                "{# @var providers \\AppBundle\\Service\\ProviderCollection #}\n" +
+                "{% for provider in providers %}\n" +
+                "  {{ provider.<caret> }}\n" +
+                "{% endfor %}\n"
+            , "name"
+        );
+    }
+
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil#collectForArrayScopeVariables
      */
