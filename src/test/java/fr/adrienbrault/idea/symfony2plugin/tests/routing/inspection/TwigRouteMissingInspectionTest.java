@@ -12,6 +12,7 @@ public class TwigRouteMissingInspectionTest extends SymfonyLightCodeInsightFixtu
 
         myFixture.copyFileToProject("TwigRouteMissingInspection.xml");
         myFixture.copyFileToProject("TwigRouteMissingInspection.php");
+        myFixture.copyFileToProject("RouteDeprecatedInspection.php");
     }
 
     protected String getTestDataPath() {
@@ -57,6 +58,20 @@ public class TwigRouteMissingInspectionTest extends SymfonyLightCodeInsightFixtu
             "test.html.twig",
             "{{ path('fo<caret>o#{segment.typeKey}foobar') }}",
             "Symfony: Missing Route"
+        );
+    }
+
+    public void testRouteUsageForDeprecatedControllerActionProvidesInspection() {
+        assertLocalInspectionContains(
+            "test.html.twig",
+            "{{ url('deprecated_<caret>route') }}",
+            "Symfony: Controller action is deprecated"
+        );
+
+        assertLocalInspectionNotContains(
+            "test.html.twig",
+            "{{ url('active_<caret>route') }}",
+            "Symfony: Controller action is deprecated"
         );
     }
 }

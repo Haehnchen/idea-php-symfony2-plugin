@@ -12,6 +12,7 @@ public class PhpRouteMissingInspectionTest extends SymfonyLightCodeInsightFixtur
 
         myFixture.copyFileToProject("PhpRouteMissingInspection.php");
         myFixture.copyFileToProject("PhpRouteMissingInspection.xml");
+        myFixture.copyFileToProject("RouteDeprecatedInspection.php");
     }
 
     protected String getTestDataPath() {
@@ -31,6 +32,20 @@ public class PhpRouteMissingInspectionTest extends SymfonyLightCodeInsightFixtur
                 "/** @var $x \\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface */\n" +
                 "$x->generate('my_fo<caret>obar');\n",
             "Symfony: Missing Route"
+        );
+    }
+
+    public void testRouteUsageForDeprecatedControllerActionProvidesInspection() {
+        assertLocalInspectionContains("test.php", "<?php\n" +
+                "/** @var $x \\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface */\n" +
+                "$x->generate('deprecated_<caret>route');\n",
+            "Symfony: Controller action is deprecated"
+        );
+
+        assertLocalInspectionNotContains("test.php", "<?php\n" +
+                "/** @var $x \\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface */\n" +
+                "$x->generate('active_<caret>route');\n",
+            "Symfony: Controller action is deprecated"
         );
     }
 }

@@ -7,10 +7,6 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
-import com.jetbrains.php.lang.psi.elements.Method;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import com.jetbrains.php.lang.psi.elements.PhpClassMember;
-import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper;
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
@@ -104,23 +100,8 @@ public class RouteControllerDeprecatedInspection {
     }
 
     private static void hasDeprecatedActionOrClass(@NotNull Project project, @NotNull PsiElement element, String text, @NotNull ProblemsHolder holder) {
-        for (PsiElement psiElement : RouteHelper.getMethodsOnControllerShortcut(project, text)) {
-            if (!(psiElement instanceof PhpNamedElement phpNamedElement)) {
-                continue;
-            }
-
-            if (psiElement instanceof Method method && method.isDeprecated()) {
-                holder.registerProblem(element, "Symfony: Controller action is deprecated", ProblemHighlightType.LIKE_DEPRECATED);
-                break;
-            }
-
-            if (psiElement instanceof PhpClassMember phpClassMember) {
-                PhpClass containingClass = phpClassMember.getContainingClass();
-                if (containingClass != null && containingClass.isDeprecated()) {
-                    holder.registerProblem(element, "Symfony: Controller action is deprecated", ProblemHighlightType.LIKE_DEPRECATED);
-                    break;
-                }
-            }
+        if (RouteHelper.isControllerActionDeprecated(project, text)) {
+            holder.registerProblem(element, "Symfony: Controller action is deprecated", ProblemHighlightType.LIKE_DEPRECATED);
         }
     }
 }

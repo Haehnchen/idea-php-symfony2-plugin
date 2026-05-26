@@ -65,6 +65,11 @@ public class PhpRouteMissingInspection extends LocalInspectionTool {
 
         if (!RouteHelper.isExistingRouteName(element.getProject(), routeName)) {
             holder.registerProblem(element, "Symfony: Missing Route", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, new RouteGuessTypoQuickFix(routeName));
+            return;
+        }
+
+        if (RouteHelper.isRouteControllerDeprecated(element.getProject(), routeName)) {
+            holder.registerProblem(element, "Symfony: Controller action is deprecated", ProblemHighlightType.LIKE_DEPRECATED);
         }
     }
 }

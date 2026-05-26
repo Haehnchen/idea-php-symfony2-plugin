@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.routing.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
+import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.psi.PsiElement;
@@ -53,8 +54,14 @@ public class TwigRouteMissingInspection extends LocalInspectionTool {
             return;
         }
 
-        if (!RouteHelper.isExistingRouteName(element.getProject(), RouteHelper.unescapeRouteName(text))) {
+        String routeName = RouteHelper.unescapeRouteName(text);
+        if (!RouteHelper.isExistingRouteName(element.getProject(), routeName)) {
             holder.registerProblem(element, "Symfony: Missing Route", new RouteGuessTypoQuickFix(text));
+            return;
+        }
+
+        if (RouteHelper.isRouteControllerDeprecated(element.getProject(), routeName)) {
+            holder.registerProblem(element, "Symfony: Controller action is deprecated", ProblemHighlightType.LIKE_DEPRECATED);
         }
     }
 }

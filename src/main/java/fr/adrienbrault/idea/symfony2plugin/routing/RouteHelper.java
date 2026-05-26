@@ -166,6 +166,39 @@ public class RouteHelper {
         return targets.toArray(new PsiElement[0]);
     }
 
+    public static boolean isRouteControllerDeprecated(@NotNull Project project, @NotNull String routeName) {
+        for (PsiElement psiElement : RouteHelper.getMethods(project, routeName)) {
+            if (RouteHelper.isControllerMethodOrClassDeprecated(psiElement)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean isControllerActionDeprecated(@NotNull Project project, @Nullable String controllerName) {
+        for (PsiElement psiElement : RouteHelper.getMethodsOnControllerShortcut(project, controllerName)) {
+            if (RouteHelper.isControllerMethodOrClassDeprecated(psiElement)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean isControllerMethodOrClassDeprecated(@NotNull PsiElement psiElement) {
+        if (psiElement instanceof Method method && method.isDeprecated()) {
+            return true;
+        }
+
+        if (!(psiElement instanceof PhpClassMember phpClassMember)) {
+            return false;
+        }
+
+        PhpClass containingClass = phpClassMember.getContainingClass();
+        return containingClass != null && containingClass.isDeprecated();
+    }
+
     /**
      * "App\Controller\Foo"
      * "App\Controller\Foo::method"
