@@ -68,18 +68,19 @@ public class TwigTranslationGeneratorAction extends CodeInsightAction {
             JBPopupFactory.getInstance().createPopupChooserBuilder(list)
                 .setTitle(String.format("Symfony: Translations \"%s\"", StringUtils.abbreviate(domain, 20)))
                 .setItemChosenCallback(selectedValue -> WriteCommandAction.runWriteCommandAction(editor.getProject(), String.format("Symfony: Add Translation \"%s\"", StringUtils.abbreviate(selectedValue, 20)), null, () -> {
-                    String s;
-
-                    if (!domain.equals(defaultDomain)) {
-                        s = String.format("{{ '%s'|trans({}, '%s') }}", selectedValue, domain);
-                    } else {
-                        s = String.format("{{ '%s'|trans }}", selectedValue);
-                    }
-
-                    PhpInsertHandlerUtil.insertStringAtCaret(editor, s);
+                    PhpInsertHandlerUtil.insertStringAtCaret(editor, createTranslationSnippet(selectedValue, defaultDomain, domain));
                 }))
                 .createPopup()
                 .showInBestPositionFor(editor);
         }
+    }
+
+    @NotNull
+    public static String createTranslationSnippet(@NotNull String translationKey, @NotNull String defaultDomain, @NotNull String domain) {
+        if (!domain.equals(defaultDomain)) {
+            return String.format("{{ '%s'|trans({}, '%s') }}", translationKey, domain);
+        }
+
+        return String.format("{{ '%s'|trans }}", translationKey);
     }
 }
