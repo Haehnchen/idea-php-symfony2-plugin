@@ -38,6 +38,17 @@ namespace Foo\ConstantBar
     }
 }
 
+namespace BugDemo
+{
+    const NAMESPACED_CONST = 'value';
+
+    class CardSuite
+    {
+        public const CLUBS = 'clubs';
+        public const SPADES = 'spades';
+    }
+}
+
 
 namespace Foo\Template {
 

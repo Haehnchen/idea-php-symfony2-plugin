@@ -10,6 +10,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.usages.UsageTarget
 import com.intellij.usages.UsageTargetProvider
+import com.jetbrains.php.lang.psi.elements.Constant
 import com.jetbrains.php.lang.psi.elements.Field
 import com.jetbrains.php.lang.psi.elements.Method
 import com.jetbrains.php.lang.psi.elements.PhpClass
@@ -79,7 +80,7 @@ private fun getTwigFindUsagesTarget(element: PsiElement): TwigFindUsagesTarget? 
         }
 
         val resolvedTargets = TwigUsageTargetUtil.getTwigFindUsagesTargets(candidate)
-            .filter { it is PhpClass || it is Method || it is Field || it is PhpEnumCase }
+            .filter { it is PhpClass || it is Method || it is Field || it is PhpEnumCase || it is Constant }
 
         if (resolvedTargets.isNotEmpty()) {
             resolvedCandidates += candidate to resolvedTargets

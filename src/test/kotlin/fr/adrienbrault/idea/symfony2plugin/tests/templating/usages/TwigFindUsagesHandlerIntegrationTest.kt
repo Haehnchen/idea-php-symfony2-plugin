@@ -9,6 +9,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.usageView.UsageInfo
 import com.intellij.psi.util.PsiTreeUtil
+import com.jetbrains.php.lang.psi.elements.Constant
 import com.jetbrains.php.lang.psi.elements.Field
 import com.jetbrains.php.lang.psi.elements.Method
 import com.jetbrains.php.lang.psi.elements.PhpClass
@@ -202,6 +203,72 @@ class TwigFindUsagesHandlerIntegrationTest : SymfonyLightCodeInsightFixtureTestC
 
         assertContainsUsageFile(usages, "templates/index.html.twig")
         assertContainsUsageFile(usages, "templates/secondary.html.twig")
+    }
+
+    fun testPlatformFindUsagesTriggeredFromTwigNamespacedGlobalConstantDelegatesToPhpConstant() {
+        myFixture.addFileToProject(
+            "src/constants.php",
+            """
+            <?php
+            namespace BugDemo;
+            const NAMESPACED_CONST = 'value';
+            const OTHER_CONST = 'other';
+            """.trimIndent(),
+        )
+
+        myFixture.addFileToProject("templates/secondary.html.twig", "{{ constant('\\\\BugDemo\\\\NAMESPACED_CONST') }}")
+        myFixture.addFileToProject("templates/other.html.twig", "{{ constant('BugDemo\\\\OTHER_CONST') }}")
+
+        val psiFile = configureByProjectPath("templates/index.html.twig", "{{ constant('BugDemo\\\\NAMESPACED_<caret>CONST') }}")
+        val twigElement = psiFile.findElementAt(myFixture.caretOffset)
+        assertNotNull(twigElement)
+
+        val handler = getPlatformFindUsagesHandler(twigElement!!)
+        assertInstanceOf(handler, TwigFindUsagesHandler::class.java)
+
+        val primaryElements = handler!!.primaryElements
+        assertEquals(1, primaryElements.size)
+        assertInstanceOf(primaryElements[0], Constant::class.java)
+
+        val usages = findUsagesFromPlatform(twigElement)
+
+        assertContainsUsageFile(usages, "templates/index.html.twig")
+        assertContainsUsageFile(usages, "templates/secondary.html.twig")
+        assertNotContainsUsageFile(usages, "templates/other.html.twig")
+    }
+
+    fun testPlatformFindUsagesTriggeredFromTwigObjectRelativeConstantDelegatesToPhpConstant() {
+        myFixture.addFileToProject(
+            "src/CardSuite.php",
+            """
+            <?php
+            namespace BugDemo;
+            class CardSuite {
+                public const CLUBS = 'clubs';
+                public const SPADES = 'spades';
+            }
+            """.trimIndent(),
+        )
+
+        myFixture.addFileToProject("templates/secondary.html.twig", "{# @var suite \\BugDemo\\CardSuite #} {{ constant('CLUBS', suite) }}")
+        myFixture.addFileToProject("templates/other.html.twig", "{# @var suite \\BugDemo\\CardSuite #} {{ constant('SPADES', suite) }}")
+
+        val psiFile = configureByProjectPath("templates/index.html.twig", "{# @var suite \\BugDemo\\CardSuite #} {{ constant('CL<caret>UBS', suite) }}")
+        val twigElement = psiFile.findElementAt(myFixture.caretOffset)
+        assertNotNull(twigElement)
+
+        val handler = getPlatformFindUsagesHandler(twigElement!!)
+        assertInstanceOf(handler, TwigFindUsagesHandler::class.java)
+
+        val primaryElements = handler!!.primaryElements
+        assertEquals(1, primaryElements.size)
+        assertInstanceOf(primaryElements[0], Field::class.java)
+
+        val usages = findUsagesFromPlatform(twigElement)
+
+        assertContainsUsageFile(usages, "templates/index.html.twig")
+        assertContainsUsageFile(usages, "templates/secondary.html.twig")
+        assertNotContainsUsageFile(usages, "templates/other.html.twig")
     }
 
     fun testPlatformFindUsagesTriggeredFromTwigEnumCasesDelegatesToPhpEnumClass() {

@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.templating;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.jetbrains.php.lang.psi.elements.Constant;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
@@ -270,6 +271,9 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
     public void testThatConstantAndEnumProvidesNavigation() {
         assertNavigationMatch(TwigFileType.INSTANCE, "{{ constant('\\Foo\\ConstantBar\\Foo::F<caret>OO') }}", PlatformPatterns.psiElement(Field.class).withName("FOO"));
         assertNavigationMatch(TwigFileType.INSTANCE, "{{ constant('\\\\Foo\\\\ConstantBar\\\\Foo::F<caret>OO') }}", PlatformPatterns.psiElement(Field.class).withName("FOO"));
+        assertNavigationMatch(TwigFileType.INSTANCE, "{{ constant('BugDemo\\\\NAMESPACED_<caret>CONST') }}", PlatformPatterns.psiElement(Constant.class).withName("NAMESPACED_CONST"));
+        assertNavigationMatch(TwigFileType.INSTANCE, "{{ constant('\\\\BugDemo\\\\NAMESPACED_<caret>CONST') }}", PlatformPatterns.psiElement(Constant.class).withName("NAMESPACED_CONST"));
+        assertNavigationMatch(TwigFileType.INSTANCE, "{# @var suite \\BugDemo\\CardSuite #}\n{{ constant('CL<caret>UBS', suite) }}", PlatformPatterns.psiElement(Field.class).withName("CLUBS"));
 
         assertNavigationMatch(TwigFileType.INSTANCE, "{% if foo == constant('\\Foo\\ConstantBar\\Foo::F<caret>OO') %}", PlatformPatterns.psiElement(Field.class).withName("FOO"));
         assertNavigationMatch(TwigFileType.INSTANCE, "{% set foo == constant('\\Foo\\ConstantBar\\Foo::F<caret>OO') %}", PlatformPatterns.psiElement(Field.class).withName("FOO"));
