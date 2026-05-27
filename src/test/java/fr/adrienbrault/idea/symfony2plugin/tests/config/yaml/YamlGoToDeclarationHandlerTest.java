@@ -305,6 +305,56 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
         );
     }
 
+    public void testNamedArgumentsNavigationForNamedDefaultBinding() {
+        assertNavigationMatch("services.yml", "" +
+                "services:\n" +
+                "   _defaults:\n" +
+                "       bind:\n" +
+                "           $proxy<caret>Url: '%env(string:PROXY_URL)%'\n" +
+                "   BindArgument\\Consumer: ~",
+            PlatformPatterns.psiElement(Parameter.class).withName("proxyUrl")
+        );
+    }
+
+    public void testNamedArgumentsNavigationForTypedDefaultBinding() {
+        assertNavigationMatch("services.yml", "" +
+                "services:\n" +
+                "   _defaults:\n" +
+                "       bind:\n" +
+                "           string $default<caret>Uri: '%env(string:DEFAULT_URI)%'\n" +
+                "   BindArgument\\Consumer: ~",
+            PlatformPatterns.psiElement(Parameter.class).withName("defaultUri")
+        );
+
+        assertNavigationMatch("services.yml", "" +
+                "services:\n" +
+                "   _defaults:\n" +
+                "       bind:\n" +
+                "           iterable $<caret>rules: !tagged_iterator app.rule\n" +
+                "   BindArgument\\Consumer: ~",
+            PlatformPatterns.psiElement(Parameter.class).withName("rules")
+        );
+
+        assertNavigationMatch("services.yml", "" +
+                "services:\n" +
+                "   _defaults:\n" +
+                "       bind:\n" +
+                "           Psr\\Log\\LoggerInterface $log<caret>ger: '@logger'\n" +
+                "   BindArgument\\Consumer: ~",
+            PlatformPatterns.psiElement(Parameter.class).withName("logger")
+        );
+    }
+
+    public void testNamedArgumentsNavigationForTypedDefaultBindingNeedsMatchingType() {
+        assertNavigationIsEmpty("services.yml", "" +
+                "services:\n" +
+                "   _defaults:\n" +
+                "       bind:\n" +
+                "           string $default<caret>Uri: '%env(string:DEFAULT_URI)%'\n" +
+                "   BindArgument\\MismatchConsumer: ~"
+        );
+    }
+
     @NotNull
     private PsiElementPattern.Capture<PhpClass> getClassPattern() {
         return PlatformPatterns.psiElement(PhpClass.class);
