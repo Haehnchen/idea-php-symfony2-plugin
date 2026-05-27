@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.dic;
 
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.XmlService;
+import fr.adrienbrault.idea.symfony2plugin.util.xml.SecureXmlUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -9,7 +10,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
@@ -26,16 +26,23 @@ public class ServiceMapParser {
     private final DocumentBuilder documentBuilder;
 
     public ServiceMapParser() throws ParserConfigurationException {
-        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        documentBuilder = dbFactory.newDocumentBuilder();
+        documentBuilder = SecureXmlUtil.createDocumentBuilder();
     }
 
     public ServiceMap parse(InputStream stream) throws IOException, SAXException {
-        return parse(documentBuilder.parse(stream));
+        try {
+            return parse(documentBuilder.parse(stream));
+        } catch (IOException | SAXException ignored) {
+            return new ServiceMap();
+        }
     }
 
     public ServiceMap parse(File file) throws IOException, SAXException {
-        return parse(documentBuilder.parse(file));
+        try {
+            return parse(documentBuilder.parse(file));
+        } catch (IOException | SAXException ignored) {
+            return new ServiceMap();
+        }
     }
 
     public ServiceMap parse(Document document) {

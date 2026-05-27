@@ -30,6 +30,7 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
+import fr.adrienbrault.idea.symfony2plugin.util.xml.SecureXmlUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -39,7 +40,6 @@ import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
@@ -332,7 +332,7 @@ public class TranslationUtil {
         Document document;
 
         try {
-            DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            DocumentBuilder documentBuilder = SecureXmlUtil.createDocumentBuilder();
             document = documentBuilder.parse(content);
         } catch (ParserConfigurationException | SAXException | ArrayIndexOutOfBoundsException | IOException e) {
             return;

@@ -14,6 +14,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceTag;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.xml.SecureXmlUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -24,7 +25,6 @@ import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -35,6 +35,7 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -299,10 +300,9 @@ public class ServiceBuilder {
 
     @Nullable
     private String buildXml(Map<String, List<MethodParameter.MethodModelParameter>> methods, String className, String serviceName) {
-        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder docBuilder;
         try {
-            docBuilder = docFactory.newDocumentBuilder();
+            docBuilder = SecureXmlUtil.createDocumentBuilder();
         } catch (ParserConfigurationException e) {
             return null;
         }
@@ -344,10 +344,9 @@ public class ServiceBuilder {
             for (ServiceTag serviceTag : serviceTags) {
                 try {
                     // convert string to node
-                    Element node = DocumentBuilderFactory
-                        .newInstance()
-                        .newDocumentBuilder()
-                        .parse(new ByteArrayInputStream(serviceTag.toXmlString().getBytes()))
+                    Element node = SecureXmlUtil
+                        .createDocumentBuilder()
+                        .parse(new ByteArrayInputStream(serviceTag.toXmlString().getBytes(StandardCharsets.UTF_8)))
                         .getDocumentElement();
 
                     rootElement.appendChild(doc.importNode(node, true));

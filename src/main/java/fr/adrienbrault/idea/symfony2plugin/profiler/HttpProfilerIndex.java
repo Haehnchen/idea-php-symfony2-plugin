@@ -34,7 +34,7 @@ public class HttpProfilerIndex implements ProfilerIndexInterface {
     @NotNull
     @Override
     public List<ProfilerRequestInterface> getRequests() {
-        String content = ProfilerUtil.getProfilerUrlContent(String.format("%s/%s/empty/search/results?ip=&limit=10", this.url, PROFILER_PATH));
+        String content = ProfilerUtil.getProfilerUrlContent(String.format("%s/%s/empty/search/results?ip=&limit=25", this.url, PROFILER_PATH));
         if(content == null) {
             return Collections.emptyList();
         }

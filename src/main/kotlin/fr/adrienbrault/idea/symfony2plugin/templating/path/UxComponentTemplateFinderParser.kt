@@ -4,12 +4,12 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import fr.adrienbrault.idea.symfony2plugin.util.VfsExUtil
 import fr.adrienbrault.idea.symfony2plugin.util.service.AbstractServiceParser
+import fr.adrienbrault.idea.symfony2plugin.util.xml.SecureXmlUtil
 import org.apache.commons.lang3.StringUtils
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.NodeList
 import java.io.InputStream
-import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 
@@ -73,7 +73,7 @@ class UxComponentTemplateFinderParser : AbstractServiceParser() {
     }
 
     private fun parseDocument(inputStream: InputStream): Document? = runCatching {
-        DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream)
+        SecureXmlUtil.createDocumentBuilder().parse(inputStream)
     }.getOrNull()
 
     private fun queryServices(document: Document): NodeList? = runCatching {

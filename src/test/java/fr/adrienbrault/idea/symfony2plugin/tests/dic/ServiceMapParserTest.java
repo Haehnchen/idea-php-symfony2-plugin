@@ -7,6 +7,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
@@ -66,5 +67,20 @@ public class ServiceMapParserTest extends Assert {
         assertEquals(0, serviceMap.getServices().stream().filter(s -> ".instanceof.SFX6J7Y".equals(s.getId())).count());
         assertEquals(0, serviceMap.getServices().stream().filter(s -> ".debug.SFX6J7Y".equals(s.getId())).count());
         assertEquals(0, serviceMap.getServices().stream().filter(s -> ".errored.SFX6J7Y".equals(s.getId())).count());
+    }
+
+    @Test
+    public void testParseSkipsDoctypeDeclarations() throws Exception {
+        ServiceMapParser serviceMapParser = new ServiceMapParser();
+
+        String xmlString = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<!DOCTYPE container [<!ENTITY xxe SYSTEM \"file:///etc/passwd\">]>" +
+            "<container>" +
+                "<service id=\"adrienbrault\" class=\"&xxe;\"/>" +
+            "</container>";
+
+        ServiceMap serviceMap = serviceMapParser.parse(new ByteArrayInputStream(xmlString.getBytes(StandardCharsets.UTF_8)));
+
+        assertTrue(serviceMap.getServices().isEmpty());
     }
 }

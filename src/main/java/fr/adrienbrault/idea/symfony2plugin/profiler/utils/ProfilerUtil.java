@@ -21,7 +21,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.net.MalformedURLException;
+import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
@@ -36,6 +38,11 @@ import java.util.zip.GZIPInputStream;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class ProfilerUtil {
+    private static final long MAX_PROFILER_FILE_BYTES = 10L * 1024 * 1024;
+    private static final int MAX_PROFILER_CONTENT_CHARS = 5 * 1024 * 1024;
+    private static final int MAX_PROFILER_HTTP_CHARS = 2 * 1024 * 1024;
+    private static final int PROFILER_CONNECT_TIMEOUT_MS = 3000;
+    private static final int PROFILER_READ_TIMEOUT_MS = 5000;
 
     /**
      * Cache for url content
@@ -300,19 +307,62 @@ public class ProfilerUtil {
 
     @Nullable
     public static String getProfilerUrlContent(@NotNull String url) {
+        URI uri = createHttpProfilerUri(url);
+        if (uri == null) {
+            return null;
+        }
+
         URLConnection conn;
         try {
-            conn = URI.create(url).toURL().openConnection();
+            conn = uri.toURL().openConnection();
+            conn.setConnectTimeout(PROFILER_CONNECT_TIMEOUT_MS);
+            conn.setReadTimeout(PROFILER_READ_TIMEOUT_MS);
+
+            if (conn instanceof HttpURLConnection httpURLConnection) {
+                httpURLConnection.setInstanceFollowRedirects(false);
+            }
         } catch (IOException | IllegalArgumentException e) {
-            e.printStackTrace();
             return null;
         }
 
         try {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
-                return reader.lines().collect(Collectors.joining("\n"));
+                return readHttpLimited(reader);
             }
         } catch (IOException e) {
+            return null;
+        }
+    }
+
+    @Nullable
+    public static String normalizeHttpProfilerBaseUrl(@Nullable String url) {
+        if (StringUtils.isBlank(url)) {
+            return null;
+        }
+
+        URI uri = createHttpProfilerUri(StringUtils.stripEnd(url, "/"));
+        if (uri == null) {
+            return null;
+        }
+
+        return StringUtils.stripEnd(uri.toString(), "/");
+    }
+
+    @Nullable
+    private static URI createHttpProfilerUri(@NotNull String url) {
+        try {
+            URI uri = new URI(url);
+            String scheme = uri.getScheme();
+            if (!"http".equalsIgnoreCase(scheme) && !"https".equalsIgnoreCase(scheme)) {
+                return null;
+            }
+
+            if (StringUtils.isBlank(uri.getHost()) || StringUtils.isNotBlank(uri.getUserInfo())) {
+                return null;
+            }
+
+            return uri;
+        } catch (URISyntaxException | IllegalArgumentException e) {
             return null;
         }
     }
@@ -388,7 +438,9 @@ public class ProfilerUtil {
 
             if(contents == null) {
                 contents = ProfilerUtil.getProfilerUrlContent(url);
-                REQUEST_CACHE.put(url, contents);
+                if (contents != null) {
+                    REQUEST_CACHE.put(url, contents);
+                }
             }
 
             return contents;
@@ -491,20 +543,22 @@ public class ProfilerUtil {
 
     @Nullable
     public static String getContentForFile(@NotNull File file) {
+        if (!file.isFile() || file.length() > MAX_PROFILER_FILE_BYTES) {
+            return null;
+        }
+
         boolean isGzipFile;
 
-        try {
+        try (InputStream is = new FileInputStream(file)) {
             byte[] buffer = new byte[3];
 
-            InputStream is = new FileInputStream(file);
-            int __ = is.read(buffer);
+            int bytesRead = is.read(buffer);
 
             // check gzip header
-            isGzipFile = buffer[0] == 31
+            isGzipFile = bytesRead == 3
+                && buffer[0] == 31
                 && buffer[1] == -117
                 && buffer[2] == 8;
-
-            is.close();
         } catch (IOException e) {
             return null;
         }
@@ -518,42 +572,56 @@ public class ProfilerUtil {
 
     @Nullable
     private static String getContentForRaw(@NotNull File file) {
-        StringBuilder content = new StringBuilder();
-
-        try {
-            BufferedReader in = new BufferedReader(new FileReader(file));
-            String str;
-            while ((str = in.readLine()) != null) {
-                content.append(str);
-            }
-            in.close();
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
+            return readLimited(in);
         } catch (IOException ignored) {
             return null;
+        }
+    }
+
+    @Nullable
+    private static String getProfilerContentGzdecode(File file) {
+        try (
+            InputStream in = new FileInputStream(file);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(in), StandardCharsets.UTF_8))
+        ) {
+            return readLimited(reader);
+        } catch (IOException ignored) {
+        }
+
+        return null;
+    }
+
+    @Nullable
+    private static String readLimited(@NotNull BufferedReader reader) throws IOException {
+        StringBuilder content = new StringBuilder();
+        String line;
+
+        while ((line = reader.readLine()) != null) {
+            if (content.length() + line.length() > MAX_PROFILER_CONTENT_CHARS) {
+                return null;
+            }
+
+            content.append(line);
         }
 
         return content.toString();
     }
 
     @Nullable
-    private static String getProfilerContentGzdecode(File file) {
-        try {
-            GZIPInputStream gis;
-            try (InputStream in = new FileInputStream(file.getPath())) {
-                gis = new GZIPInputStream(new ByteArrayInputStream(in.readAllBytes()));
+    private static String readHttpLimited(@NotNull Reader reader) throws IOException {
+        StringBuilder content = new StringBuilder();
+        char[] buffer = new char[8192];
+        int read;
+
+        while ((read = reader.read(buffer)) != -1) {
+            if (content.length() + read > MAX_PROFILER_HTTP_CHARS) {
+                return null;
             }
 
-            BufferedReader bf = new BufferedReader(new InputStreamReader(gis));
-            StringBuilder outStr = new StringBuilder();
-
-            String line;
-            while ((line = bf.readLine()) != null) {
-                outStr.append(line);
-            }
-
-            return outStr.toString();
-        } catch (IOException ignored) {
+            content.append(buffer, 0, read);
         }
 
-        return null;
+        return content.toString();
     }
 }

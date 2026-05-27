@@ -4,7 +4,7 @@ import com.intellij.openapi.project.Project;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.profiler.HttpProfilerIndex;
 import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerIndexInterface;
-import org.apache.commons.lang3.StringUtils;
+import fr.adrienbrault.idea.symfony2plugin.profiler.utils.ProfilerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,12 +15,12 @@ public class HttpProfilerFactory implements ProfilerFactoryInterface {
     @Nullable
     @Override
     public ProfilerIndexInterface createProfilerIndex(@NotNull Project project) {
-        String profilerHttpUrl = Settings.getInstance(project).profilerHttpUrl;
-        if(!profilerHttpUrl.startsWith("http")) {
+        String profilerHttpUrl = ProfilerUtil.normalizeHttpProfilerBaseUrl(Settings.getInstance(project).profilerHttpUrl);
+        if(profilerHttpUrl == null) {
             return null;
         }
 
-        return new HttpProfilerIndex(project, StringUtils.stripEnd(profilerHttpUrl, "/"));
+        return new HttpProfilerIndex(project, profilerHttpUrl);
     }
 
     @Override

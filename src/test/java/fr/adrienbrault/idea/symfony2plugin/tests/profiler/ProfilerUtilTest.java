@@ -1,6 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.profiler;
 
 import com.intellij.psi.PsiFile;
+import fr.adrienbrault.idea.symfony2plugin.profiler.LocalProfilerIndex;
+import fr.adrienbrault.idea.symfony2plugin.profiler.collector.DefaultDataCollectorInterface;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.HttpProfilerRequest;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.LocalProfilerRequest;
 import fr.adrienbrault.idea.symfony2plugin.profiler.utils.ProfilerUtil;
@@ -8,6 +10,9 @@ import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterfac
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -157,5 +162,47 @@ public class ProfilerUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         String contentFor2 = ProfilerUtil.getContentForFile(new File(this.getTestDataPath() + "/748f72-gzip-profiler-raw"));
         assertTrue(contentFor2.startsWith("a:9"));
+    }
+
+    public void testGetContentForFileRejectsLargeFiles() throws Exception {
+        Path file = Files.createTempFile("symfony-profiler-large", ".data");
+        Files.write(file, new byte[10 * 1024 * 1024 + 1]);
+
+        assertNull(ProfilerUtil.getContentForFile(file.toFile()));
+    }
+
+    public void testNormalizeHttpProfilerBaseUrlAcceptsHttpUrls() {
+        assertEquals("http://127.0.0.1:8000", ProfilerUtil.normalizeHttpProfilerBaseUrl("http://127.0.0.1:8000/"));
+        assertEquals("http://symfony.localhost:8000", ProfilerUtil.normalizeHttpProfilerBaseUrl("http://symfony.localhost:8000/"));
+        assertEquals("http://symfony:8000", ProfilerUtil.normalizeHttpProfilerBaseUrl("http://symfony:8000/"));
+        assertEquals("https://example.com/profiler", ProfilerUtil.normalizeHttpProfilerBaseUrl("https://example.com/profiler/"));
+        assertNull(ProfilerUtil.normalizeHttpProfilerBaseUrl("file:///tmp/profiler"));
+        assertNull(ProfilerUtil.normalizeHttpProfilerBaseUrl("http://user:pass@localhost:8000"));
+    }
+
+    public void testLocalProfilerIndexDecoratesValidProfilerHashOnly() throws Exception {
+        Path profilerDir = Files.createTempDirectory("symfony-profiler");
+        Path index = profilerDir.resolve("index.csv");
+        Files.writeString(index, "18e6b8,127.0.0.1,GET,http://127.0.0.1:8000/foobar,1474185112,76c8ab,200\n", StandardCharsets.UTF_8);
+
+        Path dataFile = profilerDir.resolve("b8").resolve("e6").resolve("18e6b8");
+        Files.createDirectories(dataFile.getParent());
+        Files.writeString(dataFile, "a:0:{}", StandardCharsets.UTF_8);
+
+        List<ProfilerRequestInterface> requests = new LocalProfilerIndex(index.toFile()).getRequests();
+
+        assertEquals(1, requests.size());
+        assertNotNull(requests.getFirst().getCollector(DefaultDataCollectorInterface.class));
+    }
+
+    public void testLocalProfilerIndexDoesNotReadInvalidProfilerHash() throws Exception {
+        Path profilerDir = Files.createTempDirectory("symfony-profiler");
+        Path index = profilerDir.resolve("index.csv");
+        Files.writeString(index, "../secret,127.0.0.1,GET,http://127.0.0.1:8000/foobar,1474185112,76c8ab,200\n", StandardCharsets.UTF_8);
+
+        List<ProfilerRequestInterface> requests = new LocalProfilerIndex(index.toFile()).getRequests();
+
+        assertEquals(1, requests.size());
+        assertNull(requests.getFirst().getCollector(DefaultDataCollectorInterface.class));
     }
 }
