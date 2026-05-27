@@ -90,18 +90,24 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
         }
 
         if (elementType == YAMLTokenTypes.SCALAR_KEY) {
-            String psiText = PsiElementUtils.getText(psiElement);
-
-            if (psiText.startsWith("$")) {
-                targets.addAll(namedArgumentGoto(psiElement));
-
-                // services:
-                //      _defaults:
-                //          bind:
-                //              $fo<caret>obar: '@foobar'
-                if (YamlElementPatternHelper.getBindArgumentPattern().accepts(psiElement)) {
-                    targets.addAll(namedDefaultBindArgumentGoto(psiElement, psiText));
+            // services:
+            //      _defaults:
+            //          bind:
+            //              $fo<caret>obar: '@foobar'
+            //              string $fo<caret>obar: '@foobar'
+            if (YamlElementPatternHelper.getBindArgumentPattern().accepts(psiElement)) {
+                String argumentName = getBindArgumentName(psiElement);
+                if (argumentName != null) {
+                    targets.addAll(namedDefaultBindArgumentGoto(psiElement, argumentName, getBindArgumentType(psiElement)));
                 }
+            }
+
+            // services:
+            //      Foo\Bar:
+            //          arguments:
+            //              $fo<caret>obar: '@foobar'
+            if (YamlElementPatternHelper.getNamedArgumentPattern().accepts(psiElement)) {
+                targets.addAll(namedArgumentGoto(psiElement));
             }
         }
 
@@ -203,18 +209,136 @@ public class YamlGoToDeclarationHandler implements GotoDeclarationHandler {
         return targets.toArray(new PsiElement[0]);
     }
 
-    private Collection<? extends PsiElement> namedDefaultBindArgumentGoto(@NotNull PsiElement psiElement, @NotNull String parameterName) {
+    /**
+     * Extracts the argument name from a YAML bind key.
+     * Examples:
+     * - "$proxyUrl" -> "proxyUrl"
+     * - "string $defaultUri" -> "defaultUri"
+     * - "Psr\Log\LoggerInterface $logger" -> "logger"
+     */
+    @Nullable
+    private static String getBindArgumentName(@NotNull PsiElement psiElement) {
+        PsiElement context = psiElement.getContext();
+        if (!(context instanceof YAMLKeyValue yamlKeyValue)) {
+            return null;
+        }
+
+        PsiElement key = yamlKeyValue.getKey();
+        if (key == null) {
+            return null;
+        }
+
+        String argumentName = getBindArgumentNameFromLeaf(psiElement, key);
+        if (argumentName != null) {
+            return argumentName;
+        }
+
+        argumentName = getBindArgumentNameFromLeaf(PsiTreeUtil.prevLeaf(psiElement), key);
+        if (argumentName != null) {
+            return argumentName;
+        }
+
+        return getBindArgumentNameFromLeaf(PsiTreeUtil.nextLeaf(psiElement), key);
+    }
+
+    /**
+     * Extracts the optional type prefix from a YAML bind key.
+     * Examples:
+     * - "$proxyUrl" -> null
+     * - "string $defaultUri" -> "string"
+     * - "Psr\Log\LoggerInterface $logger" -> "Psr\Log\LoggerInterface"
+     */
+    @Nullable
+    private static String getBindArgumentType(@NotNull PsiElement psiElement) {
+        PsiElement context = psiElement.getContext();
+        if (!(context instanceof YAMLKeyValue yamlKeyValue)) {
+            return null;
+        }
+
+        PsiElement key = yamlKeyValue.getKey();
+        if (key == null) {
+            return null;
+        }
+
+        String typeText = StringUtils.substringBeforeLast(key.getText(), "$");
+        return typeText.equals(key.getText()) ? null : StringUtils.trimToNull(typeText);
+    }
+
+    /**
+     * Extracts the argument name from one key leaf.
+     * Examples:
+     * - leaf "$proxyUrl" -> "proxyUrl"
+     * - leaf "string $defaultUri" -> "defaultUri"
+     * - split leaves "$" + "defaultUri" -> "defaultUri"
+     */
+    @Nullable
+    private static String getBindArgumentNameFromLeaf(@Nullable PsiElement leaf, @NotNull PsiElement key) {
+        if (leaf == null) {
+            return null;
+        }
+
+        if (leaf != key && !PsiTreeUtil.isAncestor(key, leaf, false)) {
+            return null;
+        }
+
+        String leafText = leaf.getText();
+        String argumentName = StringUtils.substringAfterLast(leafText, "$");
+        if (StringUtils.isNotBlank(argumentName) && !argumentName.equals(leafText)) {
+            return argumentName.trim();
+        }
+
+        if ("$".equals(leafText)) {
+            PsiElement nextLeaf = PsiTreeUtil.nextLeaf(leaf);
+            boolean nextLeafInKey = nextLeaf != null && (nextLeaf == key || PsiTreeUtil.isAncestor(key, nextLeaf, false));
+            return nextLeafInKey ? nextLeaf.getText() : null;
+        }
+
+        PsiElement previousLeaf = PsiTreeUtil.prevLeaf(leaf);
+        boolean previousLeafInKey = previousLeaf != null && (previousLeaf == key || PsiTreeUtil.isAncestor(key, previousLeaf, false));
+        if (previousLeafInKey && "$".equals(previousLeaf.getText())) {
+            return leafText;
+        }
+
+        return null;
+    }
+
+    private Collection<? extends PsiElement> namedDefaultBindArgumentGoto(@NotNull PsiElement psiElement, @NotNull String parameterName, @Nullable String parameterType) {
         Collection<PsiElement> psiElements = new HashSet<>();
 
-        String argumentWithoutDollar = parameterName.substring(1);
         ServiceContainerUtil.visitNamedArguments(psiElement.getContainingFile(), pair -> {
             Parameter parameter = pair.getFirst();
-            if (parameter.getName().equals(argumentWithoutDollar)) {
+            if (parameter.getName().equals(parameterName) && isBindArgumentTypeMatch(parameter, parameterType)) {
                 psiElements.add(parameter);
             }
         });
 
         return psiElements;
+    }
+
+    private static boolean isBindArgumentTypeMatch(@NotNull Parameter parameter, @Nullable String parameterType) {
+        if (StringUtils.isBlank(parameterType)) {
+            return true;
+        }
+
+        String normalizedParameterType = normalizeBindArgumentType(parameterType);
+
+        PsiElement typeDeclaration = parameter.getTypeDeclaration();
+        if (typeDeclaration != null && normalizeBindArgumentType(typeDeclaration.getText()).equalsIgnoreCase(normalizedParameterType)) {
+            return true;
+        }
+
+        for (String type : parameter.getType().getTypes()) {
+            if (normalizeBindArgumentType(type).equalsIgnoreCase(normalizedParameterType)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    @NotNull
+    private static String normalizeBindArgumentType(@NotNull String type) {
+        return StringUtils.stripStart(type.trim(), "\\");
     }
 
     private Collection<? extends PsiElement> namedArgumentGoto(@NotNull PsiElement psiElement) {
