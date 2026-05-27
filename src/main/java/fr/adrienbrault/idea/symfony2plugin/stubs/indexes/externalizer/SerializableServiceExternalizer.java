@@ -88,8 +88,17 @@ public class SerializableServiceExternalizer implements DataExternalizer<Service
     }
 
     private static void writeStringCollection(@NotNull DataOutput out, Collection<String> values) throws IOException {
-        out.writeInt(values.size());
-        for (String value : values) {
+        Collection<String> filteredValues = new ArrayList<>();
+        if (values != null) {
+            for (String value : values) {
+                if (value != null) {
+                    filteredValues.add(value);
+                }
+            }
+        }
+
+        out.writeInt(filteredValues.size());
+        for (String value : filteredValues) {
             out.writeUTF(value);
         }
     }
