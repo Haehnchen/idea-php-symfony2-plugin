@@ -17,11 +17,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.regex.Pattern;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class LocalProfilerIndex implements ProfilerIndexInterface {
+    private static final Pattern PROFILER_HASH_PATTERN = Pattern.compile("^[a-fA-F0-9]{6,64}$");
+
     @NotNull
     private final File file;
 
@@ -83,10 +86,22 @@ public class LocalProfilerIndex implements ProfilerIndexInterface {
 
     @Nullable
     private File getFile(@NotNull String hash) {
+        if (!PROFILER_HASH_PATTERN.matcher(hash).matches()) {
+            return null;
+        }
+
         String path = this.getPath(hash);
 
-        File file = new File(this.file.getParentFile().getAbsolutePath() + "/" + path);
-        if(!file.exists()) {
+        File profilerDirectory;
+        File file;
+        try {
+            profilerDirectory = this.file.getParentFile().getCanonicalFile();
+            file = new File(profilerDirectory, path).getCanonicalFile();
+        } catch (IOException e) {
+            return null;
+        }
+
+        if (!file.toPath().startsWith(profilerDirectory.toPath()) || !file.isFile()) {
             return null;
         }
 

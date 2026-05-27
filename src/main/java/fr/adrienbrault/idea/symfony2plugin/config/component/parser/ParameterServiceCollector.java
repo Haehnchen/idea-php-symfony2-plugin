@@ -1,12 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.config.component.parser;
 
+import fr.adrienbrault.idea.symfony2plugin.util.xml.SecureXmlUtil;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.*;
 import java.io.File;
@@ -24,10 +24,7 @@ public class ParameterServiceCollector {
     @NotNull
     public static Map<String, String> collect(InputStream stream) {
         try {
-            return collect(DocumentBuilderFactory.newInstance()
-                .newDocumentBuilder()
-                .parse(stream)
-            );
+            return collect(SecureXmlUtil.createDocumentBuilder().parse(stream));
         } catch (IOException | SAXException | ParserConfigurationException e) {
             return Collections.emptyMap();
         }
@@ -36,10 +33,7 @@ public class ParameterServiceCollector {
     @NotNull
     public static Map<String, String> collect(File file) {
         try {
-            return collect(DocumentBuilderFactory.newInstance()
-                .newDocumentBuilder()
-                .parse(file)
-            );
+            return collect(SecureXmlUtil.createDocumentBuilder().parse(file));
         } catch (SAXException | IOException | ParserConfigurationException e) {
             return Collections.emptyMap();
         }

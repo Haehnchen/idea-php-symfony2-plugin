@@ -6,6 +6,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.VfsExUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.AbstractServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.util.xml.SecureXmlUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -16,7 +17,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.*;
 import java.io.IOException;
@@ -204,9 +204,8 @@ public class TwigPathServiceParser extends AbstractServiceParser {
 
     @Nullable
     private Document parseDocument(@NotNull InputStream inputStream) {
-        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         try {
-            DocumentBuilder documentBuilder = dbFactory.newDocumentBuilder();
+            DocumentBuilder documentBuilder = SecureXmlUtil.createDocumentBuilder();
             return documentBuilder.parse(inputStream);
         } catch (ParserConfigurationException | SAXException | IOException e) {
             return null;

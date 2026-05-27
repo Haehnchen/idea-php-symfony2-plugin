@@ -12,6 +12,7 @@ import com.intellij.util.ProcessingContext;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.xml.SecureXmlUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.dom.CommentImpl;
@@ -25,7 +26,6 @@ import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
@@ -111,7 +111,7 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
         Document document;
 
         try {
-            DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            DocumentBuilder builder = SecureXmlUtil.createDocumentBuilder();
 
             VirtualFile virtualFile = VfsUtil.findRelativeFile(projectBaseDir, ".idea", "symfony2-config.xml");
             if(virtualFile != null) {
