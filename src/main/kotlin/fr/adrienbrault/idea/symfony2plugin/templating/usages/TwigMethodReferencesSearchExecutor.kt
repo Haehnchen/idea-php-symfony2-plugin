@@ -15,6 +15,7 @@ import com.intellij.psi.search.SearchScope
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.util.Processor
 import com.intellij.util.QueryExecutor
+import com.jetbrains.php.lang.psi.elements.Constant
 import com.jetbrains.php.lang.psi.elements.Field
 import com.jetbrains.php.lang.psi.elements.Method
 import com.jetbrains.php.lang.psi.elements.PhpEnumCase
@@ -61,6 +62,9 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
 
                 target is PhpEnumCase ->
                     doEnumCaseSearch(target.project, target, queryParameters, consumer)
+
+                target is Constant ->
+                    doGlobalConstantSearch(target.project, target, queryParameters, consumer)
 
                 target is PhpClass ->
                     doClassSearch(target.project, target, queryParameters, consumer)
@@ -194,6 +198,39 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
                     if (TwigPattern.getPrintBlockOrTagFunctionPattern("constant").accepts(element) &&
                         processed.add(element) &&
                         TwigUsageTargetUtil.resolvesToTwigEnumCase(element, target)
+                    ) {
+                        consumer.process(TwigMethodUsageReference(element, target, TextRange(0, element.textLength)))
+                    }
+
+                    super.visitElement(element)
+                }
+            })
+
+            true
+        }
+    }
+
+    /**
+     * Searches Twig `constant(...)` calls for PHP global constants.
+     */
+    private fun doGlobalConstantSearch(
+        project: Project,
+        target: Constant,
+        queryParameters: ReferencesSearch.SearchParameters,
+        consumer: Processor<in PsiReference>,
+    ) {
+        val processed = HashSet<PsiElement>()
+        val searchWords = TwigUsageTargetUtil.getTwigGlobalConstantSearchWords(target)
+        if (searchWords.isEmpty()) {
+            return
+        }
+
+        searchTwigFiles(project, queryParameters, searchWords) { twigPsiFile ->
+            twigPsiFile.accept(object : PsiRecursiveElementWalkingVisitor() {
+                override fun visitElement(element: PsiElement) {
+                    if (TwigPattern.getPrintBlockOrTagFunctionPattern("constant").accepts(element) &&
+                        processed.add(element) &&
+                        TwigUsageTargetUtil.resolvesToTwigGlobalConstant(element, target)
                     ) {
                         consumer.process(TwigMethodUsageReference(element, target, TextRange(0, element.textLength)))
                     }

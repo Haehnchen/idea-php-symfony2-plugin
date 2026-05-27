@@ -3,9 +3,13 @@ package fr.adrienbrault.idea.symfony2plugin.tests.templating.util;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
+import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
@@ -173,6 +177,17 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertEquals("app/template", myPrefix1.getSecond());
     }
 
+    /**
+     * @see TwigUtil#findTwigFunctionSecondArgumentPathLeaf
+     */
+    public void testFindTwigFunctionSecondArgumentPathLeaf() {
+        assertSecondArgumentPathLeaf("{{ constant('CLUBS', suite) }}", "suite");
+        assertSecondArgumentPathLeaf("{{ constant('CLUBS', order.suite) }}", "suite");
+
+        assertNull(TwigUtil.findTwigFunctionSecondArgumentPathLeaf(findConstantStringArgument("{{ constant('CLUBS') }}")));
+        assertNull(TwigUtil.findTwigFunctionSecondArgumentPathLeaf(findConstantStringArgument("{{ constant('CLUBS', factory()) }}")));
+    }
+
     @NotNull
     static List<TwigNamespaceSetting> createTwigNamespaceSettings() {
         return Arrays.asList(
@@ -185,5 +200,22 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
     private void assertIsDirectoryAtOffset(@NotNull String templateName, int offset, @NotNull String directory) {
         assertTrue(TwigUtil.getTemplateTargetOnOffset(getProject(), templateName, offset).stream().anyMatch(psiElement -> psiElement instanceof PsiDirectory && directory.equals(((PsiDirectory) psiElement).getName())));
+    }
+
+    private void assertSecondArgumentPathLeaf(@NotNull String template, @NotNull String expectedName) {
+        PsiElement pathLeaf = TwigUtil.findTwigFunctionSecondArgumentPathLeaf(findConstantStringArgument(template));
+
+        assertNotNull(pathLeaf);
+        assertEquals(expectedName, pathLeaf.getText());
+    }
+
+    @NotNull
+    private PsiElement findConstantStringArgument(@NotNull String template) {
+        myFixture.configureByText(TwigFileType.INSTANCE, template);
+
+        PsiElement[] elements = PsiTreeUtil.collectElements(myFixture.getFile(), TwigPattern.getPrintBlockOrTagFunctionPattern("constant")::accepts);
+        assertEquals(1, elements.length);
+
+        return elements[0];
     }
 }

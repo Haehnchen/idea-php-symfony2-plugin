@@ -431,6 +431,63 @@ public class TwigUtil {
     }
 
     /**
+     * Returns the final path leaf of a simple Twig function second argument.
+     * Example: <code>constant('CLUBS', order.suite)</code> returns <code>suite</code>.
+     * Dynamic expressions such as {@code factory()} are intentionally ignored.
+     */
+    @Nullable
+    public static PsiElement findTwigFunctionSecondArgumentPathLeaf(@NotNull PsiElement firstArgumentElement) {
+        PsiElement comma = findNextTwigFunctionArgumentComma(firstArgumentElement);
+        if (comma == null) {
+            return null;
+        }
+
+        PsiElement lastPathElement = null;
+        for (PsiElement current = PsiTreeUtil.nextVisibleLeaf(comma); current != null; current = PsiTreeUtil.nextVisibleLeaf(current)) {
+            IElementType elementType = current.getNode().getElementType();
+            if (elementType == TwigTokenTypes.COMMA || elementType == TwigTokenTypes.RBRACE) {
+                break;
+            }
+
+            // Twig path parts like "suite" or "order.suite".
+            if (elementType == TwigTokenTypes.IDENTIFIER ||
+                elementType == TwigTokenTypes.TAG_NAME ||
+                elementType == TwigElementTypes.VARIABLE_REFERENCE ||
+                elementType == TwigElementTypes.FIELD_REFERENCE
+            ) {
+                lastPathElement = current;
+                continue;
+            }
+
+            // Dynamic expressions like "factory()" are not simple paths.
+            if (elementType == TwigTokenTypes.LBRACE ||
+                elementType == TwigTokenTypes.LBRACE_SQ ||
+                elementType == TwigTokenTypes.LBRACE_CURL
+            ) {
+                return null;
+            }
+        }
+
+        return lastPathElement;
+    }
+
+    @Nullable
+    private static PsiElement findNextTwigFunctionArgumentComma(@NotNull PsiElement from) {
+        for (PsiElement current = PsiTreeUtil.nextVisibleLeaf(from); current != null; current = PsiTreeUtil.nextVisibleLeaf(current)) {
+            IElementType elementType = current.getNode().getElementType();
+            if (elementType == TwigTokenTypes.COMMA) {
+                return current;
+            }
+
+            if (elementType == TwigTokenTypes.RBRACE) {
+                return null;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * File Scope:
      * {% trans_default_domain "foo" %}
      *

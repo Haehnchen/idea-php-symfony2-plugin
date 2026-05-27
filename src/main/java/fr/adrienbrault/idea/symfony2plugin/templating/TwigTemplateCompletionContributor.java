@@ -38,6 +38,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.ServiceCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.completion.QuotedInsertionLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.*;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigConstantEnumResolver;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigIncludeContextParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
@@ -1638,6 +1639,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             }
 
             Project project = position.getProject();
+            PsiElement constantArgumentPosition = parameters.getOriginalPosition() != null ? parameters.getOriginalPosition() : position;
             PhpIndex instance = PhpIndex.getInstance(project);
 
             PrefixMatcher prefixMatcher = resultSet.getPrefixMatcher();
@@ -1681,8 +1683,12 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         completionResultSet.addElement(element);
                     }
                 }
+
+                addNamespacedGlobalConstantCompletions(instance, substring, completionResultSet);
             } else {
                 // '<caret>'
+                addObjectRelativeConstantCompletions(constantArgumentPosition, resultSet);
+
                 for (String constant : instance.getAllConstantNames(prefixMatcher)) {
                     resultSet.addElement(LookupElementBuilder.create(constant).withIcon(PhpIcons.CONSTANT));
                 }
@@ -1703,6 +1709,48 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
                         resultSet.addElement(element);
                     }
+                }
+            }
+        }
+
+        private static void addObjectRelativeConstantCompletions(@NotNull PsiElement position, @NotNull CompletionResultSet resultSet) {
+            Set<String> added = new HashSet<>();
+            for (PhpClass phpClass : TwigConstantEnumResolver.getObjectRelativeConstantClasses(position)) {
+                for (Field field : phpClass.getFields()) {
+                    if (!field.isConstant() || !field.getModifier().isPublic() || !added.add(field.getFQN())) {
+                        continue;
+                    }
+
+                    PhpClass containingClass = field.getContainingClass();
+                    String typeText = containingClass == null ? null : StringUtils.stripStart(containingClass.getFQN(), "\\");
+                    resultSet.addElement(
+                        LookupElementBuilder.createWithSmartPointer(field.getName(), field)
+                            .withTypeText(typeText, true)
+                            .withIcon(field.getIcon())
+                    );
+                }
+            }
+        }
+
+        private static void addNamespacedGlobalConstantCompletions(
+            @NotNull PhpIndex phpIndex,
+            @NotNull String namespace,
+            @NotNull CompletionResultSet resultSet
+        ) {
+            String normalizedNamespace = namespace.endsWith("\\") ? namespace : namespace + "\\";
+            for (String constantName : phpIndex.getAllConstantNames(resultSet.getPrefixMatcher())) {
+                for (Constant constant : phpIndex.getConstantsByFQN(normalizedNamespace + constantName)) {
+                    String fqn = "\\" + StringUtils.stripStart(constant.getFQN(), "\\");
+                    if (!fqn.startsWith(normalizedNamespace)) {
+                        continue;
+                    }
+
+                    String lookupString = fqn.substring(normalizedNamespace.length()).replace("\\", "\\\\");
+                    resultSet.addElement(
+                        LookupElementBuilder.create(lookupString)
+                            .withTypeText(StringUtils.stripStart(fqn, "\\"), true)
+                            .withIcon(PhpIcons.CONSTANT)
+                    );
                 }
             }
         }

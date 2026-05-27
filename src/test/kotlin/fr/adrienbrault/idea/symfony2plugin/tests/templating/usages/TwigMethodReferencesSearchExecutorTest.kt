@@ -200,6 +200,50 @@ class TwigMethodReferencesSearchExecutorTest : SymfonyLightCodeInsightFixtureTes
         assertNotContainsSourceFile(references, "templates/other.html.twig")
     }
 
+    fun testFindsTwigUsagesForNamespacedGlobalConstants() {
+        val target = getNamedElementUnderCaret(
+            """
+            <?php
+            namespace BugDemo;
+            const NAMESPACED_<caret>CONST = 'value';
+            const OTHER_CONST = 'other';
+            """.trimIndent()
+        )
+
+        myFixture.addFileToProject("templates/constant.html.twig", "{{ constant('BugDemo\\\\NAMESPACED_CONST') }}")
+        myFixture.addFileToProject("templates/leading.html.twig", "{{ constant('\\\\BugDemo\\\\NAMESPACED_CONST') }}")
+        myFixture.addFileToProject("templates/other.html.twig", "{{ constant('BugDemo\\\\OTHER_CONST') }}")
+
+        val references = getTwigUsageReferences(target)
+
+        assertContainsSourceFile(references, "templates/constant.html.twig")
+        assertContainsSourceFile(references, "templates/leading.html.twig")
+        assertNotContainsSourceFile(references, "templates/other.html.twig")
+    }
+
+    fun testFindsTwigUsagesForObjectRelativeConstants() {
+        val target = getNamedElementUnderCaret(
+            """
+            <?php
+            namespace BugDemo;
+            class CardSuite {
+                public const CL<caret>UBS = 'clubs';
+                public const SPADES = 'spades';
+            }
+            """.trimIndent()
+        )
+
+        myFixture.addFileToProject("templates/constant.html.twig", "{# @var suite \\BugDemo\\CardSuite #} {{ constant('CLUBS', suite) }}")
+        myFixture.addFileToProject("templates/other.html.twig", "{# @var suite \\BugDemo\\CardSuite #} {{ constant('SPADES', suite) }}")
+        myFixture.addFileToProject("templates/global.html.twig", "{{ constant('CLUBS') }}")
+
+        val references = getTwigUsageReferences(target)
+
+        assertContainsSourceFile(references, "templates/constant.html.twig")
+        assertNotContainsSourceFile(references, "templates/other.html.twig")
+        assertNotContainsSourceFile(references, "templates/global.html.twig")
+    }
+
     fun testFindsTwigUsagesForEnumCases() {
         val target = getNamedElementUnderCaret(
             """

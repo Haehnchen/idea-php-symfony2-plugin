@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.templating.usages
 
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
+import com.jetbrains.php.lang.psi.elements.Constant
 import com.jetbrains.php.lang.psi.elements.Field
 import com.jetbrains.php.lang.psi.elements.PhpClass
 import com.jetbrains.php.lang.psi.elements.PhpEnumCase
@@ -105,6 +106,17 @@ object TwigUsageTargetUtil {
     }
 
     /**
+     * Matches a resolved Twig `constant(...)` argument against the requested global PHP constant.
+     */
+    fun resolvesToTwigGlobalConstant(element: PsiElement, target: Constant): Boolean {
+        return TwigConstantEnumResolver.getConstantTargetsForArgument(element)
+            .filterIsInstance<Constant>()
+            .any { candidate ->
+                candidate.isEquivalentTo(target) || candidate.fqn == target.fqn
+            }
+    }
+
+    /**
      * Builds the cheap word-index prefilter terms for Twig constant field lookups.
      */
     fun getTwigConstantFieldSearchWords(target: Field): Set<String> {
@@ -124,6 +136,20 @@ object TwigUsageTargetUtil {
 
         names.add(target.name)
         target.containingClass?.name?.let(names::add)
+
+        return names.filter { it.isNotBlank() }.toCollection(linkedSetOf())
+    }
+
+    /**
+     * Builds the cheap word-index prefilter terms for Twig global-constant lookups.
+     */
+    fun getTwigGlobalConstantSearchWords(target: Constant): Set<String> {
+        val names = linkedSetOf<String>()
+
+        names.add(target.name)
+        target.fqn.split("\\")
+            .filter { it.isNotBlank() && it != target.name }
+            .forEach(names::add)
 
         return names.filter { it.isNotBlank() }.toCollection(linkedSetOf())
     }

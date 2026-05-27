@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.templating.usages
 import com.intellij.find.findUsages.PsiElement2UsageTargetAdapter
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
+import com.jetbrains.php.lang.psi.elements.Constant
 import com.jetbrains.php.lang.psi.elements.Field
 import com.jetbrains.php.lang.psi.elements.Method
 import com.jetbrains.php.lang.psi.elements.PhpClass
@@ -143,6 +144,48 @@ class TwigFindUsagesHandlerFactoryTest : SymfonyLightCodeInsightFixtureTestCase(
         )
 
         val psiFile = configureByProjectPath("templates/index.html.twig", "{{ constant('Foo\\\\FooConst::B<caret>AR') }}")
+        val twigElement = psiFile.findElementAt(myFixture.caretOffset)
+        assertNotNull(twigElement)
+
+        val handler = TwigFindUsagesHandlerFactory().createFindUsagesHandler(twigElement!!, false)
+        assertInstanceOf(handler, TwigFindUsagesHandler::class.java)
+        assertEquals(1, handler!!.primaryElements.size)
+        assertInstanceOf(handler.primaryElements[0], Field::class.java)
+    }
+
+    fun testCreateFindUsagesHandlerOnTwigNamespacedGlobalConstantReturnsPhpConstantPrimaryElement() {
+        myFixture.addFileToProject(
+            "src/constants.php",
+            """
+            <?php
+            namespace BugDemo;
+            const NAMESPACED_CONST = 'value';
+            """.trimIndent(),
+        )
+
+        val psiFile = configureByProjectPath("templates/index.html.twig", "{{ constant('BugDemo\\\\NAMESPACED_<caret>CONST') }}")
+        val twigElement = psiFile.findElementAt(myFixture.caretOffset)
+        assertNotNull(twigElement)
+
+        val handler = TwigFindUsagesHandlerFactory().createFindUsagesHandler(twigElement!!, false)
+        assertInstanceOf(handler, TwigFindUsagesHandler::class.java)
+        assertEquals(1, handler!!.primaryElements.size)
+        assertInstanceOf(handler.primaryElements[0], Constant::class.java)
+    }
+
+    fun testCreateFindUsagesHandlerOnTwigObjectRelativeConstantReturnsPhpFieldPrimaryElement() {
+        myFixture.addFileToProject(
+            "src/CardSuite.php",
+            """
+            <?php
+            namespace BugDemo;
+            class CardSuite {
+                public const CLUBS = 'clubs';
+            }
+            """.trimIndent(),
+        )
+
+        val psiFile = configureByProjectPath("templates/index.html.twig", "{# @var suite \\BugDemo\\CardSuite #} {{ constant('CL<caret>UBS', suite) }}")
         val twigElement = psiFile.findElementAt(myFixture.caretOffset)
         assertNotNull(twigElement)
 

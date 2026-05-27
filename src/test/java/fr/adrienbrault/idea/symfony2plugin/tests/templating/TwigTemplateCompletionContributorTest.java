@@ -108,6 +108,9 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('App\\\\Bike\\\\Foo<caret>') }}", "FooEnum::FOOBAR");
 
         assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('\\\\App\\\\Bike\\\\Foo<caret>') }}", "FooEnum::FOOBAR");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('BugDemo\\\\<caret>') }}", "NAMESPACED_CONST");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('\\\\BugDemo\\\\<caret>') }}", "NAMESPACED_CONST");
+        assertCompletionContains(TwigFileType.INSTANCE, "{# @var suite \\BugDemo\\CardSuite #}\n{{ constant('<caret>', suite) }}", "CLUBS", "SPADES");
 
         assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('App\\\\Bike\\\\FooConst::C<caret>') }}", "CAR");
         assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('App\\\\Bike\\\\FooEnum::F<caret>') }}", "FOOBAR");
@@ -117,6 +120,8 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ constant('App\\<caret>') }}", "{{ constant('App\\\\\\Bike\\\\FooEnum::FOOBAR') }}", l -> "\\\\Bike\\\\FooEnum::FOOBAR".equals(l.getLookupString()));
         assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ constant('App\\\\Bike\\\\Foo<caret>') }}", "{{ constant('App\\\\Bike\\\\FooEnum::FOOBAR') }}", l -> "FooEnum::FOOBAR".equals(l.getLookupString()));
         assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ constant('App\\\\Bike\\\\FooEnum::F<caret>') }}", "{{ constant('App\\\\Bike\\\\FooEnum::FOOBAR') }}", l -> "FOOBAR".equals(l.getLookupString()));
+        assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ constant('BugDemo\\\\NAMES<caret>') }}", "{{ constant('BugDemo\\\\NAMESPACED_CONST') }}", l -> "NAMESPACED_CONST".equals(l.getLookupString()));
+        assertCompletionResultEquals(TwigFileType.INSTANCE, "{# @var suite \\BugDemo\\CardSuite #}\n{{ constant('CL<caret>', suite) }}", "{# @var suite \\BugDemo\\CardSuite #}\n{{ constant('CLUBS', suite) }}", l -> "CLUBS".equals(l.getLookupString()));
     }
 
     public void testCompletionForRoutingParameter() {
