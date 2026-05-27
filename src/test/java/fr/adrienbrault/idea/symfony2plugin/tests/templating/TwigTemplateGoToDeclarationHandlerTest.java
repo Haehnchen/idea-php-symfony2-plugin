@@ -14,6 +14,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -78,6 +79,22 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
         assertNavigationMatch(TwigFileType.INSTANCE, "{# @var bar \\Date<caret>Time[] #}", PlatformPatterns.psiElement(PhpClass.class));
     }
 
+    public void testGetVarClassGotoSupportsUnionTypes() {
+        addTwigUnionFixture();
+
+        myFixture.configureByText(TwigFileType.INSTANCE, "{# @var item \\Foo\\Union\\Us<caret>er|\\Foo\\Union\\Admin|null #}");
+
+        assertNavigationClassNames("\\Foo\\Union\\User", "\\Foo\\Union\\Admin");
+    }
+
+    public void testGetVarClassGotoSupportsArrayUnionTypes() {
+        addTwigUnionFixture();
+
+        myFixture.configureByText(TwigFileType.INSTANCE, "{# @var item \\Foo\\Union\\Us<caret>er[]|\\Foo\\Union\\Admin[] #}");
+
+        assertNavigationClassNames("\\Foo\\Union\\User", "\\Foo\\Union\\Admin");
+    }
+
     public void testGetVarClassGotoDeprecated() {
         assertNavigationMatch(TwigFileType.INSTANCE, "{# bar \\Date<caret>Time #}", PlatformPatterns.psiElement(PhpClass.class));
         assertNavigationMatch(TwigFileType.INSTANCE, "{# bar \\Date<caret>Time[] #}", PlatformPatterns.psiElement(PhpClass.class));
@@ -86,6 +103,22 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
     public void testTypesTagClassGoto() {
         assertNavigationMatch(TwigFileType.INSTANCE, "{% types { bar: '\\Date<caret>Time' } %}", PlatformPatterns.psiElement(PhpClass.class));
         assertNavigationMatch(TwigFileType.INSTANCE, "{% types { bar: '\\Date<caret>Time[]' } %}", PlatformPatterns.psiElement(PhpClass.class));
+    }
+
+    public void testTypesTagClassGotoSupportsUnionTypes() {
+        addTwigUnionFixture();
+
+        myFixture.configureByText(TwigFileType.INSTANCE, "{% types { item: '\\Foo\\Union\\User|\\Foo\\Union\\Ad<caret>min|null' } %}");
+
+        assertNavigationClassNames("\\Foo\\Union\\User", "\\Foo\\Union\\Admin");
+    }
+
+    public void testTypesTagClassGotoSupportsArrayUnionTypes() {
+        addTwigUnionFixture();
+
+        myFixture.configureByText(TwigFileType.INSTANCE, "{% types { item: '\\Foo\\Union\\User[]|\\Foo\\Union\\Ad<caret>min[]' } %}");
+
+        assertNavigationClassNames("\\Foo\\Union\\User", "\\Foo\\Union\\Admin");
     }
 
     public void testTypesTagClassGotoWithOptionalMarker() {
@@ -442,5 +475,38 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
                 "class Children { public function fff(string $value): Leaf {} }\n" +
                 "class Leaf { public function getBar(): string {} public function getBaz(): string {} }\n"
         );
+    }
+
+    private void addTwigUnionFixture() {
+        myFixture.addFileToProject(
+            "src/Foo/Union/User.php",
+            "<?php\n" +
+                "namespace Foo\\Union;\n" +
+                "class User { public function getUsername(): string {} }\n"
+        );
+
+        myFixture.addFileToProject(
+            "src/Foo/Union/Admin.php",
+            "<?php\n" +
+                "namespace Foo\\Union;\n" +
+                "class Admin { public function getRoleName(): string {} }\n"
+        );
+    }
+
+    private void assertNavigationClassNames(String... expectedClassNames) {
+        PsiElement psiElement = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        PsiElement[] targets = new TwigTemplateGoToDeclarationHandler()
+            .getGotoDeclarationTargets(psiElement, myFixture.getCaretOffset(), myFixture.getEditor());
+
+        Set<String> classNames = new HashSet<>();
+        if (targets != null) {
+            for (PsiElement target : targets) {
+                if (target instanceof PhpClass phpClass) {
+                    classNames.add(phpClass.getFQN());
+                }
+            }
+        }
+
+        assertContainsElements(classNames, expectedClassNames);
     }
 }

@@ -57,6 +57,21 @@ public class TwigVarCommentAnnotatorTest extends SymfonyLightCodeInsightFixtureT
         assertHighlightKey(PhpHighlightingData.CLASS);
     }
 
+    public void testVarFirstUnionClassTypeHighlighted() {
+        myFixture.configureByText(TwigFileType.INSTANCE, "{# @var variable \\App\\Entity\\User|\\App\\Entity\\Admin #}");
+        assertHighlightedText(PhpHighlightingData.CLASS, "\\App\\Entity\\User|\\App\\Entity\\Admin");
+    }
+
+    public void testClassFirstUnionClassTypeHighlighted() {
+        myFixture.configureByText(TwigFileType.INSTANCE, "{# @var \\App\\Entity\\User|\\App\\Entity\\Admin variable #}");
+        assertHighlightedText(PhpHighlightingData.CLASS, "\\App\\Entity\\User|\\App\\Entity\\Admin");
+    }
+
+    public void testArrayUnionClassTypeHighlighted() {
+        myFixture.configureByText(TwigFileType.INSTANCE, "{# @var items \\App\\Entity\\User[]|\\App\\Entity\\Admin[] #}");
+        assertHighlightedText(PhpHighlightingData.CLASS, "\\App\\Entity\\User[]|\\App\\Entity\\Admin[]");
+    }
+
     // -- multiple @var declarations in one comment block -----------------------
 
     public void testMultipleVarDeclarationsAllHighlighted() {
@@ -111,6 +126,19 @@ public class TwigVarCommentAnnotatorTest extends SymfonyLightCodeInsightFixtureT
             "Expected highlighting with key: " + key.getExternalName(),
             highlighting.stream().anyMatch(info -> hasKey(info, key))
         );
+    }
+
+    private void assertHighlightedText(@NotNull TextAttributesKey key, @NotNull String expectedText) {
+        List<HighlightInfo> highlighting = myFixture.doHighlighting();
+        CharSequence text = myFixture.getEditor().getDocument().getCharsSequence();
+
+        for (HighlightInfo info : highlighting) {
+            if (hasKey(info, key) && expectedText.contentEquals(text.subSequence(info.startOffset, info.endOffset))) {
+                return;
+            }
+        }
+
+        fail("Expected highlighted text with key " + key.getExternalName() + ": " + expectedText);
     }
 
     private static boolean hasKey(@NotNull HighlightInfo info, @NotNull TextAttributesKey expectedKey) {

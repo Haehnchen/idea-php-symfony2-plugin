@@ -29,7 +29,7 @@ public class FileDocVariableCollector implements TwigFileVariableCollector {
         for(final Map.Entry<String, String> entry: hashMap.entrySet()) {
             String value = entry.getValue();
             if (value != null) {
-                globalVars.put(entry.getKey(), new HashSet<>(Collections.singletonList(value)));
+                globalVars.put(entry.getKey(), new HashSet<>(TwigTypeResolveUtil.splitTwigDocTypes(value)));
             } else {
                 globalVars.put(entry.getKey(), new HashSet<>());
             }

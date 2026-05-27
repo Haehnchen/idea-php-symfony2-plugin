@@ -56,23 +56,26 @@ import static fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.capture
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TwigTypeResolveUtil {
+    private static final String DOC_TYPE_ATOM_PATTERN = "[\\w\\\\\\[\\]]+";
+    private static final String DOC_UNION_TYPE_PATTERN = DOC_TYPE_ATOM_PATTERN + "(?:\\|" + DOC_TYPE_ATOM_PATTERN + ")*";
+    private static final String DOC_TYPE_BOUNDARY_PATTERN = "(?=\\s|#|$)";
 
     /**
      * {# variable \AppBundle\Entity\Foo[] #}
      */
-    public static final String DEPRECATED_DOC_TYPE_PATTERN = "\\{#[\\s]+(?<var>[\\w]+)[\\s]+(?<class>[\\w\\\\\\[\\]]+)[\\s]+#}";
+    public static final String DEPRECATED_DOC_TYPE_PATTERN = "\\{#[\\s]+(?<var>[\\w]+)[\\s]+(?<class>" + DOC_UNION_TYPE_PATTERN + ")[\\s]+#}";
 
     /**
      * {# @var variable \AppBundle\Entity\Foo[] #}
      * {# @var variable \AppBundle\Entity\Foo #}
      */
-    private static final String DOC_TYPE_PATTERN_CLASS_SECOND = "@var\\s+(?<var>\\w+)\\s+(?<class>[\\w\\\\\\[\\]]+)\\s*";
+    private static final String DOC_TYPE_PATTERN_CLASS_SECOND = "@var\\s+(?<var>\\w+)\\s+(?<class>" + DOC_UNION_TYPE_PATTERN + ")" + DOC_TYPE_BOUNDARY_PATTERN + "\\s*";
 
     /**
      * {# @var \AppBundle\Entity\Foo[] variable #}
      * {# @var \AppBundle\Entity\Foo variable #}
      */
-    private static final String DOC_TYPE_PATTERN_CLASS_FIRST = "@var\\s+(?<class>[\\w\\\\\\[\\]]+)\\s+(?<var>\\w+)\\s*";
+    private static final String DOC_TYPE_PATTERN_CLASS_FIRST = "@var\\s+(?<class>" + DOC_UNION_TYPE_PATTERN + ")\\s+(?<var>\\w+)" + DOC_TYPE_BOUNDARY_PATTERN + "\\s*";
 
     /**
      * Matches only Twig {@code @var} docs.
@@ -106,7 +109,7 @@ public class TwigTypeResolveUtil {
 
     // for supporting completion and navigation of one line element
     public static final String[] DOC_TYPE_PATTERN_SINGLE  = new String[] {
-        "^(?<var>[\\w]+)[\\s]+(?<class>[\\w\\\\\\[\\]]+)[\\s]*$",
+        "^(?<var>[\\w]+)[\\s]+(?<class>" + DOC_UNION_TYPE_PATTERN + ")" + DOC_TYPE_BOUNDARY_PATTERN + "[\\s]*$",
         DOC_TYPE_PATTERN_CLASS_SECOND,
         DOC_TYPE_PATTERN_CLASS_FIRST
     };
@@ -210,6 +213,18 @@ public class TwigTypeResolveUtil {
 
         ASTNode afterDot = FormatterUtil.getNextNonWhitespaceLeaf(next);
         return afterDot != null && isPsiTypeNameElement(afterDot);
+    }
+
+    @NotNull
+    public static Set<String> splitTwigDocTypes(@Nullable String typeExpression) {
+        if (StringUtils.isBlank(typeExpression)) {
+            return Collections.emptySet();
+        }
+
+        return Arrays.stream(typeExpression.split("\\|"))
+            .map(StringUtils::trimToNull)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     /**
@@ -638,7 +653,7 @@ public class TwigTypeResolveUtil {
         }
 
         // secure value
-        Matcher matcher = Pattern.compile("^(?<class>[\\w\\\\\\[\\]]+)$").matcher(type);
+        Matcher matcher = Pattern.compile("^(?<class>" + DOC_UNION_TYPE_PATTERN + ")$").matcher(type);
         if (matcher.find()) {
             // unescape: see also for Twig 4: https://github.com/twigphp/Twig/pull/4199
             return matcher.group("class").replace("\\\\", "\\");
@@ -689,7 +704,7 @@ public class TwigTypeResolveUtil {
 
         // Inline Twig docs only provide type strings, e.g. "{# @var form \Symfony\Component\Form\FormView #}".
         for (Map<String, String> entry : vars) {
-            entry.forEach((s, s2) -> controllerVars.merge(s, VariableData.fromType(s2), VariableData::merge));
+            entry.forEach((s, s2) -> controllerVars.merge(s, VariableData.fromTypes(splitTwigDocTypes(s2)), VariableData::merge));
         }
 
         // collect iterator
@@ -992,7 +1007,10 @@ public class TwigTypeResolveUtil {
 
         Collection<PhpClass> classFromPhpTypeSet = PhpElementsUtil.getClassFromPhpTypeSet(project, types);
         if(!classFromPhpTypeSet.isEmpty()) {
-            return classFromPhpTypeSet.iterator().next().getPresentableFQN();
+            return classFromPhpTypeSet.stream()
+                .map(PhpClass::getPresentableFQN)
+                .sorted()
+                .collect(Collectors.joining("|"));
         }
 
         PhpType phpType = new PhpType();
@@ -1002,7 +1020,7 @@ public class TwigTypeResolveUtil {
         PhpType phpTypeFormatted = PhpIndex.getInstance(project).completeType(project, phpType, new HashSet<>());
 
         if(!phpTypeFormatted.getTypes().isEmpty()) {
-            return StringUtils.join(phpTypeFormatted.getTypes(), "|");
+            return StringUtils.join(new TreeSet<>(phpTypeFormatted.getTypes()), "|");
         }
 
         if(!types.isEmpty()) {

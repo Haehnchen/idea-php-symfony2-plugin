@@ -72,6 +72,14 @@ public class TwigVariablePathInspectionTest extends SymfonyLightCodeInsightFixtu
         assertLocalInspectionContains("f.html.twig", "{{ ustring(text: 'aaa').un<caret>known }}", "Field or method not found");
     }
 
+    public void testUnionTypesDoNotHighlightKnownMembersFromEitherType() {
+        addTwigUnionFixture();
+
+        assertLocalInspectionNotContains("f.html.twig", "{# @var account \\Foo\\Union\\User|\\Foo\\Union\\Admin #} {{ account.user<caret>name }}", "Field or method not found");
+        assertLocalInspectionNotContains("f.html.twig", "{# @var account \\Foo\\Union\\User|\\Foo\\Union\\Admin #} {{ account.role<caret>Name }}", "Field or method not found");
+        assertLocalInspectionContains("f.html.twig", "{# @var account \\Foo\\Union\\User|\\Foo\\Union\\Admin #} {{ account.un<caret>known }}", "Field or method not found");
+    }
+
     public void testThatArrayAccessAndIteratorImplementationsDontHighlightAtAll() {
         assertLocalInspectionNotContains("f.html.twig", "{# @var bar \\Foo\\BarArrayAccess #} {{ bar.c<caret>ar }}", "Field or method not found");
         assertLocalInspectionNotContains("f.html.twig", "{# @var bar \\Foo\\BarIterator #} {{ bar.c<caret>ar }}", "Field or method not found");
@@ -108,6 +116,22 @@ public class TwigVariablePathInspectionTest extends SymfonyLightCodeInsightFixtu
                 "        public function truncate(int $length, string $ellipsis = '', bool $cut = true): static {}\n" +
                 "    }\n" +
                 "}\n"
+        );
+    }
+
+    private void addTwigUnionFixture() {
+        myFixture.addFileToProject(
+            "src/Foo/Union/User.php",
+            "<?php\n" +
+                "namespace Foo\\Union;\n" +
+                "class User { public function getUsername(): string {} }\n"
+        );
+
+        myFixture.addFileToProject(
+            "src/Foo/Union/Admin.php",
+            "<?php\n" +
+                "namespace Foo\\Union;\n" +
+                "class Admin { public function getRoleName(): string {} }\n"
         );
     }
 }

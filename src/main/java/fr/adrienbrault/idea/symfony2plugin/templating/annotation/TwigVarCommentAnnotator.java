@@ -30,6 +30,9 @@ import java.util.regex.Pattern;
  * @see fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil
  */
 public class TwigVarCommentAnnotator implements Annotator {
+    private static final String DOC_TYPE_ATOM_PATTERN = "[\\w\\\\\\[\\]]+";
+    private static final String DOC_UNION_TYPE_PATTERN = DOC_TYPE_ATOM_PATTERN + "(?:\\|" + DOC_TYPE_ATOM_PATTERN + ")*";
+    private static final String DOC_TYPE_BOUNDARY_PATTERN = "(?=\\s|$)";
 
     /**
      * {@code @var varName ClassName} — variable name comes first.
@@ -38,7 +41,7 @@ public class TwigVarCommentAnnotator implements Annotator {
      * Example: {@code @var variable \AppBundle\Entity\Foo[]}
      */
     private static final Pattern VAR_FIRST_PATTERN = Pattern.compile(
-        "(@var)\\s+(\\w+)\\s+([\\w\\\\\\[\\]]+)",
+        "(@var)\\s+(\\w+)\\s+(" + DOC_UNION_TYPE_PATTERN + ")" + DOC_TYPE_BOUNDARY_PATTERN,
         Pattern.MULTILINE
     );
 
@@ -49,7 +52,7 @@ public class TwigVarCommentAnnotator implements Annotator {
      * Example: {@code @var \AppBundle\Entity\Foo[] variable}
      */
     private static final Pattern CLASS_FIRST_PATTERN = Pattern.compile(
-        "(@var)\\s+([\\w\\\\\\[\\]]+)\\s+(\\w+)",
+        "(@var)\\s+(" + DOC_UNION_TYPE_PATTERN + ")\\s+(\\w+)" + DOC_TYPE_BOUNDARY_PATTERN,
         Pattern.MULTILINE
     );
 
