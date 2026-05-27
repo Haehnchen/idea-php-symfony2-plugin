@@ -1543,11 +1543,10 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             String prefix = prefixMatcher.getPrefix();
 
             int i = prefix.lastIndexOf(" ");
-            if (i <= 0) {
+            String substring = getCurrentTwigTypeCompletionPrefix(i >= 0 ? prefix.substring(i + 1) : prefix);
+            if (StringUtils.isBlank(substring)) {
                 return;
             }
-
-            String substring = prefix.substring(i + 1);
 
             if (substring.contains("\\")) {
                 // Foo\Fo<caret>
@@ -1593,15 +1592,16 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
             }
 
             String prefix = result.getPrefixMatcher().getPrefix();
+            String currentTypePrefix = getCurrentTwigTypeCompletionPrefix(prefix);
 
             // Handle the escaped backslash prefix in Twig type strings
             // User types: 'App\Foo' which becomes 'App\\Foo' in Twig
-            if (prefix.contains("\\")) {
-                int lastSlash = prefix.lastIndexOf("\\");
-                String namespace = "\\" + StringUtils.stripStart(prefix.substring(0, lastSlash + 1), "\\");
+            if (currentTypePrefix.contains("\\")) {
+                int lastSlash = currentTypePrefix.lastIndexOf("\\");
+                String namespace = "\\" + StringUtils.stripStart(currentTypePrefix.substring(0, lastSlash + 1), "\\");
 
                 if (namespace.length() > 1) {
-                    String afterLastSlash = prefix.substring(lastSlash + 1);
+                    String afterLastSlash = currentTypePrefix.substring(lastSlash + 1);
                     CompletionResultSet namespaceResult = result.withPrefixMatcher(afterLastSlash);
                     Project project = position.getProject();
 
@@ -1618,11 +1618,19 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                     }
                 }
             } else {
-                CompletionResultSet classResult = result.withPrefixMatcher(prefix);
+                CompletionResultSet classResult = result.withPrefixMatcher(currentTypePrefix);
                 PhpClassCompletionProvider phpClassCompletionProvider = new PhpClassCompletionProvider();
                 phpClassCompletionProvider.addCompletions(parameters, context, classResult);
             }
         }
+    }
+
+    @NotNull
+    private static String getCurrentTwigTypeCompletionPrefix(@NotNull String prefix) {
+        int lastSpace = prefix.lastIndexOf(" ");
+        int lastPipe = prefix.lastIndexOf("|");
+        int start = Math.max(lastSpace, lastPipe);
+        return start >= 0 ? prefix.substring(start + 1) : prefix;
     }
 
     /**

@@ -32,6 +32,10 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         assertCompletionContains(TwigFileType.INSTANCE, "{# @var bar MyFoo\\Ca<caret> #}", "Car\\Bike\\Foobar");
     }
 
+    public void testThatInlineVarProvidesClassCompletionAfterUnionSeparator() {
+        assertCompletionContains(TwigFileType.INSTANCE, "{# @var item \\MyFoo\\Car\\Bike\\Foobar|\\MyFoo\\Car\\Bike\\Foo<caret> #}", "Foobar2");
+    }
+
     public void testThatInlineVarProvidesClassCompletionDeprecated() {
         assertCompletionContains(TwigFileType.INSTANCE, "{# bar F<caret> #}", "Foobar");
     }
@@ -39,6 +43,10 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
     public void testThatTypesTagProvidesClassCompletion() {
         assertCompletionContains(TwigFileType.INSTANCE, "{% types { bar: 'F<caret>' } %}", "Foobar");
         assertCompletionContains(TwigFileType.INSTANCE, "{% types { bar: 'MyFoo\\Ca<caret>' } %}", "Car\\Bike\\Foobar");
+    }
+
+    public void testThatTypesTagProvidesClassCompletionAfterUnionSeparator() {
+        assertCompletionContains(TwigFileType.INSTANCE, "{% types { item: '\\MyFoo\\Car\\Bike\\Foobar|\\MyFoo\\Car\\Bike\\Foo<caret>' } %}", "Foobar2");
     }
 
     public void testThatTypesTagProvidesClassCompletionWithOptionalMarker() {
@@ -233,6 +241,39 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         );
     }
 
+    public void testInlineVarUnionProvidesMemberCompletionFromAllTypes() {
+        addTwigUnionFixture();
+
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{# @var item \\Foo\\Union\\User|\\Foo\\Union\\Admin #}{{ item.<caret> }}",
+            "username", "roleName"
+        );
+    }
+
+    public void testTypesTagUnionProvidesMemberCompletionFromAllTypes() {
+        addTwigUnionFixture();
+
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{% types { item: '\\Foo\\Union\\User|\\Foo\\Union\\Admin' } %}{{ item.<caret> }}",
+            "username", "roleName"
+        );
+    }
+
+    public void testInlineVarArrayUnionProvidesForLoopMemberCompletionFromAllTypes() {
+        addTwigUnionFixture();
+
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{# @var items \\Foo\\Union\\User[]|\\Foo\\Union\\Admin[] #}\n" +
+                "{% for item in items %}\n" +
+                "  {{ item.<caret> }}\n" +
+                "{% endfor %}",
+            "username", "roleName"
+        );
+    }
+
     public void testThatTypeCompletionSupportsMethodCallInPath() {
         addTwigTypePathFixture();
 
@@ -355,6 +396,22 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
                 "class Root { public function getChildren(): Children {} }\n" +
                 "class Children { public function fff(string $value): Leaf {} }\n" +
                 "class Leaf { public function getBar(): string {} public function getBaz(): string {} }\n"
+        );
+    }
+
+    private void addTwigUnionFixture() {
+        myFixture.addFileToProject(
+            "src/Foo/Union/User.php",
+            "<?php\n" +
+                "namespace Foo\\Union;\n" +
+                "class User { public function getUsername(): string {} }\n"
+        );
+
+        myFixture.addFileToProject(
+            "src/Foo/Union/Admin.php",
+            "<?php\n" +
+                "namespace Foo\\Union;\n" +
+                "class Admin { public function getRoleName(): string {} }\n"
         );
     }
 

@@ -427,7 +427,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             if (matcher.find()) {
                 String className = matcher.group("class");
                 if(StringUtils.isNotBlank(className)) {
-                    return PhpElementsUtil.getClassesInterface(psiElement.getProject(), StringUtils.stripEnd(className, "[]"));
+                    return getClassesFromTwigTypeExpression(psiElement, className);
                 }
             }
         }
@@ -458,10 +458,28 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         // Unescape double backslashes: \\App\\User -> \App\User
         className = className.replace("\\\\", "\\");
 
-        // Strip array notation: Foo[] -> Foo
-        className = StringUtils.stripEnd(className, "[]");
+        return getClassesFromTwigTypeExpression(psiElement, className);
+    }
 
-        return PhpElementsUtil.getClassesInterface(psiElement.getProject(), className);
+    @NotNull
+    private Collection<PhpClass> getClassesFromTwigTypeExpression(@NotNull PsiElement element, @NotNull String typeExpression) {
+        Collection<PhpClass> classes = new ArrayList<>();
+
+        for (String type : TwigTypeResolveUtil.splitTwigDocTypes(typeExpression)) {
+            String className = stripArraySuffix(type);
+            if (StringUtils.isBlank(className)) {
+                continue;
+            }
+
+            classes.addAll(PhpElementsUtil.getClassesInterface(element.getProject(), className));
+        }
+
+        return classes;
+    }
+
+    @NotNull
+    private static String stripArraySuffix(@NotNull String type) {
+        return type.endsWith("[]") ? type.substring(0, type.length() - 2) : type;
     }
 
     @NotNull
