@@ -317,6 +317,31 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
         assertContainsElements(appResourceArray.getExclude(), "../src/{DependencyInjection,Kernel.php}", "../src2/{Tests,Kernel.php}");
     }
 
+    public void testYamlEmptyResourceAndExcludeValuesAreIgnored() {
+        Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(myFixture.configureByText("services_empty_resource.yml", "" +
+            "services:\n" +
+            "  App\\Empty\\:\n" +
+            "    resource:\n" +
+            "    exclude: ~\n" +
+            "  App\\Null\\:\n" +
+            "    resource: null\n" +
+            "  App\\Quoted\\:\n" +
+            "    resource: \"~\"\n"
+        ));
+
+        ServiceSerializable service = services.stream().filter(s -> "App\\Empty\\".equals(s.getId())).findFirst().get();
+        assertTrue(service.getResource().isEmpty());
+        assertFalse(service.getResource().contains(null));
+        assertTrue(service.getExclude().isEmpty());
+        assertFalse(service.getExclude().contains(null));
+
+        ServiceSerializable nullService = services.stream().filter(s -> "App\\Null\\".equals(s.getId())).findFirst().get();
+        assertTrue(nullService.getResource().isEmpty());
+
+        ServiceSerializable quotedService = services.stream().filter(s -> "App\\Quoted\\".equals(s.getId())).findFirst().get();
+        assertContainsElements(quotedService.getResource(), "~");
+    }
+
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil#getServicesInFile
      */

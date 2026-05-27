@@ -35,6 +35,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLElementGenerator;
+import org.jetbrains.yaml.YAMLElementTypes;
 import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.*;
@@ -373,8 +374,25 @@ public class YamlHelper {
           return getYamlArrayValuesAsString((YAMLSequence) value);
         }
 
+        if (isYamlNullScalar(value)) {
+            return Collections.emptyList();
+        }
+
         // class: "test"
-        return Collections.singletonList(getYamlKeyValueAsString(yamlKeyValue, keyName));
+        String valueText = getYamlKeyValueAsString(yamlKeyValue, keyName);
+        if (StringUtils.isBlank(valueText)) {
+            return Collections.emptyList();
+        }
+
+        return Collections.singletonList(valueText);
+    }
+
+    private static boolean isYamlNullScalar(@Nullable YAMLValue value) {
+        if (!(value instanceof YAMLScalar scalar) || value.getNode().getElementType() != YAMLElementTypes.SCALAR_PLAIN_VALUE) {
+            return false;
+        }
+
+        return "~".equals(scalar.getTextValue()) || "null".equalsIgnoreCase(scalar.getTextValue());
     }
 
     @Nullable
