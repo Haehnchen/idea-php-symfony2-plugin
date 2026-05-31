@@ -9,6 +9,7 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
@@ -378,6 +379,69 @@ public class TwigVariableContextTest extends SymfonyLightCodeInsightFixtureTestC
             "{{ product.<caret> }}",
             "name",
             "sku"
+        );
+    }
+
+    public void testCustomIncludeInheritsParentContextAndExplicitPropertyPathType() {
+        TwigUtil.TWIG_FILE_USAGE_EXTENSIONS.getPoint().registerExtension(new TestTwigFileUsage(), getTestRootDisposable());
+        addProductFixture();
+        myFixture.addFileToProject(
+            "templates/parent_custom_include_property_path.html.twig",
+            "{# @var item \\App\\Entity\\OrderItem #}\n" +
+            "{% custom_include 'partials/_custom_card.html.twig' with {product: item.product} %}\n"
+        );
+        myFixture.addFileToProject(
+            "templates/parent_custom_include_property_path_type.html.twig",
+            "{# @var item \\App\\Entity\\OrderItem #}\n" +
+            "{% custom_include 'partials/_custom_card_type.html.twig' with {product: item.product} %}\n"
+        );
+
+        assertPathCompletionContains(
+            "templates/partials/_custom_card.html.twig",
+            "{{ <caret> }}",
+            "item",
+            "product"
+        );
+
+        assertPathCompletionContains(
+            "templates/partials/_custom_card_type.html.twig",
+            "{{ product.<caret> }}",
+            "name",
+            "sku"
+        );
+    }
+
+    public void testCustomIncludeOnlyBlocksParentContextButKeepsExplicitArguments() {
+        TwigUtil.TWIG_FILE_USAGE_EXTENSIONS.getPoint().registerExtension(new TestTwigFileUsage(), getTestRootDisposable());
+        addProductFixture();
+        myFixture.addFileToProject(
+            "templates/parent_custom_include_only.html.twig",
+            "{# @var item \\App\\Entity\\Product #}\n" +
+            "{% custom_include 'partials/_custom_isolated_card.html.twig' with {product: item} only %}\n"
+        );
+
+        assertPathCompletionContainsAndNotContains(
+            "templates/partials/_custom_isolated_card.html.twig",
+            "{{ <caret> }}",
+            new String[] {"product"},
+            new String[] {"item"}
+        );
+    }
+
+    public void testCustomEmbedInheritsParentContext() {
+        TwigUtil.TWIG_FILE_USAGE_EXTENSIONS.getPoint().registerExtension(new TestTwigFileUsage(), getTestRootDisposable());
+        addProductFixture();
+        myFixture.addFileToProject(
+            "templates/parent_custom_embed.html.twig",
+            "{# @var item \\App\\Entity\\Product #}\n" +
+            "{% custom_embed 'partials/_custom_embed.html.twig' with {product: item} %}{% end_custom_embed %}\n"
+        );
+
+        assertPathCompletionContains(
+            "templates/partials/_custom_embed.html.twig",
+            "{{ <caret> }}",
+            "item",
+            "product"
         );
     }
 

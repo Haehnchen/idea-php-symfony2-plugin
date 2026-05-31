@@ -6,7 +6,9 @@ import com.jetbrains.twig.TwigFileType;
 import com.jetbrains.twig.elements.TwigTagWithFileReference;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigIncludeContextParser;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.tests.templating.TestTwigFileUsage;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -97,6 +99,32 @@ public class TwigIncludeContextParserTest extends SymfonyLightCodeInsightFixture
         assertTargetNames("{{ include('include/_key_target.html.twig', {\"double<caret>Key\": value}) }}", "doubleKey");
         assertTargetNames("{% include 'include/_key_target.html.twig' with {plain<caret>Key: value} %}", "plainKey");
         assertTargetNames("{% embed 'include/_key_target.html.twig' with {embed<caret>Key: value} %}{% endembed %}", "embedKey");
+    }
+
+    public void testCustomIncludeWithHashKeyVariables() {
+        TwigUtil.TWIG_FILE_USAGE_EXTENSIONS.getPoint().registerExtension(new TestTwigFileUsage(), getTestRootDisposable());
+        addIncludeWithKeyTargetTemplate();
+        HashSet<String> expected = new HashSet<>(Arrays.asList("asas", "doubleKey", "plainKey", "embedKey"));
+
+        myFixture.configureByText(TwigFileType.INSTANCE, "{% custom_include 'include/_key_target.html.twig' with {'<caret>': item} %}");
+        PsiElement includeKey = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        assertNotNull(includeKey);
+        assertEquals(expected, TwigIncludeContextParser.getIncludeWithContextKeyVariables(includeKey)
+            .stream().map(TwigIncludeContextParser.IncludeWithContextTemplateVariable::name).collect(Collectors.toSet()));
+
+        myFixture.configureByText(TwigFileType.INSTANCE, "{% custom_embed 'include/_key_target.html.twig' with {\"<caret>\": item} %}{% end_custom_embed %}");
+        PsiElement embedKey = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        assertNotNull(embedKey);
+        assertEquals(expected, TwigIncludeContextParser.getIncludeWithContextKeyVariables(embedKey)
+            .stream().map(TwigIncludeContextParser.IncludeWithContextTemplateVariable::name).collect(Collectors.toSet()));
+    }
+
+    public void testCustomIncludeWithHashKeyTargets() {
+        TwigUtil.TWIG_FILE_USAGE_EXTENSIONS.getPoint().registerExtension(new TestTwigFileUsage(), getTestRootDisposable());
+        addIncludeWithKeyTargetTemplate();
+
+        assertTargetNames("{% custom_include 'include/_key_target.html.twig' with {'as<caret>as': item} %}", "asas");
+        assertTargetNames("{% custom_embed 'include/_key_target.html.twig' with {embed<caret>Key: item} %}{% end_custom_embed %}", "embedKey");
     }
 
     public void testIncludeWithHashValueDoesNotCollectKeyVariables() {

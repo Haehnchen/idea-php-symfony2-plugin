@@ -2720,6 +2720,12 @@ public class TwigUtil {
                         consumer.consume(new TemplateInclude(psiElement, template, TemplateInclude.TYPE.INCLUDE));
                     }
                 }
+
+                if (extension.isEmbedTemplate(psiElement)) {
+                    for (String template : extension.getEmbedTemplate(psiElement)) {
+                        consumer.consume(new TemplateInclude(psiElement, template, TemplateInclude.TYPE.EMBED));
+                    }
+                }
             }
         }
     }
