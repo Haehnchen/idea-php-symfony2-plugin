@@ -83,10 +83,8 @@ public class TwigIncludeStubIndex extends FileBasedIndexExtension<String, Templa
 
     @Override
     public int getVersion() {
-        return 6;
+        return 8;
     }
 
 }
-
-
 

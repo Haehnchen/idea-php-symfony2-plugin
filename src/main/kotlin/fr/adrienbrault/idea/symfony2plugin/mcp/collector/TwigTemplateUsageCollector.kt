@@ -40,7 +40,7 @@ class TwigTemplateUsageCollector(private val project: Project) {
      * 3. Optional file-glob filtering — resolved template files can be constrained by
      *    project-relative Ant-style glob patterns.
      *
-     * Returns a CSV string with columns: template,controller,twig_include,twig_embed,twig_extends,twig_import,twig_use,twig_form_theme
+     * Returns a CSV string with columns: template,controller,twig_include,twig_embed,twig_extends,twig_import,twig_use,twig_form_theme,twig_component,route_name,route_path
      */
     fun collect(templateFilter: String?, fileGlob: String? = null): String {
         val index = FileBasedIndex.getInstance()

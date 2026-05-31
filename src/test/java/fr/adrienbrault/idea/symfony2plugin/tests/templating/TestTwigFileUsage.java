@@ -15,7 +15,7 @@ import java.util.Collections;
 public class TestTwigFileUsage implements TwigFileUsage {
     @Override
     public Collection<String> getExtendsTemplate(@NotNull PsiElement psiElement) {
-        return Collections.emptyList();
+        return isTag(psiElement, "custom_extends") ? getTemplateNames(psiElement, "custom_extends") : Collections.emptyList();
     }
 
     @Override
@@ -25,7 +25,7 @@ public class TestTwigFileUsage implements TwigFileUsage {
 
     @Override
     public boolean isExtendsTemplate(@NotNull PsiElement psiElement) {
-        return false;
+        return isTag(psiElement, "custom_extends");
     }
 
     @Override
@@ -44,9 +44,48 @@ public class TestTwigFileUsage implements TwigFileUsage {
         return isTag(psiElement, "custom_embed");
     }
 
+    @NotNull
+    @Override
+    public Collection<String> getImportTemplate(@NotNull PsiElement psiElement) {
+        return isTag(psiElement, "custom_import") ? getTemplateNames(psiElement, "custom_import") : Collections.emptyList();
+    }
+
+    @Override
+    public boolean isImportTemplate(@NotNull PsiElement psiElement) {
+        return isTag(psiElement, "custom_import");
+    }
+
+    @NotNull
+    @Override
+    public Collection<String> getFromTemplate(@NotNull PsiElement psiElement) {
+        return isTag(psiElement, "custom_from") ? getTemplateNames(psiElement, "custom_from") : Collections.emptyList();
+    }
+
+    @Override
+    public boolean isFromTemplate(@NotNull PsiElement psiElement) {
+        return isTag(psiElement, "custom_from");
+    }
+
+    @NotNull
+    @Override
+    public Collection<String> getSourceTemplate(@NotNull PsiElement psiElement) {
+        return isTag(psiElement, "custom_source") ? getTemplateNames(psiElement, "custom_source") : Collections.emptyList();
+    }
+
+    @Override
+    public boolean isSourceTemplate(@NotNull PsiElement psiElement) {
+        return isTag(psiElement, "custom_source");
+    }
+
     @Override
     public boolean isTemplateFileReference(@NotNull PsiElement psiElement) {
-        return isTag(psiElement, "custom_template") || isIncludeTemplate(psiElement) || isEmbedTemplate(psiElement);
+        return isTag(psiElement, "custom_template")
+            || isExtendsTemplate(psiElement)
+            || isIncludeTemplate(psiElement)
+            || isEmbedTemplate(psiElement)
+            || isImportTemplate(psiElement)
+            || isFromTemplate(psiElement)
+            || isSourceTemplate(psiElement);
     }
 
     private static Collection<String> getTemplateNames(@NotNull PsiElement psiElement, @NotNull String tagName) {

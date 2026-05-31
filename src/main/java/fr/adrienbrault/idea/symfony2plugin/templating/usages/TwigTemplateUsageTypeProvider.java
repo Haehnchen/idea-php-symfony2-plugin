@@ -12,6 +12,7 @@ import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExternalTemplateUsageUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -54,6 +55,17 @@ public class TwigTemplateUsageTypeProvider implements UsageTypeProviderEx {
         // PHP controller: StringLiteralExpression / FunctionReference / method identifier
         if (element.getContainingFile() instanceof PhpFile) {
             return CONTROLLER;
+        }
+
+        TwigExternalTemplateUsageUtil.UsageKind externalUsageKind = TwigExternalTemplateUsageUtil.findUsageKind(element);
+        if (externalUsageKind != null) {
+            return switch (externalUsageKind) {
+                case EXTENDS -> EXTENDS;
+                case INCLUDE, SOURCE -> INCLUDE;
+                case EMBED -> EMBED;
+                case IMPORT -> IMPORT;
+                case FROM -> FROM;
+            };
         }
 
         // Twig extends: {% extends "..." %} or {% extends cond ? "..." : "..." %}
