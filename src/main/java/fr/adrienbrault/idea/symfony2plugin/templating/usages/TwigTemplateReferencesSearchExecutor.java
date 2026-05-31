@@ -80,16 +80,11 @@ public class TwigTemplateReferencesSearchExecutor implements QueryExecutor<PsiRe
 
         PsiManager psiManager = PsiManager.getInstance(project);
 
-        Set<VirtualFile> processedIncludeFiles = new HashSet<>();
         for (String templateName : templateNames) {
             String normalizedName = TwigUtil.normalizeTemplateName(templateName);
 
             // Twig include / embed / import / form_theme
             index.processValues(TwigIncludeStubIndex.KEY, normalizedName, null, (file, includeObj) -> {
-                if (!processedIncludeFiles.add(file)) {
-                    return true;
-                }
-
                 PsiFile psiFile = psiManager.findFile(file);
                 if (!(psiFile instanceof TwigFile)) {
                     return true;

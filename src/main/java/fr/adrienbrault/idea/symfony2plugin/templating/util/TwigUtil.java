@@ -2714,19 +2714,9 @@ public class TwigUtil {
                 }
             }
 
-            for (TwigFileUsage extension : TWIG_FILE_USAGE_EXTENSIONS.getExtensions()) {
-                if (extension.isIncludeTemplate(psiElement)) {
-                    for (String template : extension.getIncludeTemplate(psiElement)) {
-                        consumer.consume(new TemplateInclude(psiElement, template, TemplateInclude.TYPE.INCLUDE));
-                    }
-                }
-
-                if (extension.isEmbedTemplate(psiElement)) {
-                    for (String template : extension.getEmbedTemplate(psiElement)) {
-                        consumer.consume(new TemplateInclude(psiElement, template, TemplateInclude.TYPE.EMBED));
-                    }
-                }
-            }
+            TwigExternalTemplateUsageUtil.visitTemplateUsages(psiElement, usage -> {
+                consumer.consume(new TemplateInclude(usage.sourceElement(), usage.templateName(), usage.type()));
+            });
         }
     }
 
@@ -3463,7 +3453,9 @@ public class TwigUtil {
             }
 
             for (String template : extension.getExtendsTemplate(element)) {
-                consumer.consume(Pair.create(TwigUtil.normalizeTemplateName(template), element));
+                if (StringUtils.isNotBlank(template)) {
+                    consumer.consume(Pair.create(TwigUtil.normalizeTemplateName(template), element));
+                }
             }
         }
     }

@@ -7,8 +7,12 @@ import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.psi.PsiManager;
 import com.intellij.openapi.util.TextRange;
 import com.jetbrains.twig.TwigFile;
+import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigTemplateUsageReference;
+import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.tests.templating.TestTwigFileUsage;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -62,6 +66,35 @@ public class TwigTemplateReferencesSearchExecutorTest extends SymfonyLightCodeIn
         assertContainsSourceFile(references, "templates/component_usage_twig_tag.html.twig");
     }
 
+    public void testFindsCustomTwigFileUsageExtensionUsages() {
+        TwigUtil.TWIG_FILE_USAGE_EXTENSIONS.getPoint().registerExtension(new TestTwigFileUsage(), getTestRootDisposable());
+        addCustomUsageFixtures();
+
+        Collection<TwigTemplateUsageReference> references = getTwigUsageReferences("templates/base.html.twig");
+
+        assertContainsSourceFile(references, "templates/custom_extends.html.twig");
+        assertContainsSourceFile(references, "templates/custom_include.html.twig");
+        assertContainsSourceFile(references, "templates/custom_embed.html.twig");
+        assertContainsSourceFile(references, "templates/custom_import.html.twig");
+        assertContainsSourceFile(references, "templates/custom_from.html.twig");
+        assertContainsSourceFile(references, "templates/custom_source.html.twig");
+    }
+
+    public void testFindsCustomExtensionUsagesForEveryTemplateAliasInSameSourceFile() {
+        TwigUtil.TWIG_FILE_USAGE_EXTENSIONS.getPoint().registerExtension(new TestTwigFileUsage(), getTestRootDisposable());
+        Settings.getInstance(getProject()).twigNamespaces.add(new TwigNamespaceSetting("Alias", "templates", true, TwigUtil.NamespaceType.ADD_PATH, true));
+
+        myFixture.addFileToProject("templates/base.html.twig", "base");
+        myFixture.addFileToProject("templates/custom_multi_alias.html.twig",
+            "{% custom_include 'base.html.twig' %}\n" +
+            "{% custom_include '@Alias/base.html.twig' %}"
+        );
+
+        Collection<TwigTemplateUsageReference> references = getTwigUsageReferences("templates/base.html.twig");
+
+        assertEquals(2, countReferencesBySourceFile(references, "templates/custom_multi_alias.html.twig"));
+    }
+
     public void testComponentHtmlTagReferenceRangeIsOnlyTagName() {
         addFixturesForAllUsageTypes();
 
@@ -109,6 +142,16 @@ public class TwigTemplateReferencesSearchExecutorTest extends SymfonyLightCodeIn
         myFixture.addFileToProject("templates/component_usage_twig_tag.html.twig", "{% component Alert %}{% endcomponent %}");
     }
 
+    private void addCustomUsageFixtures() {
+        myFixture.addFileToProject("templates/base.html.twig", "base");
+        myFixture.addFileToProject("templates/custom_extends.html.twig", "{% custom_extends 'base.html.twig' %}");
+        myFixture.addFileToProject("templates/custom_include.html.twig", "{% custom_include 'base.html.twig' %}");
+        myFixture.addFileToProject("templates/custom_embed.html.twig", "{% custom_embed 'base.html.twig' %}{% end_custom_embed %}");
+        myFixture.addFileToProject("templates/custom_import.html.twig", "{% custom_import 'base.html.twig' %}");
+        myFixture.addFileToProject("templates/custom_from.html.twig", "{% custom_from 'base.html.twig' %}");
+        myFixture.addFileToProject("templates/custom_source.html.twig", "{% custom_source 'base.html.twig' %}");
+    }
+
     private Collection<TwigTemplateUsageReference> getTwigUsageReferences(String templatePath) {
         PsiFile psiFile = PsiManager.getInstance(getProject()).findFile(myFixture.findFileInTempDir(templatePath));
         assertNotNull(psiFile);
@@ -144,5 +187,14 @@ public class TwigTemplateReferencesSearchExecutorTest extends SymfonyLightCodeIn
         }
 
         return null;
+    }
+
+    private long countReferencesBySourceFile(Collection<TwigTemplateUsageReference> references, String relativePath) {
+        return references.stream()
+            .filter(reference -> {
+                PsiFile sourceFile = reference.getElement().getContainingFile();
+                return sourceFile.getVirtualFile() != null && sourceFile.getVirtualFile().getPath().endsWith(relativePath);
+            })
+            .count();
     }
 }

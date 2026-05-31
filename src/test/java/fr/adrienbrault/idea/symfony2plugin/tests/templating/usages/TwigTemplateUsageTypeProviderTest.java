@@ -17,7 +17,9 @@ import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigExtendsTag;
 import fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigTemplateUsageTypeProvider;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.tests.templating.TestTwigFileUsage;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -144,6 +146,33 @@ public class TwigTemplateUsageTypeProviderTest extends SymfonyLightCodeInsightFi
         }
     }
 
+    public void testClassifiesCustomTwigFileUsageExtensionUsages() {
+        TwigUtil.TWIG_FILE_USAGE_EXTENSIONS.getPoint().registerExtension(new TestTwigFileUsage(), getTestRootDisposable());
+        addCustomUsageFixtures();
+
+        PsiFile targetFile = getTargetTwigFile("templates/base.html.twig");
+        Collection<PsiReference> references = ReferencesSearch.search(targetFile, GlobalSearchScope.projectScope(getProject())).findAll();
+        UsageTarget[] targets = {new TestUsageTarget(targetFile)};
+        TwigTemplateUsageTypeProvider typeProvider = new TwigTemplateUsageTypeProvider();
+
+        Map<String, String> expectedBySourceFile = new LinkedHashMap<>();
+        expectedBySourceFile.put("templates/custom_extends.html.twig", "extends");
+        expectedBySourceFile.put("templates/custom_include.html.twig", "include");
+        expectedBySourceFile.put("templates/custom_embed.html.twig", "embed");
+        expectedBySourceFile.put("templates/custom_import.html.twig", "import");
+        expectedBySourceFile.put("templates/custom_from.html.twig", "from");
+        expectedBySourceFile.put("templates/custom_source.html.twig", "include");
+
+        for (Map.Entry<String, String> entry : expectedBySourceFile.entrySet()) {
+            PsiReference reference = findReferenceBySourceFile(references, entry.getKey());
+            assertNotNull("Expected reference from file: " + entry.getKey(), reference);
+
+            UsageType usageType = typeProvider.getUsageType(reference.getElement(), targets);
+            assertNotNull("Usage type should be detected for: " + entry.getKey(), usageType);
+            assertEquals("Wrong usage type for " + entry.getKey(), entry.getValue(), usageType.toString());
+        }
+    }
+
     private void addFixturesForAllUsageTypes() {
         myFixture.addFileToProject("templates/base.html.twig", "base");
         myFixture.addFileToProject("templates/child_extends.html.twig", "{% extends 'base.html.twig' %}");
@@ -175,6 +204,16 @@ public class TwigTemplateUsageTypeProviderTest extends SymfonyLightCodeInsightFi
         myFixture.addFileToProject("templates/component_usage_html_tag.html.twig", "<twig:Alert />");
         myFixture.addFileToProject("templates/component_usage_html_tag_with_body.html.twig", "<twig:Alert><div>inner</div></twig:Alert>");
         myFixture.addFileToProject("templates/component_usage_twig_tag.html.twig", "{% component Alert %}{% endcomponent %}");
+    }
+
+    private void addCustomUsageFixtures() {
+        myFixture.addFileToProject("templates/base.html.twig", "base");
+        myFixture.addFileToProject("templates/custom_extends.html.twig", "{% custom_extends 'base.html.twig' %}");
+        myFixture.addFileToProject("templates/custom_include.html.twig", "{% custom_include 'base.html.twig' %}");
+        myFixture.addFileToProject("templates/custom_embed.html.twig", "{% custom_embed 'base.html.twig' %}{% end_custom_embed %}");
+        myFixture.addFileToProject("templates/custom_import.html.twig", "{% custom_import 'base.html.twig' %}");
+        myFixture.addFileToProject("templates/custom_from.html.twig", "{% custom_from 'base.html.twig' %}");
+        myFixture.addFileToProject("templates/custom_source.html.twig", "{% custom_source 'base.html.twig' %}");
     }
 
     private PsiFile getTargetTwigFile(String templatePath) {

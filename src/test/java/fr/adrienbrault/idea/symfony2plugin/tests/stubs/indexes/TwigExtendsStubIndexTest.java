@@ -2,7 +2,9 @@ package fr.adrienbrault.idea.symfony2plugin.tests.stubs.indexes;
 
 import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.tests.templating.TestTwigFileUsage;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -13,12 +15,15 @@ public class TwigExtendsStubIndexTest extends SymfonyLightCodeInsightFixtureTest
     public void setUp() throws Exception {
         super.setUp();
 
+        TwigUtil.TWIG_FILE_USAGE_EXTENSIONS.getPoint().registerExtension(new TestTwigFileUsage(), getTestRootDisposable());
+
         myFixture.configureByText(TwigFileType.INSTANCE, "" +
             "{% extends 'extends.html.twig' %}\n" +
             "{% extends '@Bar/extends.html.twig' %}\n" +
             "{% extends '@!Bar/extends_overwrite.html.twig' %}\n" +
             "{% extends ajax ? 'extends_statement_0.html.twig' : 'extends_statement_1.html.twig' %}\n" +
             "{% extends request.ajax ? foo ~ \"extends_statement_2.html.twig\" : \"extends_statement_3.html.twig\" %}\n" +
+            "{% custom_extends 'custom_extends.html.twig' %}\n" +
 
             // invalid cases to support
             "{% if '' %}{% extends 'extends_nested_if.html.twig' %}{% endif %}\n" +
@@ -32,7 +37,8 @@ public class TwigExtendsStubIndexTest extends SymfonyLightCodeInsightFixtureTest
     public void testTemplateExtendsIndexer() {
         assertIndexContains(TwigExtendsStubIndex.KEY,
             "extends.html.twig", "extends_statement_0.html.twig", "extends_statement_1.html.twig",
-            "extends_statement_3.html.twig", "@Bar/extends_overwrite.html.twig", "extends_nested_if.html.twig", "extends_nested_block.html.twig"
+            "extends_statement_3.html.twig", "@Bar/extends_overwrite.html.twig", "extends_nested_if.html.twig",
+            "extends_nested_block.html.twig", "custom_extends.html.twig"
         );
 
         assertIndexNotContains(TwigExtendsStubIndex.KEY,
