@@ -83,7 +83,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
         // all file template "include" pattern
         extend(CompletionType.BASIC, PlatformPatterns.or(
-            TwigPattern.getPrintBlockOrTagFunctionPattern("include", "source"),
+            TwigPattern.getIncludeSourcePrintBlockOrTagFunctionPattern(),
             TwigPattern.getPrintBlockOrTagFunctionSecondParameterPattern("block"),
             TwigPattern.getIncludeTagArrayPattern(),
             TwigPattern.getTagTernaryPattern(TwigElementTypes.INCLUDE_TAG)
@@ -861,7 +861,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 prioritizedKeys.addAll(TwigUtil.getExtendsTemplateUsageAsOrderedList(project));
             } else if (TwigPattern.getTemplateFileReferenceTagPattern("embed").accepts(psiElement)) {
                 prioritizedKeys.addAll(TwigUtil.getEmbedTemplateUsageAsOrderedList(project));
-            } else if (TwigPattern.getTemplateFileReferenceTagPattern("include").accepts(psiElement) || TwigPattern.getPrintBlockOrTagFunctionPattern("include", "source").accepts(psiElement)) {
+            } else if (TwigPattern.getTemplateFileReferenceTagPattern("include").accepts(psiElement) || TwigPattern.getIncludeSourcePrintBlockOrTagFunctionPattern().accepts(psiElement)) {
                 prioritizedKeys.addAll(TwigUtil.getIncludeTemplateUsageAsOrderedList(project));
             }
 

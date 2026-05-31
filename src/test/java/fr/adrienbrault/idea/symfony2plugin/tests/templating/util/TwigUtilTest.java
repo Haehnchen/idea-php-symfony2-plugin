@@ -13,6 +13,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.tests.templating.TestTwigFileUsage;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlPsiElementFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLFile;
@@ -31,6 +32,7 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
         super.setUp();
         Settings.getInstance(getProject()).twigNamespaces.clear();
+        TwigUtil.TWIG_FILE_USAGE_EXTENSIONS.getPoint().registerExtension(new TestTwigFileUsage(), getTestRootDisposable());
     }
 
     /**
@@ -188,6 +190,40 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertNull(TwigUtil.findTwigFunctionSecondArgumentPathLeaf(findConstantStringArgument("{{ constant('CLUBS', factory()) }}")));
     }
 
+    /**
+     * @see TwigUtil#isTemplateUsage(PsiElement)
+     */
+    public void testIsTemplateUsage() {
+        PsiElement includeTagString = findCaretElement("{% include 'foo<caret>.html.twig' %}");
+        assertTrue(TwigUtil.isTemplateUsage(includeTagString));
+
+        PsiElement includeFunctionString = findCaretElement("{{ include('foo<caret>.html.twig') }}");
+        assertTrue(TwigUtil.isTemplateUsage(includeFunctionString));
+
+        PsiElement customTemplateString = findCaretElement("{% custom_template 'foo<caret>.html.twig' %}");
+        assertTrue(TwigUtil.isTemplateUsage(customTemplateString));
+
+        PsiElement plainString = findCaretElement("{{ 'foo<caret>.html.twig' }}");
+        assertFalse(TwigUtil.isTemplateUsage(plainString));
+    }
+
+    /**
+     * @see TwigUtil#isStaticTemplateUsage(PsiElement)
+     */
+    public void testIsStaticTemplateUsage() {
+        PsiElement includeTagString = findCaretElement("{% include 'foo<caret>.html.twig' %}");
+        assertTrue(TwigUtil.isStaticTemplateUsage(includeTagString));
+
+        PsiElement includeFunctionString = findCaretElement("{{ include('foo<caret>.html.twig') }}");
+        assertTrue(TwigUtil.isStaticTemplateUsage(includeFunctionString));
+
+        PsiElement customTemplateString = findCaretElement("{% custom_template 'foo<caret>.html.twig' %}");
+        assertTrue(TwigUtil.isStaticTemplateUsage(customTemplateString));
+
+        PsiElement dynamicTemplateString = findCaretElement("{% include 'foo<caret>#{bar}.html.twig' %}");
+        assertFalse(TwigUtil.isStaticTemplateUsage(dynamicTemplateString));
+    }
+
     @NotNull
     static List<TwigNamespaceSetting> createTwigNamespaceSettings() {
         return Arrays.asList(
@@ -207,6 +243,15 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         assertNotNull(pathLeaf);
         assertEquals(expectedName, pathLeaf.getText());
+    }
+
+    @NotNull
+    private PsiElement findCaretElement(@NotNull String template) {
+        myFixture.configureByText(TwigFileType.INSTANCE, template);
+        PsiElement element = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+        assertNotNull(element);
+
+        return element;
     }
 
     @NotNull
