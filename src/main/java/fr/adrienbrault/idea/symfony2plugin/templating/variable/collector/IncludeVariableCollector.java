@@ -20,6 +20,7 @@ import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import com.jetbrains.twig.elements.TwigExtendsTag;
 import com.jetbrains.twig.elements.TwigTagWithFileReference;
+import fr.adrienbrault.idea.symfony2plugin.extension.TwigFileUsage;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigIncludeStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigIncludeContextParser;
@@ -84,6 +85,28 @@ public class IncludeVariableCollector implements TwigFileVariableCollector {
         // add explicit include parameters; literal values are still visible as untyped variables
         for (TwigIncludeContextParser.IncludeArgument argument: includeContext.arguments()) {
             PsiVariable variable = resolveIncludeArgumentVariable(templatePsiName.getProject(), parentScope, getSourcePath(argument.valueElements()));
+            variables.put(argument.name(), variable != null ? variable : new PsiVariable());
+        }
+    }
+
+    /**
+     * Adds native-shaped with/only context for extension-provided custom include/embed tags.
+     */
+    private void collectExternalIncludeContextVars(PsiElement tag, Map<String, PsiVariable> variables, Set<VirtualFile> visitedFiles) {
+        TwigIncludeContextParser.IncludeContext includeContext = TwigIncludeContextParser.resolveTagIncludeContext(tag);
+
+        if (!includeContext.withParentContext() && includeContext.arguments().isEmpty()) {
+            return;
+        }
+
+        Map<String, PsiVariable> parentScope = TwigTypeResolveUtil.collectScopeVariables(tag, visitedFiles);
+
+        if (includeContext.withParentContext()) {
+            variables.putAll(parentScope);
+        }
+
+        for (TwigIncludeContextParser.IncludeArgument argument: includeContext.arguments()) {
+            PsiVariable variable = resolveIncludeArgumentVariable(tag.getProject(), parentScope, getSourcePath(argument.valueElements()));
             variables.put(argument.name(), variable != null ? variable : new PsiVariable());
         }
     }
@@ -261,6 +284,8 @@ public class IncludeVariableCollector implements TwigFileVariableCollector {
                 if (embedTag != null) {
                     collectContextVars(TwigElementTypes.EMBED_TAG, element, embedTag);
                 }
+
+                collectExternalContextVars(element);
             }
 
             super.visitElement(element);
@@ -275,6 +300,32 @@ public class IncludeVariableCollector implements TwigFileVariableCollector {
                 for (PsiFile templateFile: TwigUtil.getTemplatePsiElements(element.getProject(), templateName)) {
                     if (templateFile.equals(psiFile)) {
                         collectIncludeContextVars(iElementType, element, contextElement, variables, parameter.getVisitedFiles());
+                    }
+                }
+            }
+        }
+
+        private void collectExternalContextVars(@NotNull PsiElement element) {
+            for (TwigFileUsage extension : TwigUtil.TWIG_FILE_USAGE_EXTENSIONS.getExtensions()) {
+                if (extension.isIncludeTemplate(element)) {
+                    collectExternalContextVars(element, extension.getIncludeTemplate(element));
+                }
+
+                if (extension.isEmbedTemplate(element)) {
+                    collectExternalContextVars(element, extension.getEmbedTemplate(element));
+                }
+            }
+        }
+
+        private void collectExternalContextVars(@NotNull PsiElement element, @NotNull Collection<String> templateNames) {
+            for (String templateName : templateNames) {
+                if (StringUtils.isBlank(templateName)) {
+                    continue;
+                }
+
+                for (PsiFile templateFile : TwigUtil.getTemplatePsiElements(element.getProject(), templateName)) {
+                    if (templateFile.equals(psiFile)) {
+                        collectExternalIncludeContextVars(element, variables, parameter.getVisitedFiles());
                     }
                 }
             }
