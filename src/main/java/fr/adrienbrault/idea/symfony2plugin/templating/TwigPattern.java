@@ -194,6 +194,8 @@ public class TwigPattern {
         )
         .withLanguage(TwigLanguage.INSTANCE);
 
+    private static final ElementPattern<PsiElement> CACHED_INCLUDE_SOURCE_PRINT_BLOCK_OR_TAG_FUNCTION_PATTERN = getPrintBlockOrTagFunctionPattern("include", "source");
+
     private static final ElementPattern<PsiElement> CACHED_FUNCTION_STRING_PARAMETER_PATTERN = PlatformPatterns
         .psiElement(TwigTokenTypes.STRING_TEXT)
         .afterLeafSkipping(
@@ -886,6 +888,13 @@ public class TwigPattern {
      */
     public static ElementPattern<PsiElement> getPrintBlockOrTagFunctionPattern() {
         return CACHED_PRINT_BLOCK_OR_TAG_FUNCTION_PATTERN;
+    }
+
+    /**
+     * Check for {{ include('|') }}, {% include('|') %}, {{ source('|') }}, {% source('|') %}.
+     */
+    public static ElementPattern<PsiElement> getIncludeSourcePrintBlockOrTagFunctionPattern() {
+        return CACHED_INCLUDE_SOURCE_PRINT_BLOCK_OR_TAG_FUNCTION_PATTERN;
     }
 
     /**

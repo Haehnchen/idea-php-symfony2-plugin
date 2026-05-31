@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.templating.inspection;
 
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.LocalQuickFix;
-import com.intellij.patterns.ElementPattern;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -11,7 +10,6 @@ import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -41,33 +39,22 @@ public class TwigTemplateMissingInspection extends LocalInspectionTool {
         @NotNull
         private final ProblemsHolder holder;
 
-        private ElementPattern<?> templateFileReferencePattern;
-        private ElementPattern<?> includeFunctionPattern;
-
         MyPsiElementVisitor(@NotNull ProblemsHolder holder) {
             this.holder = holder;
         }
 
         @Override
-        public void visitElement(PsiElement element) {
+        public void visitElement(@NotNull PsiElement element) {
             if (!(element instanceof LeafPsiElement) || element.getNode().getElementType() != TwigTokenTypes.STRING_TEXT) {
                 super.visitElement(element);
                 return;
             }
 
-            if((getTemplateFileReferencePattern().accepts(element) || getIncludeFunctionPattern().accepts(element)) && TwigUtil.isValidStringWithoutInterpolatedOrConcat(element)) {
+            if(TwigUtil.isStaticTemplateUsage(element)) {
                 invoke(element, holder);
             }
 
             super.visitElement(element);
-        }
-
-        private ElementPattern<?> getTemplateFileReferencePattern() {
-            return templateFileReferencePattern != null ? templateFileReferencePattern : (templateFileReferencePattern = TwigPattern.getTemplateFileReferenceTagPattern());
-        }
-
-        private ElementPattern<?> getIncludeFunctionPattern() {
-            return includeFunctionPattern != null ? includeFunctionPattern : (includeFunctionPattern = TwigPattern.getPrintBlockOrTagFunctionPattern("include", "source"));
         }
     }
 

@@ -1273,6 +1273,66 @@ public class TwigUtil {
     }
 
     /**
+     * Matches static Twig string leaves that are known template references.
+     *
+     * <pre>{@code
+     * {% include 'base.html.twig' %}
+     * {{ include('base.html.twig') }}
+     * {% custom_template 'base.html.twig' %}
+     * }</pre>
+     *
+     * Dynamic strings such as {@code {% include 'base/' ~ name ~ '.html.twig' %}} are ignored.
+     *
+     * @see #isTemplateUsage(PsiElement)
+     */
+    public static boolean isStaticTemplateUsage(@NotNull PsiElement element) {
+        return isValidStringWithoutInterpolatedOrConcat(element) && isTemplateUsage(element);
+    }
+
+    /**
+     * Matches Twig string leaves that are template references from built-in Twig patterns or external providers.
+     *
+     * <pre>{@code
+     * {% extends 'layout.html.twig' %}
+     * {{ source('snippet.html.twig') }}
+     * {% custom_template 'layout.html.twig' %}
+     * }</pre>
+     *
+     * This method only checks whether the leaf is a template usage. Use {@link #isStaticTemplateUsage(PsiElement)}
+     * when interpolated or concatenated strings must be filtered out.
+     */
+    public static boolean isTemplateUsage(@NotNull PsiElement element) {
+        if (element.getNode() == null || element.getNode().getElementType() != TwigTokenTypes.STRING_TEXT) {
+            return false;
+        }
+
+        return isBuiltInTemplateUsage(element) || isExternalTemplateUsage(element);
+    }
+
+    private static boolean isBuiltInTemplateUsage(@NotNull PsiElement element) {
+        return TwigPattern.getTemplateFileReferenceTagPattern().accepts(element)
+            || TwigPattern.getIncludeSourcePrintBlockOrTagFunctionPattern().accepts(element);
+    }
+
+    private static boolean isExternalTemplateUsage(@NotNull PsiElement stringText) {
+        PsiElement tag = PsiTreeUtil.findFirstParent(stringText, true, parent ->
+            parent.getNode() != null && parent.getNode().getElementType() == TwigElementTypes.TAG
+        );
+
+        if (tag == null) {
+            return false;
+        }
+
+        for (TwigFileUsage extension : TWIG_FILE_USAGE_EXTENSIONS.getExtensions()) {
+            if (extension.isTemplateFileReference(tag)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Find file in a twig path collection
      *
      * @param project current project
@@ -2548,7 +2608,7 @@ public class TwigUtil {
     public static class TemplateIncludePatterns {
         final ElementPattern<PsiElement> importTag = TwigPattern.getTagNameParameterPattern(TwigElementTypes.IMPORT_TAG, "import");
         final ElementPattern<PsiElement> fromTag = TwigPattern.getTagNameParameterPattern(TwigElementTypes.IMPORT_TAG, "from");
-        final ElementPattern<PsiElement> includeSource = TwigPattern.getPrintBlockOrTagFunctionPattern("include", "source");
+        final ElementPattern<PsiElement> includeSource = TwigPattern.getIncludeSourcePrintBlockOrTagFunctionPattern();
         final ElementPattern<PsiElement> blockFunctionTemplate = TwigPattern.getPrintBlockOrTagFunctionSecondParameterPattern("block");
         final ElementPattern<PsiElement> embed = TwigPattern.getEmbedPattern();
         final ElementPattern<PsiElement> tagName = PlatformPatterns.psiElement().withElementType(TwigTokenTypes.TAG_NAME);
