@@ -23,6 +23,18 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2026.1.305
+* Add support for custom Twig template usages in `TwigFileUsage` and integrate with indexing and usage classification. (Daniel Espendiller)
+* Support custom Twig template context handling (Daniel Espendiller)
+* Wire TwigFileUsage into missing-template inspection (Daniel Espendiller)
+* Add default methods to handle various Twig template usages in `TwigFileUsage` interface (Daniel Espendiller)
+* [#2249](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2249) Complete Twig constant() Support for `constant('BugDemo\\NAMESPACED_CONST')` and `constant('FOO', object)` (Daniel Espendiller)
+* [#1327](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/1327) Support union types in Twig `@var` (Daniel Espendiller)
+* [#2798](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2798) fix: java.lang.NullPointerException: Cannot invoke "String.length()" because "str" is null (Daniel Espendiller)
+* Switch to `SecureXmlUtil` for XML parsing to enhance security and add safeguards for large profiler files and invalid profiler hashes. (Daniel Espendiller)
+* Add support for navigation in typed and named default service bindings in YAML configuration (Daniel Espendiller)
+* [#668](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/668) PHP route usage and Twig url() usage now flag routes whose controller action is deprecated (Daniel Espendiller)
+
 ## 2026.1.304
 * Add for-loop `loop` variable scope with context inheritance (Daniel Espendiller)
 * Remove `getClassDeprecatedMessage()` and `isClassOrFunctionDeprecated()` helper methods in replacement of now working core logic (Daniel Espendiller)
