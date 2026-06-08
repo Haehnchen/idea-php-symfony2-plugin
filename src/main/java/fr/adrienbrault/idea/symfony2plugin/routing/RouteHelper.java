@@ -1431,6 +1431,7 @@ public class RouteHelper {
     @NotNull
     private static Set<String> getRoutingConfiguratorParameterNames(@NotNull Function function) {
         Set<String> parameterNames = new HashSet<>();
+        Map<String, String> useImports = AnnotationBackportUtil.getUseImportMap(function);
 
         for (Parameter parameter : function.getParameters()) {
             String parameterName = parameter.getName();
@@ -1438,13 +1439,8 @@ public class RouteHelper {
                 continue;
             }
 
-            if (parameter.getDeclaredType().getTypes().stream().anyMatch(RouteHelper::isRoutingConfiguratorType)) {
-                parameterNames.add(parameterName);
-                continue;
-            }
-
             PhpTypeDeclaration typeDeclaration = parameter.getTypeDeclaration();
-            if (typeDeclaration != null && isRoutingConfiguratorType(typeDeclaration.getText())) {
+            if (typeDeclaration != null && isRoutingConfiguratorType(typeDeclaration.getText(), useImports)) {
                 parameterNames.add(parameterName);
             }
         }
@@ -1452,13 +1448,18 @@ public class RouteHelper {
         return parameterNames;
     }
 
-    private static boolean isRoutingConfiguratorType(@Nullable String type) {
+    private static boolean isRoutingConfiguratorType(@Nullable String type, @NotNull Map<String, String> useImports) {
         if (StringUtils.isBlank(type)) {
             return false;
         }
 
-        String normalizedType = StringUtils.stripStart(type, "\\");
-        return ROUTING_CONFIGURATOR_FQN.equals(normalizedType) || "RoutingConfigurator".equals(normalizedType);
+        String normalizedType = StringUtils.stripStart(type, "\\?");
+        if (ROUTING_CONFIGURATOR_FQN.equals(normalizedType) || "RoutingConfigurator".equals(normalizedType)) {
+            return true;
+        }
+
+        String importedType = useImports.get(normalizedType);
+        return importedType != null && ROUTING_CONFIGURATOR_FQN.equals(StringUtils.stripStart(importedType, "\\"));
     }
 
     @Nullable
