@@ -154,7 +154,11 @@ public class TranslationInsertUtil {
     @Deprecated
     @NotNull
     public static String findEol(@NotNull PsiElement psiElement) {
+        return findLineSeparator(psiElement);
+    }
 
+    @NotNull
+    public static String findLineSeparator(@NotNull PsiElement psiElement) {
         for(PsiElement child: YamlHelper.getChildrenFix(psiElement)) {
             if(PlatformPatterns.psiElement(YAMLTokenTypes.EOL).accepts(child)) {
                 return child.getText();

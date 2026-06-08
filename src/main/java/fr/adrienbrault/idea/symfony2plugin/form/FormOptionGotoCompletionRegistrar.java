@@ -355,7 +355,7 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
             );
 
             for (String formType : this.formTypes) {
-                targets.addAll(FormOptionsUtil.getDefaultOptionTargets((StringLiteralExpression) parent, formType));
+                targets.addAll(FormOptionsUtil.getFormDefaultOptionTargets((StringLiteralExpression) parent, formType));
             }
 
             return targets;

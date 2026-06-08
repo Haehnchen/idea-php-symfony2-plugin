@@ -300,7 +300,7 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
             }
 
             if(options.contains(FormOption.DEFAULT_OPTIONS)) {
-                targets.addAll(FormOptionsUtil.getDefaultOptionTargets((StringLiteralExpression) element, this.formType));
+                targets.addAll(FormOptionsUtil.getFormDefaultOptionTargets((StringLiteralExpression) element, this.formType));
             }
 
             return targets;

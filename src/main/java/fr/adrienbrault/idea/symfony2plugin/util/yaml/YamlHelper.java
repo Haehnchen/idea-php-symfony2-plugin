@@ -15,6 +15,7 @@ import com.intellij.util.Consumer;
 import com.intellij.util.ObjectUtils;
 import com.intellij.util.ProcessingContext;
 import com.intellij.util.containers.ContainerUtil;
+import com.jetbrains.php.config.PhpLanguageLevel;
 import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.refactoring.PhpNameUtil;
@@ -981,7 +982,7 @@ public class YamlHelper {
         }
 
         // fallback let decide PhpStorm if this is a valid class
-        return PhpNameUtil.isValidNamespaceFullName(serviceId, true);
+        return PhpNameUtil.isValidNamespaceFullName(serviceId, true, PhpLanguageLevel.DEFAULT);
     }
 
     /**
@@ -1026,7 +1027,7 @@ public class YamlHelper {
                                     PsiElement parent = yamlMapping.getParent();
                                     if(parent instanceof YAMLKeyValue) {
                                         String keyText = ((YAMLKeyValue) parent).getKeyText();
-                                        if(!keyText.contains(".") && PhpNameUtil.isValidNamespaceFullName(keyText)) {
+                                        if(!keyText.contains(".") && PhpNameUtil.isValidNamespaceFullName(keyText, PhpLanguageLevel.DEFAULT)) {
                                             consumer.consume(keyText);
                                         }
                                     }
@@ -1064,7 +1065,7 @@ public class YamlHelper {
                     PsiElement parent = yamlMapping.getParent();
                     if(parent instanceof YAMLKeyValue) {
                         String keyText = ((YAMLKeyValue) parent).getKeyText();
-                        if(StringUtils.isNotBlank(keyText) && !keyText.contains(".") && PhpNameUtil.isValidNamespaceFullName(keyText)) {
+                        if(StringUtils.isNotBlank(keyText) && !keyText.contains(".") && PhpNameUtil.isValidNamespaceFullName(keyText, PhpLanguageLevel.DEFAULT)) {
                             return keyText;
                         }
                     }

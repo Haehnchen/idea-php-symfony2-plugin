@@ -35,7 +35,6 @@ public class YamlUpdateArgumentServicesCallback implements ServiceActionUtil.Ins
     }
 
     @Override
-    @SuppressWarnings("deprecation")
     public void insert(List<String> items) {
 
         YAMLValue yamlCompoundValue = argumentsKeyValue.getValue();
@@ -67,7 +66,7 @@ public class YamlUpdateArgumentServicesCallback implements ServiceActionUtil.Ins
 
             // search indent and EOL value
             String indent = StringUtil.repeatSymbol(' ', YAMLUtil.getIndentToThisElement(yamlCompoundValue));
-            String eol = TranslationInsertUtil.findEol(yamlKeyValue);
+            String eol = TranslationInsertUtil.findLineSeparator(yamlKeyValue);
 
             List<String> yamlSequences = new ArrayList<>();
             for (String item : items) {

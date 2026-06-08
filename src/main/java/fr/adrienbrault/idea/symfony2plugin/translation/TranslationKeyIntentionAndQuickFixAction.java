@@ -102,25 +102,20 @@ public class TranslationKeyIntentionAndQuickFixAction extends IntentionAndQuickF
             return;
         }
 
-        JBList<PsiFile> list = new JBList<>(files);
-
-        list.setCellRenderer(new JBList.StripedListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                Component renderer = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (renderer instanceof JLabel && value instanceof PsiFile) {
-                    ((JLabel) renderer).setText(getPresentableName(project, ((PsiFile) value).getVirtualFile()));
-                }
-
-                return renderer;
-            }
-        });
-
-        JBPopupFactory.getInstance().createListPopupBuilder(list)
+        JBPopupFactory.getInstance().createPopupChooserBuilder(files)
             .setTitle("Symfony: Translation files")
-            .setItemChoosenCallback(() -> {
-                PsiFile selectedFile = list.getSelectedValue();
+            .setRenderer(new JBList.StripedListCellRenderer() {
+                @Override
+                public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                    Component renderer = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                    if (renderer instanceof JLabel && value instanceof PsiFile) {
+                        ((JLabel) renderer).setText(getPresentableName(project, ((PsiFile) value).getVirtualFile()));
+                    }
 
+                    return renderer;
+                }
+            })
+            .setItemChosenCallback(selectedFile -> {
                 CommandProcessor.getInstance().executeCommand(selectedFile.getProject(), () -> ApplicationManager.getApplication().runWriteAction(() -> {
                     TranslationInsertUtil.invokeTranslation(selectedFile, key, domain);
                 }), "Translation insert " + selectedFile.getName(), null);
