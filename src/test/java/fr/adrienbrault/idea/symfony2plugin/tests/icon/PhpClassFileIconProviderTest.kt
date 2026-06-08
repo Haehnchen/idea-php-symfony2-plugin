@@ -134,20 +134,77 @@ class PhpClassFileIconProviderTest : SymfonyLightCodeInsightFixtureTestCase() {
         assertNotNull("Icon should not be null for Symfony form type class", getIconFromProvider(formTypeFile))
     }
 
+    fun testRouteAttributeShowsControllerBadge() {
+        val controllerFile = myFixture.addFileToProject(
+            "src/Controller/DashboardController.php",
+            """
+            <?php
+
+            namespace App\Controller;
+
+            use Symfony\Component\Routing\Attribute\Route;
+
+            class DashboardController
+            {
+                #[Route('/dashboard', name: 'app_dashboard')]
+                public function index()
+                {
+                }
+            }
+            """.trimIndent()
+        )
+
+        assertNotNull("Icon should not be null for Symfony controller route attribute", getIconFromProvider(controllerFile))
+    }
+
+    fun testSymfonyAbstractControllerShowsControllerBadge() {
+        myFixture.addFileToProject(
+            "vendor/symfony/framework-bundle/Controller/AbstractController.php",
+            """
+            <?php
+
+            namespace Symfony\Bundle\FrameworkBundle\Controller;
+
+            abstract class AbstractController
+            {
+            }
+            """.trimIndent()
+        )
+        val controllerFile = myFixture.addFileToProject(
+            "src/Controller/AdminController.php",
+            """
+            <?php
+
+            namespace App\Controller;
+
+            use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+
+            class AdminController extends AbstractController
+            {
+            }
+            """.trimIndent()
+        )
+
+        assertNotNull("Icon should not be null for Symfony controller inheritance", getIconFromProvider(controllerFile))
+    }
+
     fun testBadgeIconsAreLayered() {
         val commandIcon: Icon = createDecoratedFileIcon(Symfony2Icons.SYMFONY, Symfony2Icons.SYMFONY_COMMAND_FILE)
         val entityIcon: Icon = createDecoratedFileIcon(Symfony2Icons.SYMFONY, Symfony2Icons.DOCTRINE_ENTITY_FILE)
         val repositoryIcon: Icon = createDecoratedFileIcon(Symfony2Icons.SYMFONY, Symfony2Icons.DOCTRINE_REPOSITORY_FILE)
         val formTypeIcon: Icon = createDecoratedFileIcon(Symfony2Icons.SYMFONY, Symfony2Icons.FORM_TYPE_FILE)
+        val controllerIcon: Icon = createDecoratedFileIcon(Symfony2Icons.SYMFONY, Symfony2Icons.CONTROLLER_FILE)
 
         assertTrue("Command badge icon should be layered", commandIcon is LayeredIcon)
         assertTrue("Entity badge icon should be layered", entityIcon is LayeredIcon)
         assertTrue("Repository badge icon should be layered", repositoryIcon is LayeredIcon)
         assertTrue("Form type badge icon should be layered", formTypeIcon is LayeredIcon)
+        assertTrue("Controller badge icon should be layered", controllerIcon is LayeredIcon)
         assertTrue("Command badge should be loaded", Symfony2Icons.SYMFONY_COMMAND_FILE.iconWidth > 0)
         assertTrue("Entity badge should be loaded", Symfony2Icons.DOCTRINE_ENTITY_FILE.iconWidth > 0)
         assertTrue("Repository badge should be loaded", Symfony2Icons.DOCTRINE_REPOSITORY_FILE.iconWidth > 0)
         assertTrue("Form type badge should be loaded", Symfony2Icons.FORM_TYPE_FILE.iconWidth > 0)
+        assertTrue("Controller badge should be loaded", Symfony2Icons.CONTROLLER_FILE.iconWidth > 0)
     }
 
     fun testRegularPhpClassFallsBackToPhpProvider() {

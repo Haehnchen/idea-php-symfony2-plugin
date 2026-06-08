@@ -43,6 +43,7 @@ public class Symfony2Icons {
     public static final Icon SERVICE_OPACITY = IconLoader.getIcon("/icons/service_opacity.png", Symfony2Icons.class);
     public static final Icon FORM_TYPE = IconLoader.getIcon("/icons/form_type.png", Symfony2Icons.class);
     public static final Icon FORM_TYPE_FILE = IconLoader.getIcon("/icons/form_type_file.svg", Symfony2Icons.class);
+    public static final Icon CONTROLLER_FILE = IconLoader.getIcon("/icons/controller_file.svg", Symfony2Icons.class);
     public static final Icon FORM_TYPE_WEAK = IconLoader.getIcon("/icons/form_type_weak.png", Symfony2Icons.class);
     public static final Icon TRANSLATION = IconLoader.getIcon("/icons/translation.png", Symfony2Icons.class);
     public static final Icon TRANSLATION_WEAK = IconLoader.getIcon("/icons/translation_weak.png", Symfony2Icons.class);

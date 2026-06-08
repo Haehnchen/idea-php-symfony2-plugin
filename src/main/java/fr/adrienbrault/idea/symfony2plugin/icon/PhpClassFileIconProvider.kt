@@ -13,12 +13,15 @@ import com.intellij.ui.LayeredIcon
 import com.jetbrains.php.lang.PhpFileType
 import com.jetbrains.php.lang.psi.PhpFile
 import com.jetbrains.php.lang.psi.PhpPsiUtil
+import com.jetbrains.php.lang.psi.elements.Method
 import com.jetbrains.php.lang.psi.elements.PhpClass
+import com.jetbrains.php.lang.psi.elements.PhpModifier
 import fr.adrienbrault.idea.symfony2plugin.Settings
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
 import fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineUtil
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil
+import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil
 import javax.swing.Icon
 import javax.swing.SwingConstants
@@ -64,6 +67,7 @@ class PhpClassFileIconProvider : FileIconProvider {
         when {
             isSymfonyCommand(phpClass) -> Symfony2Icons.SYMFONY_COMMAND_FILE
             isSymfonyFormType(phpClass) -> Symfony2Icons.FORM_TYPE_FILE
+            isSymfonyController(phpClass) -> Symfony2Icons.CONTROLLER_FILE
             isDoctrineEntity(file, phpClass) -> Symfony2Icons.DOCTRINE_ENTITY_FILE
             isDoctrineRepository(phpClass) -> Symfony2Icons.DOCTRINE_REPOSITORY_FILE
             else -> null
@@ -75,6 +79,20 @@ class PhpClassFileIconProvider : FileIconProvider {
     private fun isSymfonyFormType(phpClass: PhpClass): Boolean =
         PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Form\\AbstractType") ||
             PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Form\\FormTypeInterface")
+
+    private fun isSymfonyController(phpClass: PhpClass): Boolean =
+        PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController") ||
+            PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller") ||
+            hasRouteAttribute(phpClass) ||
+            phpClass.ownMethods.any { hasRouteAttribute(it) }
+
+    private fun hasRouteAttribute(phpClass: PhpClass): Boolean =
+        RouteHelper.ROUTE_ANNOTATIONS.any { phpClass.getAttributes(it).isNotEmpty() }
+
+    private fun hasRouteAttribute(method: Method): Boolean =
+        method.access == PhpModifier.Access.PUBLIC &&
+            !method.isStatic &&
+            RouteHelper.ROUTE_ANNOTATIONS.any { method.getAttributes(it).isNotEmpty() }
 
     private fun isDoctrineEntity(file: PhpFile, phpClass: PhpClass): Boolean {
         val className = phpClass.fqn.trimStart('\\')
