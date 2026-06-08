@@ -23,6 +23,16 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2026.1.306
+* fix index resolve in `PhpTwigTemplateUsageStubIndex` for fqn (Daniel Espendiller)
+* Add modifier icon for phpclass controller (Daniel Espendiller)
+* [paid] Add Doctrine Criteria ordering deprecation inspection (Daniel Espendiller)
+* [paid] Add Doctrine discriminator map duplicate class inspection (Daniel Espendiller)
+* [paid] Add Doctrine current default expression inspection (Daniel Espendiller)
+* [paid] add inspection that warns when a user bundle overrides `registerCommands()` (Daniel Espendiller)
+* [paid] Add inspection for deprecated `ArrayAccess` usage in Doctrine ORM mappings with quick-fix support (Daniel Espendiller)
+* [paid] Add Doctrine join column nullable deprecation inspection (Daniel Espendiller)
+
 ## 2026.1.305
 * Add support for custom Twig template usages in `TwigFileUsage` and integrate with indexing and usage classification. (Daniel Espendiller)
 * Support custom Twig template context handling (Daniel Espendiller)
