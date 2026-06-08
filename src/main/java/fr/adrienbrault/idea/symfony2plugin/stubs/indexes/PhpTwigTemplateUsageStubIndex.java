@@ -18,6 +18,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateUsage;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.TemplateUsageExternalizer;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.PhpMethodVariableResolveUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
 import kotlin.Triple;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -76,9 +77,10 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
                         PhpMethodVariableResolveUtil.TemplateRenderVisitor.processMethodAttributes(method, consumer);
                         PhpDocComment docComment = method.getDocComment();
                         if (docComment != null) {
+                            Map<String, String> fileImports = AnnotationBackportUtil.getUseImportMap(docComment);
                             PhpDocUtil.processTagElementsByPredicate(
                                 docComment,
-                                docTag -> PhpMethodVariableResolveUtil.TemplateRenderVisitor.processDocTag(docTag, consumer),
+                                docTag -> PhpMethodVariableResolveUtil.TemplateRenderVisitor.processDocTag(docTag, fileImports, consumer),
                                 phpDocTag -> true
                             );
                         }
@@ -145,5 +147,4 @@ public class PhpTwigTemplateUsageStubIndex extends FileBasedIndexExtension<Strin
         return inputData.getFile().getLength() < MAX_FILE_BYTE_SIZE;
     }
 }
-
 

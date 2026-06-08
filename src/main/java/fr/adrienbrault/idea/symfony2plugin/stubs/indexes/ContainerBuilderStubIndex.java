@@ -15,9 +15,11 @@ import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.Parameter;
+import com.jetbrains.php.lang.psi.elements.PhpTypeDeclaration;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.dict.ContainerBuilderCall;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.ContainerBuilderCallExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import one.util.streamex.StreamEx;
 import org.apache.commons.lang3.StringUtils;
@@ -114,8 +116,9 @@ public class ContainerBuilderStubIndex extends FileBasedIndexExtension<String, C
     }
 
     private void processMethod(@NotNull Method method, @NotNull Map<String, ContainerBuilderCall> map) {
+        Map<String, String> useImports = AnnotationBackportUtil.getUseImportMap(method);
         Set<CharSequence> containerParameters = StreamEx.of(method.getParameters())
-            .filter(ContainerBuilderStubIndex::isContainerParam)
+            .filter(parameter -> isContainerParam(parameter, useImports))
             .map(Parameter::getNameCS)
             .toSet();
         if (containerParameters.isEmpty()) return;
@@ -125,9 +128,19 @@ public class ContainerBuilderStubIndex extends FileBasedIndexExtension<String, C
         }
     }
 
-    private static boolean isContainerParam(@NotNull Parameter parameter) {
-        String parameterType = parameter.getDeclaredType().toString();
-        return SET.contains(StringUtils.stripStart(parameterType, "\\"));
+    private static boolean isContainerParam(@NotNull Parameter parameter, @NotNull Map<String, String> useImports) {
+        PhpTypeDeclaration typeDeclaration = parameter.getTypeDeclaration();
+        if (typeDeclaration == null) {
+            return false;
+        }
+
+        String parameterType = StringUtils.stripStart(typeDeclaration.getText(), "\\?");
+        if (SET.contains(parameterType)) {
+            return true;
+        }
+
+        String importedType = useImports.get(parameterType);
+        return importedType != null && SET.contains(StringUtils.stripStart(importedType, "\\"));
     }
 
     private static class MyInstructionProcessor extends PhpInstructionProcessor {

@@ -701,13 +701,15 @@ public class PhpMethodVariableResolveUtil {
          * "@Template(template="foobar.html.twig")"
          */
         public static void processDocTag(@NotNull PhpDocTag phpDocTag, Consumer<Triple<String, PhpNamedElement, FunctionReference>> consumer) {
+            processDocTag(phpDocTag, AnnotationBackportUtil.getUseImportMap(phpDocTag), consumer);
+        }
+
+        public static void processDocTag(@NotNull PhpDocTag phpDocTag, @NotNull Map<String, String> fileImports, Consumer<Triple<String, PhpNamedElement, FunctionReference>> consumer) {
             // "@var" and user non-related tags don't need an action
             if(AnnotationBackportUtil.NON_ANNOTATION_TAGS.contains(phpDocTag.getName())) {
                 return;
             }
 
-            // init scope imports
-            Map<String, String> fileImports = AnnotationBackportUtil.getUseImportMap(phpDocTag);
             if(fileImports.isEmpty()) {
                 return;
             }

@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -14,6 +15,7 @@ import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.StringSetDataExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -57,11 +59,12 @@ public class FormDataClassStubIndex extends FileBasedIndexExtension<String, Set<
             for (PhpNamedElement topLevelElement : ((PhpFile) psiFile).getTopLevelDefs().values()) {
                 if (topLevelElement instanceof PhpClass clazz) {
                     for (Method method : clazz.getOwnMethods()) {
+                        Map<String, String> useImports = AnnotationBackportUtil.getUseImportMap(method);
                         PhpControlFlowUtil.processFlow(method.getControlFlow(), new PhpInstructionProcessor() {
                             @Override
                             public boolean processPhpCallInstruction(PhpCallInstruction instruction) {
                                 if (instruction.getFunctionReference() instanceof MethodReference methodReference) {
-                                    visitElement(methodReference, map);
+                                    visitElement(methodReference, useImports, map);
                                 }
                                 return super.processPhpCallInstruction(instruction);
                             }
@@ -74,11 +77,13 @@ public class FormDataClassStubIndex extends FileBasedIndexExtension<String, Set<
         };
 
     }
-    public void visitElement(@NotNull MethodReference element, @NotNull Map<String, Set<String>> map) {
+
+    public void visitElement(@NotNull MethodReference element, @NotNull Map<String, String> useImports, @NotNull Map<String, Set<String>> map) {
         String phpClassFqn = null;
 
         String name = element.getName();
-        if ("setDefault".equals(name) && element.getType().getTypes().stream().anyMatch(s -> s.toLowerCase().contains("optionsresolver"))) {
+        boolean optionsResolverReference = isOptionsResolverReference(element, useImports);
+        if ("setDefault".equals(name) && optionsResolverReference) {
             // $resolver->setDefault('data_class', XXX);
 
             ParameterList parameterList = element.getParameterList();
@@ -94,7 +99,7 @@ public class FormDataClassStubIndex extends FileBasedIndexExtension<String, Set<
                     }
                 }
             }
-        } else if ("setDefaults".equals(name) && element.getType().getTypes().stream().anyMatch(s -> s.toLowerCase().contains("optionsresolver"))) {
+        } else if ("setDefaults".equals(name) && optionsResolverReference) {
             // $resolver->setDefaults(['data_class' => XXX]);
 
             ParameterList parameterList = element.getParameterList();
@@ -119,6 +124,44 @@ public class FormDataClassStubIndex extends FileBasedIndexExtension<String, Set<
                 }
             }
         }
+    }
+
+    private static boolean isOptionsResolverReference(@NotNull MethodReference element, @NotNull Map<String, String> useImports) {
+        PhpExpression classReference = element.getClassReference();
+        if (!(classReference instanceof Variable variable)) {
+            return false;
+        }
+
+        String variableName = variable.getName();
+        if (StringUtils.isBlank(variableName)) {
+            return false;
+        }
+
+        Function function = PsiTreeUtil.getParentOfType(element, Function.class);
+        if (function == null) {
+            return false;
+        }
+
+        for (Parameter parameter : function.getParameters()) {
+            if (!variableName.equals(parameter.getName())) {
+                continue;
+            }
+
+            PhpTypeDeclaration typeDeclaration = parameter.getTypeDeclaration();
+            if (typeDeclaration == null) {
+                return false;
+            }
+
+            String parameterType = StringUtils.stripStart(typeDeclaration.getText(), "\\?");
+            if (StringUtil.containsIgnoreCase(parameterType, "OptionsResolver")) {
+                return true;
+            }
+
+            String importedType = useImports.get(parameterType);
+            return importedType != null && StringUtil.containsIgnoreCase(importedType, "OptionsResolver");
+        }
+
+        return false;
     }
 
     @Nullable

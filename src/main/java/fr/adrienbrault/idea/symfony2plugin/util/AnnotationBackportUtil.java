@@ -68,11 +68,16 @@ public class AnnotationBackportUtil {
 
     @NotNull
     public static Map<String, String> getUseImportMap(@NotNull PhpDocComment phpDocComment) {
+        return getUseImportMap((PsiElement) phpDocComment);
+    }
+
+    @NotNull
+    public static Map<String, String> getUseImportMap(@NotNull PsiElement element) {
 
         // search for use alias in local file
         final Map<String, String> useImports = new HashMap<>();
 
-        PhpPsiElement scope = PhpCodeInsightUtil.findScopeForUseOperator(phpDocComment);
+        PhpPsiElement scope = PhpCodeInsightUtil.findScopeForUseOperator(element);
         if(scope == null) {
             return useImports;
         }
