@@ -8,9 +8,7 @@ import com.jetbrains.php.lang.PhpLangUtil;
 import com.jetbrains.php.lang.documentation.phpdoc.PhpDocUtil;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag;
-import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
-import de.espend.idea.php.annotation.util.AnnotationUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -157,7 +155,7 @@ public class AnnotationBackportUtil {
             return null;
         }
 
-        PhpReference reference = PhpPsiUtil.getParentByCondition(psiElement, false, PhpReference.INSTANCEOF);
+        PhpReference reference = PsiTreeUtil.getParentOfType(psiElement, PhpReference.class, false);
         String qualifiedName = PhpCodeInsightUtil.createQualifiedName(scopeForUseOperator, fqn, reference, false);
         if (!PhpLangUtil.isFqn(qualifiedName)) {
             return qualifiedName;
@@ -395,6 +393,6 @@ public class AnnotationBackportUtil {
             return shortClassName;
         }
 
-        return getFqnClassNameFromScope(phpClass, shortClassName, AnnotationUtil.getUseImportMap(docComment));
+        return getFqnClassNameFromScope(phpClass, shortClassName, getUseImportMap(docComment));
     }
 }

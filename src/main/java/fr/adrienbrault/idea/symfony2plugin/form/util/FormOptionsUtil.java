@@ -387,10 +387,8 @@ public class FormOptionsUtil {
             .collect(Collectors.toCollection(ArrayList::new));
     }
 
-    @Deprecated
     @NotNull
-    public static Collection<PsiElement> getDefaultOptionTargets(@NotNull StringLiteralExpression element, @NotNull String formType) {
-
+    public static Collection<PsiElement> getFormDefaultOptionTargets(@NotNull StringLiteralExpression element, @NotNull String formType) {
         final String value = element.getContents();
         if(StringUtils.isBlank(value)) {
             return Collections.emptySet();
@@ -405,6 +403,12 @@ public class FormOptionsUtil {
         });
 
         return psiElements;
+    }
+
+    @Deprecated
+    @NotNull
+    public static Collection<PsiElement> getDefaultOptionTargets(@NotNull StringLiteralExpression element, @NotNull String formType) {
+        return getFormDefaultOptionTargets(element, formType);
     }
 
     @NotNull

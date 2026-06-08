@@ -45,7 +45,6 @@ public class YamlServiceTagIntention extends PsiElementBaseIntentionAction {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
     public void invoke(@NotNull Project project, Editor editor, @NotNull PsiElement psiElement) throws IncorrectOperationException {
 
         YAMLKeyValue serviceKeyValue = YamlHelper.findServiceInContext(psiElement);
@@ -85,7 +84,7 @@ public class YamlServiceTagIntention extends PsiElementBaseIntentionAction {
 
             appendEndOffset = serviceKeyValue.getTextRange().getEndOffset();
 
-            String eol = TranslationInsertUtil.findEol(serviceKeyValue);
+            String eol = TranslationInsertUtil.findLineSeparator(serviceKeyValue);
             insertString = eol + indent + "tags:" + eol + StringUtils.join(yamlSequences, eol);
 
         } else {
@@ -111,7 +110,7 @@ public class YamlServiceTagIntention extends PsiElementBaseIntentionAction {
 
                 appendEndOffset = argumentsKeyValue.getTextRange().getEndOffset();
 
-                String eol = TranslationInsertUtil.findEol(argumentsKeyValue);
+                String eol = TranslationInsertUtil.findLineSeparator(argumentsKeyValue);
                 insertString = eol + StringUtils.join(yamlSequences, eol);
             }
 

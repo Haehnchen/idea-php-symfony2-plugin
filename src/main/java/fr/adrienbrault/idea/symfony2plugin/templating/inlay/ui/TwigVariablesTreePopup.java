@@ -7,10 +7,11 @@ import com.intellij.icons.AllIcons;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationGroupManager;
 import com.intellij.notification.NotificationType;
-import com.intellij.openapi.application.ReadAction;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
+import com.intellij.openapi.util.Computable;
 import com.intellij.pom.Navigatable;
 import com.intellij.ui.SearchTextField;
 import com.intellij.ui.awt.RelativePoint;
@@ -164,7 +165,7 @@ public class TwigVariablesTreePopup {
                     return;
                 }
 
-                Navigatable target = ReadAction.compute(() -> findNavigationTarget(file.getProject(), data, variableTypes));
+                Navigatable target = ApplicationManager.getApplication().runReadAction((Computable<Navigatable>) () -> findNavigationTarget(file.getProject(), data, variableTypes));
                 if (target != null) {
                     target.navigate(true);
                     if (popupRef[0] != null) {
@@ -211,7 +212,7 @@ public class TwigVariablesTreePopup {
                 disableItem.addActionListener(ev -> {
                     Project project = file.getProject();
                     InlayHintsSettings.instance().changeHintTypeStatus(new SettingsKey<>("symfony.twig.root.variables"), TwigLanguage.INSTANCE, false);
-                    DaemonCodeAnalyzer.getInstance(project).restart(file);
+                    DaemonCodeAnalyzer.getInstance(project).restart(file, this);
 
                     Notification notification = NotificationGroupManager.getInstance()
                         .getNotificationGroup("Symfony Notifications")

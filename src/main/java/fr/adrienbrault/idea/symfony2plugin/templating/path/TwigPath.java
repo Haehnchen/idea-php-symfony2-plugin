@@ -115,9 +115,7 @@ public class TwigPath {
                 String[] parts = path.split("/");
                 if (parts.length > 0) {
                     String dirName = parts[parts.length - 1];
-                    Collection<VirtualFile> dirs = FilenameIndex.getVirtualFilesByName(
-                        project, dirName, GlobalSearchScope.projectScope(project)
-                    );
+                    Collection<VirtualFile> dirs = FilenameIndex.getVirtualFilesByName(dirName, GlobalSearchScope.projectScope(project));
                     for (VirtualFile dir : dirs) {
                         if (dir.isDirectory()) {
                             return dir;
@@ -154,4 +152,3 @@ public class TwigPath {
         return customPath;
     }
 }
-

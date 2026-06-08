@@ -7,6 +7,7 @@ import com.intellij.microservices.endpoints.FrameworkPresentation
 import com.intellij.microservices.endpoints.HTTP_SERVER_TYPE
 import com.intellij.microservices.endpoints.presentation.HttpMethodPresentation
 import com.intellij.navigation.ItemPresentation
+import com.intellij.openapi.actionSystem.DataSink
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.ModificationTracker
 import com.intellij.psi.PsiElement
@@ -83,6 +84,9 @@ class SymfonyEndpointProvider : EndpointsProvider<SymfonyRouteGroup, Route> {
     override fun getNavigationElement(group: SymfonyRouteGroup, endpoint: Route): PsiElement? {
         val methods = RouteHelper.getMethods(group.project, endpoint.name)
         return if (methods.isNotEmpty()) methods[0] else null
+    }
+
+    override fun uiDataSnapshot(sink: DataSink, group: SymfonyRouteGroup, endpoint: Route) {
     }
 
     override fun getModificationTracker(project: Project): ModificationTracker =
