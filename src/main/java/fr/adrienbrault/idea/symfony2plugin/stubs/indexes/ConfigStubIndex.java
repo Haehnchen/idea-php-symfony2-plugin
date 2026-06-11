@@ -46,8 +46,8 @@ public class ConfigStubIndex extends FileBasedIndexExtension<String, ConfigIndex
                 }
 
                 Map<String, ConfigIndex> map = new HashMap<>();
-                TreeMap<String, TreeMap<String, String>> configs = new TreeMap<>();
-                Set<String> anonymousTemplateDirectory = new HashSet<>();
+                LinkedHashMap<String, LinkedHashMap<String, String>> configs = new LinkedHashMap<>();
+                Set<String> anonymousTemplateDirectory = new LinkedHashSet<>();
 
                 for (YAMLKeyValue yamlKeyValue : YamlHelper.getTopLevelKeyValues(yamlFile)) {
                     String keyText = yamlKeyValue.getKeyText();
@@ -73,13 +73,13 @@ public class ConfigStubIndex extends FileBasedIndexExtension<String, ConfigIndex
                 }
 
                 if (!anonymousTemplateDirectory.isEmpty()) {
-                    map.put("anonymous_template_directory", new ConfigIndex("anonymous_template_directory", new TreeMap<>(), anonymousTemplateDirectory));
+                    map.put("anonymous_template_directory", new ConfigIndex("anonymous_template_directory", new LinkedHashMap<>(), anonymousTemplateDirectory));
                 }
 
                 return map;
             }
 
-            private static void visitKey(@NotNull YAMLKeyValue yamlKeyValue, @NotNull TreeMap<String, TreeMap<String, String>> configs, @NotNull Set<String> anonymousTemplateDirectory) {
+            private static void visitKey(@NotNull YAMLKeyValue yamlKeyValue, @NotNull LinkedHashMap<String, LinkedHashMap<String, String>> configs, @NotNull Set<String> anonymousTemplateDirectory) {
                 YAMLValue value = yamlKeyValue.getValue();
                 if (value instanceof YAMLMapping yamlMapping) {
                     YAMLKeyValue defaults = YamlHelper.getYamlKeyValue(yamlMapping, "defaults");
@@ -93,16 +93,16 @@ public class ConfigStubIndex extends FileBasedIndexExtension<String, ConfigIndex
                                 if (value2 instanceof YAMLQuotedText || value2 instanceof YAMLPlainTextImpl) {
                                     String s = PsiElementUtils.trimQuote(value2.getText());
                                     if (!StringUtils.isBlank(s)) {
-                                        TreeMap<String, String> items = new TreeMap<>();
+                                        LinkedHashMap<String, String> items = new LinkedHashMap<>();
                                         items.put("template_directory", s);
                                         configs.put(keyText1, items);
                                     }
                                 } else if (value2 instanceof YAMLMapping yamlMapping2) {
-                                    TreeMap<String, String> items = new TreeMap<>();
+                                    LinkedHashMap<String, String> items = new LinkedHashMap<>();
 
                                     String templateDirectory = YamlHelper.getYamlKeyValueAsString(yamlMapping2, "template_directory");
                                     if (templateDirectory == null) {
-                                        continue;
+                                        templateDirectory = "components";
                                     }
 
                                     items.put("template_directory", templateDirectory);
@@ -139,7 +139,7 @@ public class ConfigStubIndex extends FileBasedIndexExtension<String, ConfigIndex
 
     @Override
     public int getVersion() {
-        return 3;
+        return 4;
     }
 
     @Override

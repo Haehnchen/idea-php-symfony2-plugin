@@ -8,6 +8,7 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileVisitor;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -61,6 +62,7 @@ public class UxUtil {
     private static final String ATTRIBUTE_EXPOSE_IN_TEMPLATE = "\\Symfony\\UX\\TwigComponent\\Attribute\\ExposeInTemplate";
 
     private static final Key<CachedValue<Collection<TwigComponentNamespace>>> TWIG_COMPONENTS_NAMESPACES = new Key<>("SYMFONY_TWIG_COMPONENTS_NAMESPACES");
+    private static final Key<CachedValue<Collection<TwigComponent>>> NAMESPACED_ANONYMOUS_COMPONENTS = new Key<>("SYMFONY_UX_NAMESPACED_ANONYMOUS_COMPONENTS");
     private static final Key<CachedValue<Collection<String>>> COMPONENT_CLASS_FQNS_FOR_TEMPLATE_FILE = new Key<>("SYMFONY_UX_COMPONENT_CLASS_FQNS_FOR_TEMPLATE_FILE");
 
     public static Collection<TwigComponentNamespace> getNamespaces(@NotNull Project project) {
@@ -74,10 +76,27 @@ public class UxUtil {
     private static Collection<TwigComponentNamespace> getNamespacesInner(@NotNull Project project) {
         Collection<TwigComponentNamespace> namespaces = new ArrayList<>();
 
+        // Symfony UX supports short-form defaults:
+        //
+        // twig_component:
+        //   defaults:
+        //     App\Twig\Components\: components/
+        //
+        // and long-form defaults:
+        //
+        // twig_component:
+        //   defaults:
+        //     App\Pizza\Components\:
+        //       template_directory: components/pizza
+        //       name_prefix: Pizza
+        //
+        // ConfigStubIndex normalizes both forms into "template_directory" and
+        // "name_prefix" entries while preserving the declaration order that
+        // Symfony UX uses for first-matching namespace resolution.
         for (String key : IndexUtil.getAllKeysForProject(ConfigStubIndex.KEY, project)) {
             for (ConfigIndex value : FileBasedIndex.getInstance().getValues(ConfigStubIndex.KEY, key, GlobalSearchScope.allScope(project))) {
                 if ("twig_component_defaults".equals(value.getName())) {
-                    for (Map.Entry<String, TreeMap<String, String>> entry : value.getConfigs().entrySet()) {
+                    for (Map.Entry<String, LinkedHashMap<String, String>> entry : value.getConfigs().entrySet()) {
                         String templateDirectory = entry.getValue().get("template_directory");
                         if (templateDirectory == null) {
                             continue;
@@ -89,7 +108,9 @@ public class UxUtil {
             }
         }
 
-        // add default if not presented
+        // Symfony Flex projects commonly omit explicit defaults because the
+        // runtime default maps App\Twig\Components\Alert to the public
+        // component name "Alert" and template "components/Alert.html.twig".
         if (namespaces.stream().noneMatch(n -> "App\\Twig\\Components".equals(StringUtils.strip(n.namespace(), "\\")))) {
             namespaces.add(new TwigComponentNamespace("App\\Twig\\Components\\", "components/", null));
         }
@@ -147,33 +168,24 @@ public class UxUtil {
 
 
             if (names.isEmpty()) {
-                String name = fqn.substring(componentNamespace.length());
+                String name = fqn.substring(componentNamespace.length()).replace("\\", "/");
                 if (name.isBlank()) {
-                    continue;
+                    break;
                 }
 
-                String fileName = name.replace("\\", "/");
-
-                // name_prefix: Pizza
-                // App\Pizza\Components\Button\Primary => Pizza:Button:Primary
-                if (twigComponentNamespace.namePrefix() != null) {
-                    fileName = twigComponentNamespace.namePrefix().replace(":", "/") + "/" + fileName;
-                }
-
-                templates.add(StringUtils.stripEnd(twigComponentNamespace.templateDirectory(), "/") + "/" + fileName + ".html.twig");
+                templates.add(StringUtils.stripEnd(twigComponentNamespace.templateDirectory(), "/") + "/" + name + ".html.twig");
             } else {
                 for (String name : names) {
-                    String fileName = name.replace(":", "/");
-
-                    // name_prefix: Pizza
-                    // App\Pizza\Components\Button\Primary => Pizza:Button:Primary
-                    if (twigComponentNamespace.namePrefix() != null) {
-                        fileName = twigComponentNamespace.namePrefix().replace(":", "/") + "/" + fileName;
+                    String componentName = removeNamePrefix(name, twigComponentNamespace.namePrefix());
+                    if (componentName == null) {
+                        continue;
                     }
 
-                    templates.add(StringUtils.stripEnd(twigComponentNamespace.templateDirectory(), "/") + "/" + fileName + ".html.twig");
+                    templates.add(StringUtils.stripEnd(twigComponentNamespace.templateDirectory(), "/") + "/" + componentName.replace(":", "/") + ".html.twig");
                 }
             }
+
+            break;
         }
 
         return templates;
@@ -196,7 +208,7 @@ public class UxUtil {
 
     @NotNull
     private static Set<String> getAnonymousTemplateDirectories(@NotNull Project project) {
-        Set<String> list = new HashSet<>();
+        Set<String> list = new LinkedHashSet<>();
 
         // Source A: YAML config via index (twig_component.anonymous_template_directory)
         for (String key : IndexUtil.getAllKeysForProject(ConfigStubIndex.KEY, project)) {
@@ -221,6 +233,21 @@ public class UxUtil {
         return list;
     }
 
+    @Nullable
+    private static String removeNamePrefix(@NotNull String componentName, @Nullable String namePrefix) {
+        if (StringUtils.isBlank(namePrefix)) {
+            return componentName;
+        }
+
+        String prefix = namePrefix + ":";
+        return componentName.startsWith(prefix) ? componentName.substring(prefix.length()) : null;
+    }
+
+    @NotNull
+    private static String addNamePrefix(@NotNull String componentName, @Nullable String namePrefix) {
+        return StringUtils.isBlank(namePrefix) ? componentName : namePrefix + ":" + componentName;
+    }
+
     public static Collection<TwigComponent> getAllComponentNames(@NotNull Project project) {
         Map<String, TwigComponent> names = new HashMap<>();
 
@@ -230,22 +257,15 @@ public class UxUtil {
                     String namespace1 = "\\" + StringUtils.strip(namespace.namespace(), "\\") + "\\";
 
                     if (value.phpClass().startsWith(namespace1)) {
-
-                        String name;
-                        if (value.name() != null) {
-                            name = value.name();
-                        } else {
-                            name = value.phpClass().substring(namespace1.length());
-                        }
+                        String name = value.name() != null
+                            ? value.name()
+                            : addNamePrefix(value.phpClass().substring(namespace1.length()).replace("\\", ":"), namespace.namePrefix());
 
                         if (!name.isBlank()) {
-                            if (namespace.namePrefix() != null) {
-                                name = namespace.namePrefix() + ":" + name;
-                            }
-
-                            String uxName = name.replace("\\", ":");
-                            names.put(uxName, new TwigComponent(uxName, value.phpClass(), namespace));
+                            names.put(name, new TwigComponent(name, value.phpClass(), namespace));
                         }
+
+                        break;
                     }
                 }
             }
@@ -282,35 +302,77 @@ public class UxUtil {
                     continue;
                 }
 
-                VirtualFile finalRelativeFile = relativeFile;
-                VfsUtil.visitChildrenRecursively(relativeFile, new VirtualFileVisitor<>() {
-                    @Override
-                    public boolean visitFile(@NotNull VirtualFile file) {
-                        if (file.isDirectory()) {
-                            return super.visitFile(file);
-                        }
-
-                        if (!"twig".equals(file.getExtension())) {
-                            return super.visitFile(file);
-                        }
-
-                        String relativePath = VfsUtil.getRelativePath(file, finalRelativeFile, '/');
-                        if (relativePath == null) {
-                            return super.visitFile(file);
-                        }
-
-                        String componentName = getAnonymousComponentNameFromRelativePath(relativePath);
-                        if (componentName != null && !names.containsKey(componentName)) {
-                            names.put(componentName, new TwigComponent(componentName, null, null));
-                        }
-
-                        return super.visitFile(file);
-                    }
-                });
+                visitAnonymousTemplateComponents(relativeFile, null, names);
             }
         }
 
+        for (TwigComponent component : getNamespacedAnonymousComponents(project)) {
+            names.putIfAbsent(component.name(), component);
+        }
+
         return names.values();
+    }
+
+    @NotNull
+    private static Collection<TwigComponent> getNamespacedAnonymousComponents(@NotNull Project project) {
+        return CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            NAMESPACED_ANONYMOUS_COMPONENTS,
+            () -> CachedValueProvider.Result.create(
+                Collections.unmodifiableCollection(getNamespacedAnonymousComponentsInner(project)),
+                VirtualFileManager.VFS_STRUCTURE_MODIFICATIONS
+            ),
+            false
+        );
+    }
+
+    @NotNull
+    private static Collection<TwigComponent> getNamespacedAnonymousComponentsInner(@NotNull Project project) {
+        Map<String, TwigComponent> names = new HashMap<>();
+
+        for (TwigPath twigPath : TwigUtil.getTwigNamespaces(project)) {
+            if (!twigPath.isEnabled() || twigPath.isGlobalNamespace() || twigPath.getNamespaceType() != TwigUtil.NamespaceType.ADD_PATH) {
+                continue;
+            }
+
+            VirtualFile directory = twigPath.getDirectory(project);
+            VirtualFile componentsDirectory = directory != null ? VfsUtil.findRelativeFile(directory, "components") : null;
+            if (componentsDirectory == null) {
+                continue;
+            }
+
+            visitAnonymousTemplateComponents(componentsDirectory, twigPath.getNamespace(), names);
+        }
+
+        return names.values();
+    }
+
+    private static void visitAnonymousTemplateComponents(@NotNull VirtualFile rootDirectory, @Nullable String namePrefix, @NotNull Map<String, TwigComponent> names) {
+        VfsUtil.visitChildrenRecursively(rootDirectory, new VirtualFileVisitor<>() {
+            @Override
+            public boolean visitFile(@NotNull VirtualFile file) {
+                if (file.isDirectory()) {
+                    return super.visitFile(file);
+                }
+
+                if (!"twig".equals(file.getExtension())) {
+                    return super.visitFile(file);
+                }
+
+                String relativePath = VfsUtil.getRelativePath(file, rootDirectory, '/');
+                if (relativePath == null) {
+                    return super.visitFile(file);
+                }
+
+                String componentName = getAnonymousComponentNameFromRelativePath(relativePath);
+                if (componentName != null) {
+                    String name = StringUtils.isBlank(namePrefix) ? componentName : namePrefix + ":" + componentName;
+                    names.putIfAbsent(name, new TwigComponent(name, null, null));
+                }
+
+                return super.visitFile(file);
+            }
+        });
     }
 
     @NotNull
@@ -332,7 +394,7 @@ public class UxUtil {
     }
 
     public static Collection<PsiFile> getComponentTemplates(@NotNull Project project, @NotNull String component) {
-        Collection<VirtualFile> virtualFiles = new HashSet<>();
+        Collection<VirtualFile> virtualFiles = new LinkedHashSet<>();
 
         for (TwigComponent entry: getAllComponentNames(project)) {
             if (!entry.name().equals(component)) {
@@ -340,20 +402,14 @@ public class UxUtil {
             }
 
             if (entry.twigComponentNamespace != null) {
-                if ((entry.twigComponentNamespace.namePrefix() == null || component.startsWith(entry.twigComponentNamespace.namePrefix() + ":"))) {
+                String componentTemplateName = removeNamePrefix(component, entry.twigComponentNamespace.namePrefix());
+                if (componentTemplateName != null) {
                     String strip = StringUtils.strip(entry.twigComponentNamespace.templateDirectory(), "/");
-                    String template = strip + "/" + component.replace(":", "/") + ".html.twig";
+                    String template = strip + "/" + componentTemplateName.replace(":", "/") + ".html.twig";
                     addTemplateFilesWithFallback(project, template, virtualFiles);
                 }
             } else {
-                for (String directory : getAnonymousTemplateDirectories(project)) {
-                    String templateName = StringUtils.strip(directory, "/") + "/" + component.replace(":", "/") + ".html.twig";
-                    addTemplateFilesWithFallback(project, templateName, virtualFiles);
-
-                    // Symfony UX 2.32: components/Foo/index.html.twig => <twig:Foo>
-                    String indexTemplateName = StringUtils.strip(directory, "/") + "/" + component.replace(":", "/") + "/index.html.twig";
-                    addTemplateFilesWithFallback(project, indexTemplateName, virtualFiles);
-                }
+                addAnonymousComponentTemplateFiles(project, component, virtualFiles);
             }
         }
 
@@ -380,6 +436,35 @@ public class UxUtil {
         }
 
         return normalized;
+    }
+
+    private static void addAnonymousComponentTemplateFiles(@NotNull Project project, @NotNull String component, @NotNull Collection<VirtualFile> virtualFiles) {
+        String componentPath = component.replace(":", "/");
+        for (String directory : getAnonymousTemplateDirectories(project)) {
+            String templateName = StringUtils.strip(directory, "/") + "/" + componentPath + ".html.twig";
+            if (addTemplateFilesWithFallback(project, templateName, virtualFiles)) {
+                return;
+            }
+
+            // Symfony UX 2.32: components/Foo/index.html.twig => <twig:Foo>
+            String indexTemplateName = StringUtils.strip(directory, "/") + "/" + componentPath + "/index.html.twig";
+            if (addTemplateFilesWithFallback(project, indexTemplateName, virtualFiles)) {
+                return;
+            }
+        }
+
+        int i = component.indexOf(":");
+        if (i <= 0 || i == component.length() - 1) {
+            return;
+        }
+
+        String namespace = component.substring(0, i);
+        String componentName = component.substring(i + 1).replace(":", "/");
+        if (addTemplateFilesWithFallback(project, "@" + namespace + "/components/" + componentName + ".html.twig", virtualFiles)) {
+            return;
+        }
+
+        addTemplateFilesWithFallback(project, "@" + namespace + "/components/" + componentName + "/index.html.twig", virtualFiles);
     }
 
     @NotNull
@@ -443,15 +528,16 @@ public class UxUtil {
         return false;
     }
 
-    private static void addTemplateFilesWithFallback(@NotNull Project project, @NotNull String templateName, @NotNull Collection<VirtualFile> virtualFiles) {
-        virtualFiles.addAll(TwigUtil.getTemplateFiles(project, templateName));
-        if (!virtualFiles.isEmpty()) {
-            return;
+    private static boolean addTemplateFilesWithFallback(@NotNull Project project, @NotNull String templateName, @NotNull Collection<VirtualFile> virtualFiles) {
+        Collection<VirtualFile> files = TwigUtil.getTemplateFiles(project, templateName);
+        if (!files.isEmpty()) {
+            virtualFiles.addAll(files);
+            return true;
         }
 
         VirtualFile baseDir = ProjectUtil.getProjectDir(project);
         if (baseDir == null) {
-            return;
+            return false;
         }
 
         VirtualFile templatesDir = VfsUtil.findRelativeFile(baseDir, "templates");
@@ -459,6 +545,7 @@ public class UxUtil {
             VirtualFile virtualFile = VfsUtil.findRelativeFile(templatesDir, templateName.split("/"));
             if (virtualFile != null) {
                 virtualFiles.add(virtualFile);
+                return true;
             }
         }
 
@@ -467,8 +554,11 @@ public class UxUtil {
             VirtualFile virtualFile = VfsUtil.findRelativeFile(appViewsDir, templateName.split("/"));
             if (virtualFile != null) {
                 virtualFiles.add(virtualFile);
+                return true;
             }
         }
+
+        return false;
     }
 
     @NotNull
@@ -517,15 +607,6 @@ public class UxUtil {
                 String templateDirectory = StringUtils.stripEnd(twigComponentNamespace.templateDirectory(), "/") + "/";
                 if (template.startsWith(templateDirectory)) {
                     String name = template.substring(templateDirectory.length());
-
-                    if (twigComponentNamespace.namePrefix() != null) {
-                        String prefix = twigComponentNamespace.namePrefix().replace(":", "/") + "/";
-                        if (!name.startsWith(prefix)) {
-                            continue;
-                        }
-
-                        name = name.substring(prefix.length());
-                    }
 
                     String s = name.replace("/", "\\");
                     String phpClassFqn = "\\" + (StringUtils.stripEnd(twigComponentNamespace.namespace(), "\\") + "\\" + s)

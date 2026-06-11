@@ -4,10 +4,10 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TreeMap;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -17,12 +17,12 @@ public class ConfigIndex implements Serializable {
     private final String name;
 
     @NotNull
-    private final TreeMap<String, TreeMap<String, String>> configs;
+    private final LinkedHashMap<String, LinkedHashMap<String, String>> configs;
 
     @NotNull
     private final Set<String> values;
 
-    public ConfigIndex(@NotNull String name, @NotNull TreeMap<String, TreeMap<String, String>> configs, @NotNull Set<String> values) {
+    public ConfigIndex(@NotNull String name, @NotNull LinkedHashMap<String, LinkedHashMap<String, String>> configs, @NotNull Set<String> values) {
         this.name = name;
         this.configs = configs;
         this.values = values;
@@ -34,7 +34,7 @@ public class ConfigIndex implements Serializable {
     }
 
     @NotNull
-    public Map<String, TreeMap<String, String>> getConfigs() {
+    public Map<String, LinkedHashMap<String, String>> getConfigs() {
         return configs;
     }
 
