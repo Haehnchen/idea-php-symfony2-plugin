@@ -7,15 +7,20 @@ import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.psi.PsiManager;
 import com.intellij.openapi.util.TextRange;
 import com.jetbrains.twig.TwigFile;
+import fr.adrienbrault.idea.symfony2plugin.extension.TwigComponentDefinition;
+import fr.adrienbrault.idea.symfony2plugin.extension.TwigComponentProvider;
+import fr.adrienbrault.idea.symfony2plugin.extension.TwigComponentProviderParameter;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigTemplateUsageReference;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.tests.templating.TestTwigFileUsage;
+import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -64,6 +69,32 @@ public class TwigTemplateReferencesSearchExecutorTest extends SymfonyLightCodeIn
         assertContainsSourceFile(references, "templates/component_usage_html_tag.html.twig");
         assertContainsSourceFile(references, "templates/component_usage_html_tag_with_body.html.twig");
         assertContainsSourceFile(references, "templates/component_usage_twig_tag.html.twig");
+    }
+
+    public void testFindsComponentUsagesForProviderBackedTemplateWithoutTwigTemplateName() {
+        PsiFile templateFile = myFixture.addFileToProject(
+            "external/package/templates/components/Button/Primary.html.twig",
+            "<button></button>"
+        );
+
+        UxUtil.TWIG_COMPONENT_PROVIDERS.getPoint().registerExtension(
+            new TestTwigComponentProvider(new TwigComponentDefinition(
+                "ExternalPackage:Button:Primary",
+                templateFile.getVirtualFile(),
+                null
+            )),
+            getTestRootDisposable()
+        );
+
+        myFixture.addFileToProject("templates/provider_component_usage.html.twig", "{{ component('ExternalPackage:Button:Primary') }}");
+        myFixture.addFileToProject("templates/provider_component_tag_usage.html.twig", "<twig:ExternalPackage:Button:Primary />");
+
+        Collection<TwigTemplateUsageReference> references = getTwigUsageReferences(
+            "external/package/templates/components/Button/Primary.html.twig"
+        );
+
+        assertContainsSourceFile(references, "templates/provider_component_usage.html.twig");
+        assertContainsSourceFile(references, "templates/provider_component_tag_usage.html.twig");
     }
 
     public void testFindsCustomTwigFileUsageExtensionUsages() {
@@ -196,5 +227,18 @@ public class TwigTemplateReferencesSearchExecutorTest extends SymfonyLightCodeIn
                 return sourceFile.getVirtualFile() != null && sourceFile.getVirtualFile().getPath().endsWith(relativePath);
             })
             .count();
+    }
+
+    private static class TestTwigComponentProvider implements TwigComponentProvider {
+        private final TwigComponentDefinition definition;
+
+        private TestTwigComponentProvider(TwigComponentDefinition definition) {
+            this.definition = definition;
+        }
+
+        @Override
+        public Collection<TwigComponentDefinition> getComponents(TwigComponentProviderParameter parameter) {
+            return Collections.singletonList(this.definition);
+        }
     }
 }

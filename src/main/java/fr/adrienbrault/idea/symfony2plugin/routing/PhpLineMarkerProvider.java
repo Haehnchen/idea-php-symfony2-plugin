@@ -13,7 +13,6 @@ import com.jetbrains.php.lang.psi.elements.MethodReference;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.resource.FileResourceUtil;
@@ -57,10 +56,7 @@ public class PhpLineMarkerProvider implements LineMarkerProvider {
         }
 
         if (leaf.getParent() instanceof PhpClass phpClass) {
-            Collection<PsiFile> files = new HashSet<>();
-            for (String template : UxUtil.getComponentTemplatesForPhpClass(phpClass)) {
-                files.addAll(TwigUtil.getTemplatePsiElements(phpClass.getProject(), template));
-            }
+            Collection<PsiFile> files = UxUtil.getComponentTemplatePsiFilesForPhpClass(phpClass);
 
             if (!files.isEmpty()) {
                 NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.TWIG_LINE_MARKER)

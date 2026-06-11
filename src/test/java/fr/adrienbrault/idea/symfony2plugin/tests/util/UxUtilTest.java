@@ -277,14 +277,14 @@ public class UxUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         PsiFile navIndexPsi = PsiManager.getInstance(getProject()).findFile(navIndexFile.getVirtualFile());
         assertNotNull(navIndexPsi);
         assertTrue(navIndexPsi instanceof TwigFile);
-        Set<String> navIndexNames = UxUtil.getTemplateComponentNames((TwigFile) navIndexPsi);
+        Set<String> navIndexNames = UxUtil.getComponentNamesForTemplateFile((TwigFile) navIndexPsi);
         assertContainsElements(navIndexNames, "Nav");
         assertFalse(navIndexNames.contains("Nav:index"));
 
         PsiFile navItemPsi = PsiManager.getInstance(getProject()).findFile(navItemFile.getVirtualFile());
         assertNotNull(navItemPsi);
         assertTrue(navItemPsi instanceof TwigFile);
-        Set<String> navItemNames = UxUtil.getTemplateComponentNames((TwigFile) navItemPsi);
+        Set<String> navItemNames = UxUtil.getComponentNamesForTemplateFile((TwigFile) navItemPsi);
         assertContainsElements(navItemNames, "Nav:Item");
     }
 

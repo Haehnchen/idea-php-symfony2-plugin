@@ -70,9 +70,6 @@ public class TwigTemplateReferencesSearchExecutor implements QueryExecutor<PsiRe
         }
 
         Set<String> templateNames = new HashSet<>(TwigUtil.getTemplateNamesForFile(project, virtualFile));
-        if (templateNames.isEmpty()) {
-            return;
-        }
 
         FileBasedIndex index = FileBasedIndex.getInstance();
         SearchScope searchScope = queryParameters.getEffectiveSearchScope();
@@ -130,49 +127,40 @@ public class TwigTemplateReferencesSearchExecutor implements QueryExecutor<PsiRe
                     }
                 });
             }
+        }
 
-            // Twig component usages
+        // Twig component usages for regular Symfony templates and provider-backed template files.
+        Set<String> targetComponentNames = UxUtil.getComponentNamesForTemplateFile(targetFile);
+        if (!targetComponentNames.isEmpty()) {
+            Set<String> normalizedComponentNames = new HashSet<>();
+            for (String componentName : targetComponentNames) {
+                String normalized = TwigComponentUsageStubIndex.normalizeComponentName(componentName);
+                if (normalized != null) {
+                    normalizedComponentNames.add(normalized);
+                }
+            }
+
             Set<PsiElement> processedComponentElements = new HashSet<>();
             GlobalSearchScope twigScope = GlobalSearchScope.getScopeRestrictedByFileTypes(scope, TwigFileType.INSTANCE);
-            for (VirtualFile templateVFile : TwigUtil.getTemplateFiles(project, normalizedName)) {
-                PsiFile psiFile = psiManager.findFile(templateVFile);
-                if (!(psiFile instanceof TwigFile templateTwigFile)) {
-                    continue;
-                }
-
-                Set<String> componentNames = UxUtil.getTemplateComponentNames(templateTwigFile);
-                if (componentNames.isEmpty()) {
-                    continue;
-                }
-
-                Set<String> normalizedComponentNames = new HashSet<>();
-                for (String componentName : componentNames) {
-                    String normalized = TwigComponentUsageStubIndex.normalizeComponentName(componentName);
-                    if (normalized != null) {
-                        normalizedComponentNames.add(normalized);
+            for (String normalizedComponentName : normalizedComponentNames) {
+                index.processValues(TwigComponentUsageStubIndex.KEY, normalizedComponentName, null, (usageFile, types) -> {
+                    if (usageFile.equals(virtualFile)) {
+                        return true; // skip self-reference
                     }
-                }
 
-                for (String normalizedComponentName : normalizedComponentNames) {
-                    index.processValues(TwigComponentUsageStubIndex.KEY, normalizedComponentName, null, (usageFile, types) -> {
-                        if (usageFile.equals(templateVFile)) {
-                            return true; // skip self-reference
-                        }
-
-                        PsiFile usagePsiFile = psiManager.findFile(usageFile);
-                        if (!(usagePsiFile instanceof TwigFile usageTwigFile)) {
-                            return true;
-                        }
-
-                        for (PsiElement element : TwigComponentUsageStubIndex.getComponentUsages(usageTwigFile, componentNames)) {
-                            if (processedComponentElements.add(element)) {
-                                consumer.process(createComponentUsageReference(element, targetFile));
-                            }
-                        }
-
+                    PsiFile usagePsiFile = psiManager.findFile(usageFile);
+                    if (!(usagePsiFile instanceof TwigFile usageTwigFile)) {
                         return true;
-                    }, twigScope);
-                }
+                    }
+
+                    for (PsiElement element : TwigComponentUsageStubIndex.getComponentUsages(usageTwigFile, targetComponentNames)) {
+                        if (processedComponentElements.add(element)) {
+                            consumer.process(createComponentUsageReference(element, targetFile));
+                        }
+                    }
+
+                    return true;
+                }, twigScope);
             }
         }
     }

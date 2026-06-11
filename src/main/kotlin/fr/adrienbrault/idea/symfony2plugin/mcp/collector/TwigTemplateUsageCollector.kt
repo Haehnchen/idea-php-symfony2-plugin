@@ -166,7 +166,7 @@ class TwigTemplateUsageCollector(private val project: Project) {
                 val psiFile = PsiManager.getInstance(project).findFile(virtualFile)
                 if (psiFile !is TwigFile) continue
 
-                for (componentName in UxUtil.getTemplateComponentNames(psiFile)) {
+                for (componentName in UxUtil.getComponentNamesForTemplateFile(psiFile)) {
                     val normalized = TwigComponentUsageStubIndex.normalizeComponentName(componentName) ?: continue
                     for (usageFile in index.getContainingFiles(TwigComponentUsageStubIndex.KEY, normalized, componentScope)) {
                         if (usageFile == virtualFile) continue

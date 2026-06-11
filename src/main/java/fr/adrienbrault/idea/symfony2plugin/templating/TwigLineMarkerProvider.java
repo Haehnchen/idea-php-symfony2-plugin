@@ -561,7 +561,7 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
             }
 
             Set<String> normalizedComponentNames = new HashSet<>();
-            for (String componentName : UxUtil.getTemplateComponentNames(twigFile)) {
+            for (String componentName : UxUtil.getComponentNamesForTemplateFile(twigFile)) {
                 String normalized = TwigComponentUsageStubIndex.normalizeComponentName(componentName);
                 if (normalized != null) {
                     normalizedComponentNames.add(normalized);
