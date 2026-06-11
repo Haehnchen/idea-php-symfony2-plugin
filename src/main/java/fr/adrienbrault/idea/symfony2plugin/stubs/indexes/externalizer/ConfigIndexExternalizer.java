@@ -7,10 +7,10 @@ import org.jetbrains.annotations.NotNull;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -22,11 +22,11 @@ public class ConfigIndexExternalizer implements DataExternalizer<ConfigIndex> {
     @Override
     public void save(@NotNull DataOutput out, ConfigIndex value) throws IOException {
         out.writeUTF(value.getName());
-        TreeMap<String, TreeMap<String, String>> configs = (TreeMap<String, TreeMap<String, String>>) value.getConfigs();
+        Map<String, LinkedHashMap<String, String>> configs = value.getConfigs();
         out.writeInt(configs.size());
-        for (Map.Entry<String, TreeMap<String, String>> entry : configs.entrySet()) {
+        for (Map.Entry<String, LinkedHashMap<String, String>> entry : configs.entrySet()) {
             out.writeUTF(entry.getKey());
-            TreeMap<String, String> inner = entry.getValue();
+            LinkedHashMap<String, String> inner = entry.getValue();
             out.writeInt(inner.size());
             for (Map.Entry<String, String> innerEntry : inner.entrySet()) {
                 out.writeUTF(innerEntry.getKey());
@@ -44,18 +44,18 @@ public class ConfigIndexExternalizer implements DataExternalizer<ConfigIndex> {
     public ConfigIndex read(@NotNull DataInput in) throws IOException {
         String name = in.readUTF();
         int configsSize = in.readInt();
-        TreeMap<String, TreeMap<String, String>> configs = new TreeMap<>();
+        LinkedHashMap<String, LinkedHashMap<String, String>> configs = new LinkedHashMap<>();
         for (int i = 0; i < configsSize; i++) {
             String key = in.readUTF();
             int innerSize = in.readInt();
-            TreeMap<String, String> inner = new TreeMap<>();
+            LinkedHashMap<String, String> inner = new LinkedHashMap<>();
             for (int j = 0; j < innerSize; j++) {
                 inner.put(in.readUTF(), in.readUTF());
             }
             configs.put(key, inner);
         }
         int valuesSize = in.readInt();
-        Set<String> values = new HashSet<>(valuesSize);
+        Set<String> values = new LinkedHashSet<>(valuesSize);
         for (int i = 0; i < valuesSize; i++) {
             values.add(in.readUTF());
         }

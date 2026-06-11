@@ -14,10 +14,14 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
+import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.TwigComponentNamespace;
 import kotlin.Pair;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,10 +35,34 @@ import java.util.stream.Collectors;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class UxUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
+    private List<TwigNamespaceSetting> previousTwigNamespaces;
 
     public void setUp() throws Exception {
         super.setUp();
+        Settings settings = Settings.getInstance(getProject());
+        previousTwigNamespaces = settings.twigNamespaces != null ? new ArrayList<>(settings.twigNamespaces) : new ArrayList<>();
+        if (settings.twigNamespaces == null) {
+            settings.twigNamespaces = new ArrayList<>();
+        } else {
+            settings.twigNamespaces.clear();
+        }
+
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("UxUtil.php"));
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        try {
+            Settings settings = Settings.getInstance(getProject());
+            if (settings.twigNamespaces == null) {
+                settings.twigNamespaces = new ArrayList<>();
+            } else {
+                settings.twigNamespaces.clear();
+            }
+            settings.twigNamespaces.addAll(previousTwigNamespaces);
+        } finally {
+            super.tearDown();
+        }
     }
 
     public String getTestDataPath() {
@@ -288,6 +316,177 @@ public class UxUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertContainsElements(navItemNames, "Nav:Item");
     }
 
+    public void testTwigComponentNamePrefixForImplicitClassComponent() {
+        myFixture.addFileToProject("config/packages/twig_component_prefix.yaml",
+            "twig_component:\n" +
+                "  defaults:\n" +
+                "    App\\Pizza\\Components\\:\n" +
+                "      template_directory: components/pizza\n" +
+                "      name_prefix: Pizza\n"
+        );
+
+        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Pizza\\Components\\Button;\n" +
+            "\n" +
+            "use Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n" +
+            "\n" +
+            "#[AsTwigComponent]\n" +
+            "class Primary {}\n"
+        );
+
+        PhpClass primaryClass = PsiTreeUtil.collectElementsOfType(psiFile, PhpClass.class).stream()
+            .filter(p -> p.getFQN().equals("\\App\\Pizza\\Components\\Button\\Primary"))
+            .findFirst().get();
+
+        Set<String> componentNames = UxUtil.getAllComponentNames(getProject()).stream()
+            .map(UxUtil.TwigComponent::name)
+            .collect(Collectors.toSet());
+        assertContainsElements(componentNames, "Pizza:Button:Primary");
+
+        Collection<String> classTemplates = UxUtil.getComponentTemplatesForPhpClass(primaryClass);
+        assertContainsElements(classTemplates, "components/pizza/Button/Primary.html.twig");
+        assertFalse(classTemplates.contains("components/pizza/Pizza/Button/Primary.html.twig"));
+
+        PsiFile templateFile = myFixture.addFileToProject("templates/components/pizza/Button/Primary.html.twig", "<div></div>");
+        myFixture.copyFileToProject("ide-twig.json", "ide-twig.json");
+        assertContainsVirtualFile(UxUtil.getComponentTemplates(getProject(), "Pizza:Button:Primary"), "/templates/components/pizza/Button/Primary.html.twig");
+
+        PsiFile templatePsi = PsiManager.getInstance(getProject()).findFile(templateFile.getVirtualFile());
+        assertNotNull(templatePsi);
+        assertTrue(templatePsi instanceof TwigFile);
+        assertContainsElements(UxUtil.getTemplateComponentNames((TwigFile) templatePsi), "Pizza:Button:Primary");
+        assertTrue(UxUtil.getComponentClassesForTemplateFile(getProject(), templatePsi).stream()
+            .anyMatch(phpClass -> "\\App\\Pizza\\Components\\Button\\Primary".equals(phpClass.getFQN())));
+    }
+
+    public void testExplicitComponentNameWithNamePrefixKeepsExplicitNameAndTemplate() {
+        myFixture.addFileToProject("config/packages/twig_component_prefix_explicit.yaml",
+            "twig_component:\n" +
+                "  defaults:\n" +
+                "    App\\Pizza\\Components\\:\n" +
+                "      template_directory: components/pizza\n" +
+                "      name_prefix: Pizza\n"
+        );
+
+        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Pizza\\Components;\n" +
+            "\n" +
+            "use Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n" +
+            "\n" +
+            "#[AsTwigComponent(name: 'Custom:Primary', template: 'custom/primary.html.twig')]\n" +
+            "class Primary {}\n"
+        );
+
+        PhpClass primaryClass = PsiTreeUtil.collectElementsOfType(psiFile, PhpClass.class).stream()
+            .filter(p -> p.getFQN().equals("\\App\\Pizza\\Components\\Primary"))
+            .findFirst().get();
+
+        Set<String> componentNames = UxUtil.getAllComponentNames(getProject()).stream()
+            .map(UxUtil.TwigComponent::name)
+            .collect(Collectors.toSet());
+        assertContainsElements(componentNames, "Custom:Primary");
+        assertFalse(componentNames.contains("Pizza:Custom:Primary"));
+
+        assertContainsElements(UxUtil.getComponentTemplatesForPhpClass(primaryClass), "custom/primary.html.twig");
+    }
+
+    public void testTwigComponentDefaultsUseComponentsDirectoryAndNoPrefixWhenOmitted() {
+        myFixture.addFileToProject("config/packages/twig_component_defaults.yaml",
+            "twig_component:\n" +
+                "  defaults:\n" +
+                "    App\\Defaulted\\Components\\:\n" +
+                "      name_prefix: ''\n"
+        );
+
+        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Defaulted\\Components;\n" +
+            "\n" +
+            "use Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n" +
+            "\n" +
+            "#[AsTwigComponent]\n" +
+            "class Alert {}\n"
+        );
+
+        PhpClass alertClass = PsiTreeUtil.collectElementsOfType(psiFile, PhpClass.class).stream()
+            .filter(p -> p.getFQN().equals("\\App\\Defaulted\\Components\\Alert"))
+            .findFirst().get();
+
+        Set<String> componentNames = UxUtil.getAllComponentNames(getProject()).stream()
+            .map(UxUtil.TwigComponent::name)
+            .collect(Collectors.toSet());
+        assertContainsElements(componentNames, "Alert");
+        assertFalse(componentNames.contains(":Alert"));
+        assertContainsElements(UxUtil.getComponentTemplatesForPhpClass(alertClass), "components/Alert.html.twig");
+    }
+
+    public void testOverlappingTwigComponentDefaultsUseDeclarationOrder() {
+        myFixture.addFileToProject("config/packages/twig_component_overlapping.yaml",
+            "twig_component:\n" +
+                "  defaults:\n" +
+                "    App\\:\n" +
+                "      template_directory: broad\n" +
+                "      name_prefix: Broad\n" +
+                "    App\\Twig\\Components\\:\n" +
+                "      template_directory: narrow\n" +
+                "      name_prefix: Narrow\n"
+        );
+
+        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Twig\\Components;\n" +
+            "\n" +
+            "use Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n" +
+            "\n" +
+            "#[AsTwigComponent]\n" +
+            "class Alert {}\n"
+        );
+
+        PhpClass alertClass = PsiTreeUtil.collectElementsOfType(psiFile, PhpClass.class).stream()
+            .filter(p -> p.getFQN().equals("\\App\\Twig\\Components\\Alert"))
+            .findFirst().get();
+
+        Set<String> componentNames = UxUtil.getAllComponentNames(getProject()).stream()
+            .map(UxUtil.TwigComponent::name)
+            .collect(Collectors.toSet());
+        assertContainsElements(componentNames, "Broad:Twig:Components:Alert");
+        assertFalse(componentNames.contains("Narrow:Alert"));
+        assertContainsElements(UxUtil.getComponentTemplatesForPhpClass(alertClass), "broad/Twig/Components/Alert.html.twig");
+    }
+
+    public void testNamespacedAnonymousTwigComponentsResolveFromTwigNamespace() {
+        configureTwigNamespaceSettings(
+            new TwigNamespaceSetting(TwigUtil.MAIN, "templates", true, TwigUtil.NamespaceType.ADD_PATH, true),
+            new TwigNamespaceSetting("Acme", "vendor/acme/acme_twig", true, TwigUtil.NamespaceType.ADD_PATH, true)
+        );
+
+        PsiFile primaryFile = myFixture.addFileToProject("vendor/acme/acme_twig/components/Button/Primary.html.twig", "<button></button>");
+        PsiFile cardFile = myFixture.addFileToProject("vendor/acme/acme_twig/components/Card/index.html.twig", "<article></article>");
+        PsiFile localButtonFile = myFixture.addFileToProject("templates/components/Acme/Button.html.twig", "local");
+        myFixture.addFileToProject("vendor/acme/acme_twig/components/Button.html.twig", "namespace");
+        PsiFile modalFile = myFixture.addFileToProject("vendor/acme/acme_twig/components/Modal.html.twig", "direct");
+        myFixture.addFileToProject("vendor/acme/acme_twig/components/Modal/index.html.twig", "index");
+
+        Set<String> componentNames = UxUtil.getAllComponentNames(getProject()).stream()
+            .map(UxUtil.TwigComponent::name)
+            .collect(Collectors.toSet());
+        assertContainsElements(componentNames, "Acme:Button:Primary", "Acme:Card", "Acme:Button", "Acme:Modal");
+
+        assertContainsVirtualFile(UxUtil.getComponentTemplates(getProject(), "Acme:Button:Primary"), "/vendor/acme/acme_twig/components/Button/Primary.html.twig");
+        assertContainsVirtualFile(UxUtil.getComponentTemplates(getProject(), "Acme:Card"), "/vendor/acme/acme_twig/components/Card/index.html.twig");
+
+        Collection<PsiFile> buttonTemplates = UxUtil.getComponentTemplates(getProject(), "Acme:Button");
+        assertContainsVirtualFile(buttonTemplates, "/templates/components/Acme/Button.html.twig");
+        assertDoesNotContainVirtualFile(buttonTemplates, "/vendor/acme/acme_twig/components/Button.html.twig");
+
+        Collection<PsiFile> modalTemplates = UxUtil.getComponentTemplates(getProject(), "Acme:Modal");
+        assertContainsVirtualFile(modalTemplates, "/vendor/acme/acme_twig/components/Modal.html.twig");
+        assertDoesNotContainVirtualFile(modalTemplates, "/vendor/acme/acme_twig/components/Modal/index.html.twig");
+
+        assertContainsElements(UxUtil.getTemplateComponentNames((TwigFile) PsiManager.getInstance(getProject()).findFile(primaryFile.getVirtualFile())), "Acme:Button:Primary");
+        assertContainsElements(UxUtil.getTemplateComponentNames((TwigFile) PsiManager.getInstance(getProject()).findFile(cardFile.getVirtualFile())), "Acme:Card");
+        assertContainsElements(UxUtil.getTemplateComponentNames((TwigFile) PsiManager.getInstance(getProject()).findFile(localButtonFile.getVirtualFile())), "Acme:Button");
+        assertContainsElements(UxUtil.getTemplateComponentNames((TwigFile) PsiManager.getInstance(getProject()).findFile(modalFile.getVirtualFile())), "Acme:Modal");
+    }
+
     public void testVisitComponentTemplateProps() {
         // Test: props with defaults
         TwigFile twigFile = (TwigFile) myFixture.configureByText(
@@ -423,5 +622,28 @@ public class UxUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         // Should only find props, not other variables
         assertContainsElements(props, "icon", "type");
         assertEquals("Should only have 2 props", 2, props.size());
+    }
+
+    private void configureTwigNamespaceSettings(@NotNull TwigNamespaceSetting... settings) {
+        Settings.getInstance(getProject()).twigNamespaces.clear();
+        Settings.getInstance(getProject()).twigNamespaces.addAll(List.of(settings));
+    }
+
+    private static void assertContainsVirtualFile(@NotNull Collection<PsiFile> psiFiles, @NotNull String pathSuffix) {
+        assertTrue("Expected path suffix " + pathSuffix + " in " + psiFiles.stream()
+                .map(psiFile -> psiFile.getVirtualFile() != null ? psiFile.getVirtualFile().getPath() : "")
+                .collect(Collectors.toList()),
+            psiFiles.stream()
+            .map(psiFile -> psiFile.getVirtualFile() != null ? psiFile.getVirtualFile().getPath() : "")
+            .anyMatch(path -> path.endsWith(pathSuffix)));
+    }
+
+    private static void assertDoesNotContainVirtualFile(@NotNull Collection<PsiFile> psiFiles, @NotNull String pathSuffix) {
+        assertFalse("Unexpected path suffix " + pathSuffix + " in " + psiFiles.stream()
+                .map(psiFile -> psiFile.getVirtualFile() != null ? psiFile.getVirtualFile().getPath() : "")
+                .collect(Collectors.toList()),
+            psiFiles.stream()
+            .map(psiFile -> psiFile.getVirtualFile() != null ? psiFile.getVirtualFile().getPath() : "")
+            .anyMatch(path -> path.endsWith(pathSuffix)));
     }
 }
