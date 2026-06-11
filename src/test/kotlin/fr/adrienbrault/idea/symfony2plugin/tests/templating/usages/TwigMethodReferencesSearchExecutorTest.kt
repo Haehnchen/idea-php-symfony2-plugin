@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.usages
 
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.psi.PsiReference
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.searches.ReferencesSearch
@@ -156,6 +157,55 @@ class TwigMethodReferencesSearchExecutorTest : SymfonyLightCodeInsightFixtureTes
         assertNotContainsSourceFile(references, "templates/other_type.html.twig")
     }
 
+    fun testRenamesTwigUsageForPublicField() {
+        val field = getFieldUnderCaret(
+            $$"""
+            <?php
+            namespace MyNamespace;
+            class TestBrokenRefactor {
+                public string $Rest<caret>Var;
+            }
+            """.trimIndent()
+        )
+
+        val sourceTwig = myFixture.addFileToProject(
+            "templates/field.html.twig",
+            "{# @var test \\MyNamespace\\TestBrokenRefactor #} {{ test.RestVar }}",
+        )
+        val reference = findTwigUsageReference(field, "templates/field.html.twig")
+
+        WriteCommandAction.runWriteCommandAction(project) {
+            reference.handleElementRename("RenamedVar")
+        }
+
+        assertEquals("{# @var test \\MyNamespace\\TestBrokenRefactor #} {{ test.RenamedVar }}", sourceTwig.text)
+    }
+
+    fun testRenamesTwigUsageForMethodShortcutAndCall() {
+        val method = getMethodUnderCaret(
+            """
+            <?php
+            namespace Foo;
+            class Bar {
+                public function getFo<caret>o() {}
+            }
+            """.trimIndent()
+        )
+
+        val shortcutTwig = myFixture.addFileToProject("templates/shortcut.html.twig", "{# @var bar \\Foo\\Bar #} {{ bar.foo }}")
+        val methodTwig = myFixture.addFileToProject("templates/method.html.twig", "{# @var bar \\Foo\\Bar #} {{ bar.getFoo() }}")
+        val shortcutReference = findTwigUsageReference(method, "templates/shortcut.html.twig")
+        val methodReference = findTwigUsageReference(method, "templates/method.html.twig")
+
+        WriteCommandAction.runWriteCommandAction(project) {
+            shortcutReference.handleElementRename("getBar")
+            methodReference.handleElementRename("getBar")
+        }
+
+        assertEquals("{# @var bar \\Foo\\Bar #} {{ bar.bar }}", shortcutTwig.text)
+        assertEquals("{# @var bar \\Foo\\Bar #} {{ bar.getBar() }}", methodTwig.text)
+    }
+
     fun testFindsTwigUsagesForPromotedPublicField() {
         val field = getFieldUnderCaret(
             $$"""
@@ -200,6 +250,27 @@ class TwigMethodReferencesSearchExecutorTest : SymfonyLightCodeInsightFixtureTes
         assertNotContainsSourceFile(references, "templates/other.html.twig")
     }
 
+    fun testRenamesTwigUsageForClassConstant() {
+        val target = getNamedElementUnderCaret(
+            """
+            <?php
+            namespace Foo;
+            class CardSuite {
+                public const CL<caret>UBS = 'clubs';
+            }
+            """.trimIndent()
+        )
+
+        val sourceTwig = myFixture.addFileToProject("templates/constant.html.twig", "{{ constant('Foo\\\\CardSuite::CLUBS') }}")
+        val reference = findTwigUsageReference(target, "templates/constant.html.twig")
+
+        WriteCommandAction.runWriteCommandAction(project) {
+            reference.handleElementRename("HEARTS")
+        }
+
+        assertEquals("{{ constant('Foo\\\\CardSuite::HEARTS') }}", sourceTwig.text)
+    }
+
     fun testFindsTwigUsagesForNamespacedGlobalConstants() {
         val target = getNamedElementUnderCaret(
             """
@@ -219,6 +290,25 @@ class TwigMethodReferencesSearchExecutorTest : SymfonyLightCodeInsightFixtureTes
         assertContainsSourceFile(references, "templates/constant.html.twig")
         assertContainsSourceFile(references, "templates/leading.html.twig")
         assertNotContainsSourceFile(references, "templates/other.html.twig")
+    }
+
+    fun testRenamesTwigUsageForNamespacedGlobalConstant() {
+        val target = getNamedElementUnderCaret(
+            """
+            <?php
+            namespace BugDemo;
+            const NAMESPACED_<caret>CONST = 'value';
+            """.trimIndent()
+        )
+
+        val sourceTwig = myFixture.addFileToProject("templates/constant.html.twig", "{{ constant('BugDemo\\\\NAMESPACED_CONST') }}")
+        val reference = findTwigUsageReference(target, "templates/constant.html.twig")
+
+        WriteCommandAction.runWriteCommandAction(project) {
+            reference.handleElementRename("RENAMED_CONST")
+        }
+
+        assertEquals("{{ constant('BugDemo\\\\RENAMED_CONST') }}", sourceTwig.text)
     }
 
     fun testFindsTwigUsagesForObjectRelativeConstants() {
@@ -265,6 +355,27 @@ class TwigMethodReferencesSearchExecutorTest : SymfonyLightCodeInsightFixtureTes
         assertNotContainsSourceFile(references, "templates/other.html.twig")
     }
 
+    fun testRenamesTwigUsageForEnumCase() {
+        val target = getNamedElementUnderCaret(
+            """
+            <?php
+            namespace Foo;
+            enum CardSuite {
+                case CL<caret>UBS;
+            }
+            """.trimIndent()
+        )
+
+        val sourceTwig = myFixture.addFileToProject("templates/case.html.twig", "{{ constant('Foo\\\\CardSuite::CLUBS') }}")
+        val reference = findTwigUsageReference(target, "templates/case.html.twig")
+
+        WriteCommandAction.runWriteCommandAction(project) {
+            reference.handleElementRename("HEARTS")
+        }
+
+        assertEquals("{{ constant('Foo\\\\CardSuite::HEARTS') }}", sourceTwig.text)
+    }
+
     fun testFindsTwigUsagesForEnumFunctionsAndVarComments() {
         val phpClass = getPhpClassUnderCaret(
             """
@@ -308,6 +419,25 @@ class TwigMethodReferencesSearchExecutorTest : SymfonyLightCodeInsightFixtureTes
         assertContainsSourceFile(references, "templates/var_first.html.twig")
         assertContainsSourceFile(references, "templates/class_first.html.twig")
         assertNotContainsSourceFile(references, "templates/other.html.twig")
+    }
+
+    fun testRenamesTwigUsageForVarCommentClass() {
+        val phpClass = getPhpClassUnderCaret(
+            """
+            <?php
+            namespace MyNamespace;
+            class TestBroken<caret>Refactor {}
+            """.trimIndent()
+        )
+
+        val sourceTwig = myFixture.addFileToProject("templates/var.html.twig", "{# @var test \\MyNamespace\\TestBrokenRefactor #}")
+        val reference = findTwigUsageReference(phpClass, "templates/var.html.twig")
+
+        WriteCommandAction.runWriteCommandAction(project) {
+            reference.handleElementRename("RenamedClass")
+        }
+
+        assertEquals("{# @var test \\MyNamespace\\RenamedClass #}", sourceTwig.text)
     }
 
     fun testFindsTwigUsagesForMultilineVarComments() {
@@ -497,6 +627,17 @@ class TwigMethodReferencesSearchExecutorTest : SymfonyLightCodeInsightFixtureTes
     private fun getTwigUsageReferences(target: com.intellij.psi.PsiElement): Collection<TwigMethodReferencesSearchExecutor.TwigMethodUsageReference> {
         val references: Collection<PsiReference> = ReferencesSearch.search(target, GlobalSearchScope.projectScope(project)).findAll()
         return references.filterIsInstance<TwigMethodReferencesSearchExecutor.TwigMethodUsageReference>()
+    }
+
+    private fun findTwigUsageReference(
+        target: com.intellij.psi.PsiElement,
+        relativePath: String,
+    ): TwigMethodReferencesSearchExecutor.TwigMethodUsageReference {
+        val reference = getTwigUsageReferences(target)
+            .firstOrNull { it.element.containingFile.virtualFile?.path?.endsWith(relativePath) == true }
+
+        assertNotNull(reference)
+        return reference!!
     }
 
     private fun assertContainsSourceFile(

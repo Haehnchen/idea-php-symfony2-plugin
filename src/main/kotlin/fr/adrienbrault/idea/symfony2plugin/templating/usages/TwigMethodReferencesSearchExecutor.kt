@@ -24,6 +24,7 @@ import com.jetbrains.php.lang.psi.elements.PhpClass
 import com.jetbrains.twig.TwigFile
 import com.jetbrains.twig.TwigFileType
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TemplateMoveRenameUtil
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil
 
 /**
@@ -612,5 +613,89 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
          * These synthetic references are not used for completion.
          */
         override fun getVariants(): Array<Any> = emptyArray()
+
+        /**
+         * Rewrites the matched Twig token, e.g. `test.RestVar` -> `test.RenamedVar`.
+         */
+        override fun handleElementRename(newElementName: String): PsiElement {
+            val renamedUsageText = getRenamedUsageText(newElementName)
+            if (renamedUsageText == value) {
+                return myElement
+            }
+
+            val result = TemplateMoveRenameUtil.applyRangeReplacement(
+                myElement,
+                rangeInElement,
+                renamedUsageText,
+            )
+
+            return result ?: myElement
+        }
+
+        /**
+         * Maps PHP rename names to Twig text, e.g. `$foo` -> `foo` or `\App\Old` -> `\App\New`.
+         */
+        private fun getRenamedUsageText(newElementName: String): String {
+            // Drop PHP field sigils, e.g. `$foo` -> `foo`.
+            val normalizedName = newElementName.removePrefix("$")
+            val currentText = value
+
+            if (targetElement is Field && targetElement.isConstant) {
+                return replaceScopedMemberName(currentText, normalizedName)
+            }
+
+            return when (val target = targetElement) {
+                is Method -> getRenamedMethodUsageText(currentText, target, normalizedName)
+                is PhpEnumCase -> replaceScopedMemberName(currentText, normalizedName)
+                is Constant -> replaceQualifiedNameTail(currentText, normalizedName)
+                is PhpClass -> replaceQualifiedNameTail(currentText, normalizedName)
+                else -> normalizedName
+            }
+        }
+
+        /**
+         * Preserves Twig getter shortcuts, e.g. `foo` + `getBar` -> `bar`.
+         */
+        private fun getRenamedMethodUsageText(currentText: String, targetMethod: Method, newElementName: String): String {
+            if (currentText.equals(targetMethod.name, ignoreCase = true)) {
+                return newElementName
+            }
+
+            val propertyShortcut = TwigTypeResolveUtil.getPropertyShortcutMethodName(targetMethod)
+            if (currentText.equals(propertyShortcut, ignoreCase = true)) {
+                return TwigTypeResolveUtil.getPropertyShortcutMethodName(newElementName)
+            }
+
+            return currentText
+        }
+
+        /**
+         * Replaces scoped member names, e.g. `Foo\\Bar::OLD` -> `Foo\\Bar::NEW`.
+         */
+        private fun replaceScopedMemberName(currentText: String, newElementName: String): String {
+            val scopeSeparator = currentText.lastIndexOf("::")
+            if (scopeSeparator >= 0) {
+                return currentText.substring(0, scopeSeparator + 2) + newElementName
+            }
+
+            return replaceQualifiedNameTail(currentText, newElementName)
+        }
+
+        /**
+         * Replaces the final FQN segment, e.g. `\App\Old[]` -> `\App\New[]`.
+         */
+        private fun replaceQualifiedNameTail(currentText: String, newElementName: String): String {
+            val arraySuffix = if (currentText.endsWith("[]")) "[]" else ""
+            val qualifiedName = currentText.removeSuffix(arraySuffix)
+            val namespaceSeparator = qualifiedName.lastIndexOf('\\')
+
+            val renamed = if (namespaceSeparator >= 0) {
+                qualifiedName.substring(0, namespaceSeparator + 1) + newElementName
+            } else {
+                newElementName
+            }
+
+            return renamed + arraySuffix
+        }
     }
 }
