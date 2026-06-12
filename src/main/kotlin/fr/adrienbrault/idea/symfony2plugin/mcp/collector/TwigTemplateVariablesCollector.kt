@@ -10,6 +10,7 @@ import fr.adrienbrault.idea.symfony2plugin.mcp.McpGlobMatcher
 import fr.adrienbrault.idea.symfony2plugin.mcp.McpPathUtil
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.ForLoopVariableResolver
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil
 import fr.adrienbrault.idea.symfony2plugin.util.VfsExUtil
@@ -90,7 +91,7 @@ class TwigTemplateVariablesCollector(private val project: Project) {
 
         for ((varName, psiVariable) in variables.entries.sortedBy { it.key }) {
             val typeStr = psiVariable.types.joinToString("|")
-            val propertiesStr = collectProperties(psiVariable.types).joinToString(",")
+            val propertiesStr = collectPropertiesForTypes(psiVariable.types).joinToString(",")
 
             csv.append("${McpCsvUtil.escape(varName)},")
                 .append("${McpCsvUtil.escape(typeStr)},")
@@ -114,16 +115,22 @@ class TwigTemplateVariablesCollector(private val project: Project) {
     /**
      * Collects the first-level Twig-accessible property names from all PHP types.
      *
-     * Delegates to [PhpTwigMethodLookupElement.getLookupString] so the output
+     * Delegates to the same method-name normalization as PhpTwigMethodLookupElement.getLookupString so the output
      * exactly matches what IDE completion shows for `{{ variable.X }}`:
      * - get/is/has shortcut methods → shortcut name (e.g. getName → name)
      * - other public non-set, non-magic methods → method name as-is
      * - public non-static fields → field name
+     * - synthetic \loop variables → ForLoopVariableResolver.getLoopVariables(project)
      *
      * Types ending with `[]` have the suffix stripped to resolve the base class.
      */
-    private fun collectProperties(types: Set<String>): List<String> {
+    @JvmName("collectPropertiesForTypes")
+    internal fun collectPropertiesForTypes(types: Set<String>): List<String> {
         val result = sortedSetOf<String>()
+
+        if (ForLoopVariableResolver.LOOP_VARIABLE_TYPE in types) {
+            result.addAll(ForLoopVariableResolver.getLoopVariables(project))
+        }
 
         for (type in types) {
             val baseType = type.trimEnd('[', ']')

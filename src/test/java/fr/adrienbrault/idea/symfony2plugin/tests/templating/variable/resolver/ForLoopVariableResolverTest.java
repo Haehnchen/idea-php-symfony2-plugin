@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.templating.variable.resolver;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.twig.TwigFileType;
+import fr.adrienbrault.idea.symfony2plugin.mcp.collector.TwigTemplateVariablesCollector;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
@@ -14,6 +15,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -31,13 +33,35 @@ public class ForLoopVariableResolverTest extends SymfonyLightCodeInsightFixtureT
         return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/fixtures";
     }
 
-    public void testResolveProvidesStaticLoopVariablesForLoopVariableType() {
+    public void testResolveProvidesStaticLoopVariablesWhenLoopContextClassIsMissing() {
         Collection<TwigTypeContainer> targets = new ArrayList<>();
         Collection<TwigTypeContainer> previousElement = TwigTypeContainer.fromCollection(Collections.singleton(new PsiVariable(ForLoopVariableResolver.LOOP_VARIABLE_TYPE)));
 
         new ForLoopVariableResolver().resolve(getProject(), targets, previousElement, "loop", new ArrayList<>(), null);
 
-        assertContainsElements(targets.stream().map(TwigTypeContainer::getStringElement).collect(Collectors.toSet()), ForLoopVariableResolver.LOOP_VARIABLES);
+        Set<String> loopVariables = targets.stream().map(TwigTypeContainer::getStringElement).collect(Collectors.toSet());
+        assertContainsElements(loopVariables, ForLoopVariableResolver.TWIG3_LOOP_VARIABLES);
+        assertDoesntContain(loopVariables, "previous", "next", "changed", "cycle", "depth", "depth0");
+    }
+
+    public void testResolveExtractsTwig4LoopContextMembersFromPhpClass() {
+        addTwig4LoopContextFixture("    public function getFixtureOnly(): string {}\n");
+
+        Collection<String> loopVariables = ForLoopVariableResolver.getLoopVariables(getProject());
+
+        assertContainsElements(loopVariables, "index", "index0", "first", "last", "changed", "previous", "next", "cycle", "depth", "depth0", "fixtureOnly");
+    }
+
+    public void testResolveIgnoresNonTwigAccessibleLoopContextMethods() {
+        addTwig4LoopContextFixture(
+            "    private function getPrivateValue(): string {}\n" +
+            "    public function setIgnored(string $value): void {}\n" +
+            "    public function __invoke($iterator): iterable {}\n"
+        );
+
+        Collection<String> loopVariables = ForLoopVariableResolver.getLoopVariables(getProject());
+
+        assertDoesntContain(loopVariables, "privateValue", "ignored", "__invoke");
     }
 
     public void testResolveIgnoresNonLoopVariableType() {
@@ -70,7 +94,7 @@ public class ForLoopVariableResolverTest extends SymfonyLightCodeInsightFixtureT
         Collection<String> beforeLeaf = TwigTypeResolveUtil.formatPsiTypeName(psiElement);
         Collection<TwigTypeContainer> types = TwigTypeResolveUtil.resolveTwigMethodName(psiElement, beforeLeaf);
 
-        assertContainsElements(types.stream().map(TwigTypeContainer::getStringElement).collect(Collectors.toSet()), ForLoopVariableResolver.LOOP_VARIABLES);
+        assertContainsElements(types.stream().map(TwigTypeContainer::getStringElement).collect(Collectors.toSet()), ForLoopVariableResolver.TWIG3_LOOP_VARIABLES);
     }
 
     public void testForLoopProvidesLoopVariableCompletion() {
@@ -92,6 +116,16 @@ public class ForLoopVariableResolverTest extends SymfonyLightCodeInsightFixtureT
             TwigFileType.INSTANCE,
             "{% block content %}{% for entry in entries %}{{ loop.<caret> }}{% endfor %}{% endblock %}",
             "index", "index0", "revindex", "revindex0", "first", "last", "length", "parent"
+        );
+    }
+
+    public void testForLoopProvidesTwig4LoopVariableCompletion() {
+        addTwig4LoopContextFixture("");
+
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "{% for entry in entries %}{{ loop.<caret> }}{% endfor %}",
+            "index", "index0", "first", "last", "previous", "next", "changed", "cycle", "depth", "depth0"
         );
     }
 
@@ -117,6 +151,22 @@ public class ForLoopVariableResolverTest extends SymfonyLightCodeInsightFixtureT
         );
     }
 
+    public void testTagIncludeInsideForLoopInheritsTwig4LoopVariableMembers() {
+        addTwig4LoopContextFixture("");
+        myFixture.addFileToProject(
+            "templates/parent_twig4_loop_include.html.twig",
+            "{% for entry in entries %}\n" +
+            "    {% include 'partials/_twig4_loop_properties.html.twig' %}\n" +
+            "{% endfor %}\n"
+        );
+
+        assertPathCompletionContains(
+            "templates/partials/_twig4_loop_properties.html.twig",
+            "{{ loop.<caret> }}",
+            "index", "index0", "first", "last", "previous", "next", "changed", "cycle", "depth", "depth0"
+        );
+    }
+
     public void testFunctionIncludeInsideForLoopInheritsLoopVariable() {
         myFixture.addFileToProject(
             "templates/parent_loop_function_include.html.twig",
@@ -130,6 +180,14 @@ public class ForLoopVariableResolverTest extends SymfonyLightCodeInsightFixtureT
             "{{ loop.<caret> }}",
             "index", "index0", "revindex", "revindex0", "first", "last", "length", "parent"
         );
+    }
+
+    public void testCollectorBridgeProvidesSyntheticLoopTypeProperties() {
+        addTwig4LoopContextFixture("    public function getFixtureOnly(): string {}\n");
+
+        List<String> properties = new TwigTemplateVariablesCollector(getProject()).collectPropertiesForTypes(Collections.singleton(ForLoopVariableResolver.LOOP_VARIABLE_TYPE));
+
+        assertContainsElements(properties, "index", "previous", "next", "changed", "cycle", "depth", "depth0", "fixtureOnly");
     }
 
     public void testIsolatedIncludeInsideForLoopDoesNotInheritLoopVariable() {
@@ -173,5 +231,33 @@ public class ForLoopVariableResolverTest extends SymfonyLightCodeInsightFixtureT
         for (String item: unexpected) {
             assertFalse("Completion should not contain: " + item, lookupElementStrings.contains(item));
         }
+    }
+
+    private void addTwig4LoopContextFixture(String extraMethods) {
+        myFixture.addFileToProject(
+            "vendor/twig/twig/src/Runtime/LoopContext.php",
+            "<?php\n" +
+            "\n" +
+            "namespace Twig\\Runtime;\n" +
+            "\n" +
+            "final class LoopContext\n" +
+            "{\n" +
+            "    public function getParent(): mixed {}\n" +
+            "    public function getRevindex0(): int {}\n" +
+            "    public function getRevindex(): int {}\n" +
+            "    public function getIndex0(): int {}\n" +
+            "    public function getIndex(): int {}\n" +
+            "    public function getLength(): int {}\n" +
+            "    public function isFirst(): bool {}\n" +
+            "    public function isLast(): bool {}\n" +
+            "    public function hasChanged(mixed $value): bool {}\n" +
+            "    public function getPrevious(): mixed {}\n" +
+            "    public function getNext(): mixed {}\n" +
+            "    public function cycle($value, ...$values): mixed {}\n" +
+            "    public function getDepth0(): int {}\n" +
+            "    public function getDepth(): int {}\n" +
+            extraMethods +
+            "}\n"
+        );
     }
 }
