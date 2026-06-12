@@ -1,7 +1,10 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.dic.command;
 
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
+import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
+import fr.adrienbrault.idea.symfony2plugin.dic.command.SymfonyCommandTestRunLineMarkerProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyCommandUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
@@ -92,5 +95,37 @@ public class SymfonyCommandTestRunLineMarkerProviderTest extends SymfonyLightCod
         );
 
         assertEquals(List.of("set-const-command"), SymfonyCommandUtil.getCommandNameFromClass(phpClass));
+    }
+
+    public void testCommandTargetContextFromMethodCommandIdentifier() {
+        PhpClass phpClass = PhpPsiElementFactory.createFromText(getProject(), PhpClass.class, "<?php\n" +
+            "use Symfony\\Component\\Console\\Attribute\\AsCommand;\n" +
+            "\n" +
+            "class UserCommands {\n" +
+            "    #[AsCommand('app:user:create')]\n" +
+            "    public function create(): int { return 0; }\n" +
+            "}"
+        );
+
+        Method method = phpClass.findOwnMethodByName("create");
+        assertNotNull(method);
+
+        PhpNamedElement target = SymfonyCommandTestRunLineMarkerProvider.getCommandTargetContext(method.getNameIdentifier());
+        assertEquals(method, target);
+        assertEquals(List.of("app:user:create"), SymfonyCommandTestRunLineMarkerProvider.getCommandNames(target));
+    }
+
+    public void testCommandTargetContextFromClassCommandIdentifier() {
+        PhpClass phpClass = PhpPsiElementFactory.createFromText(getProject(), PhpClass.class, "<?php\n" +
+            "use Symfony\\Component\\Console\\Attribute\\AsCommand;\n" +
+            "\n" +
+            "#[AsCommand('app:user:create')]\n" +
+            "class UserCommand {\n" +
+            "}"
+        );
+
+        PhpNamedElement target = SymfonyCommandTestRunLineMarkerProvider.getCommandTargetContext(phpClass.getNameIdentifier());
+        assertEquals(phpClass, target);
+        assertEquals(List.of("app:user:create"), SymfonyCommandTestRunLineMarkerProvider.getCommandNames(target));
     }
 }

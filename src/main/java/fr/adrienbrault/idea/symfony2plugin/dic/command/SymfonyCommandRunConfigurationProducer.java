@@ -7,8 +7,7 @@ import com.intellij.execution.actions.LazyRunConfigurationProducer;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.openapi.util.Ref;
 import com.intellij.psi.PsiElement;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.util.SymfonyCommandUtil;
+import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -61,11 +60,11 @@ public class SymfonyCommandRunConfigurationProducer extends LazyRunConfiguration
             return List.of();
         }
 
-        PhpClass phpClass = SymfonyCommandTestRunLineMarkerProvider.getCommandContext(location.getPsiElement());
-        if (phpClass == null) {
+        PhpNamedElement commandTarget = SymfonyCommandTestRunLineMarkerProvider.getCommandTargetContext(location.getPsiElement());
+        if (commandTarget == null) {
             return List.of();
         }
 
-        return SymfonyCommandUtil.getCommandNameFromClass(phpClass);
+        return SymfonyCommandTestRunLineMarkerProvider.getCommandNames(commandTarget);
     }
 }

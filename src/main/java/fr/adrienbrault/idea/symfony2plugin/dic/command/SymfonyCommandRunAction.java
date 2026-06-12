@@ -12,8 +12,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.util.SymfonyCommandUtil;
+import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -50,21 +49,21 @@ public class SymfonyCommandRunAction extends AnAction {
             return;
         }
 
-        PhpClass phpClass;
-        if (psiElement instanceof PhpClass) {
-            phpClass = (PhpClass) psiElement;
+        PhpNamedElement commandTarget;
+        if (psiElement instanceof PhpNamedElement phpNamedElement) {
+            commandTarget = phpNamedElement;
         } else {
-            phpClass = SymfonyCommandTestRunLineMarkerProvider.getCommandContext(psiElement);
-            if (phpClass == null && psiElement.getParent() instanceof PhpClass) {
-                phpClass = (PhpClass) psiElement.getParent();
+            commandTarget = SymfonyCommandTestRunLineMarkerProvider.getCommandTargetContext(psiElement);
+            if (commandTarget == null && psiElement.getParent() instanceof PhpNamedElement phpNamedElement) {
+                commandTarget = phpNamedElement;
             }
         }
 
-        if (phpClass == null) {
+        if (commandTarget == null) {
             return;
         }
 
-        List<String> commandNames = SymfonyCommandUtil.getCommandNameFromClass(phpClass);
+        List<String> commandNames = SymfonyCommandTestRunLineMarkerProvider.getCommandNames(commandTarget);
         if (commandNames.isEmpty()) {
             return;
         }

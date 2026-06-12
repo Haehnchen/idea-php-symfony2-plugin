@@ -2,9 +2,10 @@ package fr.adrienbrault.idea.symfony2plugin.tests.stubs.indexes;
 
 import com.jetbrains.php.lang.PhpFileType;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -94,12 +95,14 @@ public class PhpAttributeIndexTest extends SymfonyLightCodeInsightFixtureTestCas
             "}\n"
         );
 
-        // Key: Attribute FQN, Value: [class FQN, method name, filter name]
+        // Key: Attribute FQN, Value: typed method target
         assertIndexContainsKeyWithValue(PhpAttributeIndex.KEY, "\\Twig\\Attribute\\AsTwigFilter", value ->
-            value.size() == 3 &&
-            value.get(0).equals("App\\Twig\\AppExtension") &&
-            value.get(1).equals("formatProductNumberFilter") &&
-            value.get(2).equals("product_number_filter")
+            value.stream().anyMatch(target ->
+                target.scope() == PhpAttributeIndex.TargetScope.METHOD &&
+                target.classFqn().equals("App\\Twig\\AppExtension") &&
+                "formatProductNumberFilter".equals(target.memberName()) &&
+                target.data().equals(java.util.List.of("product_number_filter"))
+            )
         );
     }
 
@@ -118,12 +121,14 @@ public class PhpAttributeIndexTest extends SymfonyLightCodeInsightFixtureTestCas
             "}\n"
         );
 
-        // Key: Attribute FQN, Value: [class FQN, method name, function name]
+        // Key: Attribute FQN, Value: typed method target
         assertIndexContainsKeyWithValue(PhpAttributeIndex.KEY, "\\Twig\\Attribute\\AsTwigFunction", value ->
-            value.size() == 3 &&
-            value.get(0).equals("App\\Twig\\AppExtension") &&
-            value.get(1).equals("formatProductNumberFunction") &&
-            value.get(2).equals("product_number_function")
+            value.stream().anyMatch(target ->
+                target.scope() == PhpAttributeIndex.TargetScope.METHOD &&
+                target.classFqn().equals("App\\Twig\\AppExtension") &&
+                "formatProductNumberFunction".equals(target.memberName()) &&
+                target.data().equals(java.util.List.of("product_number_function"))
+            )
         );
     }
 
@@ -142,12 +147,14 @@ public class PhpAttributeIndexTest extends SymfonyLightCodeInsightFixtureTestCas
             "}\n"
         );
 
-        // Key: Attribute FQN, Value: [class FQN, method name, test name]
+        // Key: Attribute FQN, Value: typed method target
         assertIndexContainsKeyWithValue(PhpAttributeIndex.KEY, "\\Twig\\Attribute\\AsTwigTest", value ->
-            value.size() == 3 &&
-            value.get(0).equals("App\\Twig\\AppExtension") &&
-            value.get(1).equals("formatProductNumberTest") &&
-            value.get(2).equals("product_number_test")
+            value.stream().anyMatch(target ->
+                target.scope() == PhpAttributeIndex.TargetScope.METHOD &&
+                target.classFqn().equals("App\\Twig\\AppExtension") &&
+                "formatProductNumberTest".equals(target.memberName()) &&
+                target.data().equals(java.util.List.of("product_number_test"))
+            )
         );
     }
 
@@ -167,10 +174,13 @@ public class PhpAttributeIndexTest extends SymfonyLightCodeInsightFixtureTestCas
             "}\n"
         );
 
-        // Key: Attribute FQN, Value: [class FQN]
+        // Key: Attribute FQN, Value: typed class target
         assertIndexContainsKeyWithValue(PhpAttributeIndex.KEY, "\\Symfony\\Component\\Console\\Attribute\\AsCommand", value ->
-            value.size() == 1 &&
-            value.get(0).equals("App\\Command\\CreateUserCommand")
+            value.stream().anyMatch(target ->
+                target.scope() == PhpAttributeIndex.TargetScope.PHP_CLASS &&
+                target.classFqn().equals("App\\Command\\CreateUserCommand") &&
+                target.memberName() == null
+            )
         );
     }
 
@@ -186,10 +196,47 @@ public class PhpAttributeIndexTest extends SymfonyLightCodeInsightFixtureTestCas
             "}\n"
         );
 
-        // Key: Attribute FQN, Value: [class FQN]
+        // Key: Attribute FQN, Value: typed class target
         assertIndexContainsKeyWithValue(PhpAttributeIndex.KEY, "\\Symfony\\Component\\DependencyInjection\\Attribute\\Exclude", value ->
-            value.size() == 1 &&
-            value.get(0).equals("App\\Service\\ExcludedService")
+            value.stream().anyMatch(target ->
+                target.scope() == PhpAttributeIndex.TargetScope.PHP_CLASS &&
+                target.classFqn().equals("App\\Service\\ExcludedService") &&
+                target.memberName() == null
+            )
         );
+    }
+
+    public void testThatMultipleMethodCommandsInOneFileAreInIndex() {
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Command;\n" +
+            "\n" +
+            "use Symfony\\Component\\Console\\Attribute\\AsCommand;\n" +
+            "\n" +
+            "class UserCommands\n" +
+            "{\n" +
+            "    #[AsCommand('app:user:create')]\n" +
+            "    public function create(): int { return 0; }\n" +
+            "\n" +
+            "    #[AsCommand('app:user:delete')]\n" +
+            "    public function delete(): int { return 0; }\n" +
+            "\n" +
+            "    #[AsCommand('app:user:private')]\n" +
+            "    private function privateCommand(): int { return 0; }\n" +
+            "}\n"
+        );
+
+        Collection<PhpAttributeIndex.AttributeTarget> targets = PhpAttributeIndexUtil.getAttributeData(getProject(), "\\Symfony\\Component\\Console\\Attribute\\AsCommand");
+
+        assertTrue(targets.stream().anyMatch(target ->
+            target.scope() == PhpAttributeIndex.TargetScope.METHOD &&
+            target.classFqn().equals("App\\Command\\UserCommands") &&
+            "create".equals(target.memberName())
+        ));
+        assertTrue(targets.stream().anyMatch(target ->
+            target.scope() == PhpAttributeIndex.TargetScope.METHOD &&
+            target.classFqn().equals("App\\Command\\UserCommands") &&
+            "delete".equals(target.memberName())
+        ));
+        assertFalse(targets.stream().anyMatch(target -> "privateCommand".equals(target.memberName())));
     }
 }

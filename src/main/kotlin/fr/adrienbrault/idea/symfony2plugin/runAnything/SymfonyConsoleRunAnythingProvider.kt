@@ -102,8 +102,9 @@ class SymfonyConsoleRunAnythingProvider : RunAnythingProviderBase<SymfonyCommand
 
     override fun getMainListItem(dataContext: DataContext, value: SymfonyCommand): RunAnythingItem {
         val shortName = value.fqn.substringAfterLast('\\').ifEmpty { value.fqn }
+        val description = value.methodName?.let { "$shortName::$it" } ?: shortName
         return object : RunAnythingItemBase(value.name, Symfony2Icons.SYMFONY) {
-            override fun getDescription(): String = shortName
+            override fun getDescription(): String = description
         }
     }
 

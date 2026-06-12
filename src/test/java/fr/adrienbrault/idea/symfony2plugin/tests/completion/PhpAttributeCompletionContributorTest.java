@@ -509,15 +509,32 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
     }
 
     public void testNoAsCommandInvalidScopes() {
-        // Test that AsCommand is NOT available at method level (class-only)
+        // Test that AsCommand is NOT available on private methods
         assertCompletionNotContains(PhpFileType.INSTANCE,
-            "<?php\n\nclass MyCommand {\n    #<caret>\n    public function execute() { }\n}",
+            "<?php\n\nnamespace App\\Command;\n\nclass MyCommand {\n    #<caret>\n    private function execute() { }\n}",
             "#[AsCommand]"
         );
 
         // Test that AsCommand attribute does not appear for non-command classes
         assertCompletionNotContains(PhpFileType.INSTANCE,
             "<?php\n\nnamespace App\\Service;\n\n#<caret>\nclass MyService {\n}",
+            "#[AsCommand]"
+        );
+    }
+
+    public void testAsCommandAttributeCompletionForMethodCommands() {
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\nnamespace App\\Command;\n\nclass UserCommands {\n    #<caret>\n    public function create(): int { return 0; }\n}",
+            "#[AsCommand]"
+        );
+
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\n\nuse Symfony\\Component\\Console\\Input\\InputInterface;\n\nclass UserActions {\n    #<caret>\n    public function create(InputInterface $input): int { return 0; }\n}",
+            "#[AsCommand]"
+        );
+
+        assertCompletionNotContains(PhpFileType.INSTANCE,
+            "<?php\n\nnamespace App\\Service;\n\nclass UserService {\n    #<caret>\n    public function create(): int { return 0; }\n}",
             "#[AsCommand]"
         );
     }

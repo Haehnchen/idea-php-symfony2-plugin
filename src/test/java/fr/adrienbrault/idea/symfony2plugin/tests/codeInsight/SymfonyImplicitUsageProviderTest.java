@@ -479,6 +479,26 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
         assertNotImplicitUsage(phpClass.findOwnMethodByName("unrelated"));
     }
 
+    public void testAsCommandMethodIsMarkedUsed() {
+        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Command;\n" +
+            "\n" +
+            "use Symfony\\Component\\Console\\Attribute\\AsCommand;\n" +
+            "\n" +
+            "class UserCommands\n" +
+            "{\n" +
+            "    #[AsCommand('app:user:create')]\n" +
+            "    public function create(): int { return 0; }\n" +
+            "\n" +
+            "    public function unused(): int { return 0; }\n" +
+            "}"
+        );
+
+        PhpClass phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
+        assertImplicitUsage(phpClass.findOwnMethodByName("create"));
+        assertNotImplicitUsage(phpClass.findOwnMethodByName("unused"));
+    }
+
     public void testMcpCapabilitiesAreMarkedUsed() {
         PsiFile invokableCapabilityPsiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
             "namespace App\\Mcp;\n" +

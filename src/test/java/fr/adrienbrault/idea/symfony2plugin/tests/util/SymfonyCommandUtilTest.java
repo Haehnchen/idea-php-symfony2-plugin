@@ -1,7 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.util;
 
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyCommandUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyCommand;
@@ -50,10 +52,67 @@ public class SymfonyCommandUtilTest extends SymfonyLightCodeInsightFixtureTestCa
         SymfonyCommand cmd = commands.stream().filter(c -> "app:create-user-1".equals(c.getName())).findFirst().orElseThrow();
         assertEquals("\\Foo\\FoobarCommand1", cmd.getFqn());
 
-        // Modern #[AsCommand] without extends Command is included (must be in its own file —
-        // PhpAttributeIndex keeps one entry per attribute key per file, so sharing a file with
-        // other #[AsCommand] classes would overwrite this entry)
+        // Modern #[AsCommand] without extends Command is included.
         assertTrue(commands.stream().anyMatch(c -> "app:modern-invokable".equals(c.getName())));
+    }
+
+    /**
+     * @see SymfonyCommandUtil#getCommands
+     */
+    public void testGetCommandsFromMethodBasedCommands() {
+        myFixture.addFileToProject("MethodCommands/UserCommands.php", "<?php\n" +
+            "namespace MethodCommands;\n" +
+            "\n" +
+            "use Symfony\\Component\\Console\\Attribute\\Argument;\n" +
+            "use Symfony\\Component\\Console\\Attribute\\AsCommand;\n" +
+            "use Symfony\\Component\\Console\\Attribute\\Option;\n" +
+            "use Symfony\\Component\\Console\\Command\\Command;\n" +
+            "use Symfony\\Component\\Console\\Input\\InputInterface;\n" +
+            "use Symfony\\Component\\Console\\Output\\OutputInterface;\n" +
+            "\n" +
+            "class UserCommands\n" +
+            "{\n" +
+            "    #[AsCommand('app:user:create')]\n" +
+            "    public function create(\n" +
+            "        InputInterface $input,\n" +
+            "        OutputInterface $output,\n" +
+            "        #[Argument(description: 'User name')] string $username,\n" +
+            "        #[Option(name: 'dry-run', shortcut: 'd', description: 'Do not persist')] bool $dryRun = false,\n" +
+            "    ): int {\n" +
+            "        $input->getArgument('username');\n" +
+            "        $input->getOption('dry-run');\n" +
+            "        return Command::SUCCESS;\n" +
+            "    }\n" +
+            "\n" +
+            "    #[AsCommand(name: 'app:user:delete', aliases: ['app:user:remove'])]\n" +
+            "    public function delete(OutputInterface $output): int { return Command::SUCCESS; }\n" +
+            "\n" +
+            "    #[AsCommand('app:user:private')]\n" +
+            "    private function privateCommand(): int { return Command::SUCCESS; }\n" +
+            "}\n"
+        );
+
+        Collection<SymfonyCommand> commands = SymfonyCommandUtil.getCommands(getProject());
+
+        SymfonyCommand createCommand = commands.stream().filter(command -> "app:user:create".equals(command.getName())).findFirst().orElseThrow();
+        assertEquals("\\MethodCommands\\UserCommands", createCommand.getFqn());
+        assertEquals("create", createCommand.getMethodName());
+        assertTrue(createCommand.isMethodCommand());
+
+        assertTrue(commands.stream().anyMatch(command -> "app:user:delete".equals(command.getName())));
+        assertTrue(commands.stream().anyMatch(command -> "app:user:remove".equals(command.getName())));
+        assertFalse(commands.stream().anyMatch(command -> "app:user:private".equals(command.getName())));
+
+        PhpNamedElement target = SymfonyCommandUtil.resolveCommandTarget(getProject(), createCommand);
+        assertTrue(target instanceof Method);
+        assertEquals("create", target.getName());
+
+        Map<String, SymfonyCommandUtil.CommandOption> options = SymfonyCommandUtil.getCommandOptions(getProject(), createCommand);
+        assertTrue(options.containsKey("dry-run"));
+        assertEquals("d", options.get("dry-run").shortcut());
+
+        Map<String, SymfonyCommandUtil.CommandArgument> arguments = SymfonyCommandUtil.getCommandArguments(getProject(), createCommand);
+        assertTrue(arguments.containsKey("username"));
     }
 
     /**

@@ -13,6 +13,7 @@ import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -129,10 +130,10 @@ public class TwigExtensionParser  {
         }
 
         // Process AsTwigFilter attributes from index
-        for (List<String> data : PhpAttributeIndexUtil.getAttributeData(project, "\\Twig\\Attribute\\AsTwigFilter")) {
-            if (data.size() >= 3) {
-                String filterName = data.get(2);
-                String signature = String.format("#M#C\\%s.%s", data.get(0), data.get(1));
+        for (PhpAttributeIndex.AttributeTarget target : PhpAttributeIndexUtil.getMethodTargetsWithAttribute(project, "\\Twig\\Attribute\\AsTwigFilter")) {
+            if (target.memberName() != null && !target.data().isEmpty()) {
+                String filterName = target.data().get(0);
+                String signature = String.format("#M#C\\%s.%s", target.classFqn(), target.memberName());
                 extensions.put(filterName, new TwigExtension(TwigExtensionType.FILTER, signature, Collections.emptyMap(), getReturnClassTypes(project, signature)));
             }
         }
@@ -173,10 +174,10 @@ public class TwigExtensionParser  {
         }
 
         // Process AsTwigFunction attributes from index
-        for (List<String> data : PhpAttributeIndexUtil.getAttributeData(project, "\\Twig\\Attribute\\AsTwigFunction")) {
-            if (data.size() >= 3) {
-                String functionName = data.get(2);
-                String signature = String.format("#M#C\\%s.%s", data.get(0), data.get(1));
+        for (PhpAttributeIndex.AttributeTarget target : PhpAttributeIndexUtil.getMethodTargetsWithAttribute(project, "\\Twig\\Attribute\\AsTwigFunction")) {
+            if (target.memberName() != null && !target.data().isEmpty()) {
+                String functionName = target.data().get(0);
+                String signature = String.format("#M#C\\%s.%s", target.classFqn(), target.memberName());
                 extensions.put(functionName, new TwigExtension(TwigExtensionType.FUNCTION_METHOD, signature, Collections.emptyMap(), getReturnClassTypes(project, signature)));
             }
         }
@@ -214,10 +215,10 @@ public class TwigExtensionParser  {
         }
 
         // Process AsTwigTest attributes from index
-        for (List<String> data : PhpAttributeIndexUtil.getAttributeData(project, "\\Twig\\Attribute\\AsTwigTest")) {
-            if (data.size() >= 3) {
-                String testName = data.get(2);
-                String signature = String.format("#M#C\\%s.%s", data.get(0), data.get(1));
+        for (PhpAttributeIndex.AttributeTarget target : PhpAttributeIndexUtil.getMethodTargetsWithAttribute(project, "\\Twig\\Attribute\\AsTwigTest")) {
+            if (target.memberName() != null && !target.data().isEmpty()) {
+                String testName = target.data().get(0);
+                String signature = String.format("#M#C\\%s.%s", target.classFqn(), target.memberName());
                 extensions.put(testName, new TwigExtension(TwigExtensionType.SIMPLE_TEST, signature));
             }
         }

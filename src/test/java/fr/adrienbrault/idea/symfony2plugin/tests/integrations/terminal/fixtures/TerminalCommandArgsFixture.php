@@ -13,7 +13,6 @@ namespace Symfony\Component\Console\Style
 
 /**
  * Standalone invokable command with #[Argument] attributes only (no extends Command).
- * Must be in its own file so PhpAttributeIndex stores a separate entry for it.
  */
 namespace TerminalFixtures
 {

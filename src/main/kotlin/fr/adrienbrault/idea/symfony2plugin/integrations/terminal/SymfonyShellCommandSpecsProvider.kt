@@ -11,7 +11,6 @@ import com.intellij.psi.util.PsiModificationTracker
 import com.intellij.terminal.completion.spec.ShellRuntimeContext
 import com.jetbrains.php.lang.PhpLanguage
 import fr.adrienbrault.idea.symfony2plugin.Settings
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyCommandUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -119,11 +118,10 @@ internal fun collectCommandData(project: Project): List<CommandData> {
 
 private fun collectCommandDataInner(project: Project): List<CommandData> =
     SymfonyCommandUtil.getCommands(project).map { command ->
-        val phpClass = PhpElementsUtil.getClassInterface(project, command.fqn)
         CommandData(
             name = command.name,
-            options = if (phpClass != null) SymfonyCommandUtil.getCommandOptions(phpClass) else emptyMap(),
-            arguments = if (phpClass != null) SymfonyCommandUtil.getCommandArguments(phpClass) else emptyMap(),
+            options = SymfonyCommandUtil.getCommandOptions(project, command),
+            arguments = SymfonyCommandUtil.getCommandArguments(project, command),
         )
     }
 

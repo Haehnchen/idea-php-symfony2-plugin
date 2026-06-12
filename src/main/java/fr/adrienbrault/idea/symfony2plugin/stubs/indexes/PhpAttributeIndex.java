@@ -9,39 +9,45 @@ import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionArgument;
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.StringListDataExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.PhpAttributeTargetsDataExternalizer;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
 /**
  * Generalized index for PHP attributes on classes and methods
  *
- * Maps attribute FQNs to their targets with additional data:
+ * Maps attribute FQNs to scoped targets with additional data:
  * - Key: Attribute FQN (e.g., "\Twig\Attribute\AsTwigFilter", "\Symfony\Component\Console\Attribute\AsCommand")
- * - Value: List<String> where:
- *   [0] = Class FQN (e.g., "App\Twig\AppExtension")
- *   [1] = Method name (for method-level attributes) or attribute parameter (e.g., filter name)
- *   [2+] = Additional data (extensible for future use)
- *
- * Examples:
- * - AsTwigFilter: ["App\Twig\AppExtension", "formatProductNumber", "product_number_filter"]
- * - AsCommand: ["App\Command\CreateUserCommand"]
- * - Exclude: ["App\Service\ExcludedService"]
+ * - Value: scoped targets for supported class and method attributes
  *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class PhpAttributeIndex extends FileBasedIndexExtension<String, List<String>> {
-    public static final ID<String, List<String>> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.php_attribute.index");
+public class PhpAttributeIndex extends FileBasedIndexExtension<String, List<PhpAttributeIndex.AttributeTarget>> {
+    public static final ID<String, List<AttributeTarget>> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.php_attribute.index");
+
+    public enum TargetScope {
+        PHP_CLASS,
+        METHOD
+    }
+
+    public record AttributeTarget(
+        @NotNull TargetScope scope,
+        @NotNull String classFqn,
+        @Nullable String memberName,
+        @NotNull List<String> data
+    ) {
+    }
 
     @Override
-    public @NotNull ID<String, List<String>> getName() {
+    public @NotNull ID<String, List<AttributeTarget>> getName() {
         return KEY;
     }
 
     @Override
-    public @NotNull DataIndexer<String, List<String>, FileContent> getIndexer() {
+    public @NotNull DataIndexer<String, List<AttributeTarget>, FileContent> getIndexer() {
         return new PhpAttributeIndexer();
     }
 
@@ -51,8 +57,8 @@ public class PhpAttributeIndex extends FileBasedIndexExtension<String, List<Stri
     }
 
     @Override
-    public @NotNull DataExternalizer<List<String>> getValueExternalizer() {
-        return StringListDataExternalizer.INSTANCE;
+    public @NotNull DataExternalizer<List<AttributeTarget>> getValueExternalizer() {
+        return PhpAttributeTargetsDataExternalizer.INSTANCE;
     }
 
     @Override
@@ -67,10 +73,10 @@ public class PhpAttributeIndex extends FileBasedIndexExtension<String, List<Stri
 
     @Override
     public int getVersion() {
-        return 7;
+        return 8;
     }
 
-    public static class PhpAttributeIndexer implements DataIndexer<String, List<String>, FileContent> {
+    public static class PhpAttributeIndexer implements DataIndexer<String, List<AttributeTarget>, FileContent> {
         // Twig attributes on methods
         private static final Set<String> TWIG_METHOD_ATTRIBUTES = Set.of(
                 "\\Twig\\Attribute\\AsTwigFilter",
@@ -85,8 +91,8 @@ public class PhpAttributeIndex extends FileBasedIndexExtension<String, List<Stri
         public static final String EXCLUDE_ATTRIBUTE = "\\Symfony\\Component\\DependencyInjection\\Attribute\\Exclude";
 
         @Override
-        public @NotNull Map<String, List<String>> map(@NotNull FileContent inputData) {
-            Map<String, List<String>> result = new HashMap<>();
+        public @NotNull Map<String, List<AttributeTarget>> map(@NotNull FileContent inputData) {
+            Map<String, List<AttributeTarget>> result = new HashMap<>();
             if (!(inputData.getPsiFile() instanceof PhpFile phpFile)) {
                 return result;
             }
@@ -107,35 +113,24 @@ public class PhpAttributeIndex extends FileBasedIndexExtension<String, List<Stri
         /**
          * Process attributes on class level (e.g., AsCommand on Command classes)
          */
-        private void processClassAttributes(@NotNull PhpClass phpClass, @NotNull Map<String, List<String>> result) {
+        private void processClassAttributes(@NotNull PhpClass phpClass, @NotNull Map<String, List<AttributeTarget>> result) {
             for (PhpAttribute attribute : phpClass.getAttributes()) {
                 String attributeFqn = attribute.getFQN();
                 if (attributeFqn == null) {
                     continue;
                 }
 
-                // Index AsCommand attribute on class
-                // Key: Attribute FQN
-                // Value: [class FQN]
-                if (AS_COMMAND_ATTRIBUTE.equals(attributeFqn)) {
+                if (AS_COMMAND_ATTRIBUTE.equals(attributeFqn) || EXCLUDE_ATTRIBUTE.equals(attributeFqn)) {
                     String classFqn = StringUtils.stripStart(phpClass.getFQN(), "\\");
-                    result.put(attributeFqn, List.of(classFqn));
-                }
-
-                // Index Exclude attribute on class
-                // Key: Attribute FQN
-                // Value: [class FQN]
-                if (EXCLUDE_ATTRIBUTE.equals(attributeFqn)) {
-                    String classFqn = StringUtils.stripStart(phpClass.getFQN(), "\\");
-                    result.put(attributeFqn, List.of(classFqn));
+                    addTarget(result, attributeFqn, new AttributeTarget(TargetScope.PHP_CLASS, classFqn, null, List.of()));
                 }
             }
         }
 
         /**
-         * Process attributes on method level (Twig attributes)
+         * Process attributes on method level.
          */
-        private void processMethodAttributes(@NotNull PhpClass phpClass, @NotNull Method method, @NotNull Map<String, List<String>> result) {
+        private void processMethodAttributes(@NotNull PhpClass phpClass, @NotNull Method method, @NotNull Map<String, List<AttributeTarget>> result) {
             for (PhpAttribute attribute : method.getAttributes()) {
                 String attributeFqn = attribute.getFQN();
                 if (attributeFqn == null) {
@@ -149,10 +144,23 @@ public class PhpAttributeIndex extends FileBasedIndexExtension<String, List<Stri
                     String nameAttribute = extractFirstAttributeParameter(attribute);
                     if (nameAttribute != null) {
                         String classFqn = StringUtils.stripStart(phpClass.getFQN(), "\\");
-                        result.put(attributeFqn, List.of(classFqn, method.getName(), nameAttribute));
+                        addTarget(result, attributeFqn, new AttributeTarget(TargetScope.METHOD, classFqn, method.getName(), List.of(nameAttribute)));
                     }
                 }
+
+                if (AS_COMMAND_ATTRIBUTE.equals(attributeFqn) && method.getAccess().isPublic()) {
+                    String classFqn = StringUtils.stripStart(phpClass.getFQN(), "\\");
+                    addTarget(result, attributeFqn, new AttributeTarget(TargetScope.METHOD, classFqn, method.getName(), List.of()));
+                }
             }
+        }
+
+        private void addTarget(
+            @NotNull Map<String, List<AttributeTarget>> result,
+            @NotNull String attributeFqn,
+            @NotNull AttributeTarget target
+        ) {
+            result.computeIfAbsent(attributeFqn, ignored -> new ArrayList<>()).add(target);
         }
 
         /**

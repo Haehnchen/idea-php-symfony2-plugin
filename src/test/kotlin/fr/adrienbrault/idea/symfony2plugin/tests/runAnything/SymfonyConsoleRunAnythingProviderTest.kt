@@ -40,6 +40,22 @@ class SymfonyConsoleRunAnythingProviderTest : SymfonyLightCodeInsightFixtureTest
             class AppCreateUserCommand extends Command {}
             """.trimIndent()
         )
+        myFixture.addFileToProject(
+            "src/Command/UserCommands.php",
+            """
+            <?php
+            use Symfony\Component\Console\Attribute\AsCommand;
+
+            class UserCommands
+            {
+                #[AsCommand('app:user:create')]
+                public function create(): int { return 0; }
+
+                #[AsCommand('app:user:delete')]
+                public function delete(): int { return 0; }
+            }
+            """.trimIndent()
+        )
     }
 
     override fun getTestDataPath() =
@@ -70,6 +86,13 @@ class SymfonyConsoleRunAnythingProviderTest : SymfonyLightCodeInsightFixtureTest
         val values = provider.getValues(createDataContext(), "CACHE")
 
         assertTrue(values.any { it.name == "cache:clear" })
+    }
+
+    fun testGetValuesReturnsMethodCommands() {
+        val values = provider.getValues(createDataContext(), "app:user").map { it.name }
+
+        assertTrue("app:user:create" in values)
+        assertTrue("app:user:delete" in values)
     }
 
     fun testGetValuesInvalidatesOnPhpModification() {
@@ -114,6 +137,13 @@ class SymfonyConsoleRunAnythingProviderTest : SymfonyLightCodeInsightFixtureTest
         val item = provider.getMainListItem(createDataContext(), cmd) as RunAnythingItemBase
 
         assertEquals("ListCommand", item.description)
+    }
+
+    fun testGetMainListItemDescriptionForMethodCommand() {
+        val cmd = SymfonyCommand("app:user:create", "\\App\\Command\\UserCommands", "create")
+        val item = provider.getMainListItem(createDataContext(), cmd) as RunAnythingItemBase
+
+        assertEquals("UserCommands::create", item.description)
     }
 
     fun testGetMainListItemCommand() {

@@ -276,8 +276,10 @@ public class ContainerCollectionResolver {
                     PhpAttributeIndex.PhpAttributeIndexer.EXCLUDE_ATTRIBUTE,
                     null,
                     (file, value) -> {
-                        if (!value.isEmpty()) {
-                            excludedClasses.add(value.getFirst());
+                        for (PhpAttributeIndex.AttributeTarget target : value) {
+                            if (target.scope() == PhpAttributeIndex.TargetScope.PHP_CLASS) {
+                                excludedClasses.add(target.classFqn());
+                            }
                         }
                         return true;
                     },
