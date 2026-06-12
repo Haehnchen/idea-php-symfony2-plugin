@@ -10,6 +10,7 @@ import com.intellij.psi.util.PsiModificationTracker;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionScalarArgument;
 import fr.adrienbrault.idea.symfony2plugin.dic.ConsoleCommandServiceParser;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyCommand;
@@ -24,35 +25,56 @@ import java.util.stream.Collectors;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class SymfonyCommandUtil {
-    private static final Key<CachedValue<Map<String, String>>> SYMFONY_COMMAND_NAME_MAP = new Key<>("SYMFONY_COMMAND_NAME_MAP");
+    private static final String COMMAND_CLASS = "\\Symfony\\Component\\Console\\Command\\Command";
+    private static final String AS_COMMAND_ATTRIBUTE = "\\Symfony\\Component\\Console\\Attribute\\AsCommand";
+
+    private static final Key<CachedValue<Map<String, SymfonyCommand>>> SYMFONY_COMMAND_NAME_MAP = new Key<>("SYMFONY_COMMAND_NAME_MAP");
 
     @NotNull
     public static Collection<SymfonyCommand> getCommands(@NotNull Project project) {
-        Map<String, String> cachedValue = CachedValuesManager.getManager(project).getCachedValue(
+        Map<String, SymfonyCommand> cachedValue = CachedValuesManager.getManager(project).getCachedValue(
             project,
             SYMFONY_COMMAND_NAME_MAP,
             () -> {
-                Map<String, String> symfonyCommands = new HashMap<>();
+                Map<String, SymfonyCommand> symfonyCommands = new HashMap<>();
 
                 // Traditional Command subclasses
-                for (PhpClass phpClass : PhpIndexUtil.getAllSubclasses(project, "\\Symfony\\Component\\Console\\Command\\Command")) {
+                for (PhpClass phpClass : PhpIndexUtil.getAllSubclasses(project, COMMAND_CLASS)) {
                     if (PhpElementsUtil.isTestClass(phpClass)) {
                         continue;
                     }
 
-                    for (String commandName : getCommandNameFromClass(phpClass)) {
-                        symfonyCommands.put(commandName, phpClass.getFQN());
-                    }
+                    putClassCommands(symfonyCommands, phpClass);
                 }
 
                 // AsCommand attributes from index
-                for (PhpClass phpClass : PhpAttributeIndexUtil.getClassesWithAttribute(project, "\\Symfony\\Component\\Console\\Attribute\\AsCommand")) {
+                for (PhpClass phpClass : PhpAttributeIndexUtil.getClassesWithAttribute(project, AS_COMMAND_ATTRIBUTE)) {
                     if (PhpElementsUtil.isTestClass(phpClass)) {
                         continue;
                     }
 
-                    for (String commandName : getCommandNameFromClass(phpClass)) {
-                        symfonyCommands.put(commandName, phpClass.getFQN());
+                    putClassCommands(symfonyCommands, phpClass);
+                }
+
+                // Method-level #[AsCommand]
+                for (PhpAttributeIndex.AttributeTarget target : PhpAttributeIndexUtil.getMethodTargetsWithAttribute(project, AS_COMMAND_ATTRIBUTE)) {
+                    String methodName = target.memberName();
+                    if (methodName == null) {
+                        continue;
+                    }
+
+                    PhpClass phpClass = PhpElementsUtil.getClassInterface(project, normalizeFqn(target.classFqn()));
+                    if (phpClass == null || PhpElementsUtil.isTestClass(phpClass)) {
+                        continue;
+                    }
+
+                    Method method = phpClass.findOwnMethodByName(methodName);
+                    if (method == null || !method.getAccess().isPublic()) {
+                        continue;
+                    }
+
+                    for (String commandName : getCommandNameFromMethod(method)) {
+                        symfonyCommands.put(commandName, new SymfonyCommand(commandName, phpClass.getFQN(), method.getName()));
                     }
                 }
 
@@ -62,17 +84,51 @@ public class SymfonyCommandUtil {
         );
 
         // Fallback: compiled container XML for commands tagged with "console.command" (e.g., Doctrine)
-        Map<String, String> result = new HashMap<>(cachedValue);
+        Map<String, SymfonyCommand> result = new HashMap<>(cachedValue);
         ConsoleCommandServiceParser compiledParser = ServiceXmlParserFactory.getInstance(project, ConsoleCommandServiceParser.class);
         if (compiledParser != null) {
             for (Map.Entry<String, String> entry : compiledParser.getCommands().entrySet()) {
-                result.putIfAbsent(entry.getKey(), entry.getValue());
+                result.putIfAbsent(entry.getKey(), new SymfonyCommand(entry.getKey(), entry.getValue()));
             }
         }
 
-        return result.entrySet().stream()
-            .map(entry -> new SymfonyCommand(entry.getKey(), entry.getValue()))
-            .collect(Collectors.toList());
+        return result.values().stream().collect(Collectors.toList());
+    }
+
+    private static void putClassCommands(@NotNull Map<String, SymfonyCommand> symfonyCommands, @NotNull PhpClass phpClass) {
+        for (String commandName : getCommandNameFromClass(phpClass)) {
+            symfonyCommands.put(commandName, new SymfonyCommand(commandName, phpClass.getFQN()));
+        }
+    }
+
+    @Nullable
+    public static PhpClass resolveCommandClass(@NotNull Project project, @NotNull SymfonyCommand command) {
+        return PhpElementsUtil.getClassInterface(project, command.getFqn());
+    }
+
+    @Nullable
+    public static Method resolveCommandMethod(@NotNull Project project, @NotNull SymfonyCommand command) {
+        if (!command.isMethodCommand()) {
+            return null;
+        }
+
+        PhpClass phpClass = resolveCommandClass(project, command);
+        return phpClass != null ? phpClass.findOwnMethodByName(command.getMethodName()) : null;
+    }
+
+    @Nullable
+    public static PhpNamedElement resolveCommandTarget(@NotNull Project project, @NotNull SymfonyCommand command) {
+        Method method = resolveCommandMethod(project, command);
+        if (method != null) {
+            return method;
+        }
+
+        return resolveCommandClass(project, command);
+    }
+
+    @NotNull
+    private static String normalizeFqn(@NotNull String fqn) {
+        return fqn.startsWith("\\") ? fqn : "\\" + fqn;
     }
 
     /**
@@ -107,15 +163,35 @@ public class SymfonyCommandUtil {
         // Collect options from modern __invoke() method with #[Option] attributes
         Method invokeMethod = phpClass.findOwnMethodByName("__invoke");
         if (invokeMethod != null) {
-            for (Parameter parameter : invokeMethod.getParameters()) {
-                CommandOption option = parseOptionAttribute(parameter);
-                if (option != null) {
-                    options.put(option.name(), option);
-                }
+            options.putAll(getCommandOptions(invokeMethod));
+        }
+
+        return options;
+    }
+
+    @NotNull
+    public static Map<String, CommandOption> getCommandOptions(@NotNull Method commandMethod) {
+        Map<String, CommandOption> options = new HashMap<>();
+
+        for (Parameter parameter : commandMethod.getParameters()) {
+            CommandOption option = parseOptionAttribute(parameter);
+            if (option != null) {
+                options.put(option.name(), option);
             }
         }
 
         return options;
+    }
+
+    @NotNull
+    public static Map<String, CommandOption> getCommandOptions(@NotNull Project project, @NotNull SymfonyCommand command) {
+        Method method = resolveCommandMethod(project, command);
+        if (method != null) {
+            return getCommandOptions(method);
+        }
+
+        PhpClass phpClass = resolveCommandClass(project, command);
+        return phpClass != null ? getCommandOptions(phpClass) : Collections.emptyMap();
     }
 
     /**
@@ -249,15 +325,35 @@ public class SymfonyCommandUtil {
         // Collect arguments from modern __invoke() method with #[Argument] attributes
         Method invokeMethod = phpClass.findOwnMethodByName("__invoke");
         if (invokeMethod != null) {
-            for (Parameter parameter : invokeMethod.getParameters()) {
-                CommandArgument argument = parseArgumentAttribute(parameter);
-                if (argument != null) {
-                    arguments.put(argument.name(), argument);
-                }
+            arguments.putAll(getCommandArguments(invokeMethod));
+        }
+
+        return arguments;
+    }
+
+    @NotNull
+    public static Map<String, CommandArgument> getCommandArguments(@NotNull Method commandMethod) {
+        Map<String, CommandArgument> arguments = new HashMap<>();
+
+        for (Parameter parameter : commandMethod.getParameters()) {
+            CommandArgument argument = parseArgumentAttribute(parameter);
+            if (argument != null) {
+                arguments.put(argument.name(), argument);
             }
         }
 
         return arguments;
+    }
+
+    @NotNull
+    public static Map<String, CommandArgument> getCommandArguments(@NotNull Project project, @NotNull SymfonyCommand command) {
+        Method method = resolveCommandMethod(project, command);
+        if (method != null) {
+            return getCommandArguments(method);
+        }
+
+        PhpClass phpClass = resolveCommandClass(project, command);
+        return phpClass != null ? getCommandArguments(phpClass) : Collections.emptyMap();
     }
 
     /**
@@ -367,19 +463,9 @@ public class SymfonyCommandUtil {
     @NotNull
     public static List<String> getCommandNameFromClass(@NotNull PhpClass phpClass) {
         // #[AsCommand] attribute - works for both styles (with and without extends Command)
-        for (PhpAttribute attribute : phpClass.getAttributes("\\Symfony\\Component\\Console\\Attribute\\AsCommand")) {
-            String name = PhpPsiAttributesUtil.getAttributeValueByNameAsStringWithDefaultParameterFallback(attribute, "name");
-            List<String> names = new ArrayList<>();
-
-            if (name != null) {
-                names.add(name);
-            }
-
-            names.addAll(PhpPsiAttributesUtil.getAttributeValueByNameAsArray(attribute, "aliases"));
-
-            if (!names.isEmpty()) {
-                return names;
-            }
+        List<String> attributeNames = getCommandNamesFromAsCommandAttributes(phpClass);
+        if (!attributeNames.isEmpty()) {
+            return attributeNames;
         }
 
         // Only for classic commands (extends Command)
@@ -408,6 +494,35 @@ public class SymfonyCommandUtil {
                         return Collections.singletonList(stringValue);
                     }
                 }
+            }
+        }
+
+        return Collections.emptyList();
+    }
+
+    @NotNull
+    public static List<String> getCommandNameFromMethod(@NotNull Method method) {
+        if (!method.getAccess().isPublic()) {
+            return Collections.emptyList();
+        }
+
+        return getCommandNamesFromAsCommandAttributes(method);
+    }
+
+    @NotNull
+    private static List<String> getCommandNamesFromAsCommandAttributes(@NotNull PhpAttributesOwner element) {
+        for (PhpAttribute attribute : element.getAttributes(AS_COMMAND_ATTRIBUTE)) {
+            String name = PhpPsiAttributesUtil.getAttributeValueByNameAsStringWithDefaultParameterFallback(attribute, "name");
+            List<String> names = new ArrayList<>();
+
+            if (StringUtils.isNotBlank(name)) {
+                names.add(name);
+            }
+
+            names.addAll(PhpPsiAttributesUtil.getAttributeValueByNameAsArray(attribute, "aliases"));
+
+            if (!names.isEmpty()) {
+                return names;
             }
         }
 

@@ -6,7 +6,9 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.PhpLanguage;
+import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
@@ -45,6 +47,11 @@ public class PhpCommandGotoCompletionRegistrar implements GotoCompletionRegistra
                         .match();
 
                 if(methodMatchParameter != null) {
+                    Method method = PsiTreeUtil.getParentOfType(methodMatchParameter.getMethodReference(), Method.class);
+                    if (method != null && !SymfonyCommandUtil.getCommandNameFromMethod(method).isEmpty()) {
+                        return new CommandGotoCompletionProvider(method, s);
+                    }
+
                     PhpClass phpClass = PsiTreeUtil.getParentOfType(methodMatchParameter.getMethodReference(), PhpClass.class);
                     if(phpClass != null) {
                         return new CommandGotoCompletionProvider(phpClass, s);
@@ -63,12 +70,12 @@ public class PhpCommandGotoCompletionRegistrar implements GotoCompletionRegistra
      */
     private static class CommandGotoCompletionProvider extends GotoCompletionProvider {
 
-        final private PhpClass phpClass;
+        final private PhpNamedElement commandTarget;
         final private String addMethod;
 
-        public CommandGotoCompletionProvider(PhpClass phpClass, String addMethod) {
-            super(phpClass);
-            this.phpClass = phpClass;
+        public CommandGotoCompletionProvider(PhpNamedElement commandTarget, String addMethod) {
+            super(commandTarget);
+            this.commandTarget = commandTarget;
             this.addMethod = "add" + addMethod;
         }
 
@@ -80,7 +87,7 @@ public class PhpCommandGotoCompletionRegistrar implements GotoCompletionRegistra
 
             if("addOption".equals(addMethod)) {
                 // For options, use Map<String, CommandOption>
-                Map<String, SymfonyCommandUtil.CommandOption> targets = SymfonyCommandUtil.getCommandOptions(phpClass);
+                Map<String, SymfonyCommandUtil.CommandOption> targets = getOptions();
 
                 for(SymfonyCommandUtil.CommandOption key: targets.values()) {
                     LookupElementBuilder lookup = LookupElementBuilder.create(key.name()).withIcon(Symfony2Icons.SYMFONY);
@@ -103,7 +110,7 @@ public class PhpCommandGotoCompletionRegistrar implements GotoCompletionRegistra
                 }
             } else {
                 // For arguments, use Map<String, CommandArgument>
-                Map<String, SymfonyCommandUtil.CommandArgument> targets = SymfonyCommandUtil.getCommandArguments(phpClass);
+                Map<String, SymfonyCommandUtil.CommandArgument> targets = getArguments();
 
                 for(SymfonyCommandUtil.CommandArgument key: targets.values()) {
                     LookupElementBuilder lookup = LookupElementBuilder.create(key.name()).withIcon(Symfony2Icons.SYMFONY);
@@ -144,18 +151,44 @@ public class PhpCommandGotoCompletionRegistrar implements GotoCompletionRegistra
             }
 
             if("addOption".equals(addMethod)) {
-                Map<String, SymfonyCommandUtil.CommandOption> targets = SymfonyCommandUtil.getCommandOptions(phpClass);
+                Map<String, SymfonyCommandUtil.CommandOption> targets = getOptions();
                 if(!targets.containsKey(contents)) {
                     return Collections.emptyList();
                 }
                 return Collections.singletonList(targets.get(contents).target());
             } else {
-                Map<String, SymfonyCommandUtil.CommandArgument> targets = SymfonyCommandUtil.getCommandArguments(phpClass);
+                Map<String, SymfonyCommandUtil.CommandArgument> targets = getArguments();
                 if(!targets.containsKey(contents)) {
                     return Collections.emptyList();
                 }
                 return Collections.singletonList(targets.get(contents).target());
             }
+        }
+
+        @NotNull
+        private Map<String, SymfonyCommandUtil.CommandOption> getOptions() {
+            if (commandTarget instanceof Method method) {
+                return SymfonyCommandUtil.getCommandOptions(method);
+            }
+
+            if (commandTarget instanceof PhpClass phpClass) {
+                return SymfonyCommandUtil.getCommandOptions(phpClass);
+            }
+
+            return Collections.emptyMap();
+        }
+
+        @NotNull
+        private Map<String, SymfonyCommandUtil.CommandArgument> getArguments() {
+            if (commandTarget instanceof Method method) {
+                return SymfonyCommandUtil.getCommandArguments(method);
+            }
+
+            if (commandTarget instanceof PhpClass phpClass) {
+                return SymfonyCommandUtil.getCommandArguments(phpClass);
+            }
+
+            return Collections.emptyMap();
         }
     }
 

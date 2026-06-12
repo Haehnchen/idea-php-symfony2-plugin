@@ -7,10 +7,9 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.Processor;
 import com.intellij.util.indexing.FindSymbolParameters;
 import com.intellij.util.indexing.IdFilter;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyCommandUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.SymfonyCommand;
 import org.jetbrains.annotations.NotNull;
@@ -42,9 +41,9 @@ public class SymfonyCommandSymbolContributor implements ChooseByNameContributorE
 
         for (SymfonyCommand symfonyCommand : SymfonyCommandUtil.getCommands(project)) {
             if(symfonyCommand.getName().equals(name)) {
-                PhpClass classInterface = PhpElementsUtil.getClassInterface(project, symfonyCommand.getFqn());
-                if (classInterface != null) {
-                    processor.process(NavigationItemExStateless.create(classInterface, name, Symfony2Icons.SYMFONY, "Command", true));
+                PhpNamedElement target = SymfonyCommandUtil.resolveCommandTarget(project, symfonyCommand);
+                if (target != null) {
+                    processor.process(NavigationItemExStateless.create(target, name, Symfony2Icons.SYMFONY, "Command", true));
                 }
             }
         }

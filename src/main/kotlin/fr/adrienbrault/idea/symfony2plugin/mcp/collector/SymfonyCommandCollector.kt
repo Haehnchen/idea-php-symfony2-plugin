@@ -3,11 +3,9 @@ package fr.adrienbrault.idea.symfony2plugin.mcp.collector
 import com.intellij.openapi.project.Project
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
-import com.jetbrains.php.PhpIndex
 import fr.adrienbrault.idea.symfony2plugin.mcp.McpCsvUtil
 import fr.adrienbrault.idea.symfony2plugin.mcp.McpGlobMatcher
 import fr.adrienbrault.idea.symfony2plugin.mcp.McpPathUtil
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyCommandUtil
 
 class SymfonyCommandCollector(private val project: Project) {
@@ -28,22 +26,21 @@ class SymfonyCommandCollector(private val project: Project) {
     }
 
     private fun collectCommandRows(fileGlob: String?): List<CommandRow> {
-        val phpIndex = PhpIndex.getInstance(project)
         val normalizedFileGlob = fileGlob?.trim()?.takeIf { it.isNotBlank() }
 
         return SymfonyCommandUtil.getCommands(project).map { command ->
-            val phpClass = PhpElementsUtil.getClassInterface(project, command.fqn)
+            val target = SymfonyCommandUtil.resolveCommandTarget(project, command)
 
             CommandRow(
                 name = command.name,
                 className = command.fqn,
-                filePath = phpIndex.getClassesByFQN(command.fqn).firstOrNull()
+                filePath = target
                     ?.containingFile
                     ?.virtualFile
                     ?.let { McpPathUtil.getRelativeProjectPath(project, it) }
                     ?: "",
-                options = if (phpClass != null) SymfonyCommandUtil.getCommandOptions(phpClass) else emptyMap(),
-                arguments = if (phpClass != null) SymfonyCommandUtil.getCommandArguments(phpClass) else emptyMap(),
+                options = SymfonyCommandUtil.getCommandOptions(project, command),
+                arguments = SymfonyCommandUtil.getCommandArguments(project, command),
             )
         }.filter { command ->
             normalizedFileGlob == null || McpGlobMatcher.matches(command.filePath, normalizedFileGlob)

@@ -30,8 +30,10 @@ import java.util.stream.Collectors;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class SymfonyImplicitUsageProvider implements ImplicitUsageProvider {
+    private static final String AS_COMMAND_ATTRIBUTE = "\\Symfony\\Component\\Console\\Attribute\\AsCommand";
+
     private static final Set<String> CLASS_LEVEL_IMPLICIT_USAGE_ATTRIBUTES = Set.of(
-        "\\Symfony\\Component\\Console\\Attribute\\AsCommand",
+        AS_COMMAND_ATTRIBUTE,
         "\\Symfony\\Component\\EventDispatcher\\Attribute\\AsEventListener",
         "\\Symfony\\Component\\Messenger\\Attribute\\AsMessageHandler",
         "\\Symfony\\Component\\Scheduler\\Attribute\\AsSchedule",
@@ -75,6 +77,7 @@ public class SymfonyImplicitUsageProvider implements ImplicitUsageProvider {
                 || isAssertCallbackMethod(method)
                 || isDoctrineLifecycleCallbackMethod(method)
                 || isMcpCapabilityMethod(method)
+                || isAsCommandMethod(method)
                 || hasTwigAttribute(method);
         } else if (element instanceof PhpClass phpClass) {
             return isRouteClass(phpClass)
@@ -120,6 +123,10 @@ public class SymfonyImplicitUsageProvider implements ImplicitUsageProvider {
 
     private boolean hasOwnMcpCapabilityAttribute(@NotNull Method method) {
         return MCP_CAPABILITY_ATTRIBUTES.stream().anyMatch(attribute -> !method.getAttributes(attribute).isEmpty());
+    }
+
+    private boolean isAsCommandMethod(@NotNull Method method) {
+        return !method.getAttributes(AS_COMMAND_ATTRIBUTE).isEmpty();
     }
 
     private boolean hasClassLevelImplicitUsageAttribute(@NotNull PhpClass phpClass) {

@@ -96,6 +96,37 @@ class SymfonyCommandCollectorTest : McpCollectorTestCase() {
         assertTrue("Must contain argument default value ''default123''", result.contains("\"\"defaultValue\"\":\"\"'default123'\"\""))
     }
 
+    fun testCollectExportsMethodCommand() {
+        myFixture.addFileToProject(
+            "src/Command/UserCommands.php",
+            """
+            <?php
+            namespace App\Command;
+
+            use Symfony\Component\Console\Attribute\Argument;
+            use Symfony\Component\Console\Attribute\AsCommand;
+            use Symfony\Component\Console\Attribute\Option;
+
+            class UserCommands
+            {
+                #[AsCommand('app:user:create')]
+                public function create(
+                    #[Argument(description: 'User name')] string ${'$'}username,
+                    #[Option(name: 'dry-run', shortcut: 'd')] bool ${'$'}dryRun = false,
+                ): int { return 0; }
+            }
+            """.trimIndent()
+        )
+
+        val result = SymfonyCommandCollector(project).collect("**/UserCommands.php")
+
+        assertTrue("Must contain method command name", result.contains("app:user:create"))
+        assertTrue("Must contain containing class FQN", result.contains("\\App\\Command\\UserCommands"))
+        assertTrue("Must contain source file path", result.contains("src/Command/UserCommands.php"))
+        assertTrue("Must contain method option", result.contains("\"\"name\"\":\"\"dry-run\"\""))
+        assertTrue("Must contain method argument", result.contains("\"\"name\"\":\"\"username\"\""))
+    }
+
     fun testCollectCanFilterByCommandFileGlob() {
         val result = SymfonyCommandCollector(project).collect("**/SymfonyCommandUtilTest.php")
 

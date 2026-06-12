@@ -28,17 +28,17 @@ import java.util.List;
 public class SymfonyCommandTestRunLineMarkerProvider extends RunLineMarkerContributor {
     @Override
     public @Nullable Info getInfo(@NotNull PsiElement leaf) {
-        PhpClass phpClass = getCommandContext(leaf);
-        if (phpClass == null) {
+        PhpNamedElement commandTarget = getCommandTargetContext(leaf);
+        if (commandTarget == null) {
             return null;
         }
 
-        List<String> commandNames = SymfonyCommandUtil.getCommandNameFromClass(phpClass);
+        List<String> commandNames = getCommandNames(commandTarget);
         if (commandNames.isEmpty()) {
             return null;
         }
 
-        String commandName = commandNames.get(0);
+        String commandName = commandNames.getFirst();
         List<AnAction> actions = new ArrayList<>();
 
         Collections.addAll(actions, ExecutorAction.getActions());
@@ -70,17 +70,34 @@ public class SymfonyCommandTestRunLineMarkerProvider extends RunLineMarkerContri
     }
 
     @Nullable
-    public static PhpClass getCommandContext(@NotNull PsiElement leaf) {
+    public static PhpNamedElement getCommandTargetContext(@NotNull PsiElement leaf) {
         if (PhpPsiUtil.isOfType(leaf, PhpTokenTypes.IDENTIFIER)) {
             PhpNamedElement element = ObjectUtils.tryCast(leaf.getParent(), PhpNamedElement.class);
             if (element != null && element.getNameIdentifier() == leaf) {
-                if (element instanceof PhpClass) {
-                    return (PhpClass) element;
+                if (element instanceof Method method && !SymfonyCommandUtil.getCommandNameFromMethod(method).isEmpty()) {
+                    return method;
+                }
+
+                if (element instanceof PhpClass phpClass && !SymfonyCommandUtil.getCommandNameFromClass(phpClass).isEmpty()) {
+                    return phpClass;
                 }
             }
         }
 
         return null;
+    }
+
+    @NotNull
+    public static List<String> getCommandNames(@NotNull PhpNamedElement target) {
+        if (target instanceof Method method) {
+            return SymfonyCommandUtil.getCommandNameFromMethod(method);
+        }
+
+        if (target instanceof PhpClass phpClass) {
+            return SymfonyCommandUtil.getCommandNameFromClass(phpClass);
+        }
+
+        return List.of();
     }
 
     public static boolean isSymfonyCliAvailable() {

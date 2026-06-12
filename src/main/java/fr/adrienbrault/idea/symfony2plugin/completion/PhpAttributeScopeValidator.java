@@ -7,6 +7,7 @@ import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import fr.adrienbrault.idea.symfony2plugin.intentions.php.AddRouteAttributeIntention;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.UxTemplateStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.util.IndexUtil;
@@ -19,7 +20,7 @@ import java.util.Collection;
 
 /**
  * Utility class for validating PHP attribute scopes (class, method, property).
- *
+ * <p>
  * Provides methods to determine if a given PSI element is positioned before
  * a valid PHP attribute target (class, public method, or public field) and
  * whether we should provide attribute completions for that context.
@@ -34,6 +35,9 @@ public class PhpAttributeScopeValidator {
     private static final String AS_TWIG_FUNCTION_ATTRIBUTE_FQN = "\\Twig\\Attribute\\AsTwigFunction";
     private static final String AS_TWIG_TEST_ATTRIBUTE_FQN = "\\Twig\\Attribute\\AsTwigTest";
     private static final String DOCTRINE_ENTITY_ATTRIBUTE_FQN = "\\Doctrine\\ORM\\Mapping\\Entity";
+    private static final String COMMAND_CLASS_FQN = "\\Symfony\\Component\\Console\\Command\\Command";
+    private static final String INPUT_INTERFACE_FQN = "\\Symfony\\Component\\Console\\Input\\InputInterface";
+    private static final String OUTPUT_INTERFACE_FQN = "\\Symfony\\Component\\Console\\Output\\OutputInterface";
 
     /**
      * Get next element PHP attribute context.
@@ -95,6 +99,10 @@ public class PhpAttributeScopeValidator {
                 if (method.getAccess().isPublic() && PhpAttributeScopeValidator.isDoctrineEntityClass(containingClass)) {
                     return true;
                 }
+
+                if (isCommandActionMethod(method)) {
+                    return true;
+                }
             }
         }
 
@@ -130,6 +138,8 @@ public class PhpAttributeScopeValidator {
             if (isDoctrineEntityClass(phpClass)) {
                 return true;
             }
+
+            return isCommandClass(phpClass);
         }
 
         return false;
@@ -363,5 +373,67 @@ public class PhpAttributeScopeValidator {
         }
 
         return fqn.contains("\\Entity\\");
+    }
+
+    public static boolean isCommandActionMethod(@NotNull Method method) {
+        if (!method.getAccess().isPublic() || method.isStatic()) {
+            return false;
+        }
+
+        PhpClass containingClass = method.getContainingClass();
+        if (containingClass == null) {
+            return false;
+        }
+
+        if (isCommandClass(containingClass)) {
+            return true;
+        }
+
+        for (Parameter parameter : method.getParameters()) {
+            if (isConsoleParameterType(parameter.getType())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean isCommandClass(@NotNull PhpClass phpClass) {
+        if (phpClass.getName().endsWith("Command")) {
+            return true;
+        }
+
+        String fqn = phpClass.getFQN();
+        if (!fqn.isBlank() && fqn.contains("\\Command\\")) {
+            return true;
+        }
+
+        if (PhpElementsUtil.isInstanceOf(phpClass, COMMAND_CLASS_FQN)) {
+            return true;
+        }
+
+        Method invokeMethod = phpClass.findOwnMethodByName("__invoke");
+        if (invokeMethod != null) {
+            for (Parameter parameter : invokeMethod.getParameters()) {
+                if (isConsoleParameterType(parameter.getType())) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean isConsoleParameterType(@NotNull PhpType type) {
+        for (String typeString : type.getTypes()) {
+            String normalizedType = StringUtils.stripStart(typeString, "\\");
+
+            if (normalizedType.equals(StringUtils.stripStart(INPUT_INTERFACE_FQN, "\\")) ||
+                normalizedType.equals(StringUtils.stripStart(OUTPUT_INTERFACE_FQN, "\\"))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

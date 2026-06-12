@@ -29,4 +29,23 @@ public class PhpCommandGotoCompletionRegistrarTest extends SymfonyLightCodeInsig
         assertAtTextCompletionContains("HASOPTION", optsLookup);
     }
 
+    public void testCommandArgumentsAndOptionsFromMethodCommand() {
+        myFixture.configureByText("UserCommands.php", "<?php\n" +
+            "class UserCommands\n" +
+            "{\n" +
+            "    #[\\Symfony\\Component\\Console\\Attribute\\AsCommand('app:user:create')]\n" +
+            "    public function create(\n" +
+            "        \\Symfony\\Component\\Console\\Input\\InputInterface $input,\n" +
+            "        #[\\Symfony\\Component\\Console\\Attribute\\Argument] string $username,\n" +
+            "        #[\\Symfony\\Component\\Console\\Attribute\\Option(name: 'dry-run')] bool $dryRun = false,\n" +
+            "    ): void {\n" +
+            "        $input->getArgument('METHOD_GETARGUMENT');\n" +
+            "        $input->getOption('METHOD_GETOPTION');\n" +
+            "    }\n" +
+            "}\n"
+        );
+
+        assertAtTextCompletionContains("METHOD_GETARGUMENT", "username");
+        assertAtTextCompletionContains("METHOD_GETOPTION", "dry-run");
+    }
 }

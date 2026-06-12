@@ -15,7 +15,6 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.*;
-import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.intentions.php.AddRouteAttributeIntention;
@@ -29,9 +28,9 @@ import java.util.Collection;
 
 /**
  * Provides completion for Symfony PHP attributes like #[Route()] and #[AsController]
- *
+ * <p>
  * Triggers when typing "#<caret>" before a public method, class, or property
- *
+ * <p>
  * Supports:
  * - Class-level attributes: #[Route], #[AsController], #[IsGranted], #[AsTwigComponent], #[AsCommand]
  * - Method-level attributes: #[Route], #[IsGranted], #[Cache], #[ExposeInTemplate], #[PreMount], #[PostMount]
@@ -55,12 +54,8 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
     private static final String POST_MOUNT_ATTRIBUTE_FQN = "\\Symfony\\UX\\TwigComponent\\Attribute\\PostMount";
     private static final String TWIG_EXTENSION_FQN = "\\Twig\\Extension\\AbstractExtension";
     private static final String AS_COMMAND_ATTRIBUTE_FQN = "\\Symfony\\Component\\Console\\Attribute\\AsCommand";
-    private static final String COMMAND_CLASS_FQN = "\\Symfony\\Component\\Console\\Command\\Command";
-    private static final String INPUT_INTERFACE_FQN = "\\Symfony\\Component\\Console\\Input\\InputInterface";
-    private static final String OUTPUT_INTERFACE_FQN = "\\Symfony\\Component\\Console\\Output\\OutputInterface";
 
     // Doctrine ORM Mapping attributes - Field level
-    private static final String DOCTRINE_MAPPING_NAMESPACE = "\\Doctrine\\ORM\\Mapping";
     private static final String DOCTRINE_COLUMN_ATTRIBUTE_FQN = "\\Doctrine\\ORM\\Mapping\\Column";
     private static final String DOCTRINE_ID_ATTRIBUTE_FQN = "\\Doctrine\\ORM\\Mapping\\Id";
     private static final String DOCTRINE_GENERATED_VALUE_ATTRIBUTE_FQN = "\\Doctrine\\ORM\\Mapping\\GeneratedValue";
@@ -136,6 +131,10 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                     if (method.getAccess().isPublic() && PhpAttributeScopeValidator.isDoctrineEntityClass(containingClass)) {
                         lookupElements.addAll(getDoctrineMethodAttributeCompletions(project));
                     }
+
+                    if (PhpAttributeScopeValidator.isCommandActionMethod(method)) {
+                        lookupElements.addAll(getCommandClassCompletions(project));
+                    }
                 }
             } else if (validAttributeScope instanceof Field field) {
                 // Property-level attribute completions
@@ -158,7 +157,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                     lookupElements.addAll(getTwigComponentClassCompletions(project));
                 }
 
-                if (isCommandClass(phpClass)) {
+                if (PhpAttributeScopeValidator.isCommandClass(phpClass)) {
                     lookupElements.addAll(getCommandClassCompletions(project));
                 }
 
@@ -620,7 +619,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
         /**
          * Get attribute completions for public methods in Doctrine entity classes (Lifecycle Callbacks)
          * Includes: PostLoad, PostPersist, PostRemove, PostUpdate, PrePersist, PreRemove, PreUpdate
-         *
+         * <p>
          * These attributes use a special insert handler that also adds #[HasLifecycleCallbacks]
          * to the class if not already present.
          */
@@ -719,52 +718,6 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
          */
         private boolean hasAsTwigComponentAttribute(@NotNull PhpClass phpClass) {
             return !phpClass.getAttributes(AS_TWIG_COMPONENT_ATTRIBUTE_FQN).isEmpty();
-        }
-
-        /**
-         * Check if the class is a valid command class for AsCommand attribute.
-         * A class is considered a valid command if:
-         * - Its name ends with "Command", OR
-         * - Its namespace contains "\\Command\\", OR
-         * - It extends Symfony's Command class, OR
-         * - It has an __invoke method with Input or Output interface parameters (Symfony 7.4 style)
-         */
-        private boolean isCommandClass(@NotNull PhpClass phpClass) {
-            // Check if the class name ends with "Command"
-            if (phpClass.getName().endsWith("Command")) {
-                return true;
-            }
-
-            // Check if the class is in a Command namespace
-            String fqn = phpClass.getFQN();
-            if (!fqn.isBlank() && fqn.contains("\\Command\\")) {
-                return true;
-            }
-
-            // Check if the class extends Symfony's Command class
-            if (PhpElementsUtil.isInstanceOf(phpClass, COMMAND_CLASS_FQN)) {
-                return true;
-            }
-
-            // Check if the class has an __invoke method with Input or Output interface parameters
-            Method invokeMethod = phpClass.findOwnMethodByName("__invoke");
-            if (invokeMethod != null) {
-                for (Parameter parameter : invokeMethod.getParameters()) {
-                    // Check via PhpType resolution for exact interface match
-                    PhpType type = parameter.getType();
-                    for (String typeString : type.getTypes()) {
-                        // Strip leading backslash for comparison
-                        String normalizedType = StringUtils.stripStart(typeString, "\\");
-
-                        if (normalizedType.equals(StringUtils.stripStart(INPUT_INTERFACE_FQN, "\\")) ||
-                            normalizedType.equals(StringUtils.stripStart(OUTPUT_INTERFACE_FQN, "\\"))) {
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            return false;
         }
 
         /**

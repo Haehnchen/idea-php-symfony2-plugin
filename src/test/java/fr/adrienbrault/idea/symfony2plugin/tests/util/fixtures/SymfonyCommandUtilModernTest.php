@@ -11,7 +11,6 @@ namespace SymfonyCommandUtilModern
 
     /**
      * Modern invokable command: has #[AsCommand] but does NOT extend Command.
-     * Must be in its own file so PhpAttributeIndex stores it (index keeps one entry per file per key).
      */
     #[AsCommand(name: 'app:modern-invokable')]
     class ModernInvokableCommand

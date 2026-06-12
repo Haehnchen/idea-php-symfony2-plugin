@@ -20,10 +20,33 @@ class SymfonyShellCommandSpecsProviderTest : SymfonyLightCodeInsightFixtureTestC
         super.setUp()
         // Commands extending Command: found via subclass scan (multiple per file is fine)
         myFixture.copyFileToProject("TerminalCommandFixture.php")
-        // Standalone invokable commands without extends Command: each needs its own file
-        // (PhpAttributeIndex stores one entry per attribute key per file)
+        // Standalone invokable commands without extends Command
         myFixture.copyFileToProject("TerminalCommandOptionsFixture.php")
         myFixture.copyFileToProject("TerminalCommandArgsFixture.php")
+        myFixture.addFileToProject(
+            "src/Command/TerminalMethodCommands.php",
+            """
+            <?php
+
+            namespace TerminalFixtures;
+
+            use Symfony\Component\Console\Attribute\Argument;
+            use Symfony\Component\Console\Attribute\AsCommand;
+            use Symfony\Component\Console\Attribute\Option;
+
+            class TerminalMethodCommands
+            {
+                #[AsCommand('terminal:method-create')]
+                public function create(
+                    #[Argument(description: 'User name')] string ${'$'}username,
+                    #[Option(name: 'dry-run', shortcut: 'd')] bool ${'$'}dryRun = false,
+                ): int { return 0; }
+
+                #[AsCommand('terminal:method-delete')]
+                public function delete(): int { return 0; }
+            }
+            """.trimIndent()
+        )
     }
 
     // -------------------------------------------------------------------------
@@ -84,6 +107,8 @@ class SymfonyShellCommandSpecsProviderTest : SymfonyLightCodeInsightFixtureTestC
         assertTrue("terminal:with-options should be collected", "terminal:with-options" in names)
         assertTrue("terminal:with-args should be collected", "terminal:with-args" in names)
         assertTrue("terminal:modern-options should be collected", "terminal:modern-options" in names)
+        assertTrue("terminal:method-create should be collected", "terminal:method-create" in names)
+        assertTrue("terminal:method-delete should be collected", "terminal:method-delete" in names)
     }
 
     fun testCollectCommandDataInvalidatesOnPhpModification() {
@@ -229,5 +254,15 @@ class SymfonyShellCommandSpecsProviderTest : SymfonyLightCodeInsightFixtureTestC
         val cmd = data.find { it.name == "terminal:with-options" }
         assertNotNull("terminal:with-options must exist", cmd)
         assertTrue("terminal:with-options should have no arguments", cmd!!.arguments.isEmpty())
+    }
+
+    fun testCollectCommandDataIncludesMethodCommandOptionsAndArguments() {
+        val data = collectCommandData(project)
+        val cmd = data.find { it.name == "terminal:method-create" }
+        assertNotNull("terminal:method-create command must exist", cmd)
+
+        assertTrue("method argument 'username' must be present", cmd!!.arguments.containsKey("username"))
+        assertTrue("method option 'dry-run' must be present", cmd.options.containsKey("dry-run"))
+        assertEquals("dry-run shortcut must be 'd'", "d", cmd.options["dry-run"]?.shortcut())
     }
 }
