@@ -12,6 +12,7 @@ public class PhpArrayGotoCompletionRegistrarTest extends SymfonyLightCodeInsight
         super.setUp();
         myFixture.addFileToProject("src/Service/Mailer.php", "<?php\nnamespace App\\Service;\nclass Mailer {}\n");
         myFixture.addFileToProject("src/Service/DecoratingMailer.php", "<?php\nnamespace App\\Service;\nclass DecoratingMailer extends Mailer {}\n");
+        myFixture.addFileToProject("config/parameters.yaml", "parameters:\n    mailer.transport: smtp\n");
         myFixture.addFileToProject("config/php_array_targets.php", "<?php\nnamespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\nreturn App::config([\n    'services' => [\n        'app.mailer' => ['class' => \\App\\Service\\Mailer::class],\n    ],\n]);\n");
     }
 
@@ -63,6 +64,68 @@ public class PhpArrayGotoCompletionRegistrarTest extends SymfonyLightCodeInsight
                 "    ],\n" +
                 "];",
             lookupElement -> "app.mailer".equals(lookupElement.getItemText()) && lookupElement.isItemTextBold()
+        );
+    }
+
+    public void testArgumentsParameterCompletion() {
+        assertCompletionContains(
+            PhpFileType.INSTANCE,
+            "<?php\n" +
+                "namespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\n" +
+                "return [\n" +
+                "    'services' => [\n" +
+                "        'app.foo' => [\n" +
+                "            'arguments' => ['%<caret>'],\n" +
+                "        ],\n" +
+                "    ],\n" +
+                "];",
+            "%mailer.transport%"
+        );
+    }
+
+    public void testCallsArgumentParameterCompletion() {
+        assertCompletionContains(
+            PhpFileType.INSTANCE,
+            "<?php\n" +
+                "namespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\n" +
+                "return [\n" +
+                "    'services' => [\n" +
+                "        'app.foo' => [\n" +
+                "            'calls' => [['setTransport', ['%<caret>']]],\n" +
+                "        ],\n" +
+                "    ],\n" +
+                "];",
+            "%mailer.transport%"
+        );
+    }
+
+    public void testArgumentsParameterNavigation() {
+        assertNavigationMatch(
+            PhpFileType.INSTANCE,
+            "<?php\n" +
+                "namespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\n" +
+                "return [\n" +
+                "    'services' => [\n" +
+                "        'app.foo' => [\n" +
+                "            'arguments' => ['%mailer.trans<caret>port%'],\n" +
+                "        ],\n" +
+                "    ],\n" +
+                "];"
+        );
+    }
+
+    public void testCallsArgumentParameterNavigation() {
+        assertNavigationMatch(
+            PhpFileType.INSTANCE,
+            "<?php\n" +
+                "namespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\n" +
+                "return [\n" +
+                "    'services' => [\n" +
+                "        'app.foo' => [\n" +
+                "            'calls' => [['setTransport', ['%mailer.trans<caret>port%']]],\n" +
+                "        ],\n" +
+                "    ],\n" +
+                "];"
         );
     }
 }
