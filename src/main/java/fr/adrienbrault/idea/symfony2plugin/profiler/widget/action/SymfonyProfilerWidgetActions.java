@@ -3,9 +3,13 @@ package fr.adrienbrault.idea.symfony2plugin.profiler.widget.action;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Computable;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.ui.IconManager;
+import com.intellij.util.PsiIconUtil;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
@@ -35,8 +39,8 @@ public class SymfonyProfilerWidgetActions {
         private final String templateName;
         private final Project project;
 
-        public TemplateAction(Project project, @NotNull String templateName) {
-            super(templateName, "Open Template", TwigIcons.TwigFileIcon);
+        public TemplateAction(@NotNull Project project, @NotNull String templateName) {
+            super(templateName, "Open Template", createDeferredTemplateIcon(project, templateName));
             this.templateName = templateName;
             this.project = project;
         }
@@ -49,6 +53,32 @@ public class SymfonyProfilerWidgetActions {
             if(!psiFiles.isEmpty()) {
                 IdeHelper.navigateToPsiElement(psiFiles.iterator().next());
             }
+        }
+
+        @NotNull
+        private static Icon createDeferredTemplateIcon(@NotNull Project project, @NotNull String templateName) {
+            return IconManager.getInstance().createDeferredIcon(
+                TwigIcons.TwigFileIcon,
+                new TemplateIconRequest(project, templateName),
+                request -> {
+                    Icon icon = ApplicationManager.getApplication().runReadAction((Computable<Icon>) () ->
+                        getTemplateFileIcon(request.project(), request.templateName())
+                    );
+                    return icon != null ? icon : TwigIcons.TwigFileIcon;
+                }
+            );
+        }
+
+        @Nullable
+        public static Icon getTemplateFileIcon(@NotNull Project project, @NotNull String templateName) {
+            for (PsiFile psiFile : TwigUtil.getTemplatePsiElements(project, templateName)) {
+                return PsiIconUtil.getIconFromProviders(psiFile, 0);
+            }
+
+            return null;
+        }
+
+        private record TemplateIconRequest(@NotNull Project project, @NotNull String templateName) {
         }
     }
 

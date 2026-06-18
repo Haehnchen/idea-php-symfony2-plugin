@@ -3,6 +3,10 @@ package fr.adrienbrault.idea.symfony2plugin.profiler.widget;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.Separator;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.util.Computable;
+import com.intellij.ui.LayeredIcon;
+import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerIndexInterface;
 import fr.adrienbrault.idea.symfony2plugin.profiler.collector.DefaultDataCollectorInterface;
 import fr.adrienbrault.idea.symfony2plugin.profiler.collector.MailCollectorInterface;
@@ -10,10 +14,15 @@ import fr.adrienbrault.idea.symfony2plugin.profiler.collector.TwigComponentDataC
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.MailMessage;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerTwigComponent;
+import fr.adrienbrault.idea.symfony2plugin.profiler.widget.action.SymfonyProfilerWidgetActions;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigIncludeStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.Icon;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -78,6 +87,30 @@ public class SymfonyProfilerWidgetTest extends SymfonyLightCodeInsightFixtureTes
         assertTrue(actionTexts.contains("LowTraffic"));
         assertTrue(actionTexts.contains("AnonymousBanner (anonymous)"));
         assertTrue(actionTexts.indexOf("HighTraffic") < actionTexts.indexOf("LowTraffic"));
+    }
+
+    public void testTemplateActionUsesResolvedTemplateFileIcon() {
+        Settings.getInstance(getProject()).twigNamespaces.clear();
+        Settings.getInstance(getProject()).twigNamespaces.add(
+            new TwigNamespaceSetting(TwigUtil.MAIN, "templates", true, TwigUtil.NamespaceType.ADD_PATH, true)
+        );
+
+        myFixture.addFileToProject(
+            "templates/page.html.twig",
+            "{% include 'partial.html.twig' %}"
+        );
+        myFixture.addFileToProject(
+            "templates/partial.html.twig",
+            "<div>Partial</div>"
+        );
+
+        assertIndexContains(TwigIncludeStubIndex.KEY, "partial.html.twig");
+
+        Icon icon = ApplicationManager.getApplication().runReadAction((Computable<Icon>) () ->
+            SymfonyProfilerWidgetActions.TemplateAction.getTemplateFileIcon(getProject(), "partial.html.twig")
+        );
+
+        assertTrue("Profiler template action should use the decorated Twig file icon", icon instanceof LayeredIcon);
     }
 
     private static class TestProfilerRequest implements ProfilerRequestInterface {
