@@ -359,6 +359,84 @@ public class UxUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
             .anyMatch(phpClass -> "\\App\\Pizza\\Components\\Button\\Primary".equals(phpClass.getFQN())));
     }
 
+    public void testPhpConfiguredTwigComponentDefaultsExposeComponentName() {
+        myFixture.addFileToProject("config/packages/twig_component.php", "<?php\n" +
+            "use Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\ContainerConfigurator;\n" +
+            "\n" +
+            "return static function (ContainerConfigurator $container): void {\n" +
+            "    $container->extension('twig_component', [\n" +
+            "        'defaults' => [\n" +
+            "            'App\\\\Shared\\\\Ui\\\\Web\\\\Component\\\\' => [\n" +
+            "                'template_directory' => '@Shared',\n" +
+            "            ],\n" +
+            "        ],\n" +
+            "    ]);\n" +
+            "};\n"
+        );
+
+        myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Shared\\Ui\\Web\\Component\\PageIntro;\n" +
+            "\n" +
+            "use Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n" +
+            "\n" +
+            "#[AsTwigComponent('PageIntro', template: '@Shared/PageIntro/page-intro.html.twig')]\n" +
+            "final class PageIntroComponent {}\n"
+        );
+
+        assertContainsElements(UxUtil.getTwigComponentNames(getProject()), "PageIntro");
+        assertTrue(UxUtil.getTwigComponentPhpClasses(getProject(), "PageIntro").stream()
+            .anyMatch(phpClass -> "\\App\\Shared\\Ui\\Web\\Component\\PageIntro\\PageIntroComponent".equals(phpClass.getFQN())));
+    }
+
+    public void testPhpConfiguredTwigComponentNamePrefixForImplicitClassComponent() {
+        myFixture.addFileToProject("config/packages/twig_component_prefix.php", "<?php\n" +
+            "return [\n" +
+            "    'twig_component' => [\n" +
+            "        'defaults' => [\n" +
+            "            'App\\\\Pizza\\\\Components\\\\' => [\n" +
+            "                'template_directory' => 'components/pizza',\n" +
+            "                'name_prefix' => 'Pizza',\n" +
+            "            ],\n" +
+            "        ],\n" +
+            "    ],\n" +
+            "];\n"
+        );
+
+        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Pizza\\Components\\Button;\n" +
+            "\n" +
+            "use Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n" +
+            "\n" +
+            "#[AsTwigComponent]\n" +
+            "class Primary {}\n"
+        );
+
+        PhpClass primaryClass = PsiTreeUtil.collectElementsOfType(psiFile, PhpClass.class).stream()
+            .filter(p -> p.getFQN().equals("\\App\\Pizza\\Components\\Button\\Primary"))
+            .findFirst().get();
+
+        Set<String> componentNames = UxUtil.getAllComponentNames(getProject()).stream()
+            .map(UxUtil.TwigComponent::name)
+            .collect(Collectors.toSet());
+        assertContainsElements(componentNames, "Pizza:Button:Primary");
+        assertContainsElements(UxUtil.getComponentTemplatesForPhpClass(primaryClass), "components/pizza/Button/Primary.html.twig");
+    }
+
+    public void testPhpConfiguredAnonymousTemplateDirectoryContributesAnonymousComponents() {
+        myFixture.addFileToProject("config/packages/twig_component_anonymous.php", "<?php\n" +
+            "return [\n" +
+            "    'twig_component' => [\n" +
+            "        'anonymous_template_directory' => 'ux-components',\n" +
+            "    ],\n" +
+            "];\n"
+        );
+        myFixture.copyFileToProject("ide-twig.json", "ide-twig.json");
+        myFixture.addFileToProject("templates/ux-components/Alert.html.twig", "<div></div>");
+
+        assertContainsElements(UxUtil.getTwigComponentNames(getProject()), "Alert");
+        assertContainsVirtualFile(UxUtil.getComponentTemplates(getProject(), "Alert"), "/templates/ux-components/Alert.html.twig");
+    }
+
     public void testExplicitComponentNameWithNamePrefixKeepsExplicitNameAndTemplate() {
         myFixture.addFileToProject("config/packages/twig_component_prefix_explicit.yaml",
             "twig_component:\n" +
