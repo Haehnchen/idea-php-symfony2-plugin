@@ -8,6 +8,23 @@ namespace Symfony\Component\DependencyInjection
     };
 }
 
+namespace Psr\Container
+{
+    interface ContainerInterface
+    {
+        public function get(string $id);
+        public function has(string $id);
+    }
+}
+
+namespace Symfony\Component\DependencyInjection\ParameterBag
+{
+    interface ContainerBagInterface extends \Psr\Container\ContainerInterface
+    {
+        public function all();
+    }
+}
+
 namespace Foobar
 {
     class Car

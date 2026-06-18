@@ -1,5 +1,6 @@
 parameters:
   foo: foo
+  app.token: '%env(APP_TOKEN)%'
 
 services:
   Foo\Bar:

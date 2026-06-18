@@ -32,6 +32,23 @@ public class MissingServiceInspectionTest extends SymfonyLightCodeInsightFixture
         );
     }
 
+    public void testThatContainerBagGetMethodIsNotInspectedAsService() {
+        assertLocalInspectionNotContains("test.php", "<?php\n" +
+                "use Symfony\\Component\\DependencyInjection\\ParameterBag\\ContainerBagInterface;\n" +
+                "\n" +
+                "class TestService\n" +
+                "{\n" +
+                "    public function __construct(private ContainerBagInterface $containerBag) {}\n" +
+                "\n" +
+                "    public function testFoo()\n" +
+                "    {\n" +
+                "        $this->containerBag->get('app.to<caret>ken');\n" +
+                "    }\n" +
+                "}",
+            MissingServiceInspection.INSPECTION_MESSAGE
+        );
+    }
+
     public void testThatPhpAttributesForServiceAutowireIsInspected() {
         assertLocalInspectionContains("test.php", "<?php\n" +
                 "use Symfony\\Component\\DependencyInjection\\Attribute\\Autowire;\n" +

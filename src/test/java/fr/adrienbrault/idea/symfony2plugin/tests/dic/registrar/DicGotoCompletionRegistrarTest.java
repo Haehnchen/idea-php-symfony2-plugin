@@ -36,6 +36,30 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
         }
     }
 
+    public void testParameterContributorForParameterBagInterfaces() {
+        for (String className : new String[]{"ParameterBagInterface", "ContainerBagInterface"}) {
+            for (String methodName : new String[]{"get", "has"}) {
+                String php = "<?php\n" +
+                    "use Symfony\\Component\\DependencyInjection\\ParameterBag\\" + className + ";\n" +
+                    "\n" +
+                    "class TestService\n" +
+                    "{\n" +
+                    "    public function __construct(private " + className + " $bag) {}\n" +
+                    "\n" +
+                    "    public function testFoo()\n" +
+                    "    {\n" +
+                    "        $this->bag->" + methodName + "('<caret>');\n" +
+                    "    }\n" +
+                    "}\n";
+
+                assertCompletionContains(PhpFileType.INSTANCE, php, "app.token");
+                assertCompletionNotContains(PhpFileType.INSTANCE, php, "foo_bar_service");
+
+                assertNavigationMatch(PhpFileType.INSTANCE, php.replace("<caret>", "app.to<caret>ken"), PlatformPatterns.psiElement());
+            }
+        }
+    }
+
     public void testParameterContributorProxied() {
         for (String s : new String[]{"foo", "bar"}) {
             assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +

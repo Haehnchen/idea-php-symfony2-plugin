@@ -14,7 +14,9 @@ import fr.adrienbrault.idea.symfony2plugin.dic.ServiceIndexedReference;
 import fr.adrienbrault.idea.symfony2plugin.dic.AbstractServiceReference;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceReference;
 import fr.adrienbrault.idea.symfony2plugin.dic.TagReference;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
+import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpStringLiteralExpressionReference;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -29,22 +31,45 @@ import java.util.Collection;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class PhpConfigReferenceContributor extends PsiReferenceContributor {
+    private static final MethodMatcher.CallToSignature[] SERVICE_HAS_SIGNATURES = new MethodMatcher.CallToSignature[] {
+        new MethodMatcher.CallToSignature("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "has"),
+        new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "has"),
+        new MethodMatcher.CallToSignature("\\Psr\\Container\\ContainerInterface", "has"),
+
+        // Symfony 3.3 / 3.4
+        new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "has"),
+
+        // Symfony 4
+        new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "has"),
+    };
 
     @Override
     public void registerReferenceProviders(@NotNull PsiReferenceRegistrar psiReferenceRegistrar) {
-        psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern(), new PhpStringLiteralExpressionReference(ServiceReference.class)
-            .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "has")
-            .addCall("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller", "has")
-            .addCall("\\Psr\\Container\\ContainerInterface", "has")
+        psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern(), new PsiReferenceProvider() {
+            @NotNull
+            @Override
+            public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
+                if (!Symfony2ProjectComponent.isEnabled(psiElement) || !(psiElement instanceof StringLiteralExpression stringLiteralExpression) || !(psiElement.getContext() instanceof ParameterList parameterList)) {
+                    return new PsiReference[0];
+                }
 
-            // Symfony 3.3 / 3.4
-            .addCall("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait", "has")
+                PsiElement method = parameterList.getContext();
+                if (!(method instanceof MethodReference methodReference) || PsiElementUtils.getParameterIndexValue(psiElement) != 0) {
+                    return new PsiReference[0];
+                }
 
-            // Symfony 4
-            .addCall("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "has")
+                if (ServiceContainerUtil.isContainerBagParameterAccess(methodReference) || !PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, SERVICE_HAS_SIGNATURES)) {
+                    return new PsiReference[0];
+                }
 
-            .addCall("\\Symfony\\Component\\DependencyInjection\\ParameterBag\\ContainerBagInterface", "has")
-        );
+                return new PsiReference[]{ new ServiceReference(stringLiteralExpression) };
+            }
+
+            @Override
+            public boolean acceptsTarget(@NotNull PsiElement target) {
+                return Symfony2ProjectComponent.isEnabled(target);
+            }
+        });
 
         psiReferenceRegistrar.registerReferenceProvider(PhpElementsUtil.getMethodWithFirstStringOrNamedArgumentPattern(), new PhpStringLiteralExpressionReference(ServiceIndexedReference.class)
             .addCall("\\Symfony\\Component\\DependencyInjection\\ContainerBuilder", "hasDefinition")
