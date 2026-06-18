@@ -7,6 +7,7 @@ import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.ConstraintPropertyReference;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceReference;
+import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineTypes;
@@ -39,9 +40,6 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "has"),
         new MethodMatcher.CallToSignature("\\Psr\\Container\\ContainerInterface", "get"),
         new MethodMatcher.CallToSignature("\\Psr\\Container\\ContainerInterface", "has"),
-
-        new MethodMatcher.CallToSignature("Symfony\\Component\\DependencyInjection\\ParameterBag\\ContainerBagInterface", "get"),
-        new MethodMatcher.CallToSignature("Symfony\\Component\\DependencyInjection\\ParameterBag\\ContainerBagInterface", "has"),
     };
 
     public static final MethodMatcher.CallToSignature[] REPOSITORY_SIGNATURES = new MethodMatcher.CallToSignature[] {
@@ -117,7 +115,8 @@ public class SymfonyPhpReferenceContributor extends PsiReferenceContributor {
                 @Override
                 public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement psiElement, @NotNull ProcessingContext processingContext) {
 
-                    if (MethodMatcher.getMatchedSignatureWithDepth(psiElement, CONTAINER_SIGNATURES) == null) {
+                    MethodMatcher.MethodMatchParameter methodMatchParameter = MethodMatcher.getMatchedSignatureWithDepth(psiElement, CONTAINER_SIGNATURES);
+                    if (methodMatchParameter == null || ServiceContainerUtil.isContainerBagParameterAccess(methodMatchParameter.getMethodReference())) {
                         return new PsiReference[0];
                     }
 

@@ -9,6 +9,30 @@ namespace Symfony\Component\DependencyInjection
     }
 }
 
+namespace Psr\Container
+{
+    interface ContainerInterface
+    {
+        public function get(string $id);
+        public function has(string $id);
+    }
+}
+
+namespace Symfony\Component\DependencyInjection\ParameterBag
+{
+    interface ParameterBagInterface
+    {
+        public function get(string $name);
+        public function set(string $name, $value);
+        public function has(string $name);
+    }
+
+    interface ContainerBagInterface extends \Psr\Container\ContainerInterface
+    {
+        public function all();
+    }
+}
+
 namespace Symfony\Component\DependencyInjection\Attribute
 {
     class Autowire
@@ -145,4 +169,3 @@ namespace Foo
         }
     }
 }
-

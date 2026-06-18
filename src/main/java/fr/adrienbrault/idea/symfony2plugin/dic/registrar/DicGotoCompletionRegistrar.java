@@ -20,6 +20,7 @@ import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUt
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.TagNameCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -56,6 +57,13 @@ public class DicGotoCompletionRegistrar implements GotoCompletionRegistrar {
                     .match();
 
                 if(methodMatchParameter == null) {
+                    MethodReference methodReference = PsiElementUtils.getMethodReferenceWithFirstStringParameter((StringLiteralExpression) context);
+                    if (methodReference == null || !ServiceContainerUtil.isContainerBagParameterAccess(methodReference)) {
+                        return null;
+                    }
+                }
+
+                if(methodMatchParameter == null && PsiElementUtils.getParameterIndexValue(context) != 0) {
                     return null;
                 }
 

@@ -61,6 +61,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ServiceContainerUtil {
     private static final Key<CachedValue<Map<String, Collection<PhpClassResourceCandidate>>>> PHP_CLASS_FQN_RESOURCE_CACHE = new Key<>("SYMFONY_PHP_CLASS_FQN_RESOURCE_CACHE");
+    public static final String CONTAINER_BAG_INTERFACE = "\\Symfony\\Component\\DependencyInjection\\ParameterBag\\ContainerBagInterface";
     public static final MethodMatcher.CallToSignature[] SERVICE_GET_SIGNATURES = new MethodMatcher.CallToSignature[] {
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\DependencyInjection\\ContainerInterface", "get"),
         new MethodMatcher.CallToSignature("\\Psr\\Container\\ContainerInterface", "get"),
@@ -71,8 +72,6 @@ public class ServiceContainerUtil {
 
         // Symfony 4
         new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "get"),
-
-        new MethodMatcher.CallToSignature("\\Symfony\\Component\\DependencyInjection\\ParameterBag\\ContainerBagInterface", "get"),
     };
 
     private static final Key<CachedValue<Collection<String>>> SYMFONY_CONTAINER_FILES = new Key<>("SYMFONY_CONTAINER_FILES");
@@ -93,6 +92,29 @@ public class ServiceContainerUtil {
     public static final String AUTOWIRE_METHOD_OF_ATTRIBUTE_CLASS = "\\Symfony\\Component\\DependencyInjection\\Attribute\\AutowireMethodOf";
     public static final String CONTAINER_CONFIGURATOR = "\\Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\ContainerConfigurator";
     public static final String CONTAINER_CONFIG_APP = "\\Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\App";
+
+    public static boolean isServiceGetMethod(@NotNull MethodReference methodReference) {
+        if (isContainerBagParameterAccess(methodReference)) {
+            return false;
+        }
+
+        return PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, SERVICE_GET_SIGNATURES);
+    }
+
+    public static boolean isServiceGetMethod(@NotNull Method method) {
+        return PhpElementsUtil.isMethodInstanceOf(method, SERVICE_GET_SIGNATURES);
+    }
+
+    public static boolean isContainerBagParameterAccess(@NotNull MethodReference methodReference) {
+        String methodName = methodReference.getName();
+        if (!"get".equals(methodName) && !"has".equals(methodName)) {
+            return false;
+        }
+
+        PhpExpression receiver = methodReference.getClassReference();
+        return receiver != null && receiver.getType().getTypes().stream()
+            .anyMatch(fqn -> PhpElementsUtil.isInstanceOf(methodReference.getProject(), fqn, CONTAINER_BAG_INTERFACE));
+    }
 
     @NotNull
     public static Collection<ServiceSerializable> getServicesInFile(@NotNull PsiFile psiFile) {

@@ -51,7 +51,7 @@ public class MissingServiceInspection {
                 if(element.getLanguage() == PhpLanguage.INSTANCE && element instanceof StringLiteralExpression) {
                     // PHP
                     MethodReference methodReference = PsiElementUtils.getMethodReferenceWithFirstStringParameter((StringLiteralExpression) element);
-                    if (methodReference != null && PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, ServiceContainerUtil.SERVICE_GET_SIGNATURES)) {
+                    if (methodReference != null && ServiceContainerUtil.isServiceGetMethod(methodReference)) {
                         String serviceName = PhpElementsUtil.getFirstArgumentStringValue(methodReference);
                         if (StringUtils.isNotBlank(serviceName) && !hasService(serviceName)) {
                             holder.registerProblem(element, INSPECTION_MESSAGE, ProblemHighlightType.GENERIC_ERROR_OR_WARNING);

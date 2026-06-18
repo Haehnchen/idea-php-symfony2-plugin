@@ -189,7 +189,7 @@ public class ServiceDeprecatedClassesInspection {
                 }
 
                 MethodReference methodReference = PsiElementUtils.getMethodReferenceWithFirstStringParameter(psiElement);
-                if (methodReference == null || !PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, ServiceContainerUtil.SERVICE_GET_SIGNATURES)) {
+                if (methodReference == null || !ServiceContainerUtil.isServiceGetMethod(methodReference)) {
                     return;
                 }
 

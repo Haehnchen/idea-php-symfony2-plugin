@@ -50,6 +50,10 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider4 {
             return null;
         }
 
+        if (!ServiceContainerUtil.isServiceGetMethod(methodReference)) {
+            return null;
+        }
+
         String signature = PhpTypeProviderUtil.getReferenceSignatureByFirstParameter(methodReference, TRIM_KEY);
         return signature == null ? null : new PhpType().add("#" + this.getKey() + signature);
     }
@@ -78,7 +82,7 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider4 {
         }
 
         // finally search the classes
-        if (PhpElementsUtil.isMethodInstanceOf((Method) phpNamedElement, ServiceContainerUtil.SERVICE_GET_SIGNATURES)) {
+        if (ServiceContainerUtil.isServiceGetMethod((Method) phpNamedElement)) {
             ContainerService containerService = ContainerCollectionResolver.getService(project, parameter);
 
             if (containerService != null) {
