@@ -11,8 +11,10 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerIndexInterface;
 import fr.adrienbrault.idea.symfony2plugin.profiler.collector.DefaultDataCollectorInterface;
 import fr.adrienbrault.idea.symfony2plugin.profiler.collector.MailCollectorInterface;
+import fr.adrienbrault.idea.symfony2plugin.profiler.collector.TwigComponentDataCollectorInterface;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.MailMessage;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface;
+import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerTwigComponent;
 import fr.adrienbrault.idea.symfony2plugin.profiler.factory.ProfilerFactoryUtil;
 import fr.adrienbrault.idea.symfony2plugin.profiler.widget.action.SymfonyProfilerWidgetActions;
 import org.apache.commons.lang3.StringUtils;
@@ -71,6 +73,7 @@ public class SymfonyProfilerWidget extends EditorBasedStatusBarPopup {
         Map<String, AnAction> knownController = new ConcurrentHashMap<>();
         Map<String, AnAction> knownRoutes = new ConcurrentHashMap<>();
         Map<String, AnAction> knownTemplates = new ConcurrentHashMap<>();
+        Map<String, ProfilerTwigComponent> knownComponents = new ConcurrentHashMap<>();
 
         requests.parallelStream().forEach(profilerRequest -> {
             urlActions.add(new SymfonyProfilerWidgetActions.UrlAction(index, profilerRequest));
@@ -102,6 +105,14 @@ public class SymfonyProfilerWidget extends EditorBasedStatusBarPopup {
                     }
                 }
             }
+
+            TwigComponentDataCollectorInterface componentCollector = profilerRequest.getCollector(TwigComponentDataCollectorInterface.class);
+            if (componentCollector != null) {
+                for (ProfilerTwigComponent component : componentCollector.getComponents()) {
+                    knownComponents.merge(component.name(), component, ProfilerTwigComponent::merge);
+                }
+            }
+
             MailCollectorInterface collectorMail = profilerRequest.getCollector(MailCollectorInterface.class);
             if (collectorMail != null) {
                 for (MailMessage message : collectorMail.getMessages()) {
@@ -143,6 +154,15 @@ public class SymfonyProfilerWidget extends EditorBasedStatusBarPopup {
         if(!knownController.isEmpty()) {
             actionGroup.addSeparator("Controller");
             actionGroup.addAll(knownController.values());
+        }
+
+        if(!knownComponents.isEmpty()) {
+            actionGroup.addSeparator("Components");
+            actionGroup.addAll(knownComponents.values().stream()
+                .sorted(Comparator.comparingInt(ProfilerTwigComponent::renderCount).reversed()
+                    .thenComparing(ProfilerTwigComponent::name, String.CASE_INSENSITIVE_ORDER))
+                .map(component -> new SymfonyProfilerWidgetActions.TwigComponentAction(project, component))
+                .toList());
         }
 
         // template should be most use case; so keep it in cursor range

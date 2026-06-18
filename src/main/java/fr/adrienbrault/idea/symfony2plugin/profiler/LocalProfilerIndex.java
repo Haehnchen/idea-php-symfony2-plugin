@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.profiler;
 import com.intellij.util.containers.ContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.profiler.collector.LocalDefaultDataCollector;
 import fr.adrienbrault.idea.symfony2plugin.profiler.collector.LocalMailCollector;
+import fr.adrienbrault.idea.symfony2plugin.profiler.collector.LocalTwigComponentDataCollector;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.LocalProfilerRequest;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface;
 import fr.adrienbrault.idea.symfony2plugin.profiler.reader.ReverseFileLineReader;
@@ -135,7 +136,8 @@ public class LocalProfilerIndex implements ProfilerIndexInterface {
             return new LocalProfilerRequest(
                 split,
                 new LocalDefaultDataCollector(content),
-                new LocalMailCollector(content)
+                new LocalMailCollector(content),
+                new LocalTwigComponentDataCollector(content)
             );
         }
     }
