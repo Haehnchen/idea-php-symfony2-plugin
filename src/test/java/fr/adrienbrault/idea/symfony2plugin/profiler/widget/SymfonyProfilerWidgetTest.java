@@ -2,11 +2,14 @@ package fr.adrienbrault.idea.symfony2plugin.profiler.widget;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.Separator;
 import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerIndexInterface;
 import fr.adrienbrault.idea.symfony2plugin.profiler.collector.DefaultDataCollectorInterface;
 import fr.adrienbrault.idea.symfony2plugin.profiler.collector.MailCollectorInterface;
+import fr.adrienbrault.idea.symfony2plugin.profiler.collector.TwigComponentDataCollectorInterface;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.MailMessage;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface;
+import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerTwigComponent;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -26,7 +29,12 @@ public class SymfonyProfilerWidgetTest extends SymfonyLightCodeInsightFixtureTes
                 "hash-" + i,
                 "http://example.com/req-" + i,
                 new TestDefaultCollector("route-" + (i % 5), "template-" + (i % 3), "Controller::method" + i, "FormType" + (i % 7)),
-                new TestMailCollector(new MailMessage("body", "Mail " + i, "html", "swiftmailer"))
+                new TestMailCollector(new MailMessage("body", "Mail " + i, "html", "swiftmailer")),
+                new TestTwigComponentCollector(List.of(
+                    new ProfilerTwigComponent("LowTraffic", "\\App\\Twig\\Components\\LowTraffic", "components/LowTraffic.html.twig", 1),
+                    new ProfilerTwigComponent("HighTraffic", "\\App\\Twig\\Components\\HighTraffic", "components/HighTraffic.html.twig", 2),
+                    new ProfilerTwigComponent("AnonymousBanner", "\\Symfony\\UX\\TwigComponent\\AnonymousComponent", "components/AnonymousBanner.html.twig", 1)
+                ))
             ));
         }
 
@@ -51,6 +59,25 @@ public class SymfonyProfilerWidgetTest extends SymfonyLightCodeInsightFixtureTes
         for (AnAction action : actions) {
             assertNotNull(action);
         }
+
+        List<String> actionTexts = new ArrayList<>();
+        boolean hasComponentsGroup = false;
+        for (AnAction action : actions) {
+            if (action instanceof Separator) {
+                hasComponentsGroup = "Components".equals(((Separator) action).getText()) || hasComponentsGroup;
+            }
+
+            String text = action.getTemplatePresentation().getText();
+            if (text != null) {
+                actionTexts.add(text);
+            }
+        }
+
+        assertTrue(hasComponentsGroup);
+        assertTrue(actionTexts.contains("HighTraffic"));
+        assertTrue(actionTexts.contains("LowTraffic"));
+        assertTrue(actionTexts.contains("AnonymousBanner (anonymous)"));
+        assertTrue(actionTexts.indexOf("HighTraffic") < actionTexts.indexOf("LowTraffic"));
     }
 
     private static class TestProfilerRequest implements ProfilerRequestInterface {
@@ -58,12 +85,14 @@ public class SymfonyProfilerWidgetTest extends SymfonyLightCodeInsightFixtureTes
         private final String url;
         private final DefaultDataCollectorInterface defaultCollector;
         private final MailCollectorInterface mailCollector;
+        private final TwigComponentDataCollectorInterface twigComponentCollector;
 
-        private TestProfilerRequest(String hash, String url, DefaultDataCollectorInterface defaultCollector, MailCollectorInterface mailCollector) {
+        private TestProfilerRequest(String hash, String url, DefaultDataCollectorInterface defaultCollector, MailCollectorInterface mailCollector, TwigComponentDataCollectorInterface twigComponentCollector) {
             this.hash = hash;
             this.url = url;
             this.defaultCollector = defaultCollector;
             this.mailCollector = mailCollector;
+            this.twigComponentCollector = twigComponentCollector;
         }
 
         @NotNull
@@ -104,6 +133,10 @@ public class SymfonyProfilerWidgetTest extends SymfonyLightCodeInsightFixtureTes
 
             if (classFactory == MailCollectorInterface.class) {
                 return classFactory.cast(mailCollector);
+            }
+
+            if (classFactory == TwigComponentDataCollectorInterface.class) {
+                return classFactory.cast(twigComponentCollector);
             }
 
             return null;
@@ -159,6 +192,20 @@ public class SymfonyProfilerWidgetTest extends SymfonyLightCodeInsightFixtureTes
         @Override
         public Collection<MailMessage> getMessages() {
             return messages;
+        }
+    }
+
+    private static class TestTwigComponentCollector implements TwigComponentDataCollectorInterface {
+        private final Collection<ProfilerTwigComponent> components;
+
+        private TestTwigComponentCollector(Collection<ProfilerTwigComponent> components) {
+            this.components = components;
+        }
+
+        @NotNull
+        @Override
+        public Collection<ProfilerTwigComponent> getComponents() {
+            return components;
         }
     }
 }

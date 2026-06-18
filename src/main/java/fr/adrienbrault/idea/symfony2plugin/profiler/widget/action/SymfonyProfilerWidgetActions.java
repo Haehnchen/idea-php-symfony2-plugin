@@ -11,10 +11,12 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerIndexInterface;
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface;
+import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerTwigComponent;
 import fr.adrienbrault.idea.symfony2plugin.profiler.utils.ProfilerUtil;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import icons.TwigIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -66,6 +68,57 @@ public class SymfonyProfilerWidgetActions {
             if (psiFiles != null) {
                 IdeHelper.navigateToPsiElement(psiFiles);
             }
+        }
+    }
+
+    public static class TwigComponentAction extends AnAction {
+        @NotNull
+        private final Project project;
+
+        @NotNull
+        private final ProfilerTwigComponent component;
+
+        public TwigComponentAction(@NotNull Project project, @NotNull ProfilerTwigComponent component) {
+            super(getText(component), "Open Twig Component", TwigIcons.TwigFileIcon);
+            this.project = project;
+            this.component = component;
+        }
+
+        @Override
+        public void actionPerformed(@NotNull AnActionEvent e) {
+            if (!component.isAnonymous() && component.className() != null) {
+                PhpClass phpClass = PhpElementsUtil.getClassInterface(project, component.className());
+                if (phpClass != null) {
+                    IdeHelper.navigateToPsiElement(phpClass);
+                    return;
+                }
+            }
+
+            PsiFile template = getTemplateFile();
+            if (template != null) {
+                IdeHelper.navigateToPsiElement(template);
+            }
+        }
+
+        @Nullable
+        private PsiFile getTemplateFile() {
+            if (component.template() != null) {
+                Collection<PsiFile> psiFiles = TwigUtil.getTemplatePsiElements(project, component.template());
+                if(!psiFiles.isEmpty()) {
+                    return psiFiles.iterator().next();
+                }
+            }
+
+            return null;
+        }
+
+        @NotNull
+        private static String getText(@NotNull ProfilerTwigComponent component) {
+            if (component.isAnonymous()) {
+                return String.format("%s (anonymous)", component.name());
+            }
+
+            return component.name();
         }
     }
 
@@ -170,4 +223,3 @@ public class SymfonyProfilerWidgetActions {
         }
     }
 }
-
