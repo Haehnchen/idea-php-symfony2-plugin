@@ -54,6 +54,7 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
         assertCompletionContains(TwigFileType.INSTANCE, "{% bar is not <caret> %}", "bar_even");
 
         assertCompletionNotContains(TwigFileType.INSTANCE, "{% bar is<caret> %}", "bar_even");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{% if foo is <caret> %}", "b-and");
     }
 
     /**
@@ -62,6 +63,7 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
      */
     public void testOperatorExtension() {
         assertCompletionContains(TwigFileType.INSTANCE, "{% if foo <caret> %}", "**", "-", "b-or", "b-xor", "ends with", "not", "or", "starts with");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% if test <caret> %}", "b-and", "expression_not", "? :");
 
         assertCompletionContains(TwigFileType.INSTANCE, "{% if and foo <caret> %}", "ends with");
         assertCompletionContains(TwigFileType.INSTANCE, "{% if foo is red and blue <caret> %}", "ends with");

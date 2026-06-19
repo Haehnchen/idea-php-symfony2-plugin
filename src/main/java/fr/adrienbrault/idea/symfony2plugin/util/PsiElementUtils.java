@@ -59,7 +59,7 @@ public class PsiElementUtils {
     public static String getMethodParameterAt(@NotNull ParameterList parameterList, int index) {
         PsiElement[] parameters = parameterList.getParameters();
 
-        if(parameters.length < index + 1) {
+        if(index < 0 || parameters.length < index + 1) {
             return null;
         }
 
@@ -83,13 +83,36 @@ public class PsiElementUtils {
             return null;
         }
 
-        PsiElement[] parameters = parameterList.getParameters();
+        return getParameterPsiElementAt(parameterList.getParameters(), index);
+    }
 
-        if(parameters.length < index + 1) {
+    @Nullable
+    public static PsiElement getParameterPsiElementAt(@NotNull PsiElement[] parameters, int index) {
+
+        if(index < 0 || parameters.length < index + 1) {
             return null;
         }
 
         return parameters[index];
+    }
+
+    /**
+     * Resolves "foo($value)" by index first, then falls back to "foo(named: $value)".
+     */
+    @Nullable
+    public static PsiElement getParameterOrNamedArgument(@NotNull PsiElement[] parameters, @NotNull String namedArgument, int parameterIndex) {
+        PsiElement indexedParameter = getParameterPsiElementAt(parameters, parameterIndex);
+        if (indexedParameter != null && !isNamedArgument(indexedParameter)) {
+            return indexedParameter;
+        }
+
+        for (PsiElement parameter : parameters) {
+            if (isNamedArgument(parameter, namedArgument)) {
+                return parameter;
+            }
+        }
+
+        return getParameterPsiElementAt(parameters, parameterIndex);
     }
 
     @Nullable
@@ -131,16 +154,39 @@ public class PsiElementUtils {
             return false;
         }
 
-        ASTNode previousNonWhitespaceSibling = FormatterUtil.getPreviousNonWhitespaceSibling(psiElement.getNode());
-        if (previousNonWhitespaceSibling != null && previousNonWhitespaceSibling.getElementType() == PhpTokenTypes.opCOLON) {
-            ASTNode previousNonWhitespaceSibling1 = FormatterUtil.getPreviousNonWhitespaceSibling(previousNonWhitespaceSibling);
-            if (previousNonWhitespaceSibling1 != null && previousNonWhitespaceSibling1.getElementType() == PhpTokenTypes.IDENTIFIER && namedParameter.equals(previousNonWhitespaceSibling1.getText())) {
-                return true;
-            }
+        if (isNamedArgument(psiElement, namedParameter)) {
+            return true;
         }
 
         ParameterBag currentParameterIndex = getCurrentParameterIndex(((ParameterList) parameterList).getParameters(), psiElement);
         return currentParameterIndex != null && currentParameterIndex.getIndex() == index;
+    }
+
+    private static boolean isNamedArgument(@NotNull PsiElement psiElement, @NotNull String namedArgument) {
+        return namedArgument.equals(getNamedArgumentName(psiElement));
+    }
+
+    public static boolean isNamedArgument(@NotNull PsiElement psiElement) {
+        return getNamedArgumentName(psiElement) != null;
+    }
+
+    /**
+     * Extracts "name" from a PHP named argument value:
+     * foo(name: $value)
+     */
+    @Nullable
+    public static String getNamedArgumentName(@NotNull PsiElement psiElement) {
+        ASTNode previousNonWhitespaceSibling = FormatterUtil.getPreviousNonWhitespaceSibling(psiElement.getNode());
+        if (previousNonWhitespaceSibling == null || previousNonWhitespaceSibling.getElementType() != PhpTokenTypes.opCOLON) {
+            return null;
+        }
+
+        ASTNode previousNonWhitespaceSibling1 = FormatterUtil.getPreviousNonWhitespaceSibling(previousNonWhitespaceSibling);
+        if (previousNonWhitespaceSibling1 == null || previousNonWhitespaceSibling1.getElementType() != PhpTokenTypes.IDENTIFIER) {
+            return null;
+        }
+
+        return previousNonWhitespaceSibling1.getText();
     }
 
     public static int getParameterIndexValue(@Nullable PsiElement parameterListChild) {

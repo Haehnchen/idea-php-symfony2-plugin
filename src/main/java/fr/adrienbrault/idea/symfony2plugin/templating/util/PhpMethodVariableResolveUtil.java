@@ -535,7 +535,7 @@ public class PhpMethodVariableResolveUtil {
             }
 
             PsiElement firstParameter = PsiElementUtils.getMethodParameterPsiElementAt(parameterList, 0);
-            if (firstParameter == null || (!allowNamedFirstParameterFallback && isNamedArgument(firstParameter))) {
+            if (firstParameter == null || (!allowNamedFirstParameterFallback && PsiElementUtils.isNamedArgument(firstParameter))) {
                 return null;
             }
 
@@ -561,7 +561,7 @@ public class PhpMethodVariableResolveUtil {
                 getTemplateParameterIndex(methodReference)
             );
 
-            if (templateParameter == null || isNamedArgument(templateParameter)) {
+            if (templateParameter == null || PsiElementUtils.isNamedArgument(templateParameter)) {
                 return null;
             }
 
@@ -594,31 +594,12 @@ public class PhpMethodVariableResolveUtil {
         @Nullable
         private static PsiElement findNamedArgument(@NotNull ParameterList parameterList, @NotNull String argumentName) {
             for (PsiElement parameter : parameterList.getParameters()) {
-                if (argumentName.equalsIgnoreCase(getNamedArgumentName(parameter))) {
+                if (argumentName.equalsIgnoreCase(PsiElementUtils.getNamedArgumentName(parameter))) {
                     return parameter;
                 }
             }
 
             return null;
-        }
-
-        private static boolean isNamedArgument(@NotNull PsiElement parameter) {
-            return getNamedArgumentName(parameter) != null;
-        }
-
-        @Nullable
-        private static String getNamedArgumentName(@NotNull PsiElement parameter) {
-            PsiElement colon = PsiTreeUtil.prevCodeLeaf(parameter);
-            if (colon == null || colon.getNode().getElementType() != PhpTokenTypes.opCOLON) {
-                return null;
-            }
-
-            PsiElement argumentName = PsiTreeUtil.prevCodeLeaf(colon);
-            if (argumentName == null || argumentName.getNode().getElementType() != PhpTokenTypes.IDENTIFIER) {
-                return null;
-            }
-
-            return argumentName.getText();
         }
 
         private static void addTemplateParameterScopes(@NotNull MethodReference methodReference, @NotNull PsiElement parameter, Consumer<Triple<String, PhpNamedElement, FunctionReference>> consumer) {
