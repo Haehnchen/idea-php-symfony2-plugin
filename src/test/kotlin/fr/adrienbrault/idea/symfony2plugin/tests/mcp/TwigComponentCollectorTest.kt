@@ -1,19 +1,38 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.mcp
 
+import fr.adrienbrault.idea.symfony2plugin.Settings
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile
 import fr.adrienbrault.idea.symfony2plugin.mcp.collector.TwigComponentCollector
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
+import fr.adrienbrault.idea.symfony2plugin.util.getSymfonyVarDirectoryWatcher
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see TwigComponentCollector
  */
 class TwigComponentCollectorTest : SymfonyLightCodeInsightFixtureTestCase() {
+    private var previousContainerFiles: List<ContainerFile> = emptyList()
 
     @Throws(Exception::class)
     override fun setUp() {
         super.setUp()
+
+        val settings = Settings.getInstance(project)
+        previousContainerFiles = settings.containerFiles?.toList() ?: emptyList()
+        settings.containerFiles = arrayListOf()
+
         myFixture.copyFileToProject("twig_component.yaml", "config/packages/twig_component.yaml")
         myFixture.copyFileToProject("ide-twig.json", "ide-twig.json")
+    }
+
+    @Throws(Exception::class)
+    override fun tearDown() {
+        try {
+            Settings.getInstance(project).containerFiles = ArrayList(previousContainerFiles)
+            getSymfonyVarDirectoryWatcher(project).reloadConfiguration()
+        } finally {
+            super.tearDown()
+        }
     }
 
     override fun getTestDataPath(): String {
@@ -93,6 +112,43 @@ class TwigComponentCollectorTest : SymfonyLightCodeInsightFixtureTestCase() {
         assertTrue(result.contains("footer"))
     }
 
+    fun testCompiledContainerComponentIsIncluded() {
+        configureContainerXml("""
+            <service id="ux.twig_component.component_factory">
+                <argument type="service" id="ux.twig_component.component_template_finder"/>
+                <argument type="service" id=".service_locator.demo"/>
+                <argument type="service" id="property_accessor"/>
+                <argument type="service" id="event_dispatcher"/>
+                <argument type="collection">
+                    <argument key="Shop:Card" type="collection">
+                        <argument key="class">App\Twig\Components\ShopCard</argument>
+                        <argument key="template">components/shop/Card.html.twig</argument>
+                    </argument>
+                </argument>
+                <argument type="collection">
+                    <argument key="App\Twig\Components\ShopCard">Shop:Card</argument>
+                </argument>
+            </service>
+        """.trimIndent())
+
+        myFixture.addFileToProject("src/Twig/Components/ShopCard.php", "<?php\n" +
+            "namespace App\\Twig\\Components;\n" +
+            "\n" +
+            "class ShopCard\n" +
+            "{\n" +
+            "    public string \$title = 'hello';\n" +
+            "}\n"
+        )
+        myFixture.addFileToProject("templates/components/shop/Card.html.twig", "{% props variant %}{% block body %}{% endblock %}")
+
+        val result = TwigComponentCollector(project).collect("shop")
+
+        assertTrue(result.contains("<twig:Shop:Card></twig:Shop:Card>"))
+        assertTrue(result.contains("templates/components/shop/Card.html.twig"))
+        assertTrue(result.contains("title;variant"))
+        assertTrue(result.contains("body"))
+    }
+
     private fun seedAlertFixtures() {
         myFixture.addFileToProject("src/Twig/Components/Alert.php", "<?php\n" +
             "namespace App\\Twig\\Components;\n" +
@@ -110,5 +166,12 @@ class TwigComponentCollectorTest : SymfonyLightCodeInsightFixtureTestCase() {
             "{% block footer %}{% endblock %}\n" +
             "{% block title %}{% endblock %}\n"
         )
+    }
+
+    private fun configureContainerXml(services: String) {
+        val path = "var/cache/dev/${getTestName(false)}Container.xml"
+        createFileInProjectRoot(path, """<?xml version="1.0" encoding="utf-8"?><container><services>$services</services></container>""")
+        Settings.getInstance(project).containerFiles = arrayListOf(ContainerFile(path))
+        getSymfonyVarDirectoryWatcher(project).reloadConfiguration()
     }
 }
