@@ -21,10 +21,10 @@ class SymfonyRouteCollector(private val project: Project) {
     ): String = buildString {
         val allRoutes = RouteHelper.getAllRoutes(project)
         val phpIndex = PhpIndex.getInstance(project)
-        val normalizedUrlPath = urlPath?.trim()?.takeIf { it.isNotBlank() }
+        val normalizedUrlPath = urlPath?.trim()?.takeIf { it.isNotBlank() }?.let { RouteHelper.normalizeRouteSearchPath(it) }
         val matchingRouteNames = normalizedUrlPath?.let {
-            RouteHelper.getMethodsForPathWithPlaceholderMatchRoutes(project, it)
-                .map { (route, _) -> route.name }
+            RouteHelper.getRoutesForNormalizedPathWithPlaceholderMatch(project, it)
+                .map { route -> route.name }
                 .toSet()
         } ?: emptySet()
 

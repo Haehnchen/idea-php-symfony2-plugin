@@ -753,8 +753,45 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     public void testGetMethodsForPathWithPlaceholderMatch() {
+        myFixture.addFileToProject("src/Controller/ReverseRouteMatcherController.php", "<?php\n" +
+            "namespace MyFooBarBundle\\Controller;\n" +
+            "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Route;\n" +
+            "class ReverseRouteMatcherController\n" +
+            "{\n" +
+            "    /** @Route(\"/car/{edit}/foobar\") */\n" +
+            "    public function carAction() {}\n" +
+            "}\n"
+        );
+
         PsiElement[] targets = RouteHelper.getMethodsForPathWithPlaceholderMatch(getProject(), "/edit/12");
         assertTrue(Arrays.stream(targets).anyMatch(psiElement -> psiElement instanceof Method && "fooAction".equals(((Method) psiElement).getName())));
+
+        PsiElement[] directPatternTargets = RouteHelper.getMethodsForPathWithPlaceholderMatch(getProject(), "/edit/{id}");
+        assertTrue(Arrays.stream(directPatternTargets).anyMatch(psiElement -> psiElement instanceof Method && "fooAction".equals(((Method) psiElement).getName())));
+
+        PsiElement[] directStaticTargets = RouteHelper.getMethodsForPathWithPlaceholderMatch(getProject(), "/class-like-route");
+        assertTrue(Arrays.stream(directStaticTargets).anyMatch(psiElement -> psiElement instanceof Method && "classLikeRouteAction".equals(((Method) psiElement).getName())));
+
+        PsiElement[] absoluteStaticTargets = RouteHelper.getMethodsForPathWithPlaceholderMatch(getProject(), "https://www.de.test:8664/class-like-route?utm=1#details");
+        assertTrue(Arrays.stream(absoluteStaticTargets).anyMatch(psiElement -> psiElement instanceof Method && "classLikeRouteAction".equals(((Method) psiElement).getName())));
+
+        PsiElement[] absoluteDynamicTargets = RouteHelper.getMethodsForPathWithPlaceholderMatch(getProject(), "https://www.de.test:8664/edit/12?utm=1#details");
+        assertTrue(Arrays.stream(absoluteDynamicTargets).anyMatch(psiElement -> psiElement instanceof Method && "fooAction".equals(((Method) psiElement).getName())));
+
+        PsiElement[] dottedPlaceholderTargets = RouteHelper.getMethodsForPathWithPlaceholderMatch(getProject(), "/edit/foo.bar");
+        assertTrue(Arrays.stream(dottedPlaceholderTargets).anyMatch(psiElement -> psiElement instanceof Method && "fooAction".equals(((Method) psiElement).getName())));
+
+        PsiElement[] encodedPlaceholderTargets = RouteHelper.getMethodsForPathWithPlaceholderMatch(getProject(), "/edit/foo%2Ebar~v1");
+        assertTrue(Arrays.stream(encodedPlaceholderTargets).anyMatch(psiElement -> psiElement instanceof Method && "fooAction".equals(((Method) psiElement).getName())));
+
+        PsiElement[] segmentedPlaceholderTargets = RouteHelper.getMethodsForPathWithPlaceholderMatch(getProject(), "/edit/foo/bar");
+        assertFalse(Arrays.stream(segmentedPlaceholderTargets).anyMatch(psiElement -> psiElement instanceof Method && "fooAction".equals(((Method) psiElement).getName())));
+
+        PsiElement[] absolutePatternTargets = RouteHelper.getMethodsForPathWithPlaceholderMatch(getProject(), "https://www.de.test:8664/car/{edit}/foobar?utm=1");
+        assertTrue(Arrays.stream(absolutePatternTargets).anyMatch(psiElement -> psiElement instanceof Method && "carAction".equals(((Method) psiElement).getName())));
+
+        PsiElement[] absoluteReverseTargets = RouteHelper.getMethodsForPathWithPlaceholderMatch(getProject(), "https://www.de.test:8664/car/12/foo?utm=1");
+        assertTrue(Arrays.stream(absoluteReverseTargets).anyMatch(psiElement -> psiElement instanceof Method && "carAction".equals(((Method) psiElement).getName())));
 
         PsiElement[] targets2 = RouteHelper.getMethodsForPathWithPlaceholderMatch(getProject(), "/foo_bar/foobar/edit/foo/foo/foo");
         assertTrue(Arrays.stream(targets2).anyMatch(psiElement -> psiElement instanceof Method && "indexFooBarEditAction".equals(((Method) psiElement).getName())));
@@ -766,6 +803,26 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
         PsiElement[] targets4 = RouteHelper.getMethodsForPathWithPlaceholderMatch(getProject(), "/edit/");
         assertTrue(Arrays.stream(targets4).anyMatch(psiElement -> psiElement instanceof Method && "fooAction".equals(((Method) psiElement).getName())));
         assertTrue(Arrays.stream(targets4).anyMatch(psiElement -> psiElement instanceof Method && "indexFooBarEditAction".equals(((Method) psiElement).getName())));
+
+        PsiElement[] targets5 = RouteHelper.getMethodsForPathWithPlaceholderMatch(getProject(), "ar/12/foo");
+        assertTrue(Arrays.stream(targets5).anyMatch(psiElement -> psiElement instanceof Method && "carAction".equals(((Method) psiElement).getName())));
+
+        PsiElement[] targets6 = RouteHelper.getMethodsForPathWithPlaceholderMatch(getProject(), "12");
+        assertFalse(Arrays.stream(targets6).anyMatch(psiElement -> psiElement instanceof Method && "fooAction".equals(((Method) psiElement).getName())));
+    }
+
+    public void testNormalizeRouteSearchPath() {
+        assertEquals("", RouteHelper.normalizeRouteSearchPath(""));
+        assertEquals("", RouteHelper.normalizeRouteSearchPath("   "));
+        assertEquals("/", RouteHelper.normalizeRouteSearchPath("https://www.de.test:8664"));
+        assertEquals("/", RouteHelper.normalizeRouteSearchPath("//www.de.test:8664"));
+        assertEquals("/foo", RouteHelper.normalizeRouteSearchPath("https://www.de.test:8664/foo"));
+        assertEquals("/foo", RouteHelper.normalizeRouteSearchPath("https://www.de.test:8664/foo?utm=1#details"));
+        assertEquals("/edit/{id}", RouteHelper.normalizeRouteSearchPath("https://www.de.test:8664/edit/{id}?utm=1"));
+        assertEquals("/foo", RouteHelper.normalizeRouteSearchPath("//www.de.test:8664/foo#details"));
+        assertEquals("/foo", RouteHelper.normalizeRouteSearchPath("/foo?utm=1"));
+        assertEquals("foo/bar", RouteHelper.normalizeRouteSearchPath("foo/bar"));
+        assertEquals("foo:bar", RouteHelper.normalizeRouteSearchPath("foo:bar"));
     }
 
     /**

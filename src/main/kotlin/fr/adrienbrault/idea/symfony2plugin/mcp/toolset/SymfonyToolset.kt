@@ -36,7 +36,8 @@ class SymfonyToolset : McpToolset {
     @McpDescription("""
         Lists Symfony routes with URL mappings, controller mappings, file paths, and Twig template usages.
 
-        Use this tool to find routes by route name, controller, partial route path, or any partial request URL.
+        Use this tool to find routes by route name, controller, partial route path, partial request URL, or a full absolute URL.
+        Absolute URLs are normalized. 'https://www.de.test:8664/foo' is matched as '/foo'.
 
         Returns CSV format with columns: name,controller,path,filePath,lineNumber,templates
         - name: Route name
@@ -55,7 +56,7 @@ class SymfonyToolset : McpToolset {
         routeName: String? = null,
         @McpDescription("""Optional controller filter (partial matching, case-insensitive). Valid examples: 'FooController', 'FooController::method', 'App\Controller\FooController::method'""")
         controller: String? = null,
-        @McpDescription("Optional route-path or request-URL filter (partial matching). Examples: '/edit/{id}', '/edit/12', '/admin/users'")
+        @McpDescription("Optional route-path, request-URL, or absolute URL filter (partial matching). Absolute URLs are normalized to the path. Examples: '/edit/{id}', '/edit/12', '/admin/users', 'https://www.de.test:8664/foo'")
         urlPath: String? = null,
         @McpDescription("Optional Ant-style glob on the controller file path relative to the project root. Example: 'src/Controller/**/*Admin*.php'")
         fileGlob: String? = null,
