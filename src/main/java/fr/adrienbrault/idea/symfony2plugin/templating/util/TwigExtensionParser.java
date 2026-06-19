@@ -246,6 +246,11 @@ public class TwigExtensionParser  {
                     if (method != null) {
                         parseOperators(method, result);
                     }
+
+                    Method expressionParsers = phpClass.findMethodByName("getExpressionParsers");
+                    if (expressionParsers != null) {
+                        parseExpressionParsers(expressionParsers, result);
+                    }
                 }
                 return CachedValueProvider.Result.create(result, file);
             });
@@ -360,6 +365,51 @@ public class TwigExtensionParser  {
         }
 
         return types;
+    }
+
+    /**
+     * Parses Twig 3.21+ / 4 operators:
+     * new BinaryOperatorExpressionParser(BitwiseOrBinary::class, 'b-or', 16)
+     * new UnaryOperatorExpressionParser(NotUnary::class, 'not', 70)
+     */
+    private static void parseExpressionParsers(@NotNull Method method, @NotNull Map<String, TwigExtension> operators) {
+        for (NewExpression newExpression : PhpElementsUtil.collectNewExpressionsInsideControlFlow(method)) {
+            int aliasIndex;
+            if (PhpElementsUtil.isNewExpressionPhpClassWithInstance(newExpression, "Twig\\ExpressionParser\\Infix\\BinaryOperatorExpressionParser")) {
+                aliasIndex = 6;
+            } else if (PhpElementsUtil.isNewExpressionPhpClassWithInstance(newExpression, "Twig\\ExpressionParser\\Prefix\\UnaryOperatorExpressionParser")) {
+                aliasIndex = 5;
+            } else {
+                continue;
+            }
+
+            PsiElement[] parameters = newExpression.getParameters();
+            if (parameters.length <= 1) {
+                continue;
+            }
+
+            String operator = PhpElementsUtil.getStringValue(parameters[1]);
+            if (StringUtils.isNotBlank(operator)) {
+                operators.put(operator, new TwigExtension(TwigExtensionType.OPERATOR));
+            }
+            addExpressionParserAliases(operators, parameters, aliasIndex);
+        }
+    }
+
+    /**
+     * Parses aliases from named or positional arguments:
+     * new BinaryOperatorExpressionParser(ElvisBinary::class, '?:', 5, aliases: ['? :'])
+     */
+    private static void addExpressionParserAliases(@NotNull Map<String, TwigExtension> operators, @NotNull PsiElement[] parameters, int positionalAliasIndex) {
+        PsiElement aliases = PsiElementUtils.getParameterOrNamedArgument(parameters, "aliases", positionalAliasIndex);
+
+        if (aliases instanceof ArrayCreationExpression arrayCreationExpression) {
+            for (String alias : PhpElementsUtil.getArrayValuesAsString(arrayCreationExpression)) {
+                if (StringUtils.isNotBlank(alias)) {
+                    operators.put(alias, new TwigExtension(TwigExtensionType.OPERATOR));
+                }
+            }
+        }
     }
 
     private static void parseOperators(@NotNull Method method, @NotNull Map<String, TwigExtension> filters) {

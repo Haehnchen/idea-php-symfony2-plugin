@@ -178,8 +178,14 @@ public class TwigPatternTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getAfterOperatorPattern().accepts(
             findElementAt(TwigFileType.INSTANCE, "{% if foo.bar fa<caret>ke %}")
         ));
+        assertTrue(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getAfterOperatorPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{% if not foo fa<caret>ke %}")
+        ));
         assertFalse(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getAfterOperatorPattern().accepts(
             findElementAt(TwigFileType.INSTANCE, "{% if <caret>foo.bar %}")
+        ));
+        assertFalse(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getAfterOperatorPattern().accepts(
+            findElementAt(TwigFileType.INSTANCE, "{% if not fa<caret>ke %}")
         ));
         assertFalse(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getAfterOperatorPattern().accepts(
             findElementAt(TwigFileType.INSTANCE, "{{ fa<caret>ke }}")

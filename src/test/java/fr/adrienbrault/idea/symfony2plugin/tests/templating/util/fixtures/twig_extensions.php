@@ -146,6 +146,15 @@ namespace Twig
             ];
         }
 
+        public function getExpressionParsers(): array
+        {
+            return [
+                new \Twig\ExpressionParser\Infix\BinaryOperatorExpressionParser(\Twig\Node\Expression\Binary\BitwiseAndBinary::class, 'b-and', 18),
+                new \Twig\ExpressionParser\Infix\BinaryOperatorExpressionParser(\Twig\Node\Expression\Binary\ElvisBinary::class, '?:', 5, aliases: ['? :']),
+                new \Twig\ExpressionParser\Prefix\UnaryOperatorExpressionParser(\Twig\Node\Expression\Unary\NotUnary::class, 'expression_not', 70),
+            ];
+        }
+
         public function getGlobals()
         {
         }
@@ -172,6 +181,23 @@ namespace Symfony\Bridge\Twig\Node {
 namespace Twig\Extension {
     interface ExtensionInterface {}
     class AbstractExtension implements ExtensionInterface {}
+}
+
+namespace Twig\ExpressionParser\Infix {
+    class BinaryOperatorExpressionParser {}
+}
+
+namespace Twig\ExpressionParser\Prefix {
+    class UnaryOperatorExpressionParser {}
+}
+
+namespace Twig\Node\Expression\Binary {
+    class BitwiseAndBinary {}
+    class ElvisBinary {}
+}
+
+namespace Twig\Node\Expression\Unary {
+    class NotUnary {}
 }
 
 namespace App\Twig {

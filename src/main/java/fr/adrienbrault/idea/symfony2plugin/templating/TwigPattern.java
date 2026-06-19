@@ -249,6 +249,13 @@ public class TwigPattern {
         .psiElement(TwigTokenTypes.IDENTIFIER)
         .inside(PlatformPatterns.psiElement(TwigElementTypes.IF_TAG))
         .andNot(PlatformPatterns.psiElement().inside(PlatformPatterns.psiElement(TwigElementTypes.FIELD_REFERENCE)))
+        .andNot(PlatformPatterns.psiElement().afterLeafSkipping(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                PlatformPatterns.psiElement(TwigTokenTypes.WHITE_SPACE)
+            ),
+            CACHED_AFTER_IS_TOKEN_TEXT_PATTERN
+        ))
         .withLanguage(TwigLanguage.INSTANCE);
 
     private static final ElementPattern<PsiElement> CACHED_TAG_TOKEN_PARSER_PATTERN = PlatformPatterns
@@ -1286,10 +1293,11 @@ public class TwigPattern {
     }
 
     /**
-     * {% if foo <carpet> %}
-     * {% if foo.bar <carpet> %}
-     * {% if "foo.bar" <carpet> %}
-     * {% if 'foo.bar' <carpet> %}
+     * {% if foo <caret> %}
+     * {% if foo.bar <caret> %}
+     * {% if "foo.bar" <caret> %}
+     * {% if 'foo.bar' <caret> %}
+     * {% if not foo <caret> %}
      */
     public static ElementPattern<PsiElement> getAfterOperatorPattern() {
         return CACHED_AFTER_OPERATOR_PATTERN;

@@ -25,6 +25,42 @@ namespace{
     }
 }
 
+namespace Twig\Extension {
+    interface ExtensionInterface {}
+    abstract class AbstractExtension implements ExtensionInterface {}
+}
+
+namespace Twig\ExpressionParser\Infix {
+    class BinaryOperatorExpressionParser {}
+}
+
+namespace Twig\ExpressionParser\Prefix {
+    class UnaryOperatorExpressionParser {}
+}
+
+namespace Twig\Node\Expression\Binary {
+    class BitwiseAndBinary {}
+    class ElvisBinary {}
+}
+
+namespace Twig\Node\Expression\Unary {
+    class NotUnary {}
+}
+
+namespace Twig {
+    class ExpressionParserExtension extends \Twig\Extension\AbstractExtension
+    {
+        public function getExpressionParsers(): array
+        {
+            return [
+                new \Twig\ExpressionParser\Infix\BinaryOperatorExpressionParser(\Twig\Node\Expression\Binary\BitwiseAndBinary::class, 'b-and', 18),
+                new \Twig\ExpressionParser\Infix\BinaryOperatorExpressionParser(\Twig\Node\Expression\Binary\ElvisBinary::class, '?:', 5, aliases: ['? :']),
+                new \Twig\ExpressionParser\Prefix\UnaryOperatorExpressionParser(\Twig\Node\Expression\Unary\NotUnary::class, 'expression_not', 70),
+            ];
+        }
+    }
+}
+
 namespace Doctrine\Bundle\DoctrineBundle\Twig;
 
 class DoctrineExtension extends \Twig_Extension
