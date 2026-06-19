@@ -58,8 +58,9 @@ import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.*;
 
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -69,6 +70,7 @@ import java.util.stream.StreamSupport;
  */
 public class RouteHelper {
     private static final String ROUTING_CONFIGURATOR_FQN = "Symfony\\Component\\Routing\\Loader\\Configurator\\RoutingConfigurator";
+    private static final char ROUTE_PATH_PLACEHOLDER_MARKER = '\u009c';
 
     public static final String[] ROUTE_ANNOTATIONS = new String[] {
         "\\Symfony\\Component\\Routing\\Annotation\\Route",
@@ -241,6 +243,7 @@ public class RouteHelper {
      * - "foo/bar" => "/foo/bar"
      * - "foo/12" => "/foo/{edit}"
      * - "ar/12/foo" => "/car/{edit}/foobar"
+     * - "https://www.de.test:8664/foo/12?utm=1" => "/foo/{id}"
      */
     @NotNull
     public static Collection<Pair<Route, PsiElement>> getMethodsForPathWithPlaceholderMatchRoutes(@NotNull Project project, @NotNull String searchPath) {
@@ -263,6 +266,7 @@ public class RouteHelper {
      * - "foo/bar" => "/foo/bar"
      * - "foo/12" => "/foo/{edit}"
      * - "ar/12/foo" => "/car/{edit}/foobar"
+     * - "https://www.de.test:8664/foo/12?utm=1" => "/foo/{id}"
      */
     @NotNull
     public static PsiElement[] getMethodsForPathWithPlaceholderMatch(@NotNull Project project, @NotNull String searchPath) {
@@ -275,20 +279,100 @@ public class RouteHelper {
     }
 
     /**
+     * Normalizes route lookup input before direct and reverse matching.
+     *
+     * - "https://www.de.test:8664/foo?utm=1#details" => "/foo"
+     * - "//www.de.test:8664/foo#details" => "/foo"
+     * - "/foo?utm=1" => "/foo"
+     * - "foo/bar" => "foo/bar"
+     */
+    @NotNull
+    public static String normalizeRouteSearchPath(@NotNull String searchPath) {
+        String normalized = searchPath.trim();
+        boolean hasAuthorityPrefix = normalized.contains("://") || normalized.startsWith("//");
+
+        try {
+            URI uri = new URI(normalized);
+            String rawPath = uri.getRawPath();
+
+            if (hasAuthorityPrefix || uri.getRawAuthority() != null) {
+                if (rawPath == null || rawPath.isBlank()) {
+                    return "/";
+                }
+
+                return rawPath;
+            }
+
+            // Keep opaque route fragments such as "foo:bar" as user input, not as absolute URLs.
+            if (!uri.isAbsolute() && rawPath != null && !rawPath.isBlank()) {
+                return rawPath;
+            }
+        } catch (URISyntaxException ignored) {
+            // Route patterns with placeholders like "{id}" are useful input but invalid URI syntax.
+        }
+
+        return normalizeRouteSearchPathFallback(normalized);
+    }
+
+    /**
+     * Fallback for user input that is useful for route matching but not valid URI syntax.
+     * Mirrors URI normalization by stripping authority, query, and fragment parts.
+     *
+     * - "https://www.de.test:8664/edit/{id}?utm=1" => "/edit/{id}"
+     * - "/edit/{id}?utm=1" => "/edit/{id}"
+     */
+    @NotNull
+    private static String normalizeRouteSearchPathFallback(@NotNull String searchPath) {
+        String normalized = searchPath;
+
+        int pathStart = -1;
+        int schemeSeparator = normalized.indexOf("://");
+        if (schemeSeparator >= 0) {
+            pathStart = normalized.indexOf('/', schemeSeparator + 3);
+        } else if (normalized.startsWith("//")) {
+            pathStart = normalized.indexOf('/', 2);
+        }
+
+        if (pathStart >= 0) {
+            normalized = normalized.substring(pathStart);
+        } else if (schemeSeparator >= 0 || normalized.startsWith("//")) {
+            normalized = "/";
+        }
+
+        int queryIndex = normalized.indexOf('?');
+        int fragmentIndex = normalized.indexOf('#');
+        int pathEnd = queryIndex < 0 ? fragmentIndex : (fragmentIndex < 0 ? queryIndex : Math.min(queryIndex, fragmentIndex));
+
+        return pathEnd >= 0 ? normalized.substring(0, pathEnd) : normalized;
+    }
+
+    /**
      * Reverse routing matching, find any "incomplete" string inside the route pattern
      *
      * - "foo/bar" => "/foo/bar"
      * - "foo/12" => "/foo/{edit}"
      * - "ar/12/foo" => "/car/{edit}/foobar"
+     * - "https://www.de.test:8664/foo/12?utm=1" => "/foo/{id}"
      */
     @NotNull
     public static Collection<Route> getRoutesForPathWithPlaceholderMatch(@NotNull Project project, @NotNull String searchPath) {
-        ConcurrentHashMap<String, Pattern> patternCache = new ConcurrentHashMap<>();
+        return getRoutesForNormalizedPathWithPlaceholderMatch(project, normalizeRouteSearchPath(searchPath));
+    }
+
+    /**
+     * Reverse route matching for callers that already normalized lookup input.
+     *
+     * - "foo/12" => "/foo/{id}"
+     * - "/foo/{id}" => "/foo/{id}"
+     */
+    @NotNull
+    public static Collection<Route> getRoutesForNormalizedPathWithPlaceholderMatch(@NotNull Project project, @NotNull String normalizedSearchPath) {
+        ReverseRoutePathMatcher matcher = new ReverseRoutePathMatcher(normalizedSearchPath);
         return new ArrayList<>(RouteHelper.getAllRoutes(project).values())
             .parallelStream()
             .filter(Objects::nonNull)
             .map(route -> {
-                if (isReverseRoutePatternMatch(route, searchPath, patternCache)) {
+                if (matcher.matches(route)) {
                     return route;
                 }
                 return null;
@@ -303,65 +387,182 @@ public class RouteHelper {
      * - "foo/bar" => "/foo/bar"
      * - "foo/12" => "/foo/{edit}"
      * - "ar/12/foo" => "/car/{edit}/foobar"
+     * - "https://www.de.test:8664/foo/12?utm=1" => "/foo/{id}"
      */
     public static boolean hasRoutesForPathWithPlaceholderMatch(@NotNull Project project, @NotNull String searchPath) {
-        ConcurrentHashMap<String, Pattern> patternCache = new ConcurrentHashMap<>();
+        ReverseRoutePathMatcher matcher = new ReverseRoutePathMatcher(normalizeRouteSearchPath(searchPath));
         return RouteHelper.getAllRoutes(project).values()
             .parallelStream()
-            .anyMatch(route -> isReverseRoutePatternMatch(route, searchPath, patternCache));
+            .anyMatch(matcher::matches);
     }
 
-    private static boolean isReverseRoutePatternMatch(@NotNull Route route, @NotNull String searchPath, @NotNull ConcurrentHashMap<String, Pattern> patternCache) {
-        String routePath = route.getPath();
-        if (routePath == null) {
-            return false;
+    /**
+     * Matches a normalized lookup path against route paths while treating route placeholders as one path segment.
+     *
+     * - "foo/12" matches "/foo/{id}"
+     * - "ar/12/foo" matches "/car/{edit}/foobar"
+     */
+    private static final class ReverseRoutePathMatcher {
+        @NotNull
+        private final String searchPath;
+        private final int maxPrefixLength;
+        private final int[] prefixTable;
+
+        private ReverseRoutePathMatcher(@NotNull String searchPath) {
+            this.searchPath = searchPath;
+            // Leave at least two lookup characters after the anchor for placeholder or literal continuation.
+            this.maxPrefixLength = Math.max(0, searchPath.length() - 2);
+            this.prefixTable = buildPrefixTable(searchPath, this.maxPrefixLength);
         }
 
-        if (routePath.contains(searchPath)) {
-            return true;
-        }
-
-        // String string = "|"; visibility debug
-        String string = Character.toString((char) 156);
-
-        String routePathPlaceholderNeutral = routePath.replaceAll("\\{([^}]*)}", string);
-        String match = null;
-        int startIndex = -1;
-
-        // find first common non pattern string, string on at 2 for no fetching all; right to left
-        for (int i = 2; i < searchPath.length(); i++) {
-            String text = searchPath.substring(0, searchPath.length() - i);
-
-            int i1 = routePathPlaceholderNeutral.indexOf(text);
-            if (i1 >= 0) {
-                match = routePathPlaceholderNeutral.substring(i1);
-                startIndex = text.length();
-                break;
+        private boolean matches(@NotNull Route route) {
+            String routePath = route.getPath();
+            if (routePath == null) {
+                return false;
             }
+
+            if (routePath.contains(this.searchPath)) {
+                return true;
+            }
+
+            if (this.maxPrefixLength == 0 || routePath.indexOf('{') < 0) {
+                return false;
+            }
+
+            String normalizedRoutePath = neutralizeRoutePlaceholders(routePath);
+            PrefixMatch prefixMatch = findLongestSearchPrefixMatch(normalizedRoutePath);
+            if (prefixMatch == null) {
+                return false;
+            }
+
+            byte[][] memo = new byte[normalizedRoutePath.length() + 1][this.searchPath.length() + 1];
+            return matchesRoutePrefix(
+                normalizedRoutePath,
+                prefixMatch.routeIndex() + prefixMatch.length(),
+                prefixMatch.length(),
+                memo
+            );
         }
 
-        if (match == null) {
-            return false;
+        @Nullable
+        private PrefixMatch findLongestSearchPrefixMatch(@NotNull String routePath) {
+            int matched = 0;
+            int bestRouteIndex = -1;
+            int bestLength = 0;
+
+            for (int i = 0; i < routePath.length(); i++) {
+                char routeChar = routePath.charAt(i);
+                while (matched > 0 && routeChar != this.searchPath.charAt(matched)) {
+                    matched = this.prefixTable[matched - 1];
+                }
+
+                if (routeChar == this.searchPath.charAt(matched)) {
+                    matched++;
+                    if (matched > bestLength) {
+                        bestLength = matched;
+                        bestRouteIndex = i - matched + 1;
+
+                        if (matched == this.maxPrefixLength) {
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return bestLength > 0 ? new PrefixMatch(bestRouteIndex, bestLength) : null;
         }
 
-        // find a pattern match: left to right
-        int endIndex = match.length();
-        for (int i = startIndex + 1; i <= endIndex; i++) {
-            String substring = match.substring(0, i);
+        private boolean matchesRoutePrefix(@NotNull String routePath, int routeIndex, int searchIndex, byte[][] memo) {
+            if (searchIndex == this.searchPath.length()) {
+                return true;
+            }
 
-            String regex = substring.replace(string, "[\\w-]+");
+            if (routeIndex == routePath.length()) {
+                return false;
+            }
 
-            // user input
-            try {
-                Pattern pattern = patternCache.computeIfAbsent(regex, Pattern::compile);
-                if (pattern.matcher(searchPath).matches()) {
+            if (memo[routeIndex][searchIndex] != 0) {
+                return memo[routeIndex][searchIndex] == 1;
+            }
+
+            boolean matches;
+            char routeChar = routePath.charAt(routeIndex);
+            if (routeChar == ROUTE_PATH_PLACEHOLDER_MARKER) {
+                matches = matchesPlaceholder(routePath, routeIndex, searchIndex, memo);
+            } else {
+                matches = routeChar == this.searchPath.charAt(searchIndex)
+                    && matchesRoutePrefix(routePath, routeIndex + 1, searchIndex + 1, memo);
+            }
+
+            memo[routeIndex][searchIndex] = (byte) (matches ? 1 : 2);
+            return matches;
+        }
+
+        private boolean matchesPlaceholder(@NotNull String routePath, int routeIndex, int searchIndex, byte[][] memo) {
+            for (int i = searchIndex; i < this.searchPath.length(); i++) {
+                if (!isPlaceholderPathChar(this.searchPath.charAt(i))) {
+                    return false;
+                }
+
+                if (matchesRoutePrefix(routePath, routeIndex + 1, i + 1, memo)) {
                     return true;
                 }
-            } catch (Exception ignored) {
             }
+
+            return false;
         }
 
-        return false;
+        private static int[] buildPrefixTable(@NotNull String searchPath, int maxPrefixLength) {
+            int[] prefixTable = new int[maxPrefixLength];
+            int matched = 0;
+
+            for (int i = 1; i < maxPrefixLength; i++) {
+                char c = searchPath.charAt(i);
+                while (matched > 0 && c != searchPath.charAt(matched)) {
+                    matched = prefixTable[matched - 1];
+                }
+
+                if (c == searchPath.charAt(matched)) {
+                    matched++;
+                }
+
+                prefixTable[i] = matched;
+            }
+
+            return prefixTable;
+        }
+
+        @NotNull
+        private static String neutralizeRoutePlaceholders(@NotNull String routePath) {
+            StringBuilder builder = new StringBuilder(routePath.length());
+
+            for (int i = 0; i < routePath.length(); i++) {
+                char c = routePath.charAt(i);
+                if (c != '{') {
+                    builder.append(c);
+                    continue;
+                }
+
+                int endIndex = routePath.indexOf('}', i + 1);
+                if (endIndex == -1) {
+                    builder.append(c);
+                    continue;
+                }
+
+                builder.append(ROUTE_PATH_PLACEHOLDER_MARKER);
+                i = endIndex;
+            }
+
+            return builder.toString();
+        }
+
+        private static boolean isPlaceholderPathChar(char c) {
+            // Symfony placeholders consume one URL path segment by default; requirements can narrow it later.
+            return c != '/' && c != '?' && c != '#';
+        }
+
+        private record PrefixMatch(int routeIndex, int length) {
+        }
     }
 
     /**

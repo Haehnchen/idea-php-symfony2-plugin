@@ -24,8 +24,43 @@ class SymfonyRouteCollectorTest : McpCollectorTestCase() {
         assertUsesRealLineBreaks(result)
     }
 
+    fun testCollectCanFilterByAbsoluteRequestUrl() {
+        val result = SymfonyRouteCollector(project).collect(urlPath = "https://www.de.test:8664/edit/12?utm=1#details")
+
+        assertTrue("Unexpected CSV:\n$result", result.startsWith("name,controller,path,filePath,lineNumber,templates"))
+        assertTrue("Unexpected CSV:\n$result", result.contains("my_car_foo_stuff"))
+        assertTrue("Unexpected CSV:\n$result", result.contains("src/Controller/RouteHelper.php,30,"))
+        assertTrue("Unexpected CSV:\n$result", result.contains("/edit/{id}"))
+        assertUsesRealLineBreaks(result)
+    }
+
+    fun testCollectCanFilterByAbsoluteUrlDirectRoutePath() {
+        val result = SymfonyRouteCollector(project).collect(urlPath = "https://www.de.test:8664/class-like-route")
+
+        assertTrue("Unexpected CSV:\n$result", result.contains("App\\Controller\\ClassLikeRoute"))
+        assertTrue("Unexpected CSV:\n$result", result.contains("CarAttributeController::classLikeRouteAction"))
+        assertTrue("Unexpected CSV:\n$result", result.contains("/class-like-route"))
+        assertUsesRealLineBreaks(result)
+    }
+
     fun testCollectCanFilterByPartialUrlPath() {
         val result = SymfonyRouteCollector(project).collect(urlPath = "/edit")
+
+        assertTrue("Unexpected CSV:\n$result", result.contains("my_car_foo_stuff"))
+        assertTrue("Unexpected CSV:\n$result", result.contains("/edit/{id}"))
+        assertUsesRealLineBreaks(result)
+    }
+
+    fun testCollectCanFilterByDirectRoutePathPattern() {
+        val result = SymfonyRouteCollector(project).collect(urlPath = "/edit/{id}")
+
+        assertTrue("Unexpected CSV:\n$result", result.contains("my_car_foo_stuff"))
+        assertTrue("Unexpected CSV:\n$result", result.contains("/edit/{id}"))
+        assertUsesRealLineBreaks(result)
+    }
+
+    fun testCollectCanFilterByAbsoluteRoutePathPattern() {
+        val result = SymfonyRouteCollector(project).collect(urlPath = "https://www.de.test:8664/edit/{id}?utm=1")
 
         assertTrue("Unexpected CSV:\n$result", result.contains("my_car_foo_stuff"))
         assertTrue("Unexpected CSV:\n$result", result.contains("/edit/{id}"))
