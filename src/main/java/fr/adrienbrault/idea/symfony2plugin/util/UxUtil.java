@@ -34,9 +34,11 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigComponentUsageStubI
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.UxTemplateStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.util.IndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigPath;
+import fr.adrienbrault.idea.symfony2plugin.templating.path.UxComponentFactoryParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.UxComponentTemplateFinderParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.CompiledTwigComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.TwigComponentNamespace;
 import kotlin.Pair;
@@ -140,8 +142,38 @@ public class UxUtil {
         }
     }
 
+    /**
+     * Returns declared template names for a component class.
+     *
+     * Examples:
+     * - \App\Twig\Components\Alert -> components/Alert.html.twig
+     * - \App\Twig\Components\ShopCard -> components/shop/Card.html.twig from the compiled container
+     */
     public static Collection<String> getComponentTemplatesForPhpClass(@NotNull PhpClass phpClass) {
         Set<String> templates = new HashSet<>();
+        String fqn = phpClass.getFQN();
+
+        UxComponentFactoryParser compiledComponentParser = getCompiledTwigComponentFactoryParser(phpClass.getProject());
+        Map<String, CompiledTwigComponent> compiledComponents = getCompiledTwigComponents(compiledComponentParser);
+        for (CompiledTwigComponent component : compiledComponents.values()) {
+            if (fqn.equals(component.phpClass()) && component.template() != null) {
+                templates.add(component.template());
+            }
+        }
+
+        if (templates.isEmpty()) {
+            String componentName = compiledComponentParser != null ? compiledComponentParser.getClassMap().get(fqn) : null;
+            if (componentName != null) {
+                CompiledTwigComponent component = compiledComponents.get(componentName);
+                if (component != null && component.template() != null) {
+                    templates.add(component.template());
+                }
+            }
+        }
+
+        if (!templates.isEmpty()) {
+            return templates;
+        }
 
         Set<String> names = new HashSet<>();
 
@@ -159,7 +191,6 @@ public class UxUtil {
             return templates;
         }
 
-        String fqn = phpClass.getFQN();
         for (TwigComponentNamespace twigComponentNamespace : getNamespaces(phpClass.getProject())) {
             String componentNamespace = "\\" + StringUtils.strip(twigComponentNamespace.namespace(), "\\") + "\\";
             if (!fqn.startsWith(componentNamespace)) {
@@ -262,13 +293,17 @@ public class UxUtil {
                             : addNamePrefix(value.phpClass().substring(namespace1.length()).replace("\\", ":"), namespace.namePrefix());
 
                         if (!name.isBlank()) {
-                            names.put(name, new TwigComponent(name, value.phpClass(), namespace));
+                            names.put(name, new TwigComponent(name, value.phpClass(), namespace, value.template(), null));
                         }
 
                         break;
                     }
                 }
             }
+        }
+
+        for (CompiledTwigComponent component : getCompiledTwigComponents(project).values()) {
+            mergeCompiledComponent(names, component);
         }
 
         for (String valueValue : getAnonymousTemplateDirectories(project)) {
@@ -367,7 +402,7 @@ public class UxUtil {
                 String componentName = getAnonymousComponentNameFromRelativePath(relativePath);
                 if (componentName != null) {
                     String name = StringUtils.isBlank(namePrefix) ? componentName : namePrefix + ":" + componentName;
-                    names.putIfAbsent(name, new TwigComponent(name, null, null));
+                    names.putIfAbsent(name, new TwigComponent(name, null, null, null, null));
                 }
 
                 return super.visitFile(file);
@@ -393,11 +428,26 @@ public class UxUtil {
         return phpClasses;
     }
 
+    /**
+     * Resolves a component name to concrete template files.
+     *
+     * Examples:
+     * - Alert -> templates/components/Alert.html.twig
+     * - Shop:Card -> templates/components/Shop/Card.html.twig
+     */
     public static Collection<PsiFile> getComponentTemplates(@NotNull Project project, @NotNull String component) {
         Collection<VirtualFile> virtualFiles = new LinkedHashSet<>();
 
         for (TwigComponent entry: getAllComponentNames(project)) {
             if (!entry.name().equals(component)) {
+                continue;
+            }
+
+            if (entry.template() != null && addTemplateFilesWithFallback(project, entry.template(), virtualFiles)) {
+                continue;
+            }
+
+            if (entry.templateFromMethod() != null) {
                 continue;
             }
 
@@ -528,7 +578,15 @@ public class UxUtil {
         return false;
     }
 
+    /**
+     * Adds matching template files for a Symfony template name.
+     *
+     * Examples:
+     * - components/Alert.html.twig resolved by Twig namespaces
+     * - templates/components/Alert.html.twig via project fallback
+     */
     private static boolean addTemplateFilesWithFallback(@NotNull Project project, @NotNull String templateName, @NotNull Collection<VirtualFile> virtualFiles) {
+        // Use Twig's resolver first, including configured namespaces like "@Admin/components/Card.html.twig".
         Collection<VirtualFile> files = TwigUtil.getTemplateFiles(project, templateName);
         if (!files.isEmpty()) {
             virtualFiles.addAll(files);
@@ -540,18 +598,10 @@ public class UxUtil {
             return false;
         }
 
+        // Compiled UX metadata stores names relative to templates/, for example "components/Alert.html.twig".
         VirtualFile templatesDir = VfsUtil.findRelativeFile(baseDir, "templates");
         if (templatesDir != null) {
             VirtualFile virtualFile = VfsUtil.findRelativeFile(templatesDir, templateName.split("/"));
-            if (virtualFile != null) {
-                virtualFiles.add(virtualFile);
-                return true;
-            }
-        }
-
-        VirtualFile appViewsDir = VfsUtil.findRelativeFile(baseDir, "app", "Resources", "views");
-        if (appViewsDir != null) {
-            VirtualFile virtualFile = VfsUtil.findRelativeFile(appViewsDir, templateName.split("/"));
             if (virtualFile != null) {
                 virtualFiles.add(virtualFile);
                 return true;
@@ -570,7 +620,9 @@ public class UxUtil {
                 Collections.unmodifiableCollection(getComponentClassFqnsForTemplateFileInner(project, psiFile)),
                 psiFile,
                 FileIndexCaches.getModificationTrackerForIndexId(project, UxTemplateStubIndex.KEY),
-                FileIndexCaches.getModificationTrackerForIndexId(project, ConfigStubIndex.KEY)
+                FileIndexCaches.getModificationTrackerForIndexId(project, ConfigStubIndex.KEY),
+                SymfonyVarDirectoryWatcherKt.getSymfonyVarDirectoryWatcher(project)
+                    .getModificationTracker(SymfonyVarDirectoryWatcher.Scope.CONTAINER)
             )
         );
 
@@ -598,6 +650,12 @@ public class UxUtil {
                 }
             }
 
+            for (CompiledTwigComponent component : getCompiledTwigComponents(project).values()) {
+                if (component.phpClass() != null && template.equals(component.template())) {
+                    phpClassFqnsTemplateMatch.add(component.phpClass());
+                }
+            }
+
             if (!phpClassFqnsTemplateMatch.isEmpty()) {
                 phpClassFqns.addAll(phpClassFqnsTemplateMatch);
                 break;
@@ -618,6 +676,54 @@ public class UxUtil {
         }
 
         return phpClassFqns;
+    }
+
+    @Nullable
+    private static UxComponentFactoryParser getCompiledTwigComponentFactoryParser(@NotNull Project project) {
+        return ServiceXmlParserFactory.getInstance(project, UxComponentFactoryParser.class);
+    }
+
+    @NotNull
+    private static Map<String, CompiledTwigComponent> getCompiledTwigComponents(@Nullable UxComponentFactoryParser parser) {
+        return parser != null ? parser.getComponents() : Collections.emptyMap();
+    }
+
+    @NotNull
+    private static Map<String, CompiledTwigComponent> getCompiledTwigComponents(@NotNull Project project) {
+        return getCompiledTwigComponents(getCompiledTwigComponentFactoryParser(project));
+    }
+
+    private static void mergeCompiledComponent(
+        @NotNull Map<String, TwigComponent> components,
+        @NotNull CompiledTwigComponent compiledComponent
+    ) {
+        TwigComponent existing = components.get(compiledComponent.name());
+
+        if (existing == null) {
+            components.put(compiledComponent.name(), new TwigComponent(
+                compiledComponent.name(),
+                compiledComponent.phpClass(),
+                null,
+                compiledComponent.template(),
+                compiledComponent.templateFromMethod()
+            ));
+            return;
+        }
+
+        components.put(compiledComponent.name(), new TwigComponent(
+            compiledComponent.name(),
+            compiledComponent.phpClass() != null ? compiledComponent.phpClass() : existing.phpClass(),
+            existing.twigComponentNamespace(),
+            compiledComponent.template() != null ? compiledComponent.template() : existing.template(),
+            compiledComponent.templateFromMethod() != null ? compiledComponent.templateFromMethod() : existing.templateFromMethod()
+        ));
+    }
+
+    private static Collection<UxComponent> getComponentsWithTemplates(@NotNull Project project) {
+        return IndexUtil.getAllKeysForProject(UxTemplateStubIndex.KEY, project)
+            .stream().flatMap(key -> FileBasedIndex.getInstance().getValues(UxTemplateStubIndex.KEY, key, GlobalSearchScope.allScope(project)).stream())
+            .filter(value -> value.template() != null)
+            .collect(Collectors.toList());
     }
 
     public static Set<PhpClass> getTwigComponentAllTargets(@NotNull Project project) {
@@ -762,13 +868,6 @@ public class UxUtil {
         return names;
     }
 
-    private static Collection<UxComponent> getComponentsWithTemplates(@NotNull Project project) {
-        return IndexUtil.getAllKeysForProject(UxTemplateStubIndex.KEY, project)
-            .stream().flatMap(key -> FileBasedIndex.getInstance().getValues(UxTemplateStubIndex.KEY, key, GlobalSearchScope.allScope(project)).stream())
-            .filter(value -> value.template() != null)
-            .collect(Collectors.toList());
-    }
-
     public enum TwigComponentType {
         LIVE_COMPONENT,
         TWIG_COMPONENT,
@@ -776,5 +875,11 @@ public class UxUtil {
 
     public record TwigComponentIndex(@Nullable String name, @NotNull PhpClass phpClass, @Nullable String template, @NotNull TwigComponentType type) {}
 
-    public record TwigComponent(@NotNull String name, @Nullable String phpClass, @Nullable TwigComponentNamespace twigComponentNamespace) {}
+    public record TwigComponent(
+        @NotNull String name,
+        @Nullable String phpClass,
+        @Nullable TwigComponentNamespace twigComponentNamespace,
+        @Nullable String template,
+        @Nullable String templateFromMethod
+    ) {}
 }

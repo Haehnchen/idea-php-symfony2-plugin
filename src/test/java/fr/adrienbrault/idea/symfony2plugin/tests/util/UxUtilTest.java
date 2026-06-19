@@ -15,10 +15,12 @@ import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import com.jetbrains.twig.TwigFile;
 import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
+import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import fr.adrienbrault.idea.symfony2plugin.templating.path.TwigNamespaceSetting;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyVarDirectoryWatcherKt;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.TwigComponentNamespace;
 import kotlin.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -36,16 +38,15 @@ import java.util.stream.Collectors;
  */
 public class UxUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     private List<TwigNamespaceSetting> previousTwigNamespaces;
+    private List<ContainerFile> previousContainerFiles;
 
     public void setUp() throws Exception {
         super.setUp();
         Settings settings = Settings.getInstance(getProject());
         previousTwigNamespaces = settings.twigNamespaces != null ? new ArrayList<>(settings.twigNamespaces) : new ArrayList<>();
-        if (settings.twigNamespaces == null) {
-            settings.twigNamespaces = new ArrayList<>();
-        } else {
-            settings.twigNamespaces.clear();
-        }
+        previousContainerFiles = settings.containerFiles != null ? new ArrayList<>(settings.containerFiles) : new ArrayList<>();
+        settings.twigNamespaces = new ArrayList<>();
+        settings.containerFiles = new ArrayList<>();
 
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("UxUtil.php"));
     }
@@ -54,12 +55,9 @@ public class UxUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     protected void tearDown() throws Exception {
         try {
             Settings settings = Settings.getInstance(getProject());
-            if (settings.twigNamespaces == null) {
-                settings.twigNamespaces = new ArrayList<>();
-            } else {
-                settings.twigNamespaces.clear();
-            }
-            settings.twigNamespaces.addAll(previousTwigNamespaces);
+            settings.twigNamespaces = new ArrayList<>(previousTwigNamespaces);
+            settings.containerFiles = new ArrayList<>(previousContainerFiles);
+            SymfonyVarDirectoryWatcherKt.getSymfonyVarDirectoryWatcher(getProject()).reloadConfiguration();
         } finally {
             super.tearDown();
         }
@@ -437,6 +435,109 @@ public class UxUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertContainsVirtualFile(UxUtil.getComponentTemplates(getProject(), "Alert"), "/templates/ux-components/Alert.html.twig");
     }
 
+    public void testCompiledContainerComponentAppearsWithoutYamlOrAttribute() {
+        configureContainerXml("""
+            <service id="ux.twig_component.component_factory">
+                <argument type="service" id="ux.twig_component.component_template_finder"/>
+                <argument type="service" id=".service_locator.demo"/>
+                <argument type="service" id="property_accessor"/>
+                <argument type="service" id="event_dispatcher"/>
+                <argument type="collection">
+                    <argument key="Shop:Card" type="collection">
+                        <argument key="class">App\\Twig\\Components\\ShopCard</argument>
+                        <argument key="template">components/shop/Card.html.twig</argument>
+                    </argument>
+                </argument>
+                <argument type="collection">
+                    <argument key="App\\Twig\\Components\\ShopCard">Shop:Card</argument>
+                </argument>
+            </service>
+        """);
+
+        myFixture.addFileToProject("src/Twig/Components/ShopCard.php", "<?php\n" +
+            "namespace App\\Twig\\Components;\n" +
+            "class ShopCard {}\n"
+        );
+
+        assertContainsElements(UxUtil.getTwigComponentNames(getProject()), "Shop:Card");
+        assertTrue(UxUtil.getTwigComponentPhpClasses(getProject(), "Shop:Card").stream()
+            .anyMatch(phpClass -> "\\App\\Twig\\Components\\ShopCard".equals(phpClass.getFQN())));
+    }
+
+    public void testCompiledContainerTemplateWinsOverConfiguredTemplateDirectory() {
+        myFixture.addFileToProject("config/packages/twig_component_prefix.yaml",
+            "twig_component:\n" +
+                "  defaults:\n" +
+                "    App\\Twig\\Components\\:\n" +
+                "      template_directory: components/from-yaml\n"
+        );
+
+        configureContainerXml("""
+            <service id="ux.twig_component.component_factory">
+                <argument type="service" id="ux.twig_component.component_template_finder"/>
+                <argument type="service" id=".service_locator.demo"/>
+                <argument type="service" id="property_accessor"/>
+                <argument type="service" id="event_dispatcher"/>
+                <argument type="collection">
+                    <argument key="Alert" type="collection">
+                        <argument key="class">App\\Twig\\Components\\Alert</argument>
+                        <argument key="template">compiled/Alert.html.twig</argument>
+                    </argument>
+                </argument>
+                <argument type="collection">
+                    <argument key="App\\Twig\\Components\\Alert">Alert</argument>
+                </argument>
+            </service>
+        """);
+
+        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Twig\\Components;\n" +
+            "class Alert {}\n"
+        );
+        myFixture.copyFileToProject("ide-twig.json", "ide-twig.json");
+        myFixture.addFileToProject("templates/compiled/Alert.html.twig", "<div></div>");
+
+        PhpClass alertClass = PsiTreeUtil.collectElementsOfType(psiFile, PhpClass.class).stream()
+            .filter(p -> p.getFQN().equals("\\App\\Twig\\Components\\Alert"))
+            .findFirst().get();
+
+        assertContainsElements(UxUtil.getComponentTemplatesForPhpClass(alertClass), "compiled/Alert.html.twig");
+        assertFalse(UxUtil.getComponentTemplatesForPhpClass(alertClass).contains("components/from-yaml/Alert.html.twig"));
+        assertContainsVirtualFile(UxUtil.getComponentTemplates(getProject(), "Alert"), "/templates/compiled/Alert.html.twig");
+    }
+
+    public void testTemplateFileFindsComponentClassThroughCompiledContainerTemplate() {
+        configureContainerXml("""
+            <service id="ux.twig_component.component_factory">
+                <argument type="service" id="ux.twig_component.component_template_finder"/>
+                <argument type="service" id=".service_locator.demo"/>
+                <argument type="service" id="property_accessor"/>
+                <argument type="service" id="event_dispatcher"/>
+                <argument type="collection">
+                    <argument key="CompiledAlert" type="collection">
+                        <argument key="class">App\\Twig\\Components\\CompiledAlert</argument>
+                        <argument key="template">components/CompiledAlert.html.twig</argument>
+                    </argument>
+                </argument>
+                <argument type="collection">
+                    <argument key="App\\Twig\\Components\\CompiledAlert">CompiledAlert</argument>
+                </argument>
+            </service>
+        """);
+
+        myFixture.addFileToProject("src/Twig/Components/CompiledAlert.php", "<?php\n" +
+            "namespace App\\Twig\\Components;\n" +
+            "class CompiledAlert {}\n"
+        );
+        myFixture.copyFileToProject("ide-twig.json", "ide-twig.json");
+        PsiFile templateFile = myFixture.addFileToProject("templates/components/CompiledAlert.html.twig", "<div></div>");
+        PsiFile templatePsi = PsiManager.getInstance(getProject()).findFile(templateFile.getVirtualFile());
+
+        assertNotNull(templatePsi);
+        assertTrue(UxUtil.getComponentClassesForTemplateFile(getProject(), templatePsi).stream()
+            .anyMatch(phpClass -> "\\App\\Twig\\Components\\CompiledAlert".equals(phpClass.getFQN())));
+    }
+
     public void testExplicitComponentNameWithNamePrefixKeepsExplicitNameAndTemplate() {
         myFixture.addFileToProject("config/packages/twig_component_prefix_explicit.yaml",
             "twig_component:\n" +
@@ -705,6 +806,13 @@ public class UxUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     private void configureTwigNamespaceSettings(@NotNull TwigNamespaceSetting... settings) {
         Settings.getInstance(getProject()).twigNamespaces.clear();
         Settings.getInstance(getProject()).twigNamespaces.addAll(List.of(settings));
+    }
+
+    private void configureContainerXml(@NotNull String services) {
+        String path = "var/cache/dev/" + getTestName(false) + "Container.xml";
+        createFileInProjectRoot(path, "<?xml version=\"1.0\" encoding=\"utf-8\"?><container><services>" + services + "</services></container>");
+        Settings.getInstance(getProject()).containerFiles = List.of(new ContainerFile(path));
+        SymfonyVarDirectoryWatcherKt.getSymfonyVarDirectoryWatcher(getProject()).reloadConfiguration();
     }
 
     private static void assertContainsVirtualFile(@NotNull Collection<PsiFile> psiFiles, @NotNull String pathSuffix) {
