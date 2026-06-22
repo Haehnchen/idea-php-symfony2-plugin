@@ -28,6 +28,7 @@ public class TwigBlockEmbedIndex extends FileBasedIndexExtension<String, Set<Str
 
     @NotNull
     @Override
+    // Index-safe only: no PhpIndex/type resolution here.
     public DataIndexer<String, Set<String>, FileContent> getIndexer() {
         return fileContent -> {
             Map<String, Set<String>> blocks = new HashMap<>();

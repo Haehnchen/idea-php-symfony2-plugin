@@ -38,6 +38,7 @@ class ViteTwigUsageStubIndex : FileBasedIndexExtension<String, String>() {
     override fun getInputFilter(): FileBasedIndex.InputFilter =
         FileBasedIndex.InputFilter { it.fileType == TwigFileType.INSTANCE }
 
+    // Index-safe only: no PhpIndex/type resolution here.
     override fun getIndexer(): DataIndexer<String, String, FileContent> = DataIndexer { inputData ->
         val result = mutableMapOf<String, String>()
         val psiFile = inputData.psiFile

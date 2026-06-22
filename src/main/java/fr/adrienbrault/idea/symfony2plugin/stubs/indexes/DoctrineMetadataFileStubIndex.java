@@ -74,6 +74,7 @@ public class DoctrineMetadataFileStubIndex extends FileBasedIndexExtension<Strin
 
     @NotNull
     @Override
+    // Index-safe only: no PhpIndex/type resolution here.
     public DataIndexer<String, DoctrineModelSerializable, FileContent> getIndexer() {
         return new MyStringStringFileContentDataIndexer();
     }

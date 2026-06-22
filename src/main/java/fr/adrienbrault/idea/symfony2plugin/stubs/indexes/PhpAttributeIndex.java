@@ -47,6 +47,7 @@ public class PhpAttributeIndex extends FileBasedIndexExtension<String, List<PhpA
     }
 
     @Override
+    // Index-safe only: no PhpIndex/type resolution here.
     public @NotNull DataIndexer<String, List<AttributeTarget>, FileContent> getIndexer() {
         return new PhpAttributeIndexer();
     }

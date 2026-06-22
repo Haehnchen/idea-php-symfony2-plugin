@@ -53,6 +53,7 @@ public class ObjectRepositoryResultTypeProvider implements PhpTypeProvider4 {
         return '\u0152';
     }
 
+    // Index-safe only: no PhpIndex here.
     @Nullable
     @Override
     public PhpType getType(PsiElement e) {

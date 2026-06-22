@@ -29,6 +29,7 @@ public class ContainerParameterStubIndex extends FileBasedIndexExtension<String,
 
     @NotNull
     @Override
+    // Index-safe only: no PhpIndex/type resolution here.
     public DataIndexer<String, String, FileContent> getIndexer() {
         return inputData -> {
             Map<String, String> map = new HashMap<>();

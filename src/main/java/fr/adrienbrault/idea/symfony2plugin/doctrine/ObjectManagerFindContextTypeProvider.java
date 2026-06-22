@@ -35,6 +35,7 @@ public class ObjectManagerFindContextTypeProvider implements PhpTypeProvider4 {
         return '\u0173';
     }
 
+    // Index-safe only: no PhpIndex here.
     @Nullable
     @Override
     public PhpType getType(PsiElement e) {

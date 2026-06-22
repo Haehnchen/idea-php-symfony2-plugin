@@ -27,6 +27,7 @@ import java.util.Locale
 class TwigRouteUsageStubIndex : FileBasedIndexExtension<String, Set<String>>() {
     override fun getName(): ID<String, Set<String>> = KEY
 
+    // Index-safe only: no PhpIndex/type resolution here.
     override fun getIndexer(): DataIndexer<String, Set<String>, FileContent> = DataIndexer { inputData ->
         val map = HashMap<String, MutableSet<String>>()
         val psiFile = inputData.psiFile

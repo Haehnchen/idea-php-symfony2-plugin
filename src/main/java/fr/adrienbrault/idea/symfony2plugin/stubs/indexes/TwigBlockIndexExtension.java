@@ -39,6 +39,7 @@ public class TwigBlockIndexExtension extends FileBasedIndexExtension<String, Set
 
     @NotNull
     @Override
+    // Index-safe only: no PhpIndex/type resolution here.
     public DataIndexer<String, Set<String>, FileContent> getIndexer() {
         return fileContent -> {
             Map<String, Set<String>> blocks = new HashMap<>();

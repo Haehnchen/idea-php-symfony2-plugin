@@ -28,6 +28,7 @@ public class UxTemplateStubIndex extends FileBasedIndexExtension<String, UxCompo
     }
 
     @Override
+    // Index-safe only: no PhpIndex/type resolution here.
     public @NotNull DataIndexer<String, UxComponent, FileContent> getIndexer() {
         return inputData -> {
             Map<String, UxComponent> map = new HashMap<>();

@@ -33,6 +33,7 @@ public class TwigMacroFunctionStubIndex extends FileBasedIndexExtension<String, 
 
     @NotNull
     @Override
+    // Index-safe only: no PhpIndex/type resolution here.
     public DataIndexer<String, TwigMacroTagIndex, FileContent> getIndexer() {
         return inputData -> {
             final Map<String, TwigMacroTagIndex> map = new HashMap<>();

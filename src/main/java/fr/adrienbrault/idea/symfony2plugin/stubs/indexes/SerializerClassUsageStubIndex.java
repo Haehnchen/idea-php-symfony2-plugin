@@ -33,6 +33,7 @@ public class SerializerClassUsageStubIndex extends FileBasedIndexExtension<Strin
 
     @NotNull
     @Override
+    // Index-safe only: no PhpIndex/type resolution here.
     public DataIndexer<String, Void, FileContent> getIndexer() {
         return inputData -> {
             PsiFile psiFile = inputData.getPsiFile();

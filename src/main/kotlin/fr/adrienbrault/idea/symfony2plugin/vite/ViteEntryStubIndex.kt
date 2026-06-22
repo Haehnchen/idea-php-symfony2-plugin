@@ -36,6 +36,7 @@ class ViteEntryStubIndex : FileBasedIndexExtension<String, String>() {
         file.name == "vite.config.js" || file.name == "vite.config.ts"
     }
 
+    // Index-safe only: no PhpIndex/type resolution here.
     override fun getIndexer(): DataIndexer<String, String, FileContent> = DataIndexer { inputData ->
         val result = mutableMapOf<String, String>()
 

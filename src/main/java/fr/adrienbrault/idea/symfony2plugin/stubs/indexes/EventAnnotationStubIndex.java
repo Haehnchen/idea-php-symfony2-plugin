@@ -47,6 +47,7 @@ public class EventAnnotationStubIndex extends FileBasedIndexExtension<String, Di
 
     @NotNull
     @Override
+    // Index-safe only: no PhpIndex/type resolution here.
     public DataIndexer<String, DispatcherEvent, FileContent> getIndexer() {
         return inputData -> {
             Map<String, DispatcherEvent> map = new HashMap<>();
