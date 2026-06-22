@@ -23,6 +23,21 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2026.1.307
+* Add support for Twig 3.21+/4 operators, operator aliases, and "not" keyword patterns; refactor `PsiElementUtils` for improved parameter handling (Daniel Espendiller)
+* Support absolute URL normalization for route matching and improve performance (Daniel Espendiller)
+* Support resolving TwigComponent from compiled container XML (Daniel Espendiller)
+* [#2788](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2788) add Symfony UX Twig Component PHP Config Index (Daniel Espendiller)
+* fix [#2669](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2669) ContainerBag get method autocomplete and warning (Daniel Espendiller)
+* Use resolved Twig template icons in Symfony Profiler actions (Daniel Espendiller)
+* Add parameter completion and navigation support for PHP array service configurations (Daniel Espendiller)
+* Introduce `LocalTwigComponentDataCollector` for Symfony UX TwigComponent profiling integration (Daniel Espendiller)
+* Update `controller_file` icon (Daniel Espendiller)
+* [#2794](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2794) Symfony 8.1 Method-Based Commands Implementation (Daniel Espendiller)
+* [#2793](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2793) Add dynamic Twig 4 loop context support: derive `loop.*` members from `\Twig\Runtime\LoopContext` class if available (Daniel Espendiller)
+* [#2788](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2788) Support Twig usage renaming for public fields and implement `handleElementRename` in `TwigMethodReferencesSearchExecutor` (Daniel Espendiller)
+* Add `name_prefix` support for Symfony UX TwigComponents: component name resolution, template indexing, and reverse lookup (Daniel Espendiller)
+
 ## 2026.1.306
 * fix index resolve in `PhpTwigTemplateUsageStubIndex` for fqn (Daniel Espendiller)
 * Add modifier icon for phpclass controller (Daniel Espendiller)
