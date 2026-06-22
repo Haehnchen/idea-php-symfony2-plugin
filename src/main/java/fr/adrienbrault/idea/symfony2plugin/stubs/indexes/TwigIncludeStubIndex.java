@@ -33,6 +33,7 @@ public class TwigIncludeStubIndex extends FileBasedIndexExtension<String, Templa
 
     @NotNull
     @Override
+    // Index-safe only: no PhpIndex/type resolution here.
     public DataIndexer<String, TemplateInclude, FileContent> getIndexer() {
         return inputData -> {
             final Map<String, TemplateInclude> map = new HashMap<>();

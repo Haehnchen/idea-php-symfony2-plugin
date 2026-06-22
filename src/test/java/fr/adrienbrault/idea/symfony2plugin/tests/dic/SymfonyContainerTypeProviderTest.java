@@ -82,6 +82,22 @@ public class SymfonyContainerTypeProviderTest extends SymfonyLightCodeInsightFix
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.dic.SymfonyContainerTypeProvider
      */
+    public void testThatNonContainerGetMethodDoesNotResolveToServiceClass() {
+        assertPhpReferenceNotResolveTo(PhpFileType.INSTANCE,
+            "<?php\n" +
+                "class CustomServiceLocator {\n" +
+                "    public function get($id) { return new CustomResult(); }\n" +
+                "}\n" +
+                "class CustomResult {}\n" +
+                "$locator = new CustomServiceLocator();\n" +
+                "$locator->get('foo')->for<caret>mat();\n",
+            PlatformPatterns.psiElement(Method.class).withName("format")
+        );
+    }
+
+    /**
+     * @see fr.adrienbrault.idea.symfony2plugin.dic.SymfonyContainerTypeProvider
+     */
     public void testThatClassConstantResolves() {
         assertPhpReferenceResolveTo(PhpFileType.INSTANCE,
             "<?php" +

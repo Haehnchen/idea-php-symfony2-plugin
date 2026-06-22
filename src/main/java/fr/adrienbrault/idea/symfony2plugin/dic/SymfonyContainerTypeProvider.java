@@ -32,6 +32,7 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider4 {
         return '\u0150';
     }
 
+    // Index-safe only: no PhpIndex here.
     @Nullable
     @Override
     public PhpType getType(PsiElement e) {
@@ -47,10 +48,6 @@ public class SymfonyContainerTypeProvider implements PhpTypeProvider4 {
 
         // container calls are only on "get" methods
         if(!PhpElementsUtil.isMethodWithFirstStringOrFieldReference(e, "get")) {
-            return null;
-        }
-
-        if (!ServiceContainerUtil.isServiceGetMethod(methodReference)) {
             return null;
         }
 

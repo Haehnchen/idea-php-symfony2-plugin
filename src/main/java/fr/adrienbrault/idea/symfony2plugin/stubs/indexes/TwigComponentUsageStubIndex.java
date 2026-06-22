@@ -49,6 +49,7 @@ public class TwigComponentUsageStubIndex extends FileBasedIndexExtension<String,
     }
 
     @Override
+    // Index-safe only: no PhpIndex/type resolution here.
     public @NotNull DataIndexer<String, Set<String>, FileContent> getIndexer() {
         return inputData -> {
             Map<String, Set<String>> map = new HashMap<>();

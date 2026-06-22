@@ -26,6 +26,7 @@ public class EventDispatcherTypeProvider implements PhpTypeProvider4 {
         return '\u0187';
     }
 
+    // Index-safe only: no PhpIndex here.
     @Nullable
     @Override
     public PhpType getType(PsiElement e) {

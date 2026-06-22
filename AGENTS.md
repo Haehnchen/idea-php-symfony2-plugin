@@ -1,6 +1,4 @@
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+# AGENTS.md
 
 ## Project Overview
 
@@ -70,6 +68,7 @@ Test files use dummy fixtures via `myFixture.addFileToProject()` to simulate Sym
 ## Important Development Notes
 
 - **Performance:** Always use indexes and caching (`CachedValue`, `CachedValuesManager`) for expensive operations. Never iterate all files in the project directly.
+- **Index-Safe Hot Paths:** `PhpTypeProvider4#getType` and `FileBasedIndexExtension#getIndexer()` MUST stay PSI-local/index-safe; unsafe examples: `PhpIndex`, `getType()`, `getDeclaredType().getTypes()`, reference resolution.
 - **Thread Safety:** Follow IntelliJ's threading model - read actions for PSI access, write actions for modifications. Most operations should be read-only.
 - **Kotlin: Companion** Follow Rule: Companion objects in IDE extension implementations may only contain a logger and constants
 

@@ -33,6 +33,7 @@ public class ObjectManagerFindTypeProvider implements PhpTypeProvider4 {
         return '\u0153';
     }
 
+    // Index-safe only: no PhpIndex here.
     @Nullable
     @Override
     public PhpType getType(PsiElement e) {

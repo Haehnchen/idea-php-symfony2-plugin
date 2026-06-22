@@ -46,6 +46,7 @@ public class StimulusControllerStubIndex extends FileBasedIndexExtension<String,
     }
 
     @Override
+    // Index-safe only: no PhpIndex/type resolution here.
     public @NotNull DataIndexer<String, StimulusController, FileContent> getIndexer() {
         return inputData -> {
             Map<String, StimulusController> map = new HashMap<>();

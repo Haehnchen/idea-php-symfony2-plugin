@@ -59,6 +59,7 @@ public class ContainerBuilderStubIndex extends FileBasedIndexExtension<String, C
 
     @NotNull
     @Override
+    // Index-safe only: no PhpIndex/type resolution here.
     public DataIndexer<String, ContainerBuilderCall, FileContent> getIndexer() {
 
         return inputData -> {

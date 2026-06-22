@@ -36,6 +36,7 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
 
     @NotNull
     @Override
+    // Index-safe only: no PhpIndex/type resolution here.
     public DataIndexer<String, ServiceSerializable, FileContent> getIndexer() {
 
         return inputData -> {

@@ -43,6 +43,7 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, StubIndexed
 
     @NotNull
     @Override
+    // Index-safe only: no PhpIndex/type resolution here.
     public DataIndexer<String, StubIndexedRoute, FileContent> getIndexer() {
         return inputData -> {
             Map<String, StubIndexedRoute> map = new HashMap<>();

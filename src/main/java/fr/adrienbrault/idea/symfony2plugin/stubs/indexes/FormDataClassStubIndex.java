@@ -47,6 +47,7 @@ public class FormDataClassStubIndex extends FileBasedIndexExtension<String, Set<
 
     @NotNull
     @Override
+    // Index-safe only: no PhpIndex/type resolution here.
     public DataIndexer<String, Set<String>, FileContent> getIndexer() {
         return inputData -> {
             Map<String, Set<String>> map = new HashMap<>();

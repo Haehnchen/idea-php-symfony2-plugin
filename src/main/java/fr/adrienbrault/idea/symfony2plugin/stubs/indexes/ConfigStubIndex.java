@@ -50,6 +50,7 @@ public class ConfigStubIndex extends FileBasedIndexExtension<String, ConfigIndex
     }
 
     @Override
+    // Index-safe only: no PhpIndex/type resolution here.
     public @NotNull DataIndexer<String, ConfigIndex, FileContent> getIndexer() {
         return inputData -> {
             if (!Symfony2ProjectComponent.isEnabledForIndex(inputData.getProject())) {

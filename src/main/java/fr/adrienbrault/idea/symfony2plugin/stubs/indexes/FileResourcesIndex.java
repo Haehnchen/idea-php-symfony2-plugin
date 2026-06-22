@@ -35,6 +35,7 @@ public class FileResourcesIndex extends FileBasedIndexExtension<String, FileReso
 
     @NotNull
     @Override
+    // Index-safe only: no PhpIndex/type resolution here.
     public DataIndexer<String, FileResource, FileContent> getIndexer() {
         return inputData -> {
             PsiFile psiFile = inputData.getPsiFile();

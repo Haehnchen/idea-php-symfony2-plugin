@@ -37,6 +37,7 @@ public class ContainerIdUsagesStubIndex extends FileBasedIndexExtension<String, 
 
     @NotNull
     @Override
+    // Index-safe only: no PhpIndex/type resolution here.
     public DataIndexer<String, Integer, FileContent> getIndexer() {
         return inputData -> {
             Map<String, Integer> map = new HashMap<>();
