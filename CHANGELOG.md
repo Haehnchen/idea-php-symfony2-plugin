@@ -23,6 +23,9 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2026.1.308
+* Make `SymfonyContainerTypeProvider` index-safe; prevent resolving receiver class during indexing (Daniel Espendiller)
+
 ## 2026.1.307
 * Add support for Twig 3.21+/4 operators, operator aliases, and "not" keyword patterns; refactor `PsiElementUtils` for improved parameter handling (Daniel Espendiller)
 * Support absolute URL normalization for route matching and improve performance (Daniel Espendiller)
