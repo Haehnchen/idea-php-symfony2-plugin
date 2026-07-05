@@ -108,4 +108,39 @@ public class TwigHtmlCompletionContributorTest extends SymfonyLightCodeInsightFi
         );
     }
 
+    /**
+     * Test that a template prop's type (from its {# @prop #} docblock) is shown on the right.
+     */
+    public void testThatTemplatePropCompletionShowsTypeFromPropDocblock() {
+        myFixture.copyFileToProject("twig_component.yaml", "config/packages/twig_component.yaml");
+        myFixture.copyFileToProject("ide-twig.json", "ide-twig.json");
+        myFixture.addFileToProject("templates/components/PropsAlert.html.twig",
+            "{# @prop variant 'default'|'destructive' The visual style variant. #}\n" +
+            "{%- props variant = 'default' -%}\n" +
+            "<div></div>"
+        );
+
+        assertCompletionLookupContainsPresentableItem(
+            TwigFileType.INSTANCE,
+            "<twig:PropsAlert <caret> />",
+            presentation -> "variant".equals(presentation.getItemText()) && "'default'|'destructive'".equals(presentation.getTypeText())
+        );
+    }
+
+    /**
+     * Test that prop completion also fires right after "<twig:PropsAlert <caret>" (caret on whitespace,
+     * incomplete tag) where getOriginalPosition() is null.
+     */
+    public void testThatPropCompletionFiresRightAfterTagNameWhitespace() {
+        myFixture.copyFileToProject("twig_component.yaml", "config/packages/twig_component.yaml");
+        myFixture.copyFileToProject("ide-twig.json", "ide-twig.json");
+        myFixture.copyFileToProject("PropsAlert.html.twig", "templates/components/PropsAlert.html.twig");
+
+        assertCompletionContains(
+            TwigFileType.INSTANCE,
+            "<twig:PropsAlert <caret>",
+            "icon", "type", "message"
+        );
+    }
+
 }
