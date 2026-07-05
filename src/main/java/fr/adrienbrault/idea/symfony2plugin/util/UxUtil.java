@@ -14,6 +14,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.formatter.FormatterUtil;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.CachedValue;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
@@ -48,6 +49,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -830,6 +832,110 @@ public class UxUtil {
             }
         }
     }
+
+    /**
+     * Extracts the prop default values from a component template's {@code {%- props -%}} tag.
+     *
+     * <p>Default values live only in the {@code {%- props -%}} declaration (the single source of
+     * truth), the same way Symfony UX Toolkit's {@code ComponentDocParser} sources them rather than
+     * from the {@code {# @prop #}} docblock. Each default is returned as written in the source
+     * (e.g. {@code false}, {@code 'brand'}, {@code ['a', 'b']}); commas inside arrays, hashes and
+     * strings are handled because the Twig parser nests them, so only the tag's top-level commas
+     * separate props. Props declared without a default (required props) are not included.
+     *
+     * @return prop name to its default expression, in declaration order
+     */
+    @NotNull
+    public static Map<String, String> getComponentTemplatePropDefaults(@NotNull TwigFile twigFile) {
+        Map<String, String> defaults = new LinkedHashMap<>();
+
+        for (PsiElement element : twigFile.getChildren()) {
+            if (!(element instanceof TwigCompositeElement) || element.getNode().getElementType() != TwigElementTypes.TAG) {
+                continue;
+            }
+
+            ASTNode[] children = element.getNode().getChildren(null);
+
+            int nameIndex = -1;
+            for (int i = 0; i < children.length; i++) {
+                if (children[i].getElementType() == TwigTokenTypes.TAG_NAME) {
+                    nameIndex = i;
+                    break;
+                }
+            }
+
+            if (nameIndex == -1 || !"props".equals(children[nameIndex].getText().trim())) {
+                continue;
+            }
+
+            List<ASTNode> segment = new ArrayList<>();
+            for (int i = nameIndex + 1; i < children.length; i++) {
+                IElementType type = children[i].getElementType();
+                if (type == TwigTokenTypes.STATEMENT_BLOCK_END) {
+                    break;
+                }
+
+                if (type == TwigTokenTypes.COMMA) {
+                    collectPropDefault(segment, defaults);
+                    segment.clear();
+                } else {
+                    segment.add(children[i]);
+                }
+            }
+            collectPropDefault(segment, defaults);
+
+            return defaults;
+        }
+
+        return defaults;
+    }
+
+    private static void collectPropDefault(@NotNull List<ASTNode> segment, @NotNull Map<String, String> defaults) {
+        String name = null;
+        int equalIndex = -1;
+
+        for (int i = 0; i < segment.size(); i++) {
+            ASTNode node = segment.get(i);
+            if (node.getText().isBlank()) {
+                continue;
+            }
+
+            if (name == null) {
+                if (node.getElementType() != TwigTokenTypes.IDENTIFIER) {
+                    return;
+                }
+                name = node.getText();
+            } else if (node.getElementType() == TwigTokenTypes.EQ) {
+                equalIndex = i;
+                break;
+            }
+        }
+
+        if (name == null || equalIndex == -1) {
+            return;
+        }
+
+        StringBuilder defaultValue = new StringBuilder();
+        for (int i = equalIndex + 1; i < segment.size(); i++) {
+            defaultValue.append(segment.get(i).getText());
+        }
+
+        String trimmed = defaultValue.toString().trim();
+        if (!trimmed.isEmpty()) {
+            defaults.put(name, trimmed);
+        }
+    }
+
+    /**
+     * Pattern for a Symfony UX Toolkit {@code {# @prop name type description #}} docblock.
+     * Group 1: {@code @prop}, group 2: name, group 3: type, group 4: description.
+     *
+     * @see <a href="https://regex101.com/r/3JXNX7/1">Regex101</a>
+     */
+    public static final Pattern PROP_PATTERN = Pattern.compile(
+        "(@prop)\\s+(\\w+)\\s+(\\S+)\\s+(.+?)\\s*$",
+        Pattern.DOTALL
+    );
 
 
     private static Collection<String> getExposeName(@NotNull PhpAttributesOwner phpAttributesOwner) {
