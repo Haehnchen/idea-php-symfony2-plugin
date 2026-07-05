@@ -836,6 +836,34 @@ public class UxUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         return UxUtil.getComponentTemplatePropDefaults(twigFile);
     }
 
+    public void testGetComponentTemplateProps() {
+        TwigFile twigFile = (TwigFile) myFixture.configureByText(
+            TwigFileType.INSTANCE,
+            "{# @prop id string Unique identifier. #}\n" +
+            "{# @prop variant 'default'|'destructive' The visual style variant. #}\n" +
+            "{# @block content The content. #}\n" +
+            "{%- props id, variant = 'default' -%}"
+        );
+
+        Map<String, UxUtil.TwigComponentProp> props = UxUtil.getComponentTemplateProps(twigFile);
+
+        UxUtil.TwigComponentProp variant = props.get("variant");
+        assertNotNull(variant);
+        assertEquals("'default'|'destructive'", variant.type());
+        assertEquals("The visual style variant.", variant.description());
+        assertEquals("'default'", variant.defaultValue());
+
+        // required prop (declared without a default in {% props %})
+        UxUtil.TwigComponentProp id = props.get("id");
+        assertNotNull(id);
+        assertEquals("string", id.type());
+        assertEquals("Unique identifier.", id.description());
+        assertNull(id.defaultValue());
+
+        // @block is not a prop
+        assertFalse(props.containsKey("content"));
+    }
+
     private void configureTwigNamespaceSettings(@NotNull TwigNamespaceSetting... settings) {
         Settings.getInstance(getProject()).twigNamespaces.clear();
         Settings.getInstance(getProject()).twigNamespaces.addAll(List.of(settings));

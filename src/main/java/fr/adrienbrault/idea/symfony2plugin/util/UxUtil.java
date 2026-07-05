@@ -18,6 +18,7 @@ import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.CachedValue;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
@@ -49,6 +50,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -936,6 +938,39 @@ public class UxUtil {
         "(@prop)\\s+(\\w+)\\s+(\\S+)\\s+(.+?)\\s*$",
         Pattern.DOTALL
     );
+
+    /**
+     * A prop documented in a component template: its {@code {# @prop name type description #}} docblock
+     * merged with the default value declared in the {@code {%- props -%}} tag.
+     */
+    public record TwigComponentProp(@NotNull String name, @NotNull String type, @NotNull String description, @Nullable String defaultValue) {}
+
+    /**
+     * Parses a component template's {@code {# @prop name type description #}} docblocks and merges each
+     * prop's default value from the {@code {%- props -%}} tag ({@link #getComponentTemplatePropDefaults}).
+     *
+     * @return prop name to its documentation, in docblock order
+     */
+    @NotNull
+    public static Map<String, TwigComponentProp> getComponentTemplateProps(@NotNull TwigFile twigFile) {
+        Map<String, String> defaults = getComponentTemplatePropDefaults(twigFile);
+        Map<String, TwigComponentProp> props = new LinkedHashMap<>();
+
+        for (PsiElement comment : PsiTreeUtil.collectElements(twigFile, element -> element.getNode().getElementType() == TwigTokenTypes.COMMENT_TEXT)) {
+            Matcher matcher = PROP_PATTERN.matcher(comment.getText());
+            if (matcher.find()) {
+                String name = matcher.group(2);
+                props.put(name, new TwigComponentProp(
+                    name,
+                    matcher.group(3),
+                    matcher.group(4).trim().replaceAll("\\s+", " "),
+                    defaults.get(name)
+                ));
+            }
+        }
+
+        return props;
+    }
 
 
     private static Collection<String> getExposeName(@NotNull PhpAttributesOwner phpAttributesOwner) {

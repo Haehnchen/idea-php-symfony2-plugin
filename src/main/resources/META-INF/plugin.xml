@@ -245,6 +245,7 @@
         <annotator language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.annotation.TwigVarCommentAnnotator"/>
         <completion.contributor language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor"/>
         <completion.contributor language="HTML" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.completion.TwigHtmlCompletionContributor"/>
+        <lang.documentationProvider language="HTML" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.documentation.TwigComponentAttributeDocumentationProvider"/>
         <completion.contributor language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlCompletionContributor"/>
         <completion.contributor language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.completion.yaml.YamlCompletionContributor"/>
 
