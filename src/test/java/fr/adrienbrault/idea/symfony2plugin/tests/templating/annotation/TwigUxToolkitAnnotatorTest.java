@@ -173,6 +173,54 @@ public class TwigUxToolkitAnnotatorTest extends SymfonyLightCodeInsightFixtureTe
         );
     }
 
+    public void testPropTooltipShowsDefaultFromPropsTag() {
+        myFixture.configureByText(
+            "test.html.twig",
+            "{# @prop open boolean Whether the item is open by default. #}\n" +
+            "{%- props open = false -%}"
+        );
+
+        List<HighlightInfo> highlighting = myFixture.doHighlighting();
+
+        assertTrue(
+            "Expected a tooltip carrying the type, default value and description",
+            highlighting.stream().anyMatch(info ->
+                info.getToolTip() != null
+                    && info.getToolTip().contains("boolean")
+                    && info.getToolTip().contains("false")
+                    && info.getToolTip().contains("Whether the item is open by default.")
+            )
+        );
+    }
+
+    public void testPropTooltipOmitsDefaultForRequiredProp() {
+        myFixture.configureByText(
+            "test.html.twig",
+            "{# @prop id string Unique identifier. #}\n" +
+            "{%- props id -%}"
+        );
+
+        List<HighlightInfo> highlighting = myFixture.doHighlighting();
+
+        // the tooltip still describes the prop...
+        assertTrue(
+            "Expected a tooltip carrying the type and description",
+            highlighting.stream().anyMatch(info ->
+                info.getToolTip() != null
+                    && info.getToolTip().contains("string")
+                    && info.getToolTip().contains("Unique identifier.")
+            )
+        );
+
+        // ...but shows no default assignment for a required prop
+        assertFalse(
+            "A required prop must not show a default value",
+            highlighting.stream().anyMatch(info ->
+                info.getToolTip() != null && info.getToolTip().contains("= <code>")
+            )
+        );
+    }
+
     /**
      * Helper method to check if a HighlightInfo has a specific TextAttributesKey.
      */
