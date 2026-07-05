@@ -16,6 +16,7 @@ import com.intellij.util.Consumer;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
+import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.asset.AssetDirectoryReader;
@@ -363,7 +364,9 @@ public class TwigHtmlCompletionContributor extends CompletionContributor {
             new CompletionProvider<>() {
                 @Override
                 protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {
-                    PsiElement position = parameters.getOriginalPosition();
+                    // use getPosition() (never null) so completion also fires right after "<twig:Alert <caret>",
+                    // where getOriginalPosition() is null (caret on whitespace / not yet on an attribute).
+                    PsiElement position = parameters.getPosition();
                     if (!Symfony2ProjectComponent.isEnabled(position)) {
                         return;
                     }
@@ -398,19 +401,34 @@ public class TwigHtmlCompletionContributor extends CompletionContributor {
                         });
                     }
 
-                    // Add completion for {% props %} defined in component templates
+                    // Add completion for {% props %} defined in component templates, showing the prop
+                    // type (from its {# @prop #} docblock) on the right when available.
                     String componentName = name.substring(5);
+
+                    Map<String, String> propTypes = new HashMap<>();
+                    for (PsiFile template : UxUtil.getComponentTemplates(position.getProject(), componentName)) {
+                        if (template instanceof TwigFile twigFile) {
+                            UxUtil.getComponentTemplateProps(twigFile).forEach((propName, prop) -> propTypes.putIfAbsent(propName, prop.type()));
+                        }
+                    }
+
                     UxUtil.visitComponentTemplateProps(position.getProject(), componentName, (Consumer<Pair<String, PsiElement>>) pair -> {
+                        String type = propTypes.get(pair.getFirst());
+
                         LookupElementBuilder element1 = LookupElementBuilder
                             .create(pair.getFirst())
                             .withIcon(Symfony2Icons.SYMFONY);
-
+                        if (type != null) {
+                            element1 = element1.withTypeText(type, true);
+                        }
                         resultSet.addElement(element1);
 
                         LookupElementBuilder element2 = LookupElementBuilder
                             .create(":" + pair.getFirst())
                             .withIcon(Symfony2Icons.SYMFONY);
-
+                        if (type != null) {
+                            element2 = element2.withTypeText(type, true);
+                        }
                         resultSet.addElement(element2);
                     });
                 }
