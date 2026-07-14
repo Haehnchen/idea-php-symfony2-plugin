@@ -1,0 +1,7 @@
+App\YamlAddress:
+  type: embeddable
+  fields:
+    city:
+      type: string
+    status:
+      type: string

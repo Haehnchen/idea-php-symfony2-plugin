@@ -12,8 +12,10 @@ public class QueryBuilderCompletionContributorTest extends SymfonyLightCodeInsig
     public void setUp() throws Exception {
         super.setUp();
         myFixture.copyFileToProject("doctrine.orm.yml");
+        myFixture.copyFileToProject("yaml-address.orm.yml");
         myFixture.copyFileToProject("embedded.orm.xml");
         myFixture.copyFileToProject("address.orm.xml");
+        myFixture.copyFileToProject("attribute-embeddable.php");
         myFixture.copyFileToProject("QueryBuilderCompletionContributor.php");
     }
 
@@ -58,12 +60,38 @@ public class QueryBuilderCompletionContributorTest extends SymfonyLightCodeInsig
             "}", "s.address.city", "s.address.status");
     }
 
+    public void testCompletionForEmbeddedYamlFields() {
+        assertCompletionContains("test.php", createServiceRepositoryQueryBuilder("App\\Entity", "s.address.<caret>"), "s.address.city", "s.address.status");
+    }
+
+    public void testCompletionForEmbeddedAttributeFields() {
+        assertCompletionContains("test.php", createServiceRepositoryQueryBuilder("App\\AttributeEmbeddedEntity", "s.address.<caret>"), "s.address.city", "s.address.status");
+    }
+
     public void testCompletionForSelectField() {
         assertCompletionContains(
             "test.php",
             createQueryBuilderWrap("$qb->select('foobar, foobar.na<caret>me');"),
             "foobar.name"
         );
+    }
+
+    @NotNull
+    private String createServiceRepositoryQueryBuilder(@NotNull String entityClass, @NotNull String expression) {
+        return "<?php\n" +
+            "use Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository;\n" +
+            "class Repository extends ServiceEntityRepository\n" +
+            "{\n" +
+            "    public function __construct(RegistryInterface $registry)\n" +
+            "    {\n" +
+            "        parent::__construct($registry, \\" + entityClass + "::class);\n" +
+            "    }\n" +
+            "    public function foobar()\n" +
+            "    {\n" +
+            "        $qb = $this->createQueryBuilder('s');\n" +
+            "        $qb->andWhere('" + expression + "');\n" +
+            "    }\n" +
+            "}";
     }
 
     public void testCompletionForAddSelect() {

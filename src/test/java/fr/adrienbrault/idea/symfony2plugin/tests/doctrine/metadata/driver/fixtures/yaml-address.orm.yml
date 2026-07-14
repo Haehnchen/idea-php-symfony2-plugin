@@ -1,0 +1,9 @@
+Doctrine\Tests\ORM\YamlAddress:
+  type: embeddable
+  fields:
+    city:
+      type: string
+      column: city_name
+    status:
+      type: string
+      enumType: ORM\Foobar\Status

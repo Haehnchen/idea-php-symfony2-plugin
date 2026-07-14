@@ -1,10 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.driver;
 
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpPsiAttributesUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -14,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -88,6 +91,10 @@ public class DoctrinePhpAttributeMappingDriver implements DoctrineMappingDriverI
                         }
                     }
 
+                    if (PhpElementsUtil.isEqualClassName(fqn, "\\Doctrine\\ORM\\Mapping\\Embedded")) {
+                        addEmbeddedFields(arguments, phpClass, field, attribute, fields);
+                    }
+
                     if (PhpElementsUtil.isEqualClassName(fqn, "\\Doctrine\\ORM\\Mapping\\OneToOne", "\\Doctrine\\ORM\\Mapping\\ManyToOne", "\\Doctrine\\ORM\\Mapping\\OneToMany", "\\Doctrine\\ORM\\Mapping\\ManyToMany")) {
                         isField = true;
 
@@ -132,4 +139,57 @@ public class DoctrinePhpAttributeMappingDriver implements DoctrineMappingDriverI
 
         return model;
     }
+
+    private void addEmbeddedFields(
+        @NotNull DoctrineMappingDriverArguments arguments,
+        @NotNull PhpClass containingClass,
+        @NotNull Field field,
+        @NotNull PhpAttribute attribute,
+        @NotNull Collection<DoctrineModelField> fields
+    ) {
+        String embeddedClass = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, 0, "class");
+        if (StringUtils.isBlank(embeddedClass)) {
+            embeddedClass = getDeclaredClass(field);
+        }
+
+        if (StringUtils.isBlank(embeddedClass)) {
+            return;
+        }
+
+        String propertyName = field.getName();
+        String columnPrefix = getColumnPrefix(attribute, propertyName);
+        DoctrineEmbeddedFieldUtil.addEmbeddedFields(
+            containingClass.getPresentableFQN(),
+            List.of(new DoctrineEmbeddedFieldUtil.Mapping(propertyName, embeddedClass, columnPrefix)),
+            className -> DoctrineMetadataUtil.getModelFields(arguments.getProject(), className),
+            fields
+        );
+    }
+
+    private String getDeclaredClass(@NotNull Field field) {
+        PhpTypeDeclaration typeDeclaration = field.getTypeDeclaration();
+        if (typeDeclaration == null) {
+            return null;
+        }
+
+        for (ClassReference classReference : typeDeclaration.getClassReferences()) {
+            if (!"null".equals(classReference.getCanonicalText()) && StringUtils.isNotBlank(classReference.getFQN())) {
+                return classReference.getFQN();
+            }
+        }
+
+        return null;
+    }
+
+    @NotNull
+    private String getColumnPrefix(@NotNull PhpAttribute attribute, @NotNull String propertyName) {
+        PsiElement columnPrefixElement = PhpPsiAttributesUtil.getAttributeValuePsiElement(attribute, 1, "columnPrefix");
+        if (columnPrefixElement != null && "false".equalsIgnoreCase(columnPrefixElement.getText())) {
+            return "";
+        }
+
+        String columnPrefix = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, 1, "columnPrefix");
+        return columnPrefix != null ? columnPrefix : propertyName + "_";
+    }
+
 }

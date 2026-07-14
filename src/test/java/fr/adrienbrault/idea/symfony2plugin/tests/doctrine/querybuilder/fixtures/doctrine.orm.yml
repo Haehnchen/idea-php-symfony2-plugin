@@ -10,3 +10,7 @@ App\Entity:
     name:
       type: string
       length: 50
+  embedded:
+    address:
+      class: App\YamlAddress
+      columnPrefix: false

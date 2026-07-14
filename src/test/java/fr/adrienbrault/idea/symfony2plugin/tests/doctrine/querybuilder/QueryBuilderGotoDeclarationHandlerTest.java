@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.querybuilder;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.xml.XmlTag;
+import com.jetbrains.php.lang.psi.elements.Field;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
@@ -12,8 +13,10 @@ public class QueryBuilderGotoDeclarationHandlerTest extends SymfonyLightCodeInsi
     public void setUp() throws Exception {
         super.setUp();
         myFixture.copyFileToProject("doctrine.orm.yml");
+        myFixture.copyFileToProject("yaml-address.orm.yml");
         myFixture.copyFileToProject("embedded.orm.xml");
         myFixture.copyFileToProject("address.orm.xml");
+        myFixture.copyFileToProject("attribute-embeddable.php");
         myFixture.copyFileToProject("QueryBuilderCompletionContributor.php");
     }
 
@@ -119,6 +122,39 @@ public class QueryBuilderGotoDeclarationHandlerTest extends SymfonyLightCodeInsi
             "        $qb->andWhere('s.address.ci<caret>ty');\n" +
             "    }\n" +
             "}", PlatformPatterns.psiElement(XmlTag.class));
+    }
+
+    public void testNavigationForEmbeddedYamlField() {
+        assertNavigationMatch(
+            "test.php",
+            createServiceRepositoryQueryBuilder("App\\Entity", "s.address.ci<caret>ty"),
+            PlatformPatterns.psiElement(YAMLKeyValue.class)
+        );
+    }
+
+    public void testNavigationForEmbeddedAttributeField() {
+        assertNavigationMatch(
+            "test.php",
+            createServiceRepositoryQueryBuilder("App\\AttributeEmbeddedEntity", "s.address.ci<caret>ty"),
+            PlatformPatterns.psiElement(Field.class)
+        );
+    }
+
+    private String createServiceRepositoryQueryBuilder(String entityClass, String expression) {
+        return "<?php\n" +
+            "use Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository;\n" +
+            "class Repository extends ServiceEntityRepository\n" +
+            "{\n" +
+            "    public function __construct(RegistryInterface $registry)\n" +
+            "    {\n" +
+            "        parent::__construct($registry, \\" + entityClass + "::class);\n" +
+            "    }\n" +
+            "    public function foobar()\n" +
+            "    {\n" +
+            "        $qb = $this->createQueryBuilder('s');\n" +
+            "        $qb->andWhere('" + expression + "');\n" +
+            "    }\n" +
+            "}";
     }
 
     public void testNavigationForJoinAlias() {

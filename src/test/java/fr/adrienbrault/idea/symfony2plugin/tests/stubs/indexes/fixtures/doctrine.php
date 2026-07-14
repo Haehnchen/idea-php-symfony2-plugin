@@ -2,6 +2,7 @@
 
 namespace Doctrine\ORM\Mapping {
     class Entity {};
+    class Embeddable {};
     class Table {};
 }
 
@@ -35,6 +36,9 @@ namespace Doctrine\Orm {
 
     #[ORM\Entity(repositoryClass: AttributeEntityRepository::class)]
     class AttributeEntity {}
+
+    #[ORM\Embeddable]
+    class AttributeEmbeddable {}
 
     #[ORM\Entity(repositoryClass: AttributeEntityRepository::class)]
     #[ORM\Table(name: "attribute_users")]
