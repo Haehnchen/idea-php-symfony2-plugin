@@ -11,6 +11,13 @@ Doctrine\Tests\ORM\YamlEntity:
     status:
       type: string
       enumType: ORM\Foobar\Status
+  embedded:
+    addressDetails:
+      class: Doctrine\Tests\ORM\YamlAddress
+      columnPrefix: details_
+    location:
+      class: Doctrine\Tests\ORM\YamlAddress
+      columnPrefix: false
   oneToOne:
     address:
       targetEntity: Address

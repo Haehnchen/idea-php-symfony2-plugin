@@ -2,6 +2,8 @@
 
 namespace Doctrine\ORM\Mapping {
     class Entity {};
+    class Embeddable {};
+    class Embedded {};
     class Table {};
     class Column {};
     class OneToMany {};
@@ -57,6 +59,15 @@ namespace ORM\Attributes {
 
         #[ORM\Column(type: "string", enumType: Status::class)]
         private Status $status;
+
+        #[ORM\Embedded(class: Address::class, columnPrefix: "details_")]
+        private Address $addressDetails;
+
+        #[ORM\Embedded(class: Address::class, columnPrefix: false)]
+        private Address $location;
+
+        #[ORM\Embedded(columnPrefix: "typed_")]
+        private Address $typedAddress;
 
         #[ORM\OneToMany(targetEntity: Egg::class)]
         public $phonenumbers;

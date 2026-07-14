@@ -42,8 +42,18 @@ namespace Doctrine\Bundle\DoctrineBundle\Repository
     }
 }
 
+namespace Doctrine\ORM\Mapping
+{
+    class Entity {}
+    class Embeddable {}
+    class Embedded {}
+    class Column {}
+}
+
 namespace App
 {
+    use Doctrine\ORM\Mapping as ORM;
+
     class Entity
     {
         private $id;
@@ -59,5 +69,12 @@ namespace App
     {
         private $city;
         private $status;
+    }
+
+    #[ORM\Entity]
+    class AttributeEmbeddedEntity
+    {
+        #[ORM\Embedded(class: AttributeAddress::class)]
+        private AttributeAddress $address;
     }
 }

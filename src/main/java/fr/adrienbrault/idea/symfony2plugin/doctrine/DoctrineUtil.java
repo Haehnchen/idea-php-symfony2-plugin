@@ -41,6 +41,8 @@ import java.util.*;
  */
 public class DoctrineUtil {
 
+    private static final String ORM_EMBEDDABLE_ATTRIBUTE = "\\Doctrine\\ORM\\Mapping\\Embeddable";
+
     public static final String[] MODEL_CLASS_ANNOTATION = new String[]{
         "\\Doctrine\\ORM\\Mapping\\Entity",
         "\\TYPO3\\Flow\\Annotations\\Entity",
@@ -151,7 +153,8 @@ public class DoctrineUtil {
             for (PhpAttribute attribute : phpClass.getAttributes()) {
                 String attributeFQN = attribute.getFQN();
                 if (attributeFQN == null) continue;
-                if (PhpElementsUtil.isEqualClassName(attributeFQN, MODEL_CLASS_ANNOTATION)) {
+                if (PhpElementsUtil.isEqualClassName(attributeFQN, MODEL_CLASS_ANNOTATION)
+                    || PhpElementsUtil.isEqualClassName(attributeFQN, ORM_EMBEDDABLE_ATTRIBUTE)) {
                     String repositoryClass = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, 0, "repositoryClass");
                     String tableName = extractTableNameFromAttributes(phpClass);
                     pairs.add(new DoctrineClassMetadata(

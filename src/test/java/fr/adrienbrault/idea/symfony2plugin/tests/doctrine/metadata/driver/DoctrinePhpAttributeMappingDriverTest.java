@@ -16,6 +16,7 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
 public class DoctrinePhpAttributeMappingDriverTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void setUp() throws Exception {
         super.setUp();
+        myFixture.copyFileToProject("attribute-embeddable.php");
         myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("attributes.php"));
     }
 
@@ -84,6 +85,29 @@ public class DoctrinePhpAttributeMappingDriverTest extends SymfonyLightCodeInsig
         assertEquals("string", statusField.getTypeName());
         assertEquals("\\ORM\\Foobar\\Status", statusField.getEnumType());
         assertContainsElements(statusField.getPropertyTypes(), "\\ORM\\Foobar\\Status");
+    }
+
+    public void testEmbeddedFields() {
+        DoctrineMetadataModel metadata = createOrmMetadata();
+
+        DoctrineModelField city = metadata.getField("addressDetails.city");
+        assertNotNull(city);
+        assertEquals("string", city.getTypeName());
+        assertEquals("details_city_name", city.getColumn());
+
+        DoctrineModelField status = metadata.getField("addressDetails.status");
+        assertNotNull(status);
+        assertEquals("\\ORM\\Foobar\\Status", status.getEnumType());
+
+        assertEquals("city_name", metadata.getField("location.city").getColumn());
+        assertEquals("typed_city_name", metadata.getField("typedAddress.city").getColumn());
+    }
+
+    public void testEmbeddableFields() {
+        DoctrineMetadataModel metadata = createOrmMetadataForClass("\\ORM\\Attributes\\Address");
+
+        assertNotNull(metadata.getField("city"));
+        assertEquals("\\ORM\\Foobar\\Status", metadata.getField("status").getEnumType());
     }
 
     /**
