@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.doctrine;
 
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineClassMetadata;
+import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
@@ -19,6 +20,21 @@ import java.util.Objects;
 public class DoctrineUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     public String getTestDataPath() {
         return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/doctrine/fixtures";
+    }
+
+    public void testGetClassRepositoryPairIncludesXmlEmbeddables() {
+        PsiFile psiFile = myFixture.configureByText(
+            XmlFileType.INSTANCE,
+            "<doctrine-mapping>" +
+                "<entity name=\"App\\Entity\\User\"/>" +
+                "<embeddable name=\"App\\Entity\\Address\"><field name=\"city\" type=\"string\"/></embeddable>" +
+                "</doctrine-mapping>"
+        );
+
+        Collection<DoctrineClassMetadata> metadata = DoctrineUtil.getClassRepositoryPair(psiFile);
+        assertNotNull(metadata);
+        assertEquals(2, metadata.size());
+        assertTrue(metadata.stream().anyMatch(item -> "App\\Entity\\Address".equals(item.className())));
     }
 
     /**

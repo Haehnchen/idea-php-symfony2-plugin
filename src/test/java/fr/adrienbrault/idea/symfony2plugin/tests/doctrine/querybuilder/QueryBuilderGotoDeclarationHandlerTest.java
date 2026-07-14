@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.doctrine.querybuilder;
 
 import com.intellij.patterns.PlatformPatterns;
+import com.intellij.psi.xml.XmlTag;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
@@ -11,6 +12,8 @@ public class QueryBuilderGotoDeclarationHandlerTest extends SymfonyLightCodeInsi
     public void setUp() throws Exception {
         super.setUp();
         myFixture.copyFileToProject("doctrine.orm.yml");
+        myFixture.copyFileToProject("embedded.orm.xml");
+        myFixture.copyFileToProject("address.orm.xml");
         myFixture.copyFileToProject("QueryBuilderCompletionContributor.php");
     }
 
@@ -99,6 +102,23 @@ public class QueryBuilderGotoDeclarationHandlerTest extends SymfonyLightCodeInsi
             PlatformPatterns.psiElement(YAMLKeyValue.class)
         );
 
+    }
+
+    public void testNavigationForEmbeddedXmlField() {
+        assertNavigationMatch("test.php", "<?php\n" +
+            "use Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository;\n" +
+            "class Repository extends ServiceEntityRepository\n" +
+            "{\n" +
+            "    public function __construct(RegistryInterface $registry)\n" +
+            "    {\n" +
+            "        parent::__construct($registry, \\App\\EmbeddedEntity::class);\n" +
+            "    }\n" +
+            "    public function foobar()\n" +
+            "    {\n" +
+            "        $qb = $this->createQueryBuilder('s');\n" +
+            "        $qb->andWhere('s.address.ci<caret>ty');\n" +
+            "    }\n" +
+            "}", PlatformPatterns.psiElement(XmlTag.class));
     }
 
     public void testNavigationForJoinAlias() {

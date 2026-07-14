@@ -19,6 +19,7 @@ import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityHelper;
+import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.DoctrineMetadataPattern;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.DoctrineModel;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelSerializable;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelInterface;
@@ -369,20 +370,21 @@ public class DoctrineMetadataUtil {
     public static String findModelNameInScope(@NotNull PsiElement psiElement) {
 
         if(psiElement.getLanguage().equals(XMLLanguage.INSTANCE)) {
-            PsiElement firstParent = PsiTreeUtil.findFirstParent(psiElement, psiElement1 -> {
-                if (!(psiElement1 instanceof XmlTag)) {
-                    return false;
-                }
+            XmlTag xmlTag = PsiTreeUtil.getParentOfType(psiElement, XmlTag.class, false);
+            while (xmlTag != null) {
+                String tagName = xmlTag.getName();
+                boolean isModelTag = tagName.equals("entity")
+                    || tagName.equals("document")
+                    || tagName.equals("embedded-document")
+                    || tagName.equals("embeddable")
+                    || tagName.equals("embedded") && xmlTag.getParentTag() != null && xmlTag.getParentTag().getName().matches(DoctrineMetadataPattern.DOCTRINE_MAPPING);
 
-                String name = ((XmlTag) psiElement1).getName();
-                return name.equals("entity") || name.equals("document") || name.equals("embedded") || name.equals("embedded-document");
-            });
-
-            if(firstParent instanceof XmlTag) {
-                String name = ((XmlTag) firstParent).getAttributeValue("name");
+                String name = isModelTag ? xmlTag.getAttributeValue("name") : null;
                 if(StringUtils.isNotBlank(name)) {
                     return name;
                 }
+
+                xmlTag = PsiTreeUtil.getParentOfType(xmlTag, XmlTag.class, true);
             }
         } else if(psiElement.getContainingFile() instanceof YAMLFile) {
             PsiFile psiFile = psiElement.getContainingFile();

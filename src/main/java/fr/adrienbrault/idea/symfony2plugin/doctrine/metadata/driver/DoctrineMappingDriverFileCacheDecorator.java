@@ -6,6 +6,8 @@ import com.intellij.psi.util.CachedValue;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
+import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.DoctrineMetadataFileStubIndex;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,7 +42,11 @@ public class DoctrineMappingDriverFileCacheDecorator implements DoctrineMappingD
         PsiFile file = arguments.getPsiFile();
 
         Map<String, DoctrineMetadataModel> cache = CachedValuesManager.getCachedValue(file, cacheKey, () ->
-            CachedValueProvider.Result.create(new HashMap<>(), file)
+            CachedValueProvider.Result.create(
+                new HashMap<>(),
+                file,
+                FileIndexCaches.getModificationTrackerForIndexId(file.getProject(), DoctrineMetadataFileStubIndex.KEY)
+            )
         );
 
         String className = arguments.getClassName();

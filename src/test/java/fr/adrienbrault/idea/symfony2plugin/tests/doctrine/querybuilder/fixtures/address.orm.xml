@@ -1,0 +1,6 @@
+<doctrine-mapping>
+    <embeddable name="App\Address">
+        <field name="city" type="string" />
+        <field name="status" type="string" enum-type="App\Status" />
+    </embeddable>
+</doctrine-mapping>

@@ -53,6 +53,34 @@ public class DoctrineXmlMappingDriverTest extends SymfonyLightCodeInsightFixture
         assertEquals("\\ORM\\Foobar\\Status", statusField.getEnumType());
     }
 
+    public void testEmbeddedFields() {
+        DoctrineMetadataModel metadata = createMetadata();
+
+        DoctrineModelField city = metadata.getField("addressDetails.city");
+        assertNotNull(city);
+        assertEquals("string", city.getTypeName());
+        assertEquals("addressDetails_city", city.getColumn());
+        assertFalse(city.getTargets().isEmpty());
+
+        DoctrineModelField countryCode = metadata.getField("addressDetails.countryCode");
+        assertNotNull(countryCode);
+        assertEquals("addressDetails_country_code", countryCode.getColumn());
+
+        DoctrineModelField status = metadata.getField("addressDetails.status");
+        assertNotNull(status);
+        assertEquals("\\ORM\\Foobar\\Status", status.getEnumType());
+    }
+
+    public void testEmbeddableFields() {
+        DoctrineMetadataModel metadata = new DoctrineXmlMappingDriver().getMetadata(
+            new DoctrineMappingDriverArguments(getProject(), myFixture.getFile(), "Doctrine\\Tests\\ORM\\Address")
+        );
+
+        assertNotNull(metadata);
+        assertEquals("string", metadata.getField("city").getTypeName());
+        assertEquals("\\ORM\\Foobar\\Status", metadata.getField("status").getEnumType());
+    }
+
     /**
      * @see DoctrineXmlMappingDriver#getMetadata(DoctrineMappingDriverArguments)
      */

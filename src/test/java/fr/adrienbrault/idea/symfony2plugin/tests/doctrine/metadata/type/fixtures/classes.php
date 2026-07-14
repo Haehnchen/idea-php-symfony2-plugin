@@ -37,6 +37,7 @@ namespace Doctrine\Property {
     class Fields{
         private $id;
         private $name;
+        private $address;
         const FOO = '';
     };
 }

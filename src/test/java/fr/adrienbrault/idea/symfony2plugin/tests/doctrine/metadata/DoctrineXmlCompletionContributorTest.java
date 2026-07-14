@@ -128,4 +128,20 @@ public class DoctrineXmlCompletionContributorTest extends SymfonyLightCodeInsigh
             "MyDateTime"
         );
     }
+
+    public void testEmbeddedClassShouldCompleteClass() {
+        assertCompletionContains(
+            XmlFileType.INSTANCE,
+            "<doctrine-mapping><entity name=\"Foo\\Bar\\Ns\\Bar\"><embedded name=\"address\" class=\"<caret>\"/></entity></doctrine-mapping>",
+            "Address"
+        );
+    }
+
+    public void testEnumTypeShouldCompleteClass() {
+        assertCompletionContains(
+            XmlFileType.INSTANCE,
+            "<doctrine-mapping><entity name=\"Foo\\Bar\\Ns\\Bar\"><field name=\"status\" enum-type=\"<caret>\"/></entity></doctrine-mapping>",
+            "Status"
+        );
+    }
 }

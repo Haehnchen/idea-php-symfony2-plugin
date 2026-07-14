@@ -48,4 +48,16 @@ namespace App
     {
         private $id;
     }
+
+    class EmbeddedEntity
+    {
+        private $id;
+        private $address;
+    }
+
+    class Address
+    {
+        private $city;
+        private $status;
+    }
 }

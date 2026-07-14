@@ -122,4 +122,28 @@ public class DoctrineXmlGotoCompletionRegistrarTest extends SymfonyLightCodeInsi
             PlatformPatterns.psiElement(PhpClass.class)
         );
     }
+
+    public void testEmbeddableNameNavigation() {
+        assertNavigationMatch(
+            XmlFileType.INSTANCE,
+            "<doctrine-mapping><embeddable name=\"Foo\\Bar\\Ns<caret>\\Address\"/></doctrine-mapping>",
+            PlatformPatterns.psiElement(PhpClass.class)
+        );
+    }
+
+    public void testEmbeddedClassNavigation() {
+        assertNavigationMatch(
+            XmlFileType.INSTANCE,
+            "<doctrine-mapping><entity name=\"Foo\\Bar\\Ns\\Bar\"><embedded name=\"address\" class=\"Addr<caret>ess\"/></entity></doctrine-mapping>",
+            PlatformPatterns.psiElement(PhpClass.class)
+        );
+    }
+
+    public void testEnumTypeNavigation() {
+        assertNavigationMatch(
+            XmlFileType.INSTANCE,
+            "<doctrine-mapping><embeddable name=\"Foo\\Bar\\Ns\\Address\"><field name=\"status\" enum-type=\"Sta<caret>tus\"/></embeddable></doctrine-mapping>",
+            PlatformPatterns.psiElement(PhpClass.class)
+        );
+    }
 }
