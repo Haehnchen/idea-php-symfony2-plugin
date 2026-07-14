@@ -104,7 +104,7 @@ public class DoctrineMetadataFileStubIndex extends FileBasedIndexExtension<Strin
 
     @Override
     public int getVersion() {
-        return 5;
+        return 6;
     }
 
 }

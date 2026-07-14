@@ -87,7 +87,11 @@ public class DoctrineUtil {
 
         Collection<DoctrineClassMetadata> pairs = new ArrayList<>();
 
-        for (XmlTag xmlTag : ArrayUtils.addAll(rootTag.findSubTags("document"), rootTag.findSubTags("entity"))) {
+        XmlTag[] modelTags = ArrayUtils.addAll(
+            ArrayUtils.addAll(rootTag.findSubTags("document"), rootTag.findSubTags("entity")),
+            rootTag.findSubTags("embeddable")
+        );
+        for (XmlTag xmlTag : modelTags) {
 
             XmlAttribute attr = xmlTag.getAttribute("name");
             if(attr == null) {

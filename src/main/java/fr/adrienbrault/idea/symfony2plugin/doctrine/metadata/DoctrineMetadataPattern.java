@@ -56,6 +56,28 @@ public class DoctrineMetadataPattern {
     }
 
     /**
+     * <entity name="Class\Name">
+     *   <embedded name="property" class="Embedded\Class"/>
+     * </entity>
+     */
+    public static XmlAttributeValuePattern getEmbeddedClassPattern() {
+        return XmlPatterns
+            .xmlAttributeValue()
+            .withParent(XmlPatterns
+                .xmlAttribute("class")
+                .withParent(XmlPatterns
+                    .xmlTag().withName("embedded")
+                    .withParent(XmlPatterns
+                        .xmlTag().withName("entity")
+                        .withParent(XmlPatterns
+                            .xmlTag().withName(PlatformPatterns.string().matches(DOCTRINE_MAPPING))
+                        )
+                    )
+                )
+            );
+    }
+
+    /**
      * <doctrine-mapping|doctrine-*-mapping>
      *   <document repository-class="Class\Name"/>
      *   <entity repository-class="Class\Name"/>
@@ -132,7 +154,28 @@ public class DoctrineMetadataPattern {
                 .withParent(XmlPatterns
                     .xmlTag().withName("field")
                     .withParent(
-                        XmlPatterns.xmlTag().withName(XmlPatterns.string().oneOf("entity", "document", "embedded-document", "embedded")).withParent(
+                        XmlPatterns.xmlTag().withName(XmlPatterns.string().oneOf("entity", "embeddable", "document", "embedded-document", "embedded")).withParent(
+                            XmlPatterns.xmlTag().withName(PlatformPatterns.string().matches(DOCTRINE_MAPPING))
+                        )
+                    )
+                )
+            );
+    }
+
+    /**
+     * <entity|embeddable>
+     *   <field enum-type="Class\Name"/>
+     * </entity|embeddable>
+     */
+    public static XmlAttributeValuePattern getFieldEnumType() {
+        return XmlPatterns
+            .xmlAttributeValue()
+            .withParent(XmlPatterns
+                .xmlAttribute("enum-type")
+                .withParent(XmlPatterns
+                    .xmlTag().withName("field")
+                    .withParent(
+                        XmlPatterns.xmlTag().withName(XmlPatterns.string().oneOf("entity", "embeddable")).withParent(
                             XmlPatterns.xmlTag().withName(PlatformPatterns.string().matches(DOCTRINE_MAPPING))
                         )
                     )
@@ -154,7 +197,28 @@ public class DoctrineMetadataPattern {
                 .withParent(XmlPatterns
                     .xmlTag().withName(XmlPatterns.string().oneOf("field", "id"))
                     .withParent(
-                        XmlPatterns.xmlTag().withName(XmlPatterns.string().oneOf("entity", "document", "embedded-document", "embedded")).withParent(
+                        XmlPatterns.xmlTag().withName(XmlPatterns.string().oneOf("entity", "embeddable", "document", "embedded-document", "embedded")).withParent(
+                            XmlPatterns.xmlTag().withName(PlatformPatterns.string().matches(DOCTRINE_MAPPING))
+                        )
+                    )
+                )
+            );
+    }
+
+    /**
+     * <entity name="Class\Name">
+     *   <embedded name="property" class="Embedded\Class"/>
+     * </entity>
+     */
+    public static XmlAttributeValuePattern getEmbeddedPropertyName() {
+        return XmlPatterns
+            .xmlAttributeValue()
+            .withParent(XmlPatterns
+                .xmlAttribute("name")
+                .withParent(XmlPatterns
+                    .xmlTag().withName("embedded")
+                    .withParent(
+                        XmlPatterns.xmlTag().withName("entity").withParent(
                             XmlPatterns.xmlTag().withName(PlatformPatterns.string().matches(DOCTRINE_MAPPING))
                         )
                     )

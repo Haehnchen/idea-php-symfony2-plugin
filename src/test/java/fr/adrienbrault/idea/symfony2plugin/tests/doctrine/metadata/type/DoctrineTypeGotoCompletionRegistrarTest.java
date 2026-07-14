@@ -67,6 +67,18 @@ public class DoctrineTypeGotoCompletionRegistrarTest extends SymfonyLightCodeIns
                 "foo"
             );
         }
+
+        assertCompletionContains(
+            "foo.orm.xml",
+            "<doctrine-mapping><embeddable name=\"Doctrine\\Property\\Fields\"><field type=\"<caret>\" /></embeddable></doctrine-mapping>",
+            "string", "orm_foo_bar"
+        );
+
+        assertNavigationMatch(
+            "foo.orm.xml",
+            "<doctrine-mapping><embeddable name=\"Doctrine\\Property\\Fields\"><field type=\"orm_foo_bar<caret>\" /></embeddable></doctrine-mapping>",
+            PlatformPatterns.psiElement(PhpClass.class)
+        );
     }
 
     public void testThatOrmTypeFilledByStatic() {
@@ -141,6 +153,7 @@ public class DoctrineTypeGotoCompletionRegistrarTest extends SymfonyLightCodeIns
             add(new String[]{"document", "document", "field"});
             add(new String[]{"document", "embedded", "field"});
             add(new String[]{"orm", "entity", "field"});
+            add(new String[]{"orm", "embeddable", "field"});
 
             add(new String[]{"document", "document", "id"});
             add(new String[]{"document", "embedded", "id"});
@@ -165,6 +178,19 @@ public class DoctrineTypeGotoCompletionRegistrarTest extends SymfonyLightCodeIns
                 String.format("<doctrine-mapping><%s name=\"Doctrine\\Property\\Fields\"><%s name=\"id<caret>\" /></" + provider[1] + "></doctrine-mapping>\"", provider[1], provider[2], provider[1])
             );
         }
+    }
+
+    public void testEmbeddedPropertyName() {
+        assertCompletionContains(
+            "foo.orm.xml",
+            "<doctrine-mapping><entity name=\"Doctrine\\Property\\Fields\"><embedded name=\"<caret>\" class=\"Doctrine\\Property\\Fields\" /></entity></doctrine-mapping>",
+            "address"
+        );
+
+        assertNavigationMatch(
+            "foo.orm.xml",
+            "<doctrine-mapping><entity name=\"Doctrine\\Property\\Fields\"><embedded name=\"addr<caret>ess\" class=\"Doctrine\\Property\\Fields\" /></entity></doctrine-mapping>"
+        );
     }
 
     /**

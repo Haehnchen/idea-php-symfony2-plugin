@@ -13,5 +13,7 @@ namespace Foo\Bar\Ns {
     use Doctrine\Common\Persistence\ObjectRepository;
 
     class Bar{};
+    class Address{};
+    class Status{};
     class BarRepo implements ObjectRepository{};
 }

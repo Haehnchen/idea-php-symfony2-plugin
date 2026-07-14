@@ -7,11 +7,19 @@
         <field name="name" column="user_name" type="string" />
         <field name="status" type="string" enum-type="ORM\Foobar\Status" />
 
+        <embedded name="addressDetails" class="Address" />
+
         <one-to-one field="address" target-entity="Address" />
         <one-to-many field="phonenumbers" target-entity="Phonenumber" />
         <many-to-many field="groups" target-entity="Group" />
         <many-to-one field="author" target-entity="Author" />
 
     </entity>
+
+    <embeddable name="Doctrine\Tests\ORM\Address">
+        <field name="city" type="string" />
+        <field name="countryCode" column="country_code" type="string" />
+        <field name="status" type="string" enum-type="ORM\Foobar\Status" />
+    </embeddable>
 
 </doctrine-mapping>

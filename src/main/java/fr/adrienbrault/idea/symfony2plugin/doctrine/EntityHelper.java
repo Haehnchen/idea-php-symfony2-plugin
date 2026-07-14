@@ -290,23 +290,13 @@ public class EntityHelper {
     }
 
     @NotNull
-    public static List<DoctrineModelField> getEntityFields(@NotNull XmlFile psiFile) {
+    public static List<DoctrineModelField> getXmlModelFields(@NotNull XmlTag modelTag) {
 
         List<DoctrineModelField> modelFields = new ArrayList<>();
 
-        XmlTag rootTag = psiFile.getRootTag();
-        if(rootTag == null) {
-            return Collections.emptyList();
-        }
-
-        final XmlTag entity = rootTag.findFirstSubTag("entity");
-        if(entity == null) {
-            return Collections.emptyList();
-        }
-
         for (XmlTag xmlTag : new ArrayList<XmlTag>() {{
-            addAll(Arrays.asList(entity.findSubTags("field")));
-            addAll(Arrays.asList(entity.findSubTags("id")));
+            addAll(Arrays.asList(modelTag.findSubTags("field")));
+            addAll(Arrays.asList(modelTag.findSubTags("id")));
         }}) {
 
             String name = xmlTag.getAttributeValue("name");
@@ -319,7 +309,7 @@ public class EntityHelper {
             field.addTarget(xmlTag);
 
             String column = xmlTag.getAttributeValue("column");
-            if(org.apache.commons.lang3.StringUtils.isNotBlank(name)) {
+            if(org.apache.commons.lang3.StringUtils.isNotBlank(column)) {
                 field.setColumn(column);
             }
 
@@ -338,7 +328,7 @@ public class EntityHelper {
         }
 
         for(String s: new String[] {"one-to-one", "one-to-many", "many-to-many", "many-to-one"}) {
-            for (XmlTag xmlTag : entity.findSubTags(s)) {
+            for (XmlTag xmlTag : modelTag.findSubTags(s)) {
 
                 String targetEntity = xmlTag.getAttributeValue("target-entity");
                 if(targetEntity == null) {
@@ -354,7 +344,7 @@ public class EntityHelper {
                 entityField.addTarget(xmlTag);
 
                 // find namespace
-                entityField.setRelation(getOrmClass(psiFile, targetEntity));
+                entityField.setRelation(getOrmClass(modelTag.getContainingFile(), targetEntity));
 
                 entityField.setRelationType(StringUtils.camelize(s.replace("-", "_")));
                 modelFields.add(entityField);

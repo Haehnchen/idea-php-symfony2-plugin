@@ -1,0 +1,6 @@
+<doctrine-mapping>
+    <entity name="App\EmbeddedEntity">
+        <id name="id" type="integer" />
+        <embedded name="address" class="App\Address" />
+    </entity>
+</doctrine-mapping>

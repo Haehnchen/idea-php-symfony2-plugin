@@ -61,7 +61,11 @@ public class DoctrineTypeGotoCompletionRegistrar implements GotoCompletionRegist
 
         // <field name="id" />
         registrar.register(
-            XmlPatterns.psiElement().withParent(XmlPatterns.or(DoctrineMetadataPattern.getFieldName(), DoctrineMetadataPattern.getFieldNameRelation())), psiElement -> new MyFieldNameGotoCompletionProvider(psiElement) {
+            XmlPatterns.psiElement().withParent(XmlPatterns.or(
+                DoctrineMetadataPattern.getFieldName(),
+                DoctrineMetadataPattern.getFieldNameRelation(),
+                DoctrineMetadataPattern.getEmbeddedPropertyName()
+            )), psiElement -> new MyFieldNameGotoCompletionProvider(psiElement) {
                 @Nullable
                 @Override
                 protected String getElementText(@NotNull PsiElement element) {

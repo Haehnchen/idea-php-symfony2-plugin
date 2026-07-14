@@ -25,7 +25,9 @@ public class DoctrineXmlCompletionContributor extends CompletionContributor {
             DoctrineMetadataPattern.getXmlModelClass(),
             DoctrineMetadataPattern.getXmlTargetEntityClass(),
             DoctrineMetadataPattern.getXmlTargetDocumentClass(),
-            DoctrineMetadataPattern.getEmbeddableNameClassPattern()
+            DoctrineMetadataPattern.getEmbeddableNameClassPattern(),
+            DoctrineMetadataPattern.getEmbeddedClassPattern(),
+            DoctrineMetadataPattern.getFieldEnumType()
         )), new CompletionProvider<>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet resultSet) {

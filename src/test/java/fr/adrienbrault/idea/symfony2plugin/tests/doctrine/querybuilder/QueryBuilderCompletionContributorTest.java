@@ -12,6 +12,8 @@ public class QueryBuilderCompletionContributorTest extends SymfonyLightCodeInsig
     public void setUp() throws Exception {
         super.setUp();
         myFixture.copyFileToProject("doctrine.orm.yml");
+        myFixture.copyFileToProject("embedded.orm.xml");
+        myFixture.copyFileToProject("address.orm.xml");
         myFixture.copyFileToProject("QueryBuilderCompletionContributor.php");
     }
 
@@ -37,6 +39,23 @@ public class QueryBuilderCompletionContributorTest extends SymfonyLightCodeInsig
             createQueryBuilderWrap("$qb->select('FOO(f<caret>)');"),
             "foobar.id", "foobar.name"
         );
+    }
+
+    public void testCompletionForEmbeddedXmlFields() {
+        assertCompletionContains("test.php", "<?php\n" +
+            "use Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository;\n" +
+            "class Repository extends ServiceEntityRepository\n" +
+            "{\n" +
+            "    public function __construct(RegistryInterface $registry)\n" +
+            "    {\n" +
+            "        parent::__construct($registry, \\App\\EmbeddedEntity::class);\n" +
+            "    }\n" +
+            "    public function foobar()\n" +
+            "    {\n" +
+            "        $qb = $this->createQueryBuilder('s');\n" +
+            "        $qb->andWhere('s.address.<caret>');\n" +
+            "    }\n" +
+            "}", "s.address.city", "s.address.status");
     }
 
     public void testCompletionForSelectField() {
