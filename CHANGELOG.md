@@ -23,6 +23,14 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2026.1.309
+* Add support for Doctrine embeddable fields in YAML and PHP attributes (Daniel Espendiller)
+* [#2449](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2449) Add Doctrine XML embeddable and enum support (Daniel Espendiller)
+* Complete Twig component props on Ctrl-Space and show their type (Hugo Alliaume)
+* Document Twig component props on their usage (<twig:X attr>) (Hugo Alliaume)
+* Show a Twig component prop's default value on hover (Hugo Alliaume)
+* Add coloration for `@prop` and `@block` Twig comments from Symfony UX (Hugo Alliaume)
+
 ## 2026.1.308
 * Make `SymfonyContainerTypeProvider` index-safe; prevent resolving receiver class during indexing (Daniel Espendiller)
 
