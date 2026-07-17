@@ -47,7 +47,7 @@ public class ServicePropertyInsertUtilTest extends SymfonyLightCodeInsightFixtur
         ServicePropertyInsertUtil.appendPropertyInjection(fromText2, "router", "\\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface");
 
         String text2 = fromText2.getText();
-        assertTrue(text2.contains("public function __construct(UrlGeneratorInterface $router)"));
+        assertTrue(text2.contains("public function __construct(private readonly UrlGeneratorInterface $router)"));
 
 
         PhpClass fromText3 = PhpPsiElementFactory.createFromText(getProject(), PhpClass.class, "<?php\n" +

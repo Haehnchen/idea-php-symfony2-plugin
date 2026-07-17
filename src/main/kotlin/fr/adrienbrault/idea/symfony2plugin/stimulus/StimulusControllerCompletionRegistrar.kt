@@ -15,9 +15,11 @@ import com.jetbrains.twig.TwigLanguage
 import com.jetbrains.twig.TwigTokenTypes
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider
+import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProviderLookupArguments
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.StimulusControllerStubIndex
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils
 
 /**
@@ -80,11 +82,14 @@ class StimulusControllerCompletionRegistrar {
      */
     class StimulusTwigFunction(element: PsiElement) : GotoCompletionProvider(element) {
 
-        override fun getLookupElements(): Collection<LookupElement> {
-            if (!Symfony2ProjectComponent.isEnabled(project)) return emptyList()
+        override fun getLookupElements(arguments: GotoCompletionProviderLookupArguments) {
+            if (!Symfony2ProjectComponent.isEnabled(project)) return
 
-            return StimulusControllerCompletion.getAllControllers(project).values
+            val lookupElements = StimulusControllerCompletion.getAllControllers(project).values
                 .map { StimulusControllerCompletion.createLookupElement(it, true) }
+
+            val completionResultSet = TwigUtil.withCompletionPrefix(arguments.parameters, arguments.resultSet)
+            completionResultSet.addAllElements(lookupElements)
         }
 
         override fun getPsiTargets(element: PsiElement): Collection<PsiElement> {

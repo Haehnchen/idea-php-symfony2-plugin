@@ -1,6 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.vite
 
-import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.psi.PsiElement
@@ -8,9 +7,11 @@ import com.intellij.psi.PsiManager
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider
+import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProviderLookupArguments
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil
 import org.apache.commons.lang3.StringUtils
 
 /**
@@ -33,14 +34,17 @@ class ViteGotoCompletionRegistrar : GotoCompletionRegistrar {
 
     private class ViteEntryProvider(element: PsiElement) : GotoCompletionProvider(element) {
 
-        override fun getLookupElements(): Collection<LookupElement> {
+        override fun getLookupElements(arguments: GotoCompletionProviderLookupArguments) {
             val seen = mutableSetOf<String>()
-            return ViteUtil.getEntries(project).mapNotNull { entry ->
+            val lookupElements = ViteUtil.getEntries(project).mapNotNull { entry ->
                 if (!seen.add(entry.name)) return@mapNotNull null
                 LookupElementBuilder.create(entry.name)
                     .withIcon(Symfony2Icons.SYMFONY)
                     .withTypeText(entry.targetPath ?: entry.configFile.name)
             }
+
+            val completionResultSet = TwigUtil.withCompletionPrefix(arguments.parameters, arguments.resultSet)
+            completionResultSet.addAllElements(lookupElements)
         }
 
         override fun getPsiTargets(element: PsiElement): Collection<PsiElement> {

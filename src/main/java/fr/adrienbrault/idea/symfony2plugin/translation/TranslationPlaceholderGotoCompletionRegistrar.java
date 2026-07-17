@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.translation;
 
+import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.patterns.PlatformPatterns;
@@ -10,6 +11,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
+import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProviderLookupArguments;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
@@ -83,12 +85,14 @@ public class TranslationPlaceholderGotoCompletionRegistrar implements GotoComple
             this.domain = domain;
         }
 
-        @NotNull
         @Override
-        public Collection<LookupElement> getLookupElements() {
-            return TranslationUtil.getPlaceholderFromTranslation(getProject(), key, domain).stream()
+        public void getLookupElements(@NotNull GotoCompletionProviderLookupArguments arguments) {
+            Collection<LookupElement> lookupElements = TranslationUtil.getPlaceholderFromTranslation(getProject(), key, domain).stream()
                 .map(s -> LookupElementBuilder.create(s).withIcon(Symfony2Icons.TRANSLATION))
                 .collect(Collectors.toList());
+
+            CompletionResultSet completionResultSet = TwigUtil.withCompletionPrefix(arguments.getParameters(), arguments.getResultSet());
+            completionResultSet.addAllElements(lookupElements);
         }
 
         @NotNull

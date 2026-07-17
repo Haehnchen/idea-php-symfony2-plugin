@@ -55,6 +55,12 @@ import static java.util.function.Function.identity;
  */
 public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCodeInsightFixtureTestCase {
 
+    // These inspections require a real NIO file or background thread, which light tests do not provide.
+    private static final Set<String> UNSUPPORTED_LIGHT_TEST_INSPECTIONS = Set.of(
+        "com.intellij.clouds.docker.gateway.json.inspections.DevcontainerFolderInspection",
+        "org.jetbrains.qodana.staticAnalysis.inspections.sanity.QodanaSanity"
+    );
+
     @Override
     public void setUp() throws Exception {
         super.setUp();
@@ -554,6 +560,10 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
         for (LocalInspectionEP localInspectionEP : LocalInspectionEP.LOCAL_INSPECTION.getExtensions()) {
             Object object = localInspectionEP.getInstance();
             if(!(object instanceof LocalInspectionTool)) {
+                continue;
+            }
+
+            if(UNSUPPORTED_LIGHT_TEST_INSPECTIONS.contains(object.getClass().getName())) {
                 continue;
             }
 

@@ -1,5 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.templating;
 
+import com.intellij.codeInsight.completion.CompletionResultSet;
+import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -72,18 +74,16 @@ public class BlockGotoCompletionRegistrar implements GotoCompletionRegistrar {
         @Override
         public void getLookupElements(@NotNull GotoCompletionProviderLookupArguments arguments) {
             Collection<PsiFile> explicitTemplateTargets = TwigBlockUtil.getBlockFunctionTemplateTargets(getElement());
-            if (!explicitTemplateTargets.isEmpty()) {
-                arguments.addAllElements(TwigUtil.getBlockLookupElements(
-                    getProject(),
-                    TwigBlockUtil.getBlockLookupScopeFiles(explicitTemplateTargets)
-                ));
-                return;
-            }
+            Collection<PsiFile> templateTargets = explicitTemplateTargets.isEmpty()
+                ? Collections.singleton(arguments.getParameters().getOriginalFile())
+                : explicitTemplateTargets;
 
-            arguments.addAllElements(TwigUtil.getBlockLookupElements(
+            Collection<LookupElement> lookupElements = TwigUtil.getBlockLookupElements(
                 getProject(),
-                TwigBlockUtil.getBlockLookupScopeFiles(Collections.singleton(arguments.getParameters().getOriginalFile()))
-            ));
+                TwigBlockUtil.getBlockLookupScopeFiles(templateTargets)
+            );
+            CompletionResultSet completionResultSet = TwigUtil.withCompletionPrefix(arguments.getParameters(), arguments.getResultSet());
+            completionResultSet.addAllElements(lookupElements);
         }
     }
 }
