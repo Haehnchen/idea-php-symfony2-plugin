@@ -1,5 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
+import com.intellij.codeInsight.completion.CompletionInitializationContext;
+import com.intellij.codeInsight.completion.CompletionParameters;
+import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.editor.Editor;
@@ -101,6 +104,30 @@ public class TwigUtil {
      * Twig namespace for "non namespace"; its also a reserved value in Twig library
      */
     public static final String MAIN = "__main__";
+
+    /**
+     * Fixes the Twig prefix in 2026.2; for example, {@code path('<caret>')} must use an empty prefix instead of {@code path('}.
+     */
+    @NotNull
+    public static CompletionResultSet withCompletionPrefix(@NotNull CompletionParameters parameters, @NotNull CompletionResultSet resultSet) {
+        PsiElement position = parameters.getPosition();
+        if (position.getNode() == null || !position.getLanguage().isKindOf(TwigLanguage.INSTANCE)) {
+            return resultSet;
+        }
+
+        String text = position.getText();
+        int dummyIdentifierOffset = text.indexOf(CompletionInitializationContext.DUMMY_IDENTIFIER_TRIMMED);
+        if (dummyIdentifierOffset < 0) {
+            return resultSet;
+        }
+
+        String prefix = text.substring(0, dummyIdentifierOffset);
+        if (prefix.equals(resultSet.getPrefixMatcher().getPrefix())) {
+            return resultSet;
+        }
+
+        return resultSet.withPrefixMatcher(prefix);
+    }
 
     /**
      * Twig namespace types; mainly switch for its prefix

@@ -1,16 +1,19 @@
 package fr.adrienbrault.idea.symfony2plugin.security;
 
+import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
+import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProviderLookupArguments;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.utils.GotoCompletionUtil;
 import fr.adrienbrault.idea.symfony2plugin.security.utils.VoterUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -70,10 +73,11 @@ public class VoterGotoCompletionRegistrar implements GotoCompletionRegistrar {
             super(psiElement);
         }
 
-        @NotNull
         @Override
-        public Collection<LookupElement> getLookupElements() {
-            return VoterUtil.getVoterAttributeLookupElements(getProject());
+        public void getLookupElements(@NotNull GotoCompletionProviderLookupArguments arguments) {
+            Collection<LookupElement> lookupElements = VoterUtil.getVoterAttributeLookupElements(getProject());
+            CompletionResultSet completionResultSet = TwigUtil.withCompletionPrefix(arguments.getParameters(), arguments.getResultSet());
+            completionResultSet.addAllElements(lookupElements);
         }
 
         @NotNull

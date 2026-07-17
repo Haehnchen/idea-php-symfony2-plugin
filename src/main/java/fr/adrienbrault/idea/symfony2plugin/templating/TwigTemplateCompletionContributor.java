@@ -128,8 +128,10 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
 
                     PsiElement psiElement = parameters.getPosition();
                     String domainName = TwigUtil.getPsiElementTranslationDomain(psiElement);
+                    Collection<LookupElement> lookupElements = TranslationUtil.getTranslationLookupElementsOnDomain(psiElement.getProject(), domainName);
 
-                    resultSet.addAllElements(TranslationUtil.getTranslationLookupElementsOnDomain(psiElement.getProject(), domainName));
+                    CompletionResultSet completionResultSet = TwigUtil.withCompletionPrefix(parameters, resultSet);
+                    completionResultSet.addAllElements(lookupElements);
                 }
             }
         );
@@ -149,9 +151,9 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         return;
                     }
 
-                    resultSet.addAllElements(
-                        TranslationUtil.getTranslationDomainLookupElements(parameters.getPosition().getProject())
-                    );
+                    Collection<LookupElement> lookupElements = TranslationUtil.getTranslationDomainLookupElements(parameters.getPosition().getProject());
+                    CompletionResultSet completionResultSet = TwigUtil.withCompletionPrefix(parameters, resultSet);
+                    completionResultSet.addAllElements(lookupElements);
                 }
             }
         );
@@ -378,7 +380,9 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         return;
                     }
 
-                    resultSet.addAllElements(RouteHelper.getRoutesLookupElements(parameters.getPosition().getProject(), true));
+                    List<LookupElement> routes = RouteHelper.getRoutesLookupElements(parameters.getPosition().getProject(), true);
+                    CompletionResultSet completionResultSet = TwigUtil.withCompletionPrefix(parameters, resultSet);
+                    completionResultSet.addAllElements(routes);
                 }
             }
         );
@@ -397,7 +401,10 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 if (!Symfony2ProjectComponent.isEnabled(position) || !TwigPattern.isRouteCompareContext(position)) {
                     return;
                 }
-                resultSet.addAllElements(RouteHelper.getRoutesLookupElements(position.getProject(), true));
+
+                List<LookupElement> routes = RouteHelper.getRoutesLookupElements(position.getProject(), true);
+                CompletionResultSet completionResultSet = TwigUtil.withCompletionPrefix(parameters, resultSet);
+                completionResultSet.addAllElements(routes);
             }
         };
         extend(CompletionType.BASIC, TwigPattern.getTwigRouteComparePattern(), twigRouteCompareCompletionProvider);
@@ -416,7 +423,9 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         return;
                     }
 
-                    resultSet.addAllElements(UxUtil.getComponentLookupElements(parameters.getPosition().getProject()));
+                    Collection<LookupElement> lookupElements = UxUtil.getComponentLookupElements(parameters.getPosition().getProject());
+                    CompletionResultSet completionResultSet = TwigUtil.withCompletionPrefix(parameters, resultSet);
+                    completionResultSet.addAllElements(lookupElements);
                 }
             }
         );
@@ -814,12 +823,15 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 variables.putIfAbsent(variable.name(), variable);
             }
 
-            for (TwigIncludeContextParser.IncludeWithContextTemplateVariable variable : variables.values()) {
-                resultSet.addElement(LookupElementBuilder.create(variable.name())
+            List<LookupElement> lookupElements = variables.values().stream()
+                .map(variable -> LookupElementBuilder.create(variable.name())
                     .withIcon(TwigIcons.TwigFileIcon)
                     .withTypeText(variable.templateName(), true)
-                );
-            }
+                )
+                .collect(Collectors.toList());
+
+            CompletionResultSet completionResultSet = TwigUtil.withCompletionPrefix(parameters, resultSet);
+            completionResultSet.addAllElements(lookupElements);
         }
     }
 
@@ -836,9 +848,11 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 return;
             }
 
-            paramCompletionResultSet.addAllElements(Arrays.asList(
-                RouteHelper.getRouteParameterLookupElements(parameters.getPosition().getProject(), routeName))
+            List<LookupElement> lookupElements = Arrays.asList(
+                RouteHelper.getRouteParameterLookupElements(parameters.getPosition().getProject(), routeName)
             );
+            CompletionResultSet completionResultSet = TwigUtil.withCompletionPrefix(parameters, paramCompletionResultSet);
+            completionResultSet.addAllElements(lookupElements);
 
         }
 
@@ -865,15 +879,17 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 prioritizedKeys.addAll(TwigUtil.getIncludeTemplateUsageAsOrderedList(project));
             }
 
+            Collection<LookupElement> lookupElements = TwigUtil.getTwigLookupElements(project, new HashSet<>(prioritizedKeys));
+            CompletionResultSet completionResultSet = TwigUtil.withCompletionPrefix(parameters, resultSet);
             if (!prioritizedKeys.isEmpty()) {
                 CompletionSorter completionSorter = CompletionService.getCompletionService()
-                    .defaultSorter(parameters, resultSet.getPrefixMatcher())
+                    .defaultSorter(parameters, completionResultSet.getPrefixMatcher())
                     .weighBefore("priority", new ServiceCompletionProvider.MyLookupElementWeigher(prioritizedKeys));
 
-                resultSet = resultSet.withRelevanceSorter(completionSorter);
+                completionResultSet = completionResultSet.withRelevanceSorter(completionSorter);
             }
 
-            resultSet.addAllElements(TwigUtil.getTwigLookupElements(project, new HashSet<>(prioritizedKeys)));
+            completionResultSet.addAllElements(lookupElements);
         }
     }
 
@@ -1426,6 +1442,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 }
             }
 
+            List<LookupElement> lookupElements = new ArrayList<>();
             for (PsiElement target : targets) {
                 PsiElement firstChild = target.getFirstChild();
 
@@ -1438,7 +1455,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         parameters.getInvocationCount(),
                         parameters.getEditor(),
                         parameters.getProcess()
-                    ), completionResult -> result.addElement(completionResult.getLookupElement()));
+                    ), completionResult -> lookupElements.add(completionResult.getLookupElement()));
                 } catch (Throwable e) {
                     // catch all external issues
                     Symfony2ProjectComponent.getLogger().info("Twig proxy completion issue: " + e.getMessage());
@@ -1447,11 +1464,14 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 for (PsiReference reference : target.getReferences()) {
                     for (Object variant : reference.getVariants()) {
                         if (variant instanceof LookupElement) {
-                            result.addElement((LookupElement) variant);
+                            lookupElements.add((LookupElement) variant);
                         }
                     }
                 }
             }
+
+            CompletionResultSet completionResultSet = TwigUtil.withCompletionPrefix(parameters, result);
+            completionResultSet.addAllElements(lookupElements);
         }
 
         @NotNull
@@ -1646,17 +1666,18 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 return;
             }
 
+            CompletionResultSet completionResultSet = TwigUtil.withCompletionPrefix(parameters, resultSet);
             Project project = position.getProject();
             PsiElement constantArgumentPosition = parameters.getOriginalPosition() != null ? parameters.getOriginalPosition() : position;
             PhpIndex instance = PhpIndex.getInstance(project);
 
-            PrefixMatcher prefixMatcher = resultSet.getPrefixMatcher();
+            PrefixMatcher prefixMatcher = completionResultSet.getPrefixMatcher();
             String prefix = prefixMatcher.getPrefix();
             if (prefix.contains(":")) {
                 // 'FOO::foo<caret>'
                 String[] parts = prefix.replace("::", ":").split(":");
                 String substring = prefix.substring(prefix.lastIndexOf(":") + 1);
-                CompletionResultSet completionResultSet = resultSet.withPrefixMatcher(substring);
+                CompletionResultSet memberResultSet = completionResultSet.withPrefixMatcher(substring);
 
                 PhpClass phpClass = PhpElementsUtil.getClassInterface(project, parts[0].replace("\\\\", "\\"));
                 if (phpClass != null) {
@@ -1668,7 +1689,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                             .withTypeText(fqnNoLeadingSlash, true)
                             .withIcon(item.getIcon());
 
-                        completionResultSet.addElement(element);
+                        memberResultSet.addElement(element);
                     }
                 }
             } else if (prefix.contains("\\")) {
@@ -1676,7 +1697,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 int i = prefix.lastIndexOf("\\");
                 String substring = "\\" + StringUtils.stripStart(prefix.substring(0, i).replace("\\\\", "\\"), "\\");
                 String pre = prefix.substring(prefix.lastIndexOf("\\") + 1);
-                CompletionResultSet completionResultSet = resultSet.withPrefixMatcher(pre);
+                CompletionResultSet namespaceResultSet = completionResultSet.withPrefixMatcher(pre);
 
                 for (PhpClass phpClass: PhpIndexUtil.getPhpClassInsideNamespace(project, substring)) {
                     String fqn = phpClass.getFQN().substring(substring.length());
@@ -1688,21 +1709,21 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                             .withTypeText(fqnNoLeadingSlash, true)
                             .withIcon(item.getIcon());
 
-                        completionResultSet.addElement(element);
+                        namespaceResultSet.addElement(element);
                     }
                 }
 
-                addNamespacedGlobalConstantCompletions(instance, substring, completionResultSet);
+                addNamespacedGlobalConstantCompletions(instance, substring, namespaceResultSet);
             } else {
                 // '<caret>'
-                addObjectRelativeConstantCompletions(constantArgumentPosition, resultSet);
+                addObjectRelativeConstantCompletions(constantArgumentPosition, completionResultSet);
 
                 for (String constant : instance.getAllConstantNames(prefixMatcher)) {
-                    resultSet.addElement(LookupElementBuilder.create(constant).withIcon(PhpIcons.CONSTANT));
+                    completionResultSet.addElement(LookupElementBuilder.create(constant).withIcon(PhpIcons.CONSTANT));
                 }
 
                 Collection<PhpClass> phpClasses = new ArrayList<>();
-                for (String className : instance.getAllClassNames(resultSet.getPrefixMatcher())) {
+                for (String className : instance.getAllClassNames(completionResultSet.getPrefixMatcher())) {
                     phpClasses.addAll(instance.getClassesByName(className));
                 }
 
@@ -1715,7 +1736,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                             .withTypeText(fqnNoLeadingSlash, true)
                             .withIcon(field.getIcon());
 
-                        resultSet.addElement(element);
+                        completionResultSet.addElement(element);
                     }
                 }
             }
@@ -1784,10 +1805,11 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 return;
             }
 
+            CompletionResultSet completionResultSet = TwigUtil.withCompletionPrefix(parameters, resultSet);
             Project project = position.getProject();
             PhpIndex instance = PhpIndex.getInstance(project);
 
-            PrefixMatcher prefixMatcher = resultSet.getPrefixMatcher();
+            PrefixMatcher prefixMatcher = completionResultSet.getPrefixMatcher();
             String prefix = prefixMatcher.getPrefix();
 
             if (prefix.contains("\\")) {
@@ -1795,7 +1817,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 int i = prefix.lastIndexOf("\\");
                 String substring = "\\" + StringUtils.stripStart(prefix.substring(0, i).replace("\\\\", "\\"), "\\");
                 String pre = prefix.substring(prefix.lastIndexOf("\\") + 1);
-                CompletionResultSet completionResultSet = resultSet.withPrefixMatcher(pre);
+                CompletionResultSet namespaceResultSet = completionResultSet.withPrefixMatcher(pre);
 
                 for (PhpClass phpClass: PhpIndexUtil.getPhpClassInsideNamespace(project, substring)) {
                     // Only include enum classes
@@ -1812,12 +1834,12 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         .withTypeText(fqnNoLeadingSlash, true)
                         .withIcon(phpClass.getIcon());
 
-                    completionResultSet.addElement(element);
+                    namespaceResultSet.addElement(element);
                 }
             } else {
                 // '<caret>'
                 Collection<PhpClass> phpClasses = new ArrayList<>();
-                for (String className : instance.getAllClassNames(resultSet.getPrefixMatcher())) {
+                for (String className : instance.getAllClassNames(completionResultSet.getPrefixMatcher())) {
                     phpClasses.addAll(instance.getClassesByName(className));
                 }
 
@@ -1834,7 +1856,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         .withTypeText(fqnNoLeadingSlash, true)
                         .withIcon(phpClass.getIcon());
 
-                    resultSet.addElement(element);
+                    completionResultSet.addElement(element);
                 }
             }
         }

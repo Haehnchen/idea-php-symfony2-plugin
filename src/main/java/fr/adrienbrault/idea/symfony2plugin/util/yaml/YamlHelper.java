@@ -981,8 +981,9 @@ public class YamlHelper {
             return false;
         }
 
-        // fallback let decide PhpStorm if this is a valid class
-        return PhpNameUtil.isValidNamespaceFullName(serviceId, true, PhpLanguageLevel.DEFAULT);
+        // A valid namespace can still end in a reserved class name, for example "My\\Sweet\\Class".
+        return PhpNameUtil.isValidNamespaceFullName(serviceId, true, PhpLanguageLevel.DEFAULT)
+            && PhpNameUtil.isValidClassName(StringUtil.getShortName(serviceId, '\\'));
     }
 
     /**

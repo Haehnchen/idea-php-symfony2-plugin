@@ -1,5 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.webpack;
 
+import com.intellij.codeInsight.completion.CompletionResultSet;
+import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -10,9 +12,11 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -85,15 +89,19 @@ public class WebpackEncoreGotoCompletionRegistrar implements GotoCompletionRegis
 
         @Override
         public void getLookupElements(@NotNull GotoCompletionProviderLookupArguments arguments) {
+            Collection<LookupElement> lookupElements = new ArrayList<>();
             SymfonyWebpackUtil.visitAllEntryFileTypes(getProject(), pair ->
                 {
                     LookupElementBuilder lookupElement = LookupElementBuilder.create(pair.getEntry())
                         .withIcon(Symfony2Icons.SYMFONY)
                         .withTypeText(pair.getVirtualFile().getName());
 
-                    arguments.getResultSet().addElement(lookupElement);
+                    lookupElements.add(lookupElement);
                 }
             );
+
+            CompletionResultSet completionResultSet = TwigUtil.withCompletionPrefix(arguments.getParameters(), arguments.getResultSet());
+            completionResultSet.addAllElements(lookupElements);
         }
     }
 }
