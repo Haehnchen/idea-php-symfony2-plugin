@@ -44,4 +44,4 @@ jobs:
       run: chmod +x gradlew
 
     - name: Build with Gradle
-      run: export PHPSTORM_ENV=skip && ./gradlew check test buildPlugin
+      run: ./gradlew check test buildPlugin
