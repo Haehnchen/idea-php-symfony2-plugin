@@ -2,7 +2,8 @@ Changelog
 =========
 
 # Version names
-* 2026.x: PhpStorm 2025.3+
+* 2026.2: PhpStorm 2026.2+
+* 2026.1: PhpStorm 2025.3+ (no support)
 * 2025.x: PhpStorm 2025.1+ (no support)
 * 2024.x: PhpStorm 2024.1+ (no support)
 * 2023.x: PhpStorm 2023.1+ (no support)
@@ -22,6 +23,9 @@ Changelog
 * 0.11.x: PhpStorm 8, 9, 10 (no support)
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
+
+## 2026.2.310
+* Upgrade to 2026.2 version api (Daniel Espendiller)
 
 ## 2026.1.309
 * Add support for Doctrine embeddable fields in YAML and PHP attributes (Daniel Espendiller)
