@@ -34,6 +34,17 @@ public class YamlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFi
         );
     }
 
+    public void testQuickFixRunsOutsideWriteAction() {
+        myFixture.enableInspections(YamlServiceArgumentInspection.class);
+        myFixture.configureByText("services.yml", "services:\n" +
+            "  f<caret>oo:\n" +
+            "    class: \\Foo\\Bar\n" +
+            "    arguments: []"
+        );
+
+        assertFalse(myFixture.findSingleIntention("Symfony: Yaml Argument").startInWriteAction());
+    }
+
     public void testThatServiceShortcutOnIdAttributeIsProvidesInspection() {
         assertLocalInspectionContains("services.yml", "services:\n" +
                 "  Foo\\B<caret>ar:\n" +

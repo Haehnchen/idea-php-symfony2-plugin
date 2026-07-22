@@ -129,5 +129,10 @@ public class YamlServiceArgumentInspection extends LocalInspectionTool {
                 ServiceActionUtil.fixServiceArgument((YAMLKeyValue) serviceKeyValue);
             }
         }
+
+        @Override
+        public boolean startInWriteAction() {
+            return false;
+        }
     }
 }
