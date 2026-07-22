@@ -37,10 +37,15 @@ public class SymfonyCommandUtil {
             SYMFONY_COMMAND_NAME_MAP,
             () -> {
                 Map<String, SymfonyCommand> symfonyCommands = new HashMap<>();
+                Collection<PhpAttributeIndex.AttributeTarget> attributeTargets = PhpAttributeIndexUtil.getAttributeData(project, AS_COMMAND_ATTRIBUTE);
+                Set<String> indexedCommandClasses = attributeTargets.stream()
+                    .filter(target -> target.scope() == PhpAttributeIndex.TargetScope.PHP_CLASS && !target.data().isEmpty())
+                    .map(target -> normalizeFqn(target.classFqn()).toLowerCase(Locale.ROOT))
+                    .collect(Collectors.toSet());
 
                 // Traditional Command subclasses
                 for (PhpClass phpClass : PhpIndexUtil.getAllSubclasses(project, COMMAND_CLASS)) {
-                    if (PhpElementsUtil.isTestClass(phpClass)) {
+                    if (PhpElementsUtil.isTestClass(phpClass) || indexedCommandClasses.contains(phpClass.getFQN().toLowerCase(Locale.ROOT))) {
                         continue;
                     }
 
@@ -48,23 +53,26 @@ public class SymfonyCommandUtil {
                 }
 
                 // AsCommand attributes from index
-                for (PhpClass phpClass : PhpAttributeIndexUtil.getClassesWithAttribute(project, AS_COMMAND_ATTRIBUTE)) {
-                    if (PhpElementsUtil.isTestClass(phpClass)) {
-                        continue;
-                    }
-
-                    putClassCommands(symfonyCommands, phpClass);
-                }
-
-                // Method-level #[AsCommand]
-                for (PhpAttributeIndex.AttributeTarget target : PhpAttributeIndexUtil.getMethodTargetsWithAttribute(project, AS_COMMAND_ATTRIBUTE)) {
-                    String methodName = target.memberName();
-                    if (methodName == null) {
-                        continue;
-                    }
-
+                for (PhpAttributeIndex.AttributeTarget target : attributeTargets) {
                     PhpClass phpClass = PhpElementsUtil.getClassInterface(project, normalizeFqn(target.classFqn()));
                     if (phpClass == null || PhpElementsUtil.isTestClass(phpClass)) {
+                        continue;
+                    }
+
+                    if (!target.data().isEmpty()) {
+                        for (String commandName : target.data()) {
+                            symfonyCommands.put(commandName, new SymfonyCommand(commandName, phpClass.getFQN(), target.memberName()));
+                        }
+                        continue;
+                    }
+
+                    if (target.scope() == PhpAttributeIndex.TargetScope.PHP_CLASS) {
+                        putClassCommands(symfonyCommands, phpClass);
+                        continue;
+                    }
+
+                    String methodName = target.memberName();
+                    if (methodName == null) {
                         continue;
                     }
 

@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
+import com.intellij.psi.PsiElement;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
@@ -10,6 +11,8 @@ import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.stubs.indexes.expectedArguments.PhpExpectedFunctionArgument;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.PhpAttributeTargetsDataExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -74,7 +77,7 @@ public class PhpAttributeIndex extends FileBasedIndexExtension<String, List<PhpA
 
     @Override
     public int getVersion() {
-        return 8;
+        return 9;
     }
 
     public static class PhpAttributeIndexer implements DataIndexer<String, List<AttributeTarget>, FileContent> {
@@ -121,7 +124,15 @@ public class PhpAttributeIndex extends FileBasedIndexExtension<String, List<PhpA
                     continue;
                 }
 
-                if (AS_COMMAND_ATTRIBUTE.equals(attributeFqn) || EXCLUDE_ATTRIBUTE.equals(attributeFqn)) {
+                if (AS_COMMAND_ATTRIBUTE.equals(attributeFqn)) {
+                    String classFqn = StringUtils.stripStart(phpClass.getFQN(), "\\");
+                    addTarget(result, attributeFqn, new AttributeTarget(
+                        TargetScope.PHP_CLASS,
+                        classFqn,
+                        null,
+                        extractCommandNames(attribute, phpClass)
+                    ));
+                } else if (EXCLUDE_ATTRIBUTE.equals(attributeFqn)) {
                     String classFqn = StringUtils.stripStart(phpClass.getFQN(), "\\");
                     addTarget(result, attributeFqn, new AttributeTarget(TargetScope.PHP_CLASS, classFqn, null, List.of()));
                 }
@@ -151,9 +162,58 @@ public class PhpAttributeIndex extends FileBasedIndexExtension<String, List<PhpA
 
                 if (AS_COMMAND_ATTRIBUTE.equals(attributeFqn) && method.getAccess().isPublic()) {
                     String classFqn = StringUtils.stripStart(phpClass.getFQN(), "\\");
-                    addTarget(result, attributeFqn, new AttributeTarget(TargetScope.METHOD, classFqn, method.getName(), List.of()));
+                    addTarget(result, attributeFqn, new AttributeTarget(
+                        TargetScope.METHOD,
+                        classFqn,
+                        method.getName(),
+                        extractCommandNames(attribute, phpClass)
+                    ));
                 }
             }
+        }
+
+        @NotNull
+        private List<String> extractCommandNames(@NotNull PhpAttribute attribute, @NotNull PhpClass phpClass) {
+            List<String> names = new ArrayList<>();
+            PsiElement[] parameters = attribute.getParameters();
+
+            String name = extractStringValue(PsiElementUtils.getParameterOrNamedArgument(parameters, "name", 0), phpClass);
+            if (StringUtils.isNotBlank(name)) {
+                names.add(name);
+            }
+
+            PsiElement aliases = PsiElementUtils.getParameterOrNamedArgument(parameters, "aliases", 2);
+            if (aliases instanceof ArrayCreationExpression array) {
+                for (PsiElement value : PhpElementsUtil.getArrayValues(array)) {
+                    String alias = extractStringValue(value, phpClass);
+                    if (StringUtils.isNotBlank(alias)) {
+                        names.add(alias);
+                    }
+                }
+            }
+
+            return List.copyOf(names);
+        }
+
+        @Nullable
+        private String extractStringValue(@Nullable PsiElement value, @NotNull PhpClass phpClass) {
+            if (value instanceof StringLiteralExpression stringLiteral) {
+                return stringLiteral.getContents();
+            }
+
+            if (!(value instanceof ClassConstantReference constantReference)) {
+                return null;
+            }
+
+            PhpExpression classReference = constantReference.getClassReference();
+            if (!(classReference instanceof ClassReference) ||
+                !("self".equals(classReference.getName()) || "static".equals(classReference.getName()))) {
+                return null;
+            }
+
+            Field field = phpClass.findOwnFieldByName(constantReference.getName(), true);
+            PsiElement defaultValue = field != null ? field.getDefaultValue() : null;
+            return defaultValue instanceof StringLiteralExpression stringLiteral ? stringLiteral.getContents() : null;
         }
 
         private void addTarget(

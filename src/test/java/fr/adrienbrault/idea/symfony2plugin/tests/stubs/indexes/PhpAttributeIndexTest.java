@@ -179,7 +179,8 @@ public class PhpAttributeIndexTest extends SymfonyLightCodeInsightFixtureTestCas
             value.stream().anyMatch(target ->
                 target.scope() == PhpAttributeIndex.TargetScope.PHP_CLASS &&
                 target.classFqn().equals("App\\Command\\CreateUserCommand") &&
-                target.memberName() == null
+                target.memberName() == null &&
+                target.data().equals(java.util.List.of("app:create-user", "app:create-admin"))
             )
         );
     }
@@ -217,7 +218,7 @@ public class PhpAttributeIndexTest extends SymfonyLightCodeInsightFixtureTestCas
             "    #[AsCommand('app:user:create')]\n" +
             "    public function create(): int { return 0; }\n" +
             "\n" +
-            "    #[AsCommand('app:user:delete')]\n" +
+            "    #[AsCommand(name: 'app:user:delete', aliases: ['app:user:remove'])]\n" +
             "    public function delete(): int { return 0; }\n" +
             "\n" +
             "    #[AsCommand('app:user:private')]\n" +
@@ -230,12 +231,14 @@ public class PhpAttributeIndexTest extends SymfonyLightCodeInsightFixtureTestCas
         assertTrue(targets.stream().anyMatch(target ->
             target.scope() == PhpAttributeIndex.TargetScope.METHOD &&
             target.classFqn().equals("App\\Command\\UserCommands") &&
-            "create".equals(target.memberName())
+            "create".equals(target.memberName()) &&
+            target.data().equals(java.util.List.of("app:user:create"))
         ));
         assertTrue(targets.stream().anyMatch(target ->
             target.scope() == PhpAttributeIndex.TargetScope.METHOD &&
             target.classFqn().equals("App\\Command\\UserCommands") &&
-            "delete".equals(target.memberName())
+            "delete".equals(target.memberName()) &&
+            target.data().equals(java.util.List.of("app:user:delete", "app:user:remove"))
         ));
         assertFalse(targets.stream().anyMatch(target -> "privateCommand".equals(target.memberName())));
     }
