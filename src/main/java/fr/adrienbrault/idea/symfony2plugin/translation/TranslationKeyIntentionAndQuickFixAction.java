@@ -2,15 +2,15 @@ package fr.adrienbrault.idea.symfony2plugin.translation;
 
 import com.intellij.codeInspection.IntentionAndQuickFixAction;
 import com.intellij.codeInsight.intention.preview.IntentionPreviewUtils;
+import com.intellij.codeInsight.navigation.PsiTargetNavigator;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.platform.backend.presentation.TargetPresentation;
 import com.intellij.psi.PsiFile;
-import com.intellij.ui.components.JBList;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.util.TranslationInsertUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
@@ -21,8 +21,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLFile;
 
-import javax.swing.*;
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -102,26 +100,15 @@ public class TranslationKeyIntentionAndQuickFixAction extends IntentionAndQuickF
             return;
         }
 
-        JBPopupFactory.getInstance().createPopupChooserBuilder(files)
-            .setTitle("Symfony: Translation files")
-            .setRenderer(new JBList.StripedListCellRenderer() {
-                @Override
-                public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                    Component renderer = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                    if (renderer instanceof JLabel && value instanceof PsiFile) {
-                        ((JLabel) renderer).setText(getPresentableName(project, ((PsiFile) value).getVirtualFile()));
-                    }
-
-                    return renderer;
-                }
-            })
-            .setItemChosenCallback(selectedFile -> {
+        new PsiTargetNavigator<>(files)
+            .presentationProvider(file -> TargetPresentation.builder(getPresentableName(project, file.getVirtualFile())).presentation())
+            .navigate(editor, "Symfony: Translation files", selectedFile -> {
                 CommandProcessor.getInstance().executeCommand(selectedFile.getProject(), () -> ApplicationManager.getApplication().runWriteAction(() -> {
                     TranslationInsertUtil.invokeTranslation(selectedFile, key, domain);
                 }), "Translation insert " + selectedFile.getName(), null);
-            })
-            .createPopup()
-            .showInBestPositionFor(editor);
+
+                return true;
+            });
     }
 
     public interface DomainCollector {
