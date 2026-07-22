@@ -12,8 +12,8 @@ import fr.adrienbrault.idea.symfony2plugin.util.SymfonyVarDirectoryWatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyVarDirectoryWatcherKt;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Collection;
@@ -61,8 +61,8 @@ public class ServiceXmlParserFactory {
                 continue;
             }
 
-            try (InputStream inputStream = vf.getInputStream()) {
-                parserInstance.parser(inputStream, vf, project);
+            try {
+                parserInstance.parser(new ByteArrayInputStream(vf.contentsToByteArray()), vf, project);
             } catch (IOException ignored) {
             }
         }
