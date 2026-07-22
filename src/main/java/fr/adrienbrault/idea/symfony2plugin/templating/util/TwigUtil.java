@@ -381,13 +381,14 @@ public class TwigUtil {
 
         // Store one cache map on the file; a file may contain multiple embed scopes.
         PsiFile containingFile = scope.getContainingFile();
-        Map<TextRange, Optional<String>> cachedDomains = CachedValuesManager.getManager(scope.getProject())
+        Project project = scope.getProject();
+        Map<TextRange, Optional<String>> cachedDomains = CachedValuesManager.getManager(project)
             .getCachedValue(
                 containingFile,
                 TWIG_TRANS_DEFAULT_DOMAIN_ON_SCOPE,
                 () -> CachedValueProvider.Result.create(
                     new ConcurrentHashMap<>(),
-                    PsiModificationTracker.getInstance(scope.getProject()).forLanguage(TwigLanguage.INSTANCE)
+                    PsiModificationTracker.getInstance(project).forLanguage(TwigLanguage.INSTANCE)
                 ),
                 false
             );

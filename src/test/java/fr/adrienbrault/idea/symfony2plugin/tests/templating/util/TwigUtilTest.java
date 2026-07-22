@@ -1,10 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.util;
 
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.twig.TwigFileType;
@@ -222,6 +224,31 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         PsiElement dynamicTemplateString = findCaretElement("{% include 'foo<caret>#{bar}.html.twig' %}");
         assertFalse(TwigUtil.isStaticTemplateUsage(dynamicTemplateString));
+    }
+
+    public void testTransDefaultDomainCacheDoesNotRetainInvalidPsiScope() {
+        String template = "{% embed 'card.html.twig' %}{% trans_default_domain 'first' %}{{ 'key'|trans }}{% endembed %}";
+        PsiFile file = myFixture.configureByText(TwigFileType.INSTANCE, template);
+        PsiElement position = file.findElementAt(template.indexOf("'key'") + 1);
+        assertNotNull(position);
+
+        PsiElement scope = TwigUtil.getTransDefaultDomainScope(position);
+        assertNotNull(scope);
+        assertEquals("first", TwigUtil.getTransDefaultDomainOnScope(position));
+
+        String updatedTemplate = "{% embed 'card.html.twig' %}{% trans_default_domain 'second' %}{{ 'key'|trans }}{% endembed %}";
+        PsiFile replacementFile = PsiFileFactory.getInstance(getProject()).createFileFromText("replacement.html.twig", TwigFileType.INSTANCE, updatedTemplate);
+        PsiElement replacementPosition = replacementFile.findElementAt(updatedTemplate.indexOf("'key'") + 1);
+        assertNotNull(replacementPosition);
+
+        PsiElement replacementScope = TwigUtil.getTransDefaultDomainScope(replacementPosition);
+        assertNotNull(replacementScope);
+        WriteCommandAction.runWriteCommandAction(getProject(), (Runnable) () -> scope.replace(replacementScope));
+
+        assertFalse(scope.isValid());
+        PsiElement updatedPosition = file.findElementAt(updatedTemplate.indexOf("'key'") + 1);
+        assertNotNull(updatedPosition);
+        assertEquals("second", TwigUtil.getTransDefaultDomainOnScope(updatedPosition));
     }
 
     @NotNull
