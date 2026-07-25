@@ -19,8 +19,8 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Documentation for Symfony UX Twig component props on their usage, e.g. Ctrl-hover / Ctrl-Q on the
  * {@code variant} attribute of {@code <twig:Alert variant="">}. The prop's type and description come
- * from the component template's {@code {# @prop #}} docblock and its default value from the
- * {@code {%- props -%}} tag ({@link UxUtil#getComponentTemplateProps}).
+ * from the inline {@code ## <type> <description>} doc comment inside the component template's
+ * {@code {% props %}} tag, and its default value from the same tag ({@link UxUtil#getComponentTemplateProps}).
  *
  * <p>Registered for HTML because the {@code <twig:...>} attribute leaf is HTML in the {@code .html.twig}
  * view. Returns {@code null} for anything that is not a {@code twig:} component attribute, so the
@@ -61,8 +61,11 @@ public class TwigComponentAttributeDocumentationProvider extends AbstractDocumen
         }
 
         StringBuilder doc = new StringBuilder();
-        doc.append("<code>").append(escape(prop.name())).append("</code>")
-            .append(" : <code>").append(escape(prop.type())).append("</code>");
+        doc.append("<code>").append(escape(prop.name())).append("</code>");
+
+        if (!prop.type().isBlank()) {
+            doc.append(" : <code>").append(escape(prop.type())).append("</code>");
+        }
 
         if (prop.defaultValue() != null) {
             doc.append("<br/>Default: <code>").append(escape(prop.defaultValue())).append("</code>");
@@ -83,8 +86,11 @@ public class TwigComponentAttributeDocumentationProvider extends AbstractDocumen
         }
 
         StringBuilder info = new StringBuilder();
-        info.append("<code>").append(escape(prop.name())).append("</code>")
-            .append(" : <code>").append(escape(prop.type())).append("</code>");
+        info.append("<code>").append(escape(prop.name())).append("</code>");
+
+        if (!prop.type().isBlank()) {
+            info.append(" : <code>").append(escape(prop.type())).append("</code>");
+        }
 
         if (prop.defaultValue() != null) {
             info.append(" = <code>").append(escape(prop.defaultValue())).append("</code>");

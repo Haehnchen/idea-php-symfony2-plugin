@@ -829,6 +829,18 @@ public class UxUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         // no props tag / other tags contribute nothing
         assertTrue(propDefaults("<div>{{ foo }}</div>").isEmpty());
         assertTrue(propDefaults("{% set foo = 'bar' %}").isEmpty());
+
+        // inline "## <type> <description>" doc comments must not break default extraction
+        Map<String, String> documented = propDefaults(
+            "{%- props\n" +
+            "    ## boolean Whether it is open.\n" +
+            "    open = false,\n" +
+            "    ## string The identifier.\n" +
+            "    id = 'x'\n" +
+            "-%}"
+        );
+        assertEquals("false", documented.get("open"));
+        assertEquals("'x'", documented.get("id"));
     }
 
     private Map<String, String> propDefaults(@NotNull String source) {
@@ -839,10 +851,12 @@ public class UxUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void testGetComponentTemplateProps() {
         TwigFile twigFile = (TwigFile) myFixture.configureByText(
             TwigFileType.INSTANCE,
-            "{# @prop id string Unique identifier. #}\n" +
-            "{# @prop variant 'default'|'destructive' The visual style variant. #}\n" +
-            "{# @block content The content. #}\n" +
-            "{%- props id, variant = 'default' -%}"
+            "{%- props\n" +
+            "    ## string Unique identifier.\n" +
+            "    id,\n" +
+            "    ## 'default'|'destructive' The visual style variant.\n" +
+            "    variant = 'default',\n" +
+            "-%}"
         );
 
         Map<String, UxUtil.TwigComponentProp> props = UxUtil.getComponentTemplateProps(twigFile);
@@ -859,9 +873,19 @@ public class UxUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertEquals("string", id.type());
         assertEquals("Unique identifier.", id.description());
         assertNull(id.defaultValue());
+    }
 
-        // @block is not a prop
-        assertFalse(props.containsKey("content"));
+    public void testGetComponentTemplatePropsWithoutDocCommentHasEmptyTypeAndDescription() {
+        TwigFile twigFile = (TwigFile) myFixture.configureByText(
+            TwigFileType.INSTANCE,
+            "{%- props open = false -%}"
+        );
+
+        UxUtil.TwigComponentProp open = UxUtil.getComponentTemplateProps(twigFile).get("open");
+        assertNotNull(open);
+        assertEquals("", open.type());
+        assertEquals("", open.description());
+        assertEquals("false", open.defaultValue());
     }
 
     private void configureTwigNamespaceSettings(@NotNull TwigNamespaceSetting... settings) {

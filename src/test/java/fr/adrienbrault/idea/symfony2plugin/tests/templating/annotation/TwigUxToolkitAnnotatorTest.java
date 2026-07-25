@@ -1,64 +1,40 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.annotation;
 
 import com.intellij.codeInsight.daemon.impl.HighlightInfo;
+import com.intellij.openapi.editor.DefaultLanguageHighlighterColors;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.jetbrains.php.lang.highlighter.PhpHighlightingData;
+import com.jetbrains.twig.TwigHighlighterData;
 import fr.adrienbrault.idea.symfony2plugin.templating.annotation.TwigUxToolkitAnnotator;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 import java.util.List;
 
 /**
- * @author Daniel Espendiller <daniel@espendiller.net>
  * @see TwigUxToolkitAnnotator
  */
 public class TwigUxToolkitAnnotatorTest extends SymfonyLightCodeInsightFixtureTestCase {
 
-    public void testPropAnnotationIsHighlighted() {
-        myFixture.configureByText(
-            "test.html.twig",
-            "{# @prop open boolean Whether the item is open by default. #}"
+    public void testInlinePropDocHighlightsMarkerAndType() {
+        List<HighlightInfo> highlighting = highlight(
+            "{%- props\n" +
+            "    ## boolean Whether the item is open by default.\n" +
+            "    open = false,\n" +
+            "-%}"
         );
 
-        List<HighlightInfo> highlighting = myFixture.doHighlighting();
-
-        // Verify that highlighting is applied (INFORMATION level annotations from our annotator)
+        // the ## marker is coloured like a PHPDoc @tag
         assertTrue(
-            "Expected highlighting for @prop annotation",
+            "Expected the ## marker highlighted",
             highlighting.stream().anyMatch(info ->
                 info.getSeverity().getName().equals("INFORMATION") &&
                 hasTextAttributesKey(info, PhpHighlightingData.DOC_TAG)
             )
         );
-    }
 
-    public void testPropAnnotationHighlightsPropertyName() {
-        myFixture.configureByText(
-            "test.html.twig",
-            "{# @prop open boolean Whether the item is open by default. #}"
-        );
-
-        List<HighlightInfo> highlighting = myFixture.doHighlighting();
-
+        // the type token is coloured like a PHPDoc type
         assertTrue(
-            "Expected highlighting for property name",
-            highlighting.stream().anyMatch(info ->
-                info.getSeverity().getName().equals("INFORMATION") &&
-                hasTextAttributesKey(info, PhpHighlightingData.DOC_PROPERTY_IDENTIFIER)
-            )
-        );
-    }
-
-    public void testPropAnnotationHighlightsType() {
-        myFixture.configureByText(
-            "test.html.twig",
-            "{# @prop open boolean Whether the item is open by default. #}"
-        );
-
-        List<HighlightInfo> highlighting = myFixture.doHighlighting();
-
-        assertTrue(
-            "Expected highlighting for type",
+            "Expected the prop type highlighted",
             highlighting.stream().anyMatch(info ->
                 info.getSeverity().getName().equals("INFORMATION") &&
                 hasTextAttributesKey(info, PhpHighlightingData.DOC_IDENTIFIER)
@@ -66,121 +42,48 @@ public class TwigUxToolkitAnnotatorTest extends SymfonyLightCodeInsightFixtureTe
         );
     }
 
-    public void testBlockAnnotationIsHighlighted() {
-        myFixture.configureByText(
-            "test.html.twig",
-            "{# @block content The item content. #}"
+    public void testInlinePropDocRepaintsTagBackground() {
+        List<HighlightInfo> highlighting = highlight(
+            "{%- props\n" +
+            "    ## boolean Whether the item is open by default.\n" +
+            "    open = false,\n" +
+            "-%}"
         );
 
-        List<HighlightInfo> highlighting = myFixture.doHighlighting();
+        // the {% %} tag background is repainted (the bundled Twig lexer drops it from the first '#')
+        assertTrue(
+            "Expected the tag background repainted with TWIG_TEMPLATE",
+            highlighting.stream().anyMatch(info ->
+                info.getSeverity().getName().equals("INFORMATION") &&
+                hasTextAttributesKey(info, TwigHighlighterData.TWIG_TEMPLATE)
+            )
+        );
+    }
+
+    public void testInlinePropDocHighlightsDescriptionAsComment() {
+        List<HighlightInfo> highlighting = highlight(
+            "{%- props\n" +
+            "    ## boolean Whether the item is open by default.\n" +
+            "    open = false,\n" +
+            "-%}"
+        );
 
         assertTrue(
-            "Expected highlighting for @block annotation",
+            "Expected the description rendered as a comment",
             highlighting.stream().anyMatch(info ->
                 info.getSeverity().getName().equals("INFORMATION") &&
-                hasTextAttributesKey(info, PhpHighlightingData.DOC_TAG)
+                hasTextAttributesKey(info, DefaultLanguageHighlighterColors.DOC_COMMENT)
             )
         );
     }
 
-    public void testBlockAnnotationHighlightsBlockName() {
-        myFixture.configureByText(
-            "test.html.twig",
-            "{# @block content The item content. #}"
+    public void testInlinePropDocTooltipShowsTypeDefaultAndDescription() {
+        List<HighlightInfo> highlighting = highlight(
+            "{%- props\n" +
+            "    ## boolean Whether the item is open by default.\n" +
+            "    open = false,\n" +
+            "-%}"
         );
-
-        List<HighlightInfo> highlighting = myFixture.doHighlighting();
-
-        assertTrue(
-            "Expected highlighting for block name",
-            highlighting.stream().anyMatch(info ->
-                info.getSeverity().getName().equals("INFORMATION") &&
-                hasTextAttributesKey(info, PhpHighlightingData.DOC_PROPERTY_IDENTIFIER)
-            )
-        );
-    }
-
-    public void testPropWithComplexType() {
-        myFixture.configureByText(
-            "test.html.twig",
-            "{# @prop items App\\Entity\\Item[] List of items #}"
-        );
-
-        List<HighlightInfo> highlighting = myFixture.doHighlighting();
-
-        assertTrue(
-            "Expected highlighting for complex type",
-            highlighting.stream().anyMatch(info ->
-                info.getSeverity().getName().equals("INFORMATION") &&
-                hasTextAttributesKey(info, PhpHighlightingData.DOC_IDENTIFIER)
-            )
-        );
-    }
-
-    public void testPropWithUnionType() {
-        myFixture.configureByText(
-            "test.html.twig",
-            "{# @prop value string|int|null The value #}"
-        );
-
-        List<HighlightInfo> highlighting = myFixture.doHighlighting();
-
-        assertTrue(
-            "Expected highlighting for union type",
-            highlighting.stream().anyMatch(info ->
-                info.getSeverity().getName().equals("INFORMATION") &&
-                hasTextAttributesKey(info, PhpHighlightingData.DOC_IDENTIFIER)
-            )
-        );
-    }
-
-    public void testRegularCommentNotHighlighted() {
-        myFixture.configureByText(
-            "test.html.twig",
-            "{# This is a regular comment #}"
-        );
-
-        List<HighlightInfo> highlighting = myFixture.doHighlighting();
-
-        // Regular comments should not have our specific highlighting
-        assertFalse(
-            "Regular comments should not have DOC_COMMENT_TAG highlighting",
-            highlighting.stream().anyMatch(info ->
-                info.getSeverity().getName().equals("INFORMATION") &&
-                hasTextAttributesKey(info, PhpHighlightingData.DOC_TAG)
-            )
-        );
-    }
-
-    public void testVarCommentNotAffected() {
-        // @var comments are handled by a different mechanism, ensure we don't interfere
-        myFixture.configureByText(
-            "test.html.twig",
-            "{# @var foo \\App\\Entity\\Foo #}"
-        );
-
-        List<HighlightInfo> highlighting = myFixture.doHighlighting();
-
-        // @var must not receive @prop/@block highlighting from TwigUxToolkitAnnotator.
-        // (@var is coloured by the separate TwigVarCommentAnnotator, which uses different keys;
-        // DOC_PROPERTY_IDENTIFIER is unique to a @prop name, so its absence proves we did not fire.)
-        assertFalse(
-            "@var comments should not be highlighted by TwigUxToolkitAnnotator",
-            highlighting.stream().anyMatch(info ->
-                info.getSeverity().getName().equals("INFORMATION") &&
-                hasTextAttributesKey(info, PhpHighlightingData.DOC_PROPERTY_IDENTIFIER)
-            )
-        );
-    }
-
-    public void testPropTooltipShowsDefaultFromPropsTag() {
-        myFixture.configureByText(
-            "test.html.twig",
-            "{# @prop open boolean Whether the item is open by default. #}\n" +
-            "{%- props open = false -%}"
-        );
-
-        List<HighlightInfo> highlighting = myFixture.doHighlighting();
 
         assertTrue(
             "Expected a tooltip carrying the type, default value and description",
@@ -193,16 +96,14 @@ public class TwigUxToolkitAnnotatorTest extends SymfonyLightCodeInsightFixtureTe
         );
     }
 
-    public void testPropTooltipOmitsDefaultForRequiredProp() {
-        myFixture.configureByText(
-            "test.html.twig",
-            "{# @prop id string Unique identifier. #}\n" +
-            "{%- props id -%}"
+    public void testInlinePropDocTooltipOmitsDefaultForRequiredProp() {
+        List<HighlightInfo> highlighting = highlight(
+            "{%- props\n" +
+            "    ## string Unique identifier.\n" +
+            "    id,\n" +
+            "-%}"
         );
 
-        List<HighlightInfo> highlighting = myFixture.doHighlighting();
-
-        // the tooltip still describes the prop...
         assertTrue(
             "Expected a tooltip carrying the type and description",
             highlighting.stream().anyMatch(info ->
@@ -212,13 +113,44 @@ public class TwigUxToolkitAnnotatorTest extends SymfonyLightCodeInsightFixtureTe
             )
         );
 
-        // ...but shows no default assignment for a required prop
         assertFalse(
             "A required prop must not show a default value",
             highlighting.stream().anyMatch(info ->
                 info.getToolTip() != null && info.getToolTip().contains("= <code>")
             )
         );
+    }
+
+    public void testBlockDocMarkerIsHighlighted() {
+        List<HighlightInfo> highlighting = highlight(
+            "{## The item content. #}\n" +
+            "{% block content %}{% endblock %}"
+        );
+
+        assertTrue(
+            "Expected the {## marker highlighted as a documentation comment",
+            highlighting.stream().anyMatch(info ->
+                info.getSeverity().getName().equals("INFORMATION") &&
+                hasTextAttributesKey(info, PhpHighlightingData.DOC_TAG)
+            )
+        );
+    }
+
+    public void testRegularCommentNotHighlighted() {
+        List<HighlightInfo> highlighting = highlight("{# This is a regular comment #}");
+
+        assertFalse(
+            "A regular comment must not get documentation highlighting",
+            highlighting.stream().anyMatch(info ->
+                info.getSeverity().getName().equals("INFORMATION") &&
+                hasTextAttributesKey(info, PhpHighlightingData.DOC_TAG)
+            )
+        );
+    }
+
+    private List<HighlightInfo> highlight(String content) {
+        myFixture.configureByText("test.html.twig", content);
+        return myFixture.doHighlighting();
     }
 
     /**

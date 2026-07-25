@@ -798,178 +798,165 @@ public class UxUtil {
     }
 
     public static void visitComponentTemplateProps(@NotNull TwigFile twigFile, @NotNull Consumer<Pair<String, PsiElement>> consumer) {
-        for (PsiElement element : twigFile.getChildren()) {
-            if (element instanceof TwigCompositeElement && element.getNode().getElementType() == TwigElementTypes.TAG) {
-                PsiElement firstChild1 = element.getFirstChild();
-                if (firstChild1 == null) {
-                    continue;
-                }
-
-                PsiElement tagName = PsiElementUtils.getNextSiblingAndSkip(firstChild1, TwigTokenTypes.TAG_NAME);
-                if (tagName == null) {
-                    continue;
-                }
-
-                ASTNode nextNonWhitespaceLeaf = FormatterUtil.getNextNonWhitespaceLeaf(tagName.getNode());
-                if (nextNonWhitespaceLeaf == null || nextNonWhitespaceLeaf.getElementType() != TwigTokenTypes.IDENTIFIER) {
-                    continue;
-                }
-
-                String text = nextNonWhitespaceLeaf.getText();
-                if (!text.isBlank()) {
-                    consumer.accept(new Pair<>(text, nextNonWhitespaceLeaf.getPsi()));
-                }
-
-                for (PsiElement commaPsi : PsiElementUtils.getChildrenOfTypeAsList(element, PlatformPatterns.psiElement().withElementType(TwigTokenTypes.COMMA))) {
-                    ASTNode propName = FormatterUtil.getNextNonWhitespaceLeaf(commaPsi.getNode());
-                    if (propName == null || propName.getElementType() != TwigTokenTypes.IDENTIFIER) {
-                        continue;
-                    }
-
-                    String propText = propName.getText();
-                    if (!propText.isBlank()) {
-                        consumer.accept(new Pair<>(propText, propName.getPsi()));
-                    }
-                }
-            }
+        for (ParsedProp prop : parseComponentTemplateProps(twigFile)) {
+            PsiElement target = prop.nameOffset() >= 0 ? twigFile.findElementAt(prop.nameOffset()) : null;
+            consumer.accept(new Pair<>(prop.name(), target != null ? target : twigFile));
         }
     }
 
     /**
-     * Extracts the prop default values from a component template's {@code {%- props -%}} tag.
-     *
-     * <p>Default values live only in the {@code {%- props -%}} declaration (the single source of
-     * truth), the same way Symfony UX Toolkit's {@code ComponentDocParser} sources them rather than
-     * from the {@code {# @prop #}} docblock. Each default is returned as written in the source
-     * (e.g. {@code false}, {@code 'brand'}, {@code ['a', 'b']}); commas inside arrays, hashes and
-     * strings are handled because the Twig parser nests them, so only the tag's top-level commas
-     * separate props. Props declared without a default (required props) are not included.
-     *
-     * @return prop name to its default expression, in declaration order
-     */
-    @NotNull
-    public static Map<String, String> getComponentTemplatePropDefaults(@NotNull TwigFile twigFile) {
-        Map<String, String> defaults = new LinkedHashMap<>();
-
-        for (PsiElement element : twigFile.getChildren()) {
-            if (!(element instanceof TwigCompositeElement) || element.getNode().getElementType() != TwigElementTypes.TAG) {
-                continue;
-            }
-
-            ASTNode[] children = element.getNode().getChildren(null);
-
-            int nameIndex = -1;
-            for (int i = 0; i < children.length; i++) {
-                if (children[i].getElementType() == TwigTokenTypes.TAG_NAME) {
-                    nameIndex = i;
-                    break;
-                }
-            }
-
-            if (nameIndex == -1 || !"props".equals(children[nameIndex].getText().trim())) {
-                continue;
-            }
-
-            List<ASTNode> segment = new ArrayList<>();
-            for (int i = nameIndex + 1; i < children.length; i++) {
-                IElementType type = children[i].getElementType();
-                if (type == TwigTokenTypes.STATEMENT_BLOCK_END) {
-                    break;
-                }
-
-                if (type == TwigTokenTypes.COMMA) {
-                    collectPropDefault(segment, defaults);
-                    segment.clear();
-                } else {
-                    segment.add(children[i]);
-                }
-            }
-            collectPropDefault(segment, defaults);
-
-            return defaults;
-        }
-
-        return defaults;
-    }
-
-    private static void collectPropDefault(@NotNull List<ASTNode> segment, @NotNull Map<String, String> defaults) {
-        String name = null;
-        int equalIndex = -1;
-
-        for (int i = 0; i < segment.size(); i++) {
-            ASTNode node = segment.get(i);
-            if (node.getText().isBlank()) {
-                continue;
-            }
-
-            if (name == null) {
-                if (node.getElementType() != TwigTokenTypes.IDENTIFIER) {
-                    return;
-                }
-                name = node.getText();
-            } else if (node.getElementType() == TwigTokenTypes.EQ) {
-                equalIndex = i;
-                break;
-            }
-        }
-
-        if (name == null || equalIndex == -1) {
-            return;
-        }
-
-        StringBuilder defaultValue = new StringBuilder();
-        for (int i = equalIndex + 1; i < segment.size(); i++) {
-            defaultValue.append(segment.get(i).getText());
-        }
-
-        String trimmed = defaultValue.toString().trim();
-        if (!trimmed.isEmpty()) {
-            defaults.put(name, trimmed);
-        }
-    }
-
-    /**
-     * Pattern for a Symfony UX Toolkit {@code {# @prop name type description #}} docblock.
-     * Group 1: {@code @prop}, group 2: name, group 3: type, group 4: description.
-     *
-     * @see <a href="https://regex101.com/r/3JXNX7/1">Regex101</a>
-     */
-    public static final Pattern PROP_PATTERN = Pattern.compile(
-        "(@prop)\\s+(\\w+)\\s+(\\S+)\\s+(.+?)\\s*$",
-        Pattern.DOTALL
-    );
-
-    /**
-     * A prop documented in a component template: its {@code {# @prop name type description #}} docblock
-     * merged with the default value declared in the {@code {%- props -%}} tag.
+     * A prop documented in a component template: the inline {@code ## <type> <description>} documentation
+     * comment (Twig 3.29 documentation comment) merged with the default value declared in the same
+     * {@code {% props %}} tag. {@code type} and {@code description} are empty when the prop has no doc comment.
      */
     public record TwigComponentProp(@NotNull String name, @NotNull String type, @NotNull String description, @Nullable String defaultValue) {}
 
     /**
-     * Parses a component template's {@code {# @prop name type description #}} docblocks and merges each
-     * prop's default value from the {@code {%- props -%}} tag ({@link #getComponentTemplatePropDefaults}).
+     * Matches a whole {@code {%- props ... -%}} tag; group 1 is the body between {@code props} and the close.
+     */
+    private static final Pattern PROPS_TAG_PATTERN = Pattern.compile("\\{%-?\\s*props\\b(.*?)-?%}", Pattern.DOTALL);
+
+    /**
+     * A single prop declaration {@code name} or {@code name = default}; group 1 is the name, group 2 the
+     * default expression as written (or {@code null} for a required prop).
+     */
+    private static final Pattern PROP_DECLARATION_PATTERN = Pattern.compile("^(\\w+)\\s*(?:=\\s*(.*))?$", Pattern.DOTALL);
+
+    /**
+     * Parses a component template's {@code {% props %}} tag. Every declared prop is returned with the
+     * default value written after {@code =} (required props keep {@code null}) and, when present, the
+     * {@code ## <type> <description>} documentation comment that precedes it: the type is the first
+     * whitespace-delimited token, the rest is the description (the Symfony UX Toolkit convention).
      *
-     * @return prop name to its documentation, in docblock order
+     * <p>The bundled IntelliJ Twig lexer does not tokenize inline {@code #}/{@code ##} comments inside a
+     * {@code {% %}} block, so the tag is read from its raw text: top-level commas separate props (commas
+     * nested in strings, arrays and hashes do not) and a {@code #} starts a comment running to end of line.
+     *
+     * @return prop name to its documentation, in declaration order
      */
     @NotNull
     public static Map<String, TwigComponentProp> getComponentTemplateProps(@NotNull TwigFile twigFile) {
-        Map<String, String> defaults = getComponentTemplatePropDefaults(twigFile);
         Map<String, TwigComponentProp> props = new LinkedHashMap<>();
+        for (ParsedProp prop : parseComponentTemplateProps(twigFile)) {
+            props.put(prop.name(), new TwigComponentProp(prop.name(), prop.type(), prop.description(), prop.defaultValue()));
+        }
+        return props;
+    }
 
-        for (PsiElement comment : PsiTreeUtil.collectElements(twigFile, element -> element.getNode().getElementType() == TwigTokenTypes.COMMENT_TEXT)) {
-            Matcher matcher = PROP_PATTERN.matcher(comment.getText());
-            if (matcher.find()) {
-                String name = matcher.group(2);
-                props.put(name, new TwigComponentProp(
-                    name,
-                    matcher.group(3),
-                    matcher.group(4).trim().replaceAll("\\s+", " "),
-                    defaults.get(name)
-                ));
-            }
+    /**
+     * A prop parsed from the {@code {% props %}} tag, plus {@code nameOffset}: the absolute file offset of
+     * the name token (or {@code -1} if unknown), used to resolve a navigable PSI element.
+     */
+    private record ParsedProp(@NotNull String name, @NotNull String type, @NotNull String description, @Nullable String defaultValue, int nameOffset) {}
+
+    /**
+     * Scans the component's {@code {% props %}} tag once from its raw text (see {@link #getComponentTemplateProps}
+     * for why PSI tokens cannot be trusted here) and returns every declared prop in declaration order.
+     */
+    @NotNull
+    private static List<ParsedProp> parseComponentTemplateProps(@NotNull TwigFile twigFile) {
+        Matcher tag = PROPS_TAG_PATTERN.matcher(twigFile.getText());
+        if (!tag.find()) {
+            return Collections.emptyList();
         }
 
+        int bodyStart = tag.start(1);
+        String body = tag.group(1);
+
+        List<ParsedProp> props = new ArrayList<>();
+        List<String> pendingDoc = new ArrayList<>();
+        StringBuilder segment = new StringBuilder();
+        int segmentStart = -1;
+        int depth = 0;
+        char quote = 0;
+
+        for (int i = 0; i < body.length(); i++) {
+            char c = body.charAt(i);
+
+            if (segmentStart == -1 && quote == 0 && c != '#' && !Character.isWhitespace(c)) {
+                segmentStart = i;
+            }
+
+            if (quote != 0) {
+                segment.append(c);
+                if (c == quote) {
+                    quote = 0;
+                }
+            } else if (c == '\'' || c == '"') {
+                quote = c;
+                segment.append(c);
+            } else if (c == '#') {
+                // Twig inline comment: runs to end of line; a "##" comment documents the next prop.
+                int end = body.indexOf('\n', i);
+                if (end == -1) {
+                    end = body.length();
+                }
+                if (depth == 0 && i + 1 < body.length() && body.charAt(i + 1) == '#') {
+                    String doc = body.substring(i + 2, end).trim();
+                    if (!doc.isEmpty()) {
+                        pendingDoc.add(doc);
+                    }
+                }
+                i = end - 1;
+            } else if (c == '(' || c == '[' || c == '{') {
+                depth++;
+                segment.append(c);
+            } else if (c == ')' || c == ']' || c == '}') {
+                depth--;
+                segment.append(c);
+            } else if (c == ',' && depth == 0) {
+                collectParsedProp(segment, segmentStart, bodyStart, pendingDoc, props);
+                segmentStart = -1;
+            } else {
+                segment.append(c);
+            }
+        }
+        collectParsedProp(segment, segmentStart, bodyStart, pendingDoc, props);
+
         return props;
+    }
+
+    private static void collectParsedProp(@NotNull StringBuilder segment, int segmentStart, int bodyStart, @NotNull List<String> pendingDoc, @NotNull List<ParsedProp> props) {
+        String code = segment.toString().trim();
+        segment.setLength(0);
+
+        String doc = String.join(" ", pendingDoc).trim();
+        pendingDoc.clear();
+
+        Matcher matcher = PROP_DECLARATION_PATTERN.matcher(code);
+        if (!matcher.matches()) {
+            return;
+        }
+
+        String defaultValue = matcher.group(2) != null ? matcher.group(2).trim() : null;
+        if (defaultValue != null && defaultValue.isEmpty()) {
+            defaultValue = null;
+        }
+
+        String type = "";
+        String description = "";
+        if (!doc.isEmpty()) {
+            String[] parts = doc.split("\\s+", 2);
+            type = parts[0];
+            description = parts.length > 1 ? parts[1].trim().replaceAll("\\s+", " ") : "";
+        }
+
+        int nameOffset = segmentStart >= 0 ? bodyStart + segmentStart : -1;
+        props.add(new ParsedProp(matcher.group(1), type, description, defaultValue, nameOffset));
+    }
+
+    /**
+     * Prop name to its default value (as written) for every prop that declares one; required props are excluded.
+     */
+    @NotNull
+    public static Map<String, String> getComponentTemplatePropDefaults(@NotNull TwigFile twigFile) {
+        Map<String, String> defaults = new LinkedHashMap<>();
+        for (TwigComponentProp prop : getComponentTemplateProps(twigFile).values()) {
+            if (prop.defaultValue() != null) {
+                defaults.put(prop.name(), prop.defaultValue());
+            }
+        }
+        return defaults;
     }
 
 
