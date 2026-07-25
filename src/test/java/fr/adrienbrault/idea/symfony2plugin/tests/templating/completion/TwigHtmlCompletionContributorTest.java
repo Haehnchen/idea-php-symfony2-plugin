@@ -109,14 +109,16 @@ public class TwigHtmlCompletionContributorTest extends SymfonyLightCodeInsightFi
     }
 
     /**
-     * Test that a template prop's type (from its {# @prop #} docblock) is shown on the right.
+     * Test that a template prop's type (from its "## <type> <description>" doc comment) is shown on the right.
      */
     public void testThatTemplatePropCompletionShowsTypeFromPropDocblock() {
         myFixture.copyFileToProject("twig_component.yaml", "config/packages/twig_component.yaml");
         myFixture.copyFileToProject("ide-twig.json", "ide-twig.json");
         myFixture.addFileToProject("templates/components/PropsAlert.html.twig",
-            "{# @prop variant 'default'|'destructive' The visual style variant. #}\n" +
-            "{%- props variant = 'default' -%}\n" +
+            "{%- props\n" +
+            "    ## 'default'|'destructive' The visual style variant.\n" +
+            "    variant = 'default',\n" +
+            "-%}\n" +
             "<div></div>"
         );
 

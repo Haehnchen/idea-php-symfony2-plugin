@@ -402,13 +402,17 @@ public class TwigHtmlCompletionContributor extends CompletionContributor {
                     }
 
                     // Add completion for {% props %} defined in component templates, showing the prop
-                    // type (from its {# @prop #} docblock) on the right when available.
+                    // type (from its "## <type> <description>" doc comment) on the right when available.
                     String componentName = name.substring(5);
 
                     Map<String, String> propTypes = new HashMap<>();
                     for (PsiFile template : UxUtil.getComponentTemplates(position.getProject(), componentName)) {
                         if (template instanceof TwigFile twigFile) {
-                            UxUtil.getComponentTemplateProps(twigFile).forEach((propName, prop) -> propTypes.putIfAbsent(propName, prop.type()));
+                            UxUtil.getComponentTemplateProps(twigFile).forEach((propName, prop) -> {
+                                if (!prop.type().isBlank()) {
+                                    propTypes.putIfAbsent(propName, prop.type());
+                                }
+                            });
                         }
                     }
 

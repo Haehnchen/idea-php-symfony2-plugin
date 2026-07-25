@@ -3,16 +3,20 @@ package fr.adrienbrault.idea.symfony2plugin.templating.annotation;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.lang.annotation.HighlightSeverity;
+import com.intellij.openapi.editor.DefaultLanguageHighlighterColors;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
 import com.jetbrains.php.lang.highlighter.PhpHighlightingData;
 import com.jetbrains.twig.TwigFile;
+import com.jetbrains.twig.TwigHighlighterData;
 import com.jetbrains.twig.TwigTokenTypes;
+import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.util.UxUtil;
 import org.jetbrains.annotations.NotNull;
@@ -20,32 +24,35 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Provides syntax highlighting for Symfony UX Toolkit Twig comment annotations.
+ * Syntax highlighting for Symfony UX Toolkit Twig documentation comments (Twig 3.29 {@code ##} comments):
  *
- * Supports:
- * - {# @prop name type Description #}
- * - {# @block name Description #}
+ * <ul>
+ *   <li>inline prop docs {@code ## <type> <description>} inside a {@code {% props %}} tag: the type token is
+ *       coloured like a PHPDoc type and carries a tooltip with the prop's default value and description;</li>
+ *   <li>block docs {@code {## <description> #}} preceding a {@code {% block %}}: the {@code ##} marker is
+ *       coloured to set it apart from a regular {@code {# #}} comment.</li>
+ * </ul>
  *
- * Uses PHP's PHPDoc highlighting colors for consistency with `@property` annotations.
+ * <p>The bundled Twig lexer does not tokenize inline {@code ##} comments inside a {@code {% %}} block, so
+ * prop docs are highlighted by scanning the tag's raw text rather than from comment PSI tokens.
  *
  * @see <a href="https://github.com/symfony/ux-toolkit">Symfony UX Toolkit</a>
+ * @see <a href="https://github.com/twigphp/Twig/pull/4871">twigphp/Twig#4871</a>
  */
 public class TwigUxToolkitAnnotator implements Annotator {
-    /**
-     * Pattern for @block annotations.
-     * Format: @block name Description
-     * Example: @block content The item content.
-     *
-     * @see <a href="https://regex101.com/r/jYjXpq/1">Regex101</a>
-     */
-    private static final Pattern BLOCK_PATTERN = Pattern.compile(
-        "(@block)\\s+(\\w+)\\s+(.+?)\\s*$",
-        Pattern.DOTALL
-    );
+    /** Head of a {@code {% props %}} tag, used to skip every other Twig tag quickly. */
+    private static final Pattern PROPS_TAG_HEAD = Pattern.compile("^\\{%-?\\s*props\\b");
+
+    /** A whole inline prop-doc line: group 1 the {@code ##} marker, group 2 the type token. */
+    private static final Pattern PROP_DOC_LINE = Pattern.compile("(##)[ \\t]*(\\S+)?[^\\n]*");
+
+    /** An identifier, used to find the prop that an inline doc line documents. */
+    private static final Pattern IDENTIFIER = Pattern.compile("\\w+");
 
     @Override
     public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
@@ -53,158 +60,134 @@ public class TwigUxToolkitAnnotator implements Annotator {
             return;
         }
 
-        // Only process Twig comment text tokens
-        if (element.getNode().getElementType() != TwigTokenTypes.COMMENT_TEXT) {
-            return;
-        }
-
-        String text = element.getText();
-        int startOffset = element.getTextRange().getStartOffset();
-
-        // Try to match @prop pattern
-        Matcher propMatcher = UxUtil.PROP_PATTERN.matcher(text);
-        if (propMatcher.find()) {
-            annotateProp(holder, startOffset, propMatcher, getPropDefaults(element));
-            return;
-        }
-
-        // Try to match @block pattern
-        Matcher blockMatcher = BLOCK_PATTERN.matcher(text);
-        if (blockMatcher.find()) {
-            annotateBlock(holder, startOffset, blockMatcher);
+        IElementType elementType = element.getNode().getElementType();
+        if (elementType == TwigElementTypes.TAG) {
+            annotatePropsTag(element, holder);
+        } else if (elementType == TwigTokenTypes.COMMENT_TEXT) {
+            annotateBlockDoc(element, holder);
         }
     }
 
     /**
-     * Annotates a @prop comment with syntax highlighting.
-     * Highlights: @prop keyword, property name, and type.
-     *
-     * Uses PHP PHPDoc colors:
-     * - DOC_TAG for @prop keyword (like @property in PHPDoc)
-     * - DOC_PROPERTY_IDENTIFIER for property name (like $foo in @property string $foo)
-     * - DOC_IDENTIFIER for type (like string in @property string $foo)
-     *
-     * The property name also carries a hover tooltip with its type, default value (sourced from the
-     * {@code {% props %}} tag, the single source of truth for defaults) and description.
+     * Colours each inline {@code ## <type> <description>} prop doc inside a {@code {% props %}} tag: the
+     * {@code ##} marker (like a PHPDoc {@code @tag}) and the type token (like a PHPDoc type), the latter
+     * with a tooltip resolved from the documented prop.
      */
-    private void annotateProp(@NotNull AnnotationHolder holder, int startOffset, @NotNull Matcher matcher, @NotNull Map<String, String> propDefaults) {
-        // Highlight @prop keyword (group 1) - like @property
-        highlightRange(holder, startOffset, matcher, 1, PhpHighlightingData.DOC_TAG);
+    private void annotatePropsTag(@NotNull PsiElement tag, @NotNull AnnotationHolder holder) {
+        String text = tag.getText();
+        if (!PROPS_TAG_HEAD.matcher(text).find()) {
+            return;
+        }
 
-        // Highlight property name (group 2) - like $foo in @property string $foo - with a hover tooltip
-        String name = matcher.group(2);
-        String defaultValue = name != null ? propDefaults.get(name) : null;
-        String tooltip = buildPropTooltip(name, matcher.group(3), matcher.group(4), defaultValue);
-        highlightRangeWithTooltip(holder, startOffset, matcher, 2, PhpHighlightingData.DOC_PROPERTY_IDENTIFIER, tooltip);
+        int base = tag.getTextRange().getStartOffset();
 
-        // Highlight type (group 3) - like string in @property string $foo
-        highlightRange(holder, startOffset, matcher, 3, PhpHighlightingData.DOC_IDENTIFIER);
+        Matcher matcher = PROP_DOC_LINE.matcher(text);
+        if (!matcher.find()) {
+            return;
+        }
+
+        // The bundled Twig lexer stops applying the {% %} tag background from the first inline '#'
+        // onward; repaint it (background only) across the whole tag so the doc comments do not punch a
+        // hole in the tag background.
+        highlight(holder, base, base + text.length(), TwigHighlighterData.TWIG_TEMPLATE, null);
+
+        Map<String, UxUtil.TwigComponentProp> props = getProps(tag);
+
+        do {
+            highlight(holder, base + matcher.start(1), base + matcher.end(1), PhpHighlightingData.DOC_TAG, null);
+
+            int descriptionStart = matcher.end(1);
+            if (matcher.group(2) != null) {
+                UxUtil.TwigComponentProp prop = props.get(nextPropName(text, matcher.end(), props.keySet()));
+                String tooltip = prop != null ? buildPropTooltip(prop) : null;
+                highlight(holder, base + matcher.start(2), base + matcher.end(2), PhpHighlightingData.DOC_IDENTIFIER, tooltip);
+                descriptionStart = matcher.end(2);
+            }
+
+            // render the description like a comment so the type stands out (the bundled lexer would
+            // otherwise mis-tokenize these words as code inside the {% props %} tag)
+            if (matcher.end() > descriptionStart) {
+                highlight(holder, base + descriptionStart, base + matcher.end(), DefaultLanguageHighlighterColors.DOC_COMMENT, null);
+            }
+        } while (matcher.find());
     }
 
     /**
-     * Reads the prop default values declared in the template's {@code {% props %}} tag, cached per file.
+     * Colours the {@code ##} marker of a block doc comment {@code {## <description> #}} (which the Twig
+     * lexer exposes as a {@code COMMENT_TEXT} starting with {@code #}) to set it apart from a plain comment.
      */
-    private static @NotNull Map<String, String> getPropDefaults(@NotNull PsiElement element) {
+    private void annotateBlockDoc(@NotNull PsiElement commentText, @NotNull AnnotationHolder holder) {
+        String text = commentText.getText();
+        if (!text.startsWith("#")) {
+            return;
+        }
+
+        int start = commentText.getTextRange().getStartOffset();
+        int markerEnd = text.length() > 1 && text.charAt(1) == '#' ? 2 : 1;
+        highlight(holder, start, start + markerEnd, PhpHighlightingData.DOC_TAG, null);
+    }
+
+    private static @Nullable String nextPropName(@NotNull String text, int from, @NotNull Set<String> names) {
+        Matcher matcher = IDENTIFIER.matcher(text);
+        if (!matcher.find(from)) {
+            return null;
+        }
+
+        do {
+            if (names.contains(matcher.group())) {
+                return matcher.group();
+            }
+        } while (matcher.find());
+
+        return null;
+    }
+
+    private static @NotNull Map<String, UxUtil.TwigComponentProp> getProps(@NotNull PsiElement element) {
         PsiFile file = element.getContainingFile();
         if (!(file instanceof TwigFile twigFile)) {
             return Collections.emptyMap();
         }
 
         return CachedValuesManager.getCachedValue(twigFile, () ->
-            CachedValueProvider.Result.create(UxUtil.getComponentTemplatePropDefaults(twigFile), twigFile)
+            CachedValueProvider.Result.create(UxUtil.getComponentTemplateProps(twigFile), twigFile)
         );
     }
 
-    /**
-     * Builds the hover tooltip for a prop: {@code name : type = default} followed by its description.
-     */
-    private static @NotNull String buildPropTooltip(@Nullable String name, @Nullable String type, @Nullable String description, @Nullable String defaultValue) {
+    private static @NotNull String buildPropTooltip(@NotNull UxUtil.TwigComponentProp prop) {
         StringBuilder tooltip = new StringBuilder();
+        tooltip.append("<code>").append(StringUtil.escapeXmlEntities(prop.name())).append("</code>");
 
-        if (name != null) {
-            tooltip.append("<code>").append(StringUtil.escapeXmlEntities(name)).append("</code>");
+        if (!prop.type().isBlank()) {
+            tooltip.append(" : <code>").append(StringUtil.escapeXmlEntities(prop.type())).append("</code>");
         }
-
-        if (type != null) {
-            tooltip.append(" : <code>").append(StringUtil.escapeXmlEntities(type)).append("</code>");
+        if (prop.defaultValue() != null) {
+            tooltip.append(" = <code>").append(StringUtil.escapeXmlEntities(prop.defaultValue())).append("</code>");
         }
-
-        if (defaultValue != null) {
-            tooltip.append(" = <code>").append(StringUtil.escapeXmlEntities(defaultValue)).append("</code>");
-        }
-
-        if (description != null && !description.isBlank()) {
-            tooltip.append("<br/>").append(StringUtil.escapeXmlEntities(description.trim().replaceAll("\\s+", " ")));
+        if (!prop.description().isBlank()) {
+            tooltip.append("<br/>").append(StringUtil.escapeXmlEntities(prop.description()));
         }
 
         return tooltip.toString();
     }
 
     /**
-     * Like {@link #highlightRange} but attaches a hover tooltip (which {@code newSilentAnnotation} cannot carry).
+     * Silent when there is no tooltip; otherwise an INFORMATION annotation that can carry one
+     * ({@code newSilentAnnotation} cannot).
      */
-    private void highlightRangeWithTooltip(
-        @NotNull AnnotationHolder holder,
-        int baseOffset,
-        @NotNull Matcher matcher,
-        int group,
-        @NotNull TextAttributesKey textAttributesKey,
-        @NotNull String tooltip
-    ) {
-        if (matcher.group(group) == null) {
-            return;
+    private void highlight(@NotNull AnnotationHolder holder, int start, int end, @NotNull TextAttributesKey key, @Nullable String tooltip) {
+        TextRange range = new TextRange(start, end);
+
+        if (tooltip == null) {
+            holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
+                .range(range)
+                .textAttributes(key)
+                .create();
+        } else {
+            holder.newAnnotation(HighlightSeverity.INFORMATION, StringUtil.removeHtmlTags(tooltip))
+                .range(range)
+                .tooltip(tooltip)
+                .textAttributes(key)
+                .create();
         }
-
-        TextRange range = new TextRange(
-            baseOffset + matcher.start(group),
-            baseOffset + matcher.end(group)
-        );
-
-        holder.newAnnotation(HighlightSeverity.INFORMATION, StringUtil.removeHtmlTags(tooltip))
-            .range(range)
-            .tooltip(tooltip)
-            .textAttributes(textAttributesKey)
-            .create();
-    }
-
-    /**
-     * Annotates a @block comment with syntax highlighting.
-     * Highlights: @block keyword and block name.
-     *
-     * Uses PHP PHPDoc colors:
-     * - DOC_TAG for @block keyword
-     * - DOC_PROPERTY_IDENTIFIER for block name
-     */
-    private void annotateBlock(@NotNull AnnotationHolder holder, int startOffset, @NotNull Matcher matcher) {
-        // Highlight @block keyword (group 1)
-        highlightRange(holder, startOffset, matcher, 1, PhpHighlightingData.DOC_TAG);
-
-        // Highlight block name (group 2)
-        highlightRange(holder, startOffset, matcher, 2, PhpHighlightingData.DOC_PROPERTY_IDENTIFIER);
-    }
-
-    /**
-     * Creates a silent annotation with the specified text attributes for a regex group match.
-     */
-    private void highlightRange(
-        @NotNull AnnotationHolder holder,
-        int baseOffset,
-        @NotNull Matcher matcher,
-        int group,
-        @NotNull TextAttributesKey textAttributesKey
-    ) {
-        if (matcher.group(group) == null) {
-            return;
-        }
-
-        TextRange range = new TextRange(
-            baseOffset + matcher.start(group),
-            baseOffset + matcher.end(group)
-        );
-
-        holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
-            .range(range)
-            .textAttributes(textAttributesKey)
-            .create();
     }
 }

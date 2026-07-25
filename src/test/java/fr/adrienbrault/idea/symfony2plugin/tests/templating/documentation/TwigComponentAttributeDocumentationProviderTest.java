@@ -19,8 +19,10 @@ public class TwigComponentAttributeDocumentationProviderTest extends SymfonyLigh
         myFixture.copyFileToProject("twig_component.yaml", "config/packages/twig_component.yaml");
         myFixture.copyFileToProject("ide-twig.json", "ide-twig.json");
         myFixture.addFileToProject("templates/components/PropsAlert.html.twig",
-            "{# @prop variant 'default'|'destructive' The visual style variant. #}\n" +
-            "{%- props variant = 'default' -%}\n" +
+            "{%- props\n" +
+            "    ## 'default'|'destructive' The visual style variant.\n" +
+            "    variant = 'default',\n" +
+            "-%}\n" +
             "<div></div>"
         );
 
