@@ -15,4 +15,12 @@ public interface ProfilerIndexInterface {
 
     @Nullable
     String getUrlForRequest(@NotNull ProfilerRequestInterface request);
+
+    /**
+     * Returns the stored serialized profile for collector-level inspection, when supported.
+     * Remote profiler indexes can keep the default until they expose an equivalent raw source.
+     */
+    default byte @Nullable [] getRawProfile(@NotNull String hash) {
+        return null;
+    }
 }

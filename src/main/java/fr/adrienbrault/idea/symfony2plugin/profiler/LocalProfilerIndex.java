@@ -14,6 +14,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -25,6 +27,7 @@ import java.util.regex.Pattern;
  */
 public class LocalProfilerIndex implements ProfilerIndexInterface {
     private static final Pattern PROFILER_HASH_PATTERN = Pattern.compile("^[a-fA-F0-9]{6,64}$");
+    private static final int MAX_RAW_PROFILE_BYTES = 5 * 1024 * 1024;
 
     @NotNull
     private final File file;
@@ -77,6 +80,26 @@ public class LocalProfilerIndex implements ProfilerIndexInterface {
         }
 
         return ProfilerUtil.getBaseProfilerUrlFromRequest(request) + "/" + StringUtils.stripStart(request.getProfilerUrl(), "/");
+    }
+
+    @Override
+    public byte @Nullable [] getRawProfile(@NotNull String hash) {
+        File profile = this.getFile(hash);
+        if (profile == null) {
+            return null;
+        }
+
+        try (InputStream input = Files.newInputStream(profile.toPath())) {
+            // Read one extra byte so a concurrently growing profile cannot bypass the size limit.
+            byte[] content = input.readNBytes(MAX_RAW_PROFILE_BYTES + 1);
+            if (content.length > MAX_RAW_PROFILE_BYTES) {
+                return null;
+            }
+
+            return content;
+        } catch (IOException ignored) {
+            return null;
+        }
     }
 
     @NotNull

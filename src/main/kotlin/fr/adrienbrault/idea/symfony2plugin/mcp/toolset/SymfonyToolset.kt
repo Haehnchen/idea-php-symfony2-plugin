@@ -17,6 +17,7 @@ import fr.adrienbrault.idea.symfony2plugin.mcp.collector.ServiceDefinitionCollec
 import fr.adrienbrault.idea.symfony2plugin.mcp.collector.SymfonyCommandCollector
 import fr.adrienbrault.idea.symfony2plugin.mcp.collector.SymfonyFormTypeCollector
 import fr.adrienbrault.idea.symfony2plugin.mcp.collector.SymfonyFormTypeOptionsCollector
+import fr.adrienbrault.idea.symfony2plugin.mcp.collector.SymfonyProfilerRequestDetailsCollector
 import fr.adrienbrault.idea.symfony2plugin.mcp.collector.SymfonyProfilerRequestsCollector
 import fr.adrienbrault.idea.symfony2plugin.mcp.collector.SymfonyRouteCollector
 import fr.adrienbrault.idea.symfony2plugin.mcp.collector.SymfonyServiceLocatorCollector
@@ -24,7 +25,10 @@ import fr.adrienbrault.idea.symfony2plugin.mcp.collector.TwigComponentCollector
 import fr.adrienbrault.idea.symfony2plugin.mcp.collector.TwigExtensionCollector
 import fr.adrienbrault.idea.symfony2plugin.mcp.collector.TwigTemplateUsageCollector
 import fr.adrienbrault.idea.symfony2plugin.mcp.collector.TwigTemplateVariablesCollector
+import fr.adrienbrault.idea.symfony2plugin.profiler.factory.ProfilerFactoryUtil
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
 
 /**
@@ -207,6 +211,35 @@ class SymfonyToolset : McpToolset {
     ): String = withSymfonyProject { project ->
         readAction {
             SymfonyProfilerRequestsCollector(project).collect(url, hash, controller, route, limit)
+        }
+    }
+
+    @McpTool
+    @McpDescription("""
+        Shows one Symfony Profiler request. Use list_profiler_requests first to find its hash.
+
+        Omit collector for a compact overview.
+
+        Supported collectors:
+
+        - db: Doctrine query groups and timings
+
+        The collector detail view shows 50 items per page; use the page parameter to request the next page.
+    """)
+    suspend fun get_profiler_request_details(
+        @McpDescription("Hexadecimal profiler token/hash from list_profiler_requests. Example: '18e6b8'")
+        hash: String,
+        @McpDescription("Optional profiler collector name.")
+        collector: String? = null,
+        @McpDescription("1-based page number. Defaults to 1.")
+        page: Int = 1,
+    ): String = withSymfonyProject { project ->
+        val profilerIndex = readAction { ProfilerFactoryUtil.createIndex(project) }
+            ?: mcpFail("No profiler index available. Make sure the Symfony profiler is enabled and accessible.")
+
+        // Raw profile loading and PHP deserialization are blocking work and must not hold an IDE read lock.
+        withContext(Dispatchers.IO) {
+            SymfonyProfilerRequestDetailsCollector(profilerIndex).collect(hash, collector, page)
         }
     }
 
