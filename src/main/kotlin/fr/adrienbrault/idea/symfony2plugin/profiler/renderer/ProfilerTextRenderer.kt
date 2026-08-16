@@ -13,7 +13,7 @@ import fr.adrienbrault.idea.symfony2plugin.profiler.decoder.ProfilerReference
 import fr.adrienbrault.idea.symfony2plugin.profiler.decoder.ProfilerString
 import fr.adrienbrault.idea.symfony2plugin.profiler.decoder.ProfilerValue
 
-/** Renders collector-neutral values as bounded indented text without JSON or Markdown syntax. */
+/** Renders collector-neutral values as bounded indented key/value text with recognized lists. */
 internal object ProfilerTextRenderer {
     private const val MAX_DEPTH = 32
     private const val MAX_LINES = 10_000
@@ -52,6 +52,11 @@ internal object ProfilerTextRenderer {
                 return
             }
 
+            if (value.isList()) {
+                appendList(value, indent, depth)
+                return
+            }
+
             value.entries.forEach { entry ->
                 if (truncated) {
                     return
@@ -69,6 +74,24 @@ internal object ProfilerTextRenderer {
             }
         }
 
+        private fun appendList(value: ProfilerArray, indent: Int, depth: Int) {
+            value.entries.forEach { entry ->
+                if (truncated) {
+                    return
+                }
+                val prefix = " ".repeat(indent) + "-"
+                val nested = entry.value as? ProfilerArray
+                if (nested == null) {
+                    add("$prefix ${scalar(entry.value)}")
+                } else if (nested.entries.isEmpty()) {
+                    add("$prefix (empty)")
+                } else {
+                    add(prefix)
+                    appendArray(nested, indent + 2, depth + 1)
+                }
+            }
+        }
+
         fun add(line: String) {
             if (lines.size >= MAX_LINES) {
                 truncated = true
@@ -76,6 +99,10 @@ internal object ProfilerTextRenderer {
             }
             lines.add(line)
         }
+    }
+
+    private fun ProfilerArray.isList(): Boolean = entries.isNotEmpty() && entries.withIndex().all { (index, entry) ->
+        (entry.key as? PhpIntegerKey)?.value == index.toLong()
     }
 
     private fun key(key: fr.adrienbrault.idea.symfony2plugin.phpUnserializer.PhpArrayKey): String = when (key) {

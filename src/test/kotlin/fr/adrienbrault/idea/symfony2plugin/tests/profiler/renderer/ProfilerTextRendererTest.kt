@@ -1,0 +1,84 @@
+package fr.adrienbrault.idea.symfony2plugin.tests.profiler.renderer
+
+import fr.adrienbrault.idea.symfony2plugin.phpUnserializer.PhpBytes
+import fr.adrienbrault.idea.symfony2plugin.phpUnserializer.PhpIntegerKey
+import fr.adrienbrault.idea.symfony2plugin.phpUnserializer.PhpStringKey
+import fr.adrienbrault.idea.symfony2plugin.profiler.decoder.ProfilerArray
+import fr.adrienbrault.idea.symfony2plugin.profiler.decoder.ProfilerEntry
+import fr.adrienbrault.idea.symfony2plugin.profiler.decoder.profilerString
+import fr.adrienbrault.idea.symfony2plugin.profiler.renderer.ProfilerTextRenderer
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
+
+class ProfilerTextRendererTest {
+    @Test
+    fun `sequential integer arrays render as lists`() {
+        val value = mapValue(
+            "items" to ProfilerArray(
+                listOf(
+                    ProfilerEntry(PhpIntegerKey(0), profilerString("first")),
+                    ProfilerEntry(PhpIntegerKey(1), profilerString("second")),
+                ),
+            ),
+        )
+
+        assertEquals(
+            listOf(
+                "items:",
+                "  - first",
+                "  - second",
+            ),
+            ProfilerTextRenderer.render(value),
+        )
+    }
+
+    @Test
+    fun `list entries can contain associative key value structures`() {
+        val value = mapValue(
+            "items" to ProfilerArray(
+                listOf(
+                    ProfilerEntry(
+                        PhpIntegerKey(0),
+                        mapValue(
+                            "name" to profilerString("first"),
+                            "state" to profilerString("active"),
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        assertEquals(
+            listOf(
+                "items:",
+                "  -",
+                "    name: first",
+                "    state: active",
+            ),
+            ProfilerTextRenderer.render(value),
+        )
+    }
+
+    @Test
+    fun `mixed and non sequential arrays preserve their keys`() {
+        val mixed = ProfilerArray(
+            listOf(
+                ProfilerEntry(PhpIntegerKey(1), profilerString("indexed")),
+                ProfilerEntry(stringKey("name"), profilerString("named")),
+            ),
+        )
+
+        assertEquals(
+            listOf(
+                "[1]: indexed",
+                "name: named",
+            ),
+            ProfilerTextRenderer.render(mixed),
+        )
+    }
+
+    private fun mapValue(vararg entries: Pair<String, fr.adrienbrault.idea.symfony2plugin.profiler.decoder.ProfilerValue>) =
+        ProfilerArray(entries.map { (key, value) -> ProfilerEntry(stringKey(key), value) })
+
+    private fun stringKey(value: String) = PhpStringKey(PhpBytes(value.toByteArray(Charsets.UTF_8)))
+}

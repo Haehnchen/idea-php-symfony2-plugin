@@ -62,11 +62,10 @@ data class SymfonyProfilerRequestSummary(
 
 /** Keeps the request-specific security policies separate from the generic value decoder. */
 internal object SymfonyProfilerRequestSanitizer {
-    private const val REDACTED = "***REDACTED***"
     private const val REDACTED_BODY =
-        "$REDACTED (raw request body omitted; see request_request / request_query)"
+        "$PROFILER_REDACTED_TEXT (raw request body omitted; see request_request / request_query)"
     private const val REDACTED_CURL =
-        "$REDACTED (curl command omitted; reconstructs the raw body, URL query string and request headers)"
+        "$PROFILER_REDACTED_TEXT (curl command omitted; reconstructs the raw body, URL query string and request headers)"
 
     private val SENSITIVE_ENV_PATTERNS = listOf(
         "SECRET",
@@ -131,14 +130,14 @@ internal object SymfonyProfilerRequestSanitizer {
     }
 
     private fun redactImmediateValues(value: ProfilerValue): ProfilerValue = when (value) {
-        is ProfilerArray -> ProfilerArray(value.entries.map { entry -> entry.copy(value = redacted()) })
-        else -> redacted()
+        is ProfilerArray -> ProfilerArray(value.entries.map { entry -> entry.copy(value = redactedProfilerValue()) })
+        else -> redactedProfilerValue()
     }
 
     private fun sanitizeHeaders(value: ProfilerValue): ProfilerValue = value.transformArray { entry ->
         val name = entry.stringKeyOrNull()
         if (name == null || SENSITIVE_HEADER_PATTERNS.any { name.contains(it, ignoreCase = true) }) {
-            entry.copy(value = redacted())
+            entry.copy(value = redactedProfilerValue())
         } else {
             entry
         }
@@ -147,7 +146,7 @@ internal object SymfonyProfilerRequestSanitizer {
     private fun sanitizeEnvironment(value: ProfilerValue): ProfilerValue = value.transformArray { entry ->
         val name = entry.stringKeyOrNull()
         if (name == null || isSensitiveEnvironmentName(name) || entry.value.containsCredentialUri()) {
-            entry.copy(value = redacted())
+            entry.copy(value = redactedProfilerValue())
         } else {
             entry.copy(value = redactSensitiveParams(entry.value))
         }
@@ -158,7 +157,7 @@ internal object SymfonyProfilerRequestSanitizer {
         return environment.transformArray { entry ->
             val name = entry.stringKeyOrNull()
             if (name != null && name.uppercase() in SENSITIVE_SERVER_KEYS && entry.value.hasContent()) {
-                entry.copy(value = redacted())
+                entry.copy(value = redactedProfilerValue())
             } else {
                 entry
             }
@@ -173,7 +172,7 @@ internal object SymfonyProfilerRequestSanitizer {
                     is PhpStringKey -> {
                         val name = entry.stringKeyOrNull()
                         if (name == null || isSensitiveParameterName(name)) {
-                            entry.copy(value = redacted())
+                            entry.copy(value = redactedProfilerValue())
                         } else {
                             entry.copy(value = redactSensitiveParams(entry.value))
                         }
@@ -212,7 +211,6 @@ internal object SymfonyProfilerRequestSanitizer {
     private fun ProfilerEntry.stringKeyOrNull(): String? =
         (key as? PhpStringKey)?.bytes?.utf8StringOrNull()
 
-    private fun redacted(): ProfilerString = profilerString(REDACTED)
 }
 
 private fun ProfilerArray.stringValue(key: String): String? =

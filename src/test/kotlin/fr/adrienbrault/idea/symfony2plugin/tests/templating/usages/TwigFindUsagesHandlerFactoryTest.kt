@@ -272,11 +272,11 @@ class TwigFindUsagesHandlerFactoryTest : SymfonyLightCodeInsightFixtureTestCase(
 
     fun testGetTargetsOnTwigConstantEnumCaseReturnsPhpEnumCaseUsageTarget() {
         myFixture.addFileToProject(
-            "src/BetriebAboStatus.php",
+            "src/FeatureStatus.php",
             """
             <?php
-            namespace Delos\Core\Enums;
-            enum BetriebAboStatus: string {
+            namespace App\Feature;
+            enum FeatureStatus: string {
                 case ACTIVE = 'active';
             }
             """.trimIndent(),
@@ -284,7 +284,7 @@ class TwigFindUsagesHandlerFactoryTest : SymfonyLightCodeInsightFixtureTestCase(
 
         val psiFile = configureByProjectPath(
             "templates/index.html.twig",
-            "{{ constant('Delos\\\\Core\\\\Enums\\\\BetriebAboStatus::AC<caret>TIVE') }}"
+            "{{ constant('App\\\\Feature\\\\FeatureStatus::AC<caret>TIVE') }}"
         )
         val twigElement = psiFile.findElementAt(myFixture.caretOffset)
         assertNotNull(twigElement)

@@ -15,13 +15,6 @@ internal object SymfonyProfilerRequestDetailsRenderer {
         SymfonyProfilerDatabaseDetailRenderer,
     ).sortedByDescending { it.overviewWeight }
 
-    val supportedCollectorNames: List<String> = renderers.map { it.name }
-
-    fun supports(collector: String): Boolean = renderers.any { it.name == collector }
-
-    fun isAvailable(profile: SymfonyProfilerProfile, collector: String): Boolean =
-        collector in profile.collectorNames
-
     fun render(
         profile: SymfonyProfilerProfile,
         requestedHash: String,
@@ -32,32 +25,48 @@ internal object SymfonyProfilerRequestDetailsRenderer {
 
         val availableCollectorNames = profile.collectorNames.toSet()
         if (collector != null) {
-            val renderer = requireNotNull(renderers.firstOrNull { it.name == collector }) {
-                "Unsupported profiler collector '$collector'."
-            }
+            val renderer = renderers.firstOrNull { it.name == collector }
             appendLine()
-            append(render(renderer) { renderer.renderDetails(profile, page.coerceAtLeast(1)) })
+            if (renderer != null) {
+                append(render(renderer.name) { renderer.renderDetails(profile, page.coerceAtLeast(1)) })
+            } else {
+                append(render(collector) {
+                    SymfonyProfilerFallbackDetailRenderer.renderDetails(profile, collector, page.coerceAtLeast(1))
+                })
+            }
             return@buildString
         }
 
         val availableRenderers = renderers.filter { it.name in availableCollectorNames }
-        if (availableRenderers.isEmpty()) {
+        if (availableCollectorNames.isEmpty()) {
             appendLine()
-            appendLine("No supported profiler detail collectors are available for this request.")
+            appendLine("No profiler collectors are available for this request.")
             return@buildString
         }
 
         availableRenderers.forEach { renderer ->
-            val overview = render(renderer) { renderer.renderOverview(profile) } ?: return@forEach
+            val overview = render(renderer.name) { renderer.renderOverview(profile) } ?: return@forEach
             appendLine()
             append(overview)
         }
+
+        appendLine()
+        appendLine("## Available collectors")
+        appendLine()
+        val specializedNames = profile.collectorNames.filter { name -> renderers.any { it.name == name } }
+        val fallbackNames = profile.collectorNames.filterNot { name -> renderers.any { it.name == name } }
+        if (specializedNames.isNotEmpty()) {
+            appendLine("- Specialized: ${specializedNames.joinToString { plainText(it) }}")
+        }
+        if (fallbackNames.isNotEmpty()) {
+            appendLine("- Additional collectors: ${fallbackNames.joinToString { plainText(it) }}")
+        }
     }.trimEnd()
 
-    private fun <T> render(renderer: ProfilerDetailRenderer, render: () -> T): T = try {
+    private fun <T> render(collectorName: String, render: () -> T): T = try {
         render()
     } catch (exception: Exception) {
-        throw ProfilerRendererException(renderer.name, exception)
+        throw ProfilerRendererException(collectorName, exception)
     }
 
     private fun StringBuilder.appendRequestOverview(
