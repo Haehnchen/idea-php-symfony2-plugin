@@ -223,8 +223,9 @@ class SymfonyToolset : McpToolset {
         Supported collectors:
 
         - request: Sanitized HTTP request, response, session, route, and controller data
+        - time: Performance summary and complete Stopwatch event timeline with start/end timings
         - db: Doctrine query groups and timings
-
+        
         Collector details use bounded plain-text pages; use the page parameter to request the next page.
     """)
     suspend fun get_profiler_request_details(

@@ -9,11 +9,15 @@ import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerProf
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerRequest
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerRequestConsumer
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerRequestSummary
+import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerTime
+import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerTimeConsumer
+import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerTimeEvent
 import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.math.ceil
 
 private const val OVERVIEW_QUERY_GROUP_LIMIT = 3
+private const val OVERVIEW_TIME_EVENT_LIMIT = 3
 private const val DETAIL_PAGE_SIZE = 50
 private const val REQUEST_DETAIL_PAGE_SIZE = 100
 private const val CALL_LIMIT = 5
@@ -28,6 +32,7 @@ class SymfonyProfilerRequestDetailsCollector(
 ) {
     private val renderers: List<ProfilerDetailRenderer> = listOf(
         RequestProfilerDetailRenderer(),
+        TimeProfilerDetailRenderer(),
         DatabaseProfilerDetailRenderer(),
     )
         .sortedByDescending { it.overviewWeight }
@@ -176,6 +181,52 @@ class SymfonyProfilerRequestDetailsCollector(
         appendLine("Content type: ${summary.contentType.renderRequestSummaryValue()}")
     }
 
+    /** Renders the three slowest events in the compact performance overview. */
+    internal fun formatTimeOverview(time: SymfonyProfilerTime): String = formatTimeSection(
+        time,
+        time.events.sortedByDescending { it.durationMs }.take(OVERVIEW_TIME_EVENT_LIMIT),
+        "### Top $OVERVIEW_TIME_EVENT_LIMIT events by duration",
+    )
+
+    /** Renders all events in descending duration order without pagination. */
+    internal fun formatTimeDetails(time: SymfonyProfilerTime): String = formatTimeSection(
+        time,
+        time.events.sortedByDescending { it.durationMs },
+        "### Events ordered by duration",
+    )
+
+    private fun formatTimeSection(
+        time: SymfonyProfilerTime,
+        events: List<SymfonyProfilerTimeEvent>,
+        heading: String,
+    ): String = buildString {
+        appendLine("## Collector: time")
+        appendLine()
+        appendLine("- Total duration: ${formatMilliseconds(time.durationMs)} ms")
+        appendLine("- Initialization time: ${formatMilliseconds(time.initializationTimeMs)} ms")
+        appendLine("- Stopwatch installed: ${if (time.stopwatchInstalled) "yes" else "no"}")
+        appendLine("- Events: ${time.events.size}")
+        appendLine()
+        appendLine(heading)
+
+        if (events.isEmpty()) {
+            appendLine()
+            appendLine("No timing events recorded.")
+            return@buildString
+        }
+
+        appendLine()
+        appendLine("| Event | Category | Start (ms) | End (ms) | Duration (ms) | Memory (MiB) |")
+        appendLine("| --- | --- | ---: | ---: | ---: | ---: |")
+        events.forEach { event ->
+            appendLine(
+                "| ${plainText(event.name)} | ${plainText(event.category)} | " +
+                    "${formatMilliseconds(event.startMs)} | ${formatMilliseconds(event.endMs)} | " +
+                    "${formatMilliseconds(event.durationMs)} | ${formatMemoryMiB(event.memoryBytes)} |",
+            )
+        }
+    }.trimEnd()
+
     /** Renders the compact database summary with its top query groups. */
     internal fun formatDatabaseOverview(database: SymfonyProfilerDatabase): String = formatDatabaseSection(
         database,
@@ -257,6 +308,18 @@ class SymfonyProfilerRequestDetailsCollector(
             formatRequestDetails(SymfonyProfilerRequestConsumer.read(profile), page)
     }
 
+    /** Renders Symfony Stopwatch events exposed by the profiler's time collector. */
+    private inner class TimeProfilerDetailRenderer : ProfilerDetailRenderer {
+        override val name = "time"
+        override val overviewWeight = 50
+
+        override fun renderOverview(profile: SymfonyProfilerProfile): String =
+            formatTimeOverview(SymfonyProfilerTimeConsumer.read(profile))
+
+        override fun renderDetails(profile: SymfonyProfilerProfile, page: Int): String =
+            formatTimeDetails(SymfonyProfilerTimeConsumer.read(profile))
+    }
+
     /** Renders Doctrine data exposed by the profiler's db collector. */
     private inner class DatabaseProfilerDetailRenderer : ProfilerDetailRenderer {
         override val name = "db"
@@ -292,6 +355,10 @@ private fun formatCalls(group: SymfonyProfilerDatabaseQueryGroup): String = grou
 
 private fun formatMilliseconds(value: Double): String =
     BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP).toPlainString()
+
+private fun formatMemoryMiB(bytes: Long): String = BigDecimal.valueOf(bytes)
+    .divide(BigDecimal.valueOf(1024L * 1024L), 2, RoundingMode.HALF_UP)
+    .toPlainString()
 
 /** Keeps untrusted profiler values on one table-safe line. */
 private fun plainText(value: String): String = value
