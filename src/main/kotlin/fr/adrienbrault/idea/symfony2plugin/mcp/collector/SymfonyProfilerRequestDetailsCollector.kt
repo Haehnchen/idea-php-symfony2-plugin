@@ -21,13 +21,7 @@ class SymfonyProfilerRequestDetailsCollector(
             mcpFail("hash must be a 6-64 character hexadecimal profiler token.")
         }
 
-        val selectedCollector = collector?.trim()?.lowercase()?.takeIf { it.isNotEmpty() }
-        if (selectedCollector != null && !SymfonyProfilerRequestDetailsRenderer.supports(selectedCollector)) {
-            mcpFail(
-                "Unsupported profiler collector '$selectedCollector'. Supported collectors: " +
-                    SymfonyProfilerRequestDetailsRenderer.supportedCollectorNames.joinToString() + ".",
-            )
-        }
+        val requestedCollector = collector?.trim()?.takeIf { it.isNotEmpty() }
 
         val rawProfile = profilerIndex.getRawProfile(normalizedHash)
             ?: mcpFail(
@@ -41,7 +35,8 @@ class SymfonyProfilerRequestDetailsCollector(
             mcpFail("Unable to parse profiler request '$normalizedHash': ${exception.message}")
         }
 
-        if (selectedCollector != null && !SymfonyProfilerRequestDetailsRenderer.isAvailable(profile, selectedCollector)) {
+        val selectedCollector = requestedCollector
+        if (selectedCollector != null && selectedCollector !in profile.collectorNames) {
             mcpFail("Profiler request '$normalizedHash' does not contain the '$selectedCollector' collector.")
         }
 
