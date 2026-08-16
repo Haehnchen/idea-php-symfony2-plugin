@@ -223,11 +223,14 @@ class SymfonyToolset : McpToolset {
         Supported collectors:
 
         - request: Sanitized HTTP request, response, session, route, and controller data
+        - logger: Prioritized log sections with newest messages first
         - time: Performance summary and complete Stopwatch event timeline with start/end timings
         - twig: Twig render metrics, unique templates, and the complete rendering call tree
         - db: Doctrine query groups and timings
-        
-        Collector details use bounded plain-text pages; use the page parameter to request the next page.
+
+        Request and database details use bounded plain-text pages; use the page parameter to request the next page.
+        Logger details show at most 25 newest entries per non-empty section.
+        Time and Twig details return their complete event or rendering view.
     """)
     suspend fun get_profiler_request_details(
         @McpDescription("Hexadecimal profiler token/hash from list_profiler_requests. Example: '18e6b8'")

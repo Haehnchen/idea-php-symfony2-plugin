@@ -7,6 +7,9 @@ import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerIndexInterface
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerDatabase
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerDatabaseQueryGroup
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerDatabaseStackFrame
+import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerLog
+import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerLogger
+import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerLogSection
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerRequest
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerRequestSummary
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerTime
@@ -15,6 +18,7 @@ import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterfac
 import fr.adrienbrault.idea.symfony2plugin.profiler.decoder.ProfilerArray
 import fr.adrienbrault.idea.symfony2plugin.profiler.decoder.ProfilerEntry
 import fr.adrienbrault.idea.symfony2plugin.profiler.decoder.ProfilerInteger
+import fr.adrienbrault.idea.symfony2plugin.profiler.renderer.SymfonyProfilerLoggerDetailRenderer
 import java.nio.charset.StandardCharsets
 
 class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
@@ -163,10 +167,10 @@ class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
 
     fun testRejectsUnsupportedCollectorBeforeLoadingRawProfile() {
         try {
-            fixtureCollector().collect("abcdef", "logger")
+            fixtureCollector().collect("abcdef", "mailer")
             fail("Expected unsupported collector to fail")
         } catch (exception: Throwable) {
-            assertTrue("Unsupported profiler collector 'logger'" in exception.message.orEmpty())
+            assertTrue("Unsupported profiler collector 'mailer'" in exception.message.orEmpty())
         }
     }
 
@@ -326,6 +330,80 @@ class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
         assertFalse("Page:" in text)
     }
 
+    fun testLoggerOverviewShowsOnlyFivePrioritizedImportantLogs() {
+        val text = loggerFixtureCollector().collect("10ca11")
+
+        assertTrue("## Collector: logger" in text)
+        assertTrue("- Log entries: 48" in text)
+        assertTrue("### Important logs (12 entries)" in text)
+        assertTrue("| Level | Time | Channel | Occurrences | Message |" in text)
+        assertTrue("| Deprecations | 12:00:47.000 | deprecation | 3 | Latest deprecated feature used |" in text)
+        assertTrue("| Emergency | 12:00:45.000 | app | 1 | System unavailable |" in text)
+        assertTrue("| Errors | 12:00:42.000 | app | 1 | Latest recoverable error |" in text)
+        assertTrue("| Errors | 12:00:41.000 | app | 1 | First recoverable error |" in text)
+        assertFalse("Warnings" in text)
+        assertFalse("Alert" in text)
+        assertFalse("Critical" in text)
+        assertFalse("Debug message" in text)
+        assertTrue("_Truncated: showing 5 of 12 important log entries._" in text)
+    }
+
+    fun testLoggerDetailsShowsNonEmptySectionsNewestFirstAndTruncatesPerLevel() {
+        val text = loggerFixtureCollector().collect("10ca11", "logger", page = 99)
+
+        val headings = listOf(
+            "### Deprecations (2 entries)",
+            "### Emergency (1 entry)",
+            "### Alert (1 entry)",
+            "### Critical (1 entry)",
+            "### Errors (2 entries)",
+            "### Warnings (7 entries)",
+            "### Silenced (1 entry)",
+            "### Notice (1 entry)",
+            "### Info (2 entries)",
+            "### Debug (30 entries)",
+        )
+        headings.zipWithNext().forEach { (first, second) ->
+            assertTrue(text.indexOf(first) < text.indexOf(second))
+        }
+        assertTrue(text.indexOf("Latest deprecated feature used") < text.indexOf("Deprecated feature used"))
+        assertTrue("Warning message 07 \\| continued next line" in text)
+        assertTrue(text.indexOf("Warning message 07") < text.indexOf("Warning message 01"))
+
+        val debugSection = text.substringAfter("### Debug (30 entries)")
+        assertTrue("Debug message 30" in debugSection)
+        assertTrue("Debug message 06" in debugSection)
+        assertFalse("Debug message 05" in debugSection)
+        assertFalse("Debug message 01" in debugSection)
+        assertEquals(25, debugSection.lineSequence().count { it.startsWith("| 12:00:") })
+        assertTrue("_Truncated: showing the newest 25 of 30 entries._" in debugSection)
+        assertFalse("Page:" in text)
+        assertFalse("fixture-secret-that-must-not-be-retained" in text)
+    }
+
+    fun testLoggerDetailsOmitsEmptySections() {
+        val text = SymfonyProfilerLoggerDetailRenderer().formatDetails(
+            SymfonyProfilerLogger(
+                listOf(
+                    SymfonyProfilerLog(
+                        section = SymfonyProfilerLogSection.INFO,
+                        timestamp = "2026-08-16T12:00:00.000+00:00",
+                        timestampEpochMillis = 1_787_227_200_000,
+                        priority = 200,
+                        channel = "app",
+                        message = "Single informational message",
+                        occurrences = 1,
+                    ),
+                ),
+            ),
+        )
+
+        assertTrue("### Info (1 entry)" in text)
+        assertFalse("### Errors" in text)
+        assertFalse("### Warnings" in text)
+        assertFalse("### Debug" in text)
+    }
+
     fun testReportsUnavailableRawProfile() {
         try {
             SymfonyProfilerRequestDetailsCollector(TestProfilerIndex(null)).collect("abcdef")
@@ -349,6 +427,10 @@ class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
 
     private fun twigFixtureCollector() = SymfonyProfilerRequestDetailsCollector(
         TestProfilerIndex(resourceFixture("symfony-profiler-twig.gz")),
+    )
+
+    private fun loggerFixtureCollector() = SymfonyProfilerRequestDetailsCollector(
+        TestProfilerIndex(resourceFixture("symfony-profiler-logger.gz")),
     )
 
     private fun resourceFixture(name: String): ByteArray = requireNotNull(
