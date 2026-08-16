@@ -222,9 +222,10 @@ class SymfonyToolset : McpToolset {
 
         Supported collectors:
 
+        - request: Sanitized HTTP request, response, session, route, and controller data
         - db: Doctrine query groups and timings
 
-        The collector detail view shows 50 items per page; use the page parameter to request the next page.
+        Collector details use bounded plain-text pages; use the page parameter to request the next page.
     """)
     suspend fun get_profiler_request_details(
         @McpDescription("Hexadecimal profiler token/hash from list_profiler_requests. Example: '18e6b8'")
