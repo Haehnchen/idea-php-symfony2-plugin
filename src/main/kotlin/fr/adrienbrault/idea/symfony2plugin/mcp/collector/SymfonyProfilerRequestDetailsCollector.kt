@@ -16,6 +16,8 @@ import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerTwig
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerTwigConsumer
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerTwigProfile
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerTwigTemplate
+import fr.adrienbrault.idea.symfony2plugin.profiler.renderer.ProfilerDetailRenderer
+import fr.adrienbrault.idea.symfony2plugin.profiler.renderer.SymfonyProfilerLoggerDetailRenderer
 import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.math.ceil
@@ -37,6 +39,7 @@ class SymfonyProfilerRequestDetailsCollector(
 ) {
     private val renderers: List<ProfilerDetailRenderer> = listOf(
         RequestProfilerDetailRenderer(),
+        SymfonyProfilerLoggerDetailRenderer(),
         TimeProfilerDetailRenderer(),
         TwigProfilerDetailRenderer(),
         DatabaseProfilerDetailRenderer(),
@@ -374,22 +377,6 @@ class SymfonyProfilerRequestDetailsCollector(
             )
         }
     }.trimEnd()
-
-    /** Provides compact and collector-specific detail views for one profiler collector. */
-    private interface ProfilerDetailRenderer {
-        /** Collector name used by the MCP selector and availability check. */
-        val name: String
-
-        /** Higher weights place the collector earlier in the request overview. */
-        val overviewWeight: Int
-            get() = 0
-
-        /** Renders optional content embedded in the compact request overview. */
-        fun renderOverview(profile: SymfonyProfilerProfile): String? = null
-
-        /** Renders the collector-specific detail view. */
-        fun renderDetails(profile: SymfonyProfilerProfile, page: Int): String
-    }
 
     /** Adds sanitized request data while keeping the renderer registry collector-neutral. */
     private inner class RequestProfilerDetailRenderer : ProfilerDetailRenderer {
