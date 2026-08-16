@@ -404,6 +404,16 @@ class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
         assertFalse("### Debug" in text)
     }
 
+    fun testEventsCollectorCanBeSelected() {
+        val text = eventsFixtureCollector().collect("e71e17", "events", page = 99)
+
+        assertTrue("## Collector: events" in text)
+        assertTrue("- Dispatchers: 2" in text)
+        assertTrue("### Dispatcher: event_dispatcher" in text)
+        assertTrue("#### kernel.request (2 listeners)" in text)
+        assertFalse("Page:" in text)
+    }
+
     fun testReportsUnavailableRawProfile() {
         try {
             SymfonyProfilerRequestDetailsCollector(TestProfilerIndex(null)).collect("abcdef")
@@ -431,6 +441,10 @@ class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
 
     private fun loggerFixtureCollector() = SymfonyProfilerRequestDetailsCollector(
         TestProfilerIndex(resourceFixture("symfony-profiler-logger.gz")),
+    )
+
+    private fun eventsFixtureCollector() = SymfonyProfilerRequestDetailsCollector(
+        TestProfilerIndex(resourceFixture("symfony-profiler-events-symfony-6.3.gz")),
     )
 
     private fun resourceFixture(name: String): ByteArray = requireNotNull(

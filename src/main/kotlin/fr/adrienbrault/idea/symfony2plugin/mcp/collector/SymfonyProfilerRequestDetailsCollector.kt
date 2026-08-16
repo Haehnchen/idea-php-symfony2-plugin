@@ -17,6 +17,7 @@ import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerTwig
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerTwigProfile
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerTwigTemplate
 import fr.adrienbrault.idea.symfony2plugin.profiler.renderer.ProfilerDetailRenderer
+import fr.adrienbrault.idea.symfony2plugin.profiler.renderer.SymfonyProfilerEventsDetailRenderer
 import fr.adrienbrault.idea.symfony2plugin.profiler.renderer.SymfonyProfilerLoggerDetailRenderer
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -40,6 +41,7 @@ class SymfonyProfilerRequestDetailsCollector(
     private val renderers: List<ProfilerDetailRenderer> = listOf(
         RequestProfilerDetailRenderer(),
         SymfonyProfilerLoggerDetailRenderer(),
+        SymfonyProfilerEventsDetailRenderer(),
         TimeProfilerDetailRenderer(),
         TwigProfilerDetailRenderer(),
         DatabaseProfilerDetailRenderer(),
