@@ -12,12 +12,17 @@ import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerRequ
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerTime
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerTimeConsumer
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerTimeEvent
+import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerTwig
+import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerTwigConsumer
+import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerTwigProfile
+import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerTwigTemplate
 import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.math.ceil
 
 private const val OVERVIEW_QUERY_GROUP_LIMIT = 3
 private const val OVERVIEW_TIME_EVENT_LIMIT = 3
+private const val OVERVIEW_TWIG_TEMPLATE_LIMIT = 5
 private const val DETAIL_PAGE_SIZE = 50
 private const val REQUEST_DETAIL_PAGE_SIZE = 100
 private const val CALL_LIMIT = 5
@@ -33,6 +38,7 @@ class SymfonyProfilerRequestDetailsCollector(
     private val renderers: List<ProfilerDetailRenderer> = listOf(
         RequestProfilerDetailRenderer(),
         TimeProfilerDetailRenderer(),
+        TwigProfilerDetailRenderer(),
         DatabaseProfilerDetailRenderer(),
     )
         .sortedByDescending { it.overviewWeight }
@@ -227,6 +233,95 @@ class SymfonyProfilerRequestDetailsCollector(
         }
     }.trimEnd()
 
+    /** Renders the first five unique templates in their initial rendering order. */
+    internal fun formatTwigOverview(twig: SymfonyProfilerTwig): String = formatTwigSection(
+        twig,
+        twig.renderedTemplates.take(OVERVIEW_TWIG_TEMPLATE_LIMIT),
+        "### First $OVERVIEW_TWIG_TEMPLATE_LIMIT rendered templates",
+        includeCallTree = false,
+    )
+
+    /** Renders all unique templates and the complete rendering call tree without pagination. */
+    internal fun formatTwigDetails(twig: SymfonyProfilerTwig): String = formatTwigSection(
+        twig,
+        twig.renderedTemplates,
+        "### Rendered templates",
+        includeCallTree = true,
+    )
+
+    private fun formatTwigSection(
+        twig: SymfonyProfilerTwig,
+        templates: List<SymfonyProfilerTwigTemplate>,
+        heading: String,
+        includeCallTree: Boolean,
+    ): String = buildString {
+        appendLine("## Collector: twig")
+        appendLine()
+        appendLine("- Render time: ${formatMilliseconds(twig.renderTimeMs)} ms")
+        appendLine("- Template calls: ${twig.templateCallCount}")
+        appendLine("- Block calls: ${twig.blockCallCount}")
+        appendLine("- Macro calls: ${twig.macroCallCount}")
+        appendLine("- Unique templates: ${twig.renderedTemplates.size}")
+        appendLine()
+        appendLine(heading)
+
+        if (templates.isEmpty()) {
+            appendLine()
+            appendLine("No Twig templates were rendered.")
+        } else {
+            appendLine()
+            appendLine("| Template | Path | Render count |")
+            appendLine("| --- | --- | ---: |")
+            templates.forEach { template ->
+                appendLine(
+                    "| ${plainText(template.name)} | ${plainText(template.path ?: "none")} | " +
+                        "${template.renderCount} |",
+                )
+            }
+        }
+
+        if (includeCallTree) {
+            appendLine()
+            appendLine("### Rendering call tree")
+            appendLine()
+            appendTwigProfile(twig.root, twig.renderTimeMs)
+        }
+    }.trimEnd()
+
+    private fun StringBuilder.appendTwigProfile(
+        profile: SymfonyProfilerTwigProfile,
+        rootDurationMs: Double,
+        prefix: String = "",
+        hasFollowingSibling: Boolean = false,
+    ) {
+        val label = when (profile.type) {
+            "ROOT" -> treeText(profile.name)
+            "template" -> "$prefix└ ${treeText(profile.template)}"
+            else -> "$prefix└ ${treeText(profile.template)}::${treeText(profile.type)}(${treeText(profile.name)})"
+        }
+        val timing = if (profile.durationMs >= 1.0) {
+            val percentage = if (rootDurationMs > 0.0) profile.durationMs / rootDurationMs * 100.0 else 0.0
+            " ${formatMilliseconds(profile.durationMs)}ms/${formatPercentage(percentage)}%"
+        } else {
+            ""
+        }
+        appendLine("    $label$timing")
+
+        val childPrefix = if (profile.type == "ROOT") {
+            prefix
+        } else {
+            prefix + if (hasFollowingSibling) "│ " else "  "
+        }
+        profile.children.forEachIndexed { index, child ->
+            appendTwigProfile(
+                child,
+                rootDurationMs,
+                childPrefix,
+                hasFollowingSibling = index + 1 < profile.children.size,
+            )
+        }
+    }
+
     /** Renders the compact database summary with its top query groups. */
     internal fun formatDatabaseOverview(database: SymfonyProfilerDatabase): String = formatDatabaseSection(
         database,
@@ -280,7 +375,7 @@ class SymfonyProfilerRequestDetailsCollector(
         }
     }.trimEnd()
 
-    /** Provides compact and paginated views for one profiler collector. */
+    /** Provides compact and collector-specific detail views for one profiler collector. */
     private interface ProfilerDetailRenderer {
         /** Collector name used by the MCP selector and availability check. */
         val name: String
@@ -292,7 +387,7 @@ class SymfonyProfilerRequestDetailsCollector(
         /** Renders optional content embedded in the compact request overview. */
         fun renderOverview(profile: SymfonyProfilerProfile): String? = null
 
-        /** Renders one page of the collector-specific detail view. */
+        /** Renders the collector-specific detail view. */
         fun renderDetails(profile: SymfonyProfilerProfile, page: Int): String
     }
 
@@ -318,6 +413,18 @@ class SymfonyProfilerRequestDetailsCollector(
 
         override fun renderDetails(profile: SymfonyProfilerProfile, page: Int): String =
             formatTimeDetails(SymfonyProfilerTimeConsumer.read(profile))
+    }
+
+    /** Renders Twig metrics, unique templates, and their complete call tree. */
+    private inner class TwigProfilerDetailRenderer : ProfilerDetailRenderer {
+        override val name = "twig"
+        override val overviewWeight = 25
+
+        override fun renderOverview(profile: SymfonyProfilerProfile): String =
+            formatTwigOverview(SymfonyProfilerTwigConsumer.read(profile))
+
+        override fun renderDetails(profile: SymfonyProfilerProfile, page: Int): String =
+            formatTwigDetails(SymfonyProfilerTwigConsumer.read(profile))
     }
 
     /** Renders Doctrine data exposed by the profiler's db collector. */
@@ -356,6 +463,9 @@ private fun formatCalls(group: SymfonyProfilerDatabaseQueryGroup): String = grou
 private fun formatMilliseconds(value: Double): String =
     BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP).toPlainString()
 
+private fun formatPercentage(value: Double): String =
+    BigDecimal.valueOf(value).setScale(0, RoundingMode.HALF_UP).toPlainString()
+
 private fun formatMemoryMiB(bytes: Long): String = BigDecimal.valueOf(bytes)
     .divide(BigDecimal.valueOf(1024L * 1024L), 2, RoundingMode.HALF_UP)
     .toPlainString()
@@ -364,6 +474,8 @@ private fun formatMemoryMiB(bytes: Long): String = BigDecimal.valueOf(bytes)
 private fun plainText(value: String): String = value
     .replace(CONTROL_CHARACTERS, " ")
     .replace("|", "\\|")
+
+private fun treeText(value: String): String = value.replace(CONTROL_CHARACTERS, " ")
 
 private fun String?.renderRequestSummaryValue(): String =
     this?.takeIf { it.isNotEmpty() }?.replace(CONTROL_CHARACTERS, " ") ?: "none"

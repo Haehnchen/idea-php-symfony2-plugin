@@ -163,10 +163,10 @@ class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
 
     fun testRejectsUnsupportedCollectorBeforeLoadingRawProfile() {
         try {
-            fixtureCollector().collect("abcdef", "twig")
+            fixtureCollector().collect("abcdef", "logger")
             fail("Expected unsupported collector to fail")
         } catch (exception: Throwable) {
-            assertTrue("Unsupported profiler collector 'twig'" in exception.message.orEmpty())
+            assertTrue("Unsupported profiler collector 'logger'" in exception.message.orEmpty())
         }
     }
 
@@ -290,6 +290,42 @@ class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
         assertFalse("Page:" in text)
     }
 
+    fun testTwigOverviewShowsFirstFiveUniqueTemplatesAndAggregatesDuplicates() {
+        val text = twigFixtureCollector().collect("c0ffee")
+
+        assertTrue("## Collector: twig" in text)
+        assertTrue("- Render time: 14.00 ms" in text)
+        assertTrue("- Template calls: 8" in text)
+        assertTrue("- Block calls: 1" in text)
+        assertTrue("- Macro calls: 1" in text)
+        assertTrue("- Unique templates: 7" in text)
+        assertTrue("### First 5 rendered templates" in text)
+        assertTrue("| Template | Path | Render count |" in text)
+        assertTrue("| components/card.html.twig | templates/components/card.html.twig | 2 |" in text)
+        assertTrue("| emails/banner.html.twig | templates/emails/banner.html.twig | 1 |" in text)
+        assertFalse("@WebProfiler/Profiler/toolbar_js.html.twig" in text)
+        assertFalse("### Rendering call tree" in text)
+    }
+
+    fun testTwigDetailsShowsAllUniqueTemplatesAndCompleteCallTree() {
+        val text = twigFixtureCollector().collect("c0ffee", "twig", page = 99)
+
+        assertTrue("### Rendered templates" in text)
+        assertTrue("@WebProfiler/Profiler/toolbar_js.html.twig" in text)
+        assertTrue("@WebProfiler/Profiler/toolbar.html.twig" in text)
+        assertTrue("### Rendering call tree" in text)
+        assertTrue("    main 14.00ms/100%" in text)
+        assertTrue("    └ catalog/detail.html.twig 12.00ms/86%" in text)
+        assertTrue("    │ └ components/price.html.twig::macro(format_price)" in text)
+        assertTrue("    │ └ base.html.twig 6.00ms/43%" in text)
+        assertTrue("    │   └ catalog/detail.html.twig::block(title)" in text)
+        assertTrue("    └ @WebProfiler/Profiler/toolbar_js.html.twig 2.00ms/14%" in text)
+        val callTree = text.substringAfter("### Rendering call tree")
+        assertEquals(2, callTree.windowed("components/card.html.twig".length)
+            .count { it == "components/card.html.twig" })
+        assertFalse("Page:" in text)
+    }
+
     fun testReportsUnavailableRawProfile() {
         try {
             SymfonyProfilerRequestDetailsCollector(TestProfilerIndex(null)).collect("abcdef")
@@ -309,6 +345,10 @@ class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
 
     private fun timeFixtureCollector() = SymfonyProfilerRequestDetailsCollector(
         TestProfilerIndex(resourceFixture("symfony-profiler-time.gz")),
+    )
+
+    private fun twigFixtureCollector() = SymfonyProfilerRequestDetailsCollector(
+        TestProfilerIndex(resourceFixture("symfony-profiler-twig.gz")),
     )
 
     private fun resourceFixture(name: String): ByteArray = requireNotNull(
