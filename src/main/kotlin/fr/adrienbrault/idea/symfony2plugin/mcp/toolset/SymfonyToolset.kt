@@ -224,6 +224,7 @@ class SymfonyToolset : McpToolset {
 
         - request: Sanitized HTTP request, response, session, route, and controller data
         - time: Performance summary and complete Stopwatch event timeline with start/end timings
+        - twig: Twig render metrics, unique templates, and the complete rendering call tree
         - db: Doctrine query groups and timings
         
         Collector details use bounded plain-text pages; use the page parameter to request the next page.
