@@ -1,24 +1,24 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.dic.inspection;
+package fr.adrienbrault.idea.symfony2plugin.tests.dic.inspection
 
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see fr.adrienbrault.idea.symfony2plugin.dic.inspection.XmlServiceInstanceInspection
  */
-public class XmlServiceInstanceInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
-    public void setUp() throws Exception {
-        super.setUp();
+class XmlServiceInstanceInspectionTest : SymfonyLightCodeInsightFixtureTestCase() {
+    override fun setUp() {
+        super.setUp()
 
-        myFixture.copyFileToProject("XmlServiceInstanceInspection.php");
-        myFixture.copyFileToProject("XmlServiceInstanceInspection.xml");
+        myFixture.copyFileToProject("XmlServiceInstanceInspection.php")
+        myFixture.copyFileToProject("XmlServiceInstanceInspection.xml")
     }
 
-    public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic/inspection/fixtures";
+    override fun getTestDataPath(): String {
+        return "src/test/kotlin/fr/adrienbrault/idea/symfony2plugin/tests/dic/inspection/fixtures"
     }
 
-    public void testConstructorInstance() {
+    fun testConstructorInstance() {
         assertLocalInspectionContains("test.xml", "" +
             "<services>" +
             "     <service class=\"Args\\Foo\">\n" +
@@ -26,7 +26,7 @@ public class XmlServiceInstanceInspectionTest extends SymfonyLightCodeInsightFix
             "     </service>" +
             "</services>",
             "Expect instance of: Args\\Foo"
-        );
+        )
 
         assertLocalInspectionContains("test.xml", "" +
                 "<services>" +
@@ -35,7 +35,7 @@ public class XmlServiceInstanceInspectionTest extends SymfonyLightCodeInsightFix
                 "     </service>" +
                 "</services>",
             "Expect instance of: Args\\Foo"
-        );
+        )
 
         assertLocalInspectionContains("test.xml", "" +
                 "<services>" +
@@ -44,19 +44,19 @@ public class XmlServiceInstanceInspectionTest extends SymfonyLightCodeInsightFix
                 "     </service>" +
                 "</services>",
             "Expect instance of: Args\\Foo"
-        );
+        )
 
         assertLocalInspectionContains("test.xml", "" +
                 "<services>" +
                 "     <service id=\"Args\\Foo\">\n" +
-                "         <argument type=\"service\" key=\"$foo\" id=\"args<caret>_bar\"/>\n" +
+                "         <argument type=\"service\" key=\"\$foo\" id=\"args<caret>_bar\"/>\n" +
                 "     </service>" +
                 "</services>",
             "Expect instance of: Args\\Foo"
-        );
+        )
     }
 
-    public void testCallInstance() {
+    fun testCallInstance() {
         assertLocalInspectionContains("test.xml", "" +
                 "<services>" +
                 "        <service class=\"Args\\Foo\">\n" +
@@ -66,7 +66,7 @@ public class XmlServiceInstanceInspectionTest extends SymfonyLightCodeInsightFix
                 "        </service>" +
                 "</services>",
             "Expect instance of: Args\\Foo"
-        );
+        )
 
         assertLocalInspectionContains("test.xml", "" +
                 "<services>" +
@@ -77,7 +77,7 @@ public class XmlServiceInstanceInspectionTest extends SymfonyLightCodeInsightFix
                 "        </service>" +
                 "</services>",
             "Expect instance of: Args\\Foo"
-        );
+        )
 
         assertLocalInspectionContains("test.xml", "" +
                 "<services>" +
@@ -88,7 +88,7 @@ public class XmlServiceInstanceInspectionTest extends SymfonyLightCodeInsightFix
                 "        </service>" +
                 "</services>",
             "Expect instance of: Args\\Foo"
-        );
+        )
 
         assertLocalInspectionContains("test.xml", "" +
                 "<services>" +
@@ -101,20 +101,20 @@ public class XmlServiceInstanceInspectionTest extends SymfonyLightCodeInsightFix
                 "     </service>" +
                 "</services>",
             "Expect instance of: Args\\Foo"
-        );
+        )
     }
 
-    public void testCallInstanceForNamedAndIndexParameter() {
+    fun testCallInstanceForNamedAndIndexParameter() {
         assertLocalInspectionContains("test.xml", "" +
                 "<services>" +
                 "     <service id=\"Args\\Foo\">\n" +
                 "         <call method=\"setFoo\">\n" +
-                "             <argument type=\"service\" key=\"$car\" id=\"args_bar<caret>\"/>\n" +
+                "             <argument type=\"service\" key=\"\$car\" id=\"args_bar<caret>\"/>\n" +
                 "         </call>\n" +
                 "     </service>" +
                 "</services>",
             "Expect instance of: Args\\Foo"
-        );
+        )
 
         assertLocalInspectionContains("test.xml", "" +
                 "<services>" +
@@ -125,6 +125,6 @@ public class XmlServiceInstanceInspectionTest extends SymfonyLightCodeInsightFix
                 "     </service>" +
                 "</services>",
             "Expect instance of: Args\\Foo"
-        );
+        )
     }
 }

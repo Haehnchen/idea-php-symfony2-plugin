@@ -1,37 +1,37 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.dic.inspection;
+package fr.adrienbrault.idea.symfony2plugin.tests.dic.inspection
 
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see fr.adrienbrault.idea.symfony2plugin.dic.inspection.YamlXmlServiceInstanceInspection
  */
-public class YamlXmlServiceInstanceInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
-    public void setUp() throws Exception {
-        super.setUp();
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("YamlXmlServiceInstanceInspection.php"));
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("YamlXmlServiceInstanceInspection.xml"));
+class YamlXmlServiceInstanceInspectionTest : SymfonyLightCodeInsightFixtureTestCase() {
+    override fun setUp() {
+        super.setUp()
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("YamlXmlServiceInstanceInspection.php"))
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("YamlXmlServiceInstanceInspection.xml"))
     }
 
-    public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic/inspection/fixtures";
+    override fun getTestDataPath(): String {
+        return "src/test/kotlin/fr/adrienbrault/idea/symfony2plugin/tests/dic/inspection/fixtures"
     }
 
-    public void testInspectionForConstructorArguments() {
-        String[] strings = {
+    fun testInspectionForConstructorArguments() {
+        val strings = arrayOf(
             "@ar<caret>gs_bar",
             "\"@ar<caret>gs_bar\"",
             "'@ar<caret>gs_bar'",
-        };
+        )
 
-        for (String s : strings) {
+        for (s in strings) {
             assertLocalInspectionContains("services.yml",
                 "services:\n" +
                     "  foo:\n" +
                     "    class: \\Args\\Foo\n" +
                     "    arguments: [" + s + "]",
                 "Expect instance of: Args\\Foo"
-            );
+            )
 
             assertLocalInspectionContains("services.yml",
                 "services:\n" +
@@ -39,17 +39,17 @@ public class YamlXmlServiceInstanceInspectionTest extends SymfonyLightCodeInsigh
                     "    class: \\Args\\Foo\n" +
                     "    arguments: [ @foo, %foo%, " + s + "]",
                 "Expect instance of: Args\\Foo"
-            );
+            )
         }
     }
 
-    public void testInspectionForConstructorArgumentsForServiceIdShortcut() {
+    fun testInspectionForConstructorArgumentsForServiceIdShortcut() {
         assertLocalInspectionContains("services.yml",
             "services:\n" +
                 "  Args\\Foo:\n" +
                 "    arguments: [ @foo, %foo%, '@ar<caret>gs_bar']",
             "Expect instance of: Args\\Foo"
-        );
+        )
 
         assertLocalInspectionContains("services.yml",
             "services:\n" +
@@ -58,17 +58,17 @@ public class YamlXmlServiceInstanceInspectionTest extends SymfonyLightCodeInsigh
                 "    calls:\n" +
                 "     - [ setFoo, ['@ar<caret>gs_bar'] ]\n",
             "Expect instance of: Args\\Foo"
-        );
+        )
     }
 
-    public void testInspectionForConstructorArgumentsAsSequence() {
-        String[] strings = {
+    fun testInspectionForConstructorArgumentsAsSequence() {
+        val strings = arrayOf(
             "@ar<caret>gs_bar",
             "\"@ar<caret>gs_bar\"",
             "'@ar<caret>gs_bar'",
-        };
+        )
 
-        for (String s : strings) {
+        for (s in strings) {
             assertLocalInspectionContains("services.yml",
                 "services:\n" +
                     "  foo:\n" +
@@ -76,7 +76,7 @@ public class YamlXmlServiceInstanceInspectionTest extends SymfonyLightCodeInsigh
                     "    arguments:\n" +
                     "     - " + s + "\n",
                 "Expect instance of: Args\\Foo"
-            );
+            )
 
             assertLocalInspectionContains("services.yml",
                 "services:\n" +
@@ -87,18 +87,18 @@ public class YamlXmlServiceInstanceInspectionTest extends SymfonyLightCodeInsigh
                     "     - %foo%\n" +
                     "     - " + s + "\n",
                 "Expect instance of: Args\\Foo"
-            );
+            )
         }
     }
 
-    public void testInspectionForCallsArguments() {
-        String[] strings = {
+    fun testInspectionForCallsArguments() {
+        val strings = arrayOf(
             "@ar<caret>gs_bar",
             "\"@ar<caret>gs_bar\"",
             "'@ar<caret>gs_bar'",
-        };
+        )
 
-        for (String s : strings) {
+        for (s in strings) {
             assertLocalInspectionContains("services.yml",
                 "services:\n" +
                     "  foo:\n" +
@@ -106,7 +106,7 @@ public class YamlXmlServiceInstanceInspectionTest extends SymfonyLightCodeInsigh
                     "    calls:\n" +
                     "     - [ setFoo, [" + s + "] ]\n",
                 "Expect instance of: Args\\Foo"
-            );
+            )
 
             assertLocalInspectionContains("services.yml",
                 "services:\n" +
@@ -115,7 +115,7 @@ public class YamlXmlServiceInstanceInspectionTest extends SymfonyLightCodeInsigh
                     "    calls:\n" +
                     "     - [ setFoo, [@foo, %foo%, " + s + "] ]\n",
                 "Expect instance of: Args\\Foo"
-            );
+            )
         }
     }
 }
