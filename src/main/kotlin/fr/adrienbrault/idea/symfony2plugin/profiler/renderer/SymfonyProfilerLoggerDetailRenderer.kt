@@ -15,7 +15,7 @@ private val CONTROL_CHARACTERS = Regex("[\\u0000-\\u001F\\u007F]+")
 private val LOG_TIME_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS")
 
 /** Renders prioritized and bounded log sections without retaining log context. */
-internal class SymfonyProfilerLoggerDetailRenderer : ProfilerDetailRenderer {
+internal object SymfonyProfilerLoggerDetailRenderer : ProfilerDetailRenderer {
     override val name = "logger"
     override val overviewWeight = 75
 

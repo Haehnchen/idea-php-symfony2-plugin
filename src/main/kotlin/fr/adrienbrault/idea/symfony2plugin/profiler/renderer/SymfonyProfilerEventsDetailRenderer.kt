@@ -8,7 +8,7 @@ import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerProf
 private val CONTROL_CHARACTERS = Regex("[\\u0000-\\u001F\\u007F]+")
 
 /** Renders every dispatched event list with its called listeners in source order. */
-internal class SymfonyProfilerEventsDetailRenderer : ProfilerDetailRenderer {
+internal object SymfonyProfilerEventsDetailRenderer : ProfilerDetailRenderer {
     override val name = "events"
     override val overviewWeight = 60
 

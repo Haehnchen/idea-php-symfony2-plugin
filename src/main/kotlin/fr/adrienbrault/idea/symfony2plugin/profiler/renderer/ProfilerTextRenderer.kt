@@ -1,4 +1,4 @@
-package fr.adrienbrault.idea.symfony2plugin.mcp.collector
+package fr.adrienbrault.idea.symfony2plugin.profiler.renderer
 
 import fr.adrienbrault.idea.symfony2plugin.phpUnserializer.PhpIntegerKey
 import fr.adrienbrault.idea.symfony2plugin.phpUnserializer.PhpStringKey
