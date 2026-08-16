@@ -24,6 +24,20 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2026.2.311
+* Add fallback collector consumer / renderer for unspecialized profiler mcp (Daniel Espendiller)
+* Add Symfony events profiler detail MCP tool (Daniel Espendiller)
+* Add Symfony logger profiler detail MCP tool (Daniel Espendiller)
+* Add Symfony Twig profiler detail MCP tool (Daniel Espendiller)
+* Add Symfony time profiler detail MCP tool (Daniel Espendiller)
+* Add Symfony request profiler detail mcp tool (Daniel Espendiller)
+* Add Symfony profiler database unserialize with mcp provider (Daniel Espendiller)
+* Add kotlin PHP unserialize package namespace (Daniel Espendiller)
+* Fix self-suppression when parsing service XML (Daniel Espendiller)
+* fix "Symfony: Yaml Argument" inspection to not start on write thread (Daniel Espendiller)
+* migrate Inspection tool 'YamlUnquotedColon' psi target scope (Daniel Espendiller)
+* fix cache issue: "Invalid PSI Element: class com.jetbrains.twig.elements.TwigCompositeElement #Twig because: parent is null" (Daniel Espendiller)
+
 ## 2026.2.310
 * Upgrade to 2026.2 version api (Daniel Espendiller)
 
