@@ -1,36 +1,36 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.dic.inspection;
+package fr.adrienbrault.idea.symfony2plugin.tests.dic.inspection
 
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see fr.adrienbrault.idea.symfony2plugin.dic.inspection.ContainerConstantInspection
  */
-public class ContainerConstantInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
-    public void setUp() throws Exception {
-        super.setUp();
-        myFixture.copyFileToProject("classes.php");
+class ContainerConstantInspectionTest : SymfonyLightCodeInsightFixtureTestCase() {
+    override fun setUp() {
+        super.setUp()
+        myFixture.copyFileToProject("classes.php")
     }
 
-    public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic/inspection/fixtures";
+    override fun getTestDataPath(): String {
+        return "src/test/kotlin/fr/adrienbrault/idea/symfony2plugin/tests/dic/inspection/fixtures"
     }
 
-    public void testConstantInspectionForYamlFiles() {
+    fun testConstantInspectionForYamlFiles() {
         assertLocalInspectionContains(
             "foo.yml",
             "bar: !php/const:\\Foobar\\Car::FOOB<caret>AR_1",
             "Symfony: constant not found"
-        );
+        )
 
         assertLocalInspectionNotContains(
             "foo.yml",
             "bar: !php/const:\\Foobar\\Car::FOOB<caret>AR",
             "Symfony: constant not found"
-        );
+        )
     }
 
-    public void testConstantInspectionForXmlFiles() {
+    fun testConstantInspectionForXmlFiles() {
         assertLocalInspectionContains("service.xml",
             "<container>\n" +
                 "  <services>\n" +
@@ -40,7 +40,7 @@ public class ContainerConstantInspectionTest extends SymfonyLightCodeInsightFixt
                 "  </services>\n" +
                 "</container>\n",
             "Symfony: constant not found"
-        );
+        )
 
         assertLocalInspectionNotContains("service.xml",
             "<container>\n" +
@@ -51,7 +51,7 @@ public class ContainerConstantInspectionTest extends SymfonyLightCodeInsightFixt
                 "  </services>\n" +
                 "</container>\n",
             "Symfony: constant not found"
-        );
+        )
 
         assertLocalInspectionNotContains("service.xml",
             "<container>\n" +
@@ -62,6 +62,6 @@ public class ContainerConstantInspectionTest extends SymfonyLightCodeInsightFixt
                 "  </services>\n" +
                 "</container>\n",
             "Symfony: constant not found"
-        );
+        )
     }
 }
