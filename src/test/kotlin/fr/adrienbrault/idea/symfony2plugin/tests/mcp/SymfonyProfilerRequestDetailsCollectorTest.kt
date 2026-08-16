@@ -9,6 +9,8 @@ import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerData
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerDatabaseStackFrame
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerRequest
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerRequestSummary
+import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerTime
+import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerTimeEvent
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface
 import fr.adrienbrault.idea.symfony2plugin.profiler.decoder.ProfilerArray
 import fr.adrienbrault.idea.symfony2plugin.profiler.decoder.ProfilerEntry
@@ -236,6 +238,58 @@ class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
         assertFalse("field_201: 201" in secondPage)
     }
 
+    fun testTimeOverviewShowsThreeSlowestEvents() {
+        val text = timeFixtureCollector().collect("fedcba")
+
+        assertTrue("## Collector: time" in text)
+        assertTrue("- Total duration: 132.34 ms" in text)
+        assertTrue("- Initialization time: 12.34 ms" in text)
+        assertTrue("- Stopwatch installed: yes" in text)
+        assertTrue("- Events: 4" in text)
+        assertTrue("### Top 3 events by duration" in text)
+        assertTrue("| Event | Category | Start (ms) | End (ms) | Duration (ms) | Memory (MiB) |" in text)
+        assertTrue("| controller | section | 10.00 | 95.00 | 70.00 | 8.00 |" in text)
+        assertTrue("| view | template | 96.00 | 120.00 | 24.00 | 7.00 |" in text)
+        assertTrue("| response.listener | event_listener | 80.00 | 92.50 | 12.50 | 5.00 |" in text)
+        assertFalse("| kernel.request |" in text)
+        assertFalse("__section__" in text)
+    }
+
+    fun testTimeDetailsShowsAllEventsOrderedByDurationWithoutPagination() {
+        val text = timeFixtureCollector().collect("fedcba", "time", page = 99)
+
+        assertTrue("### Events ordered by duration" in text)
+        assertTrue("| kernel.request | event_listener | 0.00 | 8.75 | 8.75 | 4.00 |" in text)
+        assertTrue(text.indexOf("| controller |") < text.indexOf("| view |"))
+        assertTrue(text.indexOf("| view |") < text.indexOf("| response.listener |"))
+        assertTrue(text.indexOf("| response.listener |") < text.indexOf("| kernel.request |"))
+        assertFalse("Page:" in text)
+    }
+
+    fun testTimeDetailsDoesNotLimitOrPaginateEvents() {
+        val time = SymfonyProfilerTime(
+            durationMs = 75.0,
+            initializationTimeMs = 1.0,
+            stopwatchInstalled = true,
+            events = (1..75).map { index ->
+                SymfonyProfilerTimeEvent(
+                    name = if (index == 75) "event | 75\ncontinued" else "event $index",
+                    category = "section",
+                    startMs = index.toDouble(),
+                    endMs = index + 1.0,
+                    durationMs = index.toDouble(),
+                    memoryBytes = 0,
+                )
+            },
+        )
+
+        val text = timeFixtureCollector().formatTimeDetails(time)
+
+        assertTrue("event \\| 75 continued" in text)
+        assertTrue("| event 1 |" in text)
+        assertFalse("Page:" in text)
+    }
+
     fun testReportsUnavailableRawProfile() {
         try {
             SymfonyProfilerRequestDetailsCollector(TestProfilerIndex(null)).collect("abcdef")
@@ -251,6 +305,10 @@ class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
 
     private fun requestFixtureCollector() = SymfonyProfilerRequestDetailsCollector(
         TestProfilerIndex(resourceFixture("symfony-profiler-request.gz")),
+    )
+
+    private fun timeFixtureCollector() = SymfonyProfilerRequestDetailsCollector(
+        TestProfilerIndex(resourceFixture("symfony-profiler-time.gz")),
     )
 
     private fun resourceFixture(name: String): ByteArray = requireNotNull(
