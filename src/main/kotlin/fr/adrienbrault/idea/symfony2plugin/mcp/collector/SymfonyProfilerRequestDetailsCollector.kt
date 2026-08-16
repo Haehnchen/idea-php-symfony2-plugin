@@ -6,12 +6,16 @@ import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerData
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerDatabaseConsumer
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerDatabaseQueryGroup
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerProfile
+import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerRequest
+import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerRequestConsumer
+import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerRequestSummary
 import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.math.ceil
 
 private const val OVERVIEW_QUERY_GROUP_LIMIT = 3
 private const val DETAIL_PAGE_SIZE = 50
+private const val REQUEST_DETAIL_PAGE_SIZE = 100
 private const val CALL_LIMIT = 5
 private val INTERNAL_CALL_ROOT_NAMESPACES = setOf("doctrine", "symfony")
 private val CONTROL_CHARACTERS = Regex("[\\u0000-\\u001F\\u007F]+")
@@ -22,7 +26,10 @@ private val CONTROL_CHARACTERS = Regex("[\\u0000-\\u001F\\u007F]+")
 class SymfonyProfilerRequestDetailsCollector(
     private val profilerIndex: ProfilerIndexInterface,
 ) {
-    private val renderers: List<ProfilerDetailRenderer> = listOf(DatabaseProfilerDetailRenderer())
+    private val renderers: List<ProfilerDetailRenderer> = listOf(
+        RequestProfilerDetailRenderer(),
+        DatabaseProfilerDetailRenderer(),
+    )
         .sortedByDescending { it.overviewWeight }
 
     /**
@@ -131,6 +138,44 @@ class SymfonyProfilerRequestDetailsCollector(
         }
     }
 
+    /** Renders only stable request metadata in the compact profile overview. */
+    internal fun formatRequestOverview(request: SymfonyProfilerRequest): String = buildString {
+        appendLine("## Collector: request")
+        appendLine()
+        appendLine("- Path: ${request.summary.path.renderOverviewValue()}")
+        appendLine("- Route: ${request.summary.route.renderOverviewValue()}")
+        appendLine("- Content type: ${request.summary.contentType.renderOverviewValue()}")
+    }.trimEnd()
+
+    /** Renders a bounded page of the sanitized generic request value tree. */
+    internal fun formatRequestDetails(request: SymfonyProfilerRequest, page: Int = 1): String {
+        val lines = ProfilerTextRenderer.render(request.data, initialIndent = 2)
+        val totalPages = maxOf(1, ceil(lines.size.toDouble() / REQUEST_DETAIL_PAGE_SIZE).toInt())
+        val currentPage = page.coerceIn(1, totalPages)
+        val pageLines = lines.drop((currentPage - 1) * REQUEST_DETAIL_PAGE_SIZE).take(REQUEST_DETAIL_PAGE_SIZE)
+
+        return buildString {
+            appendLine("Collector: request")
+            appendLine("Page: $currentPage of $totalPages")
+            appendLine()
+            appendLine("Summary")
+            appendLine()
+            appendRequestSummary(request.summary)
+            appendLine()
+            appendLine("Data")
+            appendLine()
+            pageLines.forEach(::appendLine)
+        }.trimEnd()
+    }
+
+    private fun StringBuilder.appendRequestSummary(summary: SymfonyProfilerRequestSummary) {
+        appendLine("Method: ${summary.method.renderRequestSummaryValue()}")
+        appendLine("Path: ${summary.path.renderRequestSummaryValue()}")
+        appendLine("Route: ${summary.route.renderRequestSummaryValue()}")
+        appendLine("Status: ${summary.statusCode?.toString() ?: "none"}")
+        appendLine("Content type: ${summary.contentType.renderRequestSummaryValue()}")
+    }
+
     /** Renders the compact database summary with its top query groups. */
     internal fun formatDatabaseOverview(database: SymfonyProfilerDatabase): String = formatDatabaseSection(
         database,
@@ -200,6 +245,18 @@ class SymfonyProfilerRequestDetailsCollector(
         fun renderDetails(profile: SymfonyProfilerProfile, page: Int): String
     }
 
+    /** Adds sanitized request data while keeping the renderer registry collector-neutral. */
+    private inner class RequestProfilerDetailRenderer : ProfilerDetailRenderer {
+        override val name = "request"
+        override val overviewWeight = 100
+
+        override fun renderOverview(profile: SymfonyProfilerProfile): String =
+            formatRequestOverview(SymfonyProfilerRequestConsumer.read(profile))
+
+        override fun renderDetails(profile: SymfonyProfilerProfile, page: Int): String =
+            formatRequestDetails(SymfonyProfilerRequestConsumer.read(profile), page)
+    }
+
     /** Renders Doctrine data exposed by the profiler's db collector. */
     private inner class DatabaseProfilerDetailRenderer : ProfilerDetailRenderer {
         override val name = "db"
@@ -240,3 +297,9 @@ private fun formatMilliseconds(value: Double): String =
 private fun plainText(value: String): String = value
     .replace(CONTROL_CHARACTERS, " ")
     .replace("|", "\\|")
+
+private fun String?.renderRequestSummaryValue(): String =
+    this?.takeIf { it.isNotEmpty() }?.replace(CONTROL_CHARACTERS, " ") ?: "none"
+
+private fun String?.renderOverviewValue(): String =
+    this?.takeIf { it.isNotEmpty() }?.let(::plainText) ?: "none"

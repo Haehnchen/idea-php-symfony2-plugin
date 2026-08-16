@@ -1,11 +1,19 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.mcp
 
+import fr.adrienbrault.idea.symfony2plugin.phpUnserializer.PhpBytes
+import fr.adrienbrault.idea.symfony2plugin.phpUnserializer.PhpStringKey
 import fr.adrienbrault.idea.symfony2plugin.mcp.collector.SymfonyProfilerRequestDetailsCollector
 import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerIndexInterface
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerDatabase
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerDatabaseQueryGroup
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerDatabaseStackFrame
+import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerRequest
+import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerRequestSummary
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface
+import fr.adrienbrault.idea.symfony2plugin.profiler.decoder.ProfilerArray
+import fr.adrienbrault.idea.symfony2plugin.profiler.decoder.ProfilerEntry
+import fr.adrienbrault.idea.symfony2plugin.profiler.decoder.ProfilerInteger
+import java.nio.charset.StandardCharsets
 
 class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
     fun testHashOnlyReturnsCompactOverview() {
@@ -160,6 +168,74 @@ class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
         }
     }
 
+    fun testRequestSelectorReturnsSanitizedProjectNeutralPlainText() {
+        val text = requestFixtureCollector().collect("abc123", "request")
+
+        assertTrue("URL: http://example.test/login?page=2" in text)
+        assertTrue("Collector: request" in text)
+        assertTrue("Path: /login" in text)
+        assertTrue("Route: app_login" in text)
+        assertTrue("request_query:" in text)
+        assertTrue("api_key: ***REDACTED***" in text)
+        assertTrue("email: user@example.test" in text)
+        assertTrue("feature: neutral-value" in text)
+        assertTrue("\\0ProfilerFixture\\TraceContext\\0secretToken: ***REDACTED***" in text)
+
+        listOf(
+            "query-secret",
+            "request-secret",
+            "authorization-secret",
+            "database-secret",
+            "session-secret",
+            "body-secret",
+            "curl-secret",
+            "object-secret",
+            "future-secret",
+        ).forEach { secret -> assertFalse(secret in text) }
+        val requestDetails = text.substringAfter("Collector: request")
+        assertFalse(requestDetails.lineSequence().any { line ->
+            line.startsWith("#") || line.startsWith("- ") || line.startsWith("|") || line.startsWith("```")
+        })
+        assertFalse(requestDetails.trimStart().startsWith("{"))
+    }
+
+    fun testRequestOverviewAddsOnlyCompactRequestMetadata() {
+        val text = requestFixtureCollector().collect("abc123")
+        val requestOverview = text.substringAfter("## Collector: request")
+
+        assertTrue("- Path: /login" in requestOverview)
+        assertTrue("- Route: app_login" in requestOverview)
+        assertTrue("- Content type: application/json" in requestOverview)
+        assertFalse("request_query" in requestOverview)
+        assertFalse("Summary" in requestOverview)
+        assertFalse("Data" in requestOverview)
+    }
+
+    fun testRequestDetailsPaginatesGenericValueLines() {
+        val request = SymfonyProfilerRequest(
+            data = ProfilerArray(
+                (1..205).map { index ->
+                    ProfilerEntry(
+                        PhpStringKey(PhpBytes("field_$index".toByteArray(StandardCharsets.UTF_8))),
+                        ProfilerInteger(index.toLong()),
+                    )
+                },
+            ),
+            summary = SymfonyProfilerRequestSummary("GET", "/example", "app_example", 200, "text/html"),
+        )
+
+        val firstPage = requestFixtureCollector().formatRequestDetails(request, 1)
+        assertTrue("Page: 1 of 3" in firstPage)
+        assertTrue("field_100: 100" in firstPage)
+        assertFalse("field_101: 101" in firstPage)
+
+        val secondPage = requestFixtureCollector().formatRequestDetails(request, 2)
+        assertTrue("Page: 2 of 3" in secondPage)
+        assertTrue("field_101: 101" in secondPage)
+        assertTrue("field_200: 200" in secondPage)
+        assertFalse("field_201: 201" in secondPage)
+    }
+
     fun testReportsUnavailableRawProfile() {
         try {
             SymfonyProfilerRequestDetailsCollector(TestProfilerIndex(null)).collect("abcdef")
@@ -171,6 +247,10 @@ class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
 
     private fun fixtureCollector() = SymfonyProfilerRequestDetailsCollector(
         TestProfilerIndex(resourceFixture("symfony-profiler-db.gz")),
+    )
+
+    private fun requestFixtureCollector() = SymfonyProfilerRequestDetailsCollector(
+        TestProfilerIndex(resourceFixture("symfony-profiler-request.gz")),
     )
 
     private fun resourceFixture(name: String): ByteArray = requireNotNull(
