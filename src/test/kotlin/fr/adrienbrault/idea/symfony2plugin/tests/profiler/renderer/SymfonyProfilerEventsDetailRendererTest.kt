@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class SymfonyProfilerEventsDetailRendererTest {
-    private val renderer = SymfonyProfilerEventsDetailRenderer()
+    private val renderer = SymfonyProfilerEventsDetailRenderer
 
     @Test
     fun `overview contains counts without listener details`() {
