@@ -134,6 +134,13 @@ namespace Symfony\Component\HttpKernel\Attribute
     }
 }
 
+namespace Symfony\Component\HttpKernel\Bundle
+{
+    interface BundleInterface
+    {
+    }
+}
+
 namespace Symfony\Component\HttpFoundation
 {
     class Request
@@ -195,4 +202,3 @@ namespace Twig\Attribute {
         ) {}
     }
 }
-

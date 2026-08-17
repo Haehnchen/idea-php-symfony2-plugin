@@ -11,7 +11,6 @@ import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
-import fr.adrienbrault.idea.symfony2plugin.intentions.php.XmlServiceArgumentIntention;
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import org.jetbrains.annotations.NotNull;
@@ -39,7 +38,7 @@ public class ServiceArgumentGenerateAction extends CodeInsightAction {
             return null;
         }
 
-        return XmlServiceArgumentIntention.getServiceTagValid(psiElement);
+        return ServiceActionUtil.getServiceTagValid(psiElement);
     }
 
     @Override

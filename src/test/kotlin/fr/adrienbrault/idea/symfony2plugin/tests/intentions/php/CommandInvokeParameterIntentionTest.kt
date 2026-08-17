@@ -1,30 +1,27 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.intentions.php;
+package fr.adrienbrault.idea.symfony2plugin.tests.intentions.php
 
-import com.intellij.psi.util.PsiTreeUtil;
-import com.jetbrains.php.lang.PhpFileType;
-import com.jetbrains.php.lang.psi.elements.Method;
-import com.jetbrains.php.lang.psi.elements.PhpClass;
-import fr.adrienbrault.idea.symfony2plugin.intentions.php.CommandInvokeParameterIntention;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
-
-import java.util.List;
+import com.intellij.psi.util.PsiTreeUtil
+import com.jetbrains.php.lang.PhpFileType
+import com.jetbrains.php.lang.psi.elements.PhpClass
+import fr.adrienbrault.idea.symfony2plugin.intentions.php.CommandInvokeParameterIntention
+import fr.adrienbrault.idea.symfony2plugin.intentions.php.getAvailableCommandParameterFqns
+import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see CommandInvokeParameterIntention
  */
-public class CommandInvokeParameterIntentionTest extends SymfonyLightCodeInsightFixtureTestCase {
-
-    public void setUp() throws Exception {
-        super.setUp();
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("classes.php"));
+class CommandInvokeParameterIntentionTest : SymfonyLightCodeInsightFixtureTestCase() {
+    override fun setUp() {
+        super.setUp()
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("classes.php"))
     }
 
-    public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/intentions/php/fixtures";
+    override fun getTestDataPath(): String {
+        return "src/test/kotlin/fr/adrienbrault/idea/symfony2plugin/tests/intentions/php/fixtures"
     }
 
-    public void testIntentionIsAvailableForInvokableCommand() {
+    fun testIntentionIsAvailableForInvokableCommand() {
         assertIntentionIsAvailable(
             PhpFileType.INSTANCE,
             "<?php\n" +
@@ -40,10 +37,10 @@ public class CommandInvokeParameterIntentionTest extends SymfonyLightCodeInsight
                 "    }\n" +
                 "}\n",
             "Symfony: Add parameter to __invoke"
-        );
+        )
     }
 
-    public void testIntentionIsNotAvailableWithoutInvokeMethod() {
+    fun testIntentionIsNotAvailableWithoutInvokeMethod() {
         myFixture.configureByText(
             PhpFileType.INSTANCE,
             "<?php\n" +
@@ -58,16 +55,15 @@ public class CommandInvokeParameterIntentionTest extends SymfonyLightCodeInsight
                 "        return 0;\n" +
                 "    }\n" +
                 "}\n"
-        );
+        )
 
         assertFalse(
             myFixture.filterAvailableIntentions("Symfony: Add parameter to __invoke")
-                .stream()
-                .anyMatch(action -> action.getText().equals("Symfony: Add parameter to __invoke"))
-        );
+                .any { action -> action.text == "Symfony: Add parameter to __invoke" }
+        )
     }
 
-    public void testIntentionIsNotAvailableForClassExtendingCommand() {
+    fun testIntentionIsNotAvailableForClassExtendingCommand() {
         myFixture.configureByText(
             PhpFileType.INSTANCE,
             "<?php\n" +
@@ -81,16 +77,15 @@ public class CommandInvokeParameterIntentionTest extends SymfonyLightCodeInsight
                 "        return 0;\n" +
                 "    }\n" +
                 "}\n"
-        );
+        )
 
         assertFalse(
             myFixture.filterAvailableIntentions("Symfony: Add parameter to __invoke")
-                .stream()
-                .anyMatch(action -> action.getText().equals("Symfony: Add parameter to __invoke"))
-        );
+                .any { action -> action.text == "Symfony: Add parameter to __invoke" }
+        )
     }
 
-    public void testIntentionIsNotAvailableWithoutAsCommandAttribute() {
+    fun testIntentionIsNotAvailableWithoutAsCommandAttribute() {
         myFixture.configureByText(
             PhpFileType.INSTANCE,
             "<?php\n" +
@@ -103,16 +98,15 @@ public class CommandInvokeParameterIntentionTest extends SymfonyLightCodeInsight
                 "        return 0;\n" +
                 "    }\n" +
                 "}\n"
-        );
+        )
 
         assertFalse(
             myFixture.filterAvailableIntentions("Symfony: Add parameter to __invoke")
-                .stream()
-                .anyMatch(action -> action.getText().equals("Symfony: Add parameter to __invoke"))
-        );
+                .any { action -> action.text == "Symfony: Add parameter to __invoke" }
+        )
     }
 
-    public void testIntentionIsNotAvailableWhenAllParametersExist() {
+    fun testIntentionIsNotAvailableWhenAllParametersExist() {
         myFixture.configureByText(
             PhpFileType.INSTANCE,
             "<?php\n" +
@@ -128,25 +122,24 @@ public class CommandInvokeParameterIntentionTest extends SymfonyLightCodeInsight
                 "class <caret>TestCommand\n" +
                 "{\n" +
                 "    public function __invoke(\n" +
-                "        InputInterface $input,\n" +
-                "        OutputInterface $output,\n" +
-                "        Cursor $cursor,\n" +
-                "        SymfonyStyle $io,\n" +
-                "        Application $application\n" +
+                "        InputInterface \$input,\n" +
+                "        OutputInterface \$output,\n" +
+                "        Cursor \$cursor,\n" +
+                "        SymfonyStyle \$io,\n" +
+                "        Application \$application\n" +
                 "    ): int {\n" +
                 "        return 0;\n" +
                 "    }\n" +
                 "}\n"
-        );
+        )
 
         assertFalse(
             myFixture.filterAvailableIntentions("Symfony: Add parameter to __invoke")
-                .stream()
-                .anyMatch(action -> action.getText().equals("Symfony: Add parameter to __invoke"))
-        );
+                .any { action -> action.text == "Symfony: Add parameter to __invoke" }
+        )
     }
 
-    public void testGetAvailableParameterFqnsReturnsAllWhenEmpty() {
+    fun testGetAvailableParameterFqnsReturnsAllWhenEmpty() {
         myFixture.configureByText(
             PhpFileType.INSTANCE,
             "<?php\n" +
@@ -159,25 +152,25 @@ public class CommandInvokeParameterIntentionTest extends SymfonyLightCodeInsight
                 "        return 0;\n" +
                 "    }\n" +
                 "}\n"
-        );
+        )
 
-        PhpClass phpClass = PsiTreeUtil.findChildOfType(myFixture.getFile(), PhpClass.class);
-        assertNotNull(phpClass);
+        val phpClass = PsiTreeUtil.findChildOfType(myFixture.file, PhpClass::class.java)
+        assertNotNull(phpClass)
 
-        Method invokeMethod = phpClass.findOwnMethodByName("__invoke");
-        assertNotNull(invokeMethod);
+        val invokeMethod = phpClass!!.findOwnMethodByName("__invoke")
+        assertNotNull(invokeMethod)
 
-        List<String> availableParams = CommandInvokeParameterIntention.getAvailableParameterFqns(invokeMethod);
+        val availableParams = getAvailableCommandParameterFqns(invokeMethod!!)
 
-        assertEquals(5, availableParams.size());
-        assertTrue(availableParams.contains("Symfony\\Component\\Console\\Input\\InputInterface"));
-        assertTrue(availableParams.contains("Symfony\\Component\\Console\\Output\\OutputInterface"));
-        assertTrue(availableParams.contains("Symfony\\Component\\Console\\Cursor"));
-        assertTrue(availableParams.contains("Symfony\\Component\\Console\\Style\\SymfonyStyle"));
-        assertTrue(availableParams.contains("Symfony\\Component\\Console\\Application"));
+        assertEquals(5, availableParams.size)
+        assertTrue(availableParams.contains("Symfony\\Component\\Console\\Input\\InputInterface"))
+        assertTrue(availableParams.contains("Symfony\\Component\\Console\\Output\\OutputInterface"))
+        assertTrue(availableParams.contains("Symfony\\Component\\Console\\Cursor"))
+        assertTrue(availableParams.contains("Symfony\\Component\\Console\\Style\\SymfonyStyle"))
+        assertTrue(availableParams.contains("Symfony\\Component\\Console\\Application"))
     }
 
-    public void testGetAvailableParameterFqnsFiltersExisting() {
+    fun testGetAvailableParameterFqnsFiltersExisting() {
         myFixture.configureByText(
             PhpFileType.INSTANCE,
             "<?php\n" +
@@ -186,26 +179,26 @@ public class CommandInvokeParameterIntentionTest extends SymfonyLightCodeInsight
                 "\n" +
                 "class TestCommand\n" +
                 "{\n" +
-                "    public function __invoke(SymfonyStyle $io): int\n" +
+                "    public function __invoke(SymfonyStyle \$io): int\n" +
                 "    {\n" +
                 "        return 0;\n" +
                 "    }\n" +
                 "}\n"
-        );
+        )
 
-        PhpClass phpClass = PsiTreeUtil.findChildOfType(myFixture.getFile(), PhpClass.class);
-        assertNotNull(phpClass);
+        val phpClass = PsiTreeUtil.findChildOfType(myFixture.file, PhpClass::class.java)
+        assertNotNull(phpClass)
 
-        Method invokeMethod = phpClass.findOwnMethodByName("__invoke");
-        assertNotNull(invokeMethod);
+        val invokeMethod = phpClass!!.findOwnMethodByName("__invoke")
+        assertNotNull(invokeMethod)
 
-        List<String> availableParams = CommandInvokeParameterIntention.getAvailableParameterFqns(invokeMethod);
+        val availableParams = getAvailableCommandParameterFqns(invokeMethod!!)
 
-        assertEquals(4, availableParams.size());
-        assertFalse(availableParams.contains("Symfony\\Component\\Console\\Style\\SymfonyStyle"));
-        assertTrue(availableParams.contains("Symfony\\Component\\Console\\Input\\InputInterface"));
-        assertTrue(availableParams.contains("Symfony\\Component\\Console\\Output\\OutputInterface"));
-        assertTrue(availableParams.contains("Symfony\\Component\\Console\\Cursor"));
-        assertTrue(availableParams.contains("Symfony\\Component\\Console\\Application"));
+        assertEquals(4, availableParams.size)
+        assertFalse(availableParams.contains("Symfony\\Component\\Console\\Style\\SymfonyStyle"))
+        assertTrue(availableParams.contains("Symfony\\Component\\Console\\Input\\InputInterface"))
+        assertTrue(availableParams.contains("Symfony\\Component\\Console\\Output\\OutputInterface"))
+        assertTrue(availableParams.contains("Symfony\\Component\\Console\\Cursor"))
+        assertTrue(availableParams.contains("Symfony\\Component\\Console\\Application"))
     }
 }

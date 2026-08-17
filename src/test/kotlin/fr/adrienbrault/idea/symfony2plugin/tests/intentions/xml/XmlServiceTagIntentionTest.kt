@@ -1,0 +1,28 @@
+package fr.adrienbrault.idea.symfony2plugin.tests.intentions.xml
+
+import com.intellij.ide.highlighter.XmlFileType
+import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
+
+/**
+ * @author Daniel Espendiller <daniel@espendiller.net>
+ *
+ * @see fr.adrienbrault.idea.symfony2plugin.intentions.xml.XmlServiceTagIntention
+ */
+class XmlServiceTagIntentionTest : SymfonyLightCodeInsightFixtureTestCase() {
+    override fun setUp() {
+        super.setUp()
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("classes.php"))
+    }
+
+    override fun getTestDataPath(): String {
+        return "src/test/kotlin/fr/adrienbrault/idea/symfony2plugin/tests/intentions/xml/fixtures"
+    }
+
+    fun testTagIntentionIsAvailable() {
+        assertIntentionIsAvailable(
+            XmlFileType.INSTANCE,
+            "<service><argument>%foo_parame<caret>ter_class%</argument></service>",
+            "Symfony: Add Tags"
+        )
+    }
+}
