@@ -1,24 +1,23 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.intentions.php;
+package fr.adrienbrault.idea.symfony2plugin.tests.intentions.php
 
-import com.jetbrains.php.lang.PhpFileType;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import com.jetbrains.php.lang.PhpFileType
+import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see fr.adrienbrault.idea.symfony2plugin.intentions.php.AddRouteAttributeIntention
  */
-public class AddRouteAttributeIntentionTest extends SymfonyLightCodeInsightFixtureTestCase {
-
-    public void setUp() throws Exception {
-        super.setUp();
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("classes.php"));
+class AddRouteAttributeIntentionTest : SymfonyLightCodeInsightFixtureTestCase() {
+    override fun setUp() {
+        super.setUp()
+        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("classes.php"))
     }
 
-    public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/intentions/php/fixtures";
+    override fun getTestDataPath(): String {
+        return "src/test/kotlin/fr/adrienbrault/idea/symfony2plugin/tests/intentions/php/fixtures"
     }
 
-    public void testIntentionIsAvailableForControllerExtendingAbstractController() {
+    fun testIntentionIsAvailableForControllerExtendingAbstractController() {
         assertIntentionIsAvailable(
             PhpFileType.INSTANCE,
             "<?php\n" +
@@ -32,10 +31,10 @@ public class AddRouteAttributeIntentionTest extends SymfonyLightCodeInsightFixtu
                 "    }\n" +
                 "}\n",
             "Symfony: Add Route attribute"
-        );
+        )
     }
 
-    public void testIntentionIsAvailableForControllerWithAsControllerAttribute() {
+    fun testIntentionIsAvailableForControllerWithAsControllerAttribute() {
         assertIntentionIsAvailable(
             PhpFileType.INSTANCE,
             "<?php\n" +
@@ -50,10 +49,10 @@ public class AddRouteAttributeIntentionTest extends SymfonyLightCodeInsightFixtu
                 "    }\n" +
                 "}\n",
             "Symfony: Add Route attribute"
-        );
+        )
     }
 
-    public void testIntentionIsAvailableForControllerWithRouteOnAnotherMethod() {
+    fun testIntentionIsAvailableForControllerWithRouteOnAnotherMethod() {
         assertIntentionIsAvailable(
             PhpFileType.INSTANCE,
             "<?php\n" +
@@ -72,10 +71,10 @@ public class AddRouteAttributeIntentionTest extends SymfonyLightCodeInsightFixtu
                 "    }\n" +
                 "}\n",
             "Symfony: Add Route attribute"
-        );
+        )
     }
 
-    public void testIntentionIsAvailableForControllerWithRouteOnClass() {
+    fun testIntentionIsAvailableForControllerWithRouteOnClass() {
         assertIntentionIsAvailable(
             PhpFileType.INSTANCE,
             "<?php\n" +
@@ -90,10 +89,10 @@ public class AddRouteAttributeIntentionTest extends SymfonyLightCodeInsightFixtu
                 "    }\n" +
                 "}\n",
             "Symfony: Add Route attribute"
-        );
+        )
     }
 
-    public void testIntentionNotAvailableForMethodAlreadyHavingRoute() {
+    fun testIntentionNotAvailableForMethodAlreadyHavingRoute() {
         myFixture.configureByText(
             PhpFileType.INSTANCE,
             "<?php\n" +
@@ -108,16 +107,15 @@ public class AddRouteAttributeIntentionTest extends SymfonyLightCodeInsightFixtu
                 "    {\n" +
                 "    }\n" +
                 "}\n"
-        );
+        )
 
         assertFalse(
             myFixture.filterAvailableIntentions("Symfony: Add Route attribute")
-                .stream()
-                .anyMatch(action -> action.getText().equals("Symfony: Add Route attribute"))
-        );
+                .any { action -> action.text == "Symfony: Add Route attribute" }
+        )
     }
 
-    public void testIntentionNotAvailableForPrivateMethod() {
+    fun testIntentionNotAvailableForPrivateMethod() {
         myFixture.configureByText(
             PhpFileType.INSTANCE,
             "<?php\n" +
@@ -130,16 +128,15 @@ public class AddRouteAttributeIntentionTest extends SymfonyLightCodeInsightFixtu
                 "    {\n" +
                 "    }\n" +
                 "}\n"
-        );
+        )
 
         assertFalse(
             myFixture.filterAvailableIntentions("Symfony: Add Route attribute")
-                .stream()
-                .anyMatch(action -> action.getText().equals("Symfony: Add Route attribute"))
-        );
+                .any { action -> action.text == "Symfony: Add Route attribute" }
+        )
     }
 
-    public void testIntentionNotAvailableForStaticMethod() {
+    fun testIntentionNotAvailableForStaticMethod() {
         myFixture.configureByText(
             PhpFileType.INSTANCE,
             "<?php\n" +
@@ -152,16 +149,15 @@ public class AddRouteAttributeIntentionTest extends SymfonyLightCodeInsightFixtu
                 "    {\n" +
                 "    }\n" +
                 "}\n"
-        );
+        )
 
         assertFalse(
             myFixture.filterAvailableIntentions("Symfony: Add Route attribute")
-                .stream()
-                .anyMatch(action -> action.getText().equals("Symfony: Add Route attribute"))
-        );
+                .any { action -> action.text == "Symfony: Add Route attribute" }
+        )
     }
 
-    public void testIntentionNotAvailableForNonControllerClass() {
+    fun testIntentionNotAvailableForNonControllerClass() {
         myFixture.configureByText(
             PhpFileType.INSTANCE,
             "<?php\n" +
@@ -173,16 +169,15 @@ public class AddRouteAttributeIntentionTest extends SymfonyLightCodeInsightFixtu
                 "    {\n" +
                 "    }\n" +
                 "}\n"
-        );
+        )
 
         assertFalse(
             myFixture.filterAvailableIntentions("Symfony: Add Route attribute")
-                .stream()
-                .anyMatch(action -> action.getText().equals("Symfony: Add Route attribute"))
-        );
+                .any { action -> action.text == "Symfony: Add Route attribute" }
+        )
     }
 
-    public void testIntentionAddsRouteAttributeWithPathAndName() {
+    fun testIntentionAddsRouteAttributeWithPathAndName() {
         myFixture.configureByText(
             PhpFileType.INSTANCE,
             "<?php\n" +
@@ -195,18 +190,18 @@ public class AddRouteAttributeIntentionTest extends SymfonyLightCodeInsightFixtu
                 "    {\n" +
                 "    }\n" +
                 "}\n"
-        );
+        )
 
-        var intention = myFixture.findSingleIntention("Symfony: Add Route attribute");
-        myFixture.launchAction(intention);
+        val intention = myFixture.findSingleIntention("Symfony: Add Route attribute")
+        myFixture.launchAction(intention)
 
-        String result = myFixture.getFile().getText();
+        val result = myFixture.file.text
 
-        assertTrue("Should have Route attribute with path", result.contains("#[Route('/test'"));
-        assertTrue("Should have generated route name", result.contains("name: 'app_test_index'"));
+        assertTrue("Should have Route attribute with path", result.contains("#[Route('/test'"))
+        assertTrue("Should have generated route name", result.contains("name: 'app_test_index'"))
     }
 
-    public void testIntentionAddsRouteAttributeWithMethodNameInPath() {
+    fun testIntentionAddsRouteAttributeWithMethodNameInPath() {
         myFixture.configureByText(
             PhpFileType.INSTANCE,
             "<?php\n" +
@@ -219,18 +214,18 @@ public class AddRouteAttributeIntentionTest extends SymfonyLightCodeInsightFixtu
                 "    {\n" +
                 "    }\n" +
                 "}\n"
-        );
+        )
 
-        var intention = myFixture.findSingleIntention("Symfony: Add Route attribute");
-        myFixture.launchAction(intention);
+        val intention = myFixture.findSingleIntention("Symfony: Add Route attribute")
+        myFixture.launchAction(intention)
 
-        String result = myFixture.getFile().getText();
+        val result = myFixture.file.text
 
-        assertTrue("Should have Route attribute with path including method name", result.contains("#[Route('/product/show'"));
-        assertTrue("Should have generated route name", result.contains("name: 'app_product_show'"));
+        assertTrue("Should have Route attribute with path including method name", result.contains("#[Route('/product/show'"))
+        assertTrue("Should have generated route name", result.contains("name: 'app_product_show'"))
     }
 
-    public void testIntentionAddsRouteAttributeWithNestedNamespace() {
+    fun testIntentionAddsRouteAttributeWithNestedNamespace() {
         myFixture.configureByText(
             PhpFileType.INSTANCE,
             "<?php\n" +
@@ -243,14 +238,14 @@ public class AddRouteAttributeIntentionTest extends SymfonyLightCodeInsightFixtu
                 "    {\n" +
                 "    }\n" +
                 "}\n"
-        );
+        )
 
-        var intention = myFixture.findSingleIntention("Symfony: Add Route attribute");
-        myFixture.launchAction(intention);
+        val intention = myFixture.findSingleIntention("Symfony: Add Route attribute")
+        myFixture.launchAction(intention)
 
-        String result = myFixture.getFile().getText();
+        val result = myFixture.file.text
 
-        assertTrue("Should have Route attribute with nested path", result.contains("#[Route('/admin/user/edit'"));
-        assertTrue("Should have generated route name", result.contains("name: 'app_admin_user_edit'"));
+        assertTrue("Should have Route attribute with nested path", result.contains("#[Route('/admin/user/edit'"))
+        assertTrue("Should have generated route name", result.contains("name: 'app_admin_user_edit'"))
     }
 }

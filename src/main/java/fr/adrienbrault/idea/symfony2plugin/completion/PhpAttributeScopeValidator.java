@@ -8,7 +8,6 @@ import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
-import fr.adrienbrault.idea.symfony2plugin.intentions.php.AddRouteAttributeIntention;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.UxTemplateStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.util.IndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -38,6 +37,43 @@ public class PhpAttributeScopeValidator {
     private static final String COMMAND_CLASS_FQN = "\\Symfony\\Component\\Console\\Command\\Command";
     private static final String INPUT_INTERFACE_FQN = "\\Symfony\\Component\\Console\\Input\\InputInterface";
     private static final String OUTPUT_INTERFACE_FQN = "\\Symfony\\Component\\Console\\Output\\OutputInterface";
+    private static final String ROUTE_ATTRIBUTE_CLASS = "\\Symfony\\Component\\Routing\\Attribute\\Route";
+    private static final String ABSTRACT_CONTROLLER_CLASS = "\\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController";
+    private static final String AS_CONTROLLER_ATTRIBUTE = "\\Symfony\\Component\\HttpKernel\\Attribute\\AsController";
+
+    public static boolean isControllerClass(@NotNull PhpClass phpClass) {
+        if (DumbService.isDumb(phpClass.getProject())) {
+            return false;
+        }
+
+        if (phpClass.getName().endsWith("Controller")) {
+            return true;
+        }
+
+        if (!phpClass.getAttributes(AS_CONTROLLER_ATTRIBUTE).isEmpty()) {
+            return true;
+        }
+
+        if (!phpClass.getAttributes(ROUTE_ATTRIBUTE_CLASS).isEmpty()) {
+            return true;
+        }
+
+        if (PhpElementsUtil.isInstanceOf(phpClass, ABSTRACT_CONTROLLER_CLASS)) {
+            return true;
+        }
+
+        for (Method ownMethod : phpClass.getOwnMethods()) {
+            if (!ownMethod.getAccess().isPublic() || ownMethod.isStatic()) {
+                continue;
+            }
+
+            if (!ownMethod.getAttributes(ROUTE_ATTRIBUTE_CLASS).isEmpty()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     /**
      * Get next element PHP attribute context.
@@ -81,7 +117,7 @@ public class PhpAttributeScopeValidator {
             PhpClass containingClass = method.getContainingClass();
             if (containingClass != null) {
                 // Method-level completions for controller methods
-                if (method.getAccess().isPublic() && AddRouteAttributeIntention.isControllerClass(containingClass)) {
+                if (method.getAccess().isPublic() && isControllerClass(containingClass)) {
                     return true;
                 }
 
@@ -126,7 +162,7 @@ public class PhpAttributeScopeValidator {
         PhpClass phpClass = getPhpClass(element);
         if (phpClass != null) {
             // Class-level completions for controller classes
-            if (AddRouteAttributeIntention.isControllerClass(phpClass)) {
+            if (isControllerClass(phpClass)) {
                 return true;
             }
 

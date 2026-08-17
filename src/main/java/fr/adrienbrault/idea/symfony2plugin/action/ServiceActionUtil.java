@@ -237,6 +237,25 @@ public class ServiceActionUtil {
     }
 
     @Nullable
+    public static XmlTag getServiceTagValid(@NotNull PsiElement psiElement) {
+        XmlTag xmlTag = PsiTreeUtil.getParentOfType(psiElement, XmlTag.class);
+        if (xmlTag == null) {
+            return null;
+        }
+
+        if ("service".equals(xmlTag.getName())) {
+            return xmlTag;
+        }
+
+        xmlTag = PsiTreeUtil.getParentOfType(xmlTag, XmlTag.class);
+        if (xmlTag != null && "service".equals(xmlTag.getName())) {
+            return xmlTag;
+        }
+
+        return null;
+    }
+
+    @Nullable
     public static PhpClass getPhpClassFromXmlTag(@NotNull XmlTag xmlTag, @NotNull ContainerCollectionResolver.LazyServiceCollector collector) {
         String className = xmlTag.getAttributeValue("class");
         if(className == null) {

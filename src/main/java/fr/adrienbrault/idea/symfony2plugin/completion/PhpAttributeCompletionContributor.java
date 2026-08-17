@@ -17,7 +17,6 @@ import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.intentions.php.AddRouteAttributeIntention;
 import fr.adrienbrault.idea.symfony2plugin.util.CodeUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -115,7 +114,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                 // Method-level attribute completions
                 PhpClass containingClass = method.getContainingClass();
                 if (containingClass != null) {
-                    if (method.getAccess().isPublic() && AddRouteAttributeIntention.isControllerClass(containingClass)) {
+                    if (method.getAccess().isPublic() && PhpAttributeScopeValidator.isControllerClass(containingClass)) {
                         lookupElements.addAll(getControllerMethodCompletions(project));
                     }
 
@@ -149,7 +148,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                 }
             } else if (validAttributeScope instanceof PhpClass phpClass) {
                 // Class-level attribute completions
-                if (AddRouteAttributeIntention.isControllerClass(phpClass)) {
+                if (PhpAttributeScopeValidator.isControllerClass(phpClass)) {
                     lookupElements.addAll(getControllerClassCompletions(project));
                 }
 
