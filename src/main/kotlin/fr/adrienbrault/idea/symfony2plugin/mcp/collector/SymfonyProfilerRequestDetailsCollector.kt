@@ -35,13 +35,12 @@ class SymfonyProfilerRequestDetailsCollector(
             mcpFail("Unable to parse profiler request '$normalizedHash': ${exception.message}")
         }
 
-        val selectedCollector = requestedCollector
-        if (selectedCollector != null && selectedCollector !in profile.collectorNames) {
-            mcpFail("Profiler request '$normalizedHash' does not contain the '$selectedCollector' collector.")
+        if (requestedCollector != null && requestedCollector !in profile.collectorNames) {
+            mcpFail("Profiler request '$normalizedHash' does not contain the '$requestedCollector' collector.")
         }
 
         return try {
-            SymfonyProfilerRequestDetailsRenderer.render(profile, normalizedHash, selectedCollector, page)
+            SymfonyProfilerRequestDetailsRenderer.render(profile, normalizedHash, requestedCollector, page)
         } catch (exception: ProfilerRendererException) {
             mcpFail(
                 "Unable to read the '${exception.collectorName}' collector for '$normalizedHash': " +

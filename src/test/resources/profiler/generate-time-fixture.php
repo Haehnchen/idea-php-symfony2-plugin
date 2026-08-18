@@ -36,9 +36,18 @@ namespace Symfony\Component\HttpKernel\DataCollector {
         {
         }
     }
+
+    final class MemoryDataCollector
+    {
+        /** @param array<string, int> $data */
+        public function __construct(protected array $data)
+        {
+        }
+    }
 }
 
 namespace {
+    use Symfony\Component\HttpKernel\DataCollector\MemoryDataCollector;
     use Symfony\Component\HttpKernel\DataCollector\TimeDataCollector;
     use Symfony\Component\Stopwatch\StopwatchEvent;
     use Symfony\Component\Stopwatch\StopwatchPeriod;
@@ -81,19 +90,38 @@ namespace {
             'event_listener',
             name: 'response.listener',
         ),
+        'at.threshold' => new StopwatchEvent(
+            [new StopwatchPeriod(9.0, 10.0, 4 * 1024 * 1024)],
+            $eventOrigin,
+            'event_listener',
+            name: 'at.threshold',
+        ),
+        'below.threshold' => new StopwatchEvent(
+            [new StopwatchPeriod(8.751, 9.75, 4 * 1024 * 1024)],
+            $eventOrigin,
+            'event_listener',
+            name: 'below.threshold',
+        ),
     ];
 
-    $collector = new TimeDataCollector([
+    $timeCollector = new TimeDataCollector([
         'start_time' => $startTime,
         'events' => $events,
         'stopwatch_installed' => true,
+    ]);
+    $memoryCollector = new MemoryDataCollector([
+        'memory' => 6 * 1024 * 1024,
+        'memory_limit' => 128 * 1024 * 1024,
     ]);
 
     $profile = [
         'token' => 'fedcba',
         'parent' => null,
         'children' => [],
-        'data' => ['time' => $collector],
+        'data' => [
+            'time' => $timeCollector,
+            'memory' => $memoryCollector,
+        ],
         'ip' => '127.0.0.1',
         'method' => 'GET',
         'url' => 'http://example.test/performance',
@@ -103,7 +131,7 @@ namespace {
 
     $serialized = serialize($profile);
     $roundTrip = unserialize($serialized, ['allowed_classes' => true]);
-    if (!is_array($roundTrip) || !isset($roundTrip['data']['time'])) {
+    if (!is_array($roundTrip) || !isset($roundTrip['data']['time'], $roundTrip['data']['memory'])) {
         throw new RuntimeException('PHP rejected the generated profiler fixture');
     }
 

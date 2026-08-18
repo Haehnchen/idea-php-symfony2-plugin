@@ -12,10 +12,12 @@ import fr.adrienbrault.idea.symfony2plugin.phpUnserializer.utf8StringOrNull
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-/** Reads the Symfony time collector and orders its visible events by descending duration. */
+/** Reads Symfony time and memory metrics and orders visible events by descending duration. */
 object SymfonyProfilerTimeConsumer {
     private const val TIME_COLLECTOR =
         "Symfony\\Component\\HttpKernel\\DataCollector\\TimeDataCollector"
+    private const val MEMORY_COLLECTOR =
+        "Symfony\\Component\\HttpKernel\\DataCollector\\MemoryDataCollector"
     private const val STOPWATCH_EVENT = "Symfony\\Component\\Stopwatch\\StopwatchEvent"
     private const val STOPWATCH_PERIOD = "Symfony\\Component\\Stopwatch\\StopwatchPeriod"
     private const val SECTION_EVENT = "__section__"
@@ -44,6 +46,7 @@ object SymfonyProfilerTimeConsumer {
                 section?.let { it.originMs + it.rawDurationMs - startTime } ?: 0.0,
             ),
             initializationTimeMs = roundToTwoDecimals(section?.let { it.originMs - startTime } ?: 0.0),
+            memory = readMemory(profile),
             stopwatchInstalled = (data["stopwatch_installed"].resolve(profile.result) as? PhpBoolean)?.value
                 ?: parsedEvents.isNotEmpty(),
             events = parsedEvents
@@ -53,6 +56,23 @@ object SymfonyProfilerTimeConsumer {
                 .sortedByDescending { it.durationMs }
                 .toList(),
         )
+    }
+
+    private fun readMemory(profile: SymfonyProfilerProfile): SymfonyProfilerMemory? {
+        val collector = profile.collector("memory") ?: return null
+        check(collector.className.utf8StringOrNull() == MEMORY_COLLECTOR) {
+            "Symfony memory collector has an unsupported class"
+        }
+
+        val data = collector["data"].resolve(profile.result) as? PhpArray
+            ?: error("Symfony memory collector does not contain its data array")
+
+        val peakBytes = data["memory"].resolve(profile.result).byteCountOrNull()?.coerceAtLeast(0)
+            ?: error("Symfony memory collector does not contain its peak usage")
+        val limitBytes = data["memory_limit"].resolve(profile.result).byteCountOrNull()
+            ?: error("Symfony memory collector does not contain its PHP memory limit")
+
+        return SymfonyProfilerMemory(peakBytes, limitBytes)
     }
 
     private fun readEvent(
@@ -90,7 +110,7 @@ object SymfonyProfilerTimeConsumer {
                 category = category,
                 startMs = periods.firstOrNull()?.startMs ?: 0.0,
                 endMs = periods.lastOrNull()?.endMs ?: 0.0,
-                durationMs = roundToTwoDecimals(rawDuration),
+                durationMs = rawDuration,
                 memoryBytes = periods.maxOfOrNull { it.memoryBytes } ?: 0,
             ),
             originMs = event["origin"].resolve(result).finiteNumberOrZero("event origin"),
@@ -106,6 +126,12 @@ object SymfonyProfilerTimeConsumer {
         }
         check(value.isFinite()) { "Symfony time collector contains a non-finite $field" }
         return value
+    }
+
+    private fun PhpValue?.byteCountOrNull(): Long? = when (this) {
+        is PhpInteger -> value
+        is PhpFloat -> value.takeIf { it.isFinite() }?.toLong()
+        else -> null
     }
 
     private fun roundToTwoDecimals(value: Double): Double =
@@ -127,8 +153,14 @@ object SymfonyProfilerTimeConsumer {
 data class SymfonyProfilerTime(
     val durationMs: Double,
     val initializationTimeMs: Double,
+    val memory: SymfonyProfilerMemory?,
     val stopwatchInstalled: Boolean,
     val events: List<SymfonyProfilerTimeEvent>,
+)
+
+data class SymfonyProfilerMemory(
+    val peakBytes: Long,
+    val limitBytes: Long,
 )
 
 data class SymfonyProfilerTimeEvent(
