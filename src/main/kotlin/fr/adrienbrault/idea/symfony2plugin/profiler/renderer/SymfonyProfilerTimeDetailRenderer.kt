@@ -8,6 +8,7 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 private const val OVERVIEW_EVENT_LIMIT = 3
+private const val EVENT_THRESHOLD_MS = 1.0
 private val CONTROL_CHARACTERS = Regex("[\\u0000-\\u001F\\u007F]+")
 
 /** Renders Symfony Stopwatch events ordered by descending duration. */
@@ -21,19 +22,26 @@ internal object SymfonyProfilerTimeDetailRenderer : ProfilerDetailRenderer {
     override fun renderDetails(profile: SymfonyProfilerProfile, page: Int): String =
         formatDetails(SymfonyProfilerTimeConsumer.read(profile))
 
-    /** Renders the three slowest events in the compact performance overview. */
-    internal fun formatOverview(time: SymfonyProfilerTime): String = formatSection(
-        time,
-        time.events.sortedByDescending { it.durationMs }.take(OVERVIEW_EVENT_LIMIT),
-        "### Top $OVERVIEW_EVENT_LIMIT events by duration",
-    )
+    /** Renders the three slowest events meeting Symfony's default timeline threshold. */
+    internal fun formatOverview(time: SymfonyProfilerTime): String {
+        val visibleEvents = visibleEvents(time)
+        return formatSection(
+            time,
+            visibleEvents.take(OVERVIEW_EVENT_LIMIT),
+            "### Top $OVERVIEW_EVENT_LIMIT events by duration",
+        )
+    }
 
-    /** Renders all events in descending duration order without pagination. */
+    /** Renders all events meeting Symfony's default timeline threshold without pagination. */
     internal fun formatDetails(time: SymfonyProfilerTime): String = formatSection(
         time,
-        time.events.sortedByDescending { it.durationMs },
+        visibleEvents(time),
         "### Events ordered by duration",
     )
+
+    private fun visibleEvents(time: SymfonyProfilerTime): List<SymfonyProfilerTimeEvent> = time.events
+        .filter { it.durationMs >= EVENT_THRESHOLD_MS }
+        .sortedByDescending { it.durationMs }
 
     private fun formatSection(
         time: SymfonyProfilerTime,
@@ -46,12 +54,26 @@ internal object SymfonyProfilerTimeDetailRenderer : ProfilerDetailRenderer {
         appendLine("- Initialization time: ${formatMilliseconds(time.initializationTimeMs)} ms")
         appendLine("- Stopwatch installed: ${if (time.stopwatchInstalled) "yes" else "no"}")
         appendLine("- Events: ${time.events.size}")
+        appendLine("- Threshold: ${formatMilliseconds(EVENT_THRESHOLD_MS)} ms")
+        time.memory?.let { memory ->
+            appendLine()
+            appendLine("### Memory")
+            appendLine()
+            appendLine("- Memory peak: ${formatMemoryMiB(memory.peakBytes)} MiB")
+            appendLine("- PHP memory limit: ${formatMemoryLimit(memory.limitBytes)}")
+        }
         appendLine()
         appendLine(heading)
 
         if (events.isEmpty()) {
             appendLine()
-            appendLine("No timing events recorded.")
+            appendLine(
+                if (time.events.isEmpty()) {
+                    "No timing events recorded."
+                } else {
+                    "No timing events meet the ${formatMilliseconds(EVENT_THRESHOLD_MS)} ms threshold."
+                },
+            )
             return@buildString
         }
 
@@ -74,6 +96,9 @@ private fun formatMilliseconds(value: Double): String =
 private fun formatMemoryMiB(bytes: Long): String = BigDecimal.valueOf(bytes)
     .divide(BigDecimal.valueOf(1024L * 1024L), 2, RoundingMode.HALF_UP)
     .toPlainString()
+
+private fun formatMemoryLimit(bytes: Long): String =
+    if (bytes < 0) "unlimited" else "${formatMemoryMiB(bytes)} MiB"
 
 private fun plainText(value: String): String = value
     .replace(CONTROL_CHARACTERS, " ")

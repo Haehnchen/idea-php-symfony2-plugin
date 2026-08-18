@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.profiler.consumer
 
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerProfile
+import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerMemory
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerTimeConsumer
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerTimeEvent
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -17,12 +18,20 @@ class SymfonyProfilerTimeConsumerTest {
 
         assertEquals(132.34, actual.durationMs)
         assertEquals(12.34, actual.initializationTimeMs)
+        assertEquals(
+            SymfonyProfilerMemory(
+                peakBytes = 6L * 1024 * 1024,
+                limitBytes = 128L * 1024 * 1024,
+            ),
+            actual.memory,
+        )
         assertTrue(actual.stopwatchInstalled)
         assertEquals(
-            listOf("controller", "view", "response.listener", "kernel.request"),
+            listOf("controller", "view", "response.listener", "kernel.request", "at.threshold", "below.threshold"),
             actual.events.map { it.name },
         )
         assertFalse(actual.events.any { it.name == "__section__" })
+        assertEquals(0.999, actual.events.last().durationMs, 0.000_001)
         assertEquals(
             SymfonyProfilerTimeEvent(
                 name = "controller",

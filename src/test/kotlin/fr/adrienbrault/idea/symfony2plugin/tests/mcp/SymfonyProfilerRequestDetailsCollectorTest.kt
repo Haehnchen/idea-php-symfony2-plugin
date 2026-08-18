@@ -24,12 +24,35 @@ class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
         }
     }
 
+    fun testTimeOverviewIncludesMemoryPeak() {
+        val text = fixtureCollector("symfony-profiler-time.gz").collect("fedcba")
+
+        assertTrue("## Collector: time" in text)
+        assertTrue("### Memory" in text)
+        assertTrue("- Memory peak: 6.00 MiB" in text)
+        assertTrue("- PHP memory limit: 128.00 MiB" in text)
+        assertTrue("- Threshold: 1.00 ms" in text)
+    }
+
+    fun testTimeDetailsApplySymfonyThreshold() {
+        val text = fixtureCollector("symfony-profiler-time.gz").collect("fedcba", "time")
+
+        assertTrue("| at.threshold |" in text)
+        assertFalse("| below.threshold |" in text)
+    }
+
     fun testRawCollectorNamesAreNotRepeatedAsAdditionalCollectors() {
         specializedFixtures().forEach { (fixture, hash, collector) ->
             val text = fixtureCollector(fixture).collect(hash)
 
             assertTrue("Missing specialized collector '$collector'", "- Specialized: $collector" in text)
-            assertFalse("Specialized collector '$collector' was repeated as additional", "- Additional collectors:" in text)
+            assertFalse(
+                "Specialized collector '$collector' was repeated as additional",
+                text.lineSequence()
+                    .filter { it.startsWith("- Additional collectors: ") }
+                    .flatMap { it.removePrefix("- Additional collectors: ").split(", ").asSequence() }
+                    .any { it == collector },
+            )
         }
     }
 
