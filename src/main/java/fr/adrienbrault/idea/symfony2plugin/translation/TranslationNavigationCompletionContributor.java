@@ -88,7 +88,7 @@ public class TranslationNavigationCompletionContributor {
             return;
         }
 
-        int domainParameter = PhpTranslationDomainInspection.getDomainParameter(parameterListOwner);
+        int domainParameter = TranslationUtil.getDomainParameter(parameterListOwner);
 
         if (PsiElementUtils.isCurrentParameter(psiElement, "domain", domainParameter)) {
             domain.accept(psiElement);
