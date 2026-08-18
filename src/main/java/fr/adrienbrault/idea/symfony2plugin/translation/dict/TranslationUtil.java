@@ -406,6 +406,19 @@ public class TranslationUtil {
     }
 
     /**
+     * Returns the zero-based domain parameter index for supported PHP translation calls.
+     * Example: in {@code $translator->trans($id, $parameters, $domain)}, the third argument has index {@code 2}.
+     */
+    public static int getDomainParameter(@NotNull PsiElement methodReferenceOrNewExpression) {
+        return switch (methodReferenceOrNewExpression) {
+            case MethodReference methodReference when PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, PHP_TRANSLATION_SIGNATURES) -> "transChoice".equals(methodReference.getName()) ? 3 : 2;
+            case NewExpression newExpression when PhpElementsUtil.isNewExpressionPhpClassWithInstance(newExpression, PHP_TRANSLATION_TRANSLATABLE_MESSAGE) -> 2;
+            case FunctionReference functionReference when isFunctionReferenceTranslationTFunction(functionReference) -> 2;
+            default -> -1;
+        };
+    }
+
+    /**
      * Returns the enclosing {@link ParameterListOwner} ({@link FunctionReference} or {@link NewExpression})
      * when {@code psiElement} is a {@link com.jetbrains.php.lang.psi.elements.StringLiteralExpression} directly
      * inside a {@link ParameterList} of such a call, or {@code null} otherwise.
