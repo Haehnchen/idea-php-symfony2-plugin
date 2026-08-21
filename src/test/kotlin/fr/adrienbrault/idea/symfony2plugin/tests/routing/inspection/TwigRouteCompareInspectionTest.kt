@@ -1,93 +1,95 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.routing.inspection;
+package fr.adrienbrault.idea.symfony2plugin.tests.routing.inspection
 
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see fr.adrienbrault.idea.symfony2plugin.routing.inspection.TwigRouteCompareInspection
  */
-public class TwigRouteCompareInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
-    private static final String INSPECTION_MESSAGE = "Symfony: Missing Route";
-
-    public void setUp() throws Exception {
-        super.setUp();
-        myFixture.copyFileToProject("TwigRouteMissingInspection.xml");
+class TwigRouteCompareInspectionTest : SymfonyLightCodeInsightFixtureTestCase() {
+    companion object {
+        private const val INSPECTION_MESSAGE = "Symfony: Missing Route"
     }
 
-    protected String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/routing/inspection/fixtures";
+    override fun setUp() {
+        super.setUp()
+        myFixture.copyFileToProject("TwigRouteMissingInspection.xml")
     }
 
-    public void testMissingRouteInEquality() {
+    override fun getTestDataPath(): String {
+        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/routing/inspection/fixtures"
+    }
+
+    fun testMissingRouteInEquality() {
         assertLocalInspectionContains("test.html.twig",
             "{% if app.request.attributes.get('_route') == 'unknow<caret>n_route' %}",
-            INSPECTION_MESSAGE);
+            INSPECTION_MESSAGE)
 
         assertLocalInspectionContains("test.html.twig",
             "{% if app.request.attributes.get('_route') != 'unknow<caret>n_route' %}",
-            INSPECTION_MESSAGE);
+            INSPECTION_MESSAGE)
     }
 
-    public void testKnownRouteInEqualityHasNoInspection() {
+    fun testKnownRouteInEqualityHasNoInspection() {
         assertLocalInspectionNotContains("test.html.twig",
             "{% if app.request.attributes.get('_route') == 'my_<caret>foobar' %}",
-            INSPECTION_MESSAGE);
+            INSPECTION_MESSAGE)
 
         assertLocalInspectionNotContains("test.html.twig",
             "{% if app.request.attributes.get('_route') != 'my_<caret>foobar' %}",
-            INSPECTION_MESSAGE);
+            INSPECTION_MESSAGE)
     }
 
-    public void testMissingRouteInSameAs() {
+    fun testMissingRouteInSameAs() {
         assertLocalInspectionContains("test.html.twig",
             "{% if app.request.attributes.get('_route') is same as('unknow<caret>n_route') %}",
-            INSPECTION_MESSAGE);
+            INSPECTION_MESSAGE)
     }
 
-    public void testKnownRouteInSameAsHasNoInspection() {
+    fun testKnownRouteInSameAsHasNoInspection() {
         assertLocalInspectionNotContains("test.html.twig",
             "{% if app.request.attributes.get('_route') is same as('my_<caret>foobar') %}",
-            INSPECTION_MESSAGE);
+            INSPECTION_MESSAGE)
     }
 
-    public void testMissingRouteInArray() {
+    fun testMissingRouteInArray() {
         assertLocalInspectionContains("test.html.twig",
             "{% if app.request.attributes.get('_route') in ['unknow<caret>n_route'] %}",
-            INSPECTION_MESSAGE);
+            INSPECTION_MESSAGE)
     }
 
-    public void testKnownRouteInArrayHasNoInspection() {
+    fun testKnownRouteInArrayHasNoInspection() {
         assertLocalInspectionNotContains("test.html.twig",
             "{% if app.request.attributes.get('_route') in ['my_<caret>foobar'] %}",
-            INSPECTION_MESSAGE);
+            INSPECTION_MESSAGE)
     }
 
-    public void testStartsWithIsNotInspected() {
+    fun testStartsWithIsNotInspected() {
         // 'starts with' is a prefix match — not inspected for missing route
         assertLocalInspectionNotContains("test.html.twig",
             "{% if app.request.attributes.get('_route') starts with 'unknow<caret>n_route' %}",
-            INSPECTION_MESSAGE);
+            INSPECTION_MESSAGE)
     }
 
-    public void testTernaryEqualitySyntax() {
+    fun testTernaryEqualitySyntax() {
         // {{ app.request.attributes.get('_route') == 'aaa' ? '' : '' }}
         assertLocalInspectionContains("test.html.twig",
             "{{ app.request.attributes.get('_route') == 'aa<caret>a' ? '' : '' }}",
-            INSPECTION_MESSAGE);
+            INSPECTION_MESSAGE)
 
         assertLocalInspectionNotContains("test.html.twig",
             "{{ app.request.attributes.get('_route') == 'my_<caret>foobar' ? '' : '' }}",
-            INSPECTION_MESSAGE);
+            INSPECTION_MESSAGE)
     }
 
-    public void testTernaryDoesNotFlagEmptyStrings() {
+    fun testTernaryDoesNotFlagEmptyStrings() {
         // The empty string branches of the ternary must not be flagged
         assertLocalInspectionNotContains("test.html.twig",
             "{{ app.request.attributes.get('_route') == 'my_foobar' ? '<caret>' : '' }}",
-            INSPECTION_MESSAGE);
+            INSPECTION_MESSAGE)
 
         assertLocalInspectionNotContains("test.html.twig",
             "{{ app.request.attributes.get('_route') == 'my_foobar' ? '' : '<caret>' }}",
-            INSPECTION_MESSAGE);
+            INSPECTION_MESSAGE)
     }
 }
