@@ -104,7 +104,7 @@ public final class TwigIncludeContextParser {
             return new IncludeKeyContext(templateName, templateName.getText());
         }
 
-        return findExternalIncludeKeyContext(hashLiteral);
+        return null;
     }
 
     /**
@@ -391,33 +391,6 @@ public final class TwigIncludeContextParser {
             isTwigElementType(directChild, TwigTokenTypes.COLON) ||
             isTwigElementType(directChild, TwigTokenTypes.SINGLE_QUOTE) ||
             isTwigElementType(directChild, TwigTokenTypes.DOUBLE_QUOTE);
-    }
-
-    @Nullable
-    private static IncludeKeyContext findExternalIncludeKeyContext(@NotNull PsiElement hashLiteral) {
-        PsiElement sourceElement = PsiTreeUtil.findFirstParent(hashLiteral, false, parent ->
-            isTwigElementType(parent, TwigElementTypes.TAG)
-        );
-
-        if (sourceElement == null || !isDirectWithHash(sourceElement, hashLiteral)) {
-            return null;
-        }
-
-        String templateName = Arrays.stream(TwigUtil.TWIG_FILE_USAGE_EXTENSIONS.getExtensions()).map(extension -> {
-            if (extension.isIncludeTemplate(sourceElement)) {
-                Optional<String> includeTemplate = extension.getIncludeTemplate(sourceElement).stream().findFirst();
-                if (includeTemplate.isPresent()) {
-                    return includeTemplate.get();
-                }
-            }
-
-            if (extension.isEmbedTemplate(sourceElement)) {
-                return extension.getEmbedTemplate(sourceElement).stream().findFirst().orElse(null);
-            }
-            return null;
-        }).filter(Objects::nonNull).findFirst().orElse(null);
-
-        return templateName == null ? null : new IncludeKeyContext(sourceElement, templateName);
     }
 
     /**
