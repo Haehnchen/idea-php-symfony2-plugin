@@ -13,7 +13,7 @@ internal object SymfonyProfilerFallbackDetailRenderer {
 
     internal fun formatDetails(collector: SymfonyProfilerFallbackCollector, page: Int = 1): String {
         val detailPage = paginateProfilerDetailEntries(
-            ProfilerTextRenderer.render(collector.data, initialIndent = 2),
+            ProfilerTextRenderer.render(collector.data),
             page,
         )
 

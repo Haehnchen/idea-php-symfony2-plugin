@@ -25,9 +25,12 @@ class SymfonyProfilerTimeDetailRendererTest {
         assertTrue("- Events: 6" in text)
         assertTrue("- Threshold: 1.00 ms" in text)
         assertTrue("### Top 3 events by duration" in text)
-        assertTrue("| controller | section | 10.00 | 95.00 | 70.00 | 8.00 |" in text)
-        assertTrue("| view | template | 96.00 | 120.00 | 24.00 | 7.00 |" in text)
-        assertFalse("| kernel.request |" in text)
+        assertTrue("1. `controller` — 70.00 ms" in text)
+        assertTrue("   - Category: `section`" in text)
+        assertTrue("   - Timeline: 10.00–95.00 ms" in text)
+        assertTrue("   - Memory: 8.00 MiB" in text)
+        assertTrue("2. `view` — 24.00 ms" in text)
+        assertFalse("`kernel.request`" in text)
     }
 
     @Test
@@ -39,12 +42,13 @@ class SymfonyProfilerTimeDetailRendererTest {
         assertTrue("- PHP memory limit: 128.00 MiB" in text)
         assertTrue("- Threshold: 1.00 ms" in text)
         assertTrue("### Events ordered by duration" in text)
-        assertTrue("| kernel.request | event_listener | 0.00 | 8.75 | 8.75 | 4.00 |" in text)
-        assertTrue("| at.threshold | event_listener | 9.00 | 10.00 | 1.00 | 4.00 |" in text)
-        assertFalse("| below.threshold |" in text)
-        assertTrue(text.indexOf("| controller |") < text.indexOf("| view |"))
-        assertTrue(text.indexOf("| view |") < text.indexOf("| response.listener |"))
-        assertTrue(text.indexOf("| response.listener |") < text.indexOf("| kernel.request |"))
+        assertTrue("4. `kernel.request` — 8.75 ms" in text)
+        assertTrue("   - Timeline: 0.00–8.75 ms" in text)
+        assertTrue("5. `at.threshold` — 1.00 ms" in text)
+        assertFalse("`below.threshold`" in text)
+        assertTrue(text.indexOf("`controller`") < text.indexOf("`view`"))
+        assertTrue(text.indexOf("`view`") < text.indexOf("`response.listener`"))
+        assertTrue(text.indexOf("`response.listener`") < text.indexOf("`kernel.request`"))
         assertFalse("Page:" in text)
     }
 
@@ -70,7 +74,7 @@ class SymfonyProfilerTimeDetailRendererTest {
         val text = renderer.formatDetails(time)
 
         assertTrue("No timing events meet the 1.00 ms threshold." in text)
-        assertFalse("| fast.event |" in text)
+        assertFalse("`fast.event`" in text)
     }
 
     @Test
@@ -94,8 +98,8 @@ class SymfonyProfilerTimeDetailRendererTest {
 
         val text = renderer.formatDetails(time)
 
-        assertTrue("event \\| 75 continued" in text)
-        assertTrue("| event 1 |" in text)
+        assertTrue("`event | 75 continued`" in text)
+        assertTrue("`event 1`" in text)
         assertFalse("Page:" in text)
     }
 

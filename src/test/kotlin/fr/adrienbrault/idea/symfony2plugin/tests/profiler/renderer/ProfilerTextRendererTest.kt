@@ -12,6 +12,12 @@ import org.junit.jupiter.api.Test
 
 class ProfilerTextRendererTest {
     @Test
+    fun `inline code sanitizes controls and adapts its delimiter`() {
+        assertEquals("`line break`", ProfilerTextRenderer.inlineCode("line\nbreak"))
+        assertEquals("``value ` code``", ProfilerTextRenderer.inlineCode("value ` code"))
+    }
+
+    @Test
     fun `sequential integer arrays render as lists`() {
         val value = mapValue(
             "items" to ProfilerArray(

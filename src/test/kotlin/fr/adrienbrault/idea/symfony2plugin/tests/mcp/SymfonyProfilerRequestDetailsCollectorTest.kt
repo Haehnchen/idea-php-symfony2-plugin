@@ -51,8 +51,8 @@ class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
     fun testTimeDetailsApplySymfonyThreshold() {
         val text = fixtureCollector("symfony-profiler-time.gz").collect("fedcba", "time")
 
-        assertTrue("| at.threshold |" in text)
-        assertFalse("| below.threshold |" in text)
+        assertTrue("`at.threshold`" in text)
+        assertFalse("`below.threshold`" in text)
     }
 
     fun testRawCollectorNamesAreNotRepeatedAsAdditionalCollectors() {
@@ -179,7 +179,7 @@ class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
 
         assertFalse("Format:" in text)
         assertTrue("\n## Data\n\n" in text)
-        assertTrue("  (empty)" in text)
+        assertTrue("\n(empty)" in text)
     }
 
     fun testRawFallbackPaginatesGenericDataAroundTokenTarget() {
