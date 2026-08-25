@@ -14,6 +14,7 @@ public class LocalProfilerRequestTest extends Assert {
         LocalProfilerRequest request = new LocalProfilerRequest("18e6b8,127.0.0.1,GET,http://127.0.0.1:8000/foobar,1474185112,76c8ab,200".split(","));
 
         assertEquals("18e6b8", request.getHash());
+        assertEquals(Long.valueOf(1474185112), request.getTime());
         assertEquals("GET", request.getMethod());
         assertEquals("http://127.0.0.1:8000/foobar", request.getUrl());
         assertEquals("_profiler/18e6b8", request.getProfilerUrl());
@@ -29,6 +30,7 @@ public class LocalProfilerRequestTest extends Assert {
         // minimum split
         request = new LocalProfilerRequest("18e6b8,127.0.0.1,GET,http://127.0.0.1:8000/foobar".split(","));
         assertEquals(0, request.getStatusCode());
+        assertNull(request.getTime());
         assertEquals("http://127.0.0.1:8000/foobar", request.getUrl());
     }
 }

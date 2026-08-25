@@ -12,6 +12,9 @@ import fr.adrienbrault.idea.symfony2plugin.profiler.decoder.ProfilerOpaque
 import fr.adrienbrault.idea.symfony2plugin.profiler.decoder.ProfilerReference
 import fr.adrienbrault.idea.symfony2plugin.profiler.decoder.ProfilerString
 import fr.adrienbrault.idea.symfony2plugin.profiler.decoder.ProfilerValue
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 /** Renders collector-neutral values as bounded indented key/value text with recognized lists. */
 internal object ProfilerTextRenderer {
@@ -59,6 +62,12 @@ internal object ProfilerTextRenderer {
 
         return "$delimiter$padding$text$padding$delimiter"
     }
+
+    fun formatTimestamp(epochSeconds: Long): String? = runCatching {
+        DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(
+            Instant.ofEpochSecond(epochSeconds).atZone(ZoneId.systemDefault()),
+        )
+    }.getOrNull()
 
     private class RenderState {
         val lines = mutableListOf<String>()

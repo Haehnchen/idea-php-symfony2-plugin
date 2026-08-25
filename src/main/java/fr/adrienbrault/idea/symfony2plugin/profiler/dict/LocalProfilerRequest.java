@@ -33,6 +33,20 @@ public class LocalProfilerRequest implements ProfilerRequestInterface {
     }
 
     @Nullable
+    @Override
+    public Long getTime() {
+        if (this.separatedLine.size() <= 4) {
+            return null;
+        }
+
+        try {
+            return Long.parseLong(this.separatedLine.get(4));
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
+    }
+
+    @Nullable
     public String getMethod() {
         return this.separatedLine.get(2);
     }

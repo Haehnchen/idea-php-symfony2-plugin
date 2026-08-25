@@ -13,15 +13,19 @@ internal object SymfonyProfilerRequestDetailRenderer : ProfilerDetailRenderer {
     override val overviewWeight = 100
 
     override fun renderOverview(profile: SymfonyProfilerProfile): String =
-        formatOverview(SymfonyProfilerRequestConsumer.read(profile))
+        formatOverview(
+            SymfonyProfilerRequestConsumer.read(profile),
+            profile.time?.let(ProfilerTextRenderer::formatTimestamp),
+        )
 
     override fun renderDetails(profile: SymfonyProfilerProfile, page: Int): String =
         formatDetails(SymfonyProfilerRequestConsumer.read(profile), page)
 
     /** Renders only stable request metadata in the compact profile overview. */
-    internal fun formatOverview(request: SymfonyProfilerRequest): String = buildString {
+    internal fun formatOverview(request: SymfonyProfilerRequest, profiledAt: String? = null): String = buildString {
         appendLine("## Collector: request")
         appendLine()
+        profiledAt?.let { appendLine("- Profiled at: $it") }
         appendLine("- Path: ${request.summary.path.renderOverviewValue()}")
         appendLine("- Route: ${request.summary.route.renderOverviewValue()}")
         appendLine("- Content type: ${request.summary.contentType.renderOverviewValue()}")

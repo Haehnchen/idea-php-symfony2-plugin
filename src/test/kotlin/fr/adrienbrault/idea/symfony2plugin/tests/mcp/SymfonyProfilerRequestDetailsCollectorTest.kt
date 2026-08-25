@@ -2,16 +2,17 @@ package fr.adrienbrault.idea.symfony2plugin.tests.mcp
 
 import fr.adrienbrault.idea.symfony2plugin.mcp.collector.SymfonyProfilerRequestDetailsCollector
 import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerIndexInterface
-import fr.adrienbrault.idea.symfony2plugin.profiler.dict.HttpProfilerRequest
+import fr.adrienbrault.idea.symfony2plugin.profiler.dict.LocalProfilerRequest
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface
+import fr.adrienbrault.idea.symfony2plugin.profiler.renderer.ProfilerTextRenderer
 
 class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
     fun testLatestLoadsNewestKnownProfilerRequest() {
         val profilerIndex = TestProfilerIndex(
             resourceFixture("symfony-profiler-db.gz"),
             listOf(
-                profilerRequest("abcdef"),
-                profilerRequest("fedcba"),
+                profilerRequest("abcdef", 1_723_557_600),
+                profilerRequest("fedcba", 1_723_557_500),
             ),
         )
 
@@ -40,10 +41,11 @@ class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
 
     fun testHashOnlyReturnsCompactOverview() {
         val text = fixtureCollector("symfony-profiler-db.gz").collect("abcdef")
+        val profiledAt = ProfilerTextRenderer.formatTimestamp(1_723_557_600)
 
         assertTrue(
             text.startsWith(
-                "Symfony Profiler Request - profile01 http://example.test/orders/42 200 GET\n\n",
+                "Symfony Profiler Request - profile01 ($profiledAt) http://example.test/orders/42 200 GET\n\n",
             ),
         )
         assertFalse(text.lineSequence().any { it.startsWith("- Token:") })
@@ -145,21 +147,23 @@ class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
         }
     }
 
-    fun testParseFailureListsNewestTenProfilerHashes() {
-        val hashes = (1..12).map { it.toString(16).padStart(6, '0') }
-        val profilerIndex = TestProfilerIndex(
-            "invalid serialized profile".toByteArray(),
-            hashes.map(::profilerRequest),
-        )
+    fun testParseFailureListsNewestTenProfilerHashesWithDates() {
+        val requests = (1..12).map { index ->
+            profilerRequest(index.toString(16).padStart(6, '0'), 1_723_557_600L - index)
+        }
+        val profilerIndex = TestProfilerIndex("invalid serialized profile".toByteArray(), requests)
 
         try {
             SymfonyProfilerRequestDetailsCollector(profilerIndex).collect("abcdef")
             fail("Expected invalid profiler data to fail")
         } catch (exception: Throwable) {
             val message = exception.message.orEmpty()
-            assertTrue("Newest profiler hashes: ${hashes.take(10).joinToString(", ")}" in message)
-            assertFalse(hashes[10] in message)
-            assertFalse(hashes[11] in message)
+            val expectedHashes = requests.take(10).joinToString(", ") { request ->
+                "${request.hash} (${ProfilerTextRenderer.formatTimestamp(requireNotNull(request.time))})"
+            }
+            assertTrue("Newest profiler hashes: $expectedHashes" in message)
+            assertFalse(requests[10].hash in message)
+            assertFalse(requests[11].hash in message)
         }
     }
 
@@ -408,12 +412,8 @@ class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
         javaClass.getResourceAsStream("/profiler/generated/$name"),
     ).use { it.readAllBytes() }
 
-    private fun profilerRequest(hash: String): ProfilerRequestInterface = HttpProfilerRequest(
-        200,
-        hash,
-        "_profiler/$hash",
-        "GET",
-        "https://example.test/profile",
+    private fun profilerRequest(hash: String, time: Long): ProfilerRequestInterface = LocalProfilerRequest(
+        "$hash,127.0.0.1,GET,http://example.test/profile,$time,parent,200".split(',').toTypedArray(),
     )
 
     private class TestProfilerIndex(

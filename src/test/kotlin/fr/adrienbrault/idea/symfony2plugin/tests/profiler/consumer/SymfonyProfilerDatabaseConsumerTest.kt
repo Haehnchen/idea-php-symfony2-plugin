@@ -29,6 +29,7 @@ class SymfonyProfilerDatabaseConsumerTest {
         val profile = SymfonyProfilerProfile.read(resourceFixture("symfony-profiler-db.gz"))
         val actual = SymfonyProfilerDatabaseConsumer.read(profile)
 
+        assertEquals(1_723_557_600, profile.time)
         assertEquals(3, actual.queryCount)
         assertEquals(12.34, actual.totalTimeMs)
         assertEquals(listOf("default", "analytics"), actual.connections)
