@@ -138,6 +138,12 @@ namespace Symfony\Component\Routing\Attribute {
     }
 }
 
+namespace Symfony\Bridge\Twig\Attribute {
+    class Template
+    {
+    }
+}
+
 namespace Symfony\Component\Security\Http\Attribute {
     class IsGranted
     {

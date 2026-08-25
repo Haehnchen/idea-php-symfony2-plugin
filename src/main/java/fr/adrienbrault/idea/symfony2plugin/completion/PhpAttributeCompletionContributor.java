@@ -32,7 +32,7 @@ import java.util.Collection;
  * <p>
  * Supports:
  * - Class-level attributes: #[Route], #[AsController], #[IsGranted], #[AsTwigComponent], #[AsCommand]
- * - Method-level attributes: #[Route], #[IsGranted], #[Cache], #[ExposeInTemplate], #[PreMount], #[PostMount]
+ * - Method-level attributes: #[Route], #[IsGranted], #[Cache], #[Template], #[ExposeInTemplate], #[PreMount], #[PostMount]
  * - Property-level attributes: #[ExposeInTemplate]
  * - Twig extension attributes: #[AsTwigFilter], #[AsTwigFunction], #[AsTwigTest]
  *
@@ -43,6 +43,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
     private static final String ROUTE_ATTRIBUTE_FQN = "\\Symfony\\Component\\Routing\\Attribute\\Route";
     private static final String IS_GRANTED_ATTRIBUTE_FQN = "\\Symfony\\Component\\Security\\Http\\Attribute\\IsGranted";
     private static final String CACHE_ATTRIBUTE_FQN = "\\Symfony\\Component\\HttpKernel\\Attribute\\Cache";
+    private static final String TEMPLATE_ATTRIBUTE_FQN = "\\Symfony\\Bridge\\Twig\\Attribute\\Template";
     private static final String AS_CONTROLLER_ATTRIBUTE_FQN = "\\Symfony\\Component\\HttpKernel\\Attribute\\AsController";
     private static final String AS_TWIG_FILTER_ATTRIBUTE_FQN = "\\Twig\\Attribute\\AsTwigFilter";
     private static final String AS_TWIG_FUNCTION_ATTRIBUTE_FQN = "\\Twig\\Attribute\\AsTwigFunction";
@@ -211,6 +212,17 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                     .withInsertHandler(new PhpAttributeInsertHandler(CACHE_ATTRIBUTE_FQN, CursorPosition.INSIDE_PARENTHESES));
 
                 lookupElements.add(cacheLookupElement);
+            }
+
+            // Add Template attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, TEMPLATE_ATTRIBUTE_FQN)) {
+                LookupElement templateLookupElement = LookupElementBuilder
+                    .create("#[Template]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(TEMPLATE_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpAttributeInsertHandler(TEMPLATE_ATTRIBUTE_FQN, CursorPosition.INSIDE_QUOTES));
+
+                lookupElements.add(templateLookupElement);
             }
 
             return lookupElements;
