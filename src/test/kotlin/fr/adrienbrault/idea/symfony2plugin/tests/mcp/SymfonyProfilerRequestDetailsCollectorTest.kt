@@ -8,10 +8,15 @@ class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
     fun testHashOnlyReturnsCompactOverview() {
         val text = fixtureCollector("symfony-profiler-db.gz").collect("abcdef")
 
-        assertTrue(text.startsWith("# Symfony Profiler Request\n"))
-        assertTrue("- Method: GET" in text)
-        assertTrue("- URL: http://example.test/orders/42" in text)
-        assertTrue("- Status: 200" in text)
+        assertTrue(
+            text.startsWith(
+                "Symfony Profiler Request - profile01 http://example.test/orders/42 200 GET\n\n",
+            ),
+        )
+        assertFalse(text.lineSequence().any { it.startsWith("- Token:") })
+        assertFalse(text.lineSequence().any { it.startsWith("- Method:") })
+        assertFalse(text.lineSequence().any { it.startsWith("- URL:") })
+        assertFalse(text.lineSequence().any { it.startsWith("- Status:") })
         assertTrue("## Collector: db" in text)
         assertTrue("### Top 3 query groups" in text)
         assertTrue("- Specialized: db" in text)
@@ -126,7 +131,8 @@ class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
         val text = syntheticCollector(collectorName, entries).collect("abc123", collectorName)
 
         assertTrue("Collector: App\\Profiler\\CustomCollector" in text)
-        assertTrue("Format: sanitized raw fallback" in text)
+        assertFalse("Format:" in text)
+        assertTrue("\n## Data\n\n" in text)
         sensitiveNames.forEach { name -> assertTrue("$name: ***REDACTED***" in text) }
         assertTrue("clientSecret: ***REDACTED***" in text)
         assertTrue("database_url: ***REDACTED***" in text)
@@ -171,25 +177,34 @@ class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
 
         val text = syntheticCollectorWithoutData(collectorName).collect("abc123", collectorName)
 
-        assertTrue("Format: sanitized raw fallback" in text)
+        assertFalse("Format:" in text)
+        assertTrue("\n## Data\n\n" in text)
         assertTrue("  (empty)" in text)
     }
 
-    fun testRawFallbackPaginatesGenericData() {
+    fun testRawFallbackPaginatesGenericDataAroundTokenTarget() {
         val collectorName = "App\\Profiler\\LargeCollector"
         val entries = (1..205).map { index -> "field_$index" to "i:$index;" }
         val collector = syntheticCollector(collectorName, entries)
 
-        val firstPage = collector.collect("abc123", collectorName, page = 1)
-        assertTrue("Page: 1 of 3" in firstPage)
-        assertTrue("field_100: 100" in firstPage)
-        assertFalse("field_101: 101" in firstPage)
+        val compactDetails = collector.collect("abc123", collectorName, page = 1)
+        assertFalse("Page:" in compactDetails)
+        assertTrue("field_205: 205" in compactDetails)
 
-        val secondPage = collector.collect("abc123", collectorName, page = 2)
-        assertTrue("Page: 2 of 3" in secondPage)
-        assertTrue("field_101: 101" in secondPage)
-        assertTrue("field_200: 200" in secondPage)
-        assertFalse("field_201: 201" in secondPage)
+        val largeCollector = syntheticCollector(
+            collectorName,
+            (1..16).map { index -> "field_$index" to phpString("x".repeat(1_100)) },
+        )
+
+        val firstPage = largeCollector.collect("abc123", collectorName, page = 1)
+        assertTrue("Page: 1 of 2" in firstPage)
+        assertTrue("field_15:" in firstPage)
+        assertFalse("field_16:" in firstPage)
+
+        val secondPage = largeCollector.collect("abc123", collectorName, page = 2)
+        assertTrue("Page: 2 of 2" in secondPage)
+        assertTrue("field_16:" in secondPage)
+        assertFalse("field_15:" in secondPage)
     }
 
     fun testReportsUnavailableRawProfile() {

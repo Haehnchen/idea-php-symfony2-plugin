@@ -1,7 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.profiler.consumer
 
 import fr.adrienbrault.idea.symfony2plugin.phpUnserializer.PhpIntegerKey
-import fr.adrienbrault.idea.symfony2plugin.phpUnserializer.PhpStringKey
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerProfile
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerRequestConsumer
 import fr.adrienbrault.idea.symfony2plugin.profiler.decoder.ProfilerArray
@@ -67,10 +66,7 @@ class SymfonyProfilerRequestConsumerTest {
         )
 
         val context = data.array("session_usages").array(0).array("context")
-        val privateSecret = context.entries.first { entry ->
-            (entry.key as? PhpStringKey)?.bytes?.utf8StringOrNull()?.endsWith("\u0000secretToken") == true
-        }.value as ProfilerString
-        assertRedacted(privateSecret.utf8StringOrNull())
+        assertRedacted(context.text("secretToken"))
     }
 
     private fun readRequest() = SymfonyProfilerRequestConsumer.read(

@@ -84,12 +84,11 @@ internal object SymfonyProfilerRequestDetailsRenderer {
         profile: SymfonyProfilerProfile,
         requestedHash: String,
     ) {
-        appendLine("# Symfony Profiler Request")
+        append("Symfony Profiler Request - ${plainText(profile.token ?: requestedHash)}")
+        profile.url?.let { append(" ${plainText(it)}") }
+        profile.statusCode?.let { append(" $it") }
+        profile.method?.let { append(" ${plainText(it)}") }
         appendLine()
-        appendLine("- Token: ${plainText(profile.token ?: requestedHash)}")
-        profile.method?.let { appendLine("- Method: ${plainText(it)}") }
-        profile.url?.let { appendLine("- URL: ${plainText(it)}") }
-        profile.statusCode?.let { appendLine("- Status: $it") }
     }
 }
 
