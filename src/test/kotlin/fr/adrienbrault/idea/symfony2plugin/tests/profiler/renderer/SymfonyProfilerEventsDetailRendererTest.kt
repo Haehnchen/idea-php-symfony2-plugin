@@ -26,7 +26,7 @@ class SymfonyProfilerEventsDetailRendererTest {
     }
 
     @Test
-    fun `details render every dispatcher and consecutive event list`() {
+    fun `details retain headings and render each event listener list as CSV`() {
         val text = renderer.formatDetails(readFixture())
 
         assertTrue("### Dispatcher: event_dispatcher" in text)
@@ -34,12 +34,12 @@ class SymfonyProfilerEventsDetailRendererTest {
         assertEquals(2, Regex("#### kernel\\.request ").findAll(text).count())
         assertTrue("#### kernel.request (2 listeners)" in text)
         assertTrue("#### kernel.controller (1 listener)" in text)
-        assertTrue("| Priority | Listener |" in text)
+        assertTrue("priority,listener" in text)
         assertTrue(
-            "| 256 | Example\\EventListener\\RequestListener::validate(RequestEvent \$event): void |" in text,
+            "256,Example\\EventListener\\RequestListener::validate(RequestEvent \$event): void" in text,
         )
-        assertTrue("| -10 | Example\\EventListener\\LateRequestListener::inspect" in text)
-        assertTrue("ResponseEvent \\| continued \$event" in text)
+        assertTrue("-10,Example\\EventListener\\LateRequestListener::inspect" in text)
+        assertTrue("ResponseEvent | continued \$event" in text)
         assertTrue(text.indexOf("### Dispatcher: event_dispatcher") < text.indexOf("### Dispatcher: domain_dispatcher"))
         assertFalse("Page:" in text)
     }

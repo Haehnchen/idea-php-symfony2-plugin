@@ -11,7 +11,7 @@ import java.math.RoundingMode
 private const val OVERVIEW_TEMPLATE_LIMIT = 5
 private val CONTROL_CHARACTERS = Regex("[\\u0000-\\u001F\\u007F]+")
 
-/** Renders Twig metrics, unique templates, and the complete rendering call tree. */
+/** Renders Twig metrics, templates as CSV, and the complete rendering call tree. */
 internal object SymfonyProfilerTwigDetailRenderer : ProfilerDetailRenderer {
     override val name = "twig"
     override val overviewWeight = 60
@@ -26,7 +26,7 @@ internal object SymfonyProfilerTwigDetailRenderer : ProfilerDetailRenderer {
     internal fun formatOverview(twig: SymfonyProfilerTwig): String = formatSection(
         twig,
         twig.renderedTemplates.take(OVERVIEW_TEMPLATE_LIMIT),
-        "### First $OVERVIEW_TEMPLATE_LIMIT rendered templates",
+        "### First $OVERVIEW_TEMPLATE_LIMIT rendered templates (CSV)",
         includeCallTree = false,
     )
 
@@ -34,7 +34,7 @@ internal object SymfonyProfilerTwigDetailRenderer : ProfilerDetailRenderer {
     internal fun formatDetails(twig: SymfonyProfilerTwig): String = formatSection(
         twig,
         twig.renderedTemplates,
-        "### Rendered templates",
+        "### Rendered templates (CSV)",
         includeCallTree = true,
     )
 
@@ -59,14 +59,14 @@ internal object SymfonyProfilerTwigDetailRenderer : ProfilerDetailRenderer {
             appendLine("No Twig templates were rendered.")
         } else {
             appendLine()
-            templates.forEachIndexed { index, template ->
+            appendLine("template,path,render_count")
+            templates.forEach { template ->
                 appendLine(
-                    "${index + 1}. ${ProfilerTextRenderer.inlineCode(template.name)} — " +
-                            formatRenderCount(template.renderCount),
-                )
-                appendLine(
-                    template.path?.let { "   - Path: ${ProfilerTextRenderer.inlineCode(it)}" }
-                        ?: "   - Path unavailable",
+                    ProfilerTextRenderer.csvRow(
+                        template.name,
+                        template.path.orEmpty(),
+                        template.renderCount.toString(),
+                    ),
                 )
             }
         }
@@ -119,7 +119,5 @@ private fun formatMilliseconds(value: Double): String =
 
 private fun formatPercentage(value: Double): String =
     BigDecimal.valueOf(value).setScale(0, RoundingMode.HALF_UP).toPlainString()
-
-private fun formatRenderCount(count: Int): String = if (count == 1) "rendered once" else "rendered $count times"
 
 private fun treeText(value: String): String = value.replace(CONTROL_CHARACTERS, " ")

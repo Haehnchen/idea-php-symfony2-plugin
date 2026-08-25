@@ -7,7 +7,7 @@ import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerProf
 
 private val CONTROL_CHARACTERS = Regex("[\\u0000-\\u001F\\u007F]+")
 
-/** Renders every dispatched event list with its called listeners in source order. */
+/** Renders dispatcher/event headings with called listener lists as CSV in source order. */
 internal object SymfonyProfilerEventsDetailRenderer : ProfilerDetailRenderer {
     override val name = "events"
     override val overviewWeight = 50
@@ -45,8 +45,7 @@ internal object SymfonyProfilerEventsDetailRenderer : ProfilerDetailRenderer {
                 appendLine()
                 appendLine("#### ${plainText(event.name)} (${formatListenerCount(event.listeners.size)})")
                 appendLine()
-                appendLine("| Priority | Listener |")
-                appendLine("| ---: | --- |")
+                appendLine("priority,listener")
                 event.listeners.forEach { appendListener(it) }
             }
         }
@@ -61,13 +60,17 @@ internal object SymfonyProfilerEventsDetailRenderer : ProfilerDetailRenderer {
     }
 
     private fun StringBuilder.appendListener(listener: SymfonyProfilerEventListener) {
-        appendLine("| ${listener.priority?.toString() ?: "-"} | ${plainText(listener.listener)} |")
+        appendLine(
+            ProfilerTextRenderer.csvRow(
+                listener.priority?.toString().orEmpty(),
+                listener.listener,
+            ),
+        )
     }
 }
 
 private fun formatListenerCount(count: Int): String = "$count ${if (count == 1) "listener" else "listeners"}"
 
-/** Keeps untrusted event and listener values on one table-safe line. */
 private fun plainText(value: String): String = value
     .replace(CONTROL_CHARACTERS, " ")
     .replace("|", "\\|")

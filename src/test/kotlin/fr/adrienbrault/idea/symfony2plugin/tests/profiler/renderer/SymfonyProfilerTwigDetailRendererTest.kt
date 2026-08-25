@@ -19,10 +19,10 @@ class SymfonyProfilerTwigDetailRendererTest {
         assertTrue("- Block calls: 1" in text)
         assertTrue("- Macro calls: 1" in text)
         assertTrue("- Unique templates: 7" in text)
-        assertTrue("### First 5 rendered templates" in text)
-        assertTrue("4. `components/card.html.twig` — rendered 2 times" in text)
-        assertTrue("   - Path: `templates/components/card.html.twig`" in text)
-        assertTrue("`emails/banner.html.twig` — rendered once" in text)
+        assertTrue("### First 5 rendered templates (CSV)" in text)
+        assertTrue("template,path,render_count" in text)
+        assertTrue("components/card.html.twig,templates/components/card.html.twig,2" in text)
+        assertTrue("emails/banner.html.twig,templates/emails/banner.html.twig,1" in text)
         assertFalse("@WebProfiler/Profiler/toolbar_js.html.twig" in text)
         assertFalse("### Rendering call tree" in text)
     }
@@ -31,7 +31,7 @@ class SymfonyProfilerTwigDetailRendererTest {
     fun `details show all unique templates and complete call tree`() {
         val text = renderer.renderDetails(readProfile(), 99)
 
-        assertTrue("### Rendered templates" in text)
+        assertTrue("### Rendered templates (CSV)" in text)
         assertTrue("@WebProfiler/Profiler/toolbar_js.html.twig" in text)
         assertTrue("@WebProfiler/Profiler/toolbar.html.twig" in text)
         assertTrue("### Rendering call tree" in text)

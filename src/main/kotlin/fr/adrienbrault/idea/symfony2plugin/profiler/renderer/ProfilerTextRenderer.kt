@@ -24,7 +24,6 @@ internal object ProfilerTextRenderer {
     private const val MAX_SCALAR_LENGTH = 1_000
     private val MARKDOWN_LEADING_CHARACTERS = setOf('#', '-', '*', '+', '>', '|', '`')
     private val CONTROL_CHARACTERS = Regex("[\\u0000-\\u001F\\u007F]+")
-    private val BACKTICK_RUN = Regex("`+")
 
     fun render(value: ProfilerValue, initialIndent: Int = 0): List<String> {
         val state = RenderState()
@@ -47,20 +46,14 @@ internal object ProfilerTextRenderer {
         return state.lines
     }
 
-    /** Renders untrusted single-line text as a Markdown code span. */
-    fun inlineCode(value: String): String {
-        val text = value.replace(CONTROL_CHARACTERS, " ")
-        val longestDelimiter = BACKTICK_RUN.findAll(text).maxOfOrNull { it.value.length } ?: 0
-        val delimiter = "`".repeat(longestDelimiter + 1)
-        val padding = if (
-            text.startsWith('`') || text.endsWith('`') || text.startsWith(' ') || text.endsWith(' ')
-        ) {
-            " "
+    /** Produces one single-line CSV record from untrusted profiler values. */
+    fun csvRow(vararg values: String): String = values.joinToString(",") { value ->
+        val normalized = value.replace(CONTROL_CHARACTERS, " ")
+        if (',' in normalized || '"' in normalized) {
+            "\"${normalized.replace("\"", "\"\"")}\""
         } else {
-            ""
+            normalized
         }
-
-        return "$delimiter$padding$text$padding$delimiter"
     }
 
     fun formatTimestamp(epochSeconds: Long): String? = runCatching {

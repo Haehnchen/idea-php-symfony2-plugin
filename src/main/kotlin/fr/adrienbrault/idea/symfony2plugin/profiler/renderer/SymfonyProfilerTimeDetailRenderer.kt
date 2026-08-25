@@ -10,7 +10,7 @@ import java.math.RoundingMode
 private const val OVERVIEW_EVENT_LIMIT = 3
 private const val EVENT_THRESHOLD_MS = 1.0
 
-/** Renders Symfony Stopwatch events ordered by descending duration. */
+/** Renders Symfony Stopwatch events as CSV ordered by descending duration. */
 internal object SymfonyProfilerTimeDetailRenderer : ProfilerDetailRenderer {
     override val name = "time"
     override val overviewWeight = 80
@@ -27,7 +27,7 @@ internal object SymfonyProfilerTimeDetailRenderer : ProfilerDetailRenderer {
         return formatSection(
             time,
             visibleEvents.take(OVERVIEW_EVENT_LIMIT),
-            "### Top $OVERVIEW_EVENT_LIMIT events by duration",
+            "### Top $OVERVIEW_EVENT_LIMIT events by duration (CSV)",
         )
     }
 
@@ -35,7 +35,7 @@ internal object SymfonyProfilerTimeDetailRenderer : ProfilerDetailRenderer {
     internal fun formatDetails(time: SymfonyProfilerTime): String = formatSection(
         time,
         visibleEvents(time),
-        "### Events ordered by duration",
+        "### Events ordered by duration (CSV)",
     )
 
     private fun visibleEvents(time: SymfonyProfilerTime): List<SymfonyProfilerTimeEvent> = time.events
@@ -77,16 +77,18 @@ internal object SymfonyProfilerTimeDetailRenderer : ProfilerDetailRenderer {
         }
 
         appendLine()
-        events.forEachIndexed { index, event ->
+        appendLine("event,category,start_ms,end_ms,duration_ms,memory_mib")
+        events.forEach { event ->
             appendLine(
-                "${index + 1}. ${ProfilerTextRenderer.inlineCode(event.name)} — " +
-                        "${formatMilliseconds(event.durationMs)} ms",
+                ProfilerTextRenderer.csvRow(
+                    event.name,
+                    event.category,
+                    formatMilliseconds(event.startMs),
+                    formatMilliseconds(event.endMs),
+                    formatMilliseconds(event.durationMs),
+                    formatMemoryMiB(event.memoryBytes),
+                ),
             )
-            appendLine("   - Category: ${ProfilerTextRenderer.inlineCode(event.category)}")
-            appendLine(
-                "   - Timeline: ${formatMilliseconds(event.startMs)}–${formatMilliseconds(event.endMs)} ms",
-            )
-            appendLine("   - Memory: ${formatMemoryMiB(event.memoryBytes)} MiB")
         }
     }.trimEnd()
 }

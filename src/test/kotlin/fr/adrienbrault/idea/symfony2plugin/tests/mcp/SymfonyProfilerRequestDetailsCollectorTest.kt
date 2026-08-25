@@ -109,8 +109,8 @@ class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
     fun testTimeDetailsApplySymfonyThreshold() {
         val text = fixtureCollector("symfony-profiler-time.gz").collect("fedcba", "time")
 
-        assertTrue("`at.threshold`" in text)
-        assertFalse("`below.threshold`" in text)
+        assertTrue("at.threshold,event_listener,9.00,10.00,1.00,4.00" in text)
+        assertFalse("below.threshold," in text)
     }
 
     fun testRawCollectorNamesAreNotRepeatedAsAdditionalCollectors() {
