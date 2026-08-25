@@ -26,11 +26,10 @@ internal object SymfonyProfilerRequestDetailsRenderer {
         val availableCollectorNames = profile.collectorNames.toSet()
         if (collector != null) {
             val renderer = renderers.firstOrNull { it.name == collector }
-            appendLine()
             if (renderer != null) {
-                append(render(renderer.name) { renderer.renderDetails(profile, page.coerceAtLeast(1)) })
+                appendSection(render(renderer.name) { renderer.renderDetails(profile, page.coerceAtLeast(1)) })
             } else {
-                append(render(collector) {
+                appendSection(render(collector) {
                     SymfonyProfilerFallbackDetailRenderer.renderDetails(profile, collector, page.coerceAtLeast(1))
                 })
             }
@@ -39,34 +38,46 @@ internal object SymfonyProfilerRequestDetailsRenderer {
 
         val availableRenderers = renderers.filter { it.name in availableCollectorNames }
         if (availableCollectorNames.isEmpty()) {
-            appendLine()
-            appendLine("No profiler collectors are available for this request.")
+            appendSection("No profiler collectors are available for this request.")
             return@buildString
         }
 
         availableRenderers.forEach { renderer ->
             val overview = render(renderer.name) { renderer.renderOverview(profile) } ?: return@forEach
-            appendLine()
-            append(overview)
+            appendSection(overview)
         }
 
-        appendLine()
-        appendLine("## Available collectors")
-        appendLine()
         val specializedNames = profile.collectorNames.filter { name -> renderers.any { it.name == name } }
         val fallbackNames = profile.collectorNames.filterNot { name -> renderers.any { it.name == name } }
-        if (specializedNames.isNotEmpty()) {
-            appendLine("- Specialized: ${specializedNames.joinToString { plainText(it) }}")
-        }
-        if (fallbackNames.isNotEmpty()) {
-            appendLine("- Additional collectors: ${fallbackNames.joinToString { plainText(it) }}")
-        }
+        appendSection(buildString {
+            appendLine("## Available collectors")
+            appendLine()
+            if (specializedNames.isNotEmpty()) {
+                appendLine("- Specialized: ${specializedNames.joinToString { plainText(it) }}")
+            }
+            if (fallbackNames.isNotEmpty()) {
+                appendLine("- Additional collectors: ${fallbackNames.joinToString { plainText(it) }}")
+            }
+        }.trimEnd())
     }.trimEnd()
 
     private fun <T> render(collectorName: String, render: () -> T): T = try {
         render()
     } catch (exception: Exception) {
         throw ProfilerRendererException(collectorName, exception)
+    }
+
+    /** Appends one Markdown section with exactly one blank line after the preceding section. */
+    private fun StringBuilder.appendSection(section: String) {
+        if (isNotEmpty()) {
+            if (!endsWith("\n")) {
+                appendLine()
+            }
+            if (!endsWith("\n\n")) {
+                appendLine()
+            }
+        }
+        append(section)
     }
 
     private fun StringBuilder.appendRequestOverview(
