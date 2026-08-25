@@ -86,6 +86,7 @@ internal object SymfonyProfilerRequestDetailsRenderer {
         requestedHash: String,
     ) {
         append("Symfony Profiler Request - ${plainText(profile.token ?: requestedHash)}")
+        profile.time?.let(ProfilerTextRenderer::formatTimestamp)?.let { append(" ($it)") }
         profile.url?.let { append(" ${plainText(it)}") }
         profile.statusCode?.let { append(" $it") }
         profile.method?.let { append(" ${plainText(it)}") }

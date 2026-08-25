@@ -39,6 +39,9 @@ class SymfonyProfilerProfile private constructor(
     val statusCode: Int?
         get() = (profile["status_code"].resolve(result) as? PhpInteger)?.value?.toInt()
 
+    val time: Long?
+        get() = (profile["time"].resolve(result) as? PhpInteger)?.value
+
     val collectorNames: List<String>
         get() = collectors().entries.mapNotNull { entry ->
             (entry.key as? PhpStringKey)?.bytes?.utf8StringOrNull()

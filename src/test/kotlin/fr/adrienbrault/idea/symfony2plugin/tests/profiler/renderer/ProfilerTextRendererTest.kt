@@ -8,9 +8,17 @@ import fr.adrienbrault.idea.symfony2plugin.profiler.decoder.ProfilerEntry
 import fr.adrienbrault.idea.symfony2plugin.profiler.decoder.profilerString
 import fr.adrienbrault.idea.symfony2plugin.profiler.renderer.ProfilerTextRenderer
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class ProfilerTextRendererTest {
+    @Test
+    fun `timestamps use ISO-8601 T format with timezone`() {
+        val timestamp = requireNotNull(ProfilerTextRenderer.formatTimestamp(1_723_557_600))
+
+        assertTrue(Regex("""^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})$""").matches(timestamp))
+    }
+
     @Test
     fun `inline code sanitizes controls and adapts its delimiter`() {
         assertEquals("`line break`", ProfilerTextRenderer.inlineCode("line\nbreak"))

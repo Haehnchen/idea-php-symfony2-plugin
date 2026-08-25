@@ -186,6 +186,7 @@ class SymfonyToolset : McpToolset {
         Lists recent Symfony Profiler requests as CSV for tracing request handling, controller resolution, and rendered Twig views; pass a returned hash to get_symfony_profiler_details for collector details.
 
         - hash: Profiler token/hash
+        - profiledAt: Profile timestamp (ISO-8601)
         - method: HTTP method
         - url: Request URL
         - statusCode: HTTP status code

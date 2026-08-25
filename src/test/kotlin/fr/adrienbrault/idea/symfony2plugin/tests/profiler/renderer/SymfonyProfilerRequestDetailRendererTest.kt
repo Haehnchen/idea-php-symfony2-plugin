@@ -9,6 +9,7 @@ import fr.adrienbrault.idea.symfony2plugin.profiler.decoder.ProfilerArray
 import fr.adrienbrault.idea.symfony2plugin.profiler.decoder.ProfilerEntry
 import fr.adrienbrault.idea.symfony2plugin.profiler.decoder.ProfilerInteger
 import fr.adrienbrault.idea.symfony2plugin.profiler.decoder.profilerString
+import fr.adrienbrault.idea.symfony2plugin.profiler.renderer.ProfilerTextRenderer
 import fr.adrienbrault.idea.symfony2plugin.profiler.renderer.SymfonyProfilerRequestDetailRenderer
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -58,6 +59,7 @@ class SymfonyProfilerRequestDetailRendererTest {
     fun `overview adds only compact request metadata`() {
         val text = renderer.renderOverview(readProfile())
 
+        assertTrue("- Profiled at: ${ProfilerTextRenderer.formatTimestamp(1_786_622_400)}" in text)
         assertTrue("- Path: /login" in text)
         assertTrue("- Route: app_login" in text)
         assertTrue("- Content type: application/json" in text)

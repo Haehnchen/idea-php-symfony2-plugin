@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project
 import fr.adrienbrault.idea.symfony2plugin.profiler.collector.DefaultDataCollectorInterface
 import fr.adrienbrault.idea.symfony2plugin.profiler.factory.ProfilerFactoryUtil
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface
+import fr.adrienbrault.idea.symfony2plugin.profiler.renderer.ProfilerTextRenderer
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil
 
 class SymfonyProfilerRequestsCollector(private val project: Project) {
@@ -60,7 +61,7 @@ class SymfonyProfilerRequestsCollector(private val project: Project) {
         )
 
         return buildString {
-            appendLine("hash,method,url,statusCode,profilerUrl,controller,route,entryView,renderTemplate,renderedTemplates,formTypes")
+            appendLine("hash,profiledAt,method,url,statusCode,profilerUrl,controller,route,entryView,renderTemplate,renderedTemplates,formTypes")
             for (request in filteredRequests) {
                 val collectorData = request.getCollector(DefaultDataCollectorInterface::class.java)
 
@@ -80,6 +81,7 @@ class SymfonyProfilerRequestsCollector(private val project: Project) {
 
                 appendLine(
                     "${McpCsvUtil.escape(request.hash)}," +
+                        "${McpCsvUtil.escape(request.time?.let(ProfilerTextRenderer::formatTimestamp) ?: "")}," +
                         "${McpCsvUtil.escape(request.method ?: "")}," +
                         "${McpCsvUtil.escape(request.url)}," +
                         "${request.statusCode}," +

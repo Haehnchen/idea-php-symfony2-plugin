@@ -4,6 +4,7 @@ import com.intellij.mcpserver.mcpFail
 import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerIndexInterface
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerProfile
 import fr.adrienbrault.idea.symfony2plugin.profiler.renderer.ProfilerRendererException
+import fr.adrienbrault.idea.symfony2plugin.profiler.renderer.ProfilerTextRenderer
 import fr.adrienbrault.idea.symfony2plugin.profiler.renderer.SymfonyProfilerRequestDetailsRenderer
 
 /** Loads one profiler request and delegates its presentation to profiler renderers. */
@@ -42,9 +43,11 @@ class SymfonyProfilerRequestDetailsCollector(
         } catch (exception: Exception) {
             val newestHashes = recentRequests
                 .asSequence()
-                .map { it.hash }
                 .take(10)
-                .joinToString(", ")
+                .joinToString(", ") { request ->
+                    val profiledAt = request.time?.let(ProfilerTextRenderer::formatTimestamp)
+                    if (profiledAt != null) "${request.hash} ($profiledAt)" else request.hash
+                }
                 .ifEmpty { "(none)" }
             mcpFail(
                 "Unable to parse profiler request '$resolvedHash': ${exception.message}. " +

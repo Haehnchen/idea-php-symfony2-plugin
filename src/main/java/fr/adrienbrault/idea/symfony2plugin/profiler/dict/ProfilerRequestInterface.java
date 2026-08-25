@@ -10,6 +10,12 @@ public interface ProfilerRequestInterface {
     @NotNull
     String getHash();
 
+    /** Unix timestamp in seconds, when exposed by the profiler index. */
+    @Nullable
+    default Long getTime() {
+        return null;
+    }
+
     @Nullable
     String getMethod();
 
