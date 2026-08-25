@@ -183,21 +183,21 @@ class SymfonyToolset : McpToolset {
 
     @McpTool
     @McpDescription("""
-        Lists recent Symfony requests from the Profiler as CSV for tracing request handling, controller resolution, and rendered Twig views.
+        Lists recent Symfony Profiler requests as CSV for tracing request handling, controller resolution, and rendered Twig views; pass a returned hash to get_symfony_profiler_details for collector details.
 
         - hash: Profiler token/hash
-        - method: HTTP method (GET, POST, etc.)
+        - method: HTTP method
         - url: Request URL
         - statusCode: HTTP status code
         - profilerUrl: URL to the profiler page
         - controller: Controller handling the request
         - route: Matched route name
         - entryView: Symfony profiler "Entry View"
-        - renderTemplate: Templates indexed from render*()/@Template/#[Template], joined by semicolon
-        - renderedTemplates: First 3 Twig templates from the profiler "Rendered Templates" panel, in profiler order, joined by semicolon
+        - renderTemplate: Templates indexed from render*()/@Template/#[Template]
+        - renderedTemplates: First 3 Twig templates from the profiler "Rendered Templates" panel, in profiler order
         - formTypes: Form types used (pipe-separated if multiple)
     """)
-    suspend fun list_profiler_requests(
+    suspend fun list_symfony_profiler(
         @McpDescription("Optional URL partial match, case-insensitive. Example: '/admin'")
         url: String? = null,
         @McpDescription("Optional profiler token partial match, case-insensitive. Example: '18e6b8'")
@@ -216,7 +216,7 @@ class SymfonyToolset : McpToolset {
 
     @McpTool
     @McpDescription("""
-        Shows one Symfony Profiler request. Use list_profiler_requests first to find its hash.
+        Shows one Symfony Profiler request. Use list_symfony_profiler first to find its hash.
 
         Omit collector for a compact overview and the complete list of available collectors.
 
@@ -232,8 +232,8 @@ class SymfonyToolset : McpToolset {
         Any other collector stored in the profile is available through a bounded, sanitized raw fallback.
         Collector details use bounded plain-text pages; use the page parameter to request the next page.
     """)
-    suspend fun get_profiler_request_details(
-        @McpDescription("Hexadecimal profiler token/hash from list_profiler_requests. Example: '18e6b8'")
+    suspend fun get_symfony_profiler_details(
+        @McpDescription("Hexadecimal profiler token/hash from list_symfony_profiler. Example: '18e6b8'")
         hash: String,
         @McpDescription("Optional exact collector name from the request overview. Collector names are case-sensitive.")
         collector: String? = null,

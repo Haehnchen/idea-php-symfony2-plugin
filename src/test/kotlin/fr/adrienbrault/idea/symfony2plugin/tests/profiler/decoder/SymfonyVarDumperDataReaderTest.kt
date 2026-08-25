@@ -7,12 +7,11 @@ import fr.adrienbrault.idea.symfony2plugin.profiler.decoder.ProfilerString
 import fr.adrienbrault.idea.symfony2plugin.profiler.decoder.SymfonyVarDumperDataReader
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class SymfonyVarDumperDataReaderTest {
     @Test
-    fun `expands position tables while preserving unknown fields and property keys`() {
+    fun `expands position tables while preserving unknown fields and normalizing property keys`() {
         val profile = SymfonyProfilerProfile.read(resourceFixture("symfony-profiler-request.gz"))
         val collector = requireNotNull(profile.collector("request"))
         val decoded = SymfonyVarDumperDataReader(profile.result).read(collector["data"]) as ProfilerArray
@@ -21,11 +20,10 @@ class SymfonyVarDumperDataReaderTest {
         assertNotNull(decoded["future_context"])
 
         val context = decoded.array("session_usages").array(0).array("context")
-        val rawPropertyNames = context.entries.mapNotNull { entry ->
+        val propertyNames = context.entries.mapNotNull { entry ->
             (entry.key as? PhpStringKey)?.bytes?.utf8StringOrNull()
         }
-        assertTrue(rawPropertyNames.any { it.startsWith("\u0000ProfilerFixture\\TraceContext\u0000") })
-        assertTrue(rawPropertyNames.any { it.startsWith("\u0000*\u0000") })
+        assertEquals(listOf("secretToken", "label", "metadata"), propertyNames)
     }
 
     private fun ProfilerArray.array(key: String): ProfilerArray = this[key] as ProfilerArray

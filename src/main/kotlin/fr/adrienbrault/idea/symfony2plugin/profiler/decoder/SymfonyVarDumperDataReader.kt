@@ -3,6 +3,7 @@ package fr.adrienbrault.idea.symfony2plugin.profiler.decoder
 import fr.adrienbrault.idea.symfony2plugin.phpUnserializer.PhpArray
 import fr.adrienbrault.idea.symfony2plugin.phpUnserializer.PhpArrayKey
 import fr.adrienbrault.idea.symfony2plugin.phpUnserializer.PhpBoolean
+import fr.adrienbrault.idea.symfony2plugin.phpUnserializer.PhpBytes
 import fr.adrienbrault.idea.symfony2plugin.phpUnserializer.PhpCustomObject
 import fr.adrienbrault.idea.symfony2plugin.phpUnserializer.PhpEnum
 import fr.adrienbrault.idea.symfony2plugin.phpUnserializer.PhpFloat
@@ -177,7 +178,21 @@ class SymfonyVarDumperDataReader(
 
     private fun compactKey(key: PhpArrayKey): PhpArrayKey = when (key) {
         is PhpIntegerKey -> key
-        is PhpStringKey -> PhpStringKey(key.bytes.compact())
+        is PhpStringKey -> PhpStringKey(key.bytes.logicalPropertyName().compact())
+    }
+
+    /** Removes PHP's NUL-delimited private/protected property scope from VarDumper keys. */
+    private fun PhpBytes.logicalPropertyName(): PhpBytes {
+        if (size < 3 || byteAt(0) != 0.toByte()) {
+            return this
+        }
+
+        val separator = indexOf(0.toByte(), 1)
+        return if (separator > 1) {
+            slice(separator + 1, size - separator - 1)
+        } else {
+            this
+        }
     }
 
     private data class DataStub(

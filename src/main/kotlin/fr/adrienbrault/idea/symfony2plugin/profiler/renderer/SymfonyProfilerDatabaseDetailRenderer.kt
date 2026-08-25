@@ -6,10 +6,8 @@ import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerData
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerProfile
 import java.math.BigDecimal
 import java.math.RoundingMode
-import kotlin.math.ceil
 
 private const val OVERVIEW_QUERY_GROUP_LIMIT = 3
-private const val DETAIL_PAGE_SIZE = 50
 private const val CALL_LIMIT = 5
 private val INTERNAL_CALL_ROOT_NAMESPACES = setOf("doctrine", "symfony")
 private val CONTROL_CHARACTERS = Regex("[\\u0000-\\u001F\\u007F]+")
@@ -27,21 +25,25 @@ internal object SymfonyProfilerDatabaseDetailRenderer : ProfilerDetailRenderer {
     /** Renders the compact database summary with its top query groups. */
     internal fun formatOverview(database: SymfonyProfilerDatabase): String = formatSection(
         database,
-        database.queryGroups.take(OVERVIEW_QUERY_GROUP_LIMIT),
+        database.queryGroups.take(OVERVIEW_QUERY_GROUP_LIMIT).map(::formatQueryGroup),
         "### Top $OVERVIEW_QUERY_GROUP_LIMIT query groups",
     )
 
-    /** Renders one paginated page containing all database query groups. */
+    /** Renders one size-targeted page while keeping every database query group intact. */
     internal fun formatDetails(database: SymfonyProfilerDatabase, page: Int = 1): String {
-        val totalPages = maxOf(1, ceil(database.queryGroups.size.toDouble() / DETAIL_PAGE_SIZE).toInt())
-        val currentPage = page.coerceIn(1, totalPages)
-        val groups = database.queryGroups.drop((currentPage - 1) * DETAIL_PAGE_SIZE).take(DETAIL_PAGE_SIZE)
-        return formatSection(database, groups, "### Query groups (page $currentPage of $totalPages)")
+        val detailPage = paginateProfilerDetailEntries(database.queryGroups.map(::formatQueryGroup), page)
+        val heading = if (detailPage.isPaginated) {
+            "### Query groups (page ${detailPage.number} of ${detailPage.total})"
+        } else {
+            "### Query groups"
+        }
+
+        return formatSection(database, detailPage.entries, heading)
     }
 
     private fun formatSection(
         database: SymfonyProfilerDatabase,
-        groups: List<SymfonyProfilerDatabaseQueryGroup>,
+        queryRows: List<String>,
         heading: String,
     ): String = buildString {
         appendLine("## Collector: db")
@@ -56,7 +58,7 @@ internal object SymfonyProfilerDatabaseDetailRenderer : ProfilerDetailRenderer {
         appendLine()
         appendLine(heading)
 
-        if (groups.isEmpty()) {
+        if (queryRows.isEmpty()) {
             appendLine()
             appendLine("No queries recorded.")
             return@buildString
@@ -65,15 +67,14 @@ internal object SymfonyProfilerDatabaseDetailRenderer : ProfilerDetailRenderer {
         appendLine()
         appendLine("| Occurrences | Time (ms) | Average time (ms) | Query | Calls |")
         appendLine("| ---: | ---: | ---: | --- | --- |")
-        groups.forEach { group ->
-            appendLine(
-                "| ${group.count} | ${formatMilliseconds(group.totalTimeMs)} | " +
-                    "${formatMilliseconds(group.averageTimeMs)} | ${plainText(group.sql)} | " +
-                    "${plainText(formatCalls(group))} |",
-            )
-        }
+        queryRows.forEach(::appendLine)
     }.trimEnd()
 }
+
+private fun formatQueryGroup(group: SymfonyProfilerDatabaseQueryGroup): String =
+    "| ${group.count} | ${formatMilliseconds(group.totalTimeMs)} | " +
+        "${formatMilliseconds(group.averageTimeMs)} | ${plainText(group.sql)} | " +
+        "${plainText(formatCalls(group))} |"
 
 /** Reduces all occurrence traces to unique non-framework calls in their original order. */
 private fun formatCalls(group: SymfonyProfilerDatabaseQueryGroup): String = group.stackTraces

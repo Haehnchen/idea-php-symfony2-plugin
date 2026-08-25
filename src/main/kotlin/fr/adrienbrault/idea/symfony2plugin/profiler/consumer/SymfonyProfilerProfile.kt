@@ -15,6 +15,8 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.zip.GZIPInputStream
 
+private const val PROFILER_MAX_INPUT_BYTES = 25 * 1024 * 1024
+
 /**
  * Parsed raw Symfony profile shared by the individual profiler collector consumers.
  *
@@ -50,7 +52,7 @@ class SymfonyProfilerProfile private constructor(
     companion object {
         /** Parses raw or GZIP data with fixed defensive limits before collector consumers run. */
         fun read(input: ByteArray): SymfonyProfilerProfile {
-            val limits = PhpUnserializeLimits()
+            val limits = PhpUnserializeLimits(maxInputBytes = PROFILER_MAX_INPUT_BYTES)
             if (input.size > limits.maxInputBytes) {
                 throw PhpUnserializeException(
                     limits.maxInputBytes,

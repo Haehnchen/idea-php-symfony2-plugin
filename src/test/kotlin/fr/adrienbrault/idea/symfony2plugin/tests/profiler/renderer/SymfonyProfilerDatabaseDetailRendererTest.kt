@@ -51,8 +51,8 @@ class SymfonyProfilerDatabaseDetailRendererTest {
     }
 
     @Test
-    fun `details paginate query groups with 50 per page`() {
-        val database = SymfonyProfilerDatabase(
+    fun `details paginate complete query groups around the token target`() {
+        val compactDatabase = SymfonyProfilerDatabase(
             queryCount = 120,
             totalTimeMs = 120.0,
             connections = listOf("default"),
@@ -62,19 +62,34 @@ class SymfonyProfilerDatabaseDetailRendererTest {
             },
         )
 
-        val firstPage = renderer.formatDetails(database)
-        assertTrue("### Query groups (page 1 of 3)" in firstPage)
-        assertTrue("| query 50 |" in firstPage)
-        assertFalse("| query 51 |" in firstPage)
+        val compactDetails = renderer.formatDetails(compactDatabase)
+        assertTrue("### Query groups" in compactDetails)
+        assertFalse("### Query groups (page" in compactDetails)
+        assertTrue("| query 120 |" in compactDetails)
 
-        val secondPage = renderer.formatDetails(database, page = 2)
-        assertTrue("### Query groups (page 2 of 3)" in secondPage)
-        assertTrue("| query 51 |" in secondPage)
-        assertFalse("| query 50 |" in secondPage)
+        val largeDatabase = SymfonyProfilerDatabase(
+            queryCount = 4,
+            totalTimeMs = 4.0,
+            connections = listOf("default"),
+            duplicateQueryCount = 0,
+            queryGroups = (1..4).map { index ->
+                SymfonyProfilerDatabaseQueryGroup("query $index ${"x".repeat(5_000)}", 1, 1.0, 1.0)
+            },
+        )
 
-        val clampedPage = renderer.formatDetails(database, page = 99)
-        assertTrue("### Query groups (page 3 of 3)" in clampedPage)
-        assertTrue("| query 120 |" in clampedPage)
+        val firstPage = renderer.formatDetails(largeDatabase)
+        assertTrue("### Query groups (page 1 of 2)" in firstPage)
+        assertTrue("| query 3 " in firstPage)
+        assertFalse("| query 4 " in firstPage)
+
+        val secondPage = renderer.formatDetails(largeDatabase, page = 2)
+        assertTrue("### Query groups (page 2 of 2)" in secondPage)
+        assertTrue("| query 4 " in secondPage)
+        assertFalse("| query 3 " in secondPage)
+
+        val clampedPage = renderer.formatDetails(largeDatabase, page = 99)
+        assertTrue("### Query groups (page 2 of 2)" in clampedPage)
+        assertTrue("| query 4 " in clampedPage)
     }
 
     @Test

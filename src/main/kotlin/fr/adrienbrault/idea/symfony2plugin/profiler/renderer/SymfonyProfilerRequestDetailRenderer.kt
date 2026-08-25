@@ -4,9 +4,7 @@ import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerProf
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerRequest
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerRequestConsumer
 import fr.adrienbrault.idea.symfony2plugin.profiler.consumer.SymfonyProfilerRequestSummary
-import kotlin.math.ceil
 
-private const val DETAIL_PAGE_SIZE = 100
 private val CONTROL_CHARACTERS = Regex("[\\u0000-\\u001F\\u007F]+")
 
 /** Renders sanitized request metadata and the generic request value tree. */
@@ -31,14 +29,13 @@ internal object SymfonyProfilerRequestDetailRenderer : ProfilerDetailRenderer {
 
     /** Renders a bounded page of the sanitized generic request value tree. */
     internal fun formatDetails(request: SymfonyProfilerRequest, page: Int = 1): String {
-        val lines = ProfilerTextRenderer.render(request.data, initialIndent = 2)
-        val totalPages = maxOf(1, ceil(lines.size.toDouble() / DETAIL_PAGE_SIZE).toInt())
-        val currentPage = page.coerceIn(1, totalPages)
-        val pageLines = lines.drop((currentPage - 1) * DETAIL_PAGE_SIZE).take(DETAIL_PAGE_SIZE)
+        val detailPage = paginateProfilerDetailEntries(ProfilerTextRenderer.render(request.data), page)
 
         return buildString {
             appendLine("Collector: request")
-            appendLine("Page: $currentPage of $totalPages")
+            if (detailPage.isPaginated) {
+                appendLine("Page: ${detailPage.number} of ${detailPage.total}")
+            }
             appendLine()
             appendLine("Summary")
             appendLine()
@@ -46,7 +43,7 @@ internal object SymfonyProfilerRequestDetailRenderer : ProfilerDetailRenderer {
             appendLine()
             appendLine("Data")
             appendLine()
-            pageLines.forEach(::appendLine)
+            detailPage.entries.forEach(::appendLine)
         }.trimEnd()
     }
 
