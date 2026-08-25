@@ -25,17 +25,17 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
     public void testMethodLevelAttributeCompletionScopes() {
         assertCompletionContains(PhpFileType.INSTANCE,
             "<?php\n\nclass TestController {\n    #<caret>\n    public function index() { }\n}",
-            "#[Route]"
+            "#[Route]", "#[IsGranted]", "#[Cache]", "#[Template]"
         );
 
         assertCompletionNotContains(PhpFileType.INSTANCE,
             "<?php\n    #<caret>\n    function test() { }\n",
-            "#[Route]", "#[IsGranted]", "#[Cache]"
+            "#[Route]", "#[IsGranted]", "#[Cache]", "#[Template]"
         );
 
         assertCompletionNotContains(PhpFileType.INSTANCE,
             "<?php\n\nclass TestController {\n    <caret>\n    public function index() { }\n}",
-            "#[Route]", "#[IsGranted]", "#[Cache]"
+            "#[Route]", "#[IsGranted]", "#[Cache]", "#[Template]"
         );
 
         assertCompletionContains(PhpFileType.INSTANCE,
@@ -60,7 +60,7 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
 
         assertCompletionNotContains(PhpFileType.INSTANCE,
             "<?php\n\nclass MyService {\n    #<caret>\n    public function myMethod() { }\n}",
-            "#[AsTwigFilter]", "#[AsTwigFunction]", "#[AsTwigTest]"
+            "#[Template]", "#[AsTwigFilter]", "#[AsTwigFunction]", "#[AsTwigTest]"
         );
 
         assertCompletionNotContains(PhpFileType.INSTANCE,
@@ -76,6 +76,13 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
         );
         assertTrue("Result should contain Cache use statement", cacheResult.contains("use Symfony\\Component\\HttpKernel\\Attribute\\Cache;"));
         assertTrue("Result should contain empty parentheses", cacheResult.contains("#[Cache()]"));
+
+        String templateResult = insertSelectedCompletion(
+            "<?php\n\nnamespace App\\Controller;\n\nclass TestController {\n    #<caret>\n    public function index() { }\n}",
+            "#[Template]"
+        );
+        assertTrue("Result should contain Template use statement", templateResult.contains("use Symfony\\Bridge\\Twig\\Attribute\\Template;"));
+        assertTrue("Result should contain quotes for the template name", templateResult.contains("#[Template(\"\")]"));
 
         String filterResult = insertSelectedCompletion(
             "<?php\n\nnamespace App\\Twig;\n\nclass MyTwigExtension {\n    #<caret>\n    public function myFilter() { }\n}",
@@ -109,7 +116,7 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
 
         assertCompletionNotContains(PhpFileType.INSTANCE,
             "<?php\n\n#<caret>\nclass TestController {\n    public function index() { }\n}",
-            "#[IsGranted]", "#[Cache]"
+            "#[IsGranted]", "#[Cache]", "#[Template]"
         );
 
         assertCompletionNotContains(PhpFileType.INSTANCE,
@@ -119,7 +126,7 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
 
         assertCompletionContains(PhpFileType.INSTANCE,
             "<?php\n\nclass TestController {\n    #<caret>\n    public function index() { }\n}",
-            "#[Route]", "#[IsGranted]", "#[Cache]"
+            "#[Route]", "#[IsGranted]", "#[Cache]", "#[Template]"
         );
 
         assertCompletionNotContains(PhpFileType.INSTANCE,
