@@ -9,6 +9,7 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.lang.PhpFileType;
+import com.jetbrains.php.lang.psi.elements.FunctionReference;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.twig.TwigFile;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateReference;
@@ -205,9 +206,126 @@ public class TemplateMoveRenameUtilTest extends SymfonyLightCodeInsightFixtureTe
             ref.handleElementRename("renamed.html.twig");
         });
 
-        assertTrue(
-            "PHP file must contain the renamed template path after handleElementRename",
-            myFixture.getFile().getText().contains("@App/old/renamed.html.twig")
+        assertEquals(
+            "<?php class C { function i() { $this->render('@App/old/renamed.html.twig'); } }",
+            myFixture.getFile().getText()
+        );
+    }
+
+    /**
+     * Renaming the Twig file through IntelliJ's refactoring pipeline must keep the complete PHP
+     * string literal intact, including its closing quote.
+     */
+    public void testRenameTwigTemplateKeepsClosingQuoteInPhpRenderCall() {
+        PsiFile template = myFixture.addFileToProject("templates/event_participant/manage.html.twig", "");
+        PsiFile phpFile = myFixture.addFileToProject(
+            "src/Controller/EventParticipantController.php",
+            "<?php class C { function i() { $this->render('event_participant/manage.html.twig'); } }"
+        );
+
+        myFixture.renameElement(template, "manages.html.twig");
+
+        assertEquals(
+            "<?php class C { function i() { $this->render('event_participant/manages.html.twig'); } }",
+            phpFile.getText()
+        );
+    }
+
+    /**
+     * A resolved template variable produces a synthetic reference on the complete render() call.
+     * Renaming its target must not replace that call with the new filename.
+     */
+    public void testRenameTwigTemplateKeepsVariableRenderCallIntact() {
+        PsiFile template = myFixture.addFileToProject("templates/event_participant/manage.html.twig", "");
+        PsiFile phpFile = myFixture.addFileToProject(
+            "src/Controller/VariableController.php",
+            "<?php class C { function i() { $template = 'event_participant/manage.html.twig'; $this->render($template); } }"
+        );
+
+        TwigTemplateUsageReference reference = findTwigUsageReference(
+            "templates/event_participant/manage.html.twig",
+            phpFile
+        );
+        assertNotNull("Expected TwigTemplateUsageReference for resolved template variable", reference);
+        assertTrue("Expected the render() call as navigation element", reference.getElement() instanceof FunctionReference);
+
+        myFixture.renameElement(template, "manages.html.twig");
+
+        assertEquals(
+            "<?php class C { function i() { $template = 'event_participant/manage.html.twig'; $this->render($template); } }",
+            phpFile.getText()
+        );
+    }
+
+    /**
+     * The synthetic usage for an @Template annotation navigates to the method identifier. It is
+     * navigation-only and must not rename that method.
+     */
+    public void testRenameTwigTemplateKeepsAnnotatedMethodNameIntact() {
+        PsiFile template = myFixture.addFileToProject("templates/event_participant/manage.html.twig", "");
+        PsiFile phpFile = myFixture.addFileToProject(
+            "src/Controller/AnnotatedController.php",
+            "<?php\n" +
+                "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;\n" +
+                "class C {\n" +
+                "    /** @Template(\"event_participant/manage.html.twig\") */\n" +
+                "    public function index() {}\n" +
+                "}\n"
+        );
+
+        TwigTemplateUsageReference reference = findTwigUsageReference(
+            "templates/event_participant/manage.html.twig",
+            phpFile
+        );
+        assertNotNull("Expected TwigTemplateUsageReference for @Template", reference);
+        assertEquals("index", reference.getElement().getText());
+
+        myFixture.renameElement(template, "manages.html.twig");
+
+        assertEquals(
+            "<?php\n" +
+                "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;\n" +
+                "class C {\n" +
+                "    /** @Template(\"event_participant/manage.html.twig\") */\n" +
+                "    public function index() {}\n" +
+                "}\n",
+            phpFile.getText()
+        );
+    }
+
+    /**
+     * The synthetic usage for a #[Template] attribute also navigates to the method identifier. It
+     * must not rename that identifier; the attribute's own TemplateReference updates the literal.
+     */
+    public void testRenameTwigTemplateKeepsAttributedMethodNameIntact() {
+        PsiFile template = myFixture.addFileToProject("templates/event_participant/manage.html.twig", "");
+        PsiFile phpFile = myFixture.addFileToProject(
+            "src/Controller/AttributedController.php",
+            "<?php\n" +
+                "use Symfony\\Bridge\\Twig\\Attribute\\Template;\n" +
+                "class C {\n" +
+                "    #[Template(template: 'event_participant/manage.html.twig')]\n" +
+                "    public function index() {}\n" +
+                "}\n"
+        );
+
+        TwigTemplateUsageReference reference = findTwigUsageReference(
+            "templates/event_participant/manage.html.twig",
+            phpFile
+        );
+        assertNotNull("Expected TwigTemplateUsageReference for #[Template]", reference);
+        assertEquals("index", reference.getElement().getText());
+
+        myFixture.renameElement(template, "manages.html.twig");
+
+        assertEquals(
+            "<?php\n" +
+                "use Symfony\\Bridge\\Twig\\Attribute\\Template;\n" +
+                "class C {\n" +
+                "    #[Template(template: 'event_participant/manages.html.twig')]\n" +
+                "    public function index() {}\n" +
+                "}\n",
+            phpFile.getText()
         );
     }
 

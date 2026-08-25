@@ -122,10 +122,16 @@ public class TwigTemplateReferencesSearchExecutor implements QueryExecutor<PsiRe
 
                     PsiElement sourceElement = resolveControllerSourceElement(triple, function);
                     if (sourceElement != null && processedPhpSourceElements.add(sourceElement)) {
+                        boolean canRename = sourceElement instanceof StringLiteralExpression;
+                        TextRange range = canRename
+                            ? ((StringLiteralExpression) sourceElement).getValueRange()
+                            : new TextRange(0, sourceElement.getTextLength());
+
                         consumer.process(new TwigTemplateUsageReference(
                             sourceElement,
                             targetFile,
-                            new TextRange(0, sourceElement.getTextLength())
+                            range,
+                            canRename
                         ));
                     }
                 });

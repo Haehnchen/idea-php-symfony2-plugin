@@ -20,11 +20,21 @@ public class TwigTemplateUsageReference extends PsiReferenceBase<PsiElement> {
     private final PsiElement targetElement;
     @NotNull
     private final String templateName;
+    private final boolean canRename;
 
     public TwigTemplateUsageReference(@NotNull PsiElement sourceElement, @NotNull PsiElement targetElement, @NotNull TextRange rangeInElement) {
+        this(sourceElement, targetElement, rangeInElement, true);
+    }
+
+    public TwigTemplateUsageReference(
+            @NotNull PsiElement sourceElement,
+            @NotNull PsiElement targetElement,
+            @NotNull TextRange rangeInElement,
+            boolean canRename) {
         super(sourceElement, rangeInElement, false);
         this.targetElement = targetElement;
         this.templateName = rangeInElement.substring(sourceElement.getText());
+        this.canRename = canRename;
     }
 
     @Override
@@ -45,6 +55,10 @@ public class TwigTemplateUsageReference extends PsiReferenceBase<PsiElement> {
 
     @Override
     public PsiElement handleElementRename(@NotNull String newElementName) throws IncorrectOperationException {
+        if (!canRename) {
+            return myElement;
+        }
+
         String renamedTemplateName = TemplateMoveRenameUtil.renameTemplateName(templateName, newElementName);
         PsiElement result = TemplateMoveRenameUtil.applyRangeReplacement(myElement, getRangeInElement(), renamedTemplateName);
         return result != null ? result : myElement;
