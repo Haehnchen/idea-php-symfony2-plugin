@@ -20,6 +20,8 @@ internal object ProfilerTextRenderer {
     private const val MAX_KEY_LENGTH = 200
     private const val MAX_SCALAR_LENGTH = 1_000
     private val MARKDOWN_LEADING_CHARACTERS = setOf('#', '-', '*', '+', '>', '|', '`')
+    private val CONTROL_CHARACTERS = Regex("[\\u0000-\\u001F\\u007F]+")
+    private val BACKTICK_RUN = Regex("`+")
 
     fun render(value: ProfilerValue, initialIndent: Int = 0): List<String> {
         val state = RenderState()
@@ -40,6 +42,22 @@ internal object ProfilerTextRenderer {
             state.lines.add(" ".repeat(initialIndent) + "[output truncated]")
         }
         return state.lines
+    }
+
+    /** Renders untrusted single-line text as a Markdown code span. */
+    fun inlineCode(value: String): String {
+        val text = value.replace(CONTROL_CHARACTERS, " ")
+        val longestDelimiter = BACKTICK_RUN.findAll(text).maxOfOrNull { it.value.length } ?: 0
+        val delimiter = "`".repeat(longestDelimiter + 1)
+        val padding = if (
+            text.startsWith('`') || text.endsWith('`') || text.startsWith(' ') || text.endsWith(' ')
+        ) {
+            " "
+        } else {
+            ""
+        }
+
+        return "$delimiter$padding$text$padding$delimiter"
     }
 
     private class RenderState {
@@ -122,12 +140,14 @@ internal object ProfilerTextRenderer {
         is ProfilerFloat -> value.value.toString()
         is ProfilerString -> value.utf8StringOrNull()?.let { escape(it, MAX_SCALAR_LENGTH) }
             ?: "[binary string, ${value.bytes.size} bytes]"
+
         is ProfilerArray -> if (value.entries.isEmpty()) "(empty)" else "[nested value]"
         is ProfilerEnum -> {
             val enumName = value.enumName.utf8StringOrNull() ?: "binary enum"
             val caseName = value.caseName.utf8StringOrNull() ?: "binary case"
             escape("$enumName::$caseName", MAX_SCALAR_LENGTH)
         }
+
         is ProfilerReference -> "[reference to position ${value.position}]"
         is ProfilerOpaque -> buildString {
             append("[opaque ${escape(value.kind, MAX_KEY_LENGTH)}")

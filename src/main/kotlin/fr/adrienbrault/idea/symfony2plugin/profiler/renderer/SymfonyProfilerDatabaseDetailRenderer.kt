@@ -15,6 +15,7 @@ private val CONTROL_CHARACTERS = Regex("[\\u0000-\\u001F\\u007F]+")
 /** Renders Doctrine query summaries and paginated query groups. */
 internal object SymfonyProfilerDatabaseDetailRenderer : ProfilerDetailRenderer {
     override val name = "db"
+    override val overviewWeight = 70
 
     override fun renderOverview(profile: SymfonyProfilerProfile): String =
         formatOverview(SymfonyProfilerDatabaseConsumer.read(profile))

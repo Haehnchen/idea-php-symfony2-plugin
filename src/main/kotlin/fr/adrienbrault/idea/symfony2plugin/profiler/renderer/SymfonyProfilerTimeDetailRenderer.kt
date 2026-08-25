@@ -9,12 +9,11 @@ import java.math.RoundingMode
 
 private const val OVERVIEW_EVENT_LIMIT = 3
 private const val EVENT_THRESHOLD_MS = 1.0
-private val CONTROL_CHARACTERS = Regex("[\\u0000-\\u001F\\u007F]+")
 
 /** Renders Symfony Stopwatch events ordered by descending duration. */
 internal object SymfonyProfilerTimeDetailRenderer : ProfilerDetailRenderer {
     override val name = "time"
-    override val overviewWeight = 50
+    override val overviewWeight = 80
 
     override fun renderOverview(profile: SymfonyProfilerProfile): String =
         formatOverview(SymfonyProfilerTimeConsumer.read(profile))
@@ -78,14 +77,16 @@ internal object SymfonyProfilerTimeDetailRenderer : ProfilerDetailRenderer {
         }
 
         appendLine()
-        appendLine("| Event | Category | Start (ms) | End (ms) | Duration (ms) | Memory (MiB) |")
-        appendLine("| --- | --- | ---: | ---: | ---: | ---: |")
-        events.forEach { event ->
+        events.forEachIndexed { index, event ->
             appendLine(
-                "| ${plainText(event.name)} | ${plainText(event.category)} | " +
-                    "${formatMilliseconds(event.startMs)} | ${formatMilliseconds(event.endMs)} | " +
-                    "${formatMilliseconds(event.durationMs)} | ${formatMemoryMiB(event.memoryBytes)} |",
+                "${index + 1}. ${ProfilerTextRenderer.inlineCode(event.name)} — " +
+                        "${formatMilliseconds(event.durationMs)} ms",
             )
+            appendLine("   - Category: ${ProfilerTextRenderer.inlineCode(event.category)}")
+            appendLine(
+                "   - Timeline: ${formatMilliseconds(event.startMs)}–${formatMilliseconds(event.endMs)} ms",
+            )
+            appendLine("   - Memory: ${formatMemoryMiB(event.memoryBytes)} MiB")
         }
     }.trimEnd()
 }
@@ -99,7 +100,3 @@ private fun formatMemoryMiB(bytes: Long): String = BigDecimal.valueOf(bytes)
 
 private fun formatMemoryLimit(bytes: Long): String =
     if (bytes < 0) "unlimited" else "${formatMemoryMiB(bytes)} MiB"
-
-private fun plainText(value: String): String = value
-    .replace(CONTROL_CHARACTERS, " ")
-    .replace("|", "\\|")

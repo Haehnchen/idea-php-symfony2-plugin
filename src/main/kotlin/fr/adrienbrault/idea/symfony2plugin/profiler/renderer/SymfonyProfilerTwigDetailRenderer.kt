@@ -14,7 +14,7 @@ private val CONTROL_CHARACTERS = Regex("[\\u0000-\\u001F\\u007F]+")
 /** Renders Twig metrics, unique templates, and the complete rendering call tree. */
 internal object SymfonyProfilerTwigDetailRenderer : ProfilerDetailRenderer {
     override val name = "twig"
-    override val overviewWeight = 25
+    override val overviewWeight = 60
 
     override fun renderOverview(profile: SymfonyProfilerProfile): String =
         formatOverview(SymfonyProfilerTwigConsumer.read(profile))
@@ -59,12 +59,14 @@ internal object SymfonyProfilerTwigDetailRenderer : ProfilerDetailRenderer {
             appendLine("No Twig templates were rendered.")
         } else {
             appendLine()
-            appendLine("| Template | Path | Render count |")
-            appendLine("| --- | --- | ---: |")
-            templates.forEach { template ->
+            templates.forEachIndexed { index, template ->
                 appendLine(
-                    "| ${plainText(template.name)} | ${plainText(template.path ?: "none")} | " +
-                        "${template.renderCount} |",
+                    "${index + 1}. ${ProfilerTextRenderer.inlineCode(template.name)} — " +
+                            formatRenderCount(template.renderCount),
+                )
+                appendLine(
+                    template.path?.let { "   - Path: ${ProfilerTextRenderer.inlineCode(it)}" }
+                        ?: "   - Path unavailable",
                 )
             }
         }
@@ -118,8 +120,6 @@ private fun formatMilliseconds(value: Double): String =
 private fun formatPercentage(value: Double): String =
     BigDecimal.valueOf(value).setScale(0, RoundingMode.HALF_UP).toPlainString()
 
-private fun plainText(value: String): String = value
-    .replace(CONTROL_CHARACTERS, " ")
-    .replace("|", "\\|")
+private fun formatRenderCount(count: Int): String = if (count == 1) "rendered once" else "rendered $count times"
 
 private fun treeText(value: String): String = value.replace(CONTROL_CHARACTERS, " ")

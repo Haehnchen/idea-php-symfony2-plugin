@@ -17,7 +17,7 @@ private val LOG_TIME_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern(
 /** Renders prioritized and bounded log sections without retaining log context. */
 internal object SymfonyProfilerLoggerDetailRenderer : ProfilerDetailRenderer {
     override val name = "logger"
-    override val overviewWeight = 75
+    override val overviewWeight = 40
 
     override fun renderOverview(profile: SymfonyProfilerProfile): String =
         formatOverview(SymfonyProfilerLoggerConsumer.read(profile))
