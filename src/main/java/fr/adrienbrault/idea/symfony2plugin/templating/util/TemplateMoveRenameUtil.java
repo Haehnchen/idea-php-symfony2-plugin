@@ -71,9 +71,12 @@ public final class TemplateMoveRenameUtil {
             return null;
         }
 
+        PsiDocumentManager psiDocumentManager = PsiDocumentManager.getInstance(project);
+        psiDocumentManager.doPostponedOperationsAndUnblockDocument(document);
+
         int absoluteStart = element.getTextRange().getStartOffset() + rangeInElement.getStartOffset();
         document.replaceString(absoluteStart, absoluteStart + rangeInElement.getLength(), newText);
-        PsiDocumentManager.getInstance(project).commitDocument(document);
+        psiDocumentManager.commitDocument(document);
 
         return element;
     }

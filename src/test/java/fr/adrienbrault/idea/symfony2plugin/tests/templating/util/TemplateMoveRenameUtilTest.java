@@ -329,6 +329,35 @@ public class TemplateMoveRenameUtilTest extends SymfonyLightCodeInsightFixtureTe
         );
     }
 
+    public void testRenameTwigTemplateUpdatesMultiplePhpUsages() {
+        PsiFile template = myFixture.addFileToProject("templates/test/foobaraaaa.html.twig", "");
+        PsiFile phpFile = myFixture.addFileToProject(
+            "src/Controller/FoobarController.php",
+            "<?php\n" +
+                "use Symfony\\Bridge\\Twig\\Attribute\\Template;\n" +
+                "class FoobarController {\n" +
+                "    #[Template(template: 'test/foobaraaaa.html.twig')]\n" +
+                "    public function index() {\n" +
+                "        return $this->render('test/foobaraaaa.html.twig');\n" +
+                "    }\n" +
+                "}\n"
+        );
+
+        myFixture.renameElement(template, "foobar.html.twig");
+
+        assertEquals(
+            "<?php\n" +
+                "use Symfony\\Bridge\\Twig\\Attribute\\Template;\n" +
+                "class FoobarController {\n" +
+                "    #[Template(template: 'test/foobar.html.twig')]\n" +
+                "    public function index() {\n" +
+                "        return $this->render('test/foobar.html.twig');\n" +
+                "    }\n" +
+                "}\n",
+            phpFile.getText()
+        );
+    }
+
     /**
      * @see TemplateMoveRenameUtil#applyRangeReplacement
      */
