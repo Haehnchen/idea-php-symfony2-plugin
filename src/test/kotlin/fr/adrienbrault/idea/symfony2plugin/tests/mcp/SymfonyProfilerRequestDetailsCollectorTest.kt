@@ -2,9 +2,42 @@ package fr.adrienbrault.idea.symfony2plugin.tests.mcp
 
 import fr.adrienbrault.idea.symfony2plugin.mcp.collector.SymfonyProfilerRequestDetailsCollector
 import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerIndexInterface
+import fr.adrienbrault.idea.symfony2plugin.profiler.dict.HttpProfilerRequest
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface
 
 class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
+    fun testLatestLoadsNewestKnownProfilerRequest() {
+        val profilerIndex = TestProfilerIndex(
+            resourceFixture("symfony-profiler-db.gz"),
+            listOf(
+                profilerRequest("abcdef"),
+                profilerRequest("fedcba"),
+            ),
+        )
+
+        SymfonyProfilerRequestDetailsCollector(profilerIndex).collect(" latest ")
+
+        assertEquals("abcdef", profilerIndex.rawProfileHash)
+    }
+
+    fun testLatestFailsWithoutKnownProfilerRequests() {
+        try {
+            SymfonyProfilerRequestDetailsCollector(TestProfilerIndex(null)).collect("latest")
+            fail("Expected latest to fail without known profiler requests")
+        } catch (exception: Throwable) {
+            assertTrue("No profiler requests are available to resolve 'latest'" in exception.message.orEmpty())
+        }
+    }
+
+    fun testRejectsUnknownHashAlias() {
+        try {
+            SymfonyProfilerRequestDetailsCollector(TestProfilerIndex(null)).collect("newest")
+            fail("Expected unsupported hash alias to fail validation")
+        } catch (exception: Throwable) {
+            assertTrue("hash must be 'latest' or a 6-64 character hexadecimal profiler token" in exception.message.orEmpty())
+        }
+    }
+
     fun testHashOnlyReturnsCompactOverview() {
         val text = fixtureCollector("symfony-profiler-db.gz").collect("abcdef")
 
@@ -108,6 +141,25 @@ class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
             fail("Expected missing collector to fail")
         } catch (exception: Throwable) {
             assertTrue("does not contain the 'mailer' collector" in exception.message.orEmpty())
+            assertTrue("Available collectors: db" in exception.message.orEmpty())
+        }
+    }
+
+    fun testParseFailureListsNewestTenProfilerHashes() {
+        val hashes = (1..12).map { it.toString(16).padStart(6, '0') }
+        val profilerIndex = TestProfilerIndex(
+            "invalid serialized profile".toByteArray(),
+            hashes.map(::profilerRequest),
+        )
+
+        try {
+            SymfonyProfilerRequestDetailsCollector(profilerIndex).collect("abcdef")
+            fail("Expected invalid profiler data to fail")
+        } catch (exception: Throwable) {
+            val message = exception.message.orEmpty()
+            assertTrue("Newest profiler hashes: ${hashes.take(10).joinToString(", ")}" in message)
+            assertFalse(hashes[10] in message)
+            assertFalse(hashes[11] in message)
         }
     }
 
@@ -356,11 +408,28 @@ class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
         javaClass.getResourceAsStream("/profiler/generated/$name"),
     ).use { it.readAllBytes() }
 
-    private class TestProfilerIndex(private val rawProfile: ByteArray?) : ProfilerIndexInterface {
-        override fun getRequests(): List<ProfilerRequestInterface> = emptyList()
+    private fun profilerRequest(hash: String): ProfilerRequestInterface = HttpProfilerRequest(
+        200,
+        hash,
+        "_profiler/$hash",
+        "GET",
+        "https://example.test/profile",
+    )
+
+    private class TestProfilerIndex(
+        private val rawProfile: ByteArray?,
+        private val requests: List<ProfilerRequestInterface> = emptyList(),
+    ) : ProfilerIndexInterface {
+        var rawProfileHash: String? = null
+            private set
+
+        override fun getRequests(): List<ProfilerRequestInterface> = requests
 
         override fun getUrlForRequest(request: ProfilerRequestInterface): String? = null
 
-        override fun getRawProfile(hash: String): ByteArray? = rawProfile
+        override fun getRawProfile(hash: String): ByteArray? {
+            rawProfileHash = hash
+            return rawProfile
+        }
     }
 }
