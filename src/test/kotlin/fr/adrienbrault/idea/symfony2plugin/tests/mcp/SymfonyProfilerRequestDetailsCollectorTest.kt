@@ -34,6 +34,15 @@ class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
         assertTrue("- Threshold: 1.00 ms" in text)
     }
 
+    fun testOverviewSeparatesCollectorSectionsWithBlankLines() {
+        val text = SymfonyProfilerRequestDetailsCollector(
+            TestProfilerIndex(syntheticRequestAndTimeProfile()),
+        ).collect("abc123")
+
+        assertTrue("- Content type: application/json\n\n## Collector: time" in text)
+        assertTrue("No timing events recorded.\n\n## Available collectors" in text)
+    }
+
     fun testTimeDetailsApplySymfonyThreshold() {
         val text = fixtureCollector("symfony-profiler-time.gz").collect("fedcba", "time")
 
@@ -229,6 +238,51 @@ class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
                 "url" to phpString("https://example.test/profile"),
                 "status_code" to "i:200;",
                 "data" to phpArray(listOf(collectorName to collector)),
+            ),
+        ).toByteArray(Charsets.UTF_8)
+    }
+
+    private fun syntheticRequestAndTimeProfile(): ByteArray {
+        val protectedDataProperty = "\u0000*\u0000data"
+        val requestCollector = phpObject(
+            "Symfony\\Component\\HttpKernel\\DataCollector\\RequestDataCollector",
+            listOf(
+                protectedDataProperty to phpArray(
+                    listOf(
+                        "method" to phpString("GET"),
+                        "path_info" to phpString("/profile"),
+                        "route" to phpString("app_profile"),
+                        "status_code" to "i:200;",
+                        "content_type" to phpString("application/json"),
+                    ),
+                ),
+            ),
+        )
+        val timeCollector = phpObject(
+            "Symfony\\Component\\HttpKernel\\DataCollector\\TimeDataCollector",
+            listOf(
+                protectedDataProperty to phpArray(
+                    listOf(
+                        "start_time" to "i:0;",
+                        "events" to phpArray(emptyList()),
+                        "stopwatch_installed" to "b:0;",
+                    ),
+                ),
+            ),
+        )
+
+        return phpArray(
+            listOf(
+                "token" to phpString("abc123"),
+                "method" to phpString("GET"),
+                "url" to phpString("https://example.test/profile"),
+                "status_code" to "i:200;",
+                "data" to phpArray(
+                    listOf(
+                        "request" to requestCollector,
+                        "time" to timeCollector,
+                    ),
+                ),
             ),
         ).toByteArray(Charsets.UTF_8)
     }
