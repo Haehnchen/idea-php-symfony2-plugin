@@ -9,6 +9,7 @@ internal object SymfonyProfilerRequestDetailsRenderer {
     private val renderers: List<ProfilerDetailRenderer> = listOf(
         SymfonyProfilerRequestDetailRenderer,
         SymfonyProfilerLoggerDetailRenderer,
+        SymfonyProfilerTranslationDetailRenderer,
         SymfonyProfilerEventsDetailRenderer,
         SymfonyProfilerTimeDetailRenderer,
         SymfonyProfilerTwigDetailRenderer,

@@ -39,6 +39,29 @@ class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
         assertTrue("- Threshold: 1.00 ms" in text)
     }
 
+    fun testTranslationOverviewIncludesMessageStatesWithoutCsvRows() {
+        val text = fixtureCollector("symfony-profiler-translation.gz").collect("7a1a7e")
+
+        assertTrue("## Collector: translation" in text)
+        assertTrue("- Defined messages: 2" in text)
+        assertTrue("- Missing messages: 2" in text)
+        assertTrue("- Fallback messages: 1" in text)
+        assertFalse("state,locale,fallback_locale,domain,count,id,translation" in text)
+        assertFalse("checkout.missing_title" in text)
+    }
+
+    fun testTranslationDetailsRenderCsvWithoutParameters() {
+        val text = fixtureCollector("symfony-profiler-translation.gz")
+            .collect("7a1a7e", "translation")
+
+        assertTrue("### Messages (CSV)" in text)
+        assertTrue("state,locale,fallback_locale,domain,count,id,translation" in text)
+        assertTrue("missing,en,,checkout,2,checkout.missing_title,checkout.missing_title" in text)
+        assertTrue("fallback,en,fr,messages,1,account.title,Compte" in text)
+        assertFalse("%name%" in text)
+        assertFalse("Example" in text)
+    }
+
     fun testOverviewSeparatesCollectorSectionsWithBlankLines() {
         val text = SymfonyProfilerRequestDetailsCollector(
             TestProfilerIndex(syntheticRequestAndTimeProfile()),
@@ -225,6 +248,7 @@ class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
         Triple("symfony-profiler-time.gz", "fedcba", "time"),
         Triple("symfony-profiler-twig.gz", "c0ffee", "twig"),
         Triple("symfony-profiler-logger.gz", "10ca11", "logger"),
+        Triple("symfony-profiler-translation.gz", "7a1a7e", "translation"),
         Triple("symfony-profiler-events-symfony-6.3.gz", "e71e17", "events"),
         Triple("symfony-profiler-db.gz", "abcdef", "db"),
     )
