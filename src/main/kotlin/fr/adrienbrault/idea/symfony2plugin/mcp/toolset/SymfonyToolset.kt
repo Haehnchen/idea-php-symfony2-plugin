@@ -216,7 +216,7 @@ class SymfonyToolset : McpToolset {
 
     @McpTool
     @McpDescription("""
-        Shows one Symfony Profiler request. Use list_symfony_profiler first to find its hash.
+        Shows one Symfony Profiler request. Use list_symfony_profiler first to find its hash or pass `latest`.
 
         Omit collector for a compact overview and the complete list of available collectors.
 
@@ -233,9 +233,9 @@ class SymfonyToolset : McpToolset {
         Collector details use bounded plain-text pages; use the page parameter to request the next page.
     """)
     suspend fun get_symfony_profiler_details(
-        @McpDescription("Hexadecimal profiler token/hash from list_symfony_profiler. Example: '18e6b8'")
+        @McpDescription("Profiler token/hash from list_symfony_profiler, or 'latest' newest known. Examples: '18e6b8', 'latest'")
         hash: String,
-        @McpDescription("Optional exact collector name from the request overview. Collector names are case-sensitive.")
+        @McpDescription("Optional exact case-sensitive collector name.")
         collector: String? = null,
         @McpDescription("1-based page number. Defaults to 1.")
         page: Int = 1,
