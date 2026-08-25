@@ -24,6 +24,19 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2026.2.312
+* Add Symfony Profiler profiled date to all mcp tools (Daniel Espendiller)
+* Support `latest` hash alias in Symfony Profiler request tool (Daniel Espendiller)
+* Add Symfony translation collector support for MCP tools (Daniel Espendiller)
+* Change "special" toolset formater renderer (Daniel Espendiller)
+* Some toolset-related mcp changes (Daniel Espendiller)
+* format linebreak of profiler mcp overview output (Daniel Espendiller)
+* add: Support for `#[Template]` attribute completion (Daniel Espendiller)
+* Fix document blocking on duplicate template rename (Daniel Espendiller)
+* fix: Rename of a Twig template deletes the closing quote in the PHP render() call (Daniel Espendiller)
+* Rework UX component prop/block docs for Twig 3.29 comment syntax (Hugo Alliaume)
+* Add Symfony memory profiling support to MCP tools; add performance threshold (Daniel Espendiller)
+
 ## 2026.2.311
 * Add fallback collector consumer / renderer for unspecialized profiler mcp (Daniel Espendiller)
 * Add Symfony events profiler detail MCP tool (Daniel Espendiller)
