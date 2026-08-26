@@ -1,7 +1,5 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.util;
 
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.openapi.util.Pair;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -14,9 +12,6 @@ import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
 import com.jetbrains.php.lang.psi.elements.*;
 import de.espend.idea.php.annotation.util.AnnotationUtil;
-import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtension;
-import fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtensionParameter;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormFieldResolver;
 import fr.adrienbrault.idea.symfony2plugin.util.AnnotationBackportUtil;
@@ -446,13 +441,11 @@ public class PhpMethodVariableResolveUtil {
             }
         }
 
-        NotNullLazyValue<Set<String>> lazyMethodNamesCollector = TemplateRenderVisitor.createLazyMethodNamesCollector(function.getProject());
-
         PhpControlFlowUtil.processFlow(function.getControlFlow(), new PhpInstructionProcessor() {
             @Override
             public boolean processPhpCallInstruction(PhpCallInstruction instruction) {
                 if (instruction.getFunctionReference() instanceof MethodReference methodReference) {
-                    TemplateRenderVisitor.processMethodReference(methodReference, lazyMethodNamesCollector, consumer);
+                    TemplateRenderVisitor.processMethodReference(methodReference, consumer);
                 }
                 return super.processPhpCallInstruction(instruction);
             }
@@ -479,40 +472,19 @@ public class PhpMethodVariableResolveUtil {
             }
         }
 
-        @NotNull
-        private static Set<String> collectMethodInner(@NotNull Project project) {
-            Set<String> methods = new HashSet<>();
-
-            PluginConfigurationExtension[] extensions = Symfony2ProjectComponent.PLUGIN_CONFIGURATION_EXTENSION.getExtensions();
-            if(extensions.length > 0) {
-                PluginConfigurationExtensionParameter pluginConfiguration = new PluginConfigurationExtensionParameter(project);
-                for (PluginConfigurationExtension extension : extensions) {
-                    extension.invokePluginConfiguration(pluginConfiguration);
-                }
-
-                methods.addAll(pluginConfiguration.getTemplateUsageMethod());
-            }
-            return methods;
-        }
-
-        public static @NotNull NotNullLazyValue<Set<String>> createLazyMethodNamesCollector(@NotNull Project project) {
-            return NotNullLazyValue.lazy(() -> collectMethodInner(project));
-        }
-
-        public static void processMethodReference(@NotNull MethodReference methodReference, NotNullLazyValue<Set<String>> methods, Consumer<Triple<String, PhpNamedElement, FunctionReference>> consumer) {
+        public static void processMethodReference(@NotNull MethodReference methodReference, Consumer<Triple<String, PhpNamedElement, FunctionReference>> consumer) {
             String methodName = methodReference.getName();
             if (methodName == null) {
                 return;
             }
 
             String normalizedMethodName = methodName.toLowerCase(Locale.ROOT);
-            boolean configuredMethod = methods.get().contains(methodName);
-            if (!configuredMethod && Stream.of("render", "htmltemplate", "texttemplate", "renderblock", "renderblockview").noneMatch(normalizedMethodName::contains)) {
+            if (Stream.of("render", "htmltemplate", "texttemplate", "renderblock", "renderblockview").noneMatch(normalizedMethodName::contains)) {
                 return;
             }
 
             Collection<String> namedArguments = getTemplateNamedArguments(methodReference);
-            PsiElement templateParameter = findTemplateParameter(methodReference, namedArguments, configuredMethod && namedArguments.isEmpty());
+            PsiElement templateParameter = findTemplateParameter(methodReference, namedArguments);
             if (templateParameter == null) {
                 return;
             }
@@ -521,7 +493,7 @@ public class PhpMethodVariableResolveUtil {
         }
 
         @Nullable
-        private static PsiElement findTemplateParameter(@NotNull MethodReference methodReference, @NotNull Collection<String> namedArguments, boolean allowNamedFirstParameterFallback) {
+        private static PsiElement findTemplateParameter(@NotNull MethodReference methodReference, @NotNull Collection<String> namedArguments) {
             ParameterList parameterList = methodReference.getParameterList();
             if (parameterList == null) {
                 return null;
@@ -535,7 +507,7 @@ public class PhpMethodVariableResolveUtil {
             }
 
             PsiElement firstParameter = PsiElementUtils.getMethodParameterPsiElementAt(parameterList, 0);
-            if (firstParameter == null || (!allowNamedFirstParameterFallback && PsiElementUtils.isNamedArgument(firstParameter))) {
+            if (firstParameter == null || PsiElementUtils.isNamedArgument(firstParameter)) {
                 return null;
             }
 

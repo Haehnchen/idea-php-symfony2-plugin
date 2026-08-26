@@ -3,7 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.ProjectActivity;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -11,7 +10,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
-import fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtension;
 import fr.adrienbrault.idea.symfony2plugin.util.IdeHelper;
 import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyVarDirectoryWatcherKt;
@@ -45,8 +43,6 @@ public class Symfony2ProjectComponent {
     }
 
     final private static Logger LOG = Logger.getInstance("Symfony-Plugin");
-    public static final ExtensionPointName<PluginConfigurationExtension> PLUGIN_CONFIGURATION_EXTENSION = new ExtensionPointName<>("fr.adrienbrault.idea.symfony2plugin.extension.PluginConfigurationExtension");
-
     public static Logger getLogger() {
         return LOG;
     }
