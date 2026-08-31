@@ -41,9 +41,28 @@ namespace Symfony\Component\EventDispatcher\Attribute
 
 namespace Symfony\Component\HttpKernel
 {
+    abstract class Kernel
+    {
+    }
+
     final class KernelEvents
     {
         public const EXCEPTION = 'kernel.exception';
+    }
+}
+
+namespace Symfony\Component\DependencyInjection\Kernel
+{
+    trait KernelTrait
+    {
+    }
+}
+
+namespace Symfony\Bundle\FrameworkBundle\Kernel
+{
+    trait MicroKernelTrait
+    {
+        use \Symfony\Component\DependencyInjection\Kernel\KernelTrait;
     }
 }
 

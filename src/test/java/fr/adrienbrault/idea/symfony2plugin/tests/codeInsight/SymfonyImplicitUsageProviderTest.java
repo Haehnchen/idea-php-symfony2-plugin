@@ -159,6 +159,39 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
         assertImplicitUsage(eventListenerClass);
     }
 
+    public void testKernelAllowedEnvsMethodIsMarkedUsed() {
+        PsiFile kernelPsiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App;\n" +
+            "\n" +
+            "use Symfony\\Bundle\\FrameworkBundle\\Kernel\\MicroKernelTrait;\n" +
+            "use Symfony\\Component\\HttpKernel\\Kernel as BaseKernel;\n" +
+            "\n" +
+            "class Kernel extends BaseKernel\n" +
+            "{\n" +
+            "    use MicroKernelTrait;\n" +
+            "\n" +
+            "    private function getAllowedEnvs(): array { return ['prod', 'dev', 'test']; }\n" +
+            "    private function unused(): void {}\n" +
+            "}"
+        );
+
+        PhpClass kernelClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) kernelPsiFile.getContainingFile());
+        assertImplicitUsage(kernelClass.findOwnMethodByName("getAllowedEnvs"));
+        assertNotImplicitUsage(kernelClass.findOwnMethodByName("unused"));
+
+        PsiFile nonKernelPsiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App;\n" +
+            "\n" +
+            "class NotAKernel\n" +
+            "{\n" +
+            "    private function getAllowedEnvs(): array { return []; }\n" +
+            "}"
+        );
+
+        PhpClass nonKernelClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) nonKernelPsiFile.getContainingFile());
+        assertNotImplicitUsage(nonKernelClass.findOwnMethodByName("getAllowedEnvs"));
+    }
+
     public void testEventSubscriberGetSubscribedEventsArray() {
         PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
             "<?php\n" +
