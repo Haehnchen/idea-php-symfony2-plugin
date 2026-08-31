@@ -924,6 +924,7 @@
     <depends config-file="symfony_endpoints.xml" optional="true">com.intellij.microservices.ui</depends>
     <depends config-file="symfony_database.xml" optional="true">com.intellij.database</depends>
     <depends config-file="symfony_terminal.xml" optional="true">org.jetbrains.plugins.terminal</depends>
+    <depends config-file="markdown.xml" optional="true">org.intellij.plugins.markdown</depends>
     <depends config-file="pay.xml">com.jetbrains.php</depends>
 
     <actions>
