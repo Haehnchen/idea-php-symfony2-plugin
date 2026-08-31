@@ -31,6 +31,10 @@ import java.util.stream.Collectors;
  */
 public class SymfonyImplicitUsageProvider implements ImplicitUsageProvider {
     private static final String AS_COMMAND_ATTRIBUTE = "\\Symfony\\Component\\Console\\Attribute\\AsCommand";
+    private static final Set<String> KERNEL_TRAITS = Set.of(
+        "\\Symfony\\Bundle\\FrameworkBundle\\Kernel\\MicroKernelTrait",
+        "\\Symfony\\Component\\DependencyInjection\\Kernel\\KernelTrait"
+    );
 
     private static final Set<String> CLASS_LEVEL_IMPLICIT_USAGE_ATTRIBUTES = Set.of(
         AS_COMMAND_ATTRIBUTE,
@@ -69,7 +73,15 @@ public class SymfonyImplicitUsageProvider implements ImplicitUsageProvider {
 
     @Override
     public boolean isImplicitUsage(@NotNull PsiElement element) {
-        if (element instanceof Method method && method.getAccess() == PhpModifier.Access.PUBLIC) {
+        if (element instanceof Method method) {
+            if (isKernelAllowedEnvsMethod(method)) {
+                return true;
+            }
+
+            if (method.getAccess() != PhpModifier.Access.PUBLIC) {
+                return false;
+            }
+
             return isMethodARoute(method)
                 || isSubscribedEvent(method)
                 || isAsEventListenerMethodPhpAttribute(method)
@@ -93,6 +105,16 @@ public class SymfonyImplicitUsageProvider implements ImplicitUsageProvider {
         }
 
         return false;
+    }
+
+    private boolean isKernelAllowedEnvsMethod(@NotNull Method method) {
+        if (!"getAllowedEnvs".equals(method.getName()) || method.isStatic()) {
+            return false;
+        }
+
+        PhpClass containingClass = method.getContainingClass();
+        return containingClass != null && Arrays.stream(containingClass.getTraits())
+            .anyMatch(trait -> KERNEL_TRAITS.contains(trait.getFQN()));
     }
 
     private boolean isDoctrineLifecycleCallbackMethod(@NotNull Method method) {
