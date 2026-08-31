@@ -1,0 +1,13 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="org.intellij.markdown">
+        <fenceLanguageProvider implementation="fr.adrienbrault.idea.symfony2plugin.markdown.TwigCodeFenceLanguageProvider"/>
+    </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <lang.parserDefinition
+            language="SymfonyMarkdownTwig"
+            implementationClass="fr.adrienbrault.idea.symfony2plugin.markdown.MarkdownTwigParserDefinition"/>
+        <lang.syntaxHighlighterFactory
+            language="SymfonyMarkdownTwig"
+            implementationClass="fr.adrienbrault.idea.symfony2plugin.markdown.MarkdownTwigSyntaxHighlighterFactory"/>
+    </extensions>
+</idea-plugin>
