@@ -43,6 +43,8 @@ class SymfonyToolset : McpToolset {
         Use this tool to find routes by route name, controller, partial route path, partial request URL, or a full absolute URL.
         Absolute URLs are normalized. 'https://www.de.test:8664/foo' is matched as '/foo'.
 
+        This tool does not provide a complete list of all controllers, since controllers may exist without a route mapping.
+
         Returns CSV format with columns: name,controller,path,filePath,lineNumber,templates
         - name: Route name
         - controller: Full controller class::method reference
