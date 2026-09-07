@@ -273,6 +273,85 @@ public class UxUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
             .anyMatch(phpClass -> "\\App\\Twig\\Components\\AlertHtmlFooBar1".equals(phpClass.getFQN())));
     }
 
+    public void testManuallyTaggedTwigComponentServiceResolvesWithoutAttribute() {
+        myFixture.addFileToProject("config/services.yaml",
+            "services:\n" +
+                "    app.tag_alert:\n" +
+                "        class: App\\Service\\TagAlert\n" +
+                "        tags:\n" +
+                "            - { name: 'twig.component', key: 'TagAlert', template: 'components/CustomAlert.html.twig' }\n"
+        );
+
+        myFixture.addFileToProject("src/Service/TagAlert.php", "<?php\n" +
+            "namespace App\\Service;\n" +
+            "\n" +
+            "class TagAlert {}\n"
+        );
+
+        myFixture.copyFileToProject("ide-twig.json", "ide-twig.json");
+        myFixture.addFileToProject("templates/components/CustomAlert.html.twig", "<div></div>");
+
+        Set<String> componentNames = UxUtil.getAllComponentNames(getProject()).stream()
+            .map(UxUtil.TwigComponent::name)
+            .collect(Collectors.toSet());
+        assertContainsElements(componentNames, "TagAlert");
+
+        assertTrue(UxUtil.getTwigComponentPhpClasses(getProject(), "TagAlert").stream()
+            .anyMatch(phpClass -> "\\App\\Service\\TagAlert".equals(phpClass.getFQN())));
+
+        assertContainsVirtualFile(UxUtil.getComponentTemplates(getProject(), "TagAlert"), "components/CustomAlert.html.twig");
+    }
+
+    /**
+     * Live components are tagged "twig.component" just like regular ones - Symfony UX's LiveComponentPass
+     * doesn't use a separate tag, it just adds live-component-specific config (e.g. default_action) alongside
+     * "key"/"template". Extra unrelated attributes on the tag must not break resolution.
+     */
+    public void testManuallyTaggedTwigComponentServiceWithLiveComponentAttributesResolves() {
+        myFixture.addFileToProject("config/services_live.yaml",
+            "services:\n" +
+                "    app.tag_counter:\n" +
+                "        class: App\\Service\\TagCounter\n" +
+                "        tags:\n" +
+                "            - { name: 'twig.component', key: 'TagCounter', default_action: '__invoke' }\n"
+        );
+
+        myFixture.addFileToProject("src/Service/TagCounter.php", "<?php\n" +
+            "namespace App\\Service;\n" +
+            "\n" +
+            "class TagCounter {}\n"
+        );
+
+        Set<String> componentNames = UxUtil.getAllComponentNames(getProject()).stream()
+            .map(UxUtil.TwigComponent::name)
+            .collect(Collectors.toSet());
+        assertContainsElements(componentNames, "TagCounter");
+
+        assertTrue(UxUtil.getTwigComponentPhpClasses(getProject(), "TagCounter").stream()
+            .anyMatch(phpClass -> "\\App\\Service\\TagCounter".equals(phpClass.getFQN())));
+    }
+
+    public void testManuallyTaggedTwigComponentServiceWithoutExplicitKeyUsesNamespaceDefaults() {
+        myFixture.addFileToProject("config/services_no_key.yaml",
+            "services:\n" +
+                "    app.tag_alert2:\n" +
+                "        class: App\\Twig\\Components\\NoKeyAlert\n" +
+                "        tags:\n" +
+                "            - { name: 'twig.component' }\n"
+        );
+
+        myFixture.addFileToProject("src/Twig/Components/NoKeyAlert.php", "<?php\n" +
+            "namespace App\\Twig\\Components;\n" +
+            "\n" +
+            "class NoKeyAlert {}\n"
+        );
+
+        Set<String> componentNames = UxUtil.getAllComponentNames(getProject()).stream()
+            .map(UxUtil.TwigComponent::name)
+            .collect(Collectors.toSet());
+        assertContainsElements(componentNames, "NoKeyAlert");
+    }
+
     public void testAnonymousIndexTemplateProvidesDirectoryComponentName() {
         myFixture.copyFileToProject("twig_component.yaml");
         myFixture.copyFileToProject("ide-twig.json", "ide-twig.json");
