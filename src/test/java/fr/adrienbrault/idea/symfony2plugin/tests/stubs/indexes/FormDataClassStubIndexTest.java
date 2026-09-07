@@ -20,6 +20,10 @@ public class FormDataClassStubIndexTest extends SymfonyLightCodeInsightFixtureTe
         return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/stubs/indexes/fixtures";
     }
 
+    public void testDataClassIndexContainsFormTypeFqn() {
+        assertIndexContainsKeyWithValue(FormDataClassStubIndex.KEY, "\\App\\FooDataClass1", value -> value.contains("\\App\\AutoFarmType"));
+    }
+
     public void testTemplateIncludeIndexer() {
         assertIndexContains(FormDataClassStubIndex.KEY, "\\App\\FooDataClass1", "\\App\\FooDataClass2", "\\App\\FooDataClass3");
     }
