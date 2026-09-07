@@ -788,6 +788,10 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                             resultSet.addElement(new PhpTwigMethodLookupElement(field));
                         }
                     }
+
+                    for (PhpNamedElement enumCase : phpClass.getEnumCases()) {
+                        resultSet.addElement(new PhpTwigMethodLookupElement(enumCase));
+                    }
                 }
 
                 if (twigTypeContainer.getStringElement() != null) {

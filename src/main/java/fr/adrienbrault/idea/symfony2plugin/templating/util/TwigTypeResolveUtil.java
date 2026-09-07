@@ -423,6 +423,10 @@ public class TwigTypeResolveUtil {
 
         // {{ ustring('Symfony').truncate(20) }}: "ustring" is provided by a Twig function.
         if (isTwigFunctionChainRoot(psiElement, rootType)) {
+            if ("enum".equals(rootType)) {
+                return new RootTypeResolve(true, resolveEnumFunctionTypes(psiElement), Collections.emptyList());
+            }
+
             TwigExtension twigExtension = TwigExtensionParser.getFunctions(psiElement.getProject()).get(rootType);
             if (twigExtension == null || twigExtension.getTypes().isEmpty()) {
                 return new RootTypeResolve(true, Collections.emptyList(), Collections.emptyList());
@@ -436,6 +440,28 @@ public class TwigTypeResolveUtil {
     }
 
     private record RootTypeResolve(boolean extensionContext, @NotNull Collection<TwigTypeContainer> containers, @NotNull Collection<PsiVariable> rootVariables) {
+    }
+
+    /**
+     * Resolves {@code enum('App\\Status')} from its literal argument, independently of Twig's PHP return declaration.
+     */
+    @NotNull
+    private static Collection<TwigTypeContainer> resolveEnumFunctionTypes(@NotNull PsiElement psiElement) {
+        PsiElement root = findRootPathElement(psiElement, "enum");
+        if (root == null) {
+            return Collections.emptyList();
+        }
+
+        PsiElement argument = PsiElementUtils.getNextSiblingAndSkip(root, TwigTokenTypes.STRING_TEXT,
+            TwigTokenTypes.LBRACE, TwigTokenTypes.SINGLE_QUOTE, TwigTokenTypes.DOUBLE_QUOTE);
+        if (argument == null || PsiElementUtils.getNextSiblingAndSkip(argument, TwigTokenTypes.RBRACE,
+            TwigTokenTypes.SINGLE_QUOTE, TwigTokenTypes.DOUBLE_QUOTE) == null) {
+            return Collections.emptyList();
+        }
+
+        return TwigConstantEnumResolver.getEnumTargets(argument).stream()
+            .map(phpClass -> new TwigTypeContainer(Collections.singleton(phpClass.getFQN())))
+            .collect(Collectors.toList());
     }
 
     /**
@@ -976,6 +1002,10 @@ public class TwigTypeResolveUtil {
                     targets.add(field);
                 }
             }
+
+            targets.addAll(((PhpClass) phpNamedElement).getEnumCases().stream()
+                .filter(enumCase -> variableName.equals(enumCase.getName()))
+                .toList());
 
         }
 
