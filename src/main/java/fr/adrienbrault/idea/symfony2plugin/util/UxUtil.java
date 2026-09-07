@@ -19,6 +19,7 @@ import com.intellij.psi.util.CachedValue;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
@@ -28,10 +29,14 @@ import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfony2plugin.dic.tags.ServiceTagInterface;
+import fr.adrienbrault.idea.symfony2plugin.dic.tags.xml.XmlServiceTag;
+import fr.adrienbrault.idea.symfony2plugin.stubs.ServiceIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.ConfigIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.UxComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ConfigStubIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesTagStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigComponentUsageStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.UxTemplateStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.util.IndexUtil;
@@ -41,12 +46,15 @@ import fr.adrienbrault.idea.symfony2plugin.templating.path.UxComponentTemplateFi
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.CompiledTwigComponent;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.TwigComponentNamespace;
+import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import kotlin.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -62,14 +70,26 @@ public class UxUtil {
         put(TwigComponentType.TWIG_COMPONENT, AS_TWIG_COMPONENT);
         put(TwigComponentType.LIVE_COMPONENT, AS_LIVE_COMPONENT);
     }};
+    /**
+     * A Symfony UX component can be autowired with the AsTwigComponent attribute.
+     */
     private static final String AS_TWIG_COMPONENT = "\\Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent";
     private static final String AS_LIVE_COMPONENT = "\\Symfony\\UX\\LiveComponent\\Attribute\\AsLiveComponent";
 
     private static final String ATTRIBUTE_EXPOSE_IN_TEMPLATE = "\\Symfony\\UX\\TwigComponent\\Attribute\\ExposeInTemplate";
 
+    /**
+     * A Symfony UX component - twig or live - can be registered as a service with a tag, for when autoconfigure is false.
+     * There is no separate tag for live components, just with additional key live: true
+     *
+     * @see https://github.com/symfony/ux/blob/3.x/src/LiveComponent/src/DependencyInjection/Compiler/LiveComponentPass.php
+     */
+    private static final String TWIG_COMPONENT_TAG = "twig.component";
+
     private static final Key<CachedValue<Collection<TwigComponentNamespace>>> TWIG_COMPONENTS_NAMESPACES = new Key<>("SYMFONY_TWIG_COMPONENTS_NAMESPACES");
     private static final Key<CachedValue<Collection<TwigComponent>>> NAMESPACED_ANONYMOUS_COMPONENTS = new Key<>("SYMFONY_UX_NAMESPACED_ANONYMOUS_COMPONENTS");
     private static final Key<CachedValue<Collection<String>>> COMPONENT_CLASS_FQNS_FOR_TEMPLATE_FILE = new Key<>("SYMFONY_UX_COMPONENT_CLASS_FQNS_FOR_TEMPLATE_FILE");
+    private static final Key<CachedValue<Collection<UxComponent>>> TAG_COMPONENTS = new Key<>("SYMFONY_UX_TAG_COMPONENTS");
 
     public static Collection<TwigComponentNamespace> getNamespaces(@NotNull Project project) {
         return CachedValuesManager.getManager(project).getCachedValue(
@@ -268,6 +288,93 @@ public class UxUtil {
         return list;
     }
 
+    /**
+     * Components registered via a manual "twig.component" service tag, mirroring what Symfony UX's
+     * {@code TwigComponentPass} does at compile time: {@code findTaggedServiceIds('twig.component')},
+     * reading the "key" and "template" tag attributes for each match.
+     */
+    @NotNull
+    private static Collection<UxComponent> getTagComponents(@NotNull Project project) {
+        return CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            TAG_COMPONENTS,
+            () -> CachedValueProvider.Result.create(
+                Collections.unmodifiableCollection(getTagComponentsInner(project)),
+                FileIndexCaches.getModificationTrackerForIndexId(project, ServicesTagStubIndex.KEY)
+            ),
+            false
+        );
+    }
+
+    @NotNull
+    private static Collection<UxComponent> getTagComponentsInner(@NotNull Project project) {
+        Collection<UxComponent> components = new ArrayList<>();
+
+        for (String serviceId : ServiceUtil.getTaggedServices(project, TWIG_COMPONENT_TAG)) {
+            PhpClass phpClass = ServiceUtil.getServiceClass(project, serviceId);
+            if (phpClass == null) {
+                continue;
+            }
+
+            String fqn = phpClass.getFQN();
+            for (PsiElement serviceDefinition : ServiceIndexUtil.findServiceDefinitions(project, serviceId)) {
+                visitServiceTags(serviceId, serviceDefinition, TWIG_COMPONENT_TAG, tag -> {
+                    String name = StringUtils.trimToNull(tag.getAttribute("key"));
+                    String template = StringUtils.trimToNull(tag.getAttribute("template"));
+
+                    components.add(new UxComponent(name, fqn, template, TwigComponentType.TWIG_COMPONENT));
+                });
+            }
+        }
+
+        return components;
+    }
+
+    private static void visitServiceTags(@NotNull String serviceId, @NotNull PsiElement psiElement, @NotNull String tagName, @NotNull Consumer<ServiceTagInterface> consumer) {
+        if (psiElement instanceof YAMLKeyValue yamlKeyValue) {
+            YamlHelper.visitTagsOnServiceDefinition(yamlKeyValue, tag -> {
+                if (tagName.equals(tag.getName())) {
+                    consumer.accept(tag);
+                }
+            });
+        } else if (psiElement instanceof XmlTag xmlTag) {
+            for (XmlTag tag : xmlTag.findSubTags("tag")) {
+                if (!tagName.equals(tag.getAttributeValue("name"))) {
+                    continue;
+                }
+
+                ServiceTagInterface serviceTag = XmlServiceTag.create(serviceId, tag);
+                if (serviceTag != null) {
+                    consumer.accept(serviceTag);
+                }
+            }
+        }
+    }
+
+    /**
+     * Merges a tag-derived component. Unlike the attribute-indexed path, a "key" tag attribute (if present)
+     * is authoritative and used regardless of namespace membership - manual tagging is commonly used precisely
+     * to register a component outside the configured "twig_component.defaults" namespaces. The namespace is
+     * still resolved (independently of naming) when the class falls under one, so the template directory
+     * conventions in {@link #getComponentTemplates} keep working.
+     */
+    private static void mergeTagComponent(@NotNull Map<String, TwigComponent> names, @NotNull UxComponent value, @NotNull Collection<TwigComponentNamespace> namespaces) {
+        NamespaceMatch match = findMatchingNamespace(value.phpClass(), namespaces);
+
+        String name = value.name();
+        if (name == null) {
+            if (match == null) {
+                return;
+            }
+
+            name = addNamePrefix(value.phpClass().substring(match.prefix().length()).replace("\\", ":"), match.namespace().namePrefix());
+        }
+
+        if (!name.isBlank()) {
+            names.put(name, new TwigComponent(name, value.phpClass(), match != null ? match.namespace() : null, value.template(), null));
+        }
+    }
+
     @Nullable
     private static String removeNamePrefix(@NotNull String componentName, @Nullable String namePrefix) {
         if (StringUtils.isBlank(namePrefix)) {
@@ -283,27 +390,54 @@ public class UxUtil {
         return StringUtils.isBlank(namePrefix) ? componentName : namePrefix + ":" + componentName;
     }
 
+    /**
+     * A "twig_component.defaults" namespace matching a class FQN, plus its normalized "\Ns\" prefix -
+     * every caller needs both: the namespace for template-directory/name-prefix conventions, and the
+     * prefix length to cut the class FQN down to its component name.
+     */
+    private record NamespaceMatch(@NotNull TwigComponentNamespace namespace, @NotNull String prefix) {}
+
+    /**
+     * Finds the first namespace (in declaration order, matching Symfony UX's own first-match resolution)
+     * whose class prefix contains {@code phpClassFqn}, or {@code null} if none matches.
+     */
+    @Nullable
+    private static NamespaceMatch findMatchingNamespace(@NotNull String phpClassFqn, @NotNull Collection<TwigComponentNamespace> namespaces) {
+        for (TwigComponentNamespace namespace : namespaces) {
+            String prefix = "\\" + StringUtils.strip(namespace.namespace(), "\\") + "\\";
+            if (phpClassFqn.startsWith(prefix)) {
+                return new NamespaceMatch(namespace, prefix);
+            }
+        }
+
+        return null;
+    }
+
     public static Collection<TwigComponent> getAllComponentNames(@NotNull Project project) {
         Map<String, TwigComponent> names = new HashMap<>();
+        Collection<TwigComponentNamespace> namespaces = getNamespaces(project);
 
         for (String key : IndexUtil.getAllKeysForProject(UxTemplateStubIndex.KEY, project)) {
             for (UxComponent value : FileBasedIndex.getInstance().getValues(UxTemplateStubIndex.KEY, key, GlobalSearchScope.allScope(project))) {
-                for (TwigComponentNamespace namespace : getNamespaces(project)) {
-                    String namespace1 = "\\" + StringUtils.strip(namespace.namespace(), "\\") + "\\";
+                NamespaceMatch match = findMatchingNamespace(value.phpClass(), namespaces);
+                if (match == null) {
+                    continue;
+                }
 
-                    if (value.phpClass().startsWith(namespace1)) {
-                        String name = value.name() != null
-                            ? value.name()
-                            : addNamePrefix(value.phpClass().substring(namespace1.length()).replace("\\", ":"), namespace.namePrefix());
+                String name = value.name() != null
+                    ? value.name()
+                    : addNamePrefix(value.phpClass().substring(match.prefix().length()).replace("\\", ":"), match.namespace().namePrefix());
 
-                        if (!name.isBlank()) {
-                            names.put(name, new TwigComponent(name, value.phpClass(), namespace, value.template(), null));
-                        }
-
-                        break;
-                    }
+                if (!name.isBlank()) {
+                    names.put(name, new TwigComponent(name, value.phpClass(), match.namespace(), value.template(), null));
                 }
             }
+        }
+
+        // Components registered via a manual "twig.component" service tag instead of the
+        // #[AsTwigComponent]/#[AsLiveComponent] attributes (e.g. YAML/XML service definitions).
+        for (UxComponent value : getTagComponents(project)) {
+            mergeTagComponent(names, value, namespaces);
         }
 
         for (CompiledTwigComponent component : getCompiledTwigComponents(project).values()) {
