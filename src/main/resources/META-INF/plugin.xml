@@ -827,6 +827,10 @@
         <usageTargetProvider implementation="fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigFindUsagesHandlerFactory"/>
         <findUsagesHandlerFactory implementation="fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigFindUsagesHandlerFactory"/>
 
+        <!-- Find Usages for public data-class properties, getters and setters in Symfony form fields, including inherited members. -->
+        <referencesSearch implementation="fr.adrienbrault.idea.symfony2plugin.form.usages.FormFieldReferencesSearchExecutor"/>
+        <usageTypeProvider implementation="fr.adrienbrault.idea.symfony2plugin.form.usages.FormFieldUsageTypeProvider"/>
+
         <!-- resolve references from twig to php symbols: foo.id => function getId(), twig functions, constant(...), enum(...), @var -->
         <referencesSearch implementation="fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigMethodReferencesSearchExecutor"/>
         <usageTypeProvider implementation="fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigMethodUsageTypeProvider"/>
