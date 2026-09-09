@@ -10,7 +10,6 @@ import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProviderLookupArguments
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter
-import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil
 import org.apache.commons.lang3.StringUtils
 
@@ -18,6 +17,7 @@ import org.apache.commons.lang3.StringUtils
  * Provides completion and navigation for Vite entry points in Twig templates:
  * - vite_entry_link_tags()
  * - vite_entry_script_tags()
+ * - reprise_entry_*()
  *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -25,7 +25,7 @@ class ViteGotoCompletionRegistrar : GotoCompletionRegistrar {
 
     override fun register(registrar: GotoCompletionRegistrarParameter) {
         registrar.register(
-            TwigPattern.getPrintBlockOrTagFunctionPattern("vite_entry_link_tags", "vite_entry_script_tags")
+            viteEntryPattern()
         ) { element ->
             if (!Symfony2ProjectComponent.isEnabled(element)) null
             else ViteEntryProvider(element)
