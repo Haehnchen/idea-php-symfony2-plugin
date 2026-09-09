@@ -10,6 +10,44 @@ import fr.adrienbrault.idea.symfony2plugin.vite.ViteEntryStubIndex
  */
 class ViteEntryStubIndexTest : SymfonyLightCodeInsightFixtureTestCase() {
 
+    fun testRepriseTopLevelInputIsIndexed() {
+        myFixture.addFileToProject(
+            "vite.config.ts",
+            """
+            import { defineConfig } from 'vite';
+            import Symfony from '@symfony/reprise/vite';
+            const unused = { input: { unused: './assets/unused.js' } };
+            export default defineConfig({
+                input: {
+                    app: './assets/app.js',
+                },
+                plugins: [Symfony({ input: { pluginOption: './assets/plugin.js' } })],
+            });
+            """.trimIndent()
+        )
+
+        assertIndexContainsKeyWithValue(VITE_ENTRY_STUB_INDEX_KEY, "assets/app.js", "app")
+        assertIndexNotContains(VITE_ENTRY_STUB_INDEX_KEY, "assets/unused.js", "assets/plugin.js")
+    }
+
+    fun testRolldownInputIsIndexed() {
+        myFixture.addFileToProject(
+            "vite.config.ts",
+            """
+            import { defineConfig } from 'vite';
+            export default defineConfig({
+                build: {
+                    rolldownOptions: {
+                        input: { app: './assets/app.ts' }
+                    }
+                }
+            });
+            """.trimIndent()
+        )
+
+        assertIndexContainsKeyWithValue(VITE_ENTRY_STUB_INDEX_KEY, "assets/app.ts", "app")
+    }
+
     fun testSimpleEntryIsIndexed() {
         myFixture.addFileToProject(
             "vite.config.js",

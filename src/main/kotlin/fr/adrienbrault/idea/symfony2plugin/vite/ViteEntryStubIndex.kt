@@ -28,7 +28,7 @@ class ViteEntryStubIndex : FileBasedIndexExtension<String, String>() {
 
     override fun getValueExternalizer(): DataExternalizer<String> = EnumeratorStringDescriptor.INSTANCE
 
-    override fun getVersion(): Int = 1
+    override fun getVersion(): Int = 2
 
     override fun dependsOnFileContent(): Boolean = true
 
@@ -42,7 +42,7 @@ class ViteEntryStubIndex : FileBasedIndexExtension<String, String>() {
 
         val psiFile = inputData.psiFile
         if (psiFile is JSFile) {
-            val entries = ViteConfigParser().parseEntries(psiFile)
+            val entries = ViteConfigParser.parseEntries(psiFile)
             for (entry in entries) {
                 val raw = entry.targetPath ?: continue
                 val normalized = raw.removePrefix("./").removePrefix("/")
