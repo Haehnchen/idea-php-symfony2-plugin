@@ -8,13 +8,13 @@ import com.intellij.util.io.EnumeratorStringDescriptor
 import com.intellij.util.io.KeyDescriptor
 import com.jetbrains.twig.TwigFile
 import com.jetbrains.twig.TwigFileType
-import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils
 
 /**
- * File-based index for Twig templates that use Vite entry point functions:
+ * File-based index for Twig templates that use Vite or Reprise entry point functions:
  * - vite_entry_link_tags('entryName')
  * - vite_entry_script_tags('entryName')
+ * - reprise_entry_*('entryName')
  *
  * Key:   entry name (e.g. "app")
  * Value: empty string (file is the carrier)
@@ -32,7 +32,7 @@ class ViteTwigUsageStubIndex : FileBasedIndexExtension<String, String>() {
     override fun getName(): ID<String, String> = VITE_TWIG_USAGE_STUB_INDEX_KEY
     override fun getKeyDescriptor(): KeyDescriptor<String> = EnumeratorStringDescriptor.INSTANCE
     override fun getValueExternalizer(): DataExternalizer<String> = EnumeratorStringDescriptor.INSTANCE
-    override fun getVersion(): Int = 1
+    override fun getVersion(): Int = 2
     override fun dependsOnFileContent(): Boolean = true
 
     override fun getInputFilter(): FileBasedIndex.InputFilter =
@@ -44,9 +44,7 @@ class ViteTwigUsageStubIndex : FileBasedIndexExtension<String, String>() {
         val psiFile = inputData.psiFile
 
         if (psiFile is TwigFile) {
-            val pattern = TwigPattern.getPrintBlockOrTagFunctionPattern(
-                "vite_entry_link_tags", "vite_entry_script_tags"
-            )
+            val pattern = viteEntryPattern()
             psiFile.accept(object : PsiRecursiveElementWalkingVisitor() {
                 override fun visitElement(element: PsiElement) {
                     if (pattern.accepts(element)) {
