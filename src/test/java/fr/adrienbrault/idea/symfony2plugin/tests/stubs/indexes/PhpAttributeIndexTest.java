@@ -13,6 +13,108 @@ import java.util.Collection;
  */
 public class PhpAttributeIndexTest extends SymfonyLightCodeInsightFixtureTestCase {
 
+    public void testFormAttributes() {
+        myFixture.configureByText(PhpFileType.INSTANCE, """
+            <?php
+            namespace App;
+            use Symfony\\Component\\Form\\Attribute\\AsFormType;
+            use Symfony\\Component\\Form\\Attribute\\FormField;
+            use Symfony\\Component\\Form\\Extension\\Core\\Type\\EmailType;
+
+            #[AsFormType(options: ['label' => 'Account'])]
+            class AccountData {
+                #[FormField(EmailType::class, options: ['required' => true])]
+                public ?string $email = null;
+
+                #[FormField(name: 'displayName')]
+                public ?string $internalName = null;
+
+                #[FormField(null, [], 'positionalName')]
+                public ?string $positional = null;
+
+                #[FormField(name: null)]
+                public ?string $defaultName = null;
+
+                #[FormField(name: 'reorderedName', type: EmailType::class, options: [])]
+                public ?string $reordered = null;
+
+                public ?string $unannotated = null;
+            }
+
+            #[AsFormType]
+            class EmptyData {}
+            """);
+
+        Collection<PhpAttributeIndex.AttributeTarget> classes = PhpAttributeIndexUtil.getAttributeData(
+            getProject(), PhpAttributeIndex.PhpAttributeIndexer.AS_FORM_TYPE_ATTRIBUTE);
+        assertSize(2, classes);
+        assertTrue(classes.stream().allMatch(target -> target.scope() == PhpAttributeIndex.TargetScope.PHP_CLASS && target.memberName() == null));
+        assertTrue(classes.stream().anyMatch(target -> target.classFqn().equals("App\\AccountData")));
+        assertTrue(classes.stream().anyMatch(target -> target.classFqn().equals("App\\EmptyData")));
+
+        Collection<PhpAttributeIndex.AttributeTarget> fields = PhpAttributeIndexUtil.getAttributeData(
+            getProject(), PhpAttributeIndex.PhpAttributeIndexer.FORM_FIELD_ATTRIBUTE);
+        assertSize(5, fields);
+        PhpAttributeIndex.AttributeTarget email = fields.stream()
+            .filter(target -> "email".equals(target.memberName()))
+            .findFirst()
+            .orElseThrow();
+        assertEquals(PhpAttributeIndex.TargetScope.PROPERTY, email.scope());
+        assertEquals("App\\AccountData", email.classFqn());
+        assertEmpty(email.data());
+
+        PhpAttributeIndex.AttributeTarget internalName = fields.stream()
+            .filter(target -> "internalName".equals(target.memberName()))
+            .findFirst()
+            .orElseThrow();
+        assertEquals(PhpAttributeIndex.TargetScope.PROPERTY, internalName.scope());
+        assertEquals("App\\AccountData", internalName.classFqn());
+        assertEmpty(internalName.data());
+
+        PhpAttributeIndex.AttributeTarget positional = fields.stream()
+            .filter(target -> "positional".equals(target.memberName()))
+            .findFirst()
+            .orElseThrow();
+        assertEquals(PhpAttributeIndex.TargetScope.PROPERTY, positional.scope());
+        assertEquals("App\\AccountData", positional.classFqn());
+        assertEmpty(positional.data());
+
+        PhpAttributeIndex.AttributeTarget defaultName = fields.stream()
+            .filter(target -> "defaultName".equals(target.memberName()))
+            .findFirst()
+            .orElseThrow();
+        assertEquals(PhpAttributeIndex.TargetScope.PROPERTY, defaultName.scope());
+        assertEquals("App\\AccountData", defaultName.classFqn());
+        assertEmpty(defaultName.data());
+
+        PhpAttributeIndex.AttributeTarget reordered = fields.stream()
+            .filter(target -> "reordered".equals(target.memberName()))
+            .findFirst()
+            .orElseThrow();
+        assertEquals(PhpAttributeIndex.TargetScope.PROPERTY, reordered.scope());
+        assertEquals("App\\AccountData", reordered.classFqn());
+        assertEmpty(reordered.data());
+    }
+
+    public void testFormAttributesAreLimitedToTheirTargetScopes() {
+        myFixture.configureByText(PhpFileType.INSTANCE, """
+            <?php
+            use Symfony\\Component\\Form\\Attribute\\AsFormType;
+            use Symfony\\Component\\Form\\Attribute\\FormField;
+            #[FormField]
+            class InvalidData {
+                #[AsFormType]
+                public $property;
+                #[FormField]
+                public const FIELD = 'field';
+                #[AsFormType, FormField]
+                public function method() {}
+            }
+            """);
+        assertEmpty(PhpAttributeIndexUtil.getAttributeData(getProject(), PhpAttributeIndex.PhpAttributeIndexer.AS_FORM_TYPE_ATTRIBUTE));
+        assertEmpty(PhpAttributeIndexUtil.getAttributeData(getProject(), PhpAttributeIndex.PhpAttributeIndexer.FORM_FIELD_ATTRIBUTE));
+    }
+
     public void testBasicIndexFunctionality() {
         myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
             "namespace App\\Twig;\n" +
