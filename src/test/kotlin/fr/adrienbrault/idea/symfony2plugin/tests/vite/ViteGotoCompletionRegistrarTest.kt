@@ -12,6 +12,23 @@ import fr.adrienbrault.idea.symfony2plugin.vite.ViteGotoCompletionRegistrar
  */
 class ViteGotoCompletionRegistrarTest : SymfonyLightCodeInsightFixtureTestCase() {
 
+    fun testUnrelatedInputObjectsAreExcluded() {
+        myFixture.addFileToProject("vite.config.ts", """
+            const unused = { input: { unused: './unused.js' } };
+            export default defineConfig({
+                input: { app: './app.js' },
+                plugins: [plugin({ input: { pluginOption: './plugin.js' } })],
+                custom: { build: { rolldownOptions: { input: { custom: './custom.js' } } } }
+            });
+        """.trimIndent())
+
+        for (function in listOf("vite_entry_script_tags", "reprise_entry_script_tags")) {
+            assertCompletionContains(TwigFileType.INSTANCE, "{{ $function('<caret>') }}", "app")
+            assertCompletionNotContains(TwigFileType.INSTANCE, "{{ $function('<caret>') }}", "unused", "pluginOption", "custom")
+            assertNavigationIsEmpty(TwigFileType.INSTANCE, "{{ $function('un<caret>used') }}")
+        }
+    }
+
     fun testCompletionInViteEntryLinkTags() {
         myFixture.addFileToProject(
             "vite.config.js",

@@ -42,12 +42,11 @@ object ViteUtil {
 
     private fun collectEntries(project: Project, configFiles: Collection<VirtualFile>): List<ViteEntry> {
         val entries = mutableListOf<ViteEntry>()
-        val parser = ViteConfigParser()
 
         for (file in configFiles) {
             val psiFile = PsiManager.getInstance(project).findFile(file)
             if (psiFile is JSFile) {
-                entries.addAll(parser.parseEntries(psiFile))
+                entries.addAll(ViteConfigParser.parseEntries(psiFile))
             }
         }
 
