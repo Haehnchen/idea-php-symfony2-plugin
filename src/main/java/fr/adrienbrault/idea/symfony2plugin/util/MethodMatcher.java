@@ -128,16 +128,14 @@ public class MethodMatcher {
                 return null;
             }
 
-            MethodReferenceBag bag = this.parameterIndex >= 0
-                ? PhpElementsUtil.getMethodParameterReferenceBag(psiElement, this.parameterIndex)
-                : PhpElementsUtil.getMethodParameterReferenceBag(psiElement);
+            MethodReferenceBag bag = PhpElementsUtil.getMethodParameterReferenceBag(psiElement);
 
             if(bag == null) {
                 return null;
             }
 
             CallToSignature matchedMethodSignature = this.isCallTo(bag.getMethodReference());
-            if(matchedMethodSignature == null) {
+            if(matchedMethodSignature == null || !matchesParameter(bag.getMethodReference(), bag.getParameterBag())) {
                 return null;
             }
 
@@ -297,6 +295,30 @@ public class MethodMatcher {
         public AbstractMethodParameterMatcher withSignature(CallToSignature[] callToSignatures) {
             this.signatures.addAll(Arrays.asList(callToSignatures));
             return this;
+        }
+
+        /**
+         * Match both positional and reordered named arguments against the declared parameter position.
+         * For example: generateUrl(parameters: ['slug' => 'blog'], name: 'app_blog').
+         */
+        protected boolean matchesParameter(@NotNull MethodReference methodReference, @NotNull ParameterBag parameter) {
+            if (parameterIndex < 0) {
+                return true;
+            }
+
+            String argumentName = PsiElementUtils.getNamedArgumentName(parameter.getElement());
+            if (argumentName == null) {
+                return parameter.getIndex() == parameterIndex;
+            }
+
+            for (Method method : PhpElementsUtil.getMultiResolvedMethod(methodReference)) {
+                if (method.getParameters().length > parameterIndex
+                    && argumentName.equals(method.getParameters()[parameterIndex].getName())) {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         @Nullable

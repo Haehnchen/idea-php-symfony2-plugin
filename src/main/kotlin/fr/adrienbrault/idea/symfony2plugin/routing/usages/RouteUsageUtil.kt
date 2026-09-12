@@ -130,7 +130,7 @@ class RouteUsageUtil private constructor() {
         /**
          * Expands the caret context slightly so usage detection still works when IntelliJ gives a neighboring leaf node.
          */
-        private fun getCandidateElements(element: PsiElement): Collection<PsiElement> {
+        internal fun getCandidateElements(element: PsiElement): Collection<PsiElement> {
             val elements = linkedSetOf(element)
             element.parent?.let(elements::add)
 

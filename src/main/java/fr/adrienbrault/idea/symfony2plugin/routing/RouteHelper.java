@@ -1951,7 +1951,7 @@ public class RouteHelper {
      */
     @NotNull
     public static Collection<PsiElement> getRouteNameTarget(@NotNull Project project, @NotNull String routeName) {
-        Collection<PsiElement> phpTargets = new ArrayList<>();
+        Collection<PsiElement> routeTargets = new ArrayList<>();
 
         for(VirtualFile virtualFile: RouteHelper.getRouteDefinitionInsideFile(project, routeName)) {
             PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
@@ -1959,14 +1959,12 @@ public class RouteHelper {
             if(psiFile instanceof YAMLFile) {
                 YAMLKeyValue qualifiedKeyInFile = YAMLUtil.getQualifiedKeyInFile((YAMLFile) psiFile, routeName);
                 if (qualifiedKeyInFile != null) {
-                    return Collections.singletonList(qualifiedKeyInFile);
+                    routeTargets.add(qualifiedKeyInFile);
                 }
-
-                return Collections.emptyList();
             } else if(psiFile instanceof XmlFile) {
                 PsiElement target = RouteHelper.getXmlRouteNameTarget((XmlFile) psiFile, routeName);
                 if(target != null) {
-                    return Collections.singletonList(target);
+                    routeTargets.add(target);
                 }
             } else if(psiFile instanceof PhpFile) {
                 Collection<PsiElement> targets = new ArrayList<>();
@@ -1992,11 +1990,11 @@ public class RouteHelper {
                     targets.add(target);
                 }
 
-                phpTargets.addAll(targets);
+                routeTargets.addAll(targets);
             }
         }
 
-        return phpTargets;
+        return routeTargets;
     }
 
     /**

@@ -132,6 +132,7 @@
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
+        <platform.backend.documentation.targetProvider implementation="fr.adrienbrault.idea.symfony2plugin.routing.documentation.RouteDocumentationTargetProvider"/>
         <projectService serviceImplementation="fr.adrienbrault.idea.symfony2plugin.Settings"/>
 
         <!-- MCP application-level settings -->
