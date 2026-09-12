@@ -4,6 +4,8 @@ import com.intellij.model.Pointer
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.platform.backend.documentation.impl.computeDocumentationBlocking
 import com.intellij.psi.PsiFile
+import fr.adrienbrault.idea.symfony2plugin.documentation.DocumentationFindUsagesLinkHandler
+import fr.adrienbrault.idea.symfony2plugin.routing.documentation.ROUTE_FIND_USAGES_LINK
 import fr.adrienbrault.idea.symfony2plugin.templating.documentation.*
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
 
@@ -169,6 +171,8 @@ class TwigTemplateDocumentationTargetTest : SymfonyLightCodeInsightFixtureTestCa
         assertTrue(rendered.contains("href=\"$TEMPLATE_FIND_USAGES_LINK\">Find usages</a>"))
         assertFalse(rendered.contains("<br><br>"))
         assertTrue(rendered.indexOf("Find usages</a>") > rendered.indexOf("- include:"))
+        assertNull(DocumentationFindUsagesLinkHandler().resolveLink(result, "unrelated-link"))
+        assertNull(DocumentationFindUsagesLinkHandler().resolveLink(result, ROUTE_FIND_USAGES_LINK))
 
         val context = result.findUsagesContext()!!
         val usageTarget = context.getData(com.intellij.usages.UsageView.USAGE_TARGETS_KEY)!!.single()
