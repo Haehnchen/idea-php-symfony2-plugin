@@ -2607,6 +2607,7 @@ public class TwigUtil {
     public static class TemplateIncludePatterns {
         final ElementPattern<PsiElement> importTag = TwigPattern.getTagNameParameterPattern(TwigElementTypes.IMPORT_TAG, "import");
         final ElementPattern<PsiElement> fromTag = TwigPattern.getTagNameParameterPattern(TwigElementTypes.IMPORT_TAG, "from");
+        final ElementPattern<PsiElement> sourceFunction = TwigPattern.getPrintBlockOrTagFunctionPattern("source");
         final ElementPattern<PsiElement> includeSource = TwigPattern.getIncludeSourcePrintBlockOrTagFunctionPattern();
         final ElementPattern<PsiElement> blockFunctionTemplate = TwigPattern.getPrintBlockOrTagFunctionSecondParameterPattern("block");
         final ElementPattern<PsiElement> embed = TwigPattern.getEmbedPattern();
@@ -2646,7 +2647,7 @@ public class TwigUtil {
             if(fromTag != null) {
                 String templateName = fromTag.getText();
                 if(StringUtils.isNotBlank(templateName)) {
-                    consumer.consume(new TemplateInclude(psiElement, templateName, TemplateInclude.TYPE.IMPORT));
+                    consumer.consume(new TemplateInclude(psiElement, templateName, TemplateInclude.TYPE.FROM));
                 }
             }
         } else if(psiElement instanceof TwigCompositeElement) {
@@ -2656,7 +2657,8 @@ public class TwigUtil {
             if(includeTag != null) {
                 String templateName = includeTag.getText();
                 if(StringUtils.isNotBlank(templateName)) {
-                    consumer.consume(new TemplateInclude(psiElement, templateName, TemplateInclude.TYPE.INCLUDE_FUNCTION));
+                    consumer.consume(new TemplateInclude(psiElement, templateName,
+                        patterns.sourceFunction.accepts(includeTag) ? TemplateInclude.TYPE.SOURCE_FUNCTION : TemplateInclude.TYPE.INCLUDE_FUNCTION));
                 }
             }
 
@@ -3443,6 +3445,23 @@ public class TwigUtil {
         }
     }
 
+    private static void addTemplateUsageFileCounts(@NotNull Project project, @NotNull Set<String> names,
+                                                    @NotNull Set<TemplateInclude.TYPE> types, @NotNull Map<String, Integer> usage) {
+        FileBasedIndex index = FileBasedIndex.getInstance();
+        for (String name : names) {
+            Set<VirtualFile> files = new HashSet<>();
+            index.processValues(TwigIncludeStubIndex.KEY, name, null, (file, value) -> {
+                if (!Collections.disjoint(value.getTypes(), types)) {
+                    files.add(file);
+                }
+                return true;
+            }, GlobalSearchScope.allScope(project));
+            if (!files.isEmpty()) {
+                usage.put(name, files.size());
+            }
+        }
+    }
+
     public static List<String> getIncludeTemplateUsageAsOrderedList(@NotNull Project project) {
         return CachedValuesManager.getManager(project).getCachedValue(project, SYMFONY_TEMPLATE_INCLUDE_LIST, () -> {
             Set<String> allKeys = IndexUtil.getAllKeysForProject(TwigIncludeStubIndex.KEY, project)
@@ -3451,15 +3470,7 @@ public class TwigUtil {
                 .collect(Collectors.toSet());
 
             Map<String, Integer> extendsWithFileCountUsage = new HashMap<>();
-            for (String allKey : allKeys) {
-                List<fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateInclude> values = FileBasedIndex.getInstance().getValues(TwigIncludeStubIndex.KEY, allKey, GlobalSearchScope.allScope(project));
-                for (fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateInclude value : values) {
-                    if (value.getType() == TemplateInclude.TYPE.INCLUDE || value.getType() == TemplateInclude.TYPE.INCLUDE_FUNCTION) {
-                        extendsWithFileCountUsage.putIfAbsent(allKey, 0);
-                        extendsWithFileCountUsage.put(allKey, extendsWithFileCountUsage.get(allKey) + 1);
-                    }
-                }
-            }
+            addTemplateUsageFileCounts(project, allKeys, EnumSet.of(TemplateInclude.TYPE.INCLUDE, TemplateInclude.TYPE.INCLUDE_FUNCTION, TemplateInclude.TYPE.SOURCE_FUNCTION), extendsWithFileCountUsage);
 
             List<String> collect = extendsWithFileCountUsage.entrySet()
                 .stream()
@@ -3500,15 +3511,7 @@ public class TwigUtil {
                 }
             }
 
-            for (String allKey : allKeys) {
-              List<fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateInclude> values = FileBasedIndex.getInstance().getValues(TwigIncludeStubIndex.KEY, allKey, GlobalSearchScope.allScope(project));
-              for (fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateInclude value : values) {
-                    if (value.getType() == TemplateInclude.TYPE.FORM_THEME) {
-                        usage.putIfAbsent(allKey, 0);
-                        usage.put(allKey, usage.get(allKey) + 1);
-                    }
-                }
-            }
+            addTemplateUsageFileCounts(project, allKeys, EnumSet.of(TemplateInclude.TYPE.FORM_THEME), usage);
 
             List<String> collect = usage.entrySet()
                 .stream()
@@ -3529,15 +3532,7 @@ public class TwigUtil {
                 .collect(Collectors.toSet());
 
             Map<String, Integer> extendsWithFileCountUsage = new HashMap<>();
-            for (String allKey : allKeys) {
-                List<fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateInclude> values = FileBasedIndex.getInstance().getValues(TwigIncludeStubIndex.KEY, allKey, GlobalSearchScope.allScope(project));
-                for (fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateInclude value : values) {
-                    if (value.getType() == TemplateInclude.TYPE.EMBED) {
-                        extendsWithFileCountUsage.putIfAbsent(allKey, 0);
-                        extendsWithFileCountUsage.put(allKey, extendsWithFileCountUsage.get(allKey) + 1);
-                    }
-                }
-            }
+            addTemplateUsageFileCounts(project, allKeys, EnumSet.of(TemplateInclude.TYPE.EMBED), extendsWithFileCountUsage);
 
             List<String> collect = extendsWithFileCountUsage.entrySet()
                 .stream()

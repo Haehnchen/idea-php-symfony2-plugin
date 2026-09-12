@@ -155,4 +155,28 @@ class TwigTemplateUsageCollectorTest : SymfonyLightCodeInsightFixtureTestCase() 
         )
     }
 
+    fun testMultipleTypesInOneFilePopulateEveryGroupOnce() {
+        myFixture.addFileToProject("templates/base.html.twig", "")
+        myFixture.addFileToProject("templates/mixed.html.twig", """
+            {% include 'base.html.twig' %}
+            {% include 'base.html.twig' %}
+            {{ include('base.html.twig') }}
+            {{ source('base.html.twig') }}
+            {% embed 'base.html.twig' %}{% endembed %}
+            {% import 'base.html.twig' as macros %}
+            {% from 'base.html.twig' import field %}
+            {% form_theme form 'base.html.twig' %}
+        """.trimIndent())
+        myFixture.addFileToProject("templates/source.html.twig", "{{ source('base.html.twig') }}")
+        myFixture.addFileToProject("templates/from.html.twig", "{% from 'base.html.twig' import field %}")
+
+        val result = TwigTemplateUsageCollector(project).collect("base.html.twig")
+        val row = result.lineSequence().single { it.startsWith("base.html.twig,") }.split(',')
+        assertEquals(11, row.size)
+        assertEquals("/src/templates/mixed.html.twig;/src/templates/source.html.twig", row[2])
+        assertEquals("/src/templates/mixed.html.twig", row[3])
+        assertEquals("/src/templates/from.html.twig;/src/templates/mixed.html.twig", row[5])
+        assertEquals("/src/templates/mixed.html.twig", row[7])
+    }
+
 }

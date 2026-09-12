@@ -10,9 +10,11 @@ import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.stubs.dict.TemplateInclude;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.externalizer.TemplateIncludeExternalizer;
+import fr.adrienbrault.idea.symfony2plugin.templating.dict.TemplateInclude.TYPE;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,12 +49,14 @@ public class TwigIncludeStubIndex extends FileBasedIndexExtension<String, Templa
                 return map;
             }
 
+            Map<String, EnumSet<TYPE>> typesByTemplate = new HashMap<>();
             TwigUtil.visitTemplateIncludes((TwigFile) psiFile, templateInclude -> {
                 if (templateInclude.getTemplateName().length() < 255) {
-                    map.put(TwigUtil.normalizeTemplateName(templateInclude.getTemplateName()), new TemplateInclude(templateInclude.getTemplateName(), templateInclude.getType()));
+                    String name = TwigUtil.normalizeTemplateName(templateInclude.getTemplateName());
+                    typesByTemplate.computeIfAbsent(name, key -> EnumSet.noneOf(TYPE.class)).add(templateInclude.getType());
                 }
             });
-
+            typesByTemplate.forEach((name, types) -> map.put(name, new TemplateInclude(name, types)));
 
             return map;
         };
@@ -84,7 +88,7 @@ public class TwigIncludeStubIndex extends FileBasedIndexExtension<String, Templa
 
     @Override
     public int getVersion() {
-        return 8;
+        return 9;
     }
 
 }

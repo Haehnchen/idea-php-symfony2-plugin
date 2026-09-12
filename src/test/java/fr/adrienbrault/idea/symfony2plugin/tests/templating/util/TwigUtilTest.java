@@ -243,6 +243,37 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertEquals("second", TwigUtil.getTransDefaultDomainOnScope(updatedPosition));
     }
 
+    public void testTemplateUsageRankingCountsFilesAcrossAllGroups() {
+        // Three identical values must count as three files, even if getValues would deduplicate them.
+        for (int i = 0; i < 3; i++) {
+            myFixture.addFileToProject("popular" + i + ".html.twig", templateRankingUsages("popular.html.twig"));
+        }
+        myFixture.addFileToProject("second1.html.twig", templateRankingUsages("second.html.twig"));
+        myFixture.addFileToProject("second2.html.twig", templateRankingUsages("second.html.twig") + "{{ source('second.html.twig') }}");
+        // Repeated calls and several types in the include group still count as just one file.
+        myFixture.addFileToProject("repeated.html.twig", templateRankingUsages("repeated.html.twig").repeat(5)
+            + "{{ include('repeated.html.twig') }} {{ source('repeated.html.twig') }}");
+        myFixture.addFileToProject("import_only.html.twig", "{% import 'macros.html.twig' as macros %}");
+
+        List<String> expected = List.of("popular.html.twig", "second.html.twig", "repeated.html.twig");
+        assertEquals(expected, TwigUtil.getIncludeTemplateUsageAsOrderedList(getProject()));
+        assertEquals(expected, TwigUtil.getEmbedTemplateUsageAsOrderedList(getProject()));
+        assertEquals(expected, TwigUtil.getFormThemeTemplateUsageAsOrderedList(getProject()));
+    }
+
+    public void testSourceRemainsInIncludeRanking() {
+        myFixture.addFileToProject("source.html.twig", "{{ source('source_only.html.twig') }}");
+        assertEquals(List.of("source_only.html.twig"), TwigUtil.getIncludeTemplateUsageAsOrderedList(getProject()));
+        assertTrue(TwigUtil.getEmbedTemplateUsageAsOrderedList(getProject()).isEmpty());
+        assertTrue(TwigUtil.getFormThemeTemplateUsageAsOrderedList(getProject()).isEmpty());
+    }
+
+    private String templateRankingUsages(String template) {
+        return "{% include '" + template + "' %}"
+            + "{% embed '" + template + "' %}{% endembed %}"
+            + "{% form_theme form '" + template + "' %}";
+    }
+
     @NotNull
     static List<TwigNamespaceSetting> createTwigNamespaceSettings() {
         return Arrays.asList(
