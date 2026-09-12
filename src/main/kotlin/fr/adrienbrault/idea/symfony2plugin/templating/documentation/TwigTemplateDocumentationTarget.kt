@@ -2,24 +2,15 @@ package fr.adrienbrault.idea.symfony2plugin.templating.documentation
 
 import com.intellij.find.findUsages.PsiElement2UsageTargetAdapter
 import com.intellij.model.Pointer
-import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.ActionUiKind
-import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
-import com.intellij.openapi.actionSystem.IdeActions
-import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.readAction
-import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.platform.backend.documentation.DocumentationLinkHandler
 import com.intellij.platform.backend.documentation.DocumentationResult
 import com.intellij.platform.backend.documentation.DocumentationTarget
-import com.intellij.platform.backend.documentation.LinkResolveResult
 import com.intellij.platform.backend.presentation.TargetPresentation
 import com.intellij.pom.Navigatable
 import com.intellij.psi.PsiManager
@@ -197,24 +188,3 @@ private fun presentScope(scope: String): String {
 
 
 internal const val TEMPLATE_FIND_USAGES_LINK = "symfony-template-find-usages"
-
-class TwigTemplateDocumentationLinkHandler : DocumentationLinkHandler {
-    override fun resolveLink(target: DocumentationTarget, url: String): LinkResolveResult? {
-        if (target !is TwigTemplateDocumentationTarget || url != TEMPLATE_FIND_USAGES_LINK) {
-            return null
-        }
-
-        val pointer = target.createPointer()
-        ApplicationManager.getApplication().invokeLater {
-            val context = runReadActionBlocking {
-                pointer.dereference()?.findUsagesContext()
-            } ?: return@invokeLater
-
-            val action = ActionManager.getInstance().getAction(IdeActions.ACTION_FIND_USAGES)
-            val event = AnActionEvent.createEvent(action, context, null, "TwigTemplateDocumentation", ActionUiKind.POPUP, null)
-            ActionUtil.performAction(action, event)
-        }
-
-        return LinkResolveResult.resolvedTarget(target)
-    }
-}

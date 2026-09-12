@@ -48,6 +48,11 @@ class RouteDocumentationTargetProvider : DocumentationTargetProvider {
     private fun php(leaf: PsiElement): RouteDocumentationContext? {
         val literal = PsiTreeUtil.getParentOfType(leaf, StringLiteralExpression::class.java, false) ?: return null
 
+        // #[Route('/blog', name: 'app_<caret>blog')]
+        RouteUsageUtil.getRouteNameForDeclaration(literal)?.let {
+            return RouteDocumentationContext(it, literal)
+        }
+
         // generateUrl('app_<caret>blog') / redirectToRoute(route: 'app_<caret>blog')
         MethodMatcher.getMatchedSignatureWithDepth(literal, PhpRouteReferenceContributor.GENERATOR_SIGNATURES)
             ?: return null
@@ -71,10 +76,11 @@ class RouteDocumentationTargetProvider : DocumentationTargetProvider {
     )
 }
 
-internal fun renderRouteDocumentation(routes: Collection<Route>, twigTemplates: Int = 0): String = routes.map { route ->
-    buildString {
-        append(DocumentationMarkup.CONTENT_START)
-        append("<code>").append(escape(route.name)).append("</code>")
+internal fun renderRouteDocumentation(
+    routes: Collection<Route>,
+    twigTemplates: Int = 0,
+): String = routes.map { route ->
+    val content = buildString {
         RouteHelper.getRouteUrl(route)?.let { path ->
             append("<br>Path: <code>").append(escape(path)).append("</code>")
         }
@@ -105,8 +111,9 @@ internal fun renderRouteDocumentation(routes: Collection<Route>, twigTemplates: 
             append("<br>Twig usages: ").append(twigTemplates)
         }
 
-        append(DocumentationMarkup.CONTENT_END)
+        append("<br><a href=\"").append(ROUTE_FIND_USAGES_LINK).append("\">Find usages</a>")
     }
+    DocumentationMarkup.CONTENT_START + content.removePrefix("<br>") + DocumentationMarkup.CONTENT_END
 }.distinct().sorted().joinToString("<hr>")
 
 private fun escape(value: String): String {

@@ -1,7 +1,13 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.routing.documentation
 
 import com.intellij.model.Pointer
+import com.intellij.find.actions.FindUsagesAction
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.IdeActions
 import com.intellij.platform.backend.documentation.impl.computeDocumentationBlocking
+import com.intellij.psi.PsiElement
+import com.intellij.testFramework.PlatformTestUtil
+import fr.adrienbrault.idea.symfony2plugin.documentation.DocumentationFindUsagesLinkHandler
 import fr.adrienbrault.idea.symfony2plugin.routing.documentation.*
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
 
@@ -82,12 +88,12 @@ class RouteDocumentationTargetTest : SymfonyLightCodeInsightFixtureTestCase() {
     }
 
     fun testFluentPhpRouteWithLocalAssignment() {
-        myFixture.addFileToProject("config/routes.php", """
+        myFixture.addFileToProject("config/routes.php", $$"""
             <?php
             use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
-            return static function (RoutingConfigurator ${'$'}routes): void {
-                ${'$'}route = ${'$'}routes->prefix('/prefix')->add('fluent', '/{page}');
-                ${'$'}route->defaults(['page' => 0])->requirements(['page' => '[0-9]+']);
+            return static function (RoutingConfigurator $routes): void {
+                $route = $routes->prefix('/prefix')->add('fluent', '/{page}');
+                $route->defaults(['page' => 0])->requirements(['page' => '[0-9]+']);
             };
         """.trimIndent())
 
@@ -130,4 +136,68 @@ class RouteDocumentationTargetTest : SymfonyLightCodeInsightFixtureTestCase() {
 
         assertNull(computeDocumentationBlocking(Pointer.hardPointer(target)))
     }
+
+    fun testFindUsagesLinkUsesExistingRouteTargets() {
+        val file = myFixture.configureByText("test.html.twig", "{{ path('app_<caret>blog') }}")
+        val target = RouteDocumentationTargetProvider().documentationTargets(file, myFixture.caretOffset).single() as RouteDocumentationTarget
+        val html = computeDocumentationBlocking(Pointer.hardPointer(target))!!.html
+
+        assertTrue(html.contains("href=\"$ROUTE_FIND_USAGES_LINK\">Find usages</a>"))
+        assertTrue(html.indexOf("Find usages</a>") > html.indexOf("Twig usages:"))
+
+        val context = target.findUsagesContext()!!
+        val actual = context.getData(com.intellij.usages.UsageView.USAGE_TARGETS_KEY)!!
+            .map { (it as com.intellij.usages.PsiElementUsageTarget).element }
+
+        val expected = fr.adrienbrault.idea.symfony2plugin.routing.usages.RouteUsageTargetProvider()
+            .getTargets(file.findElementAt(myFixture.caretOffset)!!)
+            .map { (it as com.intellij.usages.PsiElementUsageTarget).element }
+
+        assertEquals(expected, actual)
+        assertTrue(actual.all { fr.adrienbrault.idea.symfony2plugin.routing.usages.RouteFindUsagesHandlerFactory().canFindUsages(it!!) })
+        assertNull(DocumentationFindUsagesLinkHandler().resolveLink(target, "unrelated-link"))
+        assertNull(DocumentationFindUsagesLinkHandler().resolveLink(target, fr.adrienbrault.idea.symfony2plugin.templating.documentation.TEMPLATE_FIND_USAGES_LINK))
+    }
+
+    fun testFindUsagesContextKeepsAllRouteDeclarations() {
+        myFixture.addFileToProject("config/other.yaml", "app_blog: { path: /other }")
+        val file = myFixture.configureByText("test.html.twig", "{{ path('app_<caret>blog') }}")
+        val target = RouteDocumentationTargetProvider().documentationTargets(file, myFixture.caretOffset).single() as RouteDocumentationTarget
+
+        val context = target.findUsagesContext()!!
+        assertEquals(2, context.getData(com.intellij.usages.UsageView.USAGE_TARGETS_KEY)!!.size)
+    }
+
+    fun testFindUsagesLinkStartsRouteSearch() {
+        val file = myFixture.configureByText("test.html.twig", "{{ path('app_<caret>blog') }}")
+        val target = RouteDocumentationTargetProvider().documentationTargets(file, myFixture.caretOffset).single()
+        val manager = ActionManager.getInstance()
+        val original = manager.getAction(IdeActions.ACTION_FIND_USAGES)
+        var searched: PsiElement? = null
+
+        manager.replaceAction(IdeActions.ACTION_FIND_USAGES, object : FindUsagesAction() {
+            override fun startFindUsages(element: PsiElement) {
+                searched = element
+            }
+        })
+        
+        try {
+            assertNotNull(DocumentationFindUsagesLinkHandler().resolveLink(target, ROUTE_FIND_USAGES_LINK))
+            PlatformTestUtil.waitWithEventsDispatching("Route search did not start", { searched != null }, 10)
+            assertTrue(fr.adrienbrault.idea.symfony2plugin.routing.usages.RouteFindUsagesHandlerFactory().canFindUsages(searched!!))
+        } finally {
+            manager.replaceAction(IdeActions.ACTION_FIND_USAGES, original)
+        }
+    }
+
+    fun testFindUsagesContextRevalidatesDeletedRoute() {
+        val file = myFixture.configureByText("test.html.twig", "{{ path('app_<caret>blog') }}")
+        val target = RouteDocumentationTargetProvider().documentationTargets(file, myFixture.caretOffset).single() as RouteDocumentationTarget
+        assertNotNull(target.findUsagesContext())
+
+        val routeFile = myFixture.findFileInTempDir("config/routes.yaml")
+        com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project) { routeFile.delete(this) }
+        assertNull(target.findUsagesContext())
+    }
+
 }
