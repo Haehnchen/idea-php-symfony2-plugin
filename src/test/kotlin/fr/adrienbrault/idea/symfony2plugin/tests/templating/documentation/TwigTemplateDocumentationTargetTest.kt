@@ -63,8 +63,7 @@ class TwigTemplateDocumentationTargetTest : SymfonyLightCodeInsightFixtureTestCa
         val result = data()
         assertEquals(setOf("include", "embed", "extends"), result.twigUsages.keys)
         assertEquals(3, result.twigUsages.values.flatten().toSet().size)
-        // The existing index retains only the last include type for each name/file.
-        assertEquals(2, result.twigUsages.getValue("include").size)
+        assertEquals(3, result.twigUsages.getValue("include").size)
         assertEquals(1, result.twigUsages.getValue("embed").size)
         assertEquals(setOf("layout.html.twig"), result.parents.getValue(template.virtualFile.url))
 
@@ -85,13 +84,13 @@ class TwigTemplateDocumentationTargetTest : SymfonyLightCodeInsightFixtureTestCa
         assertEquals(2, result.twigUsages.values.flatten().toSet().size)
     }
 
-    fun testGroupedIndexTypesAreDisplayedHonestly() {
+    fun testSourceAndFromHaveDistinctTypes() {
         myFixture.addFileToProject("templates/source.html.twig", "{{ source('blog.html.twig') }}")
         myFixture.addFileToProject("templates/from.html.twig", "{% from 'blog.html.twig' import field %}")
 
         val result = data()
-        assertEquals(1, result.twigUsages.getValue("include() / source()").size)
-        assertEquals(1, result.twigUsages.getValue("import / from").size)
+        assertEquals(1, result.twigUsages.getValue("source()").size)
+        assertEquals(1, result.twigUsages.getValue("from").size)
     }
 
     fun testPhpScopesAndFileCountsAreIndependent() {

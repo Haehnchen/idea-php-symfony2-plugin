@@ -39,6 +39,24 @@ public class TemplateMoveRenameUtilTest extends SymfonyLightCodeInsightFixtureTe
         );
     }
 
+    public void testRenameUpdatesEveryUsageTypeInOneFile() {
+        PsiFile template = myFixture.addFileToProject("templates/base.html.twig", "");
+        String text = """
+            {% include '@!App/base.html.twig' %}
+            {{ include('base.html.twig') }}
+            {% embed 'base.html.twig' %}{% endembed %}
+            {% include 'base.html.twig' %}
+            {{ source('base.html.twig') }}
+            {% import 'base.html.twig' as macros %}
+            {% from 'base.html.twig' import field %}
+            {% form_theme form 'base.html.twig' %}
+            {{ block('content', 'base.html.twig') }}
+            """;
+        PsiFile caller = myFixture.addFileToProject("templates/mixed.html.twig", text);
+        myFixture.renameElement(template, "renamed.html.twig");
+        assertEquals(text.replace("base.html.twig", "renamed.html.twig"), caller.getText());
+    }
+
     /**
      * @see TemplateMoveRenameUtil#pickBestTemplateName
      */

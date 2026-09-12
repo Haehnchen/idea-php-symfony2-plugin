@@ -139,12 +139,14 @@ class TwigTemplateUsageCollector(private val project: Project) {
 
             index.processValues(TwigIncludeStubIndex.KEY, templateName, null, { file, includeObj ->
                 val callerPath = VfsExUtil.getRelativeProjectPath(project, file) ?: return@processValues true
-                when (includeObj.type) {
-                    IncludeType.INCLUDE, IncludeType.INCLUDE_FUNCTION -> twigIncludes.add(callerPath)
-                    IncludeType.EMBED -> twigEmbeds.add(callerPath)
-                    IncludeType.IMPORT, IncludeType.FROM -> twigImports.add(callerPath)
-                    IncludeType.FORM_THEME -> twigFormThemes.add(callerPath)
-                    else -> {}
+                for (type in includeObj.types) {
+                    when (type) {
+                        IncludeType.INCLUDE, IncludeType.INCLUDE_FUNCTION, IncludeType.SOURCE_FUNCTION -> twigIncludes.add(callerPath)
+                        IncludeType.EMBED -> twigEmbeds.add(callerPath)
+                        IncludeType.IMPORT, IncludeType.FROM -> twigImports.add(callerPath)
+                        IncludeType.FORM_THEME -> twigFormThemes.add(callerPath)
+                        else -> {}
+                    }
                 }
                 true
             }, scope)

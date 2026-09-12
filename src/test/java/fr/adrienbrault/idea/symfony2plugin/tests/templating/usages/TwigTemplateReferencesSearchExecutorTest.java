@@ -76,6 +76,26 @@ public class TwigTemplateReferencesSearchExecutorTest extends SymfonyLightCodeIn
         assertEquals("twig:Alert", selected);
     }
 
+    public void testFindsEveryOccurrenceWithMultipleTypesInOneFile() {
+        myFixture.addFileToProject("templates/base.html.twig", "");
+        PsiFile caller = myFixture.addFileToProject("templates/mixed.html.twig", """
+            {% include 'base.html.twig' %}
+            {{ include('base.html.twig') }}
+            {% embed 'base.html.twig' %}{% endembed %}
+            {% include 'base.html.twig' %}
+            {{ source('base.html.twig') }}
+            {% import 'base.html.twig' as macros %}
+            {% from 'base.html.twig' import field %}
+            {% form_theme form 'base.html.twig' %}
+            {{ block('content', 'base.html.twig') }}
+            """);
+        Collection<TwigTemplateUsageReference> references = getTwigUsageReferences("templates/base.html.twig");
+        assertEquals(9, references.stream()
+            .filter(reference -> reference.getElement().getContainingFile().equals(caller))
+            .map(reference -> reference.getElement().getTextRange().getStartOffset() + reference.getRangeInElement().getStartOffset())
+            .distinct().count());
+    }
+
     private void addFixturesForAllUsageTypes() {
         myFixture.addFileToProject("templates/base.html.twig", "base");
         myFixture.addFileToProject("templates/child_extends.html.twig", "{% extends 'base.html.twig' %}");

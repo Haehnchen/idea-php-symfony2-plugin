@@ -151,18 +151,20 @@ internal fun collectTwigTemplateDocumentation(context: TwigTemplateDocumentation
     for (name in normalized) {
         ProgressManager.checkCanceled()
         index.processValues(TwigIncludeStubIndex.KEY, name, null, { file, include ->
-            val type = when (include.type) {
-                TYPE.INCLUDE -> "include"
-                TYPE.INCLUDE_FUNCTION -> "include() / source()"
-                TYPE.EMBED -> "embed"
-                TYPE.IMPORT -> "import / from"
-                TYPE.FROM -> "from"
-                TYPE.FORM_THEME -> "form_theme"
-                TYPE.BLOCK_FUNCTION -> "block"
-                null -> "include"
-            }
+            for (includeType in include.types) {
+                val type = when (includeType) {
+                    TYPE.INCLUDE -> "include"
+                    TYPE.INCLUDE_FUNCTION -> "include()"
+                    TYPE.SOURCE_FUNCTION -> "source()"
+                    TYPE.EMBED -> "embed"
+                    TYPE.IMPORT -> "import"
+                    TYPE.FROM -> "from"
+                    TYPE.FORM_THEME -> "form_theme"
+                    TYPE.BLOCK_FUNCTION -> "block"
+                }
 
-            usages.getOrPut(type) { mutableSetOf() }.add(file.url)
+                usages.getOrPut(type) { mutableSetOf() }.add(file.url)
+            }
             true
         }, scope)
 
