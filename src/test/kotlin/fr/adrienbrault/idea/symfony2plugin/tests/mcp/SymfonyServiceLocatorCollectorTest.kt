@@ -3,6 +3,13 @@ package fr.adrienbrault.idea.symfony2plugin.tests.mcp
 import fr.adrienbrault.idea.symfony2plugin.mcp.collector.SymfonyServiceLocatorCollector
 
 class SymfonyServiceLocatorCollectorTest : McpCollectorTestCase() {
+    override fun setUp() {
+        super.setUp()
+        myFixture.copyFileToProject("stubs/fixtures/classes.php", "src/Service/classes.php")
+        myFixture.copyFileToProject("stubs/fixtures/services.yml", "config/services.yml")
+        myFixture.copyFileToProject("stubs/fixtures/services.xml", "config/services.xml")
+    }
+
     fun testCollectResolvesByServiceNameAndClass() {
         val byServiceName = SymfonyServiceLocatorCollector(project).collect("foo.yml_id")
         assertEquals(

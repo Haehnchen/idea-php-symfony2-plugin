@@ -48,7 +48,7 @@ public class UxUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         settings.twigNamespaces = new ArrayList<>();
         settings.containerFiles = new ArrayList<>();
 
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("UxUtil.php"));
+        myFixture.copyFileToProject("UxUtil.php");
     }
 
     @Override

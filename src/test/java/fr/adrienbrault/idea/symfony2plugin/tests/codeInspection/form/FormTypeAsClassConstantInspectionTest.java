@@ -23,13 +23,13 @@ public class FormTypeAsClassConstantInspectionTest extends SymfonyLightCodeInsig
     public void testThatFormNamesAreInspectedAsDeprecated() {
         this.initVersion();
 
-        assertLocalInspectionContains("my_form.php", "<?php\n" +
+        assertLocalInspectionContains(FormTypeAsClassConstantInspection.class, "my_form.php", "<?php\n" +
                 "/** @var $builder \\Symfony\\Component\\Form\\FormBuilderInterface */\n" +
                 "$builder->add(null, 'fo<caret>o')",
             FormTypeAsClassConstantInspection.MESSAGE
         );
 
-        assertLocalInspectionContains("my_form.php", "<?php\n" +
+        assertLocalInspectionContains(FormTypeAsClassConstantInspection.class, "my_form.php", "<?php\n" +
                 "/** @var $builder \\Symfony\\Component\\Form\\FormBuilderInterface */\n" +
                 "$builder->create(null, 'fo<caret>o')",
             FormTypeAsClassConstantInspection.MESSAGE
@@ -39,7 +39,7 @@ public class FormTypeAsClassConstantInspectionTest extends SymfonyLightCodeInsig
     public void testThatFormNamesAreNotDeprecatedForWrongSymfonyVersion() {
         this.initVersion("2.5");
 
-        assertLocalInspectionNotContains("my_form.php", "<?php\n" +
+        assertLocalInspectionNotContains(FormTypeAsClassConstantInspection.class, "my_form.php", "<?php\n" +
                 "/** @var $builder \\Symfony\\Component\\Form\\FormBuilderInterface */\n" +
                 "$builder->add(null, 'fo<caret>o')",
             FormTypeAsClassConstantInspection.MESSAGE
@@ -49,7 +49,7 @@ public class FormTypeAsClassConstantInspectionTest extends SymfonyLightCodeInsig
     public void testThatFormNamesWithFqnAsStringNotDeprecated() {
         this.initVersion();
 
-        assertLocalInspectionNotContains("my_form.php", "<?php\n" +
+        assertLocalInspectionNotContains(FormTypeAsClassConstantInspection.class, "my_form.php", "<?php\n" +
                 "/** @var $builder \\Symfony\\Component\\Form\\FormBuilderInterface */\n" +
                 "$builder->add(null, 'Foo\\B<caret>ar')",
             FormTypeAsClassConstantInspection.MESSAGE

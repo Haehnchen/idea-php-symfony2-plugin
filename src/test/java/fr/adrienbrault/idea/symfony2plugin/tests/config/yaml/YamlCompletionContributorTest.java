@@ -14,13 +14,7 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
     public void setUp() throws Exception {
         super.setUp();
 
-        myFixture.copyFileToProject("services.xml");
-        myFixture.configureByText("config_foo.yml", "");
-        myFixture.configureByFile("YamlCompletionContributor.php");
-        myFixture.configureByFile("tagged.services.xml");
-        myFixture.configureByFile("classes.php");
-        myFixture.configureByFile("YamlCompletionContributor.env");
-        myFixture.configureByFile("routes.yml");
+        myFixture.copyFileToProject("classes.php");
     }
 
     public String getTestDataPath() {
@@ -28,6 +22,8 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
     }
 
     public void testResourcesInsideSameDirectoryProvidesCompletion() {
+        myFixture.addFileToProject("config_foo.yml", "");
+
         assertCompletionContains("config.yml", "imports:\n" +
                 "    - { resource: <caret> }",
             "config_foo.yml"
@@ -84,6 +80,8 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
     }
 
     public void testRouteControllerActionCompletion() {
+        myFixture.copyFileToProject("YamlCompletionContributor.php");
+
         assertCompletionContains("routing.yml", "" +
                 "foo:\n" +
                 "    pattern:  /hello/{name}\n" +
@@ -93,6 +91,8 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
     }
 
     public void testRouteControllerActionCompletionForControllerKeyword() {
+        myFixture.copyFileToProject("YamlCompletionContributor.php");
+
         assertCompletionContains("routing.yml", "" +
                 "foo:\n" +
                 "    pattern:  /hello/{name}\n" +
@@ -102,6 +102,8 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
     }
 
     public void testRouteControllerActionCompletionForRoutePath() {
+        myFixture.copyFileToProject("routes.yml");
+
         assertCompletionContains("routing.yml", "" +
                 "foo:\n" +
                 "    path: <caret>\n" +
@@ -111,6 +113,8 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
     }
 
     public void testClassCompletion() {
+        myFixture.copyFileToProject("YamlCompletionContributor.php");
+
         assertCompletionContains("routing.yml", "" +
             "services:\n" +
             "    foo:\n" +
@@ -155,6 +159,8 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
     }
 
     public void testParentAndServiceClassCompletion() {
+        myFixture.copyFileToProject("services.xml");
+
         assertCompletionContains("services.yml", "" +
                 "services:\n" +
                 "    foo:\n" +
@@ -171,6 +177,8 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
     }
 
     public void testTagsProvideCompletion() {
+        myFixture.copyFileToProject("tagged.services.xml");
+
         assertCompletionContains("services.yml", "" +
                 "services:\n" +
                 "    foo:\n" +
@@ -195,6 +203,8 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
     }
 
     public void testParameterCompletion() {
+        myFixture.copyFileToProject("services.xml");
+
         assertCompletionContains("services.yml", "" +
                 "services:\n" +
                 "    foo: [%<caret>]",
@@ -203,6 +213,8 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
     }
 
     public void testParameterEnvironmentCompletion() {
+        myFixture.copyFileToProject("YamlCompletionContributor.env");
+
         assertCompletionContains("services.yml", "" +
                 "services:\n" +
                 "    foo: [%<caret>]",
@@ -211,6 +223,8 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
     }
 
     public void testParameterCompletionInsertHandler() {
+        myFixture.copyFileToProject("services.xml");
+
         assertCompletionResultEquals("services.yml", "services:\n" +
                 "    foo: [%foo_paramet<caret>%]",
             "services:\n" +
@@ -319,6 +333,8 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
     }
 
     public void testBundleResourceCompletionWithLegacyConfigStructure() {
+        myFixture.copyFileToProject("YamlCompletionContributor.php");
+
         com.intellij.openapi.vfs.VirtualFile bundleFile = myFixture.copyFileToProject("FooBundle.php");
         com.intellij.openapi.vfs.VirtualFile resourcesDir = com.intellij.testFramework.VfsTestUtil.createDir(bundleFile.getParent(), "Resources");
         com.intellij.openapi.vfs.VirtualFile configDir = com.intellij.testFramework.VfsTestUtil.createDir(resourcesDir, "config");
@@ -331,6 +347,8 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
     }
 
     public void testBundleResourceCompletionWithNewConfigStructure() {
+        myFixture.copyFileToProject("YamlCompletionContributor.php");
+
         com.intellij.openapi.vfs.VirtualFile bundleFile = myFixture.copyFileToProject("FooBundle.php");
         com.intellij.openapi.vfs.VirtualFile configDir = com.intellij.testFramework.VfsTestUtil.createDir(bundleFile.getParent(), "config");
         com.intellij.testFramework.VfsTestUtil.createFile(configDir, "routing.yml");
@@ -342,6 +360,10 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
     }
 
     public void testNamedArgumentCompletionForServiceArguments() {
+        myFixture.copyFileToProject("YamlCompletionContributor.env");
+
+        myFixture.copyFileToProject("services.xml");
+
         assertCompletionContains(YAMLFileType.YML, "" +
                 "services:\n" +
                 "  Foo\\Bar:\n" +

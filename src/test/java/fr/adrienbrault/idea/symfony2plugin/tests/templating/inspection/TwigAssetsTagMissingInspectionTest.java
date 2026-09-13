@@ -1,14 +1,15 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.inspection;
 
+import fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigAssetsTagMissingInspection;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
- * @see fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigAssetMissingInspection
+ * @see fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigAssetsTagMissingInspection
  */
 public class TwigAssetsTagMissingInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void testThatUnknownAssetIsHighlighted() {
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(TwigAssetsTagMissingInspection.class,
             "test.html.twig",
             "" +
                 "{% javascripts\n" +
@@ -19,7 +20,7 @@ public class TwigAssetsTagMissingInspectionTest extends SymfonyLightCodeInsightF
             "Missing asset"
         );
 
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(TwigAssetsTagMissingInspection.class,
             "test.html.twig",
             "" +
                 "{% stylesheets\n" +
@@ -32,7 +33,7 @@ public class TwigAssetsTagMissingInspectionTest extends SymfonyLightCodeInsightF
     }
 
     public void testThatInvalidStringMustNotHighlight() {
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(TwigAssetsTagMissingInspection.class,
             "test.html.twig",
             "" +
                 "{% javascripts\n" +
@@ -43,7 +44,7 @@ public class TwigAssetsTagMissingInspectionTest extends SymfonyLightCodeInsightF
             "Missing asset"
         );
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(TwigAssetsTagMissingInspection.class,
             "test.html.twig",
             "" +
                 "{% javascripts\n" +
@@ -54,7 +55,7 @@ public class TwigAssetsTagMissingInspectionTest extends SymfonyLightCodeInsightF
             "Missing asset"
         );
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(TwigAssetsTagMissingInspection.class,
             "test.html.twig",
             "" +
                 "{% javascripts\n" +

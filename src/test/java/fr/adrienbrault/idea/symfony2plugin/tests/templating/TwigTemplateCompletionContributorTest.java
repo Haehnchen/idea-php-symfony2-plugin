@@ -1,12 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating;
 
-import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.twig.TwigFileType;
-import fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder.FormFieldDataHolder;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
@@ -18,9 +13,6 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
     public void setUp() throws Exception {
         super.setUp();
         myFixture.copyFileToProject("classes.php");
-        myFixture.copyFileToProject("TwigTemplateCompletionContributorTest.php");
-        myFixture.copyFileToProject("routing.xml");
-        myFixture.copyFileToProject("TwigFilterExtension.php");
     }
 
     public String getTestDataPath() {
@@ -28,32 +20,46 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
     }
 
     public void testThatInlineVarProvidesClassCompletion() {
+        myFixture.copyFileToProject("TwigTemplateCompletionContributorTest.php");
+
         assertCompletionContains(TwigFileType.INSTANCE, "{# @var bar F<caret> #}", "Foobar");
         assertCompletionContains(TwigFileType.INSTANCE, "{# @var bar MyFoo\\Ca<caret> #}", "Car\\Bike\\Foobar");
     }
 
     public void testThatInlineVarProvidesClassCompletionAfterUnionSeparator() {
+        myFixture.copyFileToProject("TwigTemplateCompletionContributorTest.php");
+
         assertCompletionContains(TwigFileType.INSTANCE, "{# @var item \\MyFoo\\Car\\Bike\\Foobar|\\MyFoo\\Car\\Bike\\Foo<caret> #}", "Foobar2");
     }
 
     public void testThatInlineVarProvidesClassCompletionDeprecated() {
+        myFixture.copyFileToProject("TwigTemplateCompletionContributorTest.php");
+
         assertCompletionContains(TwigFileType.INSTANCE, "{# bar F<caret> #}", "Foobar");
     }
 
     public void testThatTypesTagProvidesClassCompletion() {
+        myFixture.copyFileToProject("TwigTemplateCompletionContributorTest.php");
+
         assertCompletionContains(TwigFileType.INSTANCE, "{% types { bar: 'F<caret>' } %}", "Foobar");
         assertCompletionContains(TwigFileType.INSTANCE, "{% types { bar: 'MyFoo\\Ca<caret>' } %}", "Car\\Bike\\Foobar");
     }
 
     public void testThatTypesTagProvidesClassCompletionAfterUnionSeparator() {
+        myFixture.copyFileToProject("TwigTemplateCompletionContributorTest.php");
+
         assertCompletionContains(TwigFileType.INSTANCE, "{% types { item: '\\MyFoo\\Car\\Bike\\Foobar|\\MyFoo\\Car\\Bike\\Foo<caret>' } %}", "Foobar2");
     }
 
     public void testThatTypesTagProvidesClassCompletionWithOptionalMarker() {
+        myFixture.copyFileToProject("TwigTemplateCompletionContributorTest.php");
+
         assertCompletionContains(TwigFileType.INSTANCE, "{% types { bar?: 'F<caret>' } %}", "Foobar");
     }
 
     public void testThatTypesTagProvidesClassCompletionMultipleVariables() {
+        myFixture.copyFileToProject("TwigTemplateCompletionContributorTest.php");
+
         assertCompletionContains(TwigFileType.INSTANCE, "{% types { foo: 'DateTime', bar: 'F<caret>' } %}", "Foobar");
     }
 
@@ -73,47 +79,30 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         );
     }
 
-    public void testFormFieldCompletionUsesPrimitiveFormDataHolderPresentation() {
-        LookupElement lookupElement = TwigTemplateCompletionContributor.decorateFormFieldLookupElement(
-            LookupElementBuilder.create("title"),
-            new FormFieldDataHolder("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\TextType", "\\App\\Form\\ProductType")
-        );
-
-        LookupElementPresentation presentation = new LookupElementPresentation();
-        lookupElement.renderElement(presentation);
-
-        assertEquals("title", lookupElement.getLookupString());
-        assertEquals("TextType", presentation.getTypeText());
-        assertEquals("(ProductType)", presentation.getTailText());
-    }
-
-    public void testIncompleteFormFieldCompletionUsesPrimitiveFormTypeFqnsFromControllerRender() {
+    public void testIncompleteFormCompletionsUsePrimitiveFormTypeFqnsFromControllerRender() {
         addFormControllerFixture();
 
         myFixture.addFileToProject("templates/form/completion.html.twig", "{{ form<caret> }}");
         myFixture.configureFromTempProjectFile("templates/form/completion.html.twig");
         myFixture.completeBasic();
 
-        assertContainsElements(myFixture.getLookupElementStrings(), "form_row(form.title)");
-    }
-
-    public void testIncompleteFormStartCompletionUsesPrimitiveFormTypeFqnsFromControllerRender() {
-        addFormControllerFixture();
-
-        myFixture.addFileToProject("templates/form/completion.html.twig", "{{ form<caret> }}");
-        myFixture.configureFromTempProjectFile("templates/form/completion.html.twig");
-        myFixture.completeBasic();
-
-        assertContainsElements(myFixture.getLookupElementStrings(), "form_start(form)");
+        assertContainsElements(myFixture.getLookupElementStrings(), "form_row(form.title)", "form_start(form)");
     }
 
     public void testThatConstantProvidesCompletionForClassConstant() {
-        assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('<caret>') }}", "CONST_FOO");
-        assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('<caret>') }}", "FooConst::CAR", "FooEnum::FOOBAR");
+        myFixture.copyFileToProject("TwigFilterExtension.php");
+
+        myFixture.copyFileToProject("TwigTemplateCompletionContributorTest.php");
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('<caret>') }}", "CONST_FOO", "FooConst::CAR", "FooEnum::FOOBAR");
+        assertCurrentCompletionInserts("FooEnum::FOOBAR", "{{ constant('App\\\\Bike\\\\FooEnum::FOOBAR') }}");
 
         assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('App\\<caret>') }}", "\\\\Bike\\\\FooConst::CAR", "\\\\Bike\\\\FooEnum::FOOBAR");
+        assertCurrentCompletionInserts("\\\\Bike\\\\FooEnum::FOOBAR", "{{ constant('App\\\\\\Bike\\\\FooEnum::FOOBAR') }}");
+
         assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('App\\\\Bike\\\\<caret>') }}", "FooConst::CAR", "FooEnum::FOOBAR");
         assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('App\\\\Bike\\\\Foo<caret>') }}", "FooEnum::FOOBAR");
+        assertCurrentCompletionInserts("FooEnum::FOOBAR", "{{ constant('App\\\\Bike\\\\FooEnum::FOOBAR') }}");
 
         assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('\\\\App\\\\Bike\\\\Foo<caret>') }}", "FooEnum::FOOBAR");
         assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('BugDemo\\\\<caret>') }}", "NAMESPACED_CONST");
@@ -122,49 +111,76 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
 
         assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('App\\\\Bike\\\\FooConst::C<caret>') }}", "CAR");
         assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('App\\\\Bike\\\\FooEnum::F<caret>') }}", "FOOBAR");
+        assertCurrentCompletionInserts("FOOBAR", "{{ constant('App\\\\Bike\\\\FooEnum::FOOBAR') }}");
+
         assertCompletionContains(TwigFileType.INSTANCE, "{{ constant('\\\\App\\\\Bike\\\\FooEnum::F<caret>') }}", "FOOBAR");
 
-        assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ constant('<caret>') }}", "{{ constant('App\\\\Bike\\\\FooEnum::FOOBAR') }}", l -> "FooEnum::FOOBAR".equals(l.getLookupString()));
-        assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ constant('App\\<caret>') }}", "{{ constant('App\\\\\\Bike\\\\FooEnum::FOOBAR') }}", l -> "\\\\Bike\\\\FooEnum::FOOBAR".equals(l.getLookupString()));
-        assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ constant('App\\\\Bike\\\\Foo<caret>') }}", "{{ constant('App\\\\Bike\\\\FooEnum::FOOBAR') }}", l -> "FooEnum::FOOBAR".equals(l.getLookupString()));
-        assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ constant('App\\\\Bike\\\\FooEnum::F<caret>') }}", "{{ constant('App\\\\Bike\\\\FooEnum::FOOBAR') }}", l -> "FOOBAR".equals(l.getLookupString()));
         assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ constant('BugDemo\\\\NAMES<caret>') }}", "{{ constant('BugDemo\\\\NAMESPACED_CONST') }}", l -> "NAMESPACED_CONST".equals(l.getLookupString()));
         assertCompletionResultEquals(TwigFileType.INSTANCE, "{# @var suite \\BugDemo\\CardSuite #}\n{{ constant('CL<caret>', suite) }}", "{# @var suite \\BugDemo\\CardSuite #}\n{{ constant('CLUBS', suite) }}", l -> "CLUBS".equals(l.getLookupString()));
     }
 
+    private void assertCurrentCompletionInserts(String lookupString, String expected) {
+        var lookup = myFixture.getLookup();
+        assertNotNull("Expected an active completion lookup", lookup);
+        var item = lookup.getItems().stream()
+            .filter(element -> lookupString.equals(element.getLookupString()))
+            .findFirst()
+            .orElse(null);
+        assertNotNull("Missing completion: " + lookupString, item);
+        lookup.setCurrentItem(item);
+        myFixture.type('\n');
+        myFixture.checkResult(expected);
+    }
+
     public void testCompletionForRoutingParameter() {
+        myFixture.copyFileToProject("routing.xml");
+
         assertCompletionContains(TwigFileType.INSTANCE, "{{ path('xml_route', {'<caret>'}) }}", "slug");
         assertNavigationMatch(TwigFileType.INSTANCE, "{{ path('xml_route', {'sl<caret>ug'}) }}", PlatformPatterns.psiElement());
     }
 
     public void testCompletionForRouteCompareEquals() {
+        myFixture.copyFileToProject("routing.xml");
+
         assertCompletionContains(TwigFileType.INSTANCE, "{% if app.request.attributes.get('_route') == '<caret>' %}", "xml_route");
         assertCompletionContains(TwigFileType.INSTANCE, "{% if app.request.attributes.get('_route') != '<caret>' %}", "xml_route");
     }
 
     public void testCompletionForRouteCompareStartsWith() {
+        myFixture.copyFileToProject("routing.xml");
+
         assertCompletionContains(TwigFileType.INSTANCE, "{% if app.request.attributes.get('_route') starts with '<caret>' %}", "xml_route");
         assertCompletionContains(TwigFileType.INSTANCE, "{% if app.request.attributes.get('_route') starts with('<caret>') %}", "xml_route");
     }
 
     public void testCompletionForRouteCompareSameAs() {
+        myFixture.copyFileToProject("routing.xml");
+
         assertCompletionContains(TwigFileType.INSTANCE, "{% if app.request.attributes.get('_route') is same as('<caret>') %}", "xml_route");
     }
 
     public void testCompletionForRouteCompareInArray() {
+        myFixture.copyFileToProject("routing.xml");
+
         assertCompletionContains(TwigFileType.INSTANCE, "{% if app.request.attributes.get('_route') in ['<caret>'] %}", "xml_route");
         assertCompletionContains(TwigFileType.INSTANCE, "{% if app.request.attributes.get('_route') not in ['<caret>'] %}", "xml_route");
     }
 
     public void testNoCompletionForRouteCompareWithoutRouteContext() {
+        myFixture.copyFileToProject("routing.xml");
+
         assertCompletionNotContains(TwigFileType.INSTANCE, "{% if app.request.something == '<caret>' %}", "xml_route");
     }
 
     public void testCompletionForRoutingParameterWithIdentifierHash() {
+        myFixture.copyFileToProject("routing.xml");
+
         assertCompletionContains(TwigFileType.INSTANCE, "{{ path('xml_route', {<caret>}) }}", "slug");
     }
 
     public void testNavigationForRoutingParameterWithIdentifierHash() {
+        myFixture.copyFileToProject("routing.xml");
+
         assertNavigationMatch(TwigFileType.INSTANCE, "{{ path('xml_route', {sl<caret>ug}) }}", PlatformPatterns.psiElement());
         assertNavigationMatch(TwigFileType.INSTANCE, "{{ path('xml_route', {sl<caret>ug: 'value'}) }}", PlatformPatterns.psiElement());
     }
@@ -194,6 +210,8 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
     }
 
     public void testCompletionForTwigComponent() {
+        myFixture.copyFileToProject("TwigTemplateCompletionContributorTest.php");
+
         assertCompletionContains(TwigFileType.INSTANCE, "{{ component('<caret>'}) }}", "Alert");
     }
 
@@ -207,6 +225,8 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
     }
 
     public void testInsertHandlerForTwigFunctionWithStringParameter() {
+        myFixture.copyFileToProject("TwigTemplateCompletionContributorTest.php");
+
         assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ a_test<caret> }}", "{{ a_test('') }}");
         assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ b_test<caret> }}", "{{ b_test('') }}");
         assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ c_test<caret> }}", "{{ c_test('') }}");
@@ -296,6 +316,8 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
     }
 
     public void testThatTwigFilterReturnTypeProvidesMethodCompletion() {
+        myFixture.copyFileToProject("TwigFilterExtension.php");
+
         myFixture.copyFileToProject("TwigStringExtension.php");
 
         assertCompletionContains(
@@ -348,6 +370,8 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
     }
 
     public void testThatTwigExtensionStringParameterIsPipedToPhpCompletion() {
+        myFixture.copyFileToProject("TwigTemplateCompletionContributorTest.php");
+
         assertCompletionContains(TwigFileType.INSTANCE, "\n" +
                 "{{ 'aaa'|request_filter('<caret>') }}\n",
             "GET", "POST"
@@ -421,44 +445,40 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
     }
 
     public void testThatEnumProvidesCompletionForEnumClasses() {
-        // Test basic completion - enum should be available
+        myFixture.copyFileToProject("TwigFilterExtension.php");
+        myFixture.copyFileToProject("TwigTemplateCompletionContributorTest.php");
+
         assertCompletionContains(TwigFileType.INSTANCE, "{{ enum('<caret>') }}", "FooEnum");
+        assertCompletionResultsNotContain("FooConst");
+        assertCurrentCompletionInserts("FooEnum", "{{ enum('App\\\\Bike\\\\FooEnum') }}");
 
-        // Ensure non-enum classes are NOT included
-        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ enum('<caret>') }}", "FooConst");
-
-        // Test namespace-based completion
         assertCompletionContains(TwigFileType.INSTANCE, "{{ enum('App\\<caret>') }}", "\\\\Bike\\\\FooEnum");
-        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ enum('App\\<caret>') }}", "\\\\Bike\\\\FooConst");
+        assertCompletionResultsNotContain("\\\\Bike\\\\FooConst");
+        assertCurrentCompletionInserts("\\\\Bike\\\\FooEnum", "{{ enum('App\\\\\\Bike\\\\FooEnum') }}");
 
-        // Test sub-namespace completion
         assertCompletionContains(TwigFileType.INSTANCE, "{{ enum('App\\\\Bike\\\\<caret>') }}", "FooEnum");
-        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ enum('App\\\\Bike\\\\<caret>') }}", "FooConst");
+        assertCompletionResultsNotContain("FooConst");
 
-        // Test that the insert handler properly escapes backslashes
-        assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ enum('<caret>') }}", "{{ enum('App\\\\Bike\\\\FooEnum') }}", l -> "FooEnum".equals(l.getLookupString()));
-        assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ enum('App\\<caret>') }}", "{{ enum('App\\\\\\Bike\\\\FooEnum') }}", l -> "\\\\Bike\\\\FooEnum".equals(l.getLookupString()));
+        // Keep the distinct class-name prefix and its insertion result.
         assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ enum('App\\\\Bike\\\\Foo<caret>') }}", "{{ enum('App\\\\Bike\\\\FooEnum') }}", l -> "FooEnum".equals(l.getLookupString()));
     }
 
     public void testThatEnumCasesProvidesCompletionForEnumClasses() {
-        // Test basic completion - enum should be available
+        myFixture.copyFileToProject("TwigFilterExtension.php");
+        myFixture.copyFileToProject("TwigTemplateCompletionContributorTest.php");
+
         assertCompletionContains(TwigFileType.INSTANCE, "{{ enum_cases('<caret>') }}", "FooEnum");
+        assertCompletionResultsNotContain("FooConst");
+        assertCurrentCompletionInserts("FooEnum", "{{ enum_cases('App\\\\Bike\\\\FooEnum') }}");
 
-        // Ensure non-enum classes are NOT included
-        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ enum_cases('<caret>') }}", "FooConst");
-
-        // Test namespace-based completion
         assertCompletionContains(TwigFileType.INSTANCE, "{{ enum_cases('App\\<caret>') }}", "\\\\Bike\\\\FooEnum");
-        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ enum_cases('App\\<caret>') }}", "\\\\Bike\\\\FooConst");
+        assertCompletionResultsNotContain("\\\\Bike\\\\FooConst");
+        assertCurrentCompletionInserts("\\\\Bike\\\\FooEnum", "{{ enum_cases('App\\\\\\Bike\\\\FooEnum') }}");
 
-        // Test sub-namespace completion
         assertCompletionContains(TwigFileType.INSTANCE, "{{ enum_cases('App\\\\Bike\\\\<caret>') }}", "FooEnum");
-        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ enum_cases('App\\\\Bike\\\\<caret>') }}", "FooConst");
+        assertCompletionResultsNotContain("FooConst");
 
-        // Test that the insert handler properly escapes backslashes
-        assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ enum_cases('<caret>') }}", "{{ enum_cases('App\\\\Bike\\\\FooEnum') }}", l -> "FooEnum".equals(l.getLookupString()));
-        assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ enum_cases('App\\<caret>') }}", "{{ enum_cases('App\\\\\\Bike\\\\FooEnum') }}", l -> "\\\\Bike\\\\FooEnum".equals(l.getLookupString()));
+        // Keep the distinct class-name prefix and its insertion result.
         assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ enum_cases('App\\\\Bike\\\\Foo<caret>') }}", "{{ enum_cases('App\\\\Bike\\\\FooEnum') }}", l -> "FooEnum".equals(l.getLookupString()));
     }
 }

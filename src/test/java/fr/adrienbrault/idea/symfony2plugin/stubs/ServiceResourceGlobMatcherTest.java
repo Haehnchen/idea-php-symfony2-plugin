@@ -89,6 +89,8 @@ public class ServiceResourceGlobMatcherTest extends SymfonyLightCodeInsightFixtu
 
         assertTrue(matcher.matches(allowedFile));
         assertFalse(matcher.matches(excludedFile));
+        assertFalse(matcher.matches(myFixture.addFileToProject("src/App/Api/Model/Entry.php", "<?php").getVirtualFile()));
+        assertFalse(matcher.matches(myFixture.addFileToProject("src/App/Other/Entry.php", "<?php").getVirtualFile()));
     }
 
     public void testMatchesParentDirectoryWithBraceExcludeGroup() {
@@ -104,6 +106,12 @@ public class ServiceResourceGlobMatcherTest extends SymfonyLightCodeInsightFixtu
 
         assertTrue(matcher.matches(controllerFile));
         assertFalse(matcher.matches(excludedDirectoryFile));
+        assertFalse(matcher.matches(myFixture.addFileToProject("src/ModuleAlpha/DependencyInjection/Extension.php", "<?php").getVirtualFile()));
+        assertFalse(matcher.matches(myFixture.addFileToProject("src/ModuleAlpha/Entity/Entry.php", "<?php").getVirtualFile()));
+        assertFalse(matcher.matches(myFixture.addFileToProject("src/ModuleAlpha/Exception/Failure.php", "<?php").getVirtualFile()));
+        assertFalse(matcher.matches(myFixture.addFileToProject("src/ModuleAlpha/Tests/EntryTest.php", "<?php").getVirtualFile()));
+        assertFalse(matcher.matches(myFixture.addFileToProject("src/ModuleAlpha/Kernel.php", "<?php").getVirtualFile()));
+        assertFalse(matcher.matches(myFixture.addFileToProject("src/ModuleAlphaOther/Controller/FooController.php", "<?php").getVirtualFile()));
     }
 
     public void testMatchesWildcardDirectoryWithBraceExcludeGroup() {
@@ -136,6 +144,7 @@ public class ServiceResourceGlobMatcherTest extends SymfonyLightCodeInsightFixtu
         assertTrue(matcher.matches(regularFile));
         assertFalse(matcher.matches(excludedFileOne));
         assertFalse(matcher.matches(excludedFileTwo));
+        assertTrue(matcher.matches(myFixture.addFileToProject("src/ModuleGamma/SegmentOne/ExcludedMarkerXphp", "<?php").getVirtualFile()));
     }
 
     public void testCompilesExpectedRegexPatterns() throws Exception {

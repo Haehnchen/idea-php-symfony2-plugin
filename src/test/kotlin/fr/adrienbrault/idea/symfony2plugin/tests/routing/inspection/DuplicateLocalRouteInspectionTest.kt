@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.routing.inspection
 
+import fr.adrienbrault.idea.symfony2plugin.routing.inspection.DuplicateLocalRouteInspection
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
 
 /**
@@ -19,7 +20,7 @@ class DuplicateLocalRouteInspectionTest : SymfonyLightCodeInsightFixtureTestCase
     }
 
     fun testDuplicateRouteKeyProvidesWarning() {
-        assertLocalInspectionContains("routing.yml", "" +
+        assertLocalInspectionContains(DuplicateLocalRouteInspection::class.java, "routing.yml", "" +
             "foo:\n" +
             "  car: foo\n" +
             "f<caret>oo:\n" +
@@ -27,7 +28,7 @@ class DuplicateLocalRouteInspectionTest : SymfonyLightCodeInsightFixtureTestCase
             "Symfony: Duplicate route name"
         )
 
-        assertLocalInspectionContains("routing.yml", "" +
+        assertLocalInspectionContains(DuplicateLocalRouteInspection::class.java, "routing.yml", "" +
             "fo<caret>o:\n" +
             "  car: foo\n" +
             "foo:\n" +
@@ -35,7 +36,7 @@ class DuplicateLocalRouteInspectionTest : SymfonyLightCodeInsightFixtureTestCase
             "Symfony: Duplicate route name"
         )
 
-        assertLocalInspectionNotContains("routing.yml", "" +
+        assertLocalInspectionNotContains(DuplicateLocalRouteInspection::class.java, "routing.yml", "" +
             "foo:\n" +
             "  car: foo\n" +
             "foo<caret>bar:\n" +
@@ -47,7 +48,7 @@ class DuplicateLocalRouteInspectionTest : SymfonyLightCodeInsightFixtureTestCase
     }
 
     fun testDuplicateRoutingKeysForPhpAttribute() {
-        assertLocalInspectionContains("controller.php", "<?php\n" +
+        assertLocalInspectionContains(DuplicateLocalRouteInspection::class.java, "controller.php", "<?php\n" +
             "\n" +
             "use Symfony\\Component\\Routing\\Annotation\\Route;\n" +
             "\n" +
@@ -61,7 +62,7 @@ class DuplicateLocalRouteInspectionTest : SymfonyLightCodeInsightFixtureTestCase
             "Symfony: Duplicate route name"
         )
 
-        assertLocalInspectionContains("controller.php", "<?php\n" +
+        assertLocalInspectionContains(DuplicateLocalRouteInspection::class.java, "controller.php", "<?php\n" +
             "\n" +
             "use Symfony\\Component\\Routing\\Annotation\\Route;\n" +
             "\n" +
@@ -76,7 +77,7 @@ class DuplicateLocalRouteInspectionTest : SymfonyLightCodeInsightFixtureTestCase
             "Symfony: Duplicate route name"
         )
 
-        assertLocalInspectionNotContains("controller.php", "<?php\n" +
+        assertLocalInspectionNotContains(DuplicateLocalRouteInspection::class.java, "controller.php", "<?php\n" +
             "\n" +
             "use Symfony\\Component\\Routing\\Annotation\\Route;\n" +
             "\n" +
@@ -93,7 +94,7 @@ class DuplicateLocalRouteInspectionTest : SymfonyLightCodeInsightFixtureTestCase
     }
 
     fun testDuplicateRoutingKeysForPhpDocBlocks() {
-        assertLocalInspectionContains("controller.php", "<?php\n" +
+        assertLocalInspectionContains(DuplicateLocalRouteInspection::class.java, "controller.php", "<?php\n" +
             "\n" +
             "use Symfony\\Component\\Routing\\Annotation\\Route;\n" +
             "\n" +
@@ -116,7 +117,7 @@ class DuplicateLocalRouteInspectionTest : SymfonyLightCodeInsightFixtureTestCase
     }
 
     fun testDuplicateRoutingKeysForXml() {
-        assertLocalInspectionContains("routing.xml", "" +
+        assertLocalInspectionContains(DuplicateLocalRouteInspection::class.java, "routing.xml", "" +
             "<routes>\n" +
             "    <route id=\"blog_list\" path=\"/blog\"/>\n" +
             "    <route id=\"blog<caret>_list\" path=\"/blog1\"/>\n" +

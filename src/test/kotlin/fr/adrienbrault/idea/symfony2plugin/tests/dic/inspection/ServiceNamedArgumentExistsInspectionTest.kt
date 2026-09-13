@@ -18,14 +18,14 @@ class ServiceNamedArgumentExistsInspectionTest : SymfonyLightCodeInsightFixtureT
     }
 
     fun testMissingArgumentForYaml() {
-        assertLocalInspectionContains("foo.yml",
+        assertLocalInspectionContains(ServiceNamedArgumentExistsInspection::class.java, "foo.yml",
             "Foobar\\NamedArgument:\n" +
                 "        arguments:\n" +
                 "            \$foo<caret>bar1: ~",
             ServiceNamedArgumentExistsInspection.INSPECTION_MESSAGE
         )
 
-        assertLocalInspectionNotContains("foo.yml",
+        assertLocalInspectionNotContains(ServiceNamedArgumentExistsInspection::class.java, "foo.yml",
             "Foobar\\UnknownClassNamedArgument:\n" +
                 "        arguments:\n" +
                 "            \$foo<caret>bar: ~",
@@ -34,7 +34,7 @@ class ServiceNamedArgumentExistsInspectionTest : SymfonyLightCodeInsightFixtureT
     }
 
     fun testMissingArgumentForFactoryServiceIsNotTriggeredYaml() {
-        assertLocalInspectionNotContains("foo.yml",
+        assertLocalInspectionNotContains(ServiceNamedArgumentExistsInspection::class.java, "foo.yml",
             "Foobar\\NamedArgument:\n" +
                 "        factory: ~\n" +
                 "        arguments:\n" +

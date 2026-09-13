@@ -21,7 +21,7 @@ class TwigRouteMissingInspectionTest : SymfonyLightCodeInsightFixtureTestCase() 
     }
 
     fun testThatMissingRouteProvidesInspection() {
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(TwigRouteMissingInspection::class.java,
             "test.html.twig",
             "{{ path('fo<caret>obar') }}",
             "Symfony: Missing Route"
@@ -29,19 +29,19 @@ class TwigRouteMissingInspectionTest : SymfonyLightCodeInsightFixtureTestCase() 
     }
 
     fun testThatKnownRouteMustNotProvideErrorHighlight() {
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(TwigRouteMissingInspection::class.java,
             "test.html.twig",
             "{{ path('my_<caret>foobar') }}",
             "Symfony: Missing Route"
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(TwigRouteMissingInspection::class.java,
             "test.html.twig",
             "{{ path('App\\\\Controller\\\\Foobar<caret>Controller') }}",
             "Symfony: Missing Route"
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(TwigRouteMissingInspection::class.java,
             "test.html.twig",
             "{{ path('App\\\\Controller\\\\FooCon<caret>troller::foobar') }}",
             "Symfony: Missing Route"
@@ -49,13 +49,13 @@ class TwigRouteMissingInspectionTest : SymfonyLightCodeInsightFixtureTestCase() 
     }
 
     fun testThatInterpolatedStringMustBeIgnoredForInspection() {
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(TwigRouteMissingInspection::class.java,
             "test.html.twig",
             "{{ path('fo<caret>o#{langId}foobar') }}",
             "Symfony: Missing Route"
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(TwigRouteMissingInspection::class.java,
             "test.html.twig",
             "{{ path('fo<caret>o#{segment.typeKey}foobar') }}",
             "Symfony: Missing Route"
@@ -63,13 +63,13 @@ class TwigRouteMissingInspectionTest : SymfonyLightCodeInsightFixtureTestCase() 
     }
 
     fun testRouteUsageForDeprecatedControllerActionProvidesInspection() {
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(TwigRouteMissingInspection::class.java,
             "test.html.twig",
             "{{ url('deprecated_<caret>route') }}",
             "Symfony: Controller action is deprecated"
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(TwigRouteMissingInspection::class.java,
             "test.html.twig",
             "{{ url('active_<caret>route') }}",
             "Symfony: Controller action is deprecated"

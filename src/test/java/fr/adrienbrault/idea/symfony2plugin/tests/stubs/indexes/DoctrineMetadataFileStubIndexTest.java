@@ -15,20 +15,20 @@ public class DoctrineMetadataFileStubIndexTest extends SymfonyLightCodeInsightFi
     public void setUp() throws Exception {
         super.setUp();
 
-        myFixture.configureByText("doctrine.mongodb.xml", "" +
+        myFixture.addFileToProject("doctrine.mongodb.xml", "" +
             "<doctrine-mongo-mapping >\n" +
             "    <document name=\"Documents\\Xml\\MongoUser\" db=\"documents\" collection=\"users\" repository-class=\"Documents\\Xml\\MongoUserRepository\"/>\n" +
             "    <document name=\"Documents\\User1\" db=\"documents\" collection=\"users\"/>\n" +
             "</doctrine-mongo-mapping>"
         );
 
-        myFixture.configureByText("doctrine.orm.xml",
+        myFixture.addFileToProject("doctrine.orm.xml",
             "<doctrine-mapping>\n" +
             "    <entity name=\"Documents\\Xml\\OrmUser\" table=\"cms_users\" repository-class=\"Documents\\Xml\\OrmUserRepository\"/>\n" +
             "</doctrine-mapping>"
         );
 
-        myFixture.configureByText("doctrine.yml", "" +
+        myFixture.addFileToProject("doctrine.yml", "" +
             "Documents\\Yml\\OdmUser:\n" +
             "  db: documents\n" +
             "  collection: ~" +
@@ -38,7 +38,7 @@ public class DoctrineMetadataFileStubIndexTest extends SymfonyLightCodeInsightFi
             "  repositoryClass: Documents\\Yml\\OrmUserRepository"
         );
 
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("doctrine.php"));
+        myFixture.copyFileToProject("doctrine.php");
     }
 
     public String getTestDataPath() {

@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.dic.inspection
 
+import fr.adrienbrault.idea.symfony2plugin.dic.inspection.YamlXmlServiceInstanceInspection
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
 
 /**
@@ -25,7 +26,7 @@ class YamlXmlServiceInstanceInspectionTest : SymfonyLightCodeInsightFixtureTestC
         )
 
         for (s in strings) {
-            assertLocalInspectionContains("services.yml",
+            assertLocalInspectionContains(YamlXmlServiceInstanceInspection::class.java, "services.yml",
                 "services:\n" +
                     "  foo:\n" +
                     "    class: \\Args\\Foo\n" +
@@ -33,7 +34,7 @@ class YamlXmlServiceInstanceInspectionTest : SymfonyLightCodeInsightFixtureTestC
                 "Expect instance of: Args\\Foo"
             )
 
-            assertLocalInspectionContains("services.yml",
+            assertLocalInspectionContains(YamlXmlServiceInstanceInspection::class.java, "services.yml",
                 "services:\n" +
                     "  foo:\n" +
                     "    class: \\Args\\Foo\n" +
@@ -44,14 +45,14 @@ class YamlXmlServiceInstanceInspectionTest : SymfonyLightCodeInsightFixtureTestC
     }
 
     fun testInspectionForConstructorArgumentsForServiceIdShortcut() {
-        assertLocalInspectionContains("services.yml",
+        assertLocalInspectionContains(YamlXmlServiceInstanceInspection::class.java, "services.yml",
             "services:\n" +
                 "  Args\\Foo:\n" +
                 "    arguments: [ @foo, %foo%, '@ar<caret>gs_bar']",
             "Expect instance of: Args\\Foo"
         )
 
-        assertLocalInspectionContains("services.yml",
+        assertLocalInspectionContains(YamlXmlServiceInstanceInspection::class.java, "services.yml",
             "services:\n" +
                 "  foo:\n" +
                 "    class: \\Args\\Foo\n" +
@@ -69,7 +70,7 @@ class YamlXmlServiceInstanceInspectionTest : SymfonyLightCodeInsightFixtureTestC
         )
 
         for (s in strings) {
-            assertLocalInspectionContains("services.yml",
+            assertLocalInspectionContains(YamlXmlServiceInstanceInspection::class.java, "services.yml",
                 "services:\n" +
                     "  foo:\n" +
                     "    class: \\Args\\Foo\n" +
@@ -78,7 +79,7 @@ class YamlXmlServiceInstanceInspectionTest : SymfonyLightCodeInsightFixtureTestC
                 "Expect instance of: Args\\Foo"
             )
 
-            assertLocalInspectionContains("services.yml",
+            assertLocalInspectionContains(YamlXmlServiceInstanceInspection::class.java, "services.yml",
                 "services:\n" +
                     "  foo:\n" +
                     "    class: \\Args\\Foo\n" +
@@ -99,7 +100,7 @@ class YamlXmlServiceInstanceInspectionTest : SymfonyLightCodeInsightFixtureTestC
         )
 
         for (s in strings) {
-            assertLocalInspectionContains("services.yml",
+            assertLocalInspectionContains(YamlXmlServiceInstanceInspection::class.java, "services.yml",
                 "services:\n" +
                     "  foo:\n" +
                     "    class: \\Args\\Foo\n" +
@@ -108,7 +109,7 @@ class YamlXmlServiceInstanceInspectionTest : SymfonyLightCodeInsightFixtureTestC
                 "Expect instance of: Args\\Foo"
             )
 
-            assertLocalInspectionContains("services.yml",
+            assertLocalInspectionContains(YamlXmlServiceInstanceInspection::class.java, "services.yml",
                 "services:\n" +
                     "  foo:\n" +
                     "    class: \\Args\\Foo\n" +

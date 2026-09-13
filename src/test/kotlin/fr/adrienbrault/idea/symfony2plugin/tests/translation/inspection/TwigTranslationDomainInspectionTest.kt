@@ -18,7 +18,7 @@ class TwigTranslationDomainInspectionTest : SymfonyLightCodeInsightFixtureTestCa
     }
 
     fun testUnknownDomainIsInspected() {
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(TwigTranslationDomainInspection::class.java,
             "f.html.twig",
             "{{ 'foo'|trans({}, 'UNK<caret>NOWN')) }}",
             TwigTranslationDomainInspection.MESSAGE
@@ -26,7 +26,7 @@ class TwigTranslationDomainInspectionTest : SymfonyLightCodeInsightFixtureTestCa
     }
 
     fun testKnownDomainIsInspected() {
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(TwigTranslationDomainInspection::class.java,
             "f.html.twig",
             "{{ 'foo'|trans({}, 'sy<caret>mfony')) }}",
             TwigTranslationDomainInspection.MESSAGE
@@ -34,7 +34,7 @@ class TwigTranslationDomainInspectionTest : SymfonyLightCodeInsightFixtureTestCa
     }
 
     fun testUnknownDomainWithNamedArgumentColonSyntaxIsInspected() {
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(TwigTranslationDomainInspection::class.java,
             "f.html.twig",
             "{{ 'foo'|trans(domain: 'UNK<caret>NOWN') }}",
             TwigTranslationDomainInspection.MESSAGE
@@ -42,7 +42,7 @@ class TwigTranslationDomainInspectionTest : SymfonyLightCodeInsightFixtureTestCa
     }
 
     fun testKnownDomainWithNamedArgumentColonSyntaxIsNotInspected() {
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(TwigTranslationDomainInspection::class.java,
             "f.html.twig",
             "{{ 'foo'|trans(domain: 'sy<caret>mfony') }}",
             TwigTranslationDomainInspection.MESSAGE

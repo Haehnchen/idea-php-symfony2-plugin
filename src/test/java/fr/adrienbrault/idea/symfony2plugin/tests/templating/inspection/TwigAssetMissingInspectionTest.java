@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.inspection;
 
+import fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigAssetMissingInspection;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
@@ -8,13 +9,13 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
  */
 public class TwigAssetMissingInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void testThatUnknownAssetIsHighlighted() {
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(TwigAssetMissingInspection.class,
             "test.html.twig",
             "{{ asset('foob<caret>ar.css') %}",
             "Missing asset"
         );
 
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(TwigAssetMissingInspection.class,
             "test.html.twig",
             "{{ asset(\"foob<caret>ar.css\") %}",
             "Missing asset"
@@ -22,19 +23,19 @@ public class TwigAssetMissingInspectionTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testThatInvalidStringIsNotHighlighted() {
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(TwigAssetMissingInspection.class,
             "test.html.twig",
             "{{ asset('foo#{segment}fo<caret>o') %}",
             "Missing asset"
         );
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(TwigAssetMissingInspection.class,
             "test.html.twig",
             "{{ asset('f<caret>oo' ~ 'foobar.css') %}",
             "Missing asset"
         );
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(TwigAssetMissingInspection.class,
             "test.html.twig",
             "{{ asset('foo' ~ 'foob<caret>ar.css') %}",
             "Missing asset"

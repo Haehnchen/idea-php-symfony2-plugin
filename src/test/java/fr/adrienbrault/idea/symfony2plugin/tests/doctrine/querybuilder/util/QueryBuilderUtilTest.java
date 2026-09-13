@@ -4,7 +4,7 @@ import com.intellij.openapi.util.Pair;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderCompletionContribution;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.dict.QueryBuilderCompletionContributionType;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.querybuilder.util.QueryBuilderUtil;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import junit.framework.TestCase;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,14 +12,14 @@ import java.util.Collection;
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class QueryBuilderUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
+public class QueryBuilderUtilTest extends TestCase {
 
     public void testExtractQueryBuilderRepositoryParametersForShortcut() {
         Collection<String> strings = QueryBuilderUtil.extractQueryBuilderRepositoryParameters(
             "#M#ő#M#C\\Doctrine\\ORM\\EntityManager.getRepositoryƅespendDoctrineModelBundle:Car.createQueryBuilder|#M#M#C\\Doctrine\\ORM\\EntityManager.getRepository.createQueryBuilder"
         );
 
-        assertContainsElements(strings, "espendDoctrineModelBundle:Car");
+        assertTrue(strings.contains("espendDoctrineModelBundle:Car"));
     }
 
     public void testExtractQueryBuilderRepositoryParametersForClassConstant() {
@@ -27,7 +27,7 @@ public class QueryBuilderUtilTest extends SymfonyLightCodeInsightFixtureTestCase
             "#M#ő#M#C\\Doctrine\\ORM\\EntityManager.getRepositoryƅ#K#C\\espend\\Doctrine\\ModelBundle\\Entity\\Car.class.createQueryBuilder|#M#M#C\\Doctrine\\ORM\\EntityManager.getRepository.createQueryBuilder"
         );
 
-        assertContainsElements(strings, "#K#C\\espend\\Doctrine\\ModelBundle\\Entity\\Car.class");
+        assertTrue(strings.contains("#K#C\\espend\\Doctrine\\ModelBundle\\Entity\\Car.class"));
     }
 
     public void testGetFieldString() {
@@ -97,9 +97,5 @@ public class QueryBuilderUtilTest extends SymfonyLightCodeInsightFixtureTestCase
         Collection<QueryBuilderCompletionContribution> t10 = QueryBuilderUtil.guestCompletionContribution("FOO(test_foo.fo");
         assertEquals(1, t10.size());
         assertTrue(t10.stream().anyMatch(c -> c.type() == QueryBuilderCompletionContributionType.PROPERTY && "test_foo.fo".equals(c.prefix())));
-
-        Collection<QueryBuilderCompletionContribution> t11 = QueryBuilderUtil.guestCompletionContribution("FOO(test_foo.fo");
-        assertEquals(1, t11.size());
-        assertTrue(t11.stream().anyMatch(c -> c.type() == QueryBuilderCompletionContributionType.PROPERTY && "test_foo.fo".equals(c.prefix())));
     }
 }

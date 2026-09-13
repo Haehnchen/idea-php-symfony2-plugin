@@ -1,9 +1,9 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.intentions.php
 
 import fr.adrienbrault.idea.symfony2plugin.intentions.php.XmlServiceArgumentIntention
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
+import junit.framework.TestCase
 
-class XmlServiceArgumentIntentionTest : SymfonyLightCodeInsightFixtureTestCase() {
+class XmlServiceArgumentIntentionTest : TestCase() {
     fun testIntentionStartInReadThread() {
         val intention = XmlServiceArgumentIntention()
 

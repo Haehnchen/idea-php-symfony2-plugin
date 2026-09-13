@@ -19,7 +19,7 @@ public class TemplateMissingAnnotationPhpAttributeLocalInspectionTest extends Sy
     }
 
     public void testThatTemplateCreationAnnotationProvidesQuickfix() {
-        assertLocalInspectionContains("foobar.php", "<?php\n" +
+        assertLocalInspectionContains(TemplateMissingAnnotationPhpAttributeLocalInspection.class, "foobar.php", "<?php\n" +
                 "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;\n" +
                 "\n" +
                 "class Foobar\n" +
@@ -35,7 +35,7 @@ public class TemplateMissingAnnotationPhpAttributeLocalInspectionTest extends Sy
             "Twig: Missing Template"
         );
 
-        assertLocalInspectionContains("foobar.php", "<?php\n" +
+        assertLocalInspectionContains(TemplateMissingAnnotationPhpAttributeLocalInspection.class, "foobar.php", "<?php\n" +
                 "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;\n" +
                 "\n" +
                 "class Foobar\n" +
@@ -51,7 +51,7 @@ public class TemplateMissingAnnotationPhpAttributeLocalInspectionTest extends Sy
             "Twig: Missing Template"
         );
 
-        assertLocalInspectionContains("foobar.php", "<?php\n" +
+        assertLocalInspectionContains(TemplateMissingAnnotationPhpAttributeLocalInspection.class, "foobar.php", "<?php\n" +
                 "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;\n" +
                 "\n" +
                 "class Foobar\n" +
@@ -70,7 +70,7 @@ public class TemplateMissingAnnotationPhpAttributeLocalInspectionTest extends Sy
     }
 
     public void testThatTemplateCreationAnnotationProvidesQuickfixForPhpAttribute() {
-        assertLocalInspectionContains("foobar.php", "<?php\n" +
+        assertLocalInspectionContains(TemplateMissingAnnotationPhpAttributeLocalInspection.class, "foobar.php", "<?php\n" +
                 "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;\n" +
                 "\n" +
                 "class Foobar\n" +
@@ -84,7 +84,7 @@ public class TemplateMissingAnnotationPhpAttributeLocalInspectionTest extends Sy
             "Twig: Missing Template"
         );
 
-        assertLocalInspectionContains("foobar.php", "<?php\n" +
+        assertLocalInspectionContains(TemplateMissingAnnotationPhpAttributeLocalInspection.class, "foobar.php", "<?php\n" +
                 "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;\n" +
                 "\n" +
                 "class Foobar\n" +
@@ -102,7 +102,7 @@ public class TemplateMissingAnnotationPhpAttributeLocalInspectionTest extends Sy
     public void testThatTemplateCreationForInvokeMethodProvidesQuickfixForPhpAttribute() {
         myFixture.copyFileToProject("controller_method.php");
 
-        assertLocalInspectionContains("foobar.php", "<?php\n" +
+        assertLocalInspectionContains(TemplateMissingAnnotationPhpAttributeLocalInspection.class, "foobar.php", "<?php\n" +
                 "namespace FooBundle\\Controller;\n" +
                 "\n" +
                 "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;\n" +
@@ -122,7 +122,7 @@ public class TemplateMissingAnnotationPhpAttributeLocalInspectionTest extends Sy
     public void testThatTemplateCreationForInvokeMethodProvidesQuickfix() {
         myFixture.copyFileToProject("controller_method.php");
 
-        assertLocalInspectionContains("foobar.php", "<?php\n" +
+        assertLocalInspectionContains(TemplateMissingAnnotationPhpAttributeLocalInspection.class, "foobar.php", "<?php\n" +
                 "namespace FooBundle\\Controller;\n" +
                 "\n" +
                 "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;\n" +
@@ -142,7 +142,7 @@ public class TemplateMissingAnnotationPhpAttributeLocalInspectionTest extends Sy
     }
 
     public void testThatMissingTemplateForGlobalNamespaceWithoutBundleScopeForController() {
-        assertLocalInspectionContains("foobar.php", "<?php\n" +
+        assertLocalInspectionContains(TemplateMissingAnnotationPhpAttributeLocalInspection.class, "foobar.php", "<?php\n" +
                 "namespace FoobarApp\\Controller;\n" +
                 "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;\n" +
                 "\n" +

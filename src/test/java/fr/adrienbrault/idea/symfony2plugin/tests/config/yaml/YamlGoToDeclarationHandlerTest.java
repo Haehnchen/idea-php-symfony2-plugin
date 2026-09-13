@@ -21,14 +21,6 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
     public void setUp() throws Exception {
         super.setUp();
         myFixture.copyFileToProject("classes.php");
-        myFixture.copyFileToProject("services.xml");
-        myFixture.copyFileToProject("YamlGoToDeclarationHandler.php");
-        myFixture.copyFileToProject("YamlGoToDeclarationHandler.env");
-
-        myFixture.copyFileToProject("YamlGoToKnownDeclarationHandlerConfig.php");
-        myFixture.copyFileToProject("classes.php");
-        myFixture.configureByText("config_foo.yml", "");
-        myFixture.configureByFile("tagged.services.xml");
     }
 
     public String getTestDataPath() {
@@ -36,6 +28,8 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testGlobalServiceName() {
+        myFixture.copyFileToProject("services.xml");
+
         assertNavigationMatch(YAMLFileType.YML, "bar: f<caret>oo", getClassPattern());
         assertNavigationMatch(YAMLFileType.YML, "bar: [ f<caret>oo ]", getClassPattern());
         assertNavigationMatch(YAMLFileType.YML, "bar: { f<caret>oo }", getClassPattern());
@@ -51,6 +45,8 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testGlobalServiceNameQuote() {
+        myFixture.copyFileToProject("services.xml");
+
         assertNavigationMatch(YAMLFileType.YML, "bar: 'f<caret>oo'", getClassPattern());
         assertNavigationMatch(YAMLFileType.YML, "bar: [ 'f<caret>oo' ]", getClassPattern());
         assertNavigationMatch(YAMLFileType.YML, "bar: { 'f<caret>oo' }", getClassPattern());
@@ -66,12 +62,16 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testSpecialCharPrefix() {
+        myFixture.copyFileToProject("services.xml");
+
         assertNavigationMatch(YAMLFileType.YML, "bar: @f<caret>oo", getClassPattern());
         assertNavigationMatch(YAMLFileType.YML, "bar: @?f<caret>oo=", getClassPattern());
         assertNavigationMatch(YAMLFileType.YML, "bar: @?f<caret>oo", getClassPattern());
     }
 
     public void testSpecialCharPrefixQuote() {
+        myFixture.copyFileToProject("services.xml");
+
         assertNavigationMatch(YAMLFileType.YML, "bar: '@f<caret>oo'", getClassPattern());
         assertNavigationMatch(YAMLFileType.YML, "bar: '@?f<caret>oo='", getClassPattern());
         assertNavigationMatch(YAMLFileType.YML, "bar: '@?f<caret>oo'", getClassPattern());
@@ -82,6 +82,8 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testPhpConstantNavigation() {
+        myFixture.copyFileToProject("YamlGoToDeclarationHandler.php");
+
         assertNavigationMatch(YAMLFileType.YML, "bar: !php/const:\\YAML_<caret>FOO_BAR");
         assertNavigationMatch(YAMLFileType.YML, "bar: !php/const:YAML_<caret>FOO_BAR");
         assertNavigationMatch(YAMLFileType.YML, "bar: !php/const:Yaml\\Foo\\Bar::YAML_FOO_BAR<caret>_CLASS");
@@ -94,6 +96,8 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testPhpConstantNavigation34() {
+        myFixture.copyFileToProject("YamlGoToDeclarationHandler.php");
+
         assertNavigationMatch(YAMLFileType.YML, "bar: !php/const \\YAML_<caret>FOO_BAR");
         assertNavigationMatch(YAMLFileType.YML, "bar: !php/const YAML_<caret>FOO_BAR");
         assertNavigationMatch(YAMLFileType.YML, "bar: !php/const Yaml\\Foo\\Bar::YAML_FOO_BAR<caret>_CLASS");
@@ -103,16 +107,22 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testParameter() {
+        myFixture.copyFileToProject("services.xml");
+
         assertNavigationMatch(YAMLFileType.YML, "bar: %foo_p<caret>arameter%");
     }
 
     public void testEnvironmentParameter() {
+        myFixture.copyFileToProject("YamlGoToDeclarationHandler.env");
+
         assertNavigationMatch(YAMLFileType.YML, "bar: %env(FOOBA<caret>R_ENV)%");
         assertNavigationMatch(YAMLFileType.YML, "bar: '%env(FOOBA<caret>R_ENV)%'");
         assertNavigationMatch(YAMLFileType.YML, "bar: '%env(resolve:FOOBA<caret>R_ENV)%'");
     }
 
     public void testResourcesInsideSameDirectoryProvidesNavigation() {
+        myFixture.addFileToProject("config_foo.yml", "");
+
         assertNavigationContainsFile(YAMLFileType.YML, "imports:\n" +
                 "    - { resource: config_<caret>foo.yml }",
             "config_foo.yml"
@@ -130,6 +140,8 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testConfigKeyToTreeConfigurationNavigation() {
+        myFixture.copyFileToProject("YamlGoToKnownDeclarationHandlerConfig.php");
+
         assertNavigationMatch("config.yml", "foobar<caret>_root:\n" +
                 "    foo: ~",
             PlatformPatterns.psiElement(StringLiteralExpression.class)
@@ -142,6 +154,8 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testNavigateToTaggedServices() {
+        myFixture.copyFileToProject("tagged.services.xml");
+
         String[] values = {"my_nice<caret>_tag", "'my_nice<caret>_tag'", "\"my_nice<caret>_tag\""};
 
         for (String value : values) {
@@ -155,6 +169,8 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testNavigateToTaggedIteratorServices() {
+        myFixture.copyFileToProject("tagged.services.xml");
+
         assertNavigationMatch(YAMLFileType.YML, "" +
                 "App\\HandlerCollection:\n" +
                 "   arguments:\n" +
@@ -178,6 +194,8 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testNavigateToTagInsideHash() {
+        myFixture.copyFileToProject("tagged.services.xml");
+
         assertNavigationMatch(YAMLFileType.YML, "" +
                 "App\\HandlerCollection:\n" +
                 "   arguments:\n" +
@@ -194,6 +212,8 @@ public class YamlGoToDeclarationHandlerTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testNavigateToTaggedServicesForSymfony33Shortcut() {
+        myFixture.copyFileToProject("tagged.services.xml");
+
         String[] values = {"my_nice<caret>_tag", "'my_nice<caret>_tag'", "\"my_nice<caret>_tag\""};
 
         for (String value : values) {

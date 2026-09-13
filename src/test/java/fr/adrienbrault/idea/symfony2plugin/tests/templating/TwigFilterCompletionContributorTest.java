@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating;
 
+import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.psi.elements.Function;
 import com.jetbrains.php.lang.psi.elements.Method;
@@ -8,6 +9,8 @@ import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+
+import java.util.Arrays;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -27,6 +30,13 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
 
     public void testTwigExtensionFilterCompletionAndNavigation() {
         assertCompletionContains(TwigFileType.INSTANCE, "{{ 'test'|<caret> }}", "doctrine_minify_query", "doctrine_pretty_query");
+
+        // All tail texts belong to the same completion result.
+        assertCurrentCompletionTailEquals("doctrine_minify_query", "(query)");
+        assertCurrentCompletionTailEquals("doctrine_pretty_query", "()");
+        assertCurrentCompletionTailEquals("contextAndEnvironment", "()");
+        assertCurrentCompletionTailEquals("contextWithoutEnvironment", "()");
+
         assertCompletionContains(TwigFileType.INSTANCE, "{{ 'test'  |   <caret> }}", "doctrine_minify_query", "doctrine_pretty_query");
         assertCompletionContains(TwigFileType.INSTANCE, "{{     'test'    |       <caret>   }}", "doctrine_minify_query", "doctrine_pretty_query");
 
@@ -36,12 +46,16 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
         assertNavigationContains(TwigFileType.INSTANCE, "{{ 'test'|<caret>doctrine_minify_query }}", "Doctrine\\Bundle\\DoctrineBundle\\Twig\\DoctrineExtension::minifyQuery");
         assertNavigationContains(TwigFileType.INSTANCE, "{{ 'test'|<caret>doctrine_pretty_query }}", "SqlFormatter::format");
         assertNavigationContains(TwigFileType.INSTANCE, "{{ 'test'|<caret>json_decode }}", "my_json_decode");
+    }
 
-        assertCompletionLookupTailEquals(TwigFileType.INSTANCE, "{{ 'test'|<caret> }}", "doctrine_minify_query", "(query)");
-        assertCompletionLookupTailEquals(TwigFileType.INSTANCE, "{{ 'test'|<caret> }}", "doctrine_pretty_query", "()");
-
-        assertCompletionLookupTailEquals(TwigFileType.INSTANCE, "{{ 'test'|<caret> }}", "contextAndEnvironment", "()");
-        assertCompletionLookupTailEquals(TwigFileType.INSTANCE, "{{ 'test'|<caret> }}", "contextWithoutEnvironment", "()");
+    private void assertCurrentCompletionTailEquals(String lookupString, String tailText) {
+        var element = Arrays.stream(myFixture.getLookupElements())
+            .filter(item -> lookupString.equals(item.getLookupString()))
+            .findFirst().orElse(null);
+        assertNotNull("Missing completion: " + lookupString, element);
+        LookupElementPresentation presentation = new LookupElementPresentation();
+        element.renderElement(presentation);
+        assertEquals(lookupString, tailText, presentation.getTailText());
     }
 
     /**
@@ -62,27 +76,12 @@ public class TwigFilterCompletionContributorTest extends SymfonyLightCodeInsight
      * @see fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionContributor.TwigSimpleTestParametersCompletionProvider
      */
     public void testOperatorExtension() {
-        assertCompletionContains(TwigFileType.INSTANCE, "{% if foo <caret> %}", "**", "-", "b-or", "b-xor", "ends with", "not", "or", "starts with");
-        assertCompletionContains(TwigFileType.INSTANCE, "{% if test <caret> %}", "b-and", "expression_not", "? :");
-
-        assertCompletionContains(TwigFileType.INSTANCE, "{% if and foo <caret> %}", "ends with");
-        assertCompletionContains(TwigFileType.INSTANCE, "{% if foo is red and blue <caret> %}", "ends with");
-        assertCompletionContains(TwigFileType.INSTANCE, "{% if foo is red or blue <caret> %}", "ends with");
-        assertCompletionContains(TwigFileType.INSTANCE, "{% if foo is red or 'blue' <caret> %}", "ends with");
-        assertCompletionContains(TwigFileType.INSTANCE, "{% if foo is red or \"blue\" <caret> %}", "ends with");
-
-        assertCompletionContains(TwigFileType.INSTANCE, "{% if and foo() <caret> %}", "ends with");
-        assertCompletionContains(TwigFileType.INSTANCE, "{% if and foo.0.1.1 <caret> %}", "ends with");
-        assertCompletionContains(TwigFileType.INSTANCE, "{% if and foo(111) <caret> %}", "ends with");
-        assertCompletionContains(TwigFileType.INSTANCE, "{% if and foo(\"11\") <caret> %}", "ends with");
-        assertCompletionContains(TwigFileType.INSTANCE, "{% if and foo('11') <caret> %}", "ends with");
-        assertCompletionContains(TwigFileType.INSTANCE, "{% if and foo['11'] <caret> %}", "ends with");
-        assertCompletionContains(TwigFileType.INSTANCE, "{% if and foo[11] <caret> %}", "ends with");
-        assertCompletionContains(TwigFileType.INSTANCE, "{% if and foo('11')|test <caret> %}", "ends with");
-        assertCompletionContains(TwigFileType.INSTANCE, "{% if and foo('11') | test <caret> %}", "ends with");
-        assertCompletionContains(TwigFileType.INSTANCE, "{% if and foo('11') | \t test <caret> %}", "ends with");
+        // Syntax variants are covered by TwigPatternTest.testAfterOperatorPatternForCompletionContexts.
+        assertCompletionContains(TwigFileType.INSTANCE, "{% if foo <caret> %}",
+            "**", "-", "b-or", "b-xor", "ends with", "not", "or", "starts with", "b-and", "expression_not", "? :");
         assertCompletionContains(TwigFileType.INSTANCE, "{% if and foo[0] | \t test <caret> %}", "ends with");
 
+        // Retain end-to-end exclusions, including completion prefix filtering in malformed expressions.
         assertCompletionNotContains(TwigFileType.INSTANCE, "{% ifa and foo <caret> %}", "ends with");
         assertCompletionNotContains(TwigFileType.INSTANCE, "{% if and foo.<caret> %}", "ends with");
         assertCompletionNotContains(TwigFileType.INSTANCE, "{% if and foo$<caret> %}", "ends with");

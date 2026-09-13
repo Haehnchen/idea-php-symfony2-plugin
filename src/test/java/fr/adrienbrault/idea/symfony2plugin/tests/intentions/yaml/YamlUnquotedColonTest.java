@@ -14,12 +14,12 @@ public class YamlUnquotedColonTest extends SymfonyLightCodeInsightFixtureTestCas
     public void testColonInUnquotedMappingFollowedBySpaceShouldDeprecated() {
         this.initVersion();
 
-        assertLocalInspectionContains("foo.yml",
+        assertLocalInspectionContains(YamlUnquotedColon.class, "foo.yml",
             "class: fo<caret>obar: fff",
             YamlUnquotedColon.MESSAGE
         );
 
-        assertLocalInspectionContains("foo.yml",
+        assertLocalInspectionContains(YamlUnquotedColon.class, "foo.yml",
             "services:\n" +
             "   class: fo<caret>obar: fff\n",
             YamlUnquotedColon.MESSAGE
@@ -29,7 +29,7 @@ public class YamlUnquotedColonTest extends SymfonyLightCodeInsightFixtureTestCas
     public void testColonInUnquotedMappingFollowedBySpaceShouldNotDeprecatedOnWrongSymfonyVersion() {
         this.initVersion("2.7");
 
-        assertLocalInspectionNotContains("foo.yml",
+        assertLocalInspectionNotContains(YamlUnquotedColon.class, "foo.yml",
             "class: fo<caret>obar: fff",
             YamlUnquotedColon.MESSAGE
         );
@@ -38,27 +38,27 @@ public class YamlUnquotedColonTest extends SymfonyLightCodeInsightFixtureTestCas
     public void testColonInUnquotedWithoutMappingScopeShouldNotDeprecated() {
         this.initVersion();
 
-        assertLocalInspectionNotContains("foo.yml",
+        assertLocalInspectionNotContains(YamlUnquotedColon.class, "foo.yml",
             "class: [fo<caret>obar:fff]",
             YamlUnquotedColon.MESSAGE
         );
 
-        assertLocalInspectionNotContains("foo.yml",
+        assertLocalInspectionNotContains(YamlUnquotedColon.class, "foo.yml",
             "class: [foo, fo<caret>obar:fff]",
             YamlUnquotedColon.MESSAGE
         );
 
-        assertLocalInspectionNotContains("foo.yml",
+        assertLocalInspectionNotContains(YamlUnquotedColon.class, "foo.yml",
             "class: {fo<caret>obar:fff}",
             YamlUnquotedColon.MESSAGE
         );
 
-        assertLocalInspectionNotContains("foo.yml",
+        assertLocalInspectionNotContains(YamlUnquotedColon.class, "foo.yml",
             "class: fo<caret>obar:ddd",
             YamlUnquotedColon.MESSAGE
         );
 
-        assertLocalInspectionNotContains("foo.yml",
+        assertLocalInspectionNotContains(YamlUnquotedColon.class, "foo.yml",
             "class: fo<caret>obar: ddd \n" +
                 " fff",
             YamlUnquotedColon.MESSAGE

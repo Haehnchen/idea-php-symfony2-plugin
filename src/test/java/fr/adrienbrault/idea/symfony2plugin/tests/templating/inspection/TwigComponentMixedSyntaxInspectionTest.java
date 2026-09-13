@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.inspection;
 
+import fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigComponentMixedSyntaxInspection;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
@@ -9,7 +10,7 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
 public class TwigComponentMixedSyntaxInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
 
     public void testTwigBlockInsideHtmlComponentReportsError() {
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(TwigComponentMixedSyntaxInspection.class,
             "test.html.twig",
             "<twig:Card>\n    {% <caret>block footer %}\n        content\n    {% endblock %}\n</twig:Card>",
             "Cannot use Twig block syntax inside HTML component syntax. Use <twig:block name=\"...\"> instead."
@@ -17,7 +18,7 @@ public class TwigComponentMixedSyntaxInspectionTest extends SymfonyLightCodeInsi
     }
 
     public void testValidHtmlSyntaxDoesNotReport() {
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(TwigComponentMixedSyntaxInspection.class,
             "test.html.twig",
             "<twig:Card>\n    <twig:block name=\"footer\">\n        <caret>content\n    </twig:block>\n</twig:Card>",
             "Cannot use Twig block syntax inside HTML component syntax. Use <twig:block name=\"...\"> instead."
@@ -25,7 +26,7 @@ public class TwigComponentMixedSyntaxInspectionTest extends SymfonyLightCodeInsi
     }
 
     public void testValidTwigBlockOutsideComponentDoesNotReport() {
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(TwigComponentMixedSyntaxInspection.class,
             "test.html.twig",
             "{% extends 'base.html.twig' %}\n{% <caret>block footer %}\n    content\n{% endblock %}",
             "Cannot use Twig block syntax inside HTML component syntax. Use <twig:block name=\"...\"> instead."
@@ -33,7 +34,7 @@ public class TwigComponentMixedSyntaxInspectionTest extends SymfonyLightCodeInsi
     }
 
     public void testTwigBlockInsideNestedHtmlComponentReportsError() {
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(TwigComponentMixedSyntaxInspection.class,
             "test.html.twig",
             "<twig:Card>\n    <twig:block name=\"body\">\n        <twig:Alert>\n            {% <caret>block content %}\n                inner\n            {% endblock %}\n        </twig:Alert>\n    </twig:block>\n</twig:Card>",
             "Cannot use Twig block syntax inside HTML component syntax. Use <twig:block name=\"...\"> instead."

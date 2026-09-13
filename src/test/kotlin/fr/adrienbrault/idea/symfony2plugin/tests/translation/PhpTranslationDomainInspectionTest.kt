@@ -19,42 +19,42 @@ class PhpTranslationDomainInspectionTest : SymfonyLightCodeInsightFixtureTestCas
     }
 
     fun testThatPhpTranslationDomainInspectionsAreProvided() {
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(PhpTranslationDomainInspection::class.java,
             "test.php", "<?php\n" +
                 "/** @var \$x Symfony\\Component\\Translation\\TranslatorInterface */" +
                 "\$x->trans('foobar', [], 'dom<caret>ain')",
             PhpTranslationDomainInspection.MESSAGE
         )
 
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(PhpTranslationDomainInspection::class.java,
             "test.php", "<?php\n" +
                 "/** @var \$x Symfony\\Component\\Translation\\TranslatorInterface */" +
                 "\$x->transChoice('foobar', 1, [], 'do<caret>main')",
             PhpTranslationDomainInspection.MESSAGE
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(PhpTranslationDomainInspection::class.java,
             "test.php", "<?php\n" +
                 "/** @var \$x Symfony\\Component\\Translation\\TranslatorInterface */" +
                 "\$x->trans('foobar', [], 'sym<caret>fony')",
             PhpTranslationDomainInspection.MESSAGE
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(PhpTranslationDomainInspection::class.java,
             "test.php", "<?php\n" +
                 "/** @var \$x Symfony\\Component\\Translation\\TranslatorInterface */" +
                 "\$x->transChoice('foobar', 1, [], 'sym<caret>fony')",
             PhpTranslationDomainInspection.MESSAGE
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(PhpTranslationDomainInspection::class.java,
             "test.php", "<?php\n" +
                 "/** @var \$x Symfony\\Component\\Translation\\TranslatorInterface */" +
                 "\$x->trans('foo<caret>bar')",
             PhpTranslationDomainInspection.MESSAGE
         )
 
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(PhpTranslationDomainInspection::class.java,
             "test.php", "<?php\n" +
                 "/** @var \$x Symfony\\Component\\Translation\\TranslatorInterface */" +
                 "\$x->trans('id', domain: 'dom<caret>ain')",
@@ -63,25 +63,25 @@ class PhpTranslationDomainInspectionTest : SymfonyLightCodeInsightFixtureTestCas
     }
 
     fun testThatPhpTranslationDomainInspectionsForTranslatableMessageAreProvided() {
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(PhpTranslationDomainInspection::class.java,
             "test.php", "<?php\n" +
                 "new \\Symfony\\Component\\Translation\\TranslatableMessage('foobar', [], 'do<caret>main');",
             PhpTranslationDomainInspection.MESSAGE
         )
 
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(PhpTranslationDomainInspection::class.java,
             "test.php", "<?php\n" +
                 "new \\Symfony\\Component\\Translation\\TranslatableMessage('foobar', [], 'foo<caret>bar');",
             PhpTranslationDomainInspection.MESSAGE
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(PhpTranslationDomainInspection::class.java,
             "test.php", "<?php\n" +
                 "new \\Symfony\\Component\\Translation\\TranslatableMessage('foobar', [], 'sym<caret>fony');",
             PhpTranslationDomainInspection.MESSAGE
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(PhpTranslationDomainInspection::class.java,
             "test.php", "<?php\n" +
                 "new \\Symfony\\Component\\Translation\\TranslatableMessage(domain: 'sym<caret>fony');",
             PhpTranslationDomainInspection.MESSAGE
@@ -89,28 +89,28 @@ class PhpTranslationDomainInspectionTest : SymfonyLightCodeInsightFixtureTestCas
     }
 
     fun testThatPhpTranslationDomainInspectionsForTranslatableMessageViaTFunctionAreProvided() {
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(PhpTranslationDomainInspection::class.java,
             "test.php", "<?php\n" +
                 "use function Symfony\\Component\\Translation\\t;\n" +
                 "t('foobar', [], 'do<caret>main');",
             PhpTranslationDomainInspection.MESSAGE
         )
 
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(PhpTranslationDomainInspection::class.java,
             "test.php", "<?php\n" +
                 "use function Symfony\\Component\\Translation\\t;\n" +
                 "t('foobar', [], 'foo<caret>bar');",
             PhpTranslationDomainInspection.MESSAGE
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(PhpTranslationDomainInspection::class.java,
             "test.php", "<?php\n" +
                 "use function Symfony\\Component\\Translation\\t;\n" +
                 "t('foobar', [], 'sym<caret>fony');",
             PhpTranslationDomainInspection.MESSAGE
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(PhpTranslationDomainInspection::class.java,
             "test.php", "<?php\n" +
                 "use function Symfony\\Component\\Translation\\t;\n" +
                 "t(domain: 'sym<caret>fony');",

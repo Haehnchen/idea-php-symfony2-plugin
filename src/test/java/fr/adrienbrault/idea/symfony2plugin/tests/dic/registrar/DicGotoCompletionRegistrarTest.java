@@ -11,9 +11,7 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
 
     public void setUp() throws Exception {
         super.setUp();
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("classes.php"));
-        myFixture.copyFileToProject("services.yml");
-        myFixture.copyFileToProject(".env");
+        myFixture.copyFileToProject("classes.php");
     }
 
     public String getTestDataPath() {
@@ -21,6 +19,8 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testParameterContributor() {
+        myFixture.copyFileToProject("services.yml");
+
         for (String s : new String[]{"getParameter", "hasParameter"}) {
             assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
                     "/** @var $f \\Symfony\\Component\\DependencyInjection\\ContainerInterface */ \n" +
@@ -37,6 +37,8 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testParameterContributorForParameterBagInterfaces() {
+        myFixture.copyFileToProject("services.yml");
+
         for (String className : new String[]{"ParameterBagInterface", "ContainerBagInterface"}) {
             for (String methodName : new String[]{"get", "has"}) {
                 String php = "<?php\n" +
@@ -61,6 +63,8 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testParameterContributorProxied() {
+        myFixture.copyFileToProject("services.yml");
+
         for (String s : new String[]{"foo", "bar"}) {
             assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
                     String.format("(new \\Foo())->%s('<caret>')", s),
@@ -76,6 +80,8 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testParameterContributorFor() {
+        myFixture.copyFileToProject("services.yml");
+
         assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
                 "param('<caret>')",
             "foo"
@@ -88,6 +94,8 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testParameterContributorForDefaultAttribute() {
+        myFixture.copyFileToProject("services.yml");
+
         assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
                 "use Symfony\\Component\\DependencyInjection\\Attribute\\Autowire;\n" +
                 "\n" +
@@ -129,6 +137,8 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testParameterContributorForNamedAttribute() {
+        myFixture.copyFileToProject("services.yml");
+
         assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
                 "use Symfony\\Component\\DependencyInjection\\Attribute\\Autowire;\n" +
                 "\n" +
@@ -157,6 +167,8 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testTagContributorForTaggedIterator() {
+        myFixture.copyFileToProject("services.yml");
+
         assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
                 "use Symfony\\Component\\DependencyInjection\\Attribute\\TaggedIterator;\n" +
                 "\n" +
@@ -193,6 +205,8 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testTagContributorForTaggedLocator() {
+        myFixture.copyFileToProject("services.yml");
+
         assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
                 "use Symfony\\Component\\DependencyInjection\\Attribute\\TaggedLocator;\n" +
                 "\n" +
@@ -229,6 +243,8 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testServiceContributorForNamedAttribute() {
+        myFixture.copyFileToProject("services.yml");
+
         assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
                 "use Symfony\\Component\\DependencyInjection\\Attribute\\Autowire;\n" +
                 "\n" +
@@ -255,6 +271,8 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testServiceContributorDecoratesAttribute() {
+        myFixture.copyFileToProject("services.yml");
+
         assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
                 "use Symfony\\Component\\DependencyInjection\\Attribute\\AsDecorator;\n" +
                 "#[AsDecorator('<caret>')]\n" +
@@ -285,6 +303,8 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testTagContributorForAutoconfigureTagsAttribute() {
+        myFixture.copyFileToProject("services.yml");
+
         assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
                 "use Symfony\\Component\\DependencyInjection\\Attribute\\Autoconfigure;\n" +
                 "#[Autoconfigure(['<caret>'])]\n" +
@@ -315,6 +335,8 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testTagContributorForAutoconfigureTagAttribute() {
+        myFixture.copyFileToProject("services.yml");
+
         assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
                 "use Symfony\\Component\\DependencyInjection\\Attribute\\AutoconfigureTag;\n" +
                 "#[AutoconfigureTag('<caret>')]\n" +
@@ -354,6 +376,8 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testParameterContributorForParamAttribute() {
+        myFixture.copyFileToProject("services.yml");
+
         assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
                 "use Symfony\\Component\\DependencyInjection\\Attribute\\Autowire;\n" +
                 "\n" +
@@ -382,6 +406,8 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testEnvironmentVariableContributorForEnvFunction() {
+        myFixture.copyFileToProject(".env");
+
         assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
                 "env('<caret>')",
             "DATABASE_URL", "APP_ENV", "SOME_ENV_VAR"
@@ -394,6 +420,8 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testEnvironmentVariableContributorForEnvFunctionWithProcessor() {
+        myFixture.copyFileToProject(".env");
+
         assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
                 "env('bool:SOME_ENV<caret>_VAR')",
             PlatformPatterns.psiElement()
@@ -401,6 +429,8 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testEnvironmentVariableContributorForEnvAttribute() {
+        myFixture.copyFileToProject(".env");
+
         assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
                 "use Symfony\\Component\\DependencyInjection\\Attribute\\Autowire;\n" +
                 "\n" +
@@ -429,6 +459,8 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testEnvironmentVariableContributorForEnvAttributeWithProcessor() {
+        myFixture.copyFileToProject(".env");
+
         assertNavigationMatch(PhpFileType.INSTANCE, "<?php\n" +
                 "use Symfony\\Component\\DependencyInjection\\Attribute\\Autowire;\n" +
                 "\n" +
@@ -470,6 +502,8 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testServiceContributorForAutowireServiceClosure() {
+        myFixture.copyFileToProject("services.yml");
+
         assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
                 "use Symfony\\Component\\DependencyInjection\\Attribute\\AutowireServiceClosure;\n" +
                 "\n" +
@@ -511,6 +545,8 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testServiceContributorForAutowireMethodOf() {
+        myFixture.copyFileToProject("services.yml");
+
         assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
                 "use Symfony\\Component\\DependencyInjection\\Attribute\\AutowireMethodOf;\n" +
                 "\n" +
@@ -552,6 +588,8 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testServiceContributorForAutowireCallable() {
+        myFixture.copyFileToProject("services.yml");
+
         assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
                 "use Symfony\\Component\\DependencyInjection\\Attribute\\AutowireCallable;\n" +
                 "\n" +
@@ -580,6 +618,8 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testMethodContributorForAutowireCallable() {
+        myFixture.copyFileToProject("services.yml");
+
         assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
                 "use Symfony\\Component\\DependencyInjection\\Attribute\\AutowireCallable;\n" +
                 "\n" +
@@ -621,6 +661,8 @@ public class DicGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testMethodContributorForAutowireCallableWithClassConstant() {
+        myFixture.copyFileToProject("services.yml");
+
         assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
                 "use Symfony\\Component\\DependencyInjection\\Attribute\\AutowireCallable;\n" +
                 "use Foo\\Bar;\n" +

@@ -3,6 +3,11 @@ package fr.adrienbrault.idea.symfony2plugin.tests.mcp
 import fr.adrienbrault.idea.symfony2plugin.mcp.collector.DoctrineEntityFieldsCollector
 
 class DoctrineEntityFieldsCollectorTest : McpCollectorTestCase() {
+    override fun setUp() {
+        super.setUp()
+        loadDoctrineFixtures()
+    }
+
 
     /**
      * Test that collect returns valid CSV format with correct header.

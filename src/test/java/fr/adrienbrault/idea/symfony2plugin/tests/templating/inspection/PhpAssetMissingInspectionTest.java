@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.inspection;
 
+import fr.adrienbrault.idea.symfony2plugin.templating.inspection.PhpAssetMissingInspection;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
@@ -18,28 +19,28 @@ public class PhpAssetMissingInspectionTest extends SymfonyLightCodeInsightFixtur
     }
 
     public void testThatUnknownAssetIsHighlighted() {
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(PhpAssetMissingInspection.class,
             "test.php",
             "<?php\n" +
                 "(new \\Symfony\\Component\\Asset\\Packages())->getVersion('foob<caret>ar.css');\n",
             "Symfony: Missing asset"
         );
 
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(PhpAssetMissingInspection.class,
             "test.php",
             "<?php\n" +
                 "(new \\Symfony\\Component\\Asset\\Package())->getVersion('foob<caret>ar.css');\n",
             "Symfony: Missing asset"
         );
 
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(PhpAssetMissingInspection.class,
             "test.php",
             "<?php\n" +
                 "(new \\Symfony\\Component\\Asset\\Packages())->getUrl('foob<caret>ar.css');\n",
             "Symfony: Missing asset"
         );
 
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(PhpAssetMissingInspection.class,
             "test.php",
             "<?php\n" +
                 "(new \\Symfony\\Component\\Asset\\Package())->getUrl('foob<caret>ar.css');\n",

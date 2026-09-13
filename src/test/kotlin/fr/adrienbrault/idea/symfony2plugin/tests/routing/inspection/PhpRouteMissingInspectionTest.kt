@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.routing.inspection
 
+import fr.adrienbrault.idea.symfony2plugin.routing.inspection.PhpRouteMissingInspection
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
 
 /**
@@ -20,7 +21,7 @@ class PhpRouteMissingInspectionTest : SymfonyLightCodeInsightFixtureTestCase() {
     }
 
     fun testRouteDoesNotExistsInspection() {
-        assertLocalInspectionContains("test.php", "<?php\n" +
+        assertLocalInspectionContains(PhpRouteMissingInspection::class.java, "test.php", "<?php\n" +
             "/** @var \$x \\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface */\n" +
             "\$x->generate('fo<caret>obar');\n",
             "Symfony: Missing Route"
@@ -28,7 +29,7 @@ class PhpRouteMissingInspectionTest : SymfonyLightCodeInsightFixtureTestCase() {
     }
 
     fun testRouteDoesNotExistsInspectionMustNotBeShownForExistingRoute() {
-        assertLocalInspectionNotContains("test.php", "<?php\n" +
+        assertLocalInspectionNotContains(PhpRouteMissingInspection::class.java, "test.php", "<?php\n" +
             "/** @var \$x \\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface */\n" +
             "\$x->generate('my_fo<caret>obar');\n",
             "Symfony: Missing Route"
@@ -36,13 +37,13 @@ class PhpRouteMissingInspectionTest : SymfonyLightCodeInsightFixtureTestCase() {
     }
 
     fun testRouteUsageForDeprecatedControllerActionProvidesInspection() {
-        assertLocalInspectionContains("test.php", "<?php\n" +
+        assertLocalInspectionContains(PhpRouteMissingInspection::class.java, "test.php", "<?php\n" +
             "/** @var \$x \\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface */\n" +
             "\$x->generate('deprecated_<caret>route');\n",
             "Symfony: Controller action is deprecated"
         )
 
-        assertLocalInspectionNotContains("test.php", "<?php\n" +
+        assertLocalInspectionNotContains(PhpRouteMissingInspection::class.java, "test.php", "<?php\n" +
             "/** @var \$x \\Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface */\n" +
             "\$x->generate('active_<caret>route');\n",
             "Symfony: Controller action is deprecated"

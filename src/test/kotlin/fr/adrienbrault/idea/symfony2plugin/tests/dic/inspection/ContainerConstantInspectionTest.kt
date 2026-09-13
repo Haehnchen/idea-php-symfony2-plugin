@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.dic.inspection
 
+import fr.adrienbrault.idea.symfony2plugin.dic.inspection.ContainerConstantInspection
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
 
 /**
@@ -17,13 +18,13 @@ class ContainerConstantInspectionTest : SymfonyLightCodeInsightFixtureTestCase()
     }
 
     fun testConstantInspectionForYamlFiles() {
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(ContainerConstantInspection.ContainerConstantYamlInspection::class.java,
             "foo.yml",
             "bar: !php/const:\\Foobar\\Car::FOOB<caret>AR_1",
             "Symfony: constant not found"
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(ContainerConstantInspection.ContainerConstantYamlInspection::class.java,
             "foo.yml",
             "bar: !php/const:\\Foobar\\Car::FOOB<caret>AR",
             "Symfony: constant not found"
@@ -31,7 +32,7 @@ class ContainerConstantInspectionTest : SymfonyLightCodeInsightFixtureTestCase()
     }
 
     fun testConstantInspectionForXmlFiles() {
-        assertLocalInspectionContains("service.xml",
+        assertLocalInspectionContains(ContainerConstantInspection.ContainerConstantXmlInspection::class.java, "service.xml",
             "<container>\n" +
                 "  <services>\n" +
                 "      <service id=\"foo\" class=\"DateTime\">\n" +
@@ -42,7 +43,7 @@ class ContainerConstantInspectionTest : SymfonyLightCodeInsightFixtureTestCase()
             "Symfony: constant not found"
         )
 
-        assertLocalInspectionNotContains("service.xml",
+        assertLocalInspectionNotContains(ContainerConstantInspection.ContainerConstantXmlInspection::class.java, "service.xml",
             "<container>\n" +
                 "  <services>\n" +
                 "      <service id=\"foo\" class=\"DateTime\">\n" +
@@ -53,7 +54,7 @@ class ContainerConstantInspectionTest : SymfonyLightCodeInsightFixtureTestCase()
             "Symfony: constant not found"
         )
 
-        assertLocalInspectionNotContains("service.xml",
+        assertLocalInspectionNotContains(ContainerConstantInspection.ContainerConstantXmlInspection::class.java, "service.xml",
             "<container>\n" +
                 "  <services>\n" +
                 "      <service id=\"foo\" class=\"DateTime\">\n" +

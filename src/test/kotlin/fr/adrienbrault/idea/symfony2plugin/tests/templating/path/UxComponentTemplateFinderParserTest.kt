@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.templating.path
 
 import fr.adrienbrault.idea.symfony2plugin.templating.path.UxComponentTemplateFinderParser
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
+import fr.adrienbrault.idea.symfony2plugin.util.ProjectUtil
 import java.io.ByteArrayInputStream
 
 /**
@@ -99,7 +100,7 @@ class UxComponentTemplateFinderParserTest : SymfonyLightCodeInsightFixtureTestCa
 
     private fun ensureProjectRootFile(path: String, content: String): com.intellij.openapi.vfs.VirtualFile {
         createFileInProjectRoot(path, content)
-        return project.baseDir.findFileByRelativePath(path)!!
+        return ProjectUtil.getProjectDir(project).findFileByRelativePath(path)!!
     }
 
     private fun parse(xml: String, containerFile: com.intellij.openapi.vfs.VirtualFile): UxComponentTemplateFinderParser {

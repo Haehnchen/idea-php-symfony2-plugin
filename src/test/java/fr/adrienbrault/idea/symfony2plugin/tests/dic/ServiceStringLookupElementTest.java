@@ -4,7 +4,7 @@ import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerServiceMetadata;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceStringLookupElement;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import junit.framework.TestCase;
 
 import java.util.Collections;
 
@@ -12,7 +12,7 @@ import java.util.Collections;
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see fr.adrienbrault.idea.symfony2plugin.dic.ServiceStringLookupElement
  */
-public class ServiceStringLookupElementTest extends SymfonyLightCodeInsightFixtureTestCase {
+public class ServiceStringLookupElementTest extends TestCase {
 
     public void testServiceLookupPresentableRendering() {
         ContainerService service = new ContainerService("foo", "DateTime", new ContainerServiceMetadata(

@@ -8,6 +8,11 @@ import fr.adrienbrault.idea.symfony2plugin.mcp.collector.TwigExtensionCollector
  * Verifies CSV output for Twig extensions.
  */
 class TwigExtensionCollectorTest : McpCollectorTestCase() {
+    override fun setUp() {
+        super.setUp()
+        myFixture.copyFileToProject("templating/util/fixtures/twig_extensions.php", "src/Twig/twig_extensions.php")
+    }
+
 
     fun testCollectAttributeFilterFullLine() {
         val result = TwigExtensionCollector(project).collect("product_number_filter", true, false, false, false)

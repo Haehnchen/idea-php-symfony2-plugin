@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.dic.inspection
 
+import fr.adrienbrault.idea.symfony2plugin.dic.inspection.PhpServiceInstanceInspection
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
 
 /**
@@ -30,14 +31,14 @@ class PhpServiceInstanceInspectionTest : SymfonyLightCodeInsightFixtureTestCase(
     }
 
     fun testArrayStylePositionalConstructorArgumentReportsMismatch() {
-        assertLocalInspectionContains("test.php",
+        assertLocalInspectionContains(PhpServiceInstanceInspection::class.java, "test.php",
             arrayConfig("service('args<caret>_bar')"),
             "Expect instance of: Args\\Foo"
         )
     }
 
     fun testArrayStyleNamedConstructorArgumentReportsMismatch() {
-        assertLocalInspectionContains("test.php",
+        assertLocalInspectionContains(PhpServiceInstanceInspection::class.java, "test.php",
             "<?php\n" +
             "namespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\n" +
             "return [\n" +
@@ -52,35 +53,35 @@ class PhpServiceInstanceInspectionTest : SymfonyLightCodeInsightFixtureTestCase(
     }
 
     fun testArrayStyleRawAtServiceReportsMismatch() {
-        assertLocalInspectionContains("test.php",
+        assertLocalInspectionContains(PhpServiceInstanceInspection::class.java, "test.php",
             arrayConfig("'@args<caret>_bar'"),
             "Expect instance of: Args\\Foo"
         )
     }
 
     fun testArrayStyleSecondSlotUntypedDoesNotReport() {
-        assertLocalInspectionNotContains("test.php",
+        assertLocalInspectionNotContains(PhpServiceInstanceInspection::class.java, "test.php",
             arrayConfig("service('args_foo'), service('args<caret>_bar')"),
             "Expect instance of: Args\\Foo"
         )
     }
 
     fun testArrayStyleThirdSlotReportsMismatch() {
-        assertLocalInspectionContains("test.php",
+        assertLocalInspectionContains(PhpServiceInstanceInspection::class.java, "test.php",
             arrayConfig("service('args_foo'), service('args_foo'), service('args<caret>_bar')"),
             "Expect instance of: Args\\Foo"
         )
     }
 
     fun testArrayStyleCorrectInstanceDoesNotReport() {
-        assertLocalInspectionNotContains("test.php",
+        assertLocalInspectionNotContains(PhpServiceInstanceInspection::class.java, "test.php",
             arrayConfig("service('args<caret>_foo')"),
             "Expect instance of: Args\\Foo"
         )
     }
 
     fun testFluentArgsServiceReportsMismatch() {
-        assertLocalInspectionContains("test.php",
+        assertLocalInspectionContains(PhpServiceInstanceInspection::class.java, "test.php",
             "<?php\n" +
             "namespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\n" +
             "\$container->services()\n" +
@@ -91,7 +92,7 @@ class PhpServiceInstanceInspectionTest : SymfonyLightCodeInsightFixtureTestCase(
     }
 
     fun testFluentArgsRefReportsMismatch() {
-        assertLocalInspectionContains("test.php",
+        assertLocalInspectionContains(PhpServiceInstanceInspection::class.java, "test.php",
             "<?php\n" +
             "namespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\n" +
             "\$container->services()\n" +
@@ -102,7 +103,7 @@ class PhpServiceInstanceInspectionTest : SymfonyLightCodeInsightFixtureTestCase(
     }
 
     fun testFluentArgsCorrectInstanceDoesNotReport() {
-        assertLocalInspectionNotContains("test.php",
+        assertLocalInspectionNotContains(PhpServiceInstanceInspection::class.java, "test.php",
             "<?php\n" +
             "namespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\n" +
             "\$container->services()\n" +
@@ -113,21 +114,21 @@ class PhpServiceInstanceInspectionTest : SymfonyLightCodeInsightFixtureTestCase(
     }
 
     fun testArrayStyleClassConstantReportsMismatch() {
-        assertLocalInspectionContains("test.php",
+        assertLocalInspectionContains(PhpServiceInstanceInspection::class.java, "test.php",
             arrayConfig("service(\\Args\\Bar<caret>::class)"),
             "Expect instance of: Args\\Foo"
         )
     }
 
     fun testArrayStyleClassConstantCorrectInstanceDoesNotReport() {
-        assertLocalInspectionNotContains("test.php",
+        assertLocalInspectionNotContains(PhpServiceInstanceInspection::class.java, "test.php",
             arrayConfig("service(\\Args\\Foo<caret>::class)"),
             "Expect instance of: Args\\Foo"
         )
     }
 
     fun testNonServiceContextDoesNotReport() {
-        assertLocalInspectionNotContains("test.php",
+        assertLocalInspectionNotContains(PhpServiceInstanceInspection::class.java, "test.php",
             "<?php\n" +
             "namespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\n" +
             "service('args<caret>_bar');",
@@ -136,7 +137,7 @@ class PhpServiceInstanceInspectionTest : SymfonyLightCodeInsightFixtureTestCase(
     }
 
     fun testNonArgumentsArrayKeyDoesNotReport() {
-        assertLocalInspectionNotContains("test.php",
+        assertLocalInspectionNotContains(PhpServiceInstanceInspection::class.java, "test.php",
             "<?php\n" +
             "namespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\n" +
             "return [\n" +

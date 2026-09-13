@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.config.yaml.inspection;
 
+import fr.adrienbrault.idea.symfony2plugin.config.yaml.inspection.EventMethodCallInspection;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
@@ -19,21 +20,21 @@ public class EventMethodCallInspectionTest extends SymfonyLightCodeInsightFixtur
     }
 
     public void testThatYmlCallsProvidesMethodExistsCheck() {
-        assertLocalInspectionContains("services.yml", "services:\n" +
+        assertLocalInspectionContains(EventMethodCallInspection.class, "services.yml", "services:\n" +
                 "    foo:\n" +
                 "        class: Foo\\Service\\Method\\MyFoo\n" +
                 "        calls:\n" +
                 "            - [get<caret>Foos, []]"
             , "Missing Method");
 
-        assertLocalInspectionContains("services.yml", "services:\n" +
+        assertLocalInspectionContains(EventMethodCallInspection.class, "services.yml", "services:\n" +
                 "    foo:\n" +
                 "        class: Foo\\Service\\Method\\MyFoo\n" +
                 "        tags:\n" +
                 "            - { name: kernel.event_listener, event: kernel.exception, method: get<caret>Foos }"
             , "Missing Method");
 
-        assertLocalInspectionNotContains("services.yml", "services:\n" +
+        assertLocalInspectionNotContains(EventMethodCallInspection.class, "services.yml", "services:\n" +
                 "    newsletter_manager:\n" +
                 "        class: Foo\\Service\\Method\\MyFoo\n" +
                 "        calls:\n" +
@@ -42,7 +43,7 @@ public class EventMethodCallInspectionTest extends SymfonyLightCodeInsightFixtur
     }
 
     public void testThatPhpCallsProvidesMethodExistsCheck() {
-        assertLocalInspectionContains("test.php", "<?php\n" +
+        assertLocalInspectionContains(EventMethodCallInspection.class, "test.php", "<?php\n" +
                 "" +
                 "use Symfony\\Component\\EventDispatcher\\EventSubscriberInterface;\n" +
                 "" +
@@ -64,7 +65,7 @@ public class EventMethodCallInspectionTest extends SymfonyLightCodeInsightFixtur
     }
 
     public void testThatXmlCallsProvidesMethodExistsCheck() {
-        assertLocalInspectionContains("test.xml", "" +
+        assertLocalInspectionContains(EventMethodCallInspection.class, "test.xml", "" +
                 "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" +
                 "<container xmlns=\"http://symfony.com/schema/dic/services\"\n" +
                 "    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
@@ -80,7 +81,7 @@ public class EventMethodCallInspectionTest extends SymfonyLightCodeInsightFixtur
             "Missing Method"
         );
 
-        assertLocalInspectionContains("test.xml", "" +
+        assertLocalInspectionContains(EventMethodCallInspection.class, "test.xml", "" +
                 "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" +
                 "<container xmlns=\"http://symfony.com/schema/dic/services\"\n" +
                 "    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
@@ -98,7 +99,7 @@ public class EventMethodCallInspectionTest extends SymfonyLightCodeInsightFixtur
     }
 
     public void testThatPhpCallsProvidesMethodExistsForPhpAttributeCheck() {
-        assertLocalInspectionContains("test.php", "<?php\n" +
+        assertLocalInspectionContains(EventMethodCallInspection.class, "test.php", "<?php\n" +
                 "use Symfony\\Component\\EventDispatcher\\Attribute\\AsEventListener;\n" +
                 "\n" +
                 "#[AsEventListener(event: CustomEvent::class, method: 'onF<caret>ooBar')]\n" +
@@ -109,7 +110,7 @@ public class EventMethodCallInspectionTest extends SymfonyLightCodeInsightFixtur
             "Missing Method"
         );
 
-        assertLocalInspectionNotContains("test.php", "<?php\n" +
+        assertLocalInspectionNotContains(EventMethodCallInspection.class, "test.php", "<?php\n" +
                 "use Symfony\\Component\\EventDispatcher\\Attribute\\AsEventListener;\n" +
                 "\n" +
                 "#[AsEventListener(event: CustomEvent::class, method: 'on<caret>Foo')]\n" +

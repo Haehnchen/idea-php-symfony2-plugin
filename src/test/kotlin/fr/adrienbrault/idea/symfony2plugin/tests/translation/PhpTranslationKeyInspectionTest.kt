@@ -20,28 +20,28 @@ class PhpTranslationKeyInspectionTest : SymfonyLightCodeInsightFixtureTestCase()
     }
 
     fun testThatPhpTransInspectionsAreProvided() {
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(PhpTranslationKeyInspection::class.java,
             "test.php", "<?php\n" +
                 "/** @var \$x Symfony\\Component\\Translation\\TranslatorInterface */" +
                 "\$x->trans('fo<caret>obar', [], 'domain')",
             PhpTranslationKeyInspection.MESSAGE
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(PhpTranslationKeyInspection::class.java,
             "test.php", "<?php\n" +
                 "/** @var \$x Symfony\\Component\\Translation\\TranslatorInterface */" +
                 "\$x->trans('f\$o<caret>obar', [], 'domain')",
             PhpTranslationKeyInspection.MESSAGE
         )
 
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(PhpTranslationKeyInspection::class.java,
             "test.php", "<?php\n" +
                 "/** @var \$x Symfony\\Component\\Translation\\TranslatorInterface */" +
                 "\$x->transChoice('fo<caret>obar', 1, [], 'domain')",
             PhpTranslationKeyInspection.MESSAGE
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(PhpTranslationKeyInspection::class.java,
             "test.php", "<?php\n" +
                 "/** @var \$x Symfony\\Component\\Translation\\TranslatorInterface */" +
                 "\$x->transChoice('f\$o<caret>obar', 1, [], 'domain')",
@@ -50,63 +50,63 @@ class PhpTranslationKeyInspectionTest : SymfonyLightCodeInsightFixtureTestCase()
     }
 
     fun testThatPhpTransInspectionsAreNotProvidedForKnownTranslations() {
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(PhpTranslationKeyInspection::class.java,
             "test.php", "<?php\n" +
                 "/** @var \$x Symfony\\Component\\Translation\\TranslatorInterface */" +
                 "\$x->trans('symfon<caret>y.great')",
             PhpTranslationKeyInspection.MESSAGE
         )
 
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(PhpTranslationKeyInspection::class.java,
             "test.php", "<?php\n" +
                 "/** @var \$x Symfony\\Component\\Translation\\TranslatorInterface */" +
                 "\$x->trans(id: 'symfon<caret>y.great')",
             PhpTranslationKeyInspection.MESSAGE
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(PhpTranslationKeyInspection::class.java,
             "test.php", "<?php\n" +
                 "/** @var \$x Symfony\\Component\\Translation\\TranslatorInterface */" +
                 "\$x->trans('symfon<caret>y.great', [], 'symfony')",
             PhpTranslationKeyInspection.MESSAGE
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(PhpTranslationKeyInspection::class.java,
             "test.php", "<?php\n" +
                 "/** @var \$x Symfony\\Component\\Translation\\TranslatorInterface */" +
                 "\$x->trans('symfon<caret>y.great', domain: 'symfony')",
             PhpTranslationKeyInspection.MESSAGE
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(PhpTranslationKeyInspection::class.java,
             "test.php", "<?php\n" +
                 "/** @var \$x Symfony\\Component\\Translation\\TranslatorInterface */" +
                 "\$x->transChoice('symfon<caret>y.great', 1, [], 'symfony')",
             PhpTranslationKeyInspection.MESSAGE
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(PhpTranslationKeyInspection::class.java,
             "test.php", "<?php\n" +
                 "/** @var \$x Symfony\\Component\\Translation\\TranslatorInterface */" +
                 "\$x->transChoice('symfon<caret>y.great', 1, [], 'symfony', null)",
             PhpTranslationKeyInspection.MESSAGE
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(PhpTranslationKeyInspection::class.java,
             "test.php", "<?php\n" +
                 "/** @var \$x Symfony\\Component\\Translation\\TranslatorInterface */" +
                 "\$x->trans('symfony<caret>_message')",
             PhpTranslationKeyInspection.MESSAGE
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(PhpTranslationKeyInspection::class.java,
             "test.php", "<?php\n" +
                 "/** @var \$x Symfony\\Component\\Translation\\TranslatorInterface */" +
                 "\$x->trans('symfony<caret>_message', [])",
             PhpTranslationKeyInspection.MESSAGE
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(PhpTranslationKeyInspection::class.java,
             "test.php", "<?php\n" +
                 "\$x = 'symfony';\n" +
                 "/** @var \$x Symfony\\Component\\Translation\\TranslatorInterface */" +
@@ -114,7 +114,7 @@ class PhpTranslationKeyInspectionTest : SymfonyLightCodeInsightFixtureTestCase()
             PhpTranslationKeyInspection.MESSAGE
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(PhpTranslationKeyInspection::class.java,
             "test.php", "<?php\n" +
                 "\$x = 'symfony';\n" +
                 "/** @var \$x Symfony\\Component\\Translation\\TranslatorInterface */" +
@@ -124,25 +124,25 @@ class PhpTranslationKeyInspectionTest : SymfonyLightCodeInsightFixtureTestCase()
     }
 
     fun testThatPhpTranslationKeyInspectionsForTranslatableMessageAreProvided() {
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(PhpTranslationKeyInspection::class.java,
             "test.php", "<?php\n" +
                 "new \\Symfony\\Component\\Translation\\TranslatableMessage('symfon<caret>y.great');",
             PhpTranslationKeyInspection.MESSAGE
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(PhpTranslationKeyInspection::class.java,
             "test.php", "<?php\n" +
                 "new \\Symfony\\Component\\Translation\\TranslatableMessage('symfon<caret>y.great', domain: 'symfony');",
             PhpTranslationKeyInspection.MESSAGE
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(PhpTranslationKeyInspection::class.java,
             "test.php", "<?php\n" +
                 "new \\Symfony\\Component\\Translation\\TranslatableMessage('symfon<caret>y.great', [], 'symfony');",
             PhpTranslationKeyInspection.MESSAGE
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(PhpTranslationKeyInspection::class.java,
             "test.php", "<?php\n" +
                 "new \\Symfony\\Component\\Translation\\TranslatableMessage('symfon<caret>y.great', 1, [], \$x);",
             PhpTranslationKeyInspection.MESSAGE
@@ -150,28 +150,28 @@ class PhpTranslationKeyInspectionTest : SymfonyLightCodeInsightFixtureTestCase()
     }
 
     fun testThatPhpTranslationKeyInspectionsForTranslatableMessageViaTFunctionAreProvided() {
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(PhpTranslationKeyInspection::class.java,
             "test.php", "<?php\n" +
                 "use function Symfony\\Component\\Translation\\t;\n" +
                 "t('symfon<caret>y.great');",
             PhpTranslationKeyInspection.MESSAGE
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(PhpTranslationKeyInspection::class.java,
             "test.php", "<?php\n" +
                 "use function Symfony\\Component\\Translation\\t;\n" +
                 "t('symfon<caret>y.great', domain: 'symfony');",
             PhpTranslationKeyInspection.MESSAGE
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(PhpTranslationKeyInspection::class.java,
             "test.php", "<?php\n" +
                 "use function Symfony\\Component\\Translation\\t;\n" +
                 "t('symfon<caret>y.great', [], 'symfony');",
             PhpTranslationKeyInspection.MESSAGE
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(PhpTranslationKeyInspection::class.java,
             "test.php", "<?php\n" +
                 "use function Symfony\\Component\\Translation\\t;\n" +
                 "t('symfon<caret>y.great', 1, [], \$x);",

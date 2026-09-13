@@ -26,11 +26,11 @@ public class DoctrineMetadataUtilTest extends SymfonyLightCodeInsightFixtureTest
 
     public void setUp() throws Exception {
         super.setUp();
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("doctrine.odm.xml"));
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("doctrine.orm.xml"));
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("doctrine.orm.yml"));
+        myFixture.copyFileToProject("doctrine.odm.xml");
+        myFixture.copyFileToProject("doctrine.orm.xml");
+        myFixture.copyFileToProject("doctrine.orm.yml");
 
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("classes.php"));
+        myFixture.copyFileToProject("classes.php");
     }
 
     public String getTestDataPath() {

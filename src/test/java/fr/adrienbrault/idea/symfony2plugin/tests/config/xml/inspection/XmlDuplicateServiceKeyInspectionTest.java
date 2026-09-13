@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.config.xml.inspection;
 
+import fr.adrienbrault.idea.symfony2plugin.config.xml.inspection.XmlDuplicateServiceKeyInspection;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
@@ -8,7 +9,7 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
  */
 public class XmlDuplicateServiceKeyInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
     public void testDuplicateParameterKey() {
-        assertLocalInspectionContains("service.xml","" +
+        assertLocalInspectionContains(XmlDuplicateServiceKeyInspection.class, "service.xml","" +
                 "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" +
                 "<container>\n" +
                 "    <services>\n" +

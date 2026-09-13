@@ -18,17 +18,6 @@ public class PhpConfigReferenceContributorTest extends SymfonyLightCodeInsightFi
     public void setUp() throws Exception {
         super.setUp();
         myFixture.copyFileToProject("classes.php");
-        myFixture.copyFileToProject("tags.yml");
-        myFixture.copyFileToProject("services.yml");
-        myFixture.copyFileToProject("../../../dic/container/util/fixtures/services_array.php", "services_array.php");
-        myFixture.addFileToProject("config/php_array_targets.php", "<?php\nnamespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\nreturn App::config([\n    'services' => [\n        'app.mailer' => ['class' => \\App\\Service\\Mailer::class],\n        'app.parent' => ['class' => \\App\\Service\\Mailer::class],\n        'app.logger' => ['class' => \\App\\Service\\Logger::class],\n        'app.factory' => ['class' => \\App\\Factory\\MailerFactory::class],\n    ],\n]);\n");
-        myFixture.addFileToProject("config/parameters.yaml", "parameters:\n    mailer.transport: smtp\n");
-        myFixture.addFileToProject("src/Service/Mailer.php", "<?php\nnamespace App\\Service;\nclass Mailer {}\n");
-        myFixture.addFileToProject("src/Service/DecoratingMailer.php", "<?php\nnamespace App\\Service;\nclass DecoratingMailer extends Mailer {}\n");
-        myFixture.addFileToProject("src/Service/Logger.php", "<?php\nnamespace App\\Service;\nclass Logger {}\n");
-        myFixture.addFileToProject("src/Service/Foo.php", "<?php\nnamespace App\\Service;\nclass Foo { public function setLogger(Logger $logger): void {} }\n");
-        myFixture.addFileToProject("src/Factory/MailerFactory.php", "<?php\nnamespace App\\Factory;\nclass MailerFactory { public function create(): \\App\\Service\\Mailer { return new \\App\\Service\\Mailer(); } }\n");
-        myFixture.addFileToProject("src/Form/FooType.php", "<?php\nnamespace espend\\Form\\TypeBundle\\Form;\nclass FooType {}\n");
     }
 
     public String getTestDataPath() {
@@ -36,6 +25,8 @@ public class PhpConfigReferenceContributorTest extends SymfonyLightCodeInsightFi
     }
 
     public void testTagReferences() {
+        myFixture.copyFileToProject("tags.yml");
+
         assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
                 "/** @var $x \\Symfony\\Component\\DependencyInjection\\Definition */\n" +
                 "$x->addTag('<caret>')",
@@ -56,6 +47,8 @@ public class PhpConfigReferenceContributorTest extends SymfonyLightCodeInsightFi
     }
 
     public void testEventNameCompletionForAsEventListener() {
+        myFixture.copyFileToProject("services.yml");
+
         assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
                 "namespace App\\EventListener;\n" +
                 "\n" +
@@ -71,6 +64,8 @@ public class PhpConfigReferenceContributorTest extends SymfonyLightCodeInsightFi
     }
 
     public void testServiceCompletionForPhpArrayConfigServices() {
+        myFixture.copyFileToProject("../../../dic/container/util/fixtures/services_array.php", "services_array.php");
+
         assertCompletionContains(PhpFileType.INSTANCE, "<?php\n" +
                 "namespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\n" +
                 "return App::config([\n" +
@@ -85,6 +80,8 @@ public class PhpConfigReferenceContributorTest extends SymfonyLightCodeInsightFi
     }
 
     public void testServiceNavigationForPhpArrayConfigServices() {
+        myFixture.copyFileToProject("../../../dic/container/util/fixtures/services_array.php", "services_array.php");
+
         myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
                 "namespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\n" +
                 "return App::config([\n" +
@@ -113,6 +110,10 @@ public class PhpConfigReferenceContributorTest extends SymfonyLightCodeInsightFi
     }
 
     public void testAliasReferences() {
+        myFixture.addFileToProject("config/php_array_targets.php", "<?php\nnamespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\nreturn App::config([\n    'services' => [\n        'app.mailer' => ['class' => \\App\\Service\\Mailer::class],\n        'app.parent' => ['class' => \\App\\Service\\Mailer::class],\n        'app.logger' => ['class' => \\App\\Service\\Logger::class],\n        'app.factory' => ['class' => \\App\\Factory\\MailerFactory::class],\n    ],\n]);\n");
+        myFixture.addFileToProject("src/Service/Mailer.php", "<?php\nnamespace App\\Service;\nclass Mailer {}\n");
+        myFixture.addFileToProject("src/Service/Foo.php", "<?php\nnamespace App\\Service;\nclass Foo { public function setLogger(Logger $logger): void {} }\n");
+
         // ContainerBuilder::setAlias - second parameter navigation
         assertReferenceMatchOnParent(
             PhpFileType.INSTANCE,
@@ -154,6 +155,10 @@ public class PhpConfigReferenceContributorTest extends SymfonyLightCodeInsightFi
     }
 
     public void testDecoratesReference() {
+        myFixture.addFileToProject("config/php_array_targets.php", "<?php\nnamespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\nreturn App::config([\n    'services' => [\n        'app.mailer' => ['class' => \\App\\Service\\Mailer::class],\n        'app.parent' => ['class' => \\App\\Service\\Mailer::class],\n        'app.logger' => ['class' => \\App\\Service\\Logger::class],\n        'app.factory' => ['class' => \\App\\Factory\\MailerFactory::class],\n    ],\n]);\n");
+        myFixture.addFileToProject("src/Service/Mailer.php", "<?php\nnamespace App\\Service;\nclass Mailer {}\n");
+        myFixture.addFileToProject("src/Service/DecoratingMailer.php", "<?php\nnamespace App\\Service;\nclass DecoratingMailer extends Mailer {}\n");
+
         assertReferenceMatchOnParent(
             PhpFileType.INSTANCE,
             "<?php\n" +
@@ -171,6 +176,9 @@ public class PhpConfigReferenceContributorTest extends SymfonyLightCodeInsightFi
     }
 
     public void testParentReference() {
+        myFixture.addFileToProject("config/php_array_targets.php", "<?php\nnamespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\nreturn App::config([\n    'services' => [\n        'app.mailer' => ['class' => \\App\\Service\\Mailer::class],\n        'app.parent' => ['class' => \\App\\Service\\Mailer::class],\n        'app.logger' => ['class' => \\App\\Service\\Logger::class],\n        'app.factory' => ['class' => \\App\\Factory\\MailerFactory::class],\n    ],\n]);\n");
+        myFixture.addFileToProject("src/Service/Mailer.php", "<?php\nnamespace App\\Service;\nclass Mailer {}\n");
+
         assertReferenceMatchOnParent(
             PhpFileType.INSTANCE,
             "<?php\n" +
@@ -187,6 +195,8 @@ public class PhpConfigReferenceContributorTest extends SymfonyLightCodeInsightFi
     }
 
     public void testClassStringReference() {
+        myFixture.addFileToProject("src/Service/Mailer.php", "<?php\nnamespace App\\Service;\nclass Mailer {}\n");
+
         assertReferenceMatchOnParent(
             PhpFileType.INSTANCE,
             "<?php\n" +
@@ -203,6 +213,9 @@ public class PhpConfigReferenceContributorTest extends SymfonyLightCodeInsightFi
     }
 
     public void testArgumentsServiceReference() {
+        myFixture.addFileToProject("config/php_array_targets.php", "<?php\nnamespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\nreturn App::config([\n    'services' => [\n        'app.mailer' => ['class' => \\App\\Service\\Mailer::class],\n        'app.parent' => ['class' => \\App\\Service\\Mailer::class],\n        'app.logger' => ['class' => \\App\\Service\\Logger::class],\n        'app.factory' => ['class' => \\App\\Factory\\MailerFactory::class],\n    ],\n]);\n");
+        myFixture.addFileToProject("src/Service/Logger.php", "<?php\nnamespace App\\Service;\nclass Logger {}\n");
+
         assertReferenceMatchOnParent(
             PhpFileType.INSTANCE,
             "<?php\n" +
@@ -219,6 +232,8 @@ public class PhpConfigReferenceContributorTest extends SymfonyLightCodeInsightFi
     }
 
     public void testArgumentsClassReference() {
+        myFixture.addFileToProject("src/Service/Mailer.php", "<?php\nnamespace App\\Service;\nclass Mailer {}\n");
+
         assertReferenceMatchOnParent(
             PhpFileType.INSTANCE,
             "<?php\n" +
@@ -235,6 +250,9 @@ public class PhpConfigReferenceContributorTest extends SymfonyLightCodeInsightFi
     }
 
     public void testTagsSimpleReference() {
+        myFixture.copyFileToProject("tags.yml");
+        myFixture.addFileToProject("src/Form/FooType.php", "<?php\nnamespace espend\\Form\\TypeBundle\\Form;\nclass FooType {}\n");
+
         assertReferenceMatchOnParent(
             PhpFileType.INSTANCE,
             "<?php\n" +
@@ -251,6 +269,9 @@ public class PhpConfigReferenceContributorTest extends SymfonyLightCodeInsightFi
     }
 
     public void testTagsArrayNameReference() {
+        myFixture.copyFileToProject("tags.yml");
+        myFixture.addFileToProject("src/Form/FooType.php", "<?php\nnamespace espend\\Form\\TypeBundle\\Form;\nclass FooType {}\n");
+
         assertReferenceMatchOnParent(
             PhpFileType.INSTANCE,
             "<?php\n" +
@@ -267,6 +288,9 @@ public class PhpConfigReferenceContributorTest extends SymfonyLightCodeInsightFi
     }
 
     public void testAliasReference() {
+        myFixture.addFileToProject("config/php_array_targets.php", "<?php\nnamespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\nreturn App::config([\n    'services' => [\n        'app.mailer' => ['class' => \\App\\Service\\Mailer::class],\n        'app.parent' => ['class' => \\App\\Service\\Mailer::class],\n        'app.logger' => ['class' => \\App\\Service\\Logger::class],\n        'app.factory' => ['class' => \\App\\Factory\\MailerFactory::class],\n    ],\n]);\n");
+        myFixture.addFileToProject("src/Service/Logger.php", "<?php\nnamespace App\\Service;\nclass Logger {}\n");
+
         assertReferenceMatchOnParent(
             PhpFileType.INSTANCE,
             "<?php\n" +
@@ -281,6 +305,10 @@ public class PhpConfigReferenceContributorTest extends SymfonyLightCodeInsightFi
     }
 
     public void testFactoryServiceReference() {
+        myFixture.addFileToProject("config/php_array_targets.php", "<?php\nnamespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\nreturn App::config([\n    'services' => [\n        'app.mailer' => ['class' => \\App\\Service\\Mailer::class],\n        'app.parent' => ['class' => \\App\\Service\\Mailer::class],\n        'app.logger' => ['class' => \\App\\Service\\Logger::class],\n        'app.factory' => ['class' => \\App\\Factory\\MailerFactory::class],\n    ],\n]);\n");
+        myFixture.addFileToProject("src/Factory/MailerFactory.php", "<?php\nnamespace App\\Factory;\nclass MailerFactory { public function create(): \\App\\Service\\Mailer { return new \\App\\Service\\Mailer(); } }\n");
+        myFixture.addFileToProject("src/Service/Mailer.php", "<?php\nnamespace App\\Service;\nclass Mailer {}\n");
+
         assertReferenceMatchOnParent(
             PhpFileType.INSTANCE,
             "<?php\n" +
@@ -297,6 +325,10 @@ public class PhpConfigReferenceContributorTest extends SymfonyLightCodeInsightFi
     }
 
     public void testFactoryMethodReference() {
+        myFixture.addFileToProject("config/php_array_targets.php", "<?php\nnamespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\nreturn App::config([\n    'services' => [\n        'app.mailer' => ['class' => \\App\\Service\\Mailer::class],\n        'app.parent' => ['class' => \\App\\Service\\Mailer::class],\n        'app.logger' => ['class' => \\App\\Service\\Logger::class],\n        'app.factory' => ['class' => \\App\\Factory\\MailerFactory::class],\n    ],\n]);\n");
+        myFixture.addFileToProject("src/Factory/MailerFactory.php", "<?php\nnamespace App\\Factory;\nclass MailerFactory { public function create(): \\App\\Service\\Mailer { return new \\App\\Service\\Mailer(); } }\n");
+        myFixture.addFileToProject("src/Service/Mailer.php", "<?php\nnamespace App\\Service;\nclass Mailer {}\n");
+
         assertReferenceMatchOnParent(
             PhpFileType.INSTANCE,
             "<?php\n" +
@@ -313,6 +345,9 @@ public class PhpConfigReferenceContributorTest extends SymfonyLightCodeInsightFi
     }
 
     public void testCallsMethodReference() {
+        myFixture.addFileToProject("src/Service/Foo.php", "<?php\nnamespace App\\Service;\nclass Foo { public function setLogger(Logger $logger): void {} }\n");
+        myFixture.addFileToProject("src/Service/Logger.php", "<?php\nnamespace App\\Service;\nclass Logger {}\n");
+
         assertReferenceMatchOnParent(
             PhpFileType.INSTANCE,
             "<?php\n" +
@@ -330,6 +365,10 @@ public class PhpConfigReferenceContributorTest extends SymfonyLightCodeInsightFi
     }
 
     public void testCallsArgumentServiceReference() {
+        myFixture.addFileToProject("config/php_array_targets.php", "<?php\nnamespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\nreturn App::config([\n    'services' => [\n        'app.mailer' => ['class' => \\App\\Service\\Mailer::class],\n        'app.parent' => ['class' => \\App\\Service\\Mailer::class],\n        'app.logger' => ['class' => \\App\\Service\\Logger::class],\n        'app.factory' => ['class' => \\App\\Factory\\MailerFactory::class],\n    ],\n]);\n");
+        myFixture.addFileToProject("src/Service/Foo.php", "<?php\nnamespace App\\Service;\nclass Foo { public function setLogger(Logger $logger): void {} }\n");
+        myFixture.addFileToProject("src/Service/Logger.php", "<?php\nnamespace App\\Service;\nclass Logger {}\n");
+
         assertReferenceMatchOnParent(
             PhpFileType.INSTANCE,
             "<?php\n" +

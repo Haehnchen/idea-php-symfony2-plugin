@@ -34,7 +34,7 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
     public void setUp() throws Exception {
         super.setUp();
 
-        myFixture.configureByText("foo1.yml", "" +
+        myFixture.addFileToProject("foo1.yml", "" +
             "parameters:\n" +
             "    bar: foo\n" +
             "\n" +
@@ -49,19 +49,19 @@ public class ContainerCollectionResolverTest extends SymfonyLightCodeInsightFixt
             "        class: \\DateTime\n"
         );
 
-        myFixture.configureByText("foo2.yml", "" +
+        myFixture.addFileToProject("foo2.yml", "" +
             "services:\n" +
             "    foo_datetime:\n" +
             "        class: \\DateTimeInterface\n"
         );
 
-        myFixture.configureByText("foo3.yml", "" +
+        myFixture.addFileToProject("foo3.yml", "" +
             "services:\n" +
             "    foo_datetime:\n" +
             "        class: DateTimeInterface\n"
         );
 
-        myFixture.configureByText("foo4.yml", "" +
+        myFixture.addFileToProject("foo4.yml", "" +
             "parameters:\n" +
             "    bar: foo\n" +
             "\n" +

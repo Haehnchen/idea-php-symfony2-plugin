@@ -3,6 +3,11 @@ package fr.adrienbrault.idea.symfony2plugin.tests.mcp
 import fr.adrienbrault.idea.symfony2plugin.mcp.collector.SymfonyRouteCollector
 
 class SymfonyRouteUrlCollectorTest : McpCollectorTestCase() {
+    override fun setUp() {
+        super.setUp()
+        loadRouteFixtures()
+    }
+
     fun testCollectMatchesDynamicPathViaMergedRouteTooling() {
         val result = SymfonyRouteCollector(project).collect(urlPath = "/edit/12")
 

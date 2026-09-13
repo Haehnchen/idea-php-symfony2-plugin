@@ -20,14 +20,14 @@ public class YamlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFi
     }
 
     public void testMissingArgumentProvidesInspection() {
-        assertLocalInspectionContains("services.yml", "services:\n" +
+        assertLocalInspectionContains(YamlServiceArgumentInspection.class, "services.yml", "services:\n" +
                 "  f<caret>oo:\n" +
                 "    class: \\Foo\\Bar\n" +
                 "    arguments: []",
             "Missing argument"
         );
 
-        assertLocalInspectionContains("services.yml", "services:\n" +
+        assertLocalInspectionContains(YamlServiceArgumentInspection.class, "services.yml", "services:\n" +
                 "  f<caret>oo:\n" +
                 "    class: \\Foo\\Bar\n",
             "Missing argument"
@@ -46,7 +46,7 @@ public class YamlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFi
     }
 
     public void testThatServiceShortcutOnIdAttributeIsProvidesInspection() {
-        assertLocalInspectionContains("services.yml", "services:\n" +
+        assertLocalInspectionContains(YamlServiceArgumentInspection.class, "services.yml", "services:\n" +
                 "  Foo\\B<caret>ar:\n" +
                 "    arguments: []",
             "Missing argument"
@@ -55,7 +55,7 @@ public class YamlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFi
 
     public void testThatAllParametersAreGivenWithLastOneOptional() {
         for (String s : new String[]{"@foo", "'@foo'", "\"@foo\""}) {
-            assertLocalInspectionNotContains("services.yml", String.format("services:\n" +
+            assertLocalInspectionNotContains(YamlServiceArgumentInspection.class, "services.yml", String.format("services:\n" +
                 "  f<caret>oo:\n" +
                 "    class: \\Foo\\Apple\n" +
                 "    arguments: [%s]"
@@ -65,7 +65,7 @@ public class YamlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFi
 
     public void testThatNotSupportServiceAttributeNotProvidesInspection() {
         for (String invalidKey : YamlServiceArgumentInspection.INVALID_KEYS) {
-            assertLocalInspectionNotContains("services.yml", String.format("services:\n" +
+            assertLocalInspectionNotContains(YamlServiceArgumentInspection.class, "services.yml", String.format("services:\n" +
                 "  f<caret>oo:\n" +
                 "    class: \\Foo\\Bar\n" +
                 "    %s: ~"
@@ -74,7 +74,7 @@ public class YamlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFi
     }
 
     public void testThatDefaultsWithAutoWireMustStopInspection() {
-        assertLocalInspectionNotContains("services.yml", "" +
+        assertLocalInspectionNotContains(YamlServiceArgumentInspection.class, "services.yml", "" +
                 "services:\n" +
                 "  _defaults:\n" +
                 "    autowire: true\n" +
@@ -84,7 +84,7 @@ public class YamlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFi
             "Missing argument"
         );
 
-        assertLocalInspectionContains("services.yml", "" +
+        assertLocalInspectionContains(YamlServiceArgumentInspection.class, "services.yml", "" +
                 "services:\n" +
                 "  _defaults:\n" +
                 "    autowire: false\n" +
@@ -94,7 +94,7 @@ public class YamlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFi
             "Missing argument"
         );
 
-        assertLocalInspectionContains("services.yml", "" +
+        assertLocalInspectionContains(YamlServiceArgumentInspection.class, "services.yml", "" +
                 "services:\n" +
                 "  _defaults:\n" +
                 "    autowire: true\n" +
