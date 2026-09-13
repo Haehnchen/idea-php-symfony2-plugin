@@ -15,7 +15,6 @@ import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.codeInspection.*;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.lang.javascript.inspections.JSInspection;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.editor.Document;
@@ -55,12 +54,6 @@ import static java.util.function.Function.identity;
  */
 public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCodeInsightFixtureTestCase {
 
-    // These inspections require a real NIO file or background thread, which light tests do not provide.
-    private static final Set<String> UNSUPPORTED_LIGHT_TEST_INSPECTIONS = Set.of(
-        "com.intellij.clouds.docker.gateway.json.inspections.DevcontainerFolderInspection",
-        "org.jetbrains.qodana.staticAnalysis.inspections.sanity.QodanaSanity"
-    );
-
     @Override
     public void setUp() throws Exception {
         super.setUp();
@@ -90,7 +83,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
         myFixture.configureByText(filename, configureByText);
         myFixture.completeBasic();
 
-        assertFalse(myFixture.getLookupElementStrings().containsAll(Arrays.asList(lookupStrings)));
+        assertCompletionResultsNotContain(lookupStrings);
     }
 
 
@@ -122,7 +115,18 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
         myFixture.configureByText(languageFileType, configureByText);
         myFixture.completeBasic();
 
-        assertFalse(myFixture.getLookupElementStrings().containsAll(Arrays.asList(lookupStrings)));
+        assertCompletionResultsNotContain(lookupStrings);
+    }
+
+    protected void assertCompletionResultsNotContain(String... lookupStrings) {
+        assertTrue("Expected at least one forbidden completion", lookupStrings.length > 0);
+        List<String> results = myFixture.getLookupElementStrings();
+        assertNotNull("Expected completion lookup results", results);
+
+        List<String> unexpected = Arrays.stream(lookupStrings)
+            .filter(results::contains)
+            .toList();
+        assertTrue("Unexpected completion results: " + unexpected, unexpected.isEmpty());
     }
 
     public void assertCompletionContains(String filename, String configureByText, String... lookupStrings) {
@@ -495,10 +499,10 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
         fail(String.format("Fail that Key '%s' matches on of '%s' values", key, values.size()));
     }
 
-    public void assertLocalInspectionContains(String filename, String content, String contains) {
+    public void assertLocalInspectionContains(@NotNull Class<? extends LocalInspectionTool> inspectionClass, String filename, String content, String contains) {
         Set<String> matches = new HashSet<>();
 
-        Pair<List<ProblemDescriptor>, Integer> localInspectionsAtCaret = getLocalInspectionsAtCaret(filename, content);
+        Pair<List<ProblemDescriptor>, Integer> localInspectionsAtCaret = getLocalInspectionsAtCaret(inspectionClass, filename, content);
         for (ProblemDescriptor result : localInspectionsAtCaret.getFirst()) {
             TextRange textRange = result.getPsiElement().getTextRange();
             if (textRange.contains(localInspectionsAtCaret.getSecond()) && result.toString().equals(contains)) {
@@ -535,8 +539,8 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
         fail(String.format("Fail intention action '%s' is available in element '%s' with '%s'", intentionText, psiElement.getText(), items));
     }
 
-    public void assertLocalInspectionNotContains(String filename, String content, String contains) {
-        Pair<List<ProblemDescriptor>, Integer> localInspectionsAtCaret = getLocalInspectionsAtCaret(filename, content);
+    public void assertLocalInspectionNotContains(@NotNull Class<? extends LocalInspectionTool> inspectionClass, String filename, String content, String contains) {
+        Pair<List<ProblemDescriptor>, Integer> localInspectionsAtCaret = getLocalInspectionsAtCaret(inspectionClass, filename, content);
 
         for (ProblemDescriptor result : localInspectionsAtCaret.getFirst()) {
             TextRange textRange = result.getPsiElement().getTextRange();
@@ -546,7 +550,7 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
         }
     }
 
-    private Pair<List<ProblemDescriptor>, Integer> getLocalInspectionsAtCaret(@NotNull String filename, @NotNull String content) {
+    private Pair<List<ProblemDescriptor>, Integer> getLocalInspectionsAtCaret(@NotNull Class<? extends LocalInspectionTool> inspectionClass, @NotNull String filename, @NotNull String content) {
 
         PsiElement psiFile = myFixture.configureByText(filename, content);
 
@@ -557,22 +561,16 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
 
         ProblemsHolder problemsHolder = new ProblemsHolder(InspectionManager.getInstance(getProject()), psiFile.getContainingFile(), false);
 
+        boolean inspectionFound = false;
         for (LocalInspectionEP localInspectionEP : LocalInspectionEP.LOCAL_INSPECTION.getExtensions()) {
-            Object object = localInspectionEP.getInstance();
-            if(!(object instanceof LocalInspectionTool)) {
+            // Filter extension metadata before instantiating unrelated IDE inspections.
+            if (!inspectionClass.getName().equals(localInspectionEP.implementationClass)) {
                 continue;
             }
 
-            if(UNSUPPORTED_LIGHT_TEST_INSPECTIONS.contains(object.getClass().getName())) {
-                continue;
-            }
-
-            // fix for: should not be called, use visitFile in createVisitor instead
-            if(object instanceof JSInspection) {
-                continue;
-            }
-
-            final PsiElementVisitor psiElementVisitor = ((LocalInspectionTool) object).buildVisitor(problemsHolder, false);
+            LocalInspectionTool inspection = inspectionClass.cast(localInspectionEP.getInstance());
+            inspectionFound = true;
+            final PsiElementVisitor psiElementVisitor = inspection.buildVisitor(problemsHolder, false);
 
             psiFile.acceptChildren(new PsiRecursiveElementVisitor() {
                 @Override
@@ -583,6 +581,10 @@ public abstract class SymfonyLightCodeInsightFixtureTestCase extends LightJavaCo
             });
 
             psiElementVisitor.visitFile(psiFile.getContainingFile());
+        }
+
+        if (!inspectionFound) {
+            fail("Inspection is not registered: " + inspectionClass.getName());
         }
 
         return Pair.create(problemsHolder.getResults(), caretOffset);

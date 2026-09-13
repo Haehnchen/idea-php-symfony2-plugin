@@ -3,6 +3,11 @@ package fr.adrienbrault.idea.symfony2plugin.tests.mcp
 import fr.adrienbrault.idea.symfony2plugin.mcp.collector.SymfonyCommandCollector
 
 class SymfonyCommandCollectorTest : McpCollectorTestCase() {
+    override fun setUp() {
+        super.setUp()
+        myFixture.copyFileToProject("util/fixtures/SymfonyCommandUtilTest.php", "src/Command/SymfonyCommandUtilTest.php")
+    }
+
 
     /**
      * Verifies the CSV header and that a command registered via setName() is exported

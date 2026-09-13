@@ -4,6 +4,7 @@ import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpEnumCase;
 import com.jetbrains.twig.TwigFileType;
+import fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigVariablePathInspection;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 public class TwigEnumTypeTest extends SymfonyLightCodeInsightFixtureTestCase {
@@ -44,11 +45,11 @@ public class TwigEnumTypeTest extends SymfonyLightCodeInsightFixtureTestCase {
     }
 
     public void testEnumCasesAreInspected() {
-        assertLocalInspectionNotContains("f.html.twig",
+        assertLocalInspectionNotContains(TwigVariablePathInspection.class, "f.html.twig",
             "{{ render_status(enum('Example\\\\Status').Ac<caret>tive, format: 'text') }}",
             "Field or method not found");
-        assertLocalInspectionContains("f.html.twig", "{{ enum('Example\\\\Status').Un<caret>known }}", "Field or method not found");
-        assertLocalInspectionContains("f.html.twig", "{{ enum('Example\\\\Status').ac<caret>tive }}", "Field or method not found");
+        assertLocalInspectionContains(TwigVariablePathInspection.class, "f.html.twig", "{{ enum('Example\\\\Status').Un<caret>known }}", "Field or method not found");
+        assertLocalInspectionContains(TwigVariablePathInspection.class, "f.html.twig", "{{ enum('Example\\\\Status').ac<caret>tive }}", "Field or method not found");
     }
 
     public void testInvalidOrDynamicArgumentsDoNotResolveAsEnums() {

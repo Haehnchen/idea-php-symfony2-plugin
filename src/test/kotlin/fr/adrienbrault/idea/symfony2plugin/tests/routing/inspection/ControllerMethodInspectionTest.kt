@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.routing.inspection
 
+import fr.adrienbrault.idea.symfony2plugin.routing.inspection.ControllerMethodInspection
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
 
 /**
@@ -20,26 +21,26 @@ class ControllerMethodInspectionTest : SymfonyLightCodeInsightFixtureTestCase() 
     }
 
     fun testYamlClassControllerMethodNotFoundProvidesWarning() {
-        assertLocalInspectionContains("routing.yml", "" +
+        assertLocalInspectionContains(ControllerMethodInspection.ControllerMethodInspectionYaml::class.java, "routing.yml", "" +
             "foo:\n" +
             "    defaults: { _controller: Route\\Controller\\FooController::barA<caret>ction }",
             "Create Method"
         )
 
-        assertLocalInspectionContains("routing.yml", "" +
+        assertLocalInspectionContains(ControllerMethodInspection.ControllerMethodInspectionYaml::class.java, "routing.yml", "" +
             "foo:\n" +
             "    defaults:\n" +
             "      _controller: Route\\Controller\\FooController::barA<caret>ction",
             "Create Method"
         )
 
-        assertLocalInspectionNotContains("routing.yml", "" +
+        assertLocalInspectionNotContains(ControllerMethodInspection.ControllerMethodInspectionYaml::class.java, "routing.yml", "" +
             "foo:\n" +
             "    defaults: { _controller: Route\\Controller\\FooController::fooA<caret>ction }",
             "Create Method"
         )
 
-        assertLocalInspectionNotContains("routing.yml", "" +
+        assertLocalInspectionNotContains(ControllerMethodInspection.ControllerMethodInspectionYaml::class.java, "routing.yml", "" +
             "foo:\n" +
             "    controller: Route\\Controller\\FooController::fooA<caret>ction\n",
             "Create Method"
@@ -47,21 +48,21 @@ class ControllerMethodInspectionTest : SymfonyLightCodeInsightFixtureTestCase() 
     }
 
     fun testYamlClassControllerAsServiceWithClassNameAsServiceId() {
-        assertLocalInspectionNotContains("routing.yml", "" +
+        assertLocalInspectionNotContains(ControllerMethodInspection.ControllerMethodInspectionYaml::class.java, "routing.yml", "" +
             "foo:\n" +
             "    defaults:\n" +
             "      _controller: Route\\Controller\\FooController:foo<caret>Action",
             "Create Method"
         )
 
-        assertLocalInspectionContains("routing.yml", "" +
+        assertLocalInspectionContains(ControllerMethodInspection.ControllerMethodInspectionYaml::class.java, "routing.yml", "" +
             "foo:\n" +
             "    defaults:\n" +
             "      _controller: Route\\Controller\\FooController:bar<caret>Action",
             "Create Method"
         )
 
-        assertLocalInspectionContains("routing.yml", "" +
+        assertLocalInspectionContains(ControllerMethodInspection.ControllerMethodInspectionYaml::class.java, "routing.yml", "" +
             "foo:\n" +
             "    controller: Route\\Controller\\FooController:bar<caret>Action",
             "Create Method"
@@ -69,7 +70,7 @@ class ControllerMethodInspectionTest : SymfonyLightCodeInsightFixtureTestCase() 
     }
 
     fun testXmlClassControllerMethodNotFoundProvidesWarning() {
-        assertLocalInspectionContains("routing.xml", "" +
+        assertLocalInspectionContains(ControllerMethodInspection.ControllerMethodInspectionXml::class.java, "routing.xml", "" +
             "<routes>\n" +
             "    <route id=\"blog_list\" path=\"/blog\">\n" +
             "        <default key=\"_controller\">Route\\Controller\\FooController:bar<caret>Action</default>\n" +
@@ -78,7 +79,7 @@ class ControllerMethodInspectionTest : SymfonyLightCodeInsightFixtureTestCase() 
             "Create Method"
         )
 
-        assertLocalInspectionNotContains("routing.yml", "" +
+        assertLocalInspectionNotContains(ControllerMethodInspection.ControllerMethodInspectionYaml::class.java, "routing.yml", "" +
             "<routes>\n" +
             "    <route id=\"blog_list\" path=\"/blog\">\n" +
             "        <default key=\"_controller\">Route\\Controller\\FooController::fooA<caret>ction</default>\n" +
@@ -89,7 +90,7 @@ class ControllerMethodInspectionTest : SymfonyLightCodeInsightFixtureTestCase() 
     }
 
     fun testXmlClassControllerMethodNotFoundProvidesWarningForControllerKeyword() {
-        assertLocalInspectionContains("routing.xml", "" +
+        assertLocalInspectionContains(ControllerMethodInspection.ControllerMethodInspectionXml::class.java, "routing.xml", "" +
             "<routes>\n" +
             "    <route id=\"blog_list\" controller=\"Route\\Controller\\FooController:bar<caret>Action\"/>\n" +
             "</routes>\n",

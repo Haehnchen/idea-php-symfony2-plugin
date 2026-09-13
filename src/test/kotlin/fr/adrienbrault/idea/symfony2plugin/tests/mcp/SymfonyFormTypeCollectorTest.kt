@@ -3,6 +3,11 @@ package fr.adrienbrault.idea.symfony2plugin.tests.mcp
 import fr.adrienbrault.idea.symfony2plugin.mcp.collector.SymfonyFormTypeCollector
 
 class SymfonyFormTypeCollectorTest : McpCollectorTestCase() {
+    override fun setUp() {
+        super.setUp()
+        loadFormFixtures()
+    }
+
 
     /**
      * Verifies the CSV header is correct.

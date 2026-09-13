@@ -2,12 +2,12 @@ package fr.adrienbrault.idea.symfony2plugin.tests.templating.completion;
 
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import fr.adrienbrault.idea.symfony2plugin.templating.completion.TwigComponentBlockLookupElement;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import junit.framework.TestCase;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class TwigComponentBlockLookupElementTest extends SymfonyLightCodeInsightFixtureTestCase {
+public class TwigComponentBlockLookupElementTest extends TestCase {
 
     public void testLookupString() {
         TwigComponentBlockLookupElement element = new TwigComponentBlockLookupElement("message", "Alert.html.twig");

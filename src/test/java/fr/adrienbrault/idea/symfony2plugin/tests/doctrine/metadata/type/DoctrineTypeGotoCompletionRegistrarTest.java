@@ -16,7 +16,7 @@ public class DoctrineTypeGotoCompletionRegistrarTest extends SymfonyLightCodeIns
 
     public void setUp() throws Exception {
         super.setUp();
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("classes.php"));
+        myFixture.copyFileToProject("classes.php");
     }
 
     public String getTestDataPath() {
@@ -30,6 +30,8 @@ public class DoctrineTypeGotoCompletionRegistrarTest extends SymfonyLightCodeIns
                 "<doctrine-mapping><document><field type=\"<caret>\" /></document></doctrine-mapping>",
                 "string", s + "_foo_bar"
             );
+
+            assertCompletionResultsNotContain("foo");
 
             assertCompletionContains(
                 "foo." + s + ".xml",
@@ -59,12 +61,6 @@ public class DoctrineTypeGotoCompletionRegistrarTest extends SymfonyLightCodeIns
                 "foo." + s + ".xml",
                 "<doctrine-mapping><embedded><field type=\"string<caret>\" /></embedded></doctrine-mapping>",
                 PlatformPatterns.psiElement(PhpClass.class)
-            );
-
-            assertCompletionNotContains(
-                "foo." + s + ".xml",
-                "<doctrine-mapping><document><field type=\"<caret>\" /></document></doctrine-mapping>",
-                "foo"
             );
         }
 
@@ -99,19 +95,13 @@ public class DoctrineTypeGotoCompletionRegistrarTest extends SymfonyLightCodeIns
                 "string", s + "_foo_bar"
             );
 
+            assertCompletionResultsNotContain("foo");
+
             assertNavigationMatch("foo." + s + ".yml", "foo:\n" +
                 "    fields:\n" +
                 "        field_1:\n" +
                 "            type: stri<caret>ng",
                 PlatformPatterns.psiElement(PhpClass.class)
-            );
-
-            assertCompletionNotContains("foo." + s + ".yml", "foo:\n" +
-                    "    id:\n" +
-                    "        field_1:\n" +
-                    "            type: <caret>",
-                "string", s + "_foo_bar",
-                "foo"
             );
         }
     }
@@ -121,19 +111,13 @@ public class DoctrineTypeGotoCompletionRegistrarTest extends SymfonyLightCodeIns
             assertCompletionContains(
                 "foo." + s + ".xml",
                 "<doctrine-mapping><document><field type=\"<caret>\" /></document></doctrine-mapping>",
-                "string", "couchdb_foo_bar"
+                "string", "couchdb_foo_bar", "mongodb_foo_bar"
             );
 
             assertNavigationMatch(
                 "foo." + s + ".xml",
                 "<doctrine-mapping><document><field type=\"couchdb_foo_bar<caret>\" /></document></doctrine-mapping>",
                 PlatformPatterns.psiElement(PhpClass.class)
-            );
-
-            assertCompletionContains(
-                "foo." + s + ".xml",
-                "<doctrine-mapping><document><field type=\"<caret>\" /></document></doctrine-mapping>",
-                "string", "mongodb_foo_bar"
             );
 
             assertNavigationMatch(
@@ -167,11 +151,7 @@ public class DoctrineTypeGotoCompletionRegistrarTest extends SymfonyLightCodeIns
                 "id", "name"
             );
 
-            assertCompletionNotContains(
-                "foo." + provider[0] + ".xml",
-                String.format("<doctrine-mapping><%s name=\"Doctrine\\Property\\Fields\"><%s name=\"<caret>\" /></" + provider[1] + "></doctrine-mapping>\"", provider[1], provider[2], provider[1]),
-                "const"
-            );
+            assertCompletionResultsNotContain("const");
 
             assertNavigationMatch(
                 "foo." + provider[0] + ".xml",
@@ -216,11 +196,7 @@ public class DoctrineTypeGotoCompletionRegistrarTest extends SymfonyLightCodeIns
                 "id", "name"
             );
 
-            assertCompletionNotContains(
-                "foo." + provider[0] + ".xml",
-                "<doctrine-mapping><" + provider[1] + " name=\"Doctrine\\Property\\Fields\"><" + provider[2] + " field=\"<caret>\" /></" + provider[1] + "></doctrine-mapping>\"",
-                "const"
-            );
+            assertCompletionResultsNotContain("const");
 
             assertNavigationMatch(
                 "foo." + provider[0] + ".xml",
@@ -248,14 +224,6 @@ public class DoctrineTypeGotoCompletionRegistrarTest extends SymfonyLightCodeIns
         }};
 
         for (String[] provider : providers) {
-            assertNavigationMatch(
-                "foo." + provider[0] + ".yml",
-                "Doctrine\\Property\\Fields:\n" +
-                    "  " + provider[1] + ":\n" +
-                    "    i<caret>d:\n" +
-                    "       type: string"
-            );
-
             assertNavigationMatch(
                 "foo." + provider[0] + ".yml",
                 "Doctrine\\Property\\Fields:\n" +

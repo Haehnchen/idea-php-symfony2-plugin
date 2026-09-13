@@ -108,12 +108,7 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
                 "        arguments: [<caret>]\n",
             "!iterator", "!service"
         );
-        assertCompletionNotContains("services.yaml", "" +
-                "services:\n" +
-                "    my_service:\n" +
-                "        arguments: [<caret>]\n",
-            "!tagged", "!tagged_locator", "!tagged_iterator", "!service_locator"
-        );
+        assertCompletionResultsNotContain("!tagged", "!tagged_locator", "!tagged_iterator", "!service_locator");
     }
 
     public void testServiceArgumentCompletionForSymfony34() {
@@ -124,12 +119,7 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
                 "        arguments: [<caret>]\n",
             "!tagged", "!iterator", "!service"
         );
-        assertCompletionNotContains("services.yaml", "" +
-                "services:\n" +
-                "    my_service:\n" +
-                "        arguments: [<caret>]\n",
-            "!tagged_locator", "!tagged_iterator", "!service_locator"
-        );
+        assertCompletionResultsNotContain("!tagged_locator", "!tagged_iterator", "!service_locator");
     }
 
     public void testServiceArgumentCompletionForSymfony41() {
@@ -150,12 +140,7 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
                 "        arguments: [<caret>]\n",
             "!service_locator", "!tagged", "!iterator", "!service"
         );
-        assertCompletionNotContains("services.yaml", "" +
-                "services:\n" +
-                "    my_service:\n" +
-                "        arguments: [<caret>]\n",
-            "!tagged_locator", "!tagged_iterator"
-        );
+        assertCompletionResultsNotContain("!tagged_locator", "!tagged_iterator");
     }
 
     public void testServiceArgumentCompletionForSymfony43() {
@@ -166,12 +151,7 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
                 "        arguments: [<caret>]\n",
             "!tagged_locator", "!service_locator", "!tagged", "!iterator", "!service"
         );
-        assertCompletionNotContains("services.yaml", "" +
-                "services:\n" +
-                "    my_service:\n" +
-                "        arguments: [<caret>]\n",
-            "!tagged_iterator"
-        );
+        assertCompletionResultsNotContain("!tagged_iterator");
     }
 
     public void testServiceArgumentCompletionForSymfony44() {
@@ -182,12 +162,7 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
                 "        arguments: [<caret>]\n",
             "!tagged_iterator", "!tagged_locator", "!service_locator", "!iterator", "!service"
         );
-        assertCompletionNotContains("services.yaml", "" +
-                "services:\n" +
-                "    my_service:\n" +
-                "        arguments: [<caret>]\n",
-            "!tagged"
-        );
+        assertCompletionResultsNotContain("!tagged");
     }
 
     public void testServiceArgumentCompletionForSymfony50() {
@@ -198,12 +173,7 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
                 "        arguments: [<caret>]\n",
             "!tagged_iterator", "!tagged_locator", "!service_locator", "!iterator", "!service"
         );
-        assertCompletionNotContains("services.yaml", "" +
-                "services:\n" +
-                "    my_service:\n" +
-                "        arguments: [<caret>]\n",
-            "!tagged"
-        );
+        assertCompletionResultsNotContain("!tagged");
     }
 
     public void testKeywordsCompletion() {

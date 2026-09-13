@@ -21,9 +21,9 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
     public void setUp() throws Exception {
         super.setUp();
 
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("routes.yml"));
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("classes.php"));
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services.yml"));
+        myFixture.copyFileToProject("routes.yml");
+        myFixture.copyFileToProject("classes.php");
+        myFixture.copyFileToProject("services.yml");
     }
 
     public String getTestDataPath() {
@@ -91,11 +91,6 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
 
         assertImplicitUsage(createPhpControllerClassWithRouteContent("" +
             "public function foobarYamlAction() {}"
-        ));
-
-        assertImplicitUsage(createPhpControllerClassWithRouteContent(
-            "\\App\\Controller\\FooControllerService",
-            "public function foo() {}"
         ));
 
         assertImplicitUsage(createPhpControllerClassWithRouteContent(

@@ -504,7 +504,7 @@ open class CommandToInvokableIntention : PsiElementBaseIntentionAction(), Iconab
                 val rightVarName = value.name
 
                 // If they're the same variable, mark the statement for removal
-                if (leftVarName != null && leftVarName == rightVarName) {
+                if (leftVarName == rightVarName) {
                     // Navigate up to find the statement containing this assignment
                     val statement = PsiTreeUtil.getParentOfType(assignment, Statement::class.java)
                     if (statement != null && !statementsToRemove.contains(statement)) {

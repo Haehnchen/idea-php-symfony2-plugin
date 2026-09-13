@@ -20,13 +20,13 @@ class TwigTranslationKeyInspectionTest : SymfonyLightCodeInsightFixtureTestCase(
     }
 
     fun testUnknownDomainIsInspected() {
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(TwigTranslationKeyInspection::class.java,
             "f.html.twig",
             "{{ 'f<caret>oo'|trans({}, 'symfony')) }}",
             PhpTranslationKeyInspection.MESSAGE
         )
 
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(TwigTranslationKeyInspection::class.java,
             "f.html.twig",
             "{% trans_default_domain symfony %}\n{{ 'f<caret>oo'|trans }}",
             PhpTranslationKeyInspection.MESSAGE
@@ -34,7 +34,7 @@ class TwigTranslationKeyInspectionTest : SymfonyLightCodeInsightFixtureTestCase(
     }
 
     fun testKnownKeyWithNamedArgumentColonSyntaxIsNotInspected() {
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(TwigTranslationKeyInspection::class.java,
             "f.html.twig",
             "{{ 'symfon<caret>y.great'|trans(domain: 'symfony') }}",
             PhpTranslationKeyInspection.MESSAGE
@@ -42,7 +42,7 @@ class TwigTranslationKeyInspectionTest : SymfonyLightCodeInsightFixtureTestCase(
     }
 
     fun testThatInterpolatedStringsMustNotInspected() {
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(TwigTranslationKeyInspection::class.java,
             "f.html.twig",
             "{{ 'ti<caret>tle.#{word}'|trans({}, 'symfony')) }}",
             PhpTranslationKeyInspection.MESSAGE
@@ -50,13 +50,13 @@ class TwigTranslationKeyInspectionTest : SymfonyLightCodeInsightFixtureTestCase(
     }
 
     fun testKnownDomainIsInspected() {
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(TwigTranslationKeyInspection::class.java,
             "f.html.twig",
             "{{ 'symfon<caret>y.great'|trans({}, 'symfony')) }}",
             PhpTranslationKeyInspection.MESSAGE
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(TwigTranslationKeyInspection::class.java,
             "f.html.twig",
             "{% trans_default_domain symfony %}\n{{ 'symfon<caret>y.great'|trans }}",
             PhpTranslationKeyInspection.MESSAGE

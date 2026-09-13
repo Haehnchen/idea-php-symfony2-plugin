@@ -72,11 +72,11 @@ class CommandInvokableReturnTypeInspectionTest : SymfonyLightCodeInsightFixtureT
     }
 
     private fun assertContainsInspection(returnType: String, methodBody: String = "") {
-        assertLocalInspectionContains("test.php", commandPhp(returnType, methodBody), CommandInvokableReturnTypeInspection.MESSAGE)
+        assertLocalInspectionContains(CommandInvokableReturnTypeInspection::class.java, "test.php", commandPhp(returnType, methodBody), CommandInvokableReturnTypeInspection.MESSAGE)
     }
 
     private fun assertNotContainsInspection(content: String) {
-        assertLocalInspectionNotContains("test.php", content, CommandInvokableReturnTypeInspection.MESSAGE)
+        assertLocalInspectionNotContains(CommandInvokableReturnTypeInspection::class.java, "test.php", content, CommandInvokableReturnTypeInspection.MESSAGE)
     }
 
     private fun commandPhp(returnType: String, methodBody: String = ""): String {

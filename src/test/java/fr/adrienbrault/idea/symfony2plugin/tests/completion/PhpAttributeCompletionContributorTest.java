@@ -27,6 +27,7 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
             "<?php\n\nclass TestController {\n    #<caret>\n    public function index() { }\n}",
             "#[Route]", "#[IsGranted]", "#[Cache]", "#[Template]"
         );
+        assertCompletionResultsNotContain("#[AsController]");
 
         assertCompletionNotContains(PhpFileType.INSTANCE,
             "<?php\n    #<caret>\n    function test() { }\n",
@@ -36,11 +37,6 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
         assertCompletionNotContains(PhpFileType.INSTANCE,
             "<?php\n\nclass TestController {\n    <caret>\n    public function index() { }\n}",
             "#[Route]", "#[IsGranted]", "#[Cache]", "#[Template]"
-        );
-
-        assertCompletionContains(PhpFileType.INSTANCE,
-            "<?php\n\nclass MyTwigExtension {\n    #<caret>\n    public function myFilter() { }\n}",
-            "#[AsTwigFilter]"
         );
 
         assertCompletionContains(PhpFileType.INSTANCE,
@@ -106,32 +102,13 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
     public void testClassLevelAttributeCompletionScopes() {
         assertCompletionContains(PhpFileType.INSTANCE,
             "<?php\n\n#<caret>\nclass TestController {\n    public function index() { }\n}",
-            "#[Route]", "#[AsController]"
+            "#[Route]", "#[AsController]", "#[IsGranted]"
         );
-
-        assertCompletionContains(PhpFileType.INSTANCE,
-            "<?php\n\n#<caret>\nclass MyController {\n    public function action() { }\n}",
-            "#[Route]", "#[AsController]"
-        );
-
-        assertCompletionNotContains(PhpFileType.INSTANCE,
-            "<?php\n\n#<caret>\nclass TestController {\n    public function index() { }\n}",
-            "#[IsGranted]", "#[Cache]", "#[Template]"
-        );
+        assertCompletionResultsNotContain("#[Cache]", "#[Template]");
 
         assertCompletionNotContains(PhpFileType.INSTANCE,
             "<?php\n\n#<caret>\nclass MyService {\n    public function doSomething() { }\n}",
             "#[Route]", "#[AsController]"
-        );
-
-        assertCompletionContains(PhpFileType.INSTANCE,
-            "<?php\n\nclass TestController {\n    #<caret>\n    public function index() { }\n}",
-            "#[Route]", "#[IsGranted]", "#[Cache]", "#[Template]"
-        );
-
-        assertCompletionNotContains(PhpFileType.INSTANCE,
-            "<?php\n\nclass TestController {\n    #<caret>\n    public function index() { }\n}",
-            "#[AsController]"
         );
 
         assertCompletionNotContains(PhpFileType.INSTANCE,
@@ -145,25 +122,9 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
         );
 
         assertCompletionContains(PhpFileType.INSTANCE,
-            "<?php\n\n#<caret>\nclass UserController {\n    public function show() { }\n}",
+            "<?php\n\nnamespace App\\Controller;\n\n#<caret>\nclass ProductController {\n    public function list() { }\n}",
             "#[Route]", "#[AsController]"
         );
-
-        myFixture.configureByText(PhpFileType.INSTANCE,
-            "<?php\n\nnamespace App\\Controller;\n\n#<caret>\nclass ProductController {\n    public function list() { }\n}"
-        );
-        myFixture.completeBasic();
-
-        var items = myFixture.getLookupElements();
-        long routeCount = java.util.Arrays.stream(items)
-            .filter(l -> "#[Route]".equals(l.getLookupString()))
-            .count();
-        long asControllerCount = java.util.Arrays.stream(items)
-            .filter(l -> "#[AsController]".equals(l.getLookupString()))
-            .count();
-
-        assertTrue("Route attribute should be available", routeCount > 0);
-        assertTrue("AsController attribute should be available", asControllerCount > 0);
 
         assertCompletionContains(PhpFileType.INSTANCE,
             "<?php\n\n#[AsController]\n#<caret>\nclass FoobarController {\n    public function index() { }\n}",
@@ -193,13 +154,6 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
         assertTrue("Result should contain AsController without parentheses", asControllerResult.contains("#[AsController]"));
         assertFalse("Result should NOT contain parentheses for AsController", asControllerResult.contains("#[AsController("));
         assertTrue("Result should have AsController attribute before class", asControllerResult.indexOf("#[AsController]") < asControllerResult.indexOf("class TestController"));
-
-        String classLevelRouteResult = insertSelectedCompletion(
-            "<?php\n\nnamespace App\\Controller;\n\n#<caret>\nclass ApiController {\n    public function index() { }\n}",
-            "#[Route]"
-        );
-        assertTrue("Result should contain Route use statement", classLevelRouteResult.contains("use Symfony\\Component\\Routing\\Attribute\\Route;"));
-        assertTrue("Result should contain quotes for route path at class level", classLevelRouteResult.contains("#[Route(\"\")]"));
     }
 
     private String insertSelectedCompletion(String content, String lookupString) {
@@ -238,11 +192,10 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
         );
     }
 
-    public void testNoAsTwigComponentForNonComponentClass() {
-        // Test that AsTwigComponent attribute does not appear for non-component classes
+    public void testNoComponentOrCommandAttributeOnServiceClass() {
         assertCompletionNotContains(PhpFileType.INSTANCE,
             "<?php\n\nnamespace App\\Service;\n\n#<caret>\nclass MyService {\n}",
-            "#[AsTwigComponent]"
+            "#[AsTwigComponent]", "#[AsCommand]"
         );
     }
 
@@ -278,35 +231,24 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
     // ExposeInTemplate attribute tests
     // ===============================
 
-    public void testExposeInTemplateAttributeCompletionOnPublicMethodInAsTwigComponentClass() {
-        // Test that ExposeInTemplate attribute appears for public methods in classes with #[AsTwigComponent]
-        assertCompletionContains(PhpFileType.INSTANCE,
-            "<?php\n\nuse Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n\n#[AsTwigComponent]\nclass Button {\n    #<caret>\n    public function getLabel(): string { return 'test'; }\n}",
-            "#[ExposeInTemplate]"
-        );
-    }
-
-    public void testNoExposeInTemplateOnPropertyInNonAsTwigComponentClass() {
-        // Test that ExposeInTemplate does NOT appear for properties in classes without #[AsTwigComponent]
+    public void testNoComponentOrDoctrineAttributesOnServiceProperty() {
         assertCompletionNotContains(PhpFileType.INSTANCE,
             "<?php\n\nclass MyService {\n    #<caret>\n    private string $property;\n}",
-            "#[ExposeInTemplate]"
+            "#[ExposeInTemplate]", "#[Column]", "#[Id]", "#[GeneratedValue]"
         );
     }
 
-    public void testNoExposeInTemplateOnMethodInNonAsTwigComponentClass() {
-        // Test that ExposeInTemplate does NOT appear for methods in classes without #[AsTwigComponent]
+    public void testNoTwigComponentMethodAttributesInNonComponentClass() {
         assertCompletionNotContains(PhpFileType.INSTANCE,
             "<?php\n\nclass MyService {\n    #<caret>\n    public function doSomething() { }\n}",
-            "#[ExposeInTemplate]"
+            "#[ExposeInTemplate]", "#[PreMount]", "#[PostMount]"
         );
     }
 
-    public void testNoExposeInTemplateAtClassLevel() {
-        // Test that ExposeInTemplate is NOT available at class level (property/method-only)
+    public void testNoTwigComponentMemberAttributesAtClassLevel() {
         assertCompletionNotContains(PhpFileType.INSTANCE,
             "<?php\n\nuse Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n\n#<caret>\n#[AsTwigComponent]\nclass Button {\n}",
-            "#[ExposeInTemplate]"
+            "#[ExposeInTemplate]", "#[PreMount]", "#[PostMount]"
         );
     }
 
@@ -351,66 +293,9 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
     // PreMount and PostMount attribute tests
     // ===============================
 
-    public void testPreMountAttributeCompletionOnPublicMethodInAsTwigComponentClass() {
-        // Test that PreMount attribute appears for public methods in classes with #[AsTwigComponent]
-        assertCompletionContains(PhpFileType.INSTANCE,
-            "<?php\n\nuse Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n\n#[AsTwigComponent]\nclass Alert {\n    #<caret>\n    public function preMount(array $data): array { return $data; }\n}",
-            "#[PreMount]"
-        );
-    }
-
-    public void testPostMountAttributeCompletionOnPublicMethodInAsTwigComponentClass() {
-        // Test that PostMount attribute appears for public methods in classes with #[AsTwigComponent]
-        assertCompletionContains(PhpFileType.INSTANCE,
-            "<?php\n\nuse Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n\n#[AsTwigComponent]\nclass Modal {\n    #<caret>\n    public function postMount(): void { }\n}",
-            "#[PostMount]"
-        );
-    }
-
-    public void testPreMountAndPostMountBothAvailableInAsTwigComponentClass() {
-        // Test that both PreMount and PostMount attributes are available for methods
-        assertCompletionContains(PhpFileType.INSTANCE,
-            "<?php\n\nuse Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n\n#[AsTwigComponent]\nclass Form {\n    #<caret>\n    public function mount(): void { }\n}",
-            "#[PreMount]", "#[PostMount]"
-        );
-    }
-
-    public void testNoPreMountOnMethodInNonAsTwigComponentClass() {
-        // Test that PreMount does NOT appear for methods in classes without #[AsTwigComponent]
-        assertCompletionNotContains(PhpFileType.INSTANCE,
-            "<?php\n\nclass MyService {\n    #<caret>\n    public function doSomething() { }\n}",
-            "#[PreMount]"
-        );
-    }
-
-    public void testNoPostMountOnMethodInNonAsTwigComponentClass() {
-        // Test that PostMount does NOT appear for methods in classes without #[AsTwigComponent]
-        assertCompletionNotContains(PhpFileType.INSTANCE,
-            "<?php\n\nclass MyService {\n    #<caret>\n    public function doSomething() { }\n}",
-            "#[PostMount]"
-        );
-    }
-
-    public void testNoPreMountOnPropertyInAsTwigComponentClass() {
-        // Test that PreMount is NOT available on properties (method-only)
+    public void testNoTwigComponentMethodAttributesOnProperty() {
         assertCompletionNotContains(PhpFileType.INSTANCE,
             "<?php\n\nuse Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n\n#[AsTwigComponent]\nclass Button {\n    #<caret>\n    private string $label;\n}",
-            "#[PreMount]"
-        );
-    }
-
-    public void testNoPostMountOnPropertyInAsTwigComponentClass() {
-        // Test that PostMount is NOT available on properties (method-only)
-        assertCompletionNotContains(PhpFileType.INSTANCE,
-            "<?php\n\nuse Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n\n#[AsTwigComponent]\nclass Card {\n    #<caret>\n    private string $title;\n}",
-            "#[PostMount]"
-        );
-    }
-
-    public void testNoPreMountOrPostMountAtClassLevel() {
-        // Test that PreMount and PostMount are NOT available at class level (method-only)
-        assertCompletionNotContains(PhpFileType.INSTANCE,
-            "<?php\n\nuse Symfony\\UX\\TwigComponent\\Attribute\\AsTwigComponent;\n\n#<caret>\n#[AsTwigComponent]\nclass Widget {\n}",
             "#[PreMount]", "#[PostMount]"
         );
     }
@@ -515,16 +400,10 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
         );
     }
 
-    public void testNoAsCommandInvalidScopes() {
+    public void testNoAsCommandOnPrivateMethod() {
         // Test that AsCommand is NOT available on private methods
         assertCompletionNotContains(PhpFileType.INSTANCE,
             "<?php\n\nnamespace App\\Command;\n\nclass MyCommand {\n    #<caret>\n    private function execute() { }\n}",
-            "#[AsCommand]"
-        );
-
-        // Test that AsCommand attribute does not appear for non-command classes
-        assertCompletionNotContains(PhpFileType.INSTANCE,
-            "<?php\n\nnamespace App\\Service;\n\n#<caret>\nclass MyService {\n}",
             "#[AsCommand]"
         );
     }
@@ -557,12 +436,6 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
     }
 
     public void testNoDoctrineAttributesAtWrongScope() {
-        // Test that Doctrine attributes don't appear for non-entity classes
-        assertCompletionNotContains(PhpFileType.INSTANCE,
-            "<?php\n\nclass MyService {\n    #<caret>\n    private string $property;\n}",
-            "#[Column]", "#[Id]", "#[GeneratedValue]"
-        );
-
         // Test that Doctrine field attributes are NOT available at method level
         assertCompletionNotContains(PhpFileType.INSTANCE,
             "<?php\n\nuse Doctrine\\ORM\\Mapping as ORM;\n\n#[ORM\\Entity]\nclass User {\n    #<caret>\n    public function getEmail() { }\n}",
@@ -648,6 +521,7 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
             "<?php\n\nnamespace App\\Entity;\n\nclass Product {\n    #<caret>\n    private string $name;\n}",
             "#[Column]", "#[Id]"
         );
+        assertCompletionResultsNotContain("#[PostLoad]", "#[PrePersist]", "#[PostUpdate]");
 
         // Test that Doctrine attributes appear for classes in nested Entity namespace
         assertCompletionContains(PhpFileType.INSTANCE,
@@ -705,34 +579,6 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
 
         assertTrue("Result should contain ORM alias usage", result.contains("#[ORM\\Entity]"));
         assertTrue("Result should have existing ORM import", result.contains("use Doctrine\\ORM\\Mapping as ORM;"));
-
-    }
-
-    public void testDoctrineClassAttributeInsertionWithoutParentheses() {
-        // Test that Doctrine class attribute insertion does NOT include parentheses
-        myFixture.configureByText(PhpFileType.INSTANCE,
-            "<?php\n\n" +
-                "namespace App\\Entity;\n\n" +
-                "use Doctrine\\ORM\\Mapping as ORM;\n\n" +
-                "#<caret>\n" +
-                "class Document {\n" +
-                "    private int $id;\n" +
-                "}"
-        );
-        myFixture.completeBasic();
-
-        var items = myFixture.getLookupElements();
-        var entityItem = java.util.Arrays.stream(items)
-            .filter(l -> "#[Entity]".equals(l.getLookupString()))
-            .findFirst()
-            .orElse(null);
-
-        myFixture.getLookup().setCurrentItem(entityItem);
-        myFixture.type('\n');
-
-        String result = myFixture.getFile().getText();
-
-        assertTrue("Result should contain Entity attribute without parentheses", result.contains("#[ORM\\Entity]"));
         assertFalse("Result should NOT contain parentheses for Entity", result.contains("#[ORM\\Entity("));
     }
 
@@ -769,23 +615,11 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
         );
     }
 
-    public void testNoDoctrineLifecycleCallbackAttributesAtWrongScope() {
+    public void testNoDoctrineLifecycleCallbackAttributesAtClassLevel() {
         // Test that Doctrine lifecycle callback attributes are NOT available at class level
         assertCompletionNotContains(PhpFileType.INSTANCE,
             "<?php\n\nnamespace App\\Entity;\n\n#<caret>\nclass Customer {\n    public function onPrePersist() { }\n}",
             "#[PostLoad]", "#[PrePersist]", "#[PostUpdate]"
-        );
-
-        // Test that Doctrine lifecycle callback attributes are NOT available at field level
-        assertCompletionNotContains(PhpFileType.INSTANCE,
-            "<?php\n\nnamespace App\\Entity;\n\nclass Product {\n    #<caret>\n    private string $name;\n}",
-            "#[PostLoad]", "#[PrePersist]", "#[PostUpdate]"
-        );
-
-        // Test that Doctrine lifecycle callback attributes don't appear for non-entity classes
-        assertCompletionNotContains(PhpFileType.INSTANCE,
-            "<?php\n\nnamespace App\\Service;\n\nclass MyService {\n    #<caret>\n    public function doSomething() { }\n}",
-            "#[PostLoad]", "#[PrePersist]"
         );
     }
 

@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating;
 
+import fr.adrienbrault.idea.symfony2plugin.templating.PhpTemplateMissingInspection;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
@@ -22,7 +23,7 @@ public class PhpTemplateMissingInspectionTest extends SymfonyLightCodeInsightFix
             return;
         }
 
-        assertLocalInspectionContains("test.php", "<?php" +
+        assertLocalInspectionContains(PhpTemplateMissingInspection.class, "test.php", "<?php" +
                 "<?php\n" +
                 "/** @var $x \\Symfony\\Component\\Templating\\EngineInterface */" +
                 "$x->render('<caret>test.html.twig')",

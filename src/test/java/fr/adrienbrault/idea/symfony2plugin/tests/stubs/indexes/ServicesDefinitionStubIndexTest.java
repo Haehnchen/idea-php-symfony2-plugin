@@ -16,13 +16,13 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
     public void setUp() throws Exception {
         super.setUp();
 
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services.xml"));
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services.yml"));
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services.yaml"));
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services.php"));
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services_array.php"));
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services_with_defaults.yaml"));
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("services_fluent_chained.php"));
+        myFixture.copyFileToProject("services.xml");
+        myFixture.copyFileToProject("services.yml");
+        myFixture.copyFileToProject("services.yaml");
+        myFixture.copyFileToProject("services.php");
+        myFixture.copyFileToProject("services_array.php");
+        myFixture.copyFileToProject("services_with_defaults.yaml");
+        myFixture.copyFileToProject("services_fluent_chained.php");
     }
 
     public String getTestDataPath() {

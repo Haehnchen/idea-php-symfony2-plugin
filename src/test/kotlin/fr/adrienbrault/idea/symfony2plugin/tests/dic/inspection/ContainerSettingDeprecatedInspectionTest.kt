@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.dic.inspection
 
+import fr.adrienbrault.idea.symfony2plugin.dic.inspection.ContainerSettingDeprecatedInspection
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
 
 /**
@@ -9,7 +10,7 @@ import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureT
 class ContainerSettingDeprecatedInspectionTest : SymfonyLightCodeInsightFixtureTestCase() {
 
     fun testThatOldXmlFactoryPatternShouldProvideDeprecatedHighlight() {
-        assertLocalInspectionContains("service.xml",
+        assertLocalInspectionContains(ContainerSettingDeprecatedInspection.ContainerSettingDeprecatedInspectionXml::class.java, "service.xml",
             "<container>\n" +
                 "  <services>\n" +
                 "      <service fac<caret>tory-class=\"DateTime\"/>\n" +
@@ -18,7 +19,7 @@ class ContainerSettingDeprecatedInspectionTest : SymfonyLightCodeInsightFixtureT
             "Symfony: this factory pattern is deprecated use 'factory' instead"
         )
 
-        assertLocalInspectionNotContains("service.xml",
+        assertLocalInspectionNotContains(ContainerSettingDeprecatedInspection.ContainerSettingDeprecatedInspectionXml::class.java, "service.xml",
             "<container>\n" +
                 "  <services>\n" +
                 "      <service factory-class=\"Date<caret>Time\"/>\n" +
@@ -27,7 +28,7 @@ class ContainerSettingDeprecatedInspectionTest : SymfonyLightCodeInsightFixtureT
             "Symfony: this factory pattern is deprecated use 'factory' instead"
         )
 
-        assertLocalInspectionContains("service.xml",
+        assertLocalInspectionContains(ContainerSettingDeprecatedInspection.ContainerSettingDeprecatedInspectionXml::class.java, "service.xml",
             "<container>\n" +
                 "  <services>\n" +
                 "      <service fact<caret>ory-method=\"DateTime\"/>\n" +
@@ -36,7 +37,7 @@ class ContainerSettingDeprecatedInspectionTest : SymfonyLightCodeInsightFixtureT
             "Symfony: this factory pattern is deprecated use 'factory' instead"
         )
 
-        assertLocalInspectionContains("service.xml",
+        assertLocalInspectionContains(ContainerSettingDeprecatedInspection.ContainerSettingDeprecatedInspectionXml::class.java, "service.xml",
             "<container>\n" +
                 "  <services>\n" +
                 "      <service fact<caret>ory-service=\"DateTime\"/>\n" +
@@ -55,7 +56,7 @@ class ContainerSettingDeprecatedInspectionTest : SymfonyLightCodeInsightFixtureT
         )
 
         for (s in strings) {
-            assertLocalInspectionContains("services.yml", "" +
+            assertLocalInspectionContains(ContainerSettingDeprecatedInspection.ContainerSettingDeprecatedInspectionYaml::class.java, "services.yml", "" +
                 "services:\n" +
                 "   foo:\n" +
                 "       " + s + "\n",

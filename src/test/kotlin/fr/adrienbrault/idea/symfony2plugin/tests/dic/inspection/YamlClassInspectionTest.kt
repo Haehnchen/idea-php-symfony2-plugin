@@ -19,32 +19,32 @@ class YamlClassInspectionTest : SymfonyLightCodeInsightFixtureTestCase() {
     }
 
     fun testInspectionForClass() {
-        assertLocalInspectionContains("services.yml", "services:\n  class: Args\\Fo<caret>oBar", YamlClassInspection.MESSAGE_MISSING_CLASS)
-        assertLocalInspectionContains("services.yml", "services:\n  class: 'Args\\Fo<caret>oBar'", YamlClassInspection.MESSAGE_MISSING_CLASS)
-        assertLocalInspectionContains("services.yml", "services:\n  class: \"Args\\Fo<caret>oBar\"", YamlClassInspection.MESSAGE_MISSING_CLASS)
-        assertLocalInspectionContains("services.yml", "services:\n  factory_class: Args\\Fo<caret>oBar", YamlClassInspection.MESSAGE_MISSING_CLASS)
-        assertLocalInspectionNotContains("services.yml", "services:\n  factory_class: Args\\Fo<caret>o", YamlClassInspection.MESSAGE_MISSING_CLASS)
+        assertLocalInspectionContains(YamlClassInspection::class.java, "services.yml", "services:\n  class: Args\\Fo<caret>oBar", YamlClassInspection.MESSAGE_MISSING_CLASS)
+        assertLocalInspectionContains(YamlClassInspection::class.java, "services.yml", "services:\n  class: 'Args\\Fo<caret>oBar'", YamlClassInspection.MESSAGE_MISSING_CLASS)
+        assertLocalInspectionContains(YamlClassInspection::class.java, "services.yml", "services:\n  class: \"Args\\Fo<caret>oBar\"", YamlClassInspection.MESSAGE_MISSING_CLASS)
+        assertLocalInspectionContains(YamlClassInspection::class.java, "services.yml", "services:\n  factory_class: Args\\Fo<caret>oBar", YamlClassInspection.MESSAGE_MISSING_CLASS)
+        assertLocalInspectionNotContains(YamlClassInspection::class.java, "services.yml", "services:\n  factory_class: Args\\Fo<caret>o", YamlClassInspection.MESSAGE_MISSING_CLASS)
 
-        assertLocalInspectionContains("services.yml", "parameters:\n  foo.class: Args\\Fo<caret>oBar", YamlClassInspection.MESSAGE_MISSING_CLASS)
-        assertLocalInspectionContains("services.yml", "parameters:\n  foo.class: 'Args\\Fo<caret>oBar'", YamlClassInspection.MESSAGE_MISSING_CLASS)
-        assertLocalInspectionContains("services.yml", "parameters:\n  foo.class: \"Args\\Fo<caret>oBar\"", YamlClassInspection.MESSAGE_MISSING_CLASS)
-        assertLocalInspectionNotContains("services.yml", "parameters:\n  foo.class: Args\\Fo<caret>o", YamlClassInspection.MESSAGE_MISSING_CLASS)
+        assertLocalInspectionContains(YamlClassInspection::class.java, "services.yml", "parameters:\n  foo.class: Args\\Fo<caret>oBar", YamlClassInspection.MESSAGE_MISSING_CLASS)
+        assertLocalInspectionContains(YamlClassInspection::class.java, "services.yml", "parameters:\n  foo.class: 'Args\\Fo<caret>oBar'", YamlClassInspection.MESSAGE_MISSING_CLASS)
+        assertLocalInspectionContains(YamlClassInspection::class.java, "services.yml", "parameters:\n  foo.class: \"Args\\Fo<caret>oBar\"", YamlClassInspection.MESSAGE_MISSING_CLASS)
+        assertLocalInspectionNotContains(YamlClassInspection::class.java, "services.yml", "parameters:\n  foo.class: Args\\Fo<caret>o", YamlClassInspection.MESSAGE_MISSING_CLASS)
 
-        assertLocalInspectionContains("services.yml", "services:\n  class: Args\\Fo<caret>O", YamlClassInspection.MESSAGE_WRONG_CASING)
-        assertLocalInspectionContains("services.yml", "services:\n  class: 'Args\\Fo<caret>O'", YamlClassInspection.MESSAGE_WRONG_CASING)
-        assertLocalInspectionContains("services.yml", "services:\n  class: \"Args\\Fo<caret>O\"", YamlClassInspection.MESSAGE_WRONG_CASING)
-        assertLocalInspectionContains("services.yml", "services:\n  factory_class: Args\\Fo<caret>O", YamlClassInspection.MESSAGE_WRONG_CASING)
-        assertLocalInspectionNotContains("services.yml", "services:\n  factory_class: Args\\Fo<caret>o", YamlClassInspection.MESSAGE_WRONG_CASING)
+        assertLocalInspectionContains(YamlClassInspection::class.java, "services.yml", "services:\n  class: Args\\Fo<caret>O", YamlClassInspection.MESSAGE_WRONG_CASING)
+        assertLocalInspectionContains(YamlClassInspection::class.java, "services.yml", "services:\n  class: 'Args\\Fo<caret>O'", YamlClassInspection.MESSAGE_WRONG_CASING)
+        assertLocalInspectionContains(YamlClassInspection::class.java, "services.yml", "services:\n  class: \"Args\\Fo<caret>O\"", YamlClassInspection.MESSAGE_WRONG_CASING)
+        assertLocalInspectionContains(YamlClassInspection::class.java, "services.yml", "services:\n  factory_class: Args\\Fo<caret>O", YamlClassInspection.MESSAGE_WRONG_CASING)
+        assertLocalInspectionNotContains(YamlClassInspection::class.java, "services.yml", "services:\n  factory_class: Args\\Fo<caret>o", YamlClassInspection.MESSAGE_WRONG_CASING)
 
-        assertLocalInspectionContains("services.yml", "parameters:\n  foo.class: Args\\Fo<caret>O", YamlClassInspection.MESSAGE_WRONG_CASING)
-        assertLocalInspectionContains("services.yml", "parameters:\n  foo.class: 'Args\\Fo<caret>O'", YamlClassInspection.MESSAGE_WRONG_CASING)
-        assertLocalInspectionContains("services.yml", "parameters:\n  foo.class: \"Args\\Fo<caret>O\"", YamlClassInspection.MESSAGE_WRONG_CASING)
-        assertLocalInspectionNotContains("services.yml", "parameters:\n  foo.class: Args\\Fo<caret>o", YamlClassInspection.MESSAGE_WRONG_CASING)
+        assertLocalInspectionContains(YamlClassInspection::class.java, "services.yml", "parameters:\n  foo.class: Args\\Fo<caret>O", YamlClassInspection.MESSAGE_WRONG_CASING)
+        assertLocalInspectionContains(YamlClassInspection::class.java, "services.yml", "parameters:\n  foo.class: 'Args\\Fo<caret>O'", YamlClassInspection.MESSAGE_WRONG_CASING)
+        assertLocalInspectionContains(YamlClassInspection::class.java, "services.yml", "parameters:\n  foo.class: \"Args\\Fo<caret>O\"", YamlClassInspection.MESSAGE_WRONG_CASING)
+        assertLocalInspectionNotContains(YamlClassInspection::class.java, "services.yml", "parameters:\n  foo.class: Args\\Fo<caret>o", YamlClassInspection.MESSAGE_WRONG_CASING)
 
-        assertLocalInspectionContains("services.yml", "services:\n  Args\\Fo<caret>oBar: ~", YamlClassInspection.MESSAGE_MISSING_CLASS)
-        assertLocalInspectionNotContains("services.yml", "services:\n  foo.class: Args\\Fo<caret>o", YamlClassInspection.MESSAGE_WRONG_CASING)
+        assertLocalInspectionContains(YamlClassInspection::class.java, "services.yml", "services:\n  Args\\Fo<caret>oBar: ~", YamlClassInspection.MESSAGE_MISSING_CLASS)
+        assertLocalInspectionNotContains(YamlClassInspection::class.java, "services.yml", "services:\n  foo.class: Args\\Fo<caret>o", YamlClassInspection.MESSAGE_WRONG_CASING)
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(YamlClassInspection::class.java,
                 "services.yml",
                 "services:\n" +
                         "  Args\\Fo<caret>oBar:\n" +
@@ -52,7 +52,7 @@ class YamlClassInspectionTest : SymfonyLightCodeInsightFixtureTestCase() {
                 YamlClassInspection.MESSAGE_MISSING_CLASS
         )
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(YamlClassInspection::class.java,
                 "services.yml",
                 "services:\n" +
                         "  Args\\Fo<caret>oBar:\n" +

@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.inspection;
 
+import fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigEnumFunctionInspection;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
@@ -18,13 +19,13 @@ public class TwigEnumFunctionInspectionTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testThatValidEnumDoesNotTriggerInspection() {
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(TwigEnumFunctionInspection.class,
             "test.html.twig",
             "{{ enum('App\\\\Bike\\\\Foo<caret>Enum') }}",
             "Missing class: App\\Bike\\FooEnum"
         );
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(TwigEnumFunctionInspection.class,
             "test.html.twig",
             "{{ enum_cases('App\\\\Bike\\\\Foo<caret>Enum') }}",
             "Missing class: App\\Bike\\FooEnum"
@@ -32,13 +33,13 @@ public class TwigEnumFunctionInspectionTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testThatMissingClassTriggersInspection() {
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(TwigEnumFunctionInspection.class,
             "test.html.twig",
             "{{ enum('App\\\\Bike\\\\Missing<caret>Enum') }}",
             "Missing class: App\\Bike\\MissingEnum"
         );
 
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(TwigEnumFunctionInspection.class,
             "test.html.twig",
             "{{ enum_cases('App\\\\Bike\\\\Missing<caret>Enum') }}",
             "Missing class: App\\Bike\\MissingEnum"
@@ -50,7 +51,7 @@ public class TwigEnumFunctionInspectionTest extends SymfonyLightCodeInsightFixtu
         // We need to check if the class exists and is not an enum
         // Since we don't have a non-enum class in the fixture at App\Bike namespace,
         // let's test with a different scenario
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(TwigEnumFunctionInspection.class,
             "test.html.twig",
             "{{ enum('App\\\\Bike\\\\Foo<caret>Enum') }}",
             "is not an enum"
@@ -58,13 +59,13 @@ public class TwigEnumFunctionInspectionTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testThatEnumFunctionInTagBlocksTriggersInspection() {
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(TwigEnumFunctionInspection.class,
             "test.html.twig",
             "{% if enum('App\\\\Bike\\\\Missing<caret>Enum') %}test{% endif %}",
             "Missing class: App\\Bike\\MissingEnum"
         );
 
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(TwigEnumFunctionInspection.class,
             "test.html.twig",
             "{% set foo = enum_cases('App\\\\Bike\\\\Missing<caret>Enum') %}",
             "Missing class: App\\Bike\\MissingEnum"
@@ -72,7 +73,7 @@ public class TwigEnumFunctionInspectionTest extends SymfonyLightCodeInsightFixtu
     }
 
     public void testThatFullyQualifiedClassNameWorks() {
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(TwigEnumFunctionInspection.class,
             "test.html.twig",
             "{{ enum('\\\\App\\\\Bike\\\\Foo<caret>Enum') }}",
             "Missing class"
@@ -81,7 +82,7 @@ public class TwigEnumFunctionInspectionTest extends SymfonyLightCodeInsightFixtu
 
     public void testThatBackslashEscapingIsHandled() {
         // Test with double backslashes (escaped in Twig)
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(TwigEnumFunctionInspection.class,
             "test.html.twig",
             "{{ enum('App\\\\Bike\\\\Foo<caret>Enum') }}",
             "Missing class"

@@ -3,6 +3,11 @@ package fr.adrienbrault.idea.symfony2plugin.tests.mcp
 import fr.adrienbrault.idea.symfony2plugin.mcp.collector.SymfonyRouteCollector
 
 class SymfonyRouteCollectorTest : McpCollectorTestCase() {
+    override fun setUp() {
+        super.setUp()
+        loadRouteFixtures()
+    }
+
     fun testCollectReturnsControllerAndPath() {
         val result = SymfonyRouteCollector(project).collect(null, null, null)
 

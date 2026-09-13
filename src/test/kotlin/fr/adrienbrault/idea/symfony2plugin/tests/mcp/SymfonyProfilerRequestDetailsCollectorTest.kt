@@ -5,8 +5,9 @@ import fr.adrienbrault.idea.symfony2plugin.profiler.ProfilerIndexInterface
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.LocalProfilerRequest
 import fr.adrienbrault.idea.symfony2plugin.profiler.dict.ProfilerRequestInterface
 import fr.adrienbrault.idea.symfony2plugin.profiler.renderer.ProfilerTextRenderer
+import junit.framework.TestCase
 
-class SymfonyProfilerRequestDetailsCollectorTest : McpCollectorTestCase() {
+class SymfonyProfilerRequestDetailsCollectorTest : TestCase() {
     fun testLatestLoadsNewestKnownProfilerRequest() {
         val profilerIndex = TestProfilerIndex(
             resourceFixture("symfony-profiler-db.gz"),

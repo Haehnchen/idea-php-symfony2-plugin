@@ -3,6 +3,11 @@ package fr.adrienbrault.idea.symfony2plugin.tests.mcp
 import fr.adrienbrault.idea.symfony2plugin.mcp.collector.SymfonyFormTypeOptionsCollector
 
 class SymfonyFormTypeOptionsCollectorTest : McpCollectorTestCase() {
+    override fun setUp() {
+        super.setUp()
+        loadFormFixtures()
+    }
+
     fun testCollectReturnsInheritedAndExtensionOptions() {
         val result = SymfonyFormTypeOptionsCollector(project).collect("foo")
 

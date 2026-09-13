@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating;
 
+import com.intellij.codeInsight.completion.CompletionUtilCore;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
@@ -190,6 +191,34 @@ public class TwigPatternTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertFalse(fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern.getAfterOperatorPattern().accepts(
             findElementAt(TwigFileType.INSTANCE, "{{ fa<caret>ke }}")
         ));
+    }
+
+    public void testAfterOperatorPatternForCompletionContexts() {
+        assertAfterOperatorPatternForCompletion("{% if foo <caret> %}");
+        assertAfterOperatorPatternForCompletion("{% if test <caret> %}");
+        assertAfterOperatorPatternForCompletion("{% if and foo <caret> %}");
+        assertAfterOperatorPatternForCompletion("{% if foo is red and blue <caret> %}");
+        assertAfterOperatorPatternForCompletion("{% if foo is red or blue <caret> %}");
+        assertAfterOperatorPatternForCompletion("{% if foo is red or 'blue' <caret> %}");
+        assertAfterOperatorPatternForCompletion("{% if foo is red or \"blue\" <caret> %}");
+        assertAfterOperatorPatternForCompletion("{% if and foo() <caret> %}");
+        assertAfterOperatorPatternForCompletion("{% if and foo.0.1.1 <caret> %}");
+        assertAfterOperatorPatternForCompletion("{% if and foo(111) <caret> %}");
+        assertAfterOperatorPatternForCompletion("{% if and foo(\"11\") <caret> %}");
+        assertAfterOperatorPatternForCompletion("{% if and foo('11') <caret> %}");
+        assertAfterOperatorPatternForCompletion("{% if and foo['11'] <caret> %}");
+        assertAfterOperatorPatternForCompletion("{% if and foo[11] <caret> %}");
+        assertAfterOperatorPatternForCompletion("{% if and foo('11')|test <caret> %}");
+        assertAfterOperatorPatternForCompletion("{% if and foo('11') | test <caret> %}");
+        assertAfterOperatorPatternForCompletion("{% if and foo('11') | \t test <caret> %}");
+        assertAfterOperatorPatternForCompletion("{% if and foo[0] | \t test <caret> %}");
+    }
+
+    private void assertAfterOperatorPatternForCompletion(String context) {
+        // Completion matches PSI containing a dummy identifier, not the whitespace at the original caret.
+        PsiElement position = findElementAt(TwigFileType.INSTANCE,
+            context.replace("<caret>", "<caret>" + CompletionUtilCore.DUMMY_IDENTIFIER));
+        assertTrue(context, TwigPattern.getAfterOperatorPattern().accepts(position));
     }
 
     /**

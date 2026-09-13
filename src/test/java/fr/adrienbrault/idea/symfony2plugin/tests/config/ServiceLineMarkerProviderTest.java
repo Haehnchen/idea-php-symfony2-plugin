@@ -25,8 +25,8 @@ public class ServiceLineMarkerProviderTest extends SymfonyLightCodeInsightFixtur
         super.setUp();
 
         myFixture.copyFileToProject("validators.de.yml", "translations/validators.de.yml");
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("ServiceLineMarkerProvider.php"));
-        myFixture.configureFromExistingVirtualFile(myFixture.copyFileToProject("SymfonyPhpReferenceContributor.php"));
+        myFixture.copyFileToProject("ServiceLineMarkerProvider.php");
+        myFixture.copyFileToProject("SymfonyPhpReferenceContributor.php");
     }
 
     public String getTestDataPath() {

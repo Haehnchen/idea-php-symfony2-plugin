@@ -19,13 +19,13 @@ class MissingServiceInspectionTest : SymfonyLightCodeInsightFixtureTestCase() {
     }
 
     fun testThatPhpServiceInterfaceForGetMethodIsInspected() {
-        assertLocalInspectionContains("test.php", "<?php\n" +
+        assertLocalInspectionContains(MissingServiceInspection.PhpLocalInspectionTool::class.java, "test.php", "<?php\n" +
                 "/** @var \$x \\Symfony\\Component\\DependencyInjection\\ContainerInterface */\n" +
                 "\$x->get('fo<caret>obar')",
             MissingServiceInspection.INSPECTION_MESSAGE
         )
 
-        assertLocalInspectionNotContains("test.php", "<?php\n" +
+        assertLocalInspectionNotContains(MissingServiceInspection.PhpLocalInspectionTool::class.java, "test.php", "<?php\n" +
                 "/** @var \$x \\Symfony\\Component\\DependencyInjection\\ContainerInterface */\n" +
                 "\$x->get('app.ma<caret>iler')",
             MissingServiceInspection.INSPECTION_MESSAGE
@@ -33,7 +33,7 @@ class MissingServiceInspectionTest : SymfonyLightCodeInsightFixtureTestCase() {
     }
 
     fun testThatContainerBagGetMethodIsNotInspectedAsService() {
-        assertLocalInspectionNotContains("test.php", "<?php\n" +
+        assertLocalInspectionNotContains(MissingServiceInspection.PhpLocalInspectionTool::class.java, "test.php", "<?php\n" +
                 "use Symfony\\Component\\DependencyInjection\\ParameterBag\\ContainerBagInterface;\n" +
                 "\n" +
                 "class TestService\n" +
@@ -50,7 +50,7 @@ class MissingServiceInspectionTest : SymfonyLightCodeInsightFixtureTestCase() {
     }
 
     fun testThatPhpAttributesForServiceAutowireIsInspected() {
-        assertLocalInspectionContains("test.php", "<?php\n" +
+        assertLocalInspectionContains(MissingServiceInspection.PhpLocalInspectionTool::class.java, "test.php", "<?php\n" +
                 "use Symfony\\Component\\DependencyInjection\\Attribute\\Autowire;\n" +
                 "\n" +
                 "class HandlerCollection\n" +
@@ -62,7 +62,7 @@ class MissingServiceInspectionTest : SymfonyLightCodeInsightFixtureTestCase() {
             MissingServiceInspection.INSPECTION_MESSAGE
         )
 
-        assertLocalInspectionContains("test.php", "<?php\n" +
+        assertLocalInspectionContains(MissingServiceInspection.PhpLocalInspectionTool::class.java, "test.php", "<?php\n" +
                 "use Symfony\\Component\\DependencyInjection\\Attribute\\Autowire;\n" +
                 "\n" +
                 "class HandlerCollection\n" +
@@ -76,7 +76,7 @@ class MissingServiceInspectionTest : SymfonyLightCodeInsightFixtureTestCase() {
     }
 
     fun testThatPhpAttributesForServiceAsDecoratorIsInspected() {
-        assertLocalInspectionContains("test.php", "<?php\n" +
+        assertLocalInspectionContains(MissingServiceInspection.PhpLocalInspectionTool::class.java, "test.php", "<?php\n" +
                 "use Symfony\\Component\\DependencyInjection\\Attribute\\AsDecorator;\n" +
                 "#[AsDecorator(\"fo<caret>obar\")]\n" +
                 "class HandlerCollection {}",
@@ -85,13 +85,13 @@ class MissingServiceInspectionTest : SymfonyLightCodeInsightFixtureTestCase() {
     }
 
     fun testThatYamlServiceInterfaceForGetMethodIsInspected() {
-        assertLocalInspectionContains("services.yml", "services:\n   @args<caret>_unknown", MissingServiceInspection.INSPECTION_MESSAGE)
-        assertLocalInspectionContains("services.yml", "services:\n   @Args<caret>_unknown", MissingServiceInspection.INSPECTION_MESSAGE)
+        assertLocalInspectionContains(MissingServiceInspection.YamlLocalInspectionTool::class.java, "services.yml", "services:\n   @args<caret>_unknown", MissingServiceInspection.INSPECTION_MESSAGE)
+        assertLocalInspectionContains(MissingServiceInspection.YamlLocalInspectionTool::class.java, "services.yml", "services:\n   @Args<caret>_unknown", MissingServiceInspection.INSPECTION_MESSAGE)
 
-        assertLocalInspectionNotContains("services.yml", "services:\n   @App.ma<caret>iler", MissingServiceInspection.INSPECTION_MESSAGE)
-        assertLocalInspectionNotContains("services.yml", "services:\n   @app.ma<caret>iler", MissingServiceInspection.INSPECTION_MESSAGE)
+        assertLocalInspectionNotContains(MissingServiceInspection.YamlLocalInspectionTool::class.java, "services.yml", "services:\n   @App.ma<caret>iler", MissingServiceInspection.INSPECTION_MESSAGE)
+        assertLocalInspectionNotContains(MissingServiceInspection.YamlLocalInspectionTool::class.java, "services.yml", "services:\n   @app.ma<caret>iler", MissingServiceInspection.INSPECTION_MESSAGE)
 
-        assertLocalInspectionNotContains("services.yml", "services:\n   @@args<caret>_unknown", MissingServiceInspection.INSPECTION_MESSAGE)
-        assertLocalInspectionNotContains("services.yml", "services:\n   @=args<caret>_unknown", MissingServiceInspection.INSPECTION_MESSAGE)
+        assertLocalInspectionNotContains(MissingServiceInspection.YamlLocalInspectionTool::class.java, "services.yml", "services:\n   @@args<caret>_unknown", MissingServiceInspection.INSPECTION_MESSAGE)
+        assertLocalInspectionNotContains(MissingServiceInspection.YamlLocalInspectionTool::class.java, "services.yml", "services:\n   @=args<caret>_unknown", MissingServiceInspection.INSPECTION_MESSAGE)
     }
 }

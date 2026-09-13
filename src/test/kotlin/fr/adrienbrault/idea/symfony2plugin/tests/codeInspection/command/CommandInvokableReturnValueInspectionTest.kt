@@ -17,7 +17,7 @@ class CommandInvokableReturnValueInspectionTest : SymfonyLightCodeInsightFixture
         "src/test/kotlin/fr/adrienbrault/idea/symfony2plugin/tests/codeInspection/command/fixtures"
 
     fun testCommandReturningString() {
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(CommandInvokableReturnValueInspection::class.java,
             "test.php", """
             <?php
             use Symfony\Component\Console\Attribute\AsCommand;
@@ -36,7 +36,7 @@ class CommandInvokableReturnValueInspectionTest : SymfonyLightCodeInsightFixture
     }
 
     fun testCommandReturningNull() {
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(CommandInvokableReturnValueInspection::class.java,
             "test.php", """
             <?php
             use Symfony\Component\Console\Attribute\AsCommand;
@@ -55,7 +55,7 @@ class CommandInvokableReturnValueInspectionTest : SymfonyLightCodeInsightFixture
     }
 
     fun testCommandReturningIntegerLiteral() {
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(CommandInvokableReturnValueInspection::class.java,
             "test.php", """
             <?php
             use Symfony\Component\Console\Attribute\AsCommand;
@@ -74,7 +74,7 @@ class CommandInvokableReturnValueInspectionTest : SymfonyLightCodeInsightFixture
     }
 
     fun testCommandReturningIntegerVariable() {
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(CommandInvokableReturnValueInspection::class.java,
             "test.php", """
             <?php
             use Symfony\Component\Console\Attribute\AsCommand;
@@ -94,7 +94,7 @@ class CommandInvokableReturnValueInspectionTest : SymfonyLightCodeInsightFixture
     }
 
     fun testCommandReturningCommandSuccess() {
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(CommandInvokableReturnValueInspection::class.java,
             "test.php", """
             <?php
             use Symfony\Component\Console\Attribute\AsCommand;
@@ -114,7 +114,7 @@ class CommandInvokableReturnValueInspectionTest : SymfonyLightCodeInsightFixture
     }
 
     fun testCommandWithIntReturnTypeIsSkipped() {
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(CommandInvokableReturnValueInspection::class.java,
             "test.php", """
             <?php
             use Symfony\Component\Console\Attribute\AsCommand;
@@ -133,7 +133,7 @@ class CommandInvokableReturnValueInspectionTest : SymfonyLightCodeInsightFixture
     }
 
     fun testNonCommandClassIsIgnored() {
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(CommandInvokableReturnValueInspection::class.java,
             "test.php", """
             <?php
             class FoobarClass
@@ -149,7 +149,7 @@ class CommandInvokableReturnValueInspectionTest : SymfonyLightCodeInsightFixture
     }
 
     fun testCommandWithMultipleReturns() {
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(CommandInvokableReturnValueInspection::class.java,
             "test.php", """
             <?php
             use Symfony\Component\Console\Attribute\AsCommand;
@@ -171,7 +171,7 @@ class CommandInvokableReturnValueInspectionTest : SymfonyLightCodeInsightFixture
     }
 
     fun testTraditionalCommandWithoutAttributeIsIgnored() {
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(CommandInvokableReturnValueInspection::class.java,
             "test.php", """
             <?php
             use Symfony\Component\Console\Command\Command;

@@ -1,5 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.codeInspection.service;
 
+import fr.adrienbrault.idea.symfony2plugin.codeInspection.service.TaggedExtendsInterfaceClassInspection;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
@@ -20,7 +21,7 @@ public class TaggedExtendsInterfaceClassInspectionTest extends SymfonyLightCodeI
     }
 
     public void testThatKnownTagsShouldInspectionForMissingServiceClassImplementationsOfYaml() {
-        assertLocalInspectionContains("services.yml", "services:\n" +
+        assertLocalInspectionContains(TaggedExtendsInterfaceClassInspection.TaggedExtendsInterfaceClassInspectionYaml.class, "services.yml", "services:\n" +
             "    foo:\n" +
             "        class: Tag\\Instance<caret>Check\\EmptyClass\n" +
             "        tags:\n" +
@@ -30,7 +31,7 @@ public class TaggedExtendsInterfaceClassInspectionTest extends SymfonyLightCodeI
     }
 
     public void testThatKnownTagsShouldInspectionForMissingServiceClassImplementationsForClassAsIsOfYaml() {
-        assertLocalInspectionContains("services.yml", "services:\n" +
+        assertLocalInspectionContains(TaggedExtendsInterfaceClassInspection.TaggedExtendsInterfaceClassInspectionYaml.class, "services.yml", "services:\n" +
                 "    Tag\\Instance<caret>Check\\EmptyClass:\n" +
                 "        tags:\n" +
                 "            -  { name: twig.extension }",
@@ -39,7 +40,7 @@ public class TaggedExtendsInterfaceClassInspectionTest extends SymfonyLightCodeI
     }
 
     public void testThatKnownTagsShouldInspectionForMissingServiceClassImplementationsOfXml() {
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(TaggedExtendsInterfaceClassInspection.TaggedExtendsInterfaceClassInspectionXml.class,
             "services.xml",
                 "<?xml version=\"1.0\"?>\n" +
                 "<container>\n" +
@@ -54,7 +55,7 @@ public class TaggedExtendsInterfaceClassInspectionTest extends SymfonyLightCodeI
     }
 
     public void testThatKnownTagsShouldInspectionForMissingServiceClassImplementationsForClassAsIsOfYamlOfYml() {
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(TaggedExtendsInterfaceClassInspection.TaggedExtendsInterfaceClassInspectionXml.class,
             "services.xml",
             "<?xml version=\"1.0\"?>\n" +
                 "<container>\n" +

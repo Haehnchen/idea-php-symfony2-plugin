@@ -1,11 +1,11 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.action.quickfix;
 
 import fr.adrienbrault.idea.symfony2plugin.action.quickfix.AddServiceXmlArgumentLocalQuickFix;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import junit.framework.TestCase;
 
 import java.util.ArrayList;
 
-public class AddServiceXmlArgumentLocalQuickFixTest extends SymfonyLightCodeInsightFixtureTestCase {
+public class AddServiceXmlArgumentLocalQuickFixTest extends TestCase {
 
     public void testStartInWriteAction() {
         var quickfix = new AddServiceXmlArgumentLocalQuickFix(new ArrayList<>());

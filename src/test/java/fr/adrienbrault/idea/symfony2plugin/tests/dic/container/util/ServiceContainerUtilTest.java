@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.intellij.openapi.util.Condition;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.php.lang.psi.PhpFile;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.ServiceInterface;
@@ -27,25 +28,14 @@ import java.util.List;
  */
 public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
-    private PsiFile xmlFile;
-    private PsiFile ymlFile;
-
-    public void setUp() throws Exception {
-        super.setUp();
-        this.xmlFile = myFixture.configureByFile("services.xml");
-        this.ymlFile = myFixture.configureByFile("services.yml");
-
-        myFixture.configureByFile("usage.services.xml");
-        myFixture.configureByFile("usage1.services.xml");
-
-        myFixture.configureByFile("classes.php");
-    }
-
     public String getTestDataPath() {
         return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/dic/container/util/fixtures";
     }
 
     public void testDefaults() {
+        PsiFile xmlFile = PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services.xml"));
+        PsiFile ymlFile = PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services.yml"));
+
         for (PsiFile psiFile : new PsiFile[]{xmlFile, ymlFile}) {
             ServiceInterface bar = ContainerUtil.find(ServiceContainerUtil.getServicesInFile(psiFile), MyStringServiceInterfaceCondition.create("defaults"));
             assertEquals("defaults", bar.getId());
@@ -65,6 +55,9 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public void testDecoratorPatternCustomLanguageUnderscoreKeys() {
+        PsiFile xmlFile = PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services.xml"));
+        PsiFile ymlFile = PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services.yml"));
+
         for (PsiFile psiFile : new PsiFile[]{xmlFile, ymlFile}) {
             ServiceInterface bar = ContainerUtil.find(ServiceContainerUtil.getServicesInFile(psiFile), MyStringServiceInterfaceCondition.create("bar"));
             assertEquals("bar", bar.getId());
@@ -76,6 +69,9 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public void testNonDefaults() {
+        PsiFile xmlFile = PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services.xml"));
+        PsiFile ymlFile = PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services.yml"));
+
         for (PsiFile psiFile : new PsiFile[]{xmlFile, ymlFile}) {
             ServiceInterface bar = ContainerUtil.find(ServiceContainerUtil.getServicesInFile(psiFile), MyStringServiceInterfaceCondition.create("non.defaults"));
 
@@ -93,6 +89,9 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public void testUpperToLower() {
+        PsiFile xmlFile = PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services.xml"));
+        PsiFile ymlFile = PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services.yml"));
+
         for (PsiFile psiFile : new PsiFile[]{xmlFile, ymlFile}) {
             ServiceInterface bar = ContainerUtil.find(ServiceContainerUtil.getServicesInFile(psiFile), serviceInterface ->
                 serviceInterface.getId().equalsIgnoreCase("bar.UPPER")
@@ -103,6 +102,9 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public void testNonDefaultValuesAreSerialized() {
+        PsiFile xmlFile = PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services.xml"));
+        PsiFile ymlFile = PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services.yml"));
+
         for (PsiFile psiFile : new PsiFile[]{xmlFile, ymlFile}) {
             ServiceInterface bar = ContainerUtil.find(ServiceContainerUtil.getServicesInFile(psiFile), MyStringServiceInterfaceCondition.create("non.defaults"));
             assertEquals(
@@ -113,7 +115,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public void testPhpServicesAreInIndex() {
-        PsiFile phpFile = myFixture.configureByFile("services.php");
+        PsiFile phpFile = PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services.php"));
 
         Collection<ServiceSerializable> servicesInFile = ServiceContainerUtil.getServicesInFile(phpFile);
 
@@ -131,7 +133,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public void testPhpArrayServicesAreInIndex() {
-        PsiFile phpFile = myFixture.configureByFile("services_array.php");
+        PsiFile phpFile = PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services_array.php"));
 
         Collection<ServiceSerializable> servicesInFile = ServiceContainerUtil.getServicesInFile(phpFile);
 
@@ -164,7 +166,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public void testPhpArrayAutowireUsesDefaultsAndPerEntryOverride() {
-        PsiFile phpFile = myFixture.configureByFile("services_array.php");
+        PsiFile phpFile = PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services_array.php"));
 
         Collection<ServiceSerializable> servicesInFile = ServiceContainerUtil.getServicesInFile(phpFile);
 
@@ -179,7 +181,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public void testPhpArrayResourcePrototypeKeepsNamespaceIdAndAutowire() {
-        PsiFile phpFile = myFixture.configureByText("services_resource_array.php", "<?php\nnamespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\nreturn App::config([\n    'services' => [\n        '_defaults' => ['autowire' => true],\n        'App\\\\Service\\\\' => ['resource' => '../Service/*'],\n    ],\n]);");
+        PsiFile phpFile = myFixture.addFileToProject("services_resource_array.php", "<?php\nnamespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\nreturn App::config([\n    'services' => [\n        '_defaults' => ['autowire' => true],\n        'App\\\\Service\\\\' => ['resource' => '../Service/*'],\n    ],\n]);");
 
         Collection<ServiceSerializable> servicesInFile = ServiceContainerUtil.getServicesInFile(phpFile);
         ServiceSerializable service = servicesInFile.stream().filter(s -> "App\\Service\\".equals(s.getId())).findFirst().get();
@@ -191,7 +193,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public void testPhpArrayServicesUsingImportedAppAliasAreInIndex() {
-        PsiFile phpFile = myFixture.configureByText("services_imported_app_alias.php", "<?php\n" +
+        PsiFile phpFile = myFixture.addFileToProject("services_imported_app_alias.php", "<?php\n" +
             "use Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\App as ConfigApp;\n" +
             "return ConfigApp::config([\n" +
             "    'services' => [\n" +
@@ -206,7 +208,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public void testPhpDirectArrayReturnServicesAreInIndex() {
-        PsiFile phpFile = myFixture.configureByText("services_direct_array.php", "<?php\nreturn ['services' => ['direct.array_service' => ['class' => \\DateTime::class]]];");
+        PsiFile phpFile = myFixture.addFileToProject("services_direct_array.php", "<?php\nreturn ['services' => ['direct.array_service' => ['class' => \\DateTime::class]]];");
 
         Collection<ServiceSerializable> servicesInFile = ServiceContainerUtil.getServicesInFile(phpFile);
         ServiceSerializable service = servicesInFile.stream().filter(s -> "direct.array_service".equals(s.getId())).findFirst().get();
@@ -215,7 +217,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public void testPhpConfiguratorClosureArrayServicesAreInIndex() {
-        PsiFile phpFile = myFixture.configureByText("services_configurator_closure.php", "<?php\nnamespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\nreturn static function (ContainerConfigurator $container) {\n    return ['services' => ['closure.array_service' => ['class' => \\ArrayObject::class]]];\n};");
+        PsiFile phpFile = myFixture.addFileToProject("services_configurator_closure.php", "<?php\nnamespace Symfony\\Component\\DependencyInjection\\Loader\\Configurator;\nreturn static function (ContainerConfigurator $container) {\n    return ['services' => ['closure.array_service' => ['class' => \\ArrayObject::class]]];\n};");
 
         Collection<ServiceSerializable> servicesInFile = ServiceContainerUtil.getServicesInFile(phpFile);
         ServiceSerializable service = servicesInFile.stream().filter(s -> "closure.array_service".equals(s.getId())).findFirst().get();
@@ -224,6 +226,9 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public void testThatDefaultValueAreNullAndNotSerialized() {
+        PsiFile xmlFile = PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services.xml"));
+        PsiFile ymlFile = PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services.yml"));
+
         for (PsiFile psiFile : new PsiFile[]{xmlFile, ymlFile}) {
             ServiceInterface bar = ContainerUtil.find(ServiceContainerUtil.getServicesInFile(psiFile), MyStringServiceInterfaceCondition.create("defaults"));
             assertEquals(
@@ -234,18 +239,26 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public void testYmlDeprecatedAsTilde() {
+        PsiFile ymlFile = PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services.yml"));
+
         ServiceInterface bar = ContainerUtil.find(ServiceContainerUtil.getServicesInFile(ymlFile), MyStringServiceInterfaceCondition.create("bar.deprecated"));
         assertEquals(true, bar.isDeprecated());
     }
 
     public void testYmlAliasDefinitionAsInline() {
-        assertEquals("bar", ContainerUtil.find(ServiceContainerUtil.getServicesInFile(ymlFile), MyStringServiceInterfaceCondition.create("alias.inline_1")).getAlias());
-        assertEquals("bar", ContainerUtil.find(ServiceContainerUtil.getServicesInFile(ymlFile), MyStringServiceInterfaceCondition.create("alias.inline_2")).getAlias());
-        assertEquals("bar", ContainerUtil.find(ServiceContainerUtil.getServicesInFile(ymlFile), MyStringServiceInterfaceCondition.create("alias.inline_3")).getAlias());
-        assertNull(ContainerUtil.find(ServiceContainerUtil.getServicesInFile(ymlFile), MyStringServiceInterfaceCondition.create("alias.inline_4")).getAlias());
+        PsiFile ymlFile = PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services.yml"));
+
+        Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(ymlFile);
+        assertEquals("bar", ContainerUtil.find(services, MyStringServiceInterfaceCondition.create("alias.inline_1")).getAlias());
+        assertEquals("bar", ContainerUtil.find(services, MyStringServiceInterfaceCondition.create("alias.inline_2")).getAlias());
+        assertEquals("bar", ContainerUtil.find(services, MyStringServiceInterfaceCondition.create("alias.inline_3")).getAlias());
+        assertNull(ContainerUtil.find(services, MyStringServiceInterfaceCondition.create("alias.inline_4")).getAlias());
     }
 
     public void testServiceWithoutClassMustUseIdAsClass() {
+        PsiFile xmlFile = PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services.xml"));
+        PsiFile ymlFile = PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services.yml"));
+
         for (PsiFile psiFile : new PsiFile[]{xmlFile, ymlFile}) {
             ServiceInterface bar = ContainerUtil.find(ServiceContainerUtil.getServicesInFile(psiFile), MyStringServiceInterfaceCondition.create("My\\Class\\Id\\First"));
             assertEquals("My\\Class\\Id\\First", bar.getClassName());
@@ -256,12 +269,18 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public void testGetServiceUsage() {
+        myFixture.copyFileToProject("usage.services.xml");
+        myFixture.copyFileToProject("usage1.services.xml");
+
         assertEquals(3, ServiceContainerUtil.getServiceUsage(getProject(), "usage_xml_foobar"));
         assertEquals(3, ServiceContainerUtil.getServiceUsage(getProject(), "usage_xml_foobar2"));
         assertEquals(1, ServiceContainerUtil.getServiceUsage(getProject(), "usage_xml_foobar3"));
     }
 
     public void testGetSortedServiceId() {
+        myFixture.copyFileToProject("usage.services.xml");
+        myFixture.copyFileToProject("usage1.services.xml");
+
         List<String> sortedServiceId = ServiceContainerUtil.getSortedServiceId(getProject(), Arrays.asList("foobar.default", "foobar", "usage_xml_foobar"));
 
         assertEquals("usage_xml_foobar", sortedServiceId.get(0));
@@ -270,6 +289,9 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public void testGetSortedServiceIdByUsage() {
+        myFixture.copyFileToProject("usage.services.xml");
+        myFixture.copyFileToProject("usage1.services.xml");
+
         List<String> sortedServiceId = ServiceContainerUtil.getSortedServiceId(getProject(), Arrays.asList("foobar.default", "usage_xml_foobar3", "usage_xml_foobar2"));
 
         assertEquals("usage_xml_foobar2", sortedServiceId.get(0));
@@ -281,7 +303,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
      * @see fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil#getServicesInFile
      */
     public void testYamlFileScopeDefaultsForSymfony33() {
-        Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(myFixture.configureByFile("services3-3.yml"));
+        Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services3-3.yml")));
 
         assertFalse(services.stream().anyMatch(service -> "_defaults".equals(service.getId())));
 
@@ -306,7 +328,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
      * @see fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil#getServicesInFile
      */
     public void testYamlFileScopeDefaultsForSymfony5() {
-        Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(myFixture.configureByFile("services5.yml"));
+        Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services5.yml")));
 
         ServiceSerializable appResourceSingle = services.stream().filter(service -> "AppSingle\\".equals(service.getId())).findFirst().get();
         assertContainsElements(appResourceSingle.getResource(), "../src/*");
@@ -318,7 +340,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public void testYamlEmptyResourceAndExcludeValuesAreIgnored() {
-        Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(myFixture.configureByText("services_empty_resource.yml", "" +
+        Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(myFixture.addFileToProject("services_empty_resource.yml", "" +
             "services:\n" +
             "  App\\Empty\\:\n" +
             "    resource:\n" +
@@ -346,7 +368,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
      * @see fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil#getServicesInFile
      */
     public void testXmlFileScopeDefaultsForSymfony33() {
-        Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(myFixture.configureByFile("services3-3.xml"));
+        Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services3-3.xml")));
 
         ServiceSerializable defaults = services.stream().filter(service -> "_xml.defaults".equals(service.getId())).findFirst().get();
         assertTrue(defaults.isAutowire());
@@ -361,6 +383,8 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
      * @see fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil#getYamlConstructorTypeHint
      */
     public void testGetYamlConstructorTypeHint() {
+        myFixture.copyFileToProject("classes.php");
+
         myFixture.configureByText("test.yml", "" +
             "services:\n" +
             "   NamedArgument\\Foobar:\n" +
@@ -384,6 +408,8 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
      * @see fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil#getYamlConstructorTypeHint
      */
     public void testGetYamlConstructorTypeHintForNamedArgument() {
+        myFixture.copyFileToProject("classes.php");
+
         myFixture.configureByText("test.yml", "" +
             "services:\n" +
             "   NamedArgument\\Foobar:\n" +
@@ -408,6 +434,8 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
      * @see fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil#getXmlConstructorTypeHint
      */
     public void testGetXmlConstructorTypeHint() {
+        myFixture.copyFileToProject("classes.php");
+
         myFixture.configureByText("services.xml", "" +
                 "<services>" +
                 "     <service id=\"NamedArgument\\Foobar\">\n" +
@@ -431,6 +459,8 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
      * @see fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil#getXmlCallTypeHint
      */
     public void testGetXmlCallTypeHint() {
+        myFixture.copyFileToProject("classes.php");
+
         myFixture.configureByText("services.xml", "" +
             "<services>" +
             "     <service id=\"NamedArgument\\Foobar\">\n" +
@@ -453,7 +483,9 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public void testVisitNamedArguments() {
-        PsiFile psiFile = myFixture.configureByText("test.yml", "" +
+        myFixture.copyFileToProject("classes.php");
+
+        PsiFile psiFile = myFixture.addFileToProject("test.yml", "" +
             "services:\n" +
             "   NamedArgument\\Foobar:\n" +
             "       arguments: []\n" +
@@ -473,6 +505,8 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public void testGetTargetsForConstantForEmptyClassConstName() {
+        myFixture.copyFileToProject("classes.php");
+
         assertEmpty(ServiceContainerUtil.getTargetsForConstant(getProject(), "\\App\\Service\\FooService::"));
     }
 
@@ -480,7 +514,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
      * @see fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil#visitFile(com.jetbrains.php.lang.psi.PhpFile, com.intellij.util.Consumer)
      */
     public void testVisitFileForPhpServicesWithSetAndAlias() {
-        PhpFile phpFile = (PhpFile) myFixture.configureByFile("services_set_alias.php");
+        PhpFile phpFile = (PhpFile) PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services_set_alias.php"));
 
         Collection<String> visitedServices = new HashSet<>();
         Collection<String> visitedClasses = new HashSet<>();
@@ -521,7 +555,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public void testVisitFileForPhpFluentChainTagsAreCollected() {
-        PsiFile phpFile = myFixture.configureByFile("services_set_alias.php");
+        PsiFile phpFile = PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services_set_alias.php"));
         Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(phpFile);
 
         ServiceSerializable fullChain = services.stream().filter(s -> "test.full_chain".equals(s.getId())).findFirst().orElseThrow();
@@ -529,7 +563,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public void testVisitFileForPhpFluentChainBooleanFlagsAreIndexed() {
-        PsiFile phpFile = myFixture.configureByFile("services_set_alias.php");
+        PsiFile phpFile = PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services_set_alias.php"));
         Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(phpFile);
 
         ServiceSerializable fullChain = services.stream().filter(s -> "test.full_chain".equals(s.getId())).findFirst().orElseThrow();
@@ -548,7 +582,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public void testVisitFileForPhpFluentDefaultsAreInheritedByServices() {
-        PsiFile phpFile = myFixture.configureByFile("services_fluent_defaults.php");
+        PsiFile phpFile = PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services_fluent_defaults.php"));
         Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(phpFile);
 
         // Service with no explicit flags should inherit from ->defaults()
@@ -558,7 +592,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public void testVisitFileForPhpFluentPerServiceOverridesDefaults() {
-        PsiFile phpFile = myFixture.configureByFile("services_fluent_defaults.php");
+        PsiFile phpFile = PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services_fluent_defaults.php"));
         Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(phpFile);
 
         // ->autowire(false) overrides defaults.autowire=true; public stays false from defaults
@@ -577,7 +611,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
      * The services index must not contain entries from the parameters configurator.
      */
     public void testThatParametersSetIsNotIndexedAsService() {
-        PsiFile phpFile = myFixture.configureByFile("services_fluent_chained.php");
+        PsiFile phpFile = PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services_fluent_chained.php"));
         Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(phpFile);
 
         assertTrue("my.parameter must not be indexed as a service",
@@ -593,7 +627,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
      * must all be discovered and include class, tags, visibility, and decoration data.
      */
     public void testThatDirectChainOnServicesCallIsFullyIndexed() {
-        PsiFile phpFile = myFixture.configureByFile("services_fluent_chained.php");
+        PsiFile phpFile = PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services_fluent_chained.php"));
         Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(phpFile);
 
         ServiceSerializable serviceA = services.stream()
@@ -617,7 +651,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public void testThatDirectChainDecoratesIsIndexed() {
-        PsiFile phpFile = myFixture.configureByFile("services_fluent_chained.php");
+        PsiFile phpFile = PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services_fluent_chained.php"));
         Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(phpFile);
 
         ServiceSerializable decorated = services.stream()
@@ -627,7 +661,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public void testVisitFileForPhpFluentChainDecoratesIsIndexed() {
-        PsiFile phpFile = myFixture.configureByFile("services_set_alias.php");
+        PsiFile phpFile = PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services_set_alias.php"));
         Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(phpFile);
 
         ServiceSerializable decorated = services.stream().filter(s -> "test.decorated".equals(s.getId())).findFirst().orElseThrow();
@@ -639,7 +673,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
     }
 
     public void testVisitFileForPhpFluentChainParentIsIndexed() {
-        PsiFile phpFile = myFixture.configureByFile("services_set_alias.php");
+        PsiFile phpFile = PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services_set_alias.php"));
         Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(phpFile);
 
         ServiceSerializable withParent = services.stream().filter(s -> "test.with_parent".equals(s.getId())).findFirst().orElseThrow();
@@ -651,7 +685,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
      * The ->class() call must be resolved even with ->parent() in the chain.
      */
     public void testVisitFileForPhpFluentParentThenClassResolvesClass() {
-        PsiFile phpFile = myFixture.configureByFile("services_set_alias.php");
+        PsiFile phpFile = PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services_set_alias.php"));
         Collection<ServiceSerializable> services = ServiceContainerUtil.getServicesInFile(phpFile);
 
         ServiceSerializable parentThenClass = services.stream()
@@ -667,7 +701,7 @@ public class ServiceContainerUtilTest extends SymfonyLightCodeInsightFixtureTest
      * @see fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil#visitFile(com.jetbrains.php.lang.psi.PhpFile, com.intellij.util.Consumer)
      */
     public void testVisitFileForPhpBundleLoadExtension() {
-        PhpFile phpFile = (PhpFile) myFixture.configureByFile("services_bundle_load_extension.php");
+        PhpFile phpFile = (PhpFile) PsiManager.getInstance(getProject()).findFile(myFixture.copyFileToProject("services_bundle_load_extension.php"));
 
         Collection<String> visitedServices = new HashSet<>();
         Collection<String> visitedClasses = new HashSet<>();

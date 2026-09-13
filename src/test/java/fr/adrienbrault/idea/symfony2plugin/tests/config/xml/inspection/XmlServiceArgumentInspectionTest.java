@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.config.xml.inspection;
 
 import fr.adrienbrault.idea.symfony2plugin.action.ServiceActionUtil;
+import fr.adrienbrault.idea.symfony2plugin.config.xml.inspection.XmlServiceArgumentInspection;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
@@ -20,13 +21,13 @@ public class XmlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFix
     }
 
     public void testMissingArgumentProvidesInspection() {
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(XmlServiceArgumentInspection.class,
             "services.xml",
             createContainer("<serv<caret>ice class=\"Foo\\Bar\"/>"),
             "Missing argument"
         );
 
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(XmlServiceArgumentInspection.class,
             "services.xml",
             createContainer("<serv<caret>ice class=\"Foo\\Bar\"><argument>foo</argument></service>"),
             "Missing argument"
@@ -34,13 +35,13 @@ public class XmlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFix
     }
 
     public void testMissingArgumentNotProvidesInspection() {
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(XmlServiceArgumentInspection.class,
             "services.xml",
             "<foo<caret>bar class=\"Foo\\Bar\"/>",
             "Missing argument"
         );
 
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(XmlServiceArgumentInspection.class,
             "services.html.twig",
             "<serv<caret>ice class=\"Foo\\Bar\"/>",
             "Missing argument"
@@ -48,7 +49,7 @@ public class XmlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFix
     }
 
     public void testThatAllParametersAreGiven() {
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(XmlServiceArgumentInspection.class,
             "services.xml",
             createContainer("<serv<caret>ice class=\"Foo\\Bar\"><argument>foo</argument><argument>foo</argument></service>"),
             "Missing argument"
@@ -56,7 +57,7 @@ public class XmlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFix
     }
 
     public void testThatAllParametersAreGivenWithLastOneOptional() {
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(XmlServiceArgumentInspection.class,
             "services.xml",
             createContainer("<serv<caret>ice class=\"Foo\\Apple\"><argument>foo</argument></service>"),
             "Missing argument"
@@ -65,7 +66,7 @@ public class XmlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFix
 
     public void testThatNotSupportServiceAttributeNotProvidesInspection() {
         for (String s : ServiceActionUtil.INVALID_ARGUMENT_ATTRIBUTES) {
-            assertLocalInspectionNotContains(
+            assertLocalInspectionNotContains(XmlServiceArgumentInspection.class,
                 "services.xml",
                 createContainer("<serv<caret>ice " + s +"=\"foo\" class=\"Foo\\Bar\"/>"),
                 "Missing argument"
@@ -74,7 +75,7 @@ public class XmlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFix
     }
 
     public void testThatServiceResourceMustNotProvideInspection() {
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(XmlServiceArgumentInspection.class,
             "services.xml",
             createContainer("<serv<caret>ice resource=\"foo\" class=\"Foo\\Bar\"/>"),
             "Missing argument"
@@ -82,7 +83,7 @@ public class XmlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFix
     }
 
     public void testThatServiceFactoryServiceMustNotProvideInspection() {
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(XmlServiceArgumentInspection.class,
             "services.xml",
             createContainer("<serv<caret>ice factory-service=\"foo\" class=\"Foo\\Bar\"/>"),
             "Missing argument"
@@ -91,7 +92,7 @@ public class XmlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFix
 
     public void testThatFactoryServiceOfSymfony26NotProvidesInspection() {
         for (String s : ServiceActionUtil.INVALID_ARGUMENT_ATTRIBUTES) {
-            assertLocalInspectionNotContains(
+            assertLocalInspectionNotContains(XmlServiceArgumentInspection.class,
                 "services.xml",
                 createContainer("<serv<caret>ice " + s +"=\"foo\" class=\"Foo\\Bar\"><factory/></service>"),
                 "Missing argument"
@@ -100,19 +101,19 @@ public class XmlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFix
     }
 
     public void testThatDefaultValueMustNotProvideInspection() {
-        assertLocalInspectionNotContains(
+        assertLocalInspectionNotContains(XmlServiceArgumentInspection.class,
             "services.xml",
             createContainer("<defaults autowire=\"true\" /><serv<caret>ice class=\"Foo\\Bar\"/>"),
             "Missing argument"
         );
 
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(XmlServiceArgumentInspection.class,
             "services.xml",
             createContainer("<defaults autowire=\"false\" /><serv<caret>ice class=\"Foo\\Bar\"/>"),
             "Missing argument"
         );
 
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(XmlServiceArgumentInspection.class,
             "services.xml",
             createContainer("<defaults autowire=\"true\" /><serv<caret>ice autowire=\"false\" class=\"Foo\\Bar\"/>"),
             "Missing argument"
@@ -120,7 +121,7 @@ public class XmlServiceArgumentInspectionTest extends SymfonyLightCodeInsightFix
     }
 
     public void testThatServiceShortcutOnIdAttributeIsProvidesInspection() {
-        assertLocalInspectionContains(
+        assertLocalInspectionContains(XmlServiceArgumentInspection.class,
             "services.xml",
             createContainer("<serv<caret>ice id=\"Foo\\Bar\"/>"),
             "Missing argument"
