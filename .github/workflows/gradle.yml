@@ -26,22 +26,41 @@ jobs:
         java-version: '25'
         distribution: 'temurin'
 
-    # Cache Gradle dependencies
-    - name: Setup Gradle Dependencies Cache
-      uses: actions/cache@v6
+    - name: Set up Gradle
+      uses: gradle/actions/setup-gradle@v6
       with:
-        path: ~/.gradle/caches
-        key: ${{ runner.os }}-v2-gradle-caches-${{ hashFiles('**/*.gradle', '**/*.gradle.kts', 'gradle.properties') }}
+        # Save updated build outputs on PRs too, for subsequent commits in the same PR.
+        cache-read-only: false
+        # Export the key so Gradle encrypts the separately cached configuration state.
+        cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
-    # Cache Gradle Wrapper
-    - name: Setup Gradle Wrapper Cache
+    # setup-gradle v6 manages Gradle User Home; persist project configuration separately.
+    - name: Cache Gradle configuration
+      if: ${{ env.GRADLE_ENCRYPTION_KEY != '' }}
       uses: actions/cache@v6
       with:
-        path: ~/.gradle/wrapper
-        key: ${{ runner.os }}-v2-gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
+        path: |
+          .gradle/configuration-cache
+          !.gradle/configuration-cache/*.lock
+          !.gradle/configuration-cache/gc.properties
+        key: ${{ runner.os }}-${{ runner.arch }}-gradle-configuration-v1-${{ hashFiles('**/*.gradle', '**/*.gradle.kts', 'gradle.properties', 'gradle/wrapper/gradle-wrapper.properties', '.github/workflows/gradle.yml') }}-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-${{ runner.arch }}-gradle-configuration-v1-${{ hashFiles('**/*.gradle', '**/*.gradle.kts', 'gradle.properties', 'gradle/wrapper/gradle-wrapper.properties', '.github/workflows/gradle.yml') }}-
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
     - name: Build with Gradle
-      run: ./gradlew check test buildPlugin
+      # Always execute tests; --rerun applies only to test, preserving other build-cache hits.
+      run: ./gradlew check test --rerun buildPlugin --build-cache --profile
+
+    - name: Upload Gradle reports
+      if: ${{ !cancelled() }}
+      uses: actions/upload-artifact@v7
+      with:
+        name: gradle-reports
+        path: |
+          build/reports/profile/
+          build/reports/tests/test/
+        if-no-files-found: ignore
+        retention-days: 14
