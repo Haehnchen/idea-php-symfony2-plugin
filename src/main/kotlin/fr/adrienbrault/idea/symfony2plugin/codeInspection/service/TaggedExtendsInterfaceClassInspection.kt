@@ -19,7 +19,6 @@ import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper
-import org.apache.commons.lang3.StringUtils
 import org.jetbrains.yaml.YAMLTokenTypes
 import org.jetbrains.yaml.psi.YAMLCompoundValue
 import org.jetbrains.yaml.psi.YAMLKeyValue
@@ -39,71 +38,50 @@ class TaggedExtendsInterfaceClassInspection {
         }
 
         private class MyYamlPsiElementVisitor(private val holder: ProblemsHolder) : PsiElementVisitor() {
-            private var serviceCollector: NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector>? = null
-
-            private var singleLineClassPattern: ElementPattern<*>? = null
-            private var serviceIdKeyValuePattern: ElementPattern<*>? = null
+            private val serviceCollector by lazy(LazyThreadSafetyMode.NONE) {
+                NotNullLazyValue.lazy { ContainerCollectionResolver.LazyServiceCollector(holder.project) }
+            }
+            private val singleLineClassPattern by lazy(LazyThreadSafetyMode.NONE) {
+                YamlElementPatternHelper.getSingleLineScalarKey("class")
+            }
+            private val serviceIdKeyValuePattern by lazy(LazyThreadSafetyMode.NONE) {
+                YamlElementPatternHelper.getServiceIdKeyValuePattern()
+            }
 
             override fun visitElement(element: PsiElement) {
-                visitYamlElement(element, holder)
+                visitYamlElement(element)
                 super.visitElement(element)
             }
 
-            private fun visitYamlElement(psiElement: PsiElement, holder: ProblemsHolder) {
-                if (getSingleLineClassPattern().accepts(psiElement)) {
+            private fun visitYamlElement(psiElement: PsiElement) {
+                if (singleLineClassPattern.accepts(psiElement)) {
                     // class: '\Foo'
                     val text = PsiElementUtils.trimQuote(psiElement.text)
-                    if (StringUtils.isBlank(text)) {
+                    if (text.isBlank()) {
                         return
                     }
 
-                    val yamlScalar = psiElement.parent
-                    if (yamlScalar !is YAMLScalar) {
-                        return
+                    val yamlScalar = psiElement.parent as? YAMLScalar ?: return
+                    val classKey = yamlScalar.parent as? YAMLKeyValue ?: return
+                    val yamlCompoundValue = classKey.parent as? YAMLCompoundValue ?: return
+                    val serviceKeyValue = yamlCompoundValue.parent as? YAMLKeyValue ?: return
+                    val tags = YamlHelper.collectServiceTags(serviceKeyValue)
+                    if (tags.isNotEmpty()) {
+                        registerTaggedProblems(psiElement, tags, text, holder, serviceCollector)
                     }
-
-                    val classKey = yamlScalar.parent
-                    if (classKey is YAMLKeyValue) {
-                        val yamlCompoundValue = classKey.parent
-                        if (yamlCompoundValue is YAMLCompoundValue) {
-                            val serviceKeyValue = yamlCompoundValue.parent
-                            if (serviceKeyValue is YAMLKeyValue) {
-                                val tags = YamlHelper.collectServiceTags(serviceKeyValue)
-                                if (tags.isNotEmpty()) {
-                                    registerTaggedProblems(psiElement, tags, text, holder, createLazyServiceCollector())
-                                }
-                            }
-                        }
-                    }
-                } else if (psiElement.node.elementType === YAMLTokenTypes.SCALAR_KEY && getServiceIdKeyValuePattern().accepts(psiElement.parent)) {
+                } else if (psiElement.node.elementType === YAMLTokenTypes.SCALAR_KEY && serviceIdKeyValuePattern.accepts(psiElement.parent)) {
                     // Foobar\Foo: ~
                     val text = PsiElementUtils.getText(psiElement)
-                    if (StringUtils.isNotBlank(text) && YamlHelper.isClassServiceId(text) && text.contains("\\")) {
-                        val yamlKeyValue = psiElement.parent
-                        if (yamlKeyValue is YAMLKeyValue && YamlHelper.getYamlKeyValue(yamlKeyValue, "resource") == null && YamlHelper.getYamlKeyValue(yamlKeyValue, "exclude") == null) {
+                    if (text.isNotBlank() && YamlHelper.isClassServiceId(text) && "\\" in text) {
+                        val yamlKeyValue = psiElement.parent as? YAMLKeyValue
+                        if (yamlKeyValue != null && YamlHelper.getYamlKeyValue(yamlKeyValue, "resource") == null && YamlHelper.getYamlKeyValue(yamlKeyValue, "exclude") == null) {
                             val tags = YamlHelper.collectServiceTags(yamlKeyValue)
                             if (tags.isNotEmpty()) {
-                                registerTaggedProblems(psiElement, tags, text, holder, createLazyServiceCollector())
+                                registerTaggedProblems(psiElement, tags, text, holder, serviceCollector)
                             }
                         }
                     }
                 }
-            }
-
-            private fun createLazyServiceCollector(): NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> {
-                if (serviceCollector == null) {
-                    serviceCollector = NotNullLazyValue.lazy { ContainerCollectionResolver.LazyServiceCollector(holder.project) }
-                }
-
-                return serviceCollector!!
-            }
-
-            private fun getSingleLineClassPattern(): ElementPattern<*> {
-                return singleLineClassPattern ?: YamlElementPatternHelper.getSingleLineScalarKey("class").also { singleLineClassPattern = it }
-            }
-
-            private fun getServiceIdKeyValuePattern(): ElementPattern<*> {
-                return serviceIdKeyValuePattern ?: YamlElementPatternHelper.getServiceIdKeyValuePattern().also { serviceIdKeyValuePattern = it }
             }
         }
     }
@@ -118,44 +96,30 @@ class TaggedExtendsInterfaceClassInspection {
         }
 
         private class MyXmlPsiElementVisitor(private val holder: ProblemsHolder) : PsiElementVisitor() {
-            private var serviceCollector: NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector>? = null
-
-            private var xmlServiceClassAttrPattern: ElementPattern<*>? = null
-            private var xmlServiceIdAttrPattern: ElementPattern<*>? = null
+            private val serviceCollector by lazy(LazyThreadSafetyMode.NONE) {
+                NotNullLazyValue.lazy { ContainerCollectionResolver.LazyServiceCollector(holder.project) }
+            }
+            private val xmlServiceClassAttrPattern by lazy(LazyThreadSafetyMode.NONE) {
+                XmlHelper.getServiceClassAttributeWithIdPattern()
+            }
+            private val xmlServiceIdAttrPattern by lazy(LazyThreadSafetyMode.NONE) {
+                XmlHelper.getServiceIdAttributePattern()
+            }
 
             override fun visitElement(element: PsiElement) {
-                visitXmlElement(element, holder)
+                visitXmlElement(element)
                 super.visitElement(element)
             }
 
-            private fun visitXmlElement(element: PsiElement, holder: ProblemsHolder) {
-                val className = getClassNameFromServiceDefinition(element, getXmlServiceClassAttrPattern(), getXmlServiceIdAttrPattern())
-                if (className != null) {
-                    val parentOfType = PsiTreeUtil.getParentOfType(element, XmlTag::class.java)
-                    if (parentOfType != null) {
-                        // attach problems to string value only
-                        val psiElements = element.children
-                        if (psiElements.size > 2) {
-                            registerTaggedProblems(psiElements[1], FormUtil.getTags(parentOfType), className, holder, createLazyServiceCollector())
-                        }
-                    }
+            private fun visitXmlElement(element: PsiElement) {
+                val className = getClassNameFromServiceDefinition(element, xmlServiceClassAttrPattern, xmlServiceIdAttrPattern) ?: return
+                val serviceTag = PsiTreeUtil.getParentOfType(element, XmlTag::class.java) ?: return
+
+                // attach problems to string value only
+                val psiElements = element.children
+                if (psiElements.size > 2) {
+                    registerTaggedProblems(psiElements[1], FormUtil.getTags(serviceTag), className, holder, serviceCollector)
                 }
-            }
-
-            private fun createLazyServiceCollector(): NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> {
-                if (serviceCollector == null) {
-                    serviceCollector = NotNullLazyValue.lazy { ContainerCollectionResolver.LazyServiceCollector(holder.project) }
-                }
-
-                return serviceCollector!!
-            }
-
-            private fun getXmlServiceClassAttrPattern(): ElementPattern<*> {
-                return xmlServiceClassAttrPattern ?: XmlHelper.getServiceClassAttributeWithIdPattern().also { xmlServiceClassAttrPattern = it }
-            }
-
-            private fun getXmlServiceIdAttrPattern(): ElementPattern<*> {
-                return xmlServiceIdAttrPattern ?: XmlHelper.getServiceIdAttributePattern().also { xmlServiceIdAttrPattern = it }
             }
         }
     }
@@ -179,20 +143,18 @@ private fun registerTaggedProblems(
 
         for (expectedClass in ServiceUtil.TAG_INTERFACES.getOrDefault(tag, emptyArray())) {
             // load PhpClass only if we need it, on error exit
-            if (phpClass == null) {
-                phpClass = ServiceUtil.getResolvedClassDefinition(holder.project, serviceClass, lazyServiceCollector.get())
-                if (phpClass == null) {
-                    return
-                }
-            }
+            val resolvedClass = phpClass
+                ?: ServiceUtil.getResolvedClassDefinition(holder.project, serviceClass, lazyServiceCollector.get())
+                ?: return
+            phpClass = resolvedClass
 
             // skip unknown classes
-            if (PhpElementsUtil.getClassesInterface(phpClass.project, expectedClass).isEmpty()) {
+            if (PhpElementsUtil.getClassesInterface(resolvedClass.project, expectedClass).isEmpty()) {
                 continue
             }
 
             // check interfaces
-            if (!PhpElementsUtil.isInstanceOf(phpClass, expectedClass)) {
+            if (!PhpElementsUtil.isInstanceOf(resolvedClass, expectedClass)) {
                 missingTagInstance = expectedClass
                 continue
             }
@@ -203,11 +165,7 @@ private fun registerTaggedProblems(
 
         // check interfaces
         if (missingTagInstance != null) {
-            holder.registerProblem(
-                source,
-                String.format("Class needs to implement '%s' for tag '%s'", StringUtils.stripStart(missingTagInstance, "\\"), tag),
-                ProblemHighlightType.WEAK_WARNING
-            )
+            holder.registerProblem(source, "Class needs to implement '${missingTagInstance.trimStart('\\')}' for tag '$tag'", ProblemHighlightType.WEAK_WARNING)
         }
     }
 }
@@ -221,19 +179,14 @@ private fun getClassNameFromServiceDefinition(
     xmlServiceClassAttrPattern: ElementPattern<*>,
     xmlServiceIdAttrPattern: ElementPattern<*>
 ): String? {
-    if (xmlServiceClassAttrPattern.accepts(element)) {
+    return if (xmlServiceClassAttrPattern.accepts(element)) {
         // <service class="Foo\\Bar" id="required_attribute">
-        val text = PsiElementUtils.trimQuote(element.text)
-        if (StringUtils.isNotBlank(text)) {
-            return text
-        }
+        PsiElementUtils.trimQuote(element.text).takeIf { it.isNotBlank() }
     } else if (xmlServiceIdAttrPattern.accepts(element)) {
         // <service id="Foo\\Bar" />
         val text = PsiElementUtils.trimQuote(element.text)
-        if (StringUtils.isNotBlank(text) && YamlHelper.isClassServiceId(text) && text.contains("\\")) {
-            return text
-        }
+        text.takeIf { it.isNotBlank() && YamlHelper.isClassServiceId(it) && "\\" in it }
+    } else {
+        null
     }
-
-    return null
 }

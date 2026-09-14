@@ -3,7 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.templating.inspection
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
-import com.intellij.patterns.ElementPattern
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import com.jetbrains.php.lang.psi.elements.Field
@@ -27,10 +26,10 @@ open class TwigVariableDeprecatedInspection : LocalInspectionTool() {
     }
 
     private class MyPsiElementVisitor(private val holder: ProblemsHolder) : PsiElementVisitor() {
-        private var typeCompletionPattern: ElementPattern<PsiElement>? = null
+        private val typeCompletionPattern by lazy(LazyThreadSafetyMode.NONE) { TwigPattern.getTypeCompletionPattern() }
 
         override fun visitElement(element: PsiElement) {
-            if (getTypeCompletionPattern().accepts(element)) {
+            if (typeCompletionPattern.accepts(element)) {
                 visit(element)
             }
 
@@ -54,7 +53,7 @@ open class TwigVariableDeprecatedInspection : LocalInspectionTool() {
             for (twigTypeContainer in types) {
                 for (phpClass in TwigTypeResolveUtil.resolveTwigTypeClasses(element.project, twigTypeContainer)) {
                     for (namedElement in TwigTypeResolveUtil.getTwigPhpNameTargets(phpClass, text)) {
-                        val targetKey = getDeprecatedTargetKind(namedElement) + ":" + phpClass.fqn + "::" + namedElement.name
+                        val targetKey = "${getDeprecatedTargetKind(namedElement)}:${phpClass.fqn}::${namedElement.name}"
                         if (visitedTargets.add(targetKey) && namedElement.isDeprecated) {
                             holder.registerProblem(element, getDeprecatedMessage(phpClass, namedElement), ProblemHighlightType.LIKE_DEPRECATED)
                         }
@@ -63,32 +62,17 @@ open class TwigVariableDeprecatedInspection : LocalInspectionTool() {
             }
         }
 
-        private fun getDeprecatedTargetKind(namedElement: PhpNamedElement): String {
-            if (namedElement is Method) {
-                return "method"
-            }
-
-            if (namedElement is Field) {
-                return "field"
-            }
-
-            return "element"
+        private fun getDeprecatedTargetKind(namedElement: PhpNamedElement) = when (namedElement) {
+            is Method -> "method"
+            is Field -> "field"
+            else -> "element"
         }
 
-        private fun getDeprecatedMessage(phpClass: PhpClass, namedElement: PhpNamedElement): String {
-            if (namedElement is Method) {
-                return String.format("Method '%s::%s' is deprecated", phpClass.name, namedElement.name)
+        private fun getDeprecatedMessage(phpClass: PhpClass, namedElement: PhpNamedElement) =
+            when (namedElement) {
+                is Method -> "Method '${phpClass.name}::${namedElement.name}' is deprecated"
+                is Field -> "Field '${phpClass.name}::$${namedElement.name}' is deprecated"
+                else -> "Element '${phpClass.name}::${namedElement.name}' is deprecated"
             }
-
-            if (namedElement is Field) {
-                return String.format("Field '%s::\$%s' is deprecated", phpClass.name, namedElement.name)
-            }
-
-            return String.format("Element '%s::%s' is deprecated", phpClass.name, namedElement.name)
-        }
-
-        private fun getTypeCompletionPattern(): ElementPattern<PsiElement> {
-            return typeCompletionPattern ?: TwigPattern.getTypeCompletionPattern().also { typeCompletionPattern = it }
-        }
     }
 }

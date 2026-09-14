@@ -2,7 +2,6 @@ package fr.adrienbrault.idea.symfony2plugin.templating.inspection
 
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
-import com.intellij.patterns.ElementPattern
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
@@ -32,16 +31,16 @@ open class TwigAssetsTagMissingInspection : LocalInspectionTool() {
     }
 
     private class MyPsiElementVisitor(private val holder: ProblemsHolder) : PsiElementVisitor() {
-        private var stylesheetsPattern: ElementPattern<*>? = null
-        private var javascriptsPattern: ElementPattern<*>? = null
+        private val stylesheetsPattern by lazy(LazyThreadSafetyMode.NONE) { TwigPattern.getAutocompletableAssetTag("stylesheets") }
+        private val javaScriptsPattern by lazy(LazyThreadSafetyMode.NONE) { TwigPattern.getAutocompletableAssetTag("javascripts") }
 
         override fun visitElement(element: PsiElement) {
-            if (getStylesheetsPattern().accepts(element) && TwigUtil.isValidStringWithoutInterpolatedOrConcat(element)) {
+            if (stylesheetsPattern.accepts(element) && TwigUtil.isValidStringWithoutInterpolatedOrConcat(element)) {
                 val templateName = element.text
                 if (!isKnownAssetFileOrFolder(element, templateName, *TwigUtil.CSS_FILES_EXTENSIONS)) {
                     holder.registerProblem(element, "Missing asset")
                 }
-            } else if (getJavascriptsPattern().accepts(element) && TwigUtil.isValidStringWithoutInterpolatedOrConcat(element)) {
+            } else if (javaScriptsPattern.accepts(element) && TwigUtil.isValidStringWithoutInterpolatedOrConcat(element)) {
                 val templateName = element.text
                 if (!isKnownAssetFileOrFolder(element, templateName, *TwigUtil.JS_FILES_EXTENSIONS)) {
                     holder.registerProblem(element, "Missing asset")
@@ -50,23 +49,15 @@ open class TwigAssetsTagMissingInspection : LocalInspectionTool() {
 
             super.visitElement(element)
         }
-
-        private fun getStylesheetsPattern(): ElementPattern<*> {
-            return stylesheetsPattern ?: TwigPattern.getAutocompletableAssetTag("stylesheets").also { stylesheetsPattern = it }
-        }
-
-        private fun getJavascriptsPattern(): ElementPattern<*> {
-            return javascriptsPattern ?: TwigPattern.getAutocompletableAssetTag("javascripts").also { javascriptsPattern = it }
-        }
     }
 }
 
 private fun isKnownAssetFileOrFolder(element: PsiElement, templateName: String, vararg fileTypes: String): Boolean {
     // custom assets
-    if (templateName.startsWith("@") && templateName.length > 1) {
+    if (templateName.startsWith('@') && templateName.length > 1) {
         val twigPathServiceParser = ServiceXmlParserFactory.getInstance(element.project, TwigNamedAssetsServiceParser::class.java)
         val strings = twigPathServiceParser.namedAssets.keys
-        if (strings.contains(templateName.substring(1))) {
+        if (templateName.drop(1) in strings) {
             return true
         }
     }

@@ -1,7 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.templating.inspection
 
 import com.intellij.codeInspection.LocalInspectionTool
-import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElement
@@ -10,7 +9,6 @@ import com.intellij.psi.impl.source.tree.LeafPsiElement
 import com.jetbrains.twig.TwigTokenTypes
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil
-import org.apache.commons.lang3.StringUtils
 
 /**
  * {% include 'f<caret>.html.twig' %}
@@ -48,7 +46,7 @@ open class TwigTemplateMissingInspection : LocalInspectionTool() {
 
 private fun inspectTemplate(element: PsiElement, holder: ProblemsHolder) {
     val templateName = element.text
-    if (StringUtils.isBlank(templateName)) {
+    if (templateName.isBlank()) {
         return
     }
 
@@ -57,15 +55,11 @@ private fun inspectTemplate(element: PsiElement, holder: ProblemsHolder) {
         return
     }
 
-    val templateCreateByNameLocalQuickFix: Array<LocalQuickFix> = arrayOf(
-        TemplateCreateByNameLocalQuickFix(templateName),
-        TemplateGuessTypoQuickFix(templateName)
-    )
-
     holder.registerProblem(
         element,
         "Twig: Missing Template",
         ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
-        *templateCreateByNameLocalQuickFix
+        TemplateCreateByNameLocalQuickFix(templateName),
+        TemplateGuessTypoQuickFix(templateName)
     )
 }

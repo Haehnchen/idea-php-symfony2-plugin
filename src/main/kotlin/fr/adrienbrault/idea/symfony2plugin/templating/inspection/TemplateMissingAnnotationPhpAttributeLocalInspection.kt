@@ -16,7 +16,6 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil
 import fr.adrienbrault.idea.symfony2plugin.util.PhpPsiAttributesUtil
-import java.util.LinkedHashSet
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -29,13 +28,9 @@ open class TemplateMissingAnnotationPhpAttributeLocalInspection : LocalInspectio
 
         return object : PsiElementVisitor() {
             override fun visitElement(element: PsiElement) {
-                if (element is PhpDocTag) {
-                    annotate(element, holder)
-                }
-
-                if (element is PhpAttribute) {
-                    val fqn = element.fqn
-                    if (fqn != null && PhpElementsUtil.isEqualClassName(fqn, *TwigUtil.TEMPLATE_ANNOTATION_CLASS)) {
+                when (element) {
+                    is PhpDocTag -> annotate(element, holder)
+                    is PhpAttribute -> if (element.fqn?.let { PhpElementsUtil.isEqualClassName(it, *TwigUtil.TEMPLATE_ANNOTATION_CLASS) } == true) {
                         annotate(element, holder)
                     }
                 }
@@ -46,28 +41,19 @@ open class TemplateMissingAnnotationPhpAttributeLocalInspection : LocalInspectio
     }
 
     private fun annotate(phpAttribute: PhpAttribute, holder: ProblemsHolder) {
-        val templateNames = LinkedHashSet<String>()
-
-
+        val templateNames = linkedSetOf<String>()
         val isEmptyTemplateAndGuess = phpAttribute.arguments.isEmpty()
         if (isEmptyTemplateAndGuess) {
-            val phpAttributesList = phpAttribute.parent
-            if (phpAttributesList is PhpAttributesList) {
-                val method = phpAttributesList.parent
-                if (method is Method) {
-                    templateNames.addAll(TwigUtil.getControllerMethodShortcut(method).asList())
-                }
+            val method = (phpAttribute.parent as? PhpAttributesList)?.parent as? Method
+            if (method != null) {
+                templateNames.addAll(TwigUtil.getControllerMethodShortcut(method))
             }
         } else {
-            val attributeDefaultValue = PhpPsiAttributesUtil.getAttributeValueByNameAsStringWithDefaultParameterFallback(phpAttribute, "template")
-            if (attributeDefaultValue != null) {
-                templateNames.add(attributeDefaultValue)
-            }
+            val templateName = PhpPsiAttributesUtil.getAttributeValueByNameAsStringWithDefaultParameterFallback(phpAttribute, "template") ?: return
+            templateNames.add(templateName)
         }
 
-        if (templateNames.isNotEmpty()) {
-            attachProblemForMissingTemplatesWithSuggestions(phpAttribute, holder, templateNames, isEmptyTemplateAndGuess)
-        }
+        attachProblemForMissingTemplatesWithSuggestions(phpAttribute, holder, templateNames, isEmptyTemplateAndGuess)
     }
 
     private fun annotate(phpDocTag: PhpDocTag, holder: ProblemsHolder) {
@@ -76,13 +62,11 @@ open class TemplateMissingAnnotationPhpAttributeLocalInspection : LocalInspectio
             return
         }
 
-        val phpDocAttrList = phpDocTag.firstPsiChild
-        if (phpDocAttrList == null) {
+        if (phpDocTag.firstPsiChild == null) {
             return
         }
 
-        val templateNames = LinkedHashSet<String>()
-
+        val templateNames = linkedSetOf<String>()
         var isEmptyTemplateAndGuess = false
 
         val matcher = AnnotationUtil.getPropertyValueOrDefault(phpDocTag, "template")
@@ -96,40 +80,36 @@ open class TemplateMissingAnnotationPhpAttributeLocalInspection : LocalInspectio
 
             val method = PsiTreeUtil.getNextSiblingOfType(docComment, Method::class.java) ?: return
 
-            templateNames.addAll(TwigUtil.getControllerMethodShortcut(method).asList())
+            templateNames.addAll(TwigUtil.getControllerMethodShortcut(method))
         }
 
-        if (templateNames.isNotEmpty()) {
-            attachProblemForMissingTemplatesWithSuggestions(phpDocTag, holder, templateNames, isEmptyTemplateAndGuess)
-        }
+        attachProblemForMissingTemplatesWithSuggestions(phpDocTag, holder, templateNames, isEmptyTemplateAndGuess)
     }
 
     private fun attachProblemForMissingTemplatesWithSuggestions(
         target: PsiElement,
         holder: ProblemsHolder,
-        templateNames: LinkedHashSet<String>,
+        templateNames: Set<String>,
         isEmptyTemplateAndGuess: Boolean
     ) {
         if (templateNames.isEmpty()) {
             return
         }
 
-        for (templateName in templateNames) {
-            if (TwigUtil.getTemplateFiles(holder.project, templateName).isNotEmpty()) {
-                return
-            }
+        if (templateNames.any { TwigUtil.getTemplateFiles(holder.project, it).isNotEmpty() }) {
+            return
         }
 
         // find html target, as this this our first priority for end users condition
         // or fallback on first item
-        val templates = templateNames.filter { it.lowercase().endsWith(".html.twig") }.toTypedArray()
+        val templates = templateNames.filter { it.endsWith(".html.twig", ignoreCase = true) }.toTypedArray()
+        val quickFixes = buildList<LocalQuickFix> {
+            add(TemplateCreateByNameLocalQuickFix(*templates))
 
-        val quickFixes = ArrayList<LocalQuickFix>()
-        quickFixes.add(TemplateCreateByNameLocalQuickFix(*templates))
-
-        if (!isEmptyTemplateAndGuess && templates.isNotEmpty()) {
-            // use first as underscore is higher priority and common way by framework bundle
-            quickFixes.add(TemplateGuessTypoQuickFix(templates[0]))
+            if (!isEmptyTemplateAndGuess && templates.isNotEmpty()) {
+                // use first as underscore is higher priority and common way by framework bundle
+                add(TemplateGuessTypoQuickFix(templates.first()))
+            }
         }
 
         holder.registerProblem(target, "Twig: Missing Template", *quickFixes.toTypedArray())

@@ -3,7 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.templating.inspection
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
-import com.intellij.patterns.ElementPattern
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.impl.source.tree.LeafPsiElement
@@ -11,7 +10,6 @@ import com.jetbrains.twig.TwigTokenTypes
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil
-import org.apache.commons.lang3.StringUtils
 
 /**
  * Inspection for Twig enum() and enum_cases() functions to validate that:
@@ -35,24 +33,18 @@ open class TwigEnumFunctionInspection : LocalInspectionTool() {
     }
 
     private class MyPsiElementVisitor(private val holder: ProblemsHolder) : PsiElementVisitor() {
-        private var enumFunctionPattern: ElementPattern<*>? = null
+        private val enumFunctionPattern by lazy(LazyThreadSafetyMode.NONE) {
+            TwigPattern.getPrintBlockOrTagFunctionPattern("enum", "enum_cases")
+        }
 
         override fun visitElement(element: PsiElement) {
             // Fast pre-filter: only STRING_TEXT elements can be enum/enum_cases arguments
-            if (element !is LeafPsiElement) {
-                super.visitElement(element)
-                return
-            }
-
-            val node = element.node
-            if (node.elementType !== TwigTokenTypes.STRING_TEXT) {
-                super.visitElement(element)
-                return
-            }
-
             // enum('App\Config\SomeOption')
             // enum_cases('App\Config\SomeOption')
-            if (getEnumFunctionPattern().accepts(element)) {
+            if (element is LeafPsiElement &&
+                element.node.elementType === TwigTokenTypes.STRING_TEXT &&
+                enumFunctionPattern.accepts(element)
+            ) {
                 visitEnumFunction(element)
             }
 
@@ -61,7 +53,7 @@ open class TwigEnumFunctionInspection : LocalInspectionTool() {
 
         private fun visitEnumFunction(element: PsiElement) {
             val contents = element.text
-            if (StringUtils.isBlank(contents)) {
+            if (contents.isBlank()) {
                 return
             }
 
@@ -70,25 +62,25 @@ open class TwigEnumFunctionInspection : LocalInspectionTool() {
 
             val phpClass = PhpElementsUtil.getClassInterface(element.project, className)
 
-            if (phpClass == null) {
-                // Class doesn't exist
-                holder.registerProblem(
-                    element,
-                    "Missing class: $className",
-                    ProblemHighlightType.WARNING
-                )
-            } else if (!phpClass.isEnum) {
-                // Class exists but is not an enum
-                holder.registerProblem(
-                    element,
-                    "Class '${phpClass.name}' is not an enum",
-                    ProblemHighlightType.WARNING
-                )
-            }
-        }
+            when {
+                phpClass == null -> {
+                    // Class doesn't exist
+                    holder.registerProblem(
+                        element,
+                        "Missing class: $className",
+                        ProblemHighlightType.WARNING
+                    )
+                }
 
-        private fun getEnumFunctionPattern(): ElementPattern<*> {
-            return enumFunctionPattern ?: TwigPattern.getPrintBlockOrTagFunctionPattern("enum", "enum_cases").also { enumFunctionPattern = it }
+                !phpClass.isEnum -> {
+                    // Class exists but is not an enum
+                    holder.registerProblem(
+                        element,
+                        "Class '${phpClass.name}' is not an enum",
+                        ProblemHighlightType.WARNING
+                    )
+                }
+            }
         }
     }
 }

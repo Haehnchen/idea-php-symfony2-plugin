@@ -4,19 +4,17 @@ import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.util.NotNullLazyValue
-import com.intellij.patterns.ElementPattern
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper
+import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil
 import fr.adrienbrault.idea.symfony2plugin.stubs.ContainerCollectionResolver
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil
-import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil
-import org.apache.commons.lang3.StringUtils
 import org.jetbrains.yaml.YAMLTokenTypes
 
 /**
@@ -33,41 +31,34 @@ class ServiceDeprecatedClassesInspection {
         }
 
         private class MyYamlPsiElementVisitor(private val holder: ProblemsHolder) : PsiElementVisitor() {
-            private var serviceCollector: NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector>? = null
-            private var singleLineClassPattern: ElementPattern<*>? = null
+            private val serviceCollector by lazy(LazyThreadSafetyMode.NONE) {
+                NotNullLazyValue.lazy { ContainerCollectionResolver.LazyServiceCollector(holder.project) }
+            }
+            private val singleLineClassPattern by lazy(LazyThreadSafetyMode.NONE) {
+                YamlElementPatternHelper.getSingleLineScalarKey("class")
+            }
 
             override fun visitElement(element: PsiElement) {
-                visitYamlElement(element, holder)
+                visitYamlElement(element)
                 super.visitElement(element)
             }
 
-            private fun visitYamlElement(element: PsiElement, holder: ProblemsHolder) {
-                if (getSingleLineClassPattern().accepts(element)) {
+            private fun visitYamlElement(element: PsiElement) {
+                if (singleLineClassPattern.accepts(element)) {
                     // class: '\Foo'
                     val text = PsiElementUtils.trimQuote(element.text)
-                    if (StringUtils.isNotBlank(text)) {
-                        ProblemRegistrar.attachDeprecatedProblem(element, text, holder, createLazyServiceCollector())
+                    if (text.isNotBlank()) {
+                        ProblemRegistrar.attachDeprecatedProblem(element, text, holder, serviceCollector)
                     }
                 } else if (element.node.elementType === YAMLTokenTypes.TEXT) {
                     // @service
                     val text = element.text
-                    if (StringUtils.isNotBlank(text) && text.startsWith("@")) {
-                        ProblemRegistrar.attachDeprecatedProblem(element, text.substring(1), holder, createLazyServiceCollector())
-                        ProblemRegistrar.attachServiceDeprecatedProblem(element, text.substring(1), holder, createLazyServiceCollector())
+                    if (text.isNotBlank() && text.startsWith('@')) {
+                        val serviceName = text.drop(1)
+                        ProblemRegistrar.attachDeprecatedProblem(element, serviceName, holder, serviceCollector)
+                        ProblemRegistrar.attachServiceDeprecatedProblem(element, serviceName, holder, serviceCollector)
                     }
                 }
-            }
-
-            private fun createLazyServiceCollector(): NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> {
-                if (serviceCollector == null) {
-                    serviceCollector = NotNullLazyValue.lazy { ContainerCollectionResolver.LazyServiceCollector(holder.project) }
-                }
-
-                return serviceCollector!!
-            }
-
-            private fun getSingleLineClassPattern(): ElementPattern<*> {
-                return singleLineClassPattern ?: YamlElementPatternHelper.getSingleLineScalarKey("class").also { singleLineClassPattern = it }
             }
         }
     }
@@ -82,48 +73,34 @@ class ServiceDeprecatedClassesInspection {
         }
 
         private class MyXmlPsiElementVisitor(private val holder: ProblemsHolder) : PsiElementVisitor() {
-            private var serviceCollector: NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector>? = null
-            private var argumentServiceIdPattern: ElementPattern<*>? = null
-            private var serviceClassAttributePattern: ElementPattern<*>? = null
+            private val serviceCollector by lazy(LazyThreadSafetyMode.NONE) {
+                NotNullLazyValue.lazy { ContainerCollectionResolver.LazyServiceCollector(holder.project) }
+            }
+            private val argumentServiceIdPattern by lazy(LazyThreadSafetyMode.NONE) { XmlHelper.getArgumentServiceIdPattern() }
+            private val serviceClassAttributePattern by lazy(LazyThreadSafetyMode.NONE) { XmlHelper.getServiceClassAttributeWithIdPattern() }
 
             override fun visitElement(element: PsiElement) {
-                visitXmlElement(element, holder)
+                visitXmlElement(element)
                 super.visitElement(element)
             }
 
-            private fun visitXmlElement(element: PsiElement, holder: ProblemsHolder) {
-                val serviceArgumentAccepted = getArgumentServiceIdPattern().accepts(element)
+            private fun visitXmlElement(element: PsiElement) {
+                val serviceArgumentAccepted = argumentServiceIdPattern.accepts(element)
 
-                if (serviceArgumentAccepted || getServiceClassAttributePattern().accepts(element)) {
+                if (serviceArgumentAccepted || serviceClassAttributePattern.accepts(element)) {
                     val text = PsiElementUtils.trimQuote(element.text)
                     val psiElements = element.children
 
                     // we need to attach to child because else strike out equal and quote char
-                    if (StringUtils.isNotBlank(text) && psiElements.size > 2) {
-                        ProblemRegistrar.attachDeprecatedProblem(psiElements[1], text, holder, createLazyServiceCollector())
+                    if (text.isNotBlank() && psiElements.size > 2) {
+                        ProblemRegistrar.attachDeprecatedProblem(psiElements[1], text, holder, serviceCollector)
 
                         // check service arguments for "deprecated" defs
                         if (serviceArgumentAccepted) {
-                            ProblemRegistrar.attachServiceDeprecatedProblem(psiElements[1], text, holder, createLazyServiceCollector())
+                            ProblemRegistrar.attachServiceDeprecatedProblem(psiElements[1], text, holder, serviceCollector)
                         }
                     }
                 }
-            }
-
-            private fun createLazyServiceCollector(): NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> {
-                if (serviceCollector == null) {
-                    serviceCollector = NotNullLazyValue.lazy { ContainerCollectionResolver.LazyServiceCollector(holder.project) }
-                }
-
-                return serviceCollector!!
-            }
-
-            private fun getArgumentServiceIdPattern(): ElementPattern<*> {
-                return argumentServiceIdPattern ?: XmlHelper.getArgumentServiceIdPattern().also { argumentServiceIdPattern = it }
-            }
-
-            private fun getServiceClassAttributePattern(): ElementPattern<*> {
-                return serviceClassAttributePattern ?: XmlHelper.getServiceClassAttributeWithIdPattern().also { serviceClassAttributePattern = it }
             }
         }
     }
@@ -138,8 +115,15 @@ class ServiceDeprecatedClassesInspection {
         }
 
         private class MyPhpPsiElementVisitor(private val holder: ProblemsHolder) : PsiElementVisitor() {
-            private var serviceCollector: NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector>? = null
-            private var autowireServicePattern: ElementPattern<*>? = null
+            private val serviceCollector by lazy(LazyThreadSafetyMode.NONE) {
+                NotNullLazyValue.lazy { ContainerCollectionResolver.LazyServiceCollector(holder.project) }
+            }
+            private val autowireServicePattern by lazy(LazyThreadSafetyMode.NONE) {
+                PhpElementsUtil.getAttributeNamedArgumentStringPattern(
+                    ServiceContainerUtil.AUTOWIRE_ATTRIBUTE_CLASS,
+                    "service"
+                )
+            }
 
             override fun visitElement(element: PsiElement) {
                 if (element is StringLiteralExpression) {
@@ -153,11 +137,11 @@ class ServiceDeprecatedClassesInspection {
                 // #[Autowire(service: 'foobar')]
                 val leafText = PsiElementUtils.getTextLeafElementFromStringLiteralExpression(psiElement)
 
-                if (leafText != null && getAutowireServicePattern().accepts(leafText)) {
+                if (leafText != null && autowireServicePattern.accepts(leafText)) {
                     val contents = psiElement.contents
-                    if (StringUtils.isNotBlank(contents)) {
-                        ProblemRegistrar.attachDeprecatedProblem(psiElement, contents, holder, createLazyServiceCollector())
-                        ProblemRegistrar.attachServiceDeprecatedProblem(psiElement, contents, holder, createLazyServiceCollector())
+                    if (contents.isNotBlank()) {
+                        ProblemRegistrar.attachDeprecatedProblem(psiElement, contents, holder, serviceCollector)
+                        ProblemRegistrar.attachServiceDeprecatedProblem(psiElement, contents, holder, serviceCollector)
                     }
 
                     return
@@ -169,25 +153,10 @@ class ServiceDeprecatedClassesInspection {
                 }
 
                 val contents = psiElement.contents
-                if (StringUtils.isNotBlank(contents)) {
-                    ProblemRegistrar.attachDeprecatedProblem(psiElement, contents, holder, createLazyServiceCollector())
-                    ProblemRegistrar.attachServiceDeprecatedProblem(psiElement, contents, holder, createLazyServiceCollector())
+                if (contents.isNotBlank()) {
+                    ProblemRegistrar.attachDeprecatedProblem(psiElement, contents, holder, serviceCollector)
+                    ProblemRegistrar.attachServiceDeprecatedProblem(psiElement, contents, holder, serviceCollector)
                 }
-            }
-
-            private fun createLazyServiceCollector(): NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> {
-                if (serviceCollector == null) {
-                    serviceCollector = NotNullLazyValue.lazy { ContainerCollectionResolver.LazyServiceCollector(holder.project) }
-                }
-
-                return serviceCollector!!
-            }
-
-            private fun getAutowireServicePattern(): ElementPattern<*> {
-                return autowireServicePattern ?: PhpElementsUtil.getAttributeNamedArgumentStringPattern(
-                    ServiceContainerUtil.AUTOWIRE_ATTRIBUTE_CLASS,
-                    "service"
-                ).also { autowireServicePattern = it }
             }
         }
     }
@@ -202,9 +171,12 @@ class ServiceDeprecatedClassesInspection {
             val phpClass = ServiceUtil.getResolvedClassDefinition(element.project, text, lazyServiceCollector.get())
                 ?: return
 
-            val docComment = phpClass.docComment
-            if (docComment != null && docComment.getTagElementsByName("@deprecated").isNotEmpty()) {
-                holder.registerProblem(element, String.format("Class '%s' is deprecated", phpClass.name), ProblemHighlightType.LIKE_DEPRECATED)
+            if (phpClass.docComment?.getTagElementsByName("@deprecated")?.isNotEmpty() == true) {
+                holder.registerProblem(
+                    element,
+                    "Class '${phpClass.name}' is deprecated",
+                    ProblemHighlightType.LIKE_DEPRECATED
+                )
             }
         }
 
@@ -214,16 +186,15 @@ class ServiceDeprecatedClassesInspection {
             holder: ProblemsHolder,
             lazyServiceCollector: NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector>
         ) {
-            val services = lazyServiceCollector.get().collector.services
-            if (!services.containsKey(serviceName)) {
+            if (lazyServiceCollector.get().collector.services[serviceName]?.isDeprecated != true) {
                 return
             }
 
-            if (!services[serviceName]!!.isDeprecated) {
-                return
-            }
-
-            holder.registerProblem(element, String.format("Service '%s' is deprecated", serviceName), ProblemHighlightType.LIKE_DEPRECATED)
+            holder.registerProblem(
+                element,
+                "Service '$serviceName' is deprecated",
+                ProblemHighlightType.LIKE_DEPRECATED
+            )
         }
     }
 }

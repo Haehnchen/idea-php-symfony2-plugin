@@ -1,7 +1,6 @@
 package fr.adrienbrault.idea.symfony2plugin.templating
 
 import com.intellij.codeInspection.LocalInspectionTool
-import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElement
@@ -16,7 +15,6 @@ import fr.adrienbrault.idea.symfony2plugin.templating.inspection.TemplateGuessTy
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils
-import org.apache.commons.lang3.StringUtils
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -30,53 +28,40 @@ open class PhpTemplateMissingInspection : LocalInspectionTool() {
         return object : PsiElementVisitor() {
             override fun visitElement(element: PsiElement) {
                 if (element is StringLiteralExpression) {
-                    invoke(holder, element)
+                    inspectTemplate(holder, element)
                 }
                 super.visitElement(element)
             }
         }
     }
 
-    private fun invoke(holder: ProblemsHolder, psiElement: StringLiteralExpression) {
-        val templateNameIfMissing = getTemplateNameIfMissing(psiElement) ?: return
-
-        val templateCreateByNameLocalQuickFix: Array<LocalQuickFix> = arrayOf(
-            TemplateCreateByNameLocalQuickFix(templateNameIfMissing),
-            TemplateGuessTypoQuickFix(templateNameIfMissing)
-        )
+    private fun inspectTemplate(holder: ProblemsHolder, psiElement: StringLiteralExpression) {
+        val templateName = getTemplateNameIfMissing(psiElement) ?: return
 
         holder.registerProblem(
             psiElement,
             "Twig: Missing Template",
             ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
-            *templateCreateByNameLocalQuickFix
+            TemplateCreateByNameLocalQuickFix(templateName),
+            TemplateGuessTypoQuickFix(templateName)
         )
     }
 
     private fun getTemplateNameIfMissing(psiElement: StringLiteralExpression): String? {
-        val parameterBag = PsiElementUtils.getCurrentParameterIndex(psiElement)
-        if (parameterBag == null || parameterBag.index != 0) {
+        if (PsiElementUtils.getCurrentParameterIndex(psiElement)?.index != 0) {
             return null
         }
 
-        val parameterList = psiElement.parent
-        if (parameterList !is ParameterList) {
-            return null
-        }
-
-        val methodReference = parameterList.parent
-        if (methodReference !is MethodReference) {
-            return null
-        }
+        val parameterList = psiElement.parent as? ParameterList ?: return null
+        val methodReference = parameterList.parent as? MethodReference ?: return null
 
         if (!PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, *SymfonyPhpReferenceContributor.TEMPLATE_SIGNATURES)) {
             return null
         }
 
         val templateName = PhpElementsUtil.getFirstArgumentStringValue(methodReference)
-        if (templateName == null || StringUtils.isBlank(templateName)) {
-            return null
-        }
+            ?.takeIf { it.isNotBlank() }
+            ?: return null
 
         if (TwigUtil.getTemplateFiles(psiElement.project, templateName).isNotEmpty()) {
             return null

@@ -44,7 +44,7 @@ open class YamlUnquotedColon : LocalInspectionTool() {
 
             // invalid inline item "foo: foo: foo", also check text length
             val text = yamlKeyValue.text
-            if (!text.contains(": ") || text.contains("\n") || text.length > 200) {
+            if (": " !in text || "\n" in text || text.length > 200) {
                 super.visitElement(element)
                 return
             }
@@ -60,11 +60,17 @@ open class YamlUnquotedColon : LocalInspectionTool() {
         }
 
         private fun isIllegalColonExpression(element: PsiElement): Boolean {
-            if (productVersionGreaterThanOrEqual(2018, 3)) {
-                return element is YAMLCompoundValue && element.node.elementType === YAMLElementTypes.MAPPING
+            if (element !is YAMLCompoundValue) {
+                return false
             }
 
-            return element is YAMLCompoundValue && element.node.elementType === YAMLElementTypes.COMPOUND_VALUE
+            val illegalElementType = if (productVersionGreaterThanOrEqual(2018, 3)) {
+                YAMLElementTypes.MAPPING
+            } else {
+                YAMLElementTypes.COMPOUND_VALUE
+            }
+
+            return element.node.elementType === illegalElementType
         }
     }
 

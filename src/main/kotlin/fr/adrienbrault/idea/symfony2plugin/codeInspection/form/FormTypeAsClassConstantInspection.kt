@@ -8,7 +8,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.PsiFile
-import com.intellij.util.ArrayUtil
 import com.jetbrains.php.lang.psi.elements.MethodReference
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
@@ -29,22 +28,20 @@ open class FormTypeAsClassConstantInspection : LocalInspectionTool() {
     }
 
     private class MyPsiElementVisitor(private val holder: ProblemsHolder) : PsiElementVisitor() {
-        private var isVersionGreaterThenEquals: Boolean? = null
+        private val isVersionGreaterThenEquals by lazy(LazyThreadSafetyMode.NONE) {
+            SymfonyUtil.isVersionGreaterThenEquals(holder.project, "2.8")
+        }
 
         override fun visitElement(element: PsiElement) {
             if (element !is MethodReference ||
-                !ArrayUtil.contains(element.name, "add", "create") ||
+                element.name != "add" && element.name != "create" ||
                 !PhpElementsUtil.isMethodReferenceInstanceOf(element, "Symfony\\Component\\Form\\FormBuilderInterface")
             ) {
                 super.visitElement(element)
                 return
             }
 
-            if (isVersionGreaterThenEquals == null) {
-                isVersionGreaterThenEquals = SymfonyUtil.isVersionGreaterThenEquals(holder.project, "2.8")
-            }
-
-            if (isVersionGreaterThenEquals == false) {
+            if (!isVersionGreaterThenEquals) {
                 return
             }
 
@@ -55,7 +52,7 @@ open class FormTypeAsClassConstantInspection : LocalInspectionTool() {
             }
 
             val formType = parameters[1]
-            if (formType !is StringLiteralExpression || formType.contents.contains("\\")) {
+            if (formType !is StringLiteralExpression || "\\" in formType.contents) {
                 super.visitElement(element)
                 return
             }
@@ -71,22 +68,15 @@ open class FormTypeAsClassConstantInspection : LocalInspectionTool() {
         }
 
         private class MyLocalQuickFix(element: PsiElement) : LocalQuickFixOnPsiElement(element) {
-            override fun getText(): String {
-                return "Use class constant"
-            }
+            override fun getText() = "Use class constant"
 
-            override fun getFamilyName(): String {
-                return "Class constant"
-            }
+            override fun getFamilyName() = "Class constant"
 
             override fun invoke(project: Project, psiFile: PsiFile, psiElement: PsiElement, psiElement1: PsiElement) {
-                val startElement = startElement
-                if (startElement !is StringLiteralExpression) {
-                    return
-                }
+                val formType = startElement as? StringLiteralExpression ?: return
 
                 try {
-                    FormUtil.replaceFormStringAliasWithClassConstant(startElement)
+                    FormUtil.replaceFormStringAliasWithClassConstant(formType)
                 } catch (_: Exception) {
                 }
             }

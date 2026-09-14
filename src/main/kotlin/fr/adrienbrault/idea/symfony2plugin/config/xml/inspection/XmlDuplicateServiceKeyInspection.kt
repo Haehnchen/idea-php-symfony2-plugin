@@ -39,31 +39,25 @@ internal fun visitRoot(
     tagName: String,
     message: String
 ) {
-    var value: String? = null
+    val xmlAttribute = xmlAttributeValue.parent as? XmlAttribute ?: return
+    if (tagName != xmlAttribute.name) {
+        return
+    }
 
-    val xmlAttribute = xmlAttributeValue.parent
-    if (xmlAttribute is XmlAttribute && tagName == xmlAttribute.name) {
-        val xmlTag = xmlAttribute.parent
-        val rootContextXmlTag = xmlTag?.parent
-        if (xmlTag != null && child == xmlTag.name && rootContextXmlTag is XmlTag && root == rootContextXmlTag.name) {
-            var found = 0
-            for (parameters in rootContextXmlTag.findSubTags(child)) {
-                val key = parameters.getAttributeValue(tagName)
+    val xmlTag = xmlAttribute.parent ?: return
+    val rootContextXmlTag = xmlTag.parent as? XmlTag ?: return
+    if (child != xmlTag.name || root != rootContextXmlTag.name) {
+        return
+    }
 
-                // lazy value resolve
-                if (value == null) {
-                    value = xmlAttributeValue.value
-                }
+    val value by lazy(LazyThreadSafetyMode.NONE) { xmlAttributeValue.value }
+    val hasDuplicate = rootContextXmlTag.findSubTags(child)
+        .asSequence()
+        .filter { it.getAttributeValue(tagName) == value }
+        .take(2)
+        .count() == 2
 
-                if (value == key) {
-                    found++
-                }
-
-                if (found == 2) {
-                    holder.registerProblem(xmlAttributeValue, message, ProblemHighlightType.GENERIC_ERROR_OR_WARNING)
-                    break
-                }
-            }
-        }
+    if (hasDuplicate) {
+        holder.registerProblem(xmlAttributeValue, message, ProblemHighlightType.GENERIC_ERROR_OR_WARNING)
     }
 }
