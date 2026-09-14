@@ -19,7 +19,7 @@ import de.espend.idea.php.annotation.dict.PhpDocTagAnnotation
 import de.espend.idea.php.annotation.pattern.AnnotationPattern
 import de.espend.idea.php.annotation.util.AnnotationUtil
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
-import fr.adrienbrault.idea.symfony2plugin.config.xml.inspection.XmlDuplicateServiceKeyInspection
+import fr.adrienbrault.idea.symfony2plugin.config.xml.inspection.visitRoot
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper
@@ -52,7 +52,7 @@ open class DuplicateLocalRouteInspection : LocalInspectionTool() {
             } else if (element is StringLiteralExpression && element.language === PhpLanguage.INSTANCE) {
                 visitPhp(element)
             } else if (element is XmlAttributeValue) {
-                XmlDuplicateServiceKeyInspection.visitRoot(element, holder, "routes", "route", "id", MESSAGE)
+                visitRoot(element, holder, "routes", "route", "id", MESSAGE)
             }
 
             super.visitElement(element)
