@@ -3,14 +3,12 @@ package fr.adrienbrault.idea.symfony2plugin.templating.inspection
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
-import com.intellij.patterns.ElementPattern
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import com.jetbrains.twig.TwigTokenTypes
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil
-import org.apache.commons.lang3.StringUtils
 
 /**
  * Inspection for deprecated Twig extensions (tags, filters, and functions)
@@ -32,13 +30,14 @@ open class TwigExtensionDeprecatedInspection : LocalInspectionTool() {
     }
 
     private class MyPsiElementVisitor(private val holder: ProblemsHolder) : PsiElementVisitor() {
-        private var filterPattern: ElementPattern<*>? = null
-        private var applyFilterPattern: ElementPattern<*>? = null
-        private var printBlockFunctionPattern: ElementPattern<*>? = null
-
-        private var namedDeprecatedTokenParserTags: Map<String, String>? = null
-        private var deprecatedFilters: Set<String>? = null
-        private var deprecatedFunctions: Set<String>? = null
+        private val filterPattern by lazy(LazyThreadSafetyMode.NONE) { TwigPattern.getFilterPattern() }
+        private val applyFilterPattern by lazy(LazyThreadSafetyMode.NONE) { TwigPattern.getApplyFilterPattern() }
+        private val printBlockFunctionPattern by lazy(LazyThreadSafetyMode.NONE) { TwigPattern.getPrintBlockFunctionPattern() }
+        private val namedDeprecatedTokenParserTags by lazy(LazyThreadSafetyMode.NONE) {
+            TwigUtil.getNamedDeprecatedTokenParserTags(holder.project)
+        }
+        private val deprecatedFilters by lazy(LazyThreadSafetyMode.NONE) { TwigUtil.getDeprecatedFilters(holder.project) }
+        private val deprecatedFunctions by lazy(LazyThreadSafetyMode.NONE) { TwigUtil.getDeprecatedFunctions(holder.project) }
 
         override fun visitElement(element: PsiElement) {
             // {% tag %}
@@ -48,12 +47,12 @@ open class TwigExtensionDeprecatedInspection : LocalInspectionTool() {
 
             // {{ value|filter }}
             // {% apply filter %}
-            if (getFilterPattern().accepts(element) || getApplyFilterPattern().accepts(element)) {
+            if (filterPattern.accepts(element) || applyFilterPattern.accepts(element)) {
                 visitFilter(element)
             }
 
             // {{ function() }}
-            if (getPrintBlockFunctionPattern().accepts(element)) {
+            if (printBlockFunctionPattern.accepts(element)) {
                 visitFunction(element)
             }
 
@@ -61,30 +60,19 @@ open class TwigExtensionDeprecatedInspection : LocalInspectionTool() {
         }
 
         private fun visitTagTokenName(element: PsiElement) {
-            var tagName = element.text
-
-            if (StringUtils.isBlank(tagName)) {
-                return
-            }
+            var tagName = element.text.takeIf { it.isNotBlank() } ?: return
 
             // {% endspaceless % }
             if (tagName.length > 3 && tagName.startsWith("end")) {
-                tagName = tagName.substring(3)
+                tagName = tagName.removePrefix("end")
             }
 
-            if (namedDeprecatedTokenParserTags == null) {
-                namedDeprecatedTokenParserTags = TwigUtil.getNamedDeprecatedTokenParserTags(element.project)
-            }
-
-            val deprecatedTokenParserTags = namedDeprecatedTokenParserTags ?: return
-            if (deprecatedTokenParserTags.containsKey(tagName)) {
-                val descriptionTemplate = deprecatedTokenParserTags[tagName]
-
+            if (tagName in namedDeprecatedTokenParserTags) {
                 // "Deprecated" highlight is not visible, so we are going here for weak warning
                 // WEAK_WARNING would be match; but not really visible
                 holder.registerProblem(
                     element.parent,
-                    descriptionTemplate ?: "Deprecated Twig tag",
+                    namedDeprecatedTokenParserTags[tagName] ?: "Deprecated Twig tag",
                     ProblemHighlightType.GENERIC_ERROR_OR_WARNING
                 )
             }
@@ -93,15 +81,11 @@ open class TwigExtensionDeprecatedInspection : LocalInspectionTool() {
         private fun visitFilter(element: PsiElement) {
             val filterName = element.text
 
-            if (StringUtils.isBlank(filterName)) {
+            if (filterName.isBlank()) {
                 return
             }
 
-            if (deprecatedFilters == null) {
-                deprecatedFilters = TwigUtil.getDeprecatedFilters(element.project)
-            }
-
-            if (deprecatedFilters?.contains(filterName) == true) {
+            if (filterName in deprecatedFilters) {
                 holder.registerProblem(
                     element,
                     "Deprecated Twig filter",
@@ -113,15 +97,11 @@ open class TwigExtensionDeprecatedInspection : LocalInspectionTool() {
         private fun visitFunction(element: PsiElement) {
             val functionName = element.text
 
-            if (StringUtils.isBlank(functionName)) {
+            if (functionName.isBlank()) {
                 return
             }
 
-            if (deprecatedFunctions == null) {
-                deprecatedFunctions = TwigUtil.getDeprecatedFunctions(element.project)
-            }
-
-            if (deprecatedFunctions?.contains(functionName) == true) {
+            if (functionName in deprecatedFunctions) {
                 holder.registerProblem(
                     element,
                     "Deprecated Twig function",
@@ -130,16 +110,5 @@ open class TwigExtensionDeprecatedInspection : LocalInspectionTool() {
             }
         }
 
-        private fun getFilterPattern(): ElementPattern<*> {
-            return filterPattern ?: TwigPattern.getFilterPattern().also { filterPattern = it }
-        }
-
-        private fun getApplyFilterPattern(): ElementPattern<*> {
-            return applyFilterPattern ?: TwigPattern.getApplyFilterPattern().also { applyFilterPattern = it }
-        }
-
-        private fun getPrintBlockFunctionPattern(): ElementPattern<*> {
-            return printBlockFunctionPattern ?: TwigPattern.getPrintBlockFunctionPattern().also { printBlockFunctionPattern = it }
-        }
     }
 }

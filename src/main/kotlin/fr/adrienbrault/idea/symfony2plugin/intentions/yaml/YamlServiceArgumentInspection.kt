@@ -28,10 +28,13 @@ open class YamlServiceArgumentInspection : LocalInspectionTool() {
     }
 
     private class MyPsiElementVisitor(private val problemsHolder: ProblemsHolder) : PsiElementVisitor() {
-        private var lazyServiceCollector: ContainerCollectionResolver.LazyServiceCollector? = null
+        private val lazyServiceCollector by lazy(LazyThreadSafetyMode.NONE) {
+            ContainerCollectionResolver.LazyServiceCollector(problemsHolder.project)
+        }
 
         override fun visitElement(element: PsiElement) {
-            if (element is YAMLKeyValue && element.parent is YAMLMapping && element.parent.parent is YAMLKeyValue && (element.parent.parent as YAMLKeyValue).keyText == "services") {
+            val servicesKey = (element.parent as? YAMLMapping)?.parent as? YAMLKeyValue
+            if (element is YAMLKeyValue && servicesKey?.keyText == "services") {
                 // we don't support parent services for now
                 if (!element.keyText.equals("_defaults", ignoreCase = true) && isValidService(element)) {
                     val container = ServiceActionUtil.ServiceYamlContainer.create(element)
@@ -40,7 +43,7 @@ open class YamlServiceArgumentInspection : LocalInspectionTool() {
                             problemsHolder.project,
                             container,
                             false,
-                            getLazyServiceCollector(problemsHolder.project)
+                            lazyServiceCollector
                         )
 
                         if (yamlMissingArgumentTypes.isNotEmpty()) {
@@ -54,15 +57,10 @@ open class YamlServiceArgumentInspection : LocalInspectionTool() {
         }
 
         private fun isValidService(serviceKey: YAMLKeyValue): Boolean {
-            val keySet = YamlHelper.getKeySet(serviceKey)
-            if (keySet == null) {
-                return true
-            }
+            val keySet = YamlHelper.getKeySet(serviceKey) ?: return true
 
-            for (key in INVALID_KEYS) {
-                if (keySet.contains(key)) {
-                    return false
-                }
+            if (INVALID_KEYS.any { it in keySet }) {
+                return false
             }
 
             // check autowire scope
@@ -70,35 +68,20 @@ open class YamlServiceArgumentInspection : LocalInspectionTool() {
             if (serviceAutowire != null) {
                 // use service scope for autowire
                 return !serviceAutowire
-            } else {
-                // find file scope defaults
-                // defaults: [autowire: true]
-                val key = serviceKey.parentMapping
-                if (key != null) {
-                    val defaults = YamlHelper.getYamlKeyValue(key, "_defaults")
-                    if (defaults != null) {
-                        val autowire = YamlHelper.getYamlKeyValueAsBoolean(defaults, "autowire")
-                        return autowire == null || !autowire
-                    }
-                }
             }
 
-            return true
-        }
-
-        private fun getLazyServiceCollector(project: Project): ContainerCollectionResolver.LazyServiceCollector {
-            return lazyServiceCollector ?: ContainerCollectionResolver.LazyServiceCollector(project).also { lazyServiceCollector = it }
+            // find file scope defaults: defaults: [autowire: true]
+            val defaults = serviceKey.parentMapping
+                ?.let { YamlHelper.getYamlKeyValue(it, "_defaults") }
+                ?: return true
+            return YamlHelper.getYamlKeyValueAsBoolean(defaults, "autowire") != true
         }
     }
 
     private class YamlArgumentQuickfix : LocalQuickFix {
-        override fun getName(): String {
-            return "Symfony: Yaml Argument"
-        }
+        override fun getName() = "Symfony: Yaml Argument"
 
-        override fun getFamilyName(): String {
-            return "Symfony"
-        }
+        override fun getFamilyName() = "Symfony"
 
         override fun applyFix(project: Project, problemDescriptor: ProblemDescriptor) {
             val serviceKeyValue = problemDescriptor.psiElement.parent
@@ -108,11 +91,10 @@ open class YamlServiceArgumentInspection : LocalInspectionTool() {
             }
         }
 
-        override fun startInWriteAction(): Boolean {
-            return false
-        }
+        override fun startInWriteAction() = false
     }
 
+    @Suppress("CompanionObjectInExtension") // Kept for the existing Java ABI.
     companion object {
         @JvmField
         val INVALID_KEYS = arrayOf(

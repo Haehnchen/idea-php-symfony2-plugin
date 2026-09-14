@@ -9,7 +9,6 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils
-import org.apache.commons.lang3.StringUtils
 
 /**
  * PHP version of "Twig" "asset" function
@@ -32,24 +31,28 @@ open class PhpAssetMissingInspection : LocalInspectionTool() {
         override fun visitElement(element: PsiElement) {
             if (element is StringLiteralExpression) {
                 val methodReference = PsiElementUtils.getMethodReferenceWithFirstStringParameter(element)
-                if (methodReference != null) {
-                    val methodName = methodReference.name
-                    if (methodName != null && (methodName == "getUrl" || methodName == "getVersion") &&
-                        (PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "\\Symfony\\Component\\Asset\\Packages", "getUrl") ||
-                            PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "\\Symfony\\Component\\Asset\\Packages", "getVersion") ||
-                            PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "\\Symfony\\Component\\Asset\\PackageInterface", "getUrl") ||
-                            PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "\\Symfony\\Component\\Asset\\PackageInterface", "getVersion"))
-                    ) {
-                        invoke(element, holder)
-                    }
+                val methodName = methodReference?.name
+                if ((methodName == "getUrl" || methodName == "getVersion") &&
+                    (PhpElementsUtil.isMethodReferenceInstanceOf(
+                        methodReference,
+                        "\\Symfony\\Component\\Asset\\Packages",
+                        methodName
+                    ) ||
+                            PhpElementsUtil.isMethodReferenceInstanceOf(
+                                methodReference,
+                                "\\Symfony\\Component\\Asset\\PackageInterface",
+                                methodName
+                            ))
+                ) {
+                    inspectAsset(element)
                 }
             }
             super.visitElement(element)
         }
 
-        private fun invoke(element: StringLiteralExpression, holder: ProblemsHolder) {
+        private fun inspectAsset(element: StringLiteralExpression) {
             val asset = element.contents
-            if (StringUtils.isBlank(asset) || TwigUtil.resolveAssetsFiles(element.project, asset).isNotEmpty()) {
+            if (asset.isBlank() || TwigUtil.resolveAssetsFiles(element.project, asset).isNotEmpty()) {
                 return
             }
 

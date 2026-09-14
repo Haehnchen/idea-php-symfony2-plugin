@@ -28,26 +28,24 @@ open class XmlServiceArgumentInspection : LocalInspectionTool() {
     }
 
     private class MyPsiElementVisitor(private val holder: ProblemsHolder) : PsiElementVisitor() {
-        private var serviceCollector: NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector>? = null
+        private val serviceCollector by lazy(LazyThreadSafetyMode.NONE) {
+            NotNullLazyValue.lazy { ContainerCollectionResolver.LazyServiceCollector(holder.project) }
+        }
 
         override fun visitElement(element: PsiElement) {
             if (element is XmlTag) {
-                visitService(element, holder, createLazyServiceCollector())
+                visitService(element)
             }
 
             super.visitElement(element)
         }
 
-        private fun visitService(
-            xmlTag: XmlTag,
-            holder: ProblemsHolder,
-            lazyServiceCollector: NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector>
-        ) {
+        private fun visitService(xmlTag: XmlTag) {
             if (!ServiceActionUtil.isValidXmlParameterInspectionService(xmlTag)) {
                 return
             }
 
-            val args = ServiceActionUtil.getXmlMissingArgumentTypes(xmlTag, false, lazyServiceCollector.get())
+            val args = ServiceActionUtil.getXmlMissingArgumentTypes(xmlTag, false, serviceCollector.get())
             if (args.isEmpty()) {
                 return
             }
@@ -61,14 +59,6 @@ open class XmlServiceArgumentInspection : LocalInspectionTool() {
                 ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
                 AddServiceXmlArgumentLocalQuickFix(args)
             )
-        }
-
-        private fun createLazyServiceCollector(): NotNullLazyValue<ContainerCollectionResolver.LazyServiceCollector> {
-            if (serviceCollector == null) {
-                serviceCollector = NotNullLazyValue.lazy { ContainerCollectionResolver.LazyServiceCollector(holder.project) }
-            }
-
-            return serviceCollector!!
         }
     }
 }

@@ -46,14 +46,8 @@ open class TwigComponentSelfMacroImportInspection : LocalInspectionTool() {
 
         return object : PsiElementVisitor() {
             override fun visitElement(element: PsiElement) {
-                val node = element.node
-                if (node == null) {
-                    super.visitElement(element)
-                    return
-                }
-
                 // Match the RESERVED_ID token (_self) that appears in an import tag
-                if (node.elementType === TwigTokenTypes.RESERVED_ID
+                if (element.node?.elementType === TwigTokenTypes.RESERVED_ID
                     && element.text == "_self"
                     && isInsideFromImportTag(element)
                     && isInsideComponentContext(element)
@@ -72,11 +66,8 @@ open class TwigComponentSelfMacroImportInspection : LocalInspectionTool() {
              * Returns true if this {@code _self} token is the template source in a
              * {@code {% from _self import ... %}} statement.
              */
-            private fun isInsideFromImportTag(element: PsiElement): Boolean {
-                val parent = element.parent ?: return false
-                val parentNode = parent.node
-                return parentNode != null && parentNode.elementType === TwigElementTypes.IMPORT_TAG
-            }
+            private fun isInsideFromImportTag(element: PsiElement) =
+                element.parent?.node?.elementType === TwigElementTypes.IMPORT_TAG
 
             /**
              * Returns true when the element is inside a Twig component context:
@@ -84,10 +75,7 @@ open class TwigComponentSelfMacroImportInspection : LocalInspectionTool() {
              * Twig-syntax component ({@code {% component 'Name' %}}).
              */
             private fun isInsideComponentContext(element: PsiElement): Boolean {
-                val containingFile = element.containingFile
-                if (containingFile !is TwigFile) {
-                    return false
-                }
+                val containingFile = element.containingFile as? TwigFile ?: return false
 
                 // Check for HTML component context via the HTML language view
                 if (TwigHtmlCompletionUtil.isInsideHtmlComponentTag(element, containingFile)) {
@@ -111,7 +99,7 @@ open class TwigComponentSelfMacroImportInspection : LocalInspectionTool() {
                     return false
                 }
 
-                val textBefore = fileText.substring(0, offset)
+                val textBefore = fileText.take(offset)
 
                 // Count open and close component tags before the element position
                 val openCount = countTagOccurrences(textBefore, "component")
@@ -125,10 +113,15 @@ open class TwigComponentSelfMacroImportInspection : LocalInspectionTool() {
                 var index = 0
                 // Match {%- component or {% component (optional whitespace/dash)
                 val pattern = "{%"
-                while (text.indexOf(pattern, index).also { index = it } != -1) {
+                while (true) {
+                    index = text.indexOf(pattern, index)
+                    if (index == -1) {
+                        break
+                    }
+
                     var remaining = index + pattern.length
                     // Skip optional whitespace and dash
-                    while (remaining < text.length && (text[remaining] == ' ' || text[remaining] == '\t' || text[remaining] == '-')) {
+                    while (remaining < text.length && text[remaining] in " \t-") {
                         remaining++
                     }
                     // Check if the tag name matches
@@ -136,7 +129,7 @@ open class TwigComponentSelfMacroImportInspection : LocalInspectionTool() {
                         val afterTag = remaining + tagName.length
                         // Must be followed by whitespace, -, or %}
                         if (afterTag >= text.length || text[afterTag].isWhitespace()
-                            || text[afterTag] == '-' || text[afterTag] == '%'
+                            || text[afterTag] in "-%"
                         ) {
                             count++
                         }

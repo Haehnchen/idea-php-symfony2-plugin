@@ -42,14 +42,9 @@ open class TwigComponentMixedSyntaxInspection : LocalInspectionTool() {
 
         return object : PsiElementVisitor() {
             override fun visitElement(element: PsiElement) {
-                if (element.node == null) {
-                    super.visitElement(element)
-                    return
-                }
-
                 // Detect {% block name %} inside <twig:Component>
                 val containingFile = element.containingFile
-                if (element.node.elementType === TwigTokenTypes.TAG_NAME
+                if (element.node?.elementType === TwigTokenTypes.TAG_NAME
                     && element.text == "block"
                     && containingFile is TwigFile
                     && TwigHtmlCompletionUtil.isInsideHtmlComponentTag(element, containingFile)

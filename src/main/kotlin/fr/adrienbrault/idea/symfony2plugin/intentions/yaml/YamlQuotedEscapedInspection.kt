@@ -8,8 +8,9 @@ import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.PsiErrorElement
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyUtil
-import org.apache.commons.lang3.StringUtils
 import org.jetbrains.yaml.YAMLTokenTypes
+
+private val UNESCAPED_BACKSLASH_PATTERN = Regex(""".*[^\\]\\[^\\0abtnvfre "/N_LPxuU].*""")
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -24,30 +25,40 @@ open class YamlQuotedEscapedInspection : LocalInspectionTool() {
 
         return object : PsiElementVisitor() {
             override fun visitElement(element: PsiElement) {
-                if (element.node.elementType === YAMLTokenTypes.SCALAR_DSTRING && SymfonyUtil.isVersionGreaterThenEquals(project, "2.8")) {
-                    // "Foo\Foo" -> "Foo\\Foo"
-                    val text = StringUtils.strip(element.text, "\"")
+                when (element.node.elementType) {
+                    YAMLTokenTypes.SCALAR_DSTRING -> {
+                        if (SymfonyUtil.isVersionGreaterThenEquals(project, "2.8")) {
+                            // "Foo\Foo" -> "Foo\\Foo"
+                            val text = element.text.trim('"')
 
-                    // dont check to long strings
-                    // ascii chars that need to be escape; some @see Symfony\Component\Yaml\Unescaper
-                    if (text.length < 255 && text.matches(".*[^\\\\]\\\\[^\\\\0abtnvfre \"/N_LPxuU].*".toRegex())) {
-                        holder.registerProblem(element, "Not escaping a backslash in a double-quoted string is deprecated", ProblemHighlightType.WEAK_WARNING)
-                    }
-                } else if (element.node.elementType === YAMLTokenTypes.TEXT && SymfonyUtil.isVersionGreaterThenEquals(project, "2.8")) {
-                    // @foo -> "@foo"
-                    val text = if (parentIsErrorAndHasPreviousElement(element)) {
-                        element.parent.prevSibling.text
-                    } else {
-                        element.text
+                            // dont check to long strings
+                            // ascii chars that need to be escape; some @see Symfony\Component\Yaml\Unescaper
+                            if (text.length < 255 && UNESCAPED_BACKSLASH_PATTERN.matches(text)) {
+                                holder.registerProblem(element, "Not escaping a backslash in a double-quoted string is deprecated", ProblemHighlightType.WEAK_WARNING)
+                            }
+                        }
                     }
 
-                    if (text.length > 1 || (parentIsErrorAndHasPreviousElement(element) && text.isNotEmpty())) {
-                        val startChar = text.substring(0, 1)
-                        if (startChar == "@" || startChar == "`" || startChar == "|" || startChar == ">") {
-                            holder.registerProblem(element, String.format("Deprecated usage of '%s' at the beginning of unquoted string", startChar), ProblemHighlightType.WEAK_WARNING)
-                        } else if (startChar == "%") {
-                            // deprecated in => "3.1"; but as most user will need to migrate in 2.8 let them know it already
-                            holder.registerProblem(element, "Not quoting a scalar starting with the '%' indicator character is deprecated since Symfony 3.1", ProblemHighlightType.WEAK_WARNING)
+                    YAMLTokenTypes.TEXT -> {
+                        if (SymfonyUtil.isVersionGreaterThenEquals(project, "2.8")) {
+                            // @foo -> "@foo"
+                            val hasPreviousErrorElement = parentIsErrorAndHasPreviousElement(element)
+                            val text = if (hasPreviousErrorElement) {
+                                element.parent.prevSibling.text
+                            } else {
+                                element.text
+                            }
+
+                            if (text.length > 1 || hasPreviousErrorElement && text.isNotEmpty()) {
+                                when (val startChar = text.first()) {
+                                    '@', '`', '|', '>' -> holder.registerProblem(element, "Deprecated usage of '$startChar' at the beginning of unquoted string", ProblemHighlightType.WEAK_WARNING)
+
+                                    '%' -> {
+                                        // deprecated in => "3.1"; but as most user will need to migrate in 2.8 let them know it already
+                                        holder.registerProblem(element, "Not quoting a scalar starting with the '%' indicator character is deprecated since Symfony 3.1", ProblemHighlightType.WEAK_WARNING)
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -56,9 +67,6 @@ open class YamlQuotedEscapedInspection : LocalInspectionTool() {
         }
     }
 
-    private fun parentIsErrorAndHasPreviousElement(element: PsiElement): Boolean {
-        val parent = element.parent
-
-        return parent is PsiErrorElement && parent.prevSibling != null
-    }
+    private fun parentIsErrorAndHasPreviousElement(element: PsiElement) =
+        element.parent is PsiErrorElement && element.parent.prevSibling != null
 }

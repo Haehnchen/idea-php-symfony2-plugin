@@ -3,7 +3,6 @@ package fr.adrienbrault.idea.symfony2plugin.templating.inspection
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
-import com.intellij.patterns.ElementPattern
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
@@ -31,10 +30,10 @@ open class TwigVariablePathInspection : LocalInspectionTool() {
     }
 
     private class MyPsiElementVisitor(private val holder: ProblemsHolder) : PsiElementVisitor() {
-        private var typeCompletionPattern: ElementPattern<PsiElement>? = null
+        private val typeCompletionPattern by lazy(LazyThreadSafetyMode.NONE) { TwigPattern.getTypeCompletionPattern() }
 
         override fun visitElement(element: PsiElement) {
-            if (getTypeCompletionPattern().accepts(element)) {
+            if (typeCompletionPattern.accepts(element)) {
                 visit(element)
             }
             super.visitElement(element)
@@ -50,33 +49,33 @@ open class TwigVariablePathInspection : LocalInspectionTool() {
                 return
             }
 
-            val pathNames = pathElements.map(PsiElement::getText)
+            val pathNames = pathElements.map { it.text }
 
-            val lastIndex = pathElements.size - 1
-            val lastPathElement = pathElements[lastIndex]
+            val lastIndex = pathElements.lastIndex
+            val lastPathElement = pathElements.last()
 
             // Fast path: if the tail resolves, all earlier segments are already usable.
-            val lastState = inspectPathElement(lastPathElement, pathNames.subList(0, lastIndex), lastPathElement.text)
-            if (lastState == PathElementState.FOUND) {
-                return
-            }
-
-            if (lastState == PathElementState.MISSING) {
-                holder.registerProblem(lastPathElement, "Field or method not found", ProblemHighlightType.GENERIC_ERROR_OR_WARNING)
-                return
-            }
-
-            // Tail is ambiguous; report the first earlier segment that is known missing.
-            for (i in 1 until lastIndex) {
-                val pathElement = pathElements[i]
-                val state = inspectPathElement(pathElement, pathNames.subList(0, i), pathElement.text)
-                if (state == PathElementState.MISSING) {
-                    holder.registerProblem(pathElement, "Field or method not found", ProblemHighlightType.GENERIC_ERROR_OR_WARNING)
+            when (inspectPathElement(lastPathElement, pathNames.subList(0, lastIndex), lastPathElement.text)) {
+                PathElementState.FOUND -> return
+                PathElementState.MISSING -> {
+                    holder.registerProblem(lastPathElement, "Field or method not found", ProblemHighlightType.GENERIC_ERROR_OR_WARNING)
                     return
                 }
 
-                if (state == PathElementState.UNKNOWN) {
-                    return
+                PathElementState.UNKNOWN -> Unit
+            }
+
+            // Tail is ambiguous; report the first earlier segment that is known missing.
+            for (i in 1..<lastIndex) {
+                val pathElement = pathElements[i]
+                when (inspectPathElement(pathElement, pathNames.subList(0, i), pathElement.text)) {
+                    PathElementState.MISSING -> {
+                        holder.registerProblem(pathElement, "Field or method not found", ProblemHighlightType.GENERIC_ERROR_OR_WARNING)
+                        return
+                    }
+
+                    PathElementState.UNKNOWN -> return
+                    PathElementState.FOUND -> Unit
                 }
             }
         }
@@ -108,10 +107,6 @@ open class TwigVariablePathInspection : LocalInspectionTool() {
             }
 
             return PathElementState.MISSING
-        }
-
-        private fun getTypeCompletionPattern(): ElementPattern<PsiElement> {
-            return typeCompletionPattern ?: TwigPattern.getTypeCompletionPattern().also { typeCompletionPattern = it }
         }
 
         /**

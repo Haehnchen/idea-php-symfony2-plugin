@@ -4,14 +4,12 @@ import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.project.Project
-import com.intellij.patterns.ElementPattern
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
 import fr.adrienbrault.idea.symfony2plugin.config.xml.XmlHelper
 import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils
-import org.apache.commons.lang3.StringUtils
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -28,29 +26,20 @@ open class RouteControllerDeprecatedInspection {
         }
 
         private class MyXmlPsiElementVisitor(private val project: Project, private val holder: ProblemsHolder) : PsiElementVisitor() {
-            private var routeControllerPattern: ElementPattern<*>? = null
+            private val routeControllerPattern by lazy(LazyThreadSafetyMode.NONE) { XmlHelper.getRouteControllerPattern() }
 
             override fun visitElement(element: PsiElement) {
-                if (getRouteControllerPattern().accepts(element)) {
-                    val parent = element.parent
-                    if (parent != null) {
-                        val text = RouteXmlReferenceContributor.getControllerText(parent)
-                        if (text != null) {
-                            hasDeprecatedActionOrClass(project, element, text, holder)
-                        }
-                    }
+                if (routeControllerPattern.accepts(element)) {
+                    inspectController(element)
                 }
 
                 super.visitElement(element)
             }
 
-            private fun getRouteControllerPattern(): ElementPattern<*> {
-                if (routeControllerPattern != null) {
-                    return routeControllerPattern!!
-                }
-
-                routeControllerPattern = XmlHelper.getRouteControllerPattern()
-                return routeControllerPattern!!
+            private fun inspectController(element: PsiElement) {
+                val parent = element.parent ?: return
+                val text = RouteXmlReferenceContributor.getControllerText(parent) ?: return
+                hasDeprecatedActionOrClass(project, element, text, holder)
             }
         }
     }
@@ -66,26 +55,19 @@ open class RouteControllerDeprecatedInspection {
         }
 
         private class MyYamlPsiElementVisitor(private val project: Project, private val holder: ProblemsHolder) : PsiElementVisitor() {
-            private var controllerScalarPattern: ElementPattern<*>? = null
+            private val controllerScalarPattern by lazy(LazyThreadSafetyMode.NONE) {
+                YamlElementPatternHelper.getSingleLineScalarKey("_controller", "controller")
+            }
 
             override fun visitElement(element: PsiElement) {
-                if (getControllerScalarPattern().accepts(element)) {
+                if (controllerScalarPattern.accepts(element)) {
                     val text = PsiElementUtils.trimQuote(element.text)
-                    if (StringUtils.isNotBlank(text)) {
+                    if (text.isNotBlank()) {
                         hasDeprecatedActionOrClass(project, element, text, holder)
                     }
                 }
 
                 super.visitElement(element)
-            }
-
-            private fun getControllerScalarPattern(): ElementPattern<*> {
-                if (controllerScalarPattern != null) {
-                    return controllerScalarPattern!!
-                }
-
-                controllerScalarPattern = YamlElementPatternHelper.getSingleLineScalarKey("_controller", "controller")
-                return controllerScalarPattern!!
             }
         }
     }
