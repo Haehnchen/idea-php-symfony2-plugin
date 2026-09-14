@@ -11,7 +11,7 @@ import com.jetbrains.php.lang.psi.PhpPsiUtil
 import com.jetbrains.php.lang.psi.elements.Method
 import com.jetbrains.php.lang.psi.elements.PhpClass
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
-import fr.adrienbrault.idea.symfony2plugin.action.generator.ServiceGenerateAction
+import fr.adrienbrault.idea.symfony2plugin.action.generator.invokeServiceGenerator
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -34,7 +34,7 @@ open class PhpServiceIntention : PsiElementBaseIntentionAction() {
         val phpClass = PhpPsiUtil.getParentByCondition<PhpClass>(psiElement, true, PhpClass.INSTANCEOF, null)
             ?: return
 
-        ServiceGenerateAction.invokeServiceGenerator(project, phpClass.containingFile, phpClass, editor)
+        invokeServiceGenerator(project, phpClass.containingFile, phpClass, editor)
     }
 
     override fun isAvailable(project: Project, editor: Editor?, psiElement: PsiElement): Boolean {
