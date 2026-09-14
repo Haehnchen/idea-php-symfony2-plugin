@@ -1,0 +1,122 @@
+<?php
+
+namespace{
+    function my_json_decode() {}
+    function twig_test_even() {}
+    function constant($name) {}
+    function enum($name) {}
+    function enum_cases($name) {}
+
+    interface Twig_ExtensionInterface {}
+    interface Twig_Environment {}
+    abstract class Twig_Extension implements Twig_ExtensionInterface {}
+    class Twig_SimpleFilter {}
+    class Twig_SimpleFunction {}
+    class Twig_SimpleTest {}
+    class SqlFormatter {
+        public function format() {}
+    }
+
+    interface Twig_TokenParserInterface {}
+
+    class FooTokenParser implements Twig_TokenParserInterface
+    {
+        public function getTag() { return 'foo_tag'; }
+    }
+}
+
+namespace Twig\Extension {
+    interface ExtensionInterface {}
+    abstract class AbstractExtension implements ExtensionInterface {}
+}
+
+namespace Twig\ExpressionParser\Infix {
+    class BinaryOperatorExpressionParser {}
+}
+
+namespace Twig\ExpressionParser\Prefix {
+    class UnaryOperatorExpressionParser {}
+}
+
+namespace Twig\Node\Expression\Binary {
+    class BitwiseAndBinary {}
+    class ElvisBinary {}
+}
+
+namespace Twig\Node\Expression\Unary {
+    class NotUnary {}
+}
+
+namespace Twig {
+    class ExpressionParserExtension extends \Twig\Extension\AbstractExtension
+    {
+        public function getExpressionParsers(): array
+        {
+            return [
+                new \Twig\ExpressionParser\Infix\BinaryOperatorExpressionParser(\Twig\Node\Expression\Binary\BitwiseAndBinary::class, 'b-and', 18),
+                new \Twig\ExpressionParser\Infix\BinaryOperatorExpressionParser(\Twig\Node\Expression\Binary\ElvisBinary::class, '?:', 5, aliases: ['? :']),
+                new \Twig\ExpressionParser\Prefix\UnaryOperatorExpressionParser(\Twig\Node\Expression\Unary\NotUnary::class, 'expression_not', 70),
+            ];
+        }
+    }
+}
+
+namespace Doctrine\Bundle\DoctrineBundle\Twig;
+
+class DoctrineExtension extends \Twig_Extension
+{
+
+    public function getFilters()
+    {
+        return array(
+            new \Twig_SimpleFilter('doctrine_minify_query', array($this, 'minifyQuery')),
+            new \Twig_SimpleFilter('doctrine_pretty_query', 'SqlFormatter::format'),
+            new \Twig_SimpleFilter('contextAndEnvironment', array($this, 'minifyQuery'), array('needs_context' => true, 'needs_environment' => true)),
+            new \Twig_SimpleFilter('contextWithoutEnvironment', array($this, 'minifyQuery'), array('needs_environment' => true)),
+            new \Twig_SimpleFilter('json_decode', 'my_json_decode'),
+        );
+    }
+
+    public function getFunctions()
+    {
+        return array(
+            new \Twig_SimpleFunction('foobar', array($this, 'foobar')),
+            new \Twig_SimpleFunction('json_bar', 'my_json_decode'),
+            new \Twig_SimpleFunction('constant', 'constant'),
+            new \Twig_SimpleFunction('enum', 'enum'),
+            new \Twig_SimpleFunction('enum_cases', 'enum_cases'),
+        );
+    }
+
+    public function getTests()
+    {
+        return array(
+            new \Twig_SimpleTest('bar_even', 'twig_test_even'),
+            new \Twig_SimpleTest('bar even', 'twig_test_even'),
+        );
+    }
+
+    public function getOperators()
+    {
+        return array(
+            array(
+                'not' => array(),
+                '-' => array(),
+            ),
+            array(
+                'or' => array(),
+                'b-or' => array(),
+                'b-xor' => array(),
+                'starts with' => array(),
+                'ends with' => array(),
+                '**' => array(),
+            ),
+        );
+    }
+
+    public function minifyQuery($query) {}
+    public function foobar() {}
+    public function contextAndEnvironment(\Twig_Environment $env, $context, $string) {}
+    public function contextWithoutEnvironment($context, $string) {}
+
+}

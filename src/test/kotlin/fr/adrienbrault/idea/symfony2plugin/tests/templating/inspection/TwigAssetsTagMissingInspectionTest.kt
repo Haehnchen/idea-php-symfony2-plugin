@@ -1,15 +1,15 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating.inspection;
+package fr.adrienbrault.idea.symfony2plugin.tests.templating.inspection
 
-import fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigAssetsTagMissingInspection;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigAssetsTagMissingInspection
+import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see fr.adrienbrault.idea.symfony2plugin.templating.inspection.TwigAssetsTagMissingInspection
  */
-public class TwigAssetsTagMissingInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
-    public void testThatUnknownAssetIsHighlighted() {
-        assertLocalInspectionContains(TwigAssetsTagMissingInspection.class,
+class TwigAssetsTagMissingInspectionTest : SymfonyLightCodeInsightFixtureTestCase() {
+    fun testThatUnknownAssetIsHighlighted() {
+        assertLocalInspectionContains(TwigAssetsTagMissingInspection::class.java,
             "test.html.twig",
             "" +
                 "{% javascripts\n" +
@@ -18,9 +18,9 @@ public class TwigAssetsTagMissingInspectionTest extends SymfonyLightCodeInsightF
                 "    <script src=\"{{ asset_url }}\"></script>\n" +
                 "{% endjavascripts %}",
             "Missing asset"
-        );
+        )
 
-        assertLocalInspectionContains(TwigAssetsTagMissingInspection.class,
+        assertLocalInspectionContains(TwigAssetsTagMissingInspection::class.java,
             "test.html.twig",
             "" +
                 "{% stylesheets\n" +
@@ -29,11 +29,11 @@ public class TwigAssetsTagMissingInspectionTest extends SymfonyLightCodeInsightF
                 "<link type=\"text/css\" rel=\"stylesheet\" media=\"all\" href=\"{{ asset_url }}\" />\n" +
                 "{% endstylesheets %}",
             "Missing asset"
-        );
+        )
     }
 
-    public void testThatInvalidStringMustNotHighlight() {
-        assertLocalInspectionNotContains(TwigAssetsTagMissingInspection.class,
+    fun testThatInvalidStringMustNotHighlight() {
+        assertLocalInspectionNotContains(TwigAssetsTagMissingInspection::class.java,
             "test.html.twig",
             "" +
                 "{% javascripts\n" +
@@ -42,9 +42,9 @@ public class TwigAssetsTagMissingInspectionTest extends SymfonyLightCodeInsightF
                 "    <script src=\"{{ asset_url }}\"></script>\n" +
                 "{% endjavascripts %}",
             "Missing asset"
-        );
+        )
 
-        assertLocalInspectionNotContains(TwigAssetsTagMissingInspection.class,
+        assertLocalInspectionNotContains(TwigAssetsTagMissingInspection::class.java,
             "test.html.twig",
             "" +
                 "{% javascripts\n" +
@@ -53,9 +53,9 @@ public class TwigAssetsTagMissingInspectionTest extends SymfonyLightCodeInsightF
                 "    <script src=\"{{ asset_url }}\"></script>\n" +
                 "{% endjavascripts %}",
             "Missing asset"
-        );
+        )
 
-        assertLocalInspectionNotContains(TwigAssetsTagMissingInspection.class,
+        assertLocalInspectionNotContains(TwigAssetsTagMissingInspection::class.java,
             "test.html.twig",
             "" +
                 "{% javascripts\n" +
@@ -64,6 +64,6 @@ public class TwigAssetsTagMissingInspectionTest extends SymfonyLightCodeInsightF
                 "    <script src=\"{{ asset_url }}\"></script>\n" +
                 "{% endjavascripts %}",
             "Missing asset"
-        );
+        )
     }
 }
