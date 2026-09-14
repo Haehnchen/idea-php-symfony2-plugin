@@ -1,25 +1,25 @@
-package fr.adrienbrault.idea.symfony2plugin.tests.templating.inspection;
+package fr.adrienbrault.idea.symfony2plugin.tests.templating.inspection
 
-import fr.adrienbrault.idea.symfony2plugin.templating.inspection.TemplateMissingAnnotationPhpAttributeLocalInspection;
-import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.templating.inspection.TemplateMissingAnnotationPhpAttributeLocalInspection
+import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see TemplateMissingAnnotationPhpAttributeLocalInspection
  */
-public class TemplateMissingAnnotationPhpAttributeLocalInspectionTest extends SymfonyLightCodeInsightFixtureTestCase {
-    public void setUp() throws Exception {
-        super.setUp();
+class TemplateMissingAnnotationPhpAttributeLocalInspectionTest : SymfonyLightCodeInsightFixtureTestCase() {
+    override fun setUp() {
+        super.setUp()
 
-        myFixture.copyFileToProject("classes.php");
+        myFixture.copyFileToProject("classes.php")
     }
 
-    public String getTestDataPath() {
-        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/inspection/fixtures";
+    override fun getTestDataPath(): String {
+        return "src/test/kotlin/fr/adrienbrault/idea/symfony2plugin/tests/templating/inspection/fixtures"
     }
 
-    public void testThatTemplateCreationAnnotationProvidesQuickfix() {
-        assertLocalInspectionContains(TemplateMissingAnnotationPhpAttributeLocalInspection.class, "foobar.php", "<?php\n" +
+    fun testThatTemplateCreationAnnotationProvidesQuickfix() {
+        assertLocalInspectionContains(TemplateMissingAnnotationPhpAttributeLocalInspection::class.java, "foobar.php", "<?php\n" +
                 "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;\n" +
                 "\n" +
                 "class Foobar\n" +
@@ -33,9 +33,9 @@ public class TemplateMissingAnnotationPhpAttributeLocalInspectionTest extends Sy
                 "}\n" +
                 "",
             "Twig: Missing Template"
-        );
+        )
 
-        assertLocalInspectionContains(TemplateMissingAnnotationPhpAttributeLocalInspection.class, "foobar.php", "<?php\n" +
+        assertLocalInspectionContains(TemplateMissingAnnotationPhpAttributeLocalInspection::class.java, "foobar.php", "<?php\n" +
                 "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;\n" +
                 "\n" +
                 "class Foobar\n" +
@@ -49,9 +49,9 @@ public class TemplateMissingAnnotationPhpAttributeLocalInspectionTest extends Sy
                 "}\n" +
                 "",
             "Twig: Missing Template"
-        );
+        )
 
-        assertLocalInspectionContains(TemplateMissingAnnotationPhpAttributeLocalInspection.class, "foobar.php", "<?php\n" +
+        assertLocalInspectionContains(TemplateMissingAnnotationPhpAttributeLocalInspection::class.java, "foobar.php", "<?php\n" +
                 "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;\n" +
                 "\n" +
                 "class Foobar\n" +
@@ -66,11 +66,11 @@ public class TemplateMissingAnnotationPhpAttributeLocalInspectionTest extends Sy
                 "}\n" +
                 "",
             "Twig: Missing Template"
-        );
+        )
     }
 
-    public void testThatTemplateCreationAnnotationProvidesQuickfixForPhpAttribute() {
-        assertLocalInspectionContains(TemplateMissingAnnotationPhpAttributeLocalInspection.class, "foobar.php", "<?php\n" +
+    fun testThatTemplateCreationAnnotationProvidesQuickfixForPhpAttribute() {
+        assertLocalInspectionContains(TemplateMissingAnnotationPhpAttributeLocalInspection::class.java, "foobar.php", "<?php\n" +
                 "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;\n" +
                 "\n" +
                 "class Foobar\n" +
@@ -82,9 +82,9 @@ public class TemplateMissingAnnotationPhpAttributeLocalInspectionTest extends Sy
                 "}\n" +
                 "",
             "Twig: Missing Template"
-        );
+        )
 
-        assertLocalInspectionContains(TemplateMissingAnnotationPhpAttributeLocalInspection.class, "foobar.php", "<?php\n" +
+        assertLocalInspectionContains(TemplateMissingAnnotationPhpAttributeLocalInspection::class.java, "foobar.php", "<?php\n" +
                 "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;\n" +
                 "\n" +
                 "class Foobar\n" +
@@ -96,13 +96,13 @@ public class TemplateMissingAnnotationPhpAttributeLocalInspectionTest extends Sy
                 "}\n" +
                 "",
             "Twig: Missing Template"
-        );
+        )
     }
 
-    public void testThatTemplateCreationForInvokeMethodProvidesQuickfixForPhpAttribute() {
-        myFixture.copyFileToProject("controller_method.php");
+    fun testThatTemplateCreationForInvokeMethodProvidesQuickfixForPhpAttribute() {
+        myFixture.copyFileToProject("controller_method.php")
 
-        assertLocalInspectionContains(TemplateMissingAnnotationPhpAttributeLocalInspection.class, "foobar.php", "<?php\n" +
+        assertLocalInspectionContains(TemplateMissingAnnotationPhpAttributeLocalInspection::class.java, "foobar.php", "<?php\n" +
                 "namespace FooBundle\\Controller;\n" +
                 "\n" +
                 "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;\n" +
@@ -116,13 +116,13 @@ public class TemplateMissingAnnotationPhpAttributeLocalInspectionTest extends Sy
                 "}\n" +
                 "",
             "Twig: Missing Template"
-        );
+        )
     }
 
-    public void testThatTemplateCreationForInvokeMethodProvidesQuickfix() {
-        myFixture.copyFileToProject("controller_method.php");
+    fun testThatTemplateCreationForInvokeMethodProvidesQuickfix() {
+        myFixture.copyFileToProject("controller_method.php")
 
-        assertLocalInspectionContains(TemplateMissingAnnotationPhpAttributeLocalInspection.class, "foobar.php", "<?php\n" +
+        assertLocalInspectionContains(TemplateMissingAnnotationPhpAttributeLocalInspection::class.java, "foobar.php", "<?php\n" +
                 "namespace FooBundle\\Controller;\n" +
                 "\n" +
                 "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;\n" +
@@ -138,11 +138,11 @@ public class TemplateMissingAnnotationPhpAttributeLocalInspectionTest extends Sy
                 "}\n" +
                 "",
             "Twig: Missing Template"
-        );
+        )
     }
 
-    public void testThatMissingTemplateForGlobalNamespaceWithoutBundleScopeForController() {
-        assertLocalInspectionContains(TemplateMissingAnnotationPhpAttributeLocalInspection.class, "foobar.php", "<?php\n" +
+    fun testThatMissingTemplateForGlobalNamespaceWithoutBundleScopeForController() {
+        assertLocalInspectionContains(TemplateMissingAnnotationPhpAttributeLocalInspection::class.java, "foobar.php", "<?php\n" +
                 "namespace FoobarApp\\Controller;\n" +
                 "use Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Template;\n" +
                 "\n" +
@@ -157,6 +157,6 @@ public class TemplateMissingAnnotationPhpAttributeLocalInspectionTest extends Sy
                 "}\n" +
                 "",
             "Twig: Missing Template"
-        );
+        )
     }
 }
