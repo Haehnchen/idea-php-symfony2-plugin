@@ -43,6 +43,12 @@ public class JavascriptCompletionNavigationContributor {
                     return;
                 }
 
+                if (isAcceptedRouteNamePattern(jsLiteral)) {
+                    result.addAllElements(RouteHelper.getRoutesLookupElements(psiElement.getProject()));
+
+                    return;
+                }
+
                 if (!isAcceptedUrlPattern(jsLiteral)) {
                     return;
                 }
@@ -74,6 +80,15 @@ public class JavascriptCompletionNavigationContributor {
                 return null;
             }
 
+            if (isAcceptedRouteNamePattern(jsLiteralExpression)) {
+                String routeName = jsLiteralExpression.getStringValue();
+                if (routeName == null || routeName.isBlank()) {
+                    return new PsiElement[0];
+                }
+
+                return RouteHelper.getRouteDefinitionTargets(psiElement.getProject(), routeName).toArray(new PsiElement[0]);
+            }
+
             if (!isAcceptedUrlPattern(jsLiteralExpression)) {
                 return null;
             }
@@ -103,6 +118,22 @@ public class JavascriptCompletionNavigationContributor {
 
             context.getEditor().getCaretModel().moveToOffset(context.getTailOffset());
         }
+    }
+
+    /**
+     * FOSJsRoutingBundle exposes the routing as a route name, not as an url
+     *
+     * Routing.generate('foo_route')
+     * fos.Router.generate('foo_route')
+     */
+    private static boolean isAcceptedRouteNamePattern(@NotNull final JSLiteralExpression jsLiteral) {
+        return JSPatterns.jsLiteralExpression()
+            .inside(false, JSPatterns.jsArgument(JSPatterns.jsReferenceExpression().withQualifiedName("Routing.generate"), 0))
+            .accepts(jsLiteral)
+
+            || JSPatterns.jsLiteralExpression()
+            .inside(false, JSPatterns.jsArgument(JSPatterns.jsReferenceExpression().withQualifiedName("fos.Router.generate"), 0))
+            .accepts(jsLiteral);
     }
 
     private static boolean isAcceptedUrlPattern(@NotNull final JSLiteralExpression jsLiteral) {

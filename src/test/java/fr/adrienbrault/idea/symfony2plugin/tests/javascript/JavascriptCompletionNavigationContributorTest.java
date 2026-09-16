@@ -70,6 +70,35 @@ public class JavascriptCompletionNavigationContributorTest extends SymfonyLightC
         );
     }
 
+    public void testCompletionForRouteNamesInsideFosJsRouting() {
+        assertCompletionContains("test.js", "" +
+                "Routing.generate('<caret>');",
+            "foo_controller_invoke"
+        );
+
+        assertCompletionContains("test.ts", "" +
+                "Routing.generate('<caret>', {foo: 'foo'});",
+            "foo_controller_invoke"
+        );
+
+        assertCompletionContains("test.js", "" +
+                "fos.Router.generate('<caret>');",
+            "foo_controller_invoke"
+        );
+    }
+
+    public void testNavigationForRouteNamesInsideFosJsRouting() {
+        assertNavigationMatch("test.js",
+            "Routing.generate('foo_controller_inv<caret>oke');",
+            PlatformPatterns.psiElement(Method.class)
+        );
+
+        assertNavigationMatch("test.ts",
+            "fos.Router.generate('foo_controller_inv<caret>oke');",
+            PlatformPatterns.psiElement(Method.class)
+        );
+    }
+
     public void testNavigationForUrlsInsideJavascriptAndTypescript() {
         assertNavigationMatch("test.ts",
             "fetch('/test/foobar/car/foob<caret>ar');",
