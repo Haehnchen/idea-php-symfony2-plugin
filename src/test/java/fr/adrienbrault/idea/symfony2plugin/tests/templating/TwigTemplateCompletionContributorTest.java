@@ -481,4 +481,101 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         // Keep the distinct class-name prefix and its insertion result.
         assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ enum_cases('App\\\\Bike\\\\Foo<caret>') }}", "{{ enum_cases('App\\\\Bike\\\\FooEnum') }}", l -> "FooEnum".equals(l.getLookupString()));
     }
+
+    public void testCompletionForTwigFunctionHashKeysFromParameterArrayShape() {
+        myFixture.copyFileToProject("TwigFunctionArrayShape.php");
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ button_direct({ <caret> }) }}", "size", "variant");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ button_direct({ '<caret>' }) }}", "size", "variant");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ button_alias({ <caret> }) }}", "size", "variant", "icon");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ button_alias({ size: 'sm', <caret> }) }}", "variant", "icon");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% set button = button_alias({ <caret> }) %}", "size", "variant", "icon");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ button_direct({ size: <caret> }) }}", "size", "variant", "sm");
+    }
+
+    public void testCompletionForTwigFunctionHashValuesFromParameterArrayShape() {
+        myFixture.copyFileToProject("TwigFunctionArrayShape.php");
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ button_direct({ size: '<caret>' }) }}", "sm", "md", "lg");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ button_alias({ variant: \"<caret>\" }) }}", "primary", "secondary");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ button_alias({ variant: '<caret>' }) }}", "string");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ button_direct({ '<caret>': 'sm' }) }}", "sm");
+    }
+
+    public void testCompletionForTwigFunctionNestedHashFromParameterArrayShapeAlias() {
+        myFixture.copyFileToProject("TwigFunctionArrayShape.php");
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ button_alias({ icon: { <caret> } }) }}", "name", "position");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ button_alias({ icon: { position: '<caret>' } }) }}", "start", "end");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ button_alias({ icon: { <caret> } }) }}", "size", "variant");
+    }
+
+    public void testCompletionForTwigFunctionHashFromImportedParameterArrayShapeAlias() {
+        myFixture.copyFileToProject("TwigFunctionArrayShape.php");
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ button_imported({ <caret> }) }}", "size", "variant", "icon");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ button_imported({ variant: '<caret>' }) }}", "primary", "secondary");
+    }
+
+    public void testCompletionForTwigFunctionHashFromPhpStanParameterArrayShapeAlias() {
+        myFixture.copyFileToProject("TwigFunctionArrayShape.php");
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ badge({ <caret> }) }}", "tone", "rounded");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ badge({ tone: '<caret>' }) }}", "info", "danger");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ badge_imported({ <caret> }) }}", "tone", "rounded");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ badge_imported({ tone: '<caret>' }) }}", "info", "danger");
+    }
+
+    public void testCompletionForTwigFunctionHashValuesFromValueTypeAlias() {
+        myFixture.copyFileToProject("TwigFunctionArrayShape.php");
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ link({ size: '<caret>' }) }}", "xs", "xl");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ link({ size: '<caret>' }) }}", "string");
+    }
+
+    public void testCompletionForTwigFunctionHashKeysQuotesInvalidIdentifiers() {
+        myFixture.copyFileToProject("TwigFunctionArrayShape.php");
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ link({ <caret> }) }}", "href", "'data-turbo'");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ link({ '<caret>' }) }}", "href", "data-turbo");
+        assertCompletionResultEquals(TwigFileType.INSTANCE, "{{ link({ <caret> }) }}", "{{ link({ 'data-turbo' }) }}", l -> "'data-turbo'".equals(l.getLookupString()));
+    }
+
+    public void testCompletionForTwigFunctionHashShiftsParameterForEnvironmentAndContext() {
+        myFixture.copyFileToProject("TwigFunctionArrayShape.php");
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ button_env({ <caret> }) }}", "size", "variant", "icon");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ button_env({ size: '<caret>' }) }}", "sm", "md", "lg");
+    }
+
+    public void testCompletionForTwigFunctionHashAtSecondArgument() {
+        myFixture.copyFileToProject("TwigFunctionArrayShape.php");
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ button_second('Save', { <caret> }) }}", "size", "variant", "icon");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ button_second('Save', { size: '<caret>' }) }}", "sm", "md", "lg");
+        assertCompletionIsEmpty(TwigFileType.INSTANCE, "{{ button_second({ <caret> }) }}");
+    }
+
+    public void testCompletionForTwigFunctionNestedHashFromCrossFileImportedArrayShapeAlias() {
+        myFixture.copyFileToProject("TwigFunctionArrayShape.php");
+        myFixture.copyFileToProject("TwigFunctionArrayShapeCrossFile.php");
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ button_cross_file({ <caret> }) }}", "size", "variant", "icon");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ button_cross_file({ icon: { <caret> } }) }}", "name", "position");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ button_cross_file({ icon: { position: '<caret>' } }) }}", "start", "end");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ menu({ children: { children: { <caret> } } }) }}", "label", "children");
+    }
+
+    public void testCompletionForTwigFunctionHashFromCrossFileImportedArrayShapeAlias() {
+        myFixture.copyFileToProject("TwigFunctionArrayShape.php");
+        myFixture.copyFileToProject("TwigFunctionArrayShapeCss.php");
+        myFixture.copyFileToProject("TwigFunctionArrayShapeCssReference.php");
+
+        assertCompletionContains(TwigFileType.INSTANCE, "<div class=\"{{ css({ <caret> }) }}\"></div>", "WebkitAppearance", "display", "zIndex", "'2xl'", "'@/2xl'", "_hover");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ css({ display: '<caret>' }) }}", "-moz-initial", "block", "flex", "grid");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ css({ display: '<caret>' }) }}", "string");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ css({ display: 'flex', WebkitAppearance: '<caret>' }) }}", "button", "none");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ css({ zIndex: '<caret>' }) }}", "auto", "inherit");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ css({ zIndex: '<caret>' }) }}", "int", "float");
+    }
 }
