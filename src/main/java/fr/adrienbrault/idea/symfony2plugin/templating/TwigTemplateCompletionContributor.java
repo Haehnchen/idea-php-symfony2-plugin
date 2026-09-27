@@ -37,9 +37,11 @@ import fr.adrienbrault.idea.symfony2plugin.dic.MethodReferenceBag;
 import fr.adrienbrault.idea.symfony2plugin.dic.ServiceCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper;
 import fr.adrienbrault.idea.symfony2plugin.templating.completion.QuotedInsertionLookupElement;
+import fr.adrienbrault.idea.symfony2plugin.templating.completion.TwigFunctionHashCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.*;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigConstantEnumResolver;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigExtensionParser;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigFunctionHashParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigIncludeContextParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
@@ -113,6 +115,19 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                 }
             }),
             new IncludeWithContextKeyCompletionProvider()
+        );
+
+        // {{ button({ <caret> }) }}
+        // {{ button({ size: '<caret>' }) }}
+        extend(
+            CompletionType.BASIC,
+            PlatformPatterns.psiElement().with(new PatternCondition<PsiElement>("function hash literal") {
+                @Override
+                public boolean accepts(@NotNull PsiElement element, ProcessingContext context) {
+                    return TwigFunctionHashParser.parse(element) != null;
+                }
+            }),
+            new TwigFunctionHashCompletionProvider()
         );
 
         // provides support for 'a<xxx>'|trans({'%foo%' : bar|default}, 'Domain')
