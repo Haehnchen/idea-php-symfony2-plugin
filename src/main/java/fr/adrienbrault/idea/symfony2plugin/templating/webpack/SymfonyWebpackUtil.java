@@ -10,7 +10,6 @@ import com.intellij.lang.javascript.psi.JSLiteralExpression;
 import com.intellij.lang.javascript.psi.JSReferenceExpression;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
-import com.intellij.openapi.util.io.StreamUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
@@ -77,7 +76,7 @@ public class SymfonyWebpackUtil {
         String s;
 
         try {
-            byte[] bytes = StreamUtil.readBytes(virtualFile.getInputStream());
+            byte[] bytes = virtualFile.contentsToByteArray();
             s = new String(bytes, StandardCharsets.UTF_8);
         } catch (IOException e) {
             return;
@@ -161,7 +160,7 @@ public class SymfonyWebpackUtil {
     private static void visitManifestJson(@NotNull VirtualFile virtualFile, @NotNull Consumer<Pair<String, String>> consumer) {
         JsonElement jsonElement;
         try {
-            byte[] bytes = StreamUtil.readBytes(virtualFile.getInputStream());
+            byte[] bytes = virtualFile.contentsToByteArray();
             String s = new String(bytes, StandardCharsets.UTF_8);
             jsonElement = JsonParser.parseString(s);
         } catch (JsonSyntaxException | IOException e) {

@@ -1,9 +1,13 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating.webpack;
 
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.testFramework.LightVirtualFile;
 import fr.adrienbrault.idea.symfony2plugin.templating.webpack.SymfonyWebpackUtil;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -57,5 +61,51 @@ public class SymfonyWebpackUtilTest extends SymfonyLightCodeInsightFixtureTestCa
         SymfonyWebpackUtil.visitManifestJsonEntries(virtualFile, pair -> entries.add(pair.getFirst()));
 
         assertTrue(entries.isEmpty());
+    }
+
+    public void testRepeatedManifestReadsDoNotLeaveStreamsOpen() {
+        StreamTrackingVirtualFile virtualFile = new StreamTrackingVirtualFile("{\"build/app.js\":\"/build/app.123abc.js\"}");
+
+        for (int i = 0; i < 3; i++) {
+            Set<String> targets = new HashSet<>();
+            SymfonyWebpackUtil.visitManifestJsonEntries(virtualFile, pair -> targets.add(pair.getSecond()));
+
+            assertContainsElements(targets, "/build/app.123abc.js");
+            assertEquals(0, virtualFile.openStreams);
+        }
+    }
+
+    public void testInvalidManifestDoesNotLeaveStreamsOpen() {
+        StreamTrackingVirtualFile virtualFile = new StreamTrackingVirtualFile("{");
+        Set<String> entries = new HashSet<>();
+
+        SymfonyWebpackUtil.visitManifestJsonEntries(virtualFile, pair -> entries.add(pair.getFirst()));
+
+        assertTrue(entries.isEmpty());
+        assertEquals(0, virtualFile.openStreams);
+    }
+
+    private static class StreamTrackingVirtualFile extends LightVirtualFile {
+        private int openStreams;
+
+        private StreamTrackingVirtualFile(String content) {
+            super("manifest.json", content);
+        }
+
+        @Override
+        public InputStream getInputStream() {
+            openStreams++;
+            return new ByteArrayInputStream(getContent().toString().getBytes(StandardCharsets.UTF_8)) {
+                private boolean closed;
+
+                @Override
+                public void close() {
+                    if (!closed) {
+                        closed = true;
+                        openStreams--;
+                    }
+                }
+            };
+        }
     }
 }

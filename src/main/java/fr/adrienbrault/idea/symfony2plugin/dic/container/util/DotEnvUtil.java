@@ -181,8 +181,8 @@ public class DotEnvUtil {
             }
 
             Properties variables = new Properties();
-            try {
-                variables.load(virtualFile.getInputStream());
+            try (InputStream inputStream = virtualFile.getInputStream()) {
+                variables.load(inputStream);
             } catch (Throwable e) {
                 continue;
             }
