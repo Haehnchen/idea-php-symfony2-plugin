@@ -24,9 +24,6 @@ import com.jetbrains.php.lang.psi.elements.PhpNamedElement
 import com.jetbrains.php.lang.psi.elements.PhpClass
 import com.jetbrains.twig.TwigFile
 import com.jetbrains.twig.TwigFileType
-import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeClass
-import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil
-import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeIndex.PhpAttributeIndexer.FORM_FIELD_ATTRIBUTE
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TemplateMoveRenameUtil
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil
@@ -613,27 +610,7 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
         val names = linkedSetOf<String>()
 
         if (isTwigAccessibleField(field)) names.add(field.name)
-        names.addAll(getFormFieldNames(field))
-
-        return names
-    }
-
-    /**
-     * Form field names come from the shared form collection rather than the PHP property name.
-     */
-    private fun getFormFieldNames(field: Field): Set<String> {
-        if (field.getAttributes(FORM_FIELD_ATTRIBUTE).isEmpty()) return emptySet()
-
-        val owner = field.containingClass ?: return emptySet()
-        val formType = FormUtil.getFormTypeClasses(field.project)[owner.fqn.trimStart('\\')]
-        if (formType?.type != FormTypeClass.Type.ATTRIBUTE) return emptySet()
-
-        val names = linkedSetOf<String>()
-        FormFieldResolver.visitFormFields(field.project, listOf(owner.fqn)) { formField ->
-            if (formField.propertyName() == field.name && formField.ownerFormTypeFqn() == owner.fqn) {
-                names.add(formField.name())
-            }
-        }
+        names.addAll(FormFieldResolver.getAttributeFieldNames(field))
 
         return names
     }

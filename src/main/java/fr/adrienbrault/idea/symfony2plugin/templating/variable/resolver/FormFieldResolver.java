@@ -297,6 +297,30 @@ public class FormFieldResolver implements TwigTypeResolver {
     }
 
     @NotNull
+    public static Set<String> getAttributeFieldNames(@NotNull Field field) {
+        if (field.getAttributes(PhpAttributeIndex.PhpAttributeIndexer.FORM_FIELD_ATTRIBUTE).isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        PhpClass owner = field.getContainingClass();
+        if (owner == null) {
+            return Collections.emptySet();
+        }
+        FormTypeClass formType = FormUtil.getFormTypeClasses(field.getProject()).get(StringUtils.stripStart(owner.getFQN(), "\\"));
+        if (formType == null || formType.getType() != FormTypeClass.Type.ATTRIBUTE) {
+            return Collections.emptySet();
+        }
+
+        Set<String> names = new LinkedHashSet<>();
+        visitFormFields(field.getProject(), Collections.singleton(owner.getFQN()), formField -> {
+            if (field.getName().equals(formField.propertyName()) && owner.getFQN().equals(formField.ownerFormTypeFqn())) {
+                names.add(formField.name());
+            }
+        });
+        return names;
+    }
+
+    @NotNull
     private static List<TwigFormField> getAttributeFormFields(@NotNull PhpClass phpClass) {
         return CachedValuesManager.getCachedValue(phpClass, () -> {
             List<TwigFormField> fields = new ArrayList<>();
