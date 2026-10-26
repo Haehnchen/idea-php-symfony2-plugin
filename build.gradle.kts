@@ -5,8 +5,8 @@ fun properties(key: String) = project.findProperty(key).toString()
 
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "2.4.10"
-    id("org.jetbrains.intellij.platform") version "2.18.1"
+    id("org.jetbrains.kotlin.jvm") version "2.4.21"
+    id("org.jetbrains.intellij.platform") version "2.19.0"
     id("org.jetbrains.changelog") version "2.5.0"
 }
 
