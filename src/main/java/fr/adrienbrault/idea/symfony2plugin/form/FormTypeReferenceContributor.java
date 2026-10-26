@@ -180,13 +180,13 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
                         return new PsiReference[0];
                     }
 
-                    Method method = FormUtil.resolveFormGetterCallMethod(methodMatchParameter.getMethodReference());
-                    if(method == null) {
+                    PhpClass formType = FormUtil.resolveFormGetterCall(methodMatchParameter.getMethodReference());
+                    if(formType == null) {
                         return new PsiReference[0];
                     }
 
                     return new PsiReference[] {
-                        new FormFieldNameReference((StringLiteralExpression) psiElement, method)
+                        new FormFieldNameReference((StringLiteralExpression) psiElement, formType)
                     };
                 }
 

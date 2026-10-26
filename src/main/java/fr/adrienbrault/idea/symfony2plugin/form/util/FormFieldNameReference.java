@@ -3,74 +3,96 @@ package fr.adrienbrault.idea.symfony2plugin.form.util;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiReferenceBase;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormFieldResolver;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.TwigFormField;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
-public class FormFieldNameReference extends PsiReferenceBase<PsiElement> implements PsiReference {
+public class FormFieldNameReference extends PsiReferenceBase<StringLiteralExpression> {
 
-    private final StringLiteralExpression element;
-    private final Method method;
+    private final PhpClass formType;
 
-    public FormFieldNameReference(@NotNull StringLiteralExpression element, Method method) {
-        super(element);
-        this.element = element;
-        this.method = method;
+    public FormFieldNameReference(@NotNull StringLiteralExpression element, @NotNull PhpClass formType) {
+        super(element, element.getValueRange());
+        this.formType = formType;
     }
 
     @Nullable
     @Override
     public PsiElement resolve() {
-
-        MethodReference[] formBuilderTypes = FormUtil.getFormBuilderTypes(method);
-        for(MethodReference methodReference: formBuilderTypes) {
-            String fieldName = PsiElementUtils.getMethodParameterAt(methodReference, 0);
-            if(fieldName != null && fieldName.equals(this.element.getContents())) {
-                return methodReference;
+        for (TwigFormField field : getFields()) {
+            if (!field.name().equals(myElement.getContents())) {
+                continue;
             }
+
+            PhpClass owner = PhpElementsUtil.getClassInterface(myElement.getProject(), field.ownerFormTypeFqn());
+            if (owner == null) {
+                continue;
+            }
+            if (field.propertyName() != null) {
+                return owner.findFieldByName(field.propertyName(), false);
+            }
+
+            return resolveBuilderField(owner, field.name());
         }
 
+        return null;
+    }
+
+    @Nullable
+    private static MethodReference resolveBuilderField(@NotNull PhpClass owner, @NotNull String name) {
+        Method method = owner.findMethodByName("buildForm");
+        if (method == null) {
+            return null;
+        }
+        for (MethodReference call : FormUtil.getFormBuilderTypes(method)) {
+            if (name.equals(PsiElementUtils.getMethodParameterAt(call, 0))) {
+                return call;
+            }
+        }
         return null;
     }
 
     @NotNull
     @Override
     public Object[] getVariants() {
-        return getFormLookups(method);
-    }
-
-    public static LookupElement[] getFormLookups(Method method) {
-
-        MethodReference[] formBuilderTypes = FormUtil.getFormBuilderTypes(method);
-        List<LookupElement> lookupElements = new ArrayList<>();
-
-        for(MethodReference methodReference: formBuilderTypes) {
-            String fieldName = PsiElementUtils.getMethodParameterAt(methodReference, 0);
-            if(fieldName != null) {
-
-                LookupElementBuilder lookup = LookupElementBuilder.create(fieldName).withIcon(Symfony2Icons.FORM_TYPE);
-                String fieldType = PsiElementUtils.getMethodParameterAt(methodReference, 1);
-                if(fieldType != null) {
-                    lookup = lookup.withTypeText(fieldType, true);
-                }
-
-                lookupElements.add(lookup);
+        Map<String, LookupElement> lookups = new LinkedHashMap<>();
+        for (TwigFormField field : getFields()) {
+            LookupElementBuilder lookup = LookupElementBuilder.create(field.name()).withIcon(Symfony2Icons.FORM_TYPE);
+            if (field.fieldTypeFqn() != null) {
+                lookup = lookup.withTypeText(field.fieldTypeFqn(), true);
             }
+            lookups.put(field.name(), lookup);
         }
-
-        return lookupElements.toArray(new LookupElement[0]);
+        return lookups.values().toArray(LookupElement[]::new);
     }
 
+    @NotNull
+    private List<TwigFormField> getFields() {
+        List<TwigFormField> fields = new ArrayList<>();
+        FormFieldResolver.visitFormFields(myElement.getProject(), Collections.singleton(formType.getFQN()), fields::add);
+        return fields;
+    }
+
+    @Override
+    public PsiElement handleElementRename(@NotNull String newElementName) {
+        return myElement;
+    }
 }

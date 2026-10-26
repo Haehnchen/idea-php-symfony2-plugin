@@ -181,67 +181,44 @@ public class FormUtil {
      * $form->get ..
      */
     @Nullable
-    private static PhpClass resolveFormGetterCall(MethodReference methodReference) {
-
+    public static PhpClass resolveFormGetterCall(@NotNull MethodReference methodReference) {
         // "$form"->get('field_name');
-        PhpPsiElement variable = methodReference.getFirstPsiChild();
-        if(!(variable instanceof Variable)) {
+        PsiElement form = methodReference.getClassReference();
+        if (form instanceof Variable variable) {
+            // Find the assignment: "$form" = $this->createForm(...);
+            PsiElement declaration = variable.resolve();
+            if (declaration == null || !(declaration.getParent() instanceof AssignmentExpression assignment)) {
+                return null;
+            }
+            // $form = "$this->createForm(new Type(), $entity)";
+            form = assignment.getValue();
+        }
+
+        // $form = $this->"createForm(new Type(), $entity)";
+        if (!(form instanceof MethodReference factoryCall)) {
             return null;
         }
 
-        // find "$form = $this->createForm" createView call
-        PsiElement variableDecl = ((Variable) variable).resolve();
-        if(variableDecl == null) {
+        int typeIndex;
+        if (PhpElementsUtil.isMethodReferenceInstanceOf(factoryCall, FORM_FACTORY_SIGNATURES)) {
+            typeIndex = 0;
+        } else if (PhpElementsUtil.isMethodReferenceInstanceOf(factoryCall, PHP_FORM_NAMED_BUILDER_SIGNATURES)) {
+            typeIndex = 1;
+        } else {
             return null;
         }
 
-        // $form = "$this->createForm(new Type(), $entity)";
-        PsiElement assignmentExpression = variableDecl.getParent();
-        if(!(assignmentExpression instanceof AssignmentExpression)) {
+        // $this->createForm("new Type()", $entity), or $this->createForm(type: Type::class);
+        PsiElement type = PsiElementUtils.getParameterOrNamedArgument(factoryCall.getParameters(), "type", typeIndex);
+        if (type == null) {
             return null;
         }
 
-        // $form = "$this->"createForm(new Type(), $entity)";
-        PhpPsiElement calledMethodReference = ((AssignmentExpression) assignmentExpression).getValue();
-        if(!(calledMethodReference instanceof MethodReference)) {
+        String argumentName = PsiElementUtils.getNamedArgumentName(type);
+        if (argumentName != null && !"type".equals(argumentName)) {
             return null;
         }
-
-        return getFormTypeClass((MethodReference) calledMethodReference);
-
-    }
-
-    private static PhpClass getFormTypeClass(@Nullable MethodReference calledMethodReference) {
-        if(calledMethodReference == null || !PhpElementsUtil.isMethodReferenceInstanceOf(calledMethodReference, "\\Symfony\\Component\\Form\\FormFactory", "create")) {
-            return null;
-        }
-
-        // $form = "$this->createForm("new Type()", $entity)";
-        PsiElement formType = PsiElementUtils.getMethodParameterPsiElementAt(calledMethodReference, 0);
-        if(formType == null) {
-            return null;
-        }
-
-        return getFormTypeClassOnParameter(formType);
-    }
-
-    /**
-     * Get form builder field for
-     * $form->get('field');
-     */
-    @Nullable
-    public static Method resolveFormGetterCallMethod(MethodReference methodReference) {
-        PhpClass formPhpClass = FormUtil.resolveFormGetterCall(methodReference);
-        if(formPhpClass == null) {
-            return null;
-        }
-
-        Method method = formPhpClass.findMethodByName("buildForm");
-        if (method == null) {
-            return null;
-        }
-
-        return method;
+        return getFormTypeClassOnParameter(type);
     }
 
     /**

@@ -3,7 +3,15 @@
 namespace Symfony\Component\Form {
     interface FormTypeInterface {}
     class FormView {}
-    interface FormInterface { public function createView(): FormView; }
+    interface FormInterface {
+        public function createView(): FormView;
+        public function get(string $name): FormInterface;
+        public function has(string $name): bool;
+    }
+    interface FormFactoryInterface {
+        public function create($type, $data = null, array $options = []): FormInterface;
+        public function createNamed($name, $type, $data = null, array $options = []): FormInterface;
+    }
 }
 
 namespace Symfony\Component\Form\Extension\Core\Type {

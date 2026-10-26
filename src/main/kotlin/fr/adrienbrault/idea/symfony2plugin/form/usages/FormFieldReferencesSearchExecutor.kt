@@ -4,6 +4,7 @@ import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.psi.*
 import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.PsiSearchHelper
 import com.intellij.psi.search.PsiSearchScopeUtil
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.PsiTreeUtil
@@ -12,28 +13,72 @@ import com.intellij.util.QueryExecutor
 import com.intellij.util.indexing.FileBasedIndex
 import com.jetbrains.php.PhpIndex
 import com.jetbrains.php.lang.PhpLangUtil
+import com.jetbrains.php.lang.PhpFileType
 import com.jetbrains.php.lang.psi.PhpFile
 import com.jetbrains.php.lang.psi.elements.*
 import com.jetbrains.php.lang.psi.elements.Function
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil
+import fr.adrienbrault.idea.symfony2plugin.form.util.FormFieldNameReference
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.FormDataClassStubIndex
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormFieldResolver
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil
 
 /**
- * Finds `$builder->add('title')` for `$title`, `getTitle()` or `setTitle()`
+ * Finds builder declarations and attributed form accesses for PHP members.
  */
 class FormFieldReferencesSearchExecutor : QueryExecutor<PsiReference, ReferencesSearch.SearchParameters> {
     override fun execute(parameters: ReferencesSearch.SearchParameters, consumer: Processor<in PsiReference>): Boolean =
         ReadAction.computeBlocking<Boolean, RuntimeException> {
             val target = parameters.elementToSearch as? PhpNamedElement ?: return@computeBlocking true
 
-            processFormFieldUsages(target) { literal ->
+            val completed = processFormFieldUsages(target) { literal ->
                 !PsiSearchScopeUtil.isInScope(parameters.effectiveSearchScope, literal) ||
                     consumer.process(FormFieldUsageReference(literal, target))
             }
+            if (!completed) return@computeBlocking false
+
+            processAttributeFieldAccessUsages(target, parameters, consumer)
         }
+
+    // Find get()/has() accesses separately from classic builder declarations.
+    private fun processAttributeFieldAccessUsages(
+        target: PhpNamedElement,
+        parameters: ReferencesSearch.SearchParameters,
+        consumer: Processor<in PsiReference>,
+    ): Boolean {
+        if (target !is Field || !Symfony2ProjectComponent.isEnabled(target.project)) return true
+
+        val names = FormFieldResolver.getAttributeFieldNames(target)
+        if (names.isEmpty()) return true
+
+        val project = target.project
+        val searchScope = parameters.scopeDeterminedByUser
+        val globalScope = searchScope as? GlobalSearchScope ?: GlobalSearchScope.projectScope(project)
+        val phpScope = GlobalSearchScope.getScopeRestrictedByFileTypes(globalScope, PhpFileType.INSTANCE)
+        val candidates = linkedSetOf<PhpFile>()
+        for (name in names) {
+            ProgressManager.checkCanceled()
+            PsiSearchHelper.getInstance(project).processAllFilesWithWordInLiterals(name, phpScope) { file ->
+                if (file is PhpFile) candidates.add(file)
+                true
+            }
+        }
+
+        for (file in candidates) {
+            ProgressManager.checkCanceled()
+            for (literal in PsiTreeUtil.findChildrenOfType(file, StringLiteralExpression::class.java)) {
+                if (literal.contents !in names || !PsiSearchScopeUtil.isInScope(searchScope, literal)) continue
+
+                for (reference in literal.references.filterIsInstance<FormFieldNameReference>()) {
+                    if (reference.isReferenceTo(target) && !consumer.process(reference)) return false
+                }
+            }
+        }
+
+        return true
+    }
 }
 
 class FormFieldUsageReference(element: StringLiteralExpression, private val target: PhpNamedElement) :
