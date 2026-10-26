@@ -76,6 +76,7 @@ public class FormUtil {
         // Symfony 4
         new MethodMatcher.CallToSignature("\\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController", "createForm"),
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "create"),
+        new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormFactoryInterface", "createBuilder"),
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Form\\FormFactory", "createBuilder"),
     };
 
@@ -199,26 +200,49 @@ public class FormUtil {
             return null;
         }
 
+        if (!PhpElementsUtil.isMethodReferenceInstanceOf(factoryCall, FORM_FACTORY_SIGNATURES)
+            && !PhpElementsUtil.isMethodReferenceInstanceOf(factoryCall, PHP_FORM_NAMED_BUILDER_SIGNATURES)) {
+            return null;
+        }
+
+        // $this->createForm("new Type()", $entity), or $this->createForm(type: Type::class);
+        PsiElement type = getFormTypeArgument(factoryCall);
+        if (type == null) {
+            return null;
+        }
+
+        return getFormTypeClassOnParameter(type);
+    }
+
+    /**
+     * Returns the type argument of a supported form builder, factory or controller call.
+     */
+    @Nullable
+    public static PsiElement getFormTypeArgument(@NotNull MethodReference methodReference) {
         int typeIndex;
-        if (PhpElementsUtil.isMethodReferenceInstanceOf(factoryCall, FORM_FACTORY_SIGNATURES)) {
+        if (PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, FORM_FACTORY_SIGNATURES)) {
+            // $this->createForm(Type::class), $factory->create(Type::class), $factory->createBuilder(Type::class)
             typeIndex = 0;
-        } else if (PhpElementsUtil.isMethodReferenceInstanceOf(factoryCall, PHP_FORM_NAMED_BUILDER_SIGNATURES)) {
+        } else if (PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, PHP_FORM_BUILDER_SIGNATURES)
+            || PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, PHP_FORM_NAMED_BUILDER_SIGNATURES)) {
+            // $builder->add('field', Type::class), $builder->create('field', Type::class)
+            // $factory->createNamed('form', Type::class), $factory->createNamedBuilder('form', Type::class)
             typeIndex = 1;
         } else {
             return null;
         }
 
-        // $this->createForm("new Type()", $entity), or $this->createForm(type: Type::class);
-        PsiElement type = PsiElementUtils.getParameterOrNamedArgument(factoryCall.getParameters(), "type", typeIndex);
-        if (type == null) {
+        PsiElement argument = PsiElementUtils.getParameterOrNamedArgument(methodReference.getParameters(), "type", typeIndex);
+        if (argument == null) {
             return null;
         }
 
-        String argumentName = PsiElementUtils.getNamedArgumentName(type);
+        String argumentName = PsiElementUtils.getNamedArgumentName(argument);
         if (argumentName != null && !"type".equals(argumentName)) {
             return null;
         }
-        return getFormTypeClassOnParameter(type);
+
+        return argument;
     }
 
     /**
