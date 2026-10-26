@@ -75,6 +75,22 @@ class AttributeFormFieldFindUsagesTest : SymfonyLightCodeInsightFixtureTestCase(
         assertTrue(target.containingFile.text.contains("\$updatedName"))
     }
 
+    fun testPrivateTraitAliasFindsUsagesAcrossConsumingForms() {
+        val template = myFixture.addFileToProject("templates/form/traits.html.twig", "{{ form.displayName }} {{ form.traitEmail }}")
+        myFixture.addFileToProject("templates/form/other_traits.html.twig", "{{ form.displayName }}")
+        myFixture.addFileToProject("templates/form/shadowed_traits.html.twig", "{{ form.displayName }}")
+        myFixture.addFileToProject("templates/unrelated.html.twig", "{{ form.displayName }}")
+        val target = PhpElementsUtil.getClassInterface(project, "App\\Form\\ContactFields")!!.findFieldByName("traitName", false)!!
+
+        assertEquals(2, usages(target).size)
+        assertEquals(target, usages(target).first().resolve())
+        assertEquals(1, usages(target, GlobalSearchScope.fileScope(template)).size)
+        assertEquals(1, usages(target, LocalSearchScope(template)).size)
+        assertEmpty(usages(target, LocalSearchScope(target)))
+        val publicTarget = PhpElementsUtil.getClassInterface(project, "App\\Form\\ContactFields")!!.findFieldByName("traitEmail", false)!!
+        assertEquals(1, usages(publicTarget, GlobalSearchScope.fileScope(template)).size)
+    }
+
     private fun field(name: String): Field =
         PhpElementsUtil.getClass(project, "\\App\\Form\\AccountData")!!.findFieldByName(name, false)!!
 
