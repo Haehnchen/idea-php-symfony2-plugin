@@ -89,6 +89,17 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         assertContainsElements(myFixture.getLookupElementStrings(), "form_row(form.title)", "form_start(form)");
     }
 
+    public void testAttributeFormFieldsCompletion() {
+        myFixture.copyFileToProject("ide-twig.json");
+        myFixture.copyFileToProject("AttributeFormFields.php");
+        myFixture.addFileToProject("templates/form/attributes.html.twig", "{{ form.<caret> }}");
+        myFixture.configureFromTempProjectFile("templates/form/attributes.html.twig");
+        myFixture.completeBasic();
+
+        assertContainsElements(myFixture.getLookupElementStrings(), "email", "displayName", "identifier");
+        assertCompletionResultsNotContain("internalName", "unannotated");
+    }
+
     public void testThatConstantProvidesCompletionForClassConstant() {
         myFixture.copyFileToProject("TwigFilterExtension.php");
 

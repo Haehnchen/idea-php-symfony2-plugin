@@ -558,10 +558,12 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
                     if (text.equals(twigTypeContainer.getStringElement())) {
                         FormFieldDataHolder formFieldDataHolder = twigTypeContainer.getFormFieldDataHolder();
                         if (formFieldDataHolder != null) {
-                            // @TODO: resolve the to field itself
                             PhpClass phpClass = PhpElementsUtil.getClassInterface(psiElement.getProject(), formFieldDataHolder.ownerFormTypeFqn());
                             if (phpClass != null) {
-                                targetPsiElements.add(phpClass);
+                                PsiElement target = formFieldDataHolder.propertyName() != null
+                                    ? phpClass.findFieldByName(formFieldDataHolder.propertyName(), false)
+                                    : phpClass;
+                                ContainerUtil.addIfNotNull(targetPsiElements, target);
                             }
                         }
                     }

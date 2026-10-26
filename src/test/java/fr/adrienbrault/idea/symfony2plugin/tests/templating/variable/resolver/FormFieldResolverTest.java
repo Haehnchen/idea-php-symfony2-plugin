@@ -119,6 +119,30 @@ public class FormFieldResolverTest extends SymfonyLightCodeInsightFixtureTestCas
         assertEquals("\\App\\Form\\ProductType", formFieldDataHolder.ownerFormTypeFqn());
     }
 
+    public void testAttributeFieldMetadata() {
+        myFixture.configureByText(PhpFileType.INSTANCE, """
+            <?php
+            namespace App;
+            use Symfony\\Component\\Form\\Attribute\\AsFormType;
+            use Symfony\\Component\\Form\\Attribute\\FormField;
+
+            #[AsFormType]
+            class AccountData {
+                #[FormField(type: \\Symfony\\Component\\Form\\Extension\\Core\\Type\\TextType::class, name: 'displayName')]
+                public string $internalName;
+            }
+            """);
+
+        ArrayList<TwigFormField> fields = new ArrayList<>();
+        FormFieldResolver.visitFormFields(getProject(), Collections.singleton("\\App\\AccountData"), fields::add);
+
+        assertSize(1, fields);
+        TwigFormField field = fields.getFirst();
+        assertEquals("displayName", field.name());
+        assertEquals("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\TextType", field.fieldTypeFqn());
+        assertEquals("internalName", field.propertyName());
+    }
+
     public void testResolveDoesNotUseFormViewClassWithoutFormViewDataHolder() {
         myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
             "namespace Symfony\\Component\\Form { class FormView {} interface FormTypeInterface {} interface FormBuilderInterface { public function add(); } }\n" +

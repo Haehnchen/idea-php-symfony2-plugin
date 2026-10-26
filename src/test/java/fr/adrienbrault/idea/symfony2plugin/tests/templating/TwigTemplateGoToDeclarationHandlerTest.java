@@ -258,6 +258,16 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
         assertNavigationMatch(TwigFileType.INSTANCE, "{# \\Date<caret>Time:format #}", PlatformPatterns.psiElement(Method.class));
     }
 
+    public void testAttributeFormFieldNavigation() {
+        myFixture.copyFileToProject("ide-twig.json");
+        myFixture.copyFileToProject("AttributeFormFields.php");
+        PsiFile template = myFixture.addFileToProject("templates/form/attributes.html.twig", "{{ form.displayName }}");
+        myFixture.configureFromExistingVirtualFile(template.getVirtualFile());
+        myFixture.getEditor().getCaretModel().moveToOffset("{{ form.dis".length());
+
+        assertNavigationMatch(PlatformPatterns.psiElement(Field.class).withName("internalName"));
+    }
+
     public void testSeeTagGotoRegexMatch() {
         for (String s : new String[]{"\\DateTime", "\\DateTime::format", "foo/foo.html.twig", "@foo/foo.html.twig", "@foo/fo-o.html.twig", "@foo\\fo-o.html.twig", "Include/type_embed.html.twig"}) {
             assertTrue(Pattern.compile(TwigPattern.DOC_SEE_REGEX).matcher("{# @see " + s + " #}").find());

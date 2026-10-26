@@ -6,15 +6,17 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Primitive metadata for a Symfony form field found in a form type.
  *
- * @param name field name passed to the form builder
- * @param fieldTypeFqn explicit field form type FQN, or {@code null} when the builder call has no type parameter
- * @param ownerFormTypeFqn FQN of the form type whose {@code buildForm()} contributed this field
+ * @param name visible form field name
+ * @param fieldTypeFqn explicit field form type FQN, or {@code null} when no type is declared
+ * @param ownerFormTypeFqn FQN of the form type contributing this field
+ * @param propertyName PHP property declaring an attribute field, or {@code null} for builder fields
  *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public record TwigFormField(
     @NotNull String name,
     @Nullable String fieldTypeFqn,
-    @NotNull String ownerFormTypeFqn
+    @NotNull String ownerFormTypeFqn,
+    @Nullable String propertyName
 ) {
 }
