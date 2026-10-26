@@ -75,6 +75,18 @@ public class FormUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
 
         assertNotNull(formTypeClasses.get("foo_bar"));
         assertEquals(formTypeClasses.get("foo_bar").getPhpClass(getProject()).getFQN(), "\\Form\\FormType\\FooBar");
+        assertEquals(FormTypeClass.Type.PLAIN, formTypeClasses.get("foo_type").getType());
+    }
+
+    public void testGetAttributeFormTypeClasses() {
+        myFixture.copyFileToProject("attribute_form_types.php");
+
+        Map<String, FormTypeClass> formTypes = FormUtil.getFormTypeClasses(getProject());
+        FormTypeClass formType = formTypes.get("App\\Form\\AccountData");
+        assertNotNull(formType);
+        assertEquals("\\App\\Form\\AccountData", formType.getPhpClassName());
+        assertEquals(FormTypeClass.Type.ATTRIBUTE, formType.getType());
+        assertFalse(formTypes.containsKey("App\\Form\\PlainData"));
     }
 
     public void testGetFormAliases() {

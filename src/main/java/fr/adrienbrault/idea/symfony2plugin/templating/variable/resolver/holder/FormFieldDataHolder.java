@@ -6,14 +6,16 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Metadata for a Symfony form field exposed in Twig, for example {@code form.title}.
  *
- * @param fieldTypeFqn explicit normalized field form type FQN, or {@code null} when the builder call has no type parameter
- * @param ownerFormTypeFqn normalized FQN of the form type whose {@code buildForm()} contributed this field
+ * @param fieldTypeFqn explicit normalized field form type FQN, or {@code null} when no type is declared
+ * @param ownerFormTypeFqn normalized FQN of the form type contributing this field
+ * @param propertyName PHP property declaring an attribute field, or {@code null} for builder fields
  *
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public record FormFieldDataHolder(
     @Nullable String fieldTypeFqn,
-    @NotNull String ownerFormTypeFqn
+    @NotNull String ownerFormTypeFqn,
+    @Nullable String propertyName
 ) {
     public FormFieldDataHolder {
         if (fieldTypeFqn != null && !fieldTypeFqn.startsWith("\\")) {

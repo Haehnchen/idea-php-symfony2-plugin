@@ -14,7 +14,7 @@ public class TwigFormFieldLookupElementTest extends TestCase {
     public void testFormFieldCompletionUsesPrimitiveFormDataHolderPresentation() {
         LookupElement lookupElement = TwigTemplateCompletionContributor.decorateFormFieldLookupElement(
             LookupElementBuilder.create("title"),
-            new FormFieldDataHolder("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\TextType", "\\App\\Form\\ProductType")
+            new FormFieldDataHolder("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\TextType", "\\App\\Form\\ProductType", null)
         );
 
         LookupElementPresentation presentation = new LookupElementPresentation();

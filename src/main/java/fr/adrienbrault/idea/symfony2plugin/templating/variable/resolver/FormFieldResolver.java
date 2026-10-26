@@ -2,21 +2,33 @@ package fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.util.CachedValueProvider;
+import com.intellij.psi.util.CachedValuesManager;
+import com.intellij.psi.util.PsiModificationTracker;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.lang.PhpLanguage;
+import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
+import com.jetbrains.php.lang.psi.elements.PhpAttribute;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.Variable;
 import com.jetbrains.php.lang.psi.resolve.types.PhpType;
+import fr.adrienbrault.idea.symfony2plugin.form.dict.FormClass;
+import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeClass;
+import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder.FormFieldDataHolder;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder.FormViewDataHolder;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpPsiAttributesUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -188,7 +200,7 @@ public class FormFieldResolver implements TwigTypeResolver {
                 fieldTypeFqn = FormUtil.getFormTypeFqnOnParameter(psiElement);
             }
 
-            twigFormFields.add(new TwigFormField(fieldName, fieldTypeFqn, formTypeClass.getFQN()));
+            twigFormFields.add(new TwigFormField(fieldName, fieldTypeFqn, formTypeClass.getFQN(), null));
         }
 
         return twigFormFields;
@@ -219,13 +231,19 @@ public class FormFieldResolver implements TwigTypeResolver {
                 continue;
             }
 
+            if (collector == null) {
+                collector = new FormUtil.FormTypeCollector(project).collect();
+            }
+
+            FormTypeClass formType = collector.getFormTypesMap().get(StringUtils.stripStart(phpClass.getFQN(), "\\"));
+            if (formType != null && formType.getType() == FormTypeClass.Type.ATTRIBUTE) {
+                visitAttributeFormFields(phpClass, collector, consumer);
+                continue;
+            }
+
             Method method = phpClass.findMethodByName("buildForm");
             if (method != null) {
                 methods.add(method);
-            }
-
-            if (collector == null) {
-                collector = new FormUtil.FormTypeCollector(project).collect();
             }
 
             for (PhpClass formInHierarchicalPath : FormUtil.getParentAndExtendingTypes(phpClass, collector)) {
@@ -244,9 +262,68 @@ public class FormFieldResolver implements TwigTypeResolver {
         }
     }
 
+    private static void visitAttributeFormFields(@NotNull PhpClass phpClass, @NotNull FormUtil.FormTypeCollector collector, @NotNull Consumer<TwigFormField> consumer) {
+        Map<String, TwigFormField> fields = new LinkedHashMap<>();
+        Set<String> visited = new HashSet<>();
+        Set<String> formTypes = new LinkedHashSet<>();
+
+        // Collect child fields first so they override fields from attributed parents.
+        for (PhpClass current = phpClass; current != null && visited.add(current.getFQN()); current = current.getSuperClass()) {
+            FormTypeClass formType = collector.getFormTypesMap().get(StringUtils.stripStart(current.getFQN(), "\\"));
+            if (formType == null || formType.getType() != FormTypeClass.Type.ATTRIBUTE) {
+                continue;
+            }
+
+            formTypes.add(current.getFQN());
+            for (TwigFormField field : getAttributeFormFields(current)) {
+                fields.putIfAbsent(field.name(), field);
+            }
+        }
+
+        String coreFormType = "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\FormType";
+        formTypes.add(coreFormType);
+        PhpClass coreClass = collector.getFormTypeToClass(coreFormType);
+        if (coreClass != null) {
+            consumeFieldType(coreClass, field -> fields.putIfAbsent(field.name(), field));
+        }
+
+        for (FormClass extension : FormOptionsUtil.getExtendedTypeClasses(phpClass.getProject(), formTypes.toArray(String[]::new))) {
+            consumeFieldType(extension.getPhpClass(), field -> fields.put(field.name(), field));
+        }
+
+        for (TwigFormField field : fields.values()) {
+            consumer.accept(field);
+        }
+    }
+
+    @NotNull
+    private static List<TwigFormField> getAttributeFormFields(@NotNull PhpClass phpClass) {
+        return CachedValuesManager.getCachedValue(phpClass, () -> {
+            List<TwigFormField> fields = new ArrayList<>();
+            for (Field field : phpClass.getOwnFields()) {
+                if (field.isConstant()) {
+                    continue;
+                }
+
+                for (PhpAttribute attribute : field.getAttributes(PhpAttributeIndex.PhpAttributeIndexer.FORM_FIELD_ATTRIBUTE)) {
+                    String name = PhpElementsUtil.getStringValue(PhpPsiAttributesUtil.getAttributeValuePsiElement(attribute, 2, "name"));
+                    String type = PhpElementsUtil.getStringValue(PhpPsiAttributesUtil.getAttributeValuePsiElement(attribute, 0, "type"));
+                    fields.add(new TwigFormField(
+                        name != null ? name : field.getName(),
+                        type != null ? "\\" + StringUtils.stripStart(type, "\\") : null,
+                        phpClass.getFQN(),
+                        field.getName()
+                    ));
+                }
+            }
+
+            return CachedValueProvider.Result.create(List.copyOf(fields), PsiModificationTracker.getInstance(phpClass.getProject()).forLanguage(PhpLanguage.INSTANCE));
+        });
+    }
+
     @NotNull
     private static TwigTypeContainer toTwigTypeContainer(@NotNull TwigFormField field) {
-        return new TwigTypeContainer(field.name(), new FormFieldDataHolder(field.fieldTypeFqn(), field.ownerFormTypeFqn()));
+        return new TwigTypeContainer(field.name(), new FormFieldDataHolder(field.fieldTypeFqn(), field.ownerFormTypeFqn(), field.propertyName()));
     }
 
     private static void consumeFieldType(@NotNull PhpClass phpClass, @NotNull Consumer<TwigFormField> consumer) {
