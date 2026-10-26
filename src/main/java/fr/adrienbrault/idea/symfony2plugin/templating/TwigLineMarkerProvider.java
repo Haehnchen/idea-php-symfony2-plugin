@@ -30,6 +30,7 @@ import com.jetbrains.twig.TwigTokenTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.RelatedPopupGotoLineMarker;
+import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigComponentUsageStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigExtendsStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigIncludeStubIndex;
@@ -37,6 +38,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder.FormFieldDataHolder;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder.FormViewDataHolder;
 import fr.adrienbrault.idea.symfony2plugin.twig.loader.FileImplementsLazyLoader;
 import fr.adrienbrault.idea.symfony2plugin.twig.loader.FileOverwritesLazyLoader;
 import fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigBlockUtil;
@@ -326,15 +328,34 @@ public class TwigLineMarkerProvider implements LineMarkerProvider {
 
         Collection<TwigTypeContainer> twigTypeContainers = TwigTypeResolveUtil.resolveTwigMethodName(twigFunctionParameterIdentifierPsi, TwigTypeResolveUtil.formatPsiTypeNameWithCurrent(twigFunctionParameterIdentifierPsi));
 
-        Collection<PhpClass> phpClasses = new HashSet<>();
-
+        Set<String> formTypes = new HashSet<>();
+        Set<String> fieldOwners = new HashSet<>();
         for (TwigTypeContainer twigTypeContainer : twigTypeContainers) {
+            FormViewDataHolder formViewDataHolder = twigTypeContainer.getFormViewDataHolder();
+            if (formViewDataHolder != null) {
+                formTypes.addAll(formViewDataHolder.formTypeFqns());
+            }
+
             FormFieldDataHolder formFieldDataHolder = twigTypeContainer.getFormFieldDataHolder();
             if (formFieldDataHolder != null) {
-                PhpClass phpClass = PhpElementsUtil.getClassInterface(psiElement.getProject(), formFieldDataHolder.ownerFormTypeFqn());
-                if (phpClass != null && PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Form\\FormTypeInterface")) {
-                    phpClasses.add(phpClass);
+                if (twigTypeContainer.getStringElement() == null && formFieldDataHolder.fieldTypeFqn() != null) {
+                    formTypes.add(formFieldDataHolder.fieldTypeFqn());
+                } else {
+                    fieldOwners.add(formFieldDataHolder.ownerFormTypeFqn());
                 }
+            }
+        }
+
+        // Use field owners only when the form view itself has no type metadata.
+        if (formTypes.isEmpty()) {
+            formTypes.addAll(fieldOwners);
+        }
+
+        Collection<PhpClass> phpClasses = new HashSet<>();
+        for (String formType : formTypes) {
+            PhpClass phpClass = PhpElementsUtil.getClassInterface(psiElement.getProject(), formType);
+            if (phpClass != null && FormUtil.isFormType(phpClass)) {
+                phpClasses.add(phpClass);
             }
         }
 

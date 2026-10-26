@@ -216,6 +216,49 @@ public class TwigLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTe
         );
     }
 
+    public void testFormStartLineMarkerNavigatesToAttributeFormType() {
+        myFixture.copyFileToProject("AttributeFormFields.php");
+
+        assertLineMarker(
+            myFixture.addFileToProject("templates/form/attributes.html.twig", "{{ form_start(form) }}"),
+            new LineMarker.TargetAcceptsPattern("Navigate to Form", PlatformPatterns.psiElement(PhpClass.class).withName("AccountData"))
+        );
+    }
+
+    public void testEmptyAttributeFormHasFormLineMarker() {
+        myFixture.copyFileToProject("AttributeFormFields.php");
+        myFixture.addFileToProject("src/Controller/EmptyFormController.php", """
+            <?php
+            namespace App\\Form {
+                #[\\Symfony\\Component\\Form\\Attribute\\AsFormType]
+                class EmptyData {}
+            }
+            namespace App\\Controller {
+                class EmptyFormController extends \\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController {
+                    public function index() {
+                        $form = $this->createForm(\\App\\Form\\EmptyData::class);
+                        return $this->render('form/empty.html.twig', ['form' => $form->createView()]);
+                    }
+                }
+            }
+            """);
+
+        assertLineMarker(
+            myFixture.addFileToProject("templates/form/empty.html.twig", "{{ form_start(form) }}"),
+            new LineMarker.TargetAcceptsPattern("Navigate to Form", PlatformPatterns.psiElement(PhpClass.class).withName("EmptyData"))
+        );
+    }
+
+    public void testNestedAttributeFormLineMarkerNavigatesToFieldType() {
+        myFixture.copyFileToProject("AttributeFormFields.php");
+        myFixture.copyFileToProject("NestedFormFields.php");
+
+        assertLineMarker(
+            myFixture.addFileToProject("templates/form/nested.html.twig", "{{ form_start(form.address) }}"),
+            new LineMarker.TargetAcceptsPattern("Navigate to Form", PlatformPatterns.psiElement(PhpClass.class).withName("AddressData"))
+        );
+    }
+
     /**
      * Test embed line marker.
      */

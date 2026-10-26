@@ -1,6 +1,8 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.form;
 
+import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.PhpFileType;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
@@ -49,6 +51,28 @@ public class PhpLineMarkerProviderTest extends SymfonyLightCodeInsightFixtureTes
                     "class FoobarDataClass {}\n"
             ),
             new LineMarker.ToolTipEqualsAssert("Navigate to form")
+        );
+    }
+
+    public void testAttributeDataClassNavigatesToAnotherForm() {
+        myFixture.addFileToProject("src/Form/AccountType.php", """
+            <?php
+            namespace App;
+            class AccountType extends \\Symfony\\Component\\Form\\AbstractType {
+                public function configureOptions(\\Symfony\\Component\\OptionsResolver\\OptionsResolver $resolver) {
+                    $resolver->setDefaults(['data_class' => AccountData::class]);
+                }
+            }
+            """);
+
+        assertLineMarker(
+            myFixture.configureByText(PhpFileType.INSTANCE, """
+                <?php
+                namespace App;
+                #[\\Symfony\\Component\\Form\\Attribute\\AsFormType]
+                class AccountData {}
+                """),
+            new LineMarker.TargetAcceptsPattern("Navigate to form", PlatformPatterns.psiElement(PhpClass.class).withName("AccountType"))
         );
     }
 }

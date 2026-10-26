@@ -21,6 +21,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
 import fr.adrienbrault.idea.symfony2plugin.doctrine.DoctrineUtil
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil
+import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil
 import javax.swing.Icon
@@ -78,7 +79,7 @@ class PhpClassFileIconProvider : FileIconProvider {
 
     private fun isSymfonyFormType(phpClass: PhpClass): Boolean =
         PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Form\\AbstractType") ||
-            PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Component\\Form\\FormTypeInterface")
+            FormUtil.isFormType(phpClass)
 
     private fun isSymfonyController(phpClass: PhpClass): Boolean =
         PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController") ||
