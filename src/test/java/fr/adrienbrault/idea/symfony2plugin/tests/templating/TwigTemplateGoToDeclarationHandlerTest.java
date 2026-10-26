@@ -268,6 +268,22 @@ public class TwigTemplateGoToDeclarationHandlerTest extends SymfonyLightCodeInsi
         assertNavigationMatch(PlatformPatterns.psiElement(Field.class).withName("internalName"));
     }
 
+    public void testTraitFormFieldNavigation() {
+        myFixture.copyFileToProject("ide-twig.json");
+        myFixture.copyFileToProject("AttributeFormFields.php");
+        String code = "{{ form.displayName }} {{ form.traitEmail }}";
+        PsiFile template = myFixture.addFileToProject("templates/form/traits.html.twig", code);
+        myFixture.configureFromExistingVirtualFile(template.getVirtualFile());
+        myFixture.getEditor().getCaretModel().moveToOffset("{{ form.dis".length());
+
+        assertNavigationMatch(PlatformPatterns.psiElement(Field.class).withName("traitName")
+            .inside(PlatformPatterns.psiElement(PhpClass.class).withName("ContactFields")));
+
+        myFixture.getEditor().getCaretModel().moveToOffset(code.indexOf("traitEmail") + 3);
+        assertNavigationMatch(PlatformPatterns.psiElement(Field.class).withName("traitEmail")
+            .inside(PlatformPatterns.psiElement(PhpClass.class).withName("ContactFields")));
+    }
+
     public void testSeeTagGotoRegexMatch() {
         for (String s : new String[]{"\\DateTime", "\\DateTime::format", "foo/foo.html.twig", "@foo/foo.html.twig", "@foo/fo-o.html.twig", "@foo\\fo-o.html.twig", "Include/type_embed.html.twig"}) {
             assertTrue(Pattern.compile(TwigPattern.DOC_SEE_REGEX).matcher("{# @see " + s + " #}").find());

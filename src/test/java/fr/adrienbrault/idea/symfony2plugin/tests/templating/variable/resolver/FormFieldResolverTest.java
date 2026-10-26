@@ -23,6 +23,11 @@ import java.util.stream.Collectors;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class FormFieldResolverTest extends SymfonyLightCodeInsightFixtureTestCase {
+    @Override
+    protected String getTestDataPath() {
+        return "src/test/java/fr/adrienbrault/idea/symfony2plugin/tests/templating/fixtures";
+    }
+
     public void testGetFormTypeFqnsFromFormFactory() {
         myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
             "namespace Symfony\\Component\\Form { interface FormInterface {} interface FormView {} interface FormTypeInterface {} }\n" +
@@ -160,6 +165,24 @@ public class FormFieldResolverTest extends SymfonyLightCodeInsightFixtureTestCas
         new FormFieldResolver().resolve(getProject(), targets, targets, "form", new ArrayList<>(), null);
 
         assertFalse(targets.stream().anyMatch(twigTypeContainer -> "title".equals(twigTypeContainer.getStringElement())));
+    }
+
+    public void testUnattributedParentDoesNotContributeTraitFields() {
+        myFixture.copyFileToProject("AttributeFormFields.php");
+        ArrayList<TwigFormField> fields = new ArrayList<>();
+        FormFieldResolver.visitFormFields(getProject(), Collections.singleton("\\App\\Form\\PlainParentTraitData"), fields::add);
+
+        assertEmpty(fields);
+    }
+
+    public void testClassPropertyShadowsTraitAttribute() {
+        myFixture.copyFileToProject("AttributeFormFields.php");
+        ArrayList<TwigFormField> fields = new ArrayList<>();
+        FormFieldResolver.visitFormFields(getProject(), Collections.singleton("\\App\\Form\\ShadowedTraitData"), fields::add);
+
+        assertSize(1, fields);
+        assertEquals("traitEmail", fields.getFirst().name());
+        assertEquals("\\App\\Form\\ShadowedTraitData", fields.getFirst().ownerFormTypeFqn());
     }
 
     @NotNull

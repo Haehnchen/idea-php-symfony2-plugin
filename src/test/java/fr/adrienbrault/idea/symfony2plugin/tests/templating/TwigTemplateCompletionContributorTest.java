@@ -100,6 +100,17 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         assertCompletionResultsNotContain("internalName", "unannotated");
     }
 
+    public void testNestedTraitFormFieldsCompletion() {
+        myFixture.copyFileToProject("ide-twig.json");
+        myFixture.copyFileToProject("AttributeFormFields.php");
+        myFixture.addFileToProject("templates/form/traits.html.twig", "{{ form.<caret> }}");
+        myFixture.configureFromTempProjectFile("templates/form/traits.html.twig");
+        myFixture.completeBasic();
+
+        assertContainsElements(myFixture.getLookupElementStrings(), "displayName", "traitEmail");
+        assertCompletionResultsNotContain("traitName");
+    }
+
     public void testThatConstantProvidesCompletionForClassConstant() {
         myFixture.copyFileToProject("TwigFilterExtension.php");
 

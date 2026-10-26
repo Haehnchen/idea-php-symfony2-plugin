@@ -29,6 +29,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TemplateMoveRenameUti
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormFieldResolver
+import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil
 
 /**
  * Adds Twig usages to Find Usages for PHP symbols that are referenced from Twig.
@@ -525,10 +526,13 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
         for (twigTypeContainer in types) {
             val formField = twigTypeContainer.formFieldDataHolder
             if (formField != null && twigTypeContainer.stringElement == element.text &&
-                formField.propertyName() == targetField.name &&
-                formField.ownerFormTypeFqn() == targetField.containingClass?.fqn
+                formField.propertyName() == targetField.name
             ) {
-                return TwigMethodUsageReference(element, targetField, TextRange(0, element.textLength), renameUsage = false)
+                val owner = PhpElementsUtil.getClassInterface(element.project, formField.ownerFormTypeFqn()) ?: continue
+                val property = FormFieldResolver.resolveAttributeField(owner, targetField.name) ?: continue
+                if (targetField.manager.areElementsEquivalent(property, targetField)) {
+                    return TwigMethodUsageReference(element, targetField, TextRange(0, element.textLength), renameUsage = false)
+                }
             }
         }
 

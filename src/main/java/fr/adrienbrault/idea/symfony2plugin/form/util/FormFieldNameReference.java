@@ -47,7 +47,7 @@ public class FormFieldNameReference extends PsiReferenceBase<StringLiteralExpres
                 continue;
             }
             if (field.propertyName() != null) {
-                return owner.findFieldByName(field.propertyName(), false);
+                return FormFieldResolver.resolveAttributeField(owner, field.propertyName());
             }
 
             return resolveBuilderField(owner, field.name());

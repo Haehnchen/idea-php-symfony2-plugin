@@ -28,6 +28,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder.FormFieldDataHolder;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormFieldResolver;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigBlockUtil;
 import fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.ControllerDocVariableCollector;
@@ -561,7 +562,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
                             PhpClass phpClass = PhpElementsUtil.getClassInterface(psiElement.getProject(), formFieldDataHolder.ownerFormTypeFqn());
                             if (phpClass != null) {
                                 PsiElement target = formFieldDataHolder.propertyName() != null
-                                    ? phpClass.findFieldByName(formFieldDataHolder.propertyName(), false)
+                                    ? FormFieldResolver.resolveAttributeField(phpClass, formFieldDataHolder.propertyName())
                                     : phpClass;
                                 ContainerUtil.addIfNotNull(targetPsiElements, target);
                             }

@@ -11,6 +11,7 @@ import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
+import com.jetbrains.php.lang.psi.elements.Parameter;
 import com.jetbrains.php.lang.psi.elements.PhpAttribute;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import com.jetbrains.php.lang.psi.elements.Variable;
@@ -295,6 +296,9 @@ public class FormFieldResolver implements TwigTypeResolver {
         }
     }
 
+    /**
+     * Returns visible attribute field names used to search for references.
+     */
     @NotNull
     public static Set<String> getAttributeFieldNames(@NotNull Field field) {
         if (field.getAttributes(PhpAttributeIndex.PhpAttributeIndexer.FORM_FIELD_ATTRIBUTE).isEmpty()) {
@@ -305,12 +309,23 @@ public class FormFieldResolver implements TwigTypeResolver {
         if (owner == null) {
             return Collections.emptySet();
         }
+
+        Set<String> names = new LinkedHashSet<>();
+        if (owner.isTrait()) {
+            // Search by the declared names; references verify the property in each consuming form type.
+            for (TwigFormField formField : getAttributeFormFields(owner)) {
+                if (field.getName().equals(formField.propertyName())) {
+                    names.add(formField.name());
+                }
+            }
+            return names;
+        }
+
         FormTypeClass formType = FormUtil.getFormTypeClasses(field.getProject()).get(StringUtils.stripStart(owner.getFQN(), "\\"));
         if (formType == null || formType.getType() != FormTypeClass.Type.ATTRIBUTE) {
             return Collections.emptySet();
         }
 
-        Set<String> names = new LinkedHashSet<>();
         visitFormFields(field.getProject(), Collections.singleton(owner.getFQN()), formField -> {
             if (field.getName().equals(formField.propertyName()) && owner.getFQN().equals(formField.ownerFormTypeFqn())) {
                 names.add(formField.name());
@@ -323,11 +338,10 @@ public class FormFieldResolver implements TwigTypeResolver {
     private static List<TwigFormField> getAttributeFormFields(@NotNull PhpClass phpClass) {
         return CachedValuesManager.getCachedValue(phpClass, () -> {
             List<TwigFormField> fields = new ArrayList<>();
-            for (Field field : phpClass.getOwnFields()) {
-                if (field.isConstant()) {
-                    continue;
-                }
+            Map<String, Field> properties = new LinkedHashMap<>();
+            collectOwnAndTraitFields(phpClass, properties, new HashSet<>());
 
+            for (Field field : properties.values()) {
                 for (PhpAttribute attribute : field.getAttributes(PhpAttributeIndex.PhpAttributeIndexer.FORM_FIELD_ATTRIBUTE)) {
                     String name = PhpElementsUtil.getStringValue(PhpPsiAttributesUtil.getAttributeValuePsiElement(attribute, 2, "name"));
                     String type = PhpElementsUtil.getStringValue(PhpPsiAttributesUtil.getAttributeValuePsiElement(attribute, 0, "type"));
@@ -343,6 +357,41 @@ public class FormFieldResolver implements TwigTypeResolver {
 
             return CachedValueProvider.Result.create(List.copyOf(fields), PsiModificationTracker.getInstance(phpClass.getProject()).forLanguage(PhpLanguage.INSTANCE));
         });
+    }
+
+    /**
+     * Resolves an attribute field to its declared class or trait property, ignoring virtual properties.
+     */
+    @Nullable
+    public static Field resolveAttributeField(@NotNull PhpClass phpClass, @NotNull String propertyName) {
+        Field field = phpClass.findFieldByName(propertyName, false);
+        if (field == null || isDeclaredProperty(field)) {
+            return field;
+        }
+
+        Map<String, Field> fields = new LinkedHashMap<>();
+        collectOwnAndTraitFields(phpClass, fields, new HashSet<>());
+        return fields.get(propertyName);
+    }
+
+    private static boolean isDeclaredProperty(@NotNull Field field) {
+        return !field.isConstant() && (field.getParentList() != null || field instanceof Parameter);
+    }
+
+    private static void collectOwnAndTraitFields(@NotNull PhpClass phpClass, @NotNull Map<String, Field> fields, @NotNull Set<String> visited) {
+        if (!visited.add(phpClass.getFQN())) {
+            return;
+        }
+
+        // Class declarations take precedence over properties imported from traits.
+        for (Field field : phpClass.getOwnFields()) {
+            if (isDeclaredProperty(field)) {
+                fields.putIfAbsent(field.getName(), field);
+            }
+        }
+        for (PhpClass trait : phpClass.getTraits()) {
+            collectOwnAndTraitFields(trait, fields, visited);
+        }
     }
 
     @NotNull

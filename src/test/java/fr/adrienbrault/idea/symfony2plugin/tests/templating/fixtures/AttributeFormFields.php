@@ -46,6 +46,46 @@ namespace App\Form {
 
         public string $unannotated;
     }
+
+    trait ContactFields {
+        #[FormField(name: 'displayName')]
+        private string $traitName;
+
+        #[FormField(TextType::class)]
+        public string $traitEmail;
+    }
+
+    trait NestedContactFields {
+        use ContactFields;
+    }
+
+    /** @property string $traitEmail */
+    #[AsFormType]
+    class TraitAccountData {
+        use NestedContactFields;
+    }
+
+    #[AsFormType]
+    class ChildTraitAccountData extends TraitAccountData {}
+
+    #[AsFormType]
+    class OtherTraitData {
+        use ContactFields;
+    }
+
+    #[AsFormType]
+    class ShadowedTraitData {
+        use ContactFields;
+
+        private string $traitName;
+    }
+
+    class PlainTraitParent {
+        use ContactFields;
+    }
+
+    #[AsFormType]
+    class PlainParentTraitData extends PlainTraitParent {}
 }
 
 namespace App\Controller {
@@ -54,6 +94,23 @@ namespace App\Controller {
             $form = $this->createForm(\App\Form\AccountData::class);
 
             return $this->render('form/attributes.html.twig', ['form' => $form->createView()]);
+        }
+    }
+
+    class TraitFormController extends \Symfony\Bundle\FrameworkBundle\Controller\AbstractController {
+        public function index() {
+            $form = $this->createForm(\App\Form\TraitAccountData::class);
+            return $this->render('form/traits.html.twig', ['form' => $form->createView()]);
+        }
+
+        public function other() {
+            $form = $this->createForm(\App\Form\OtherTraitData::class);
+            return $this->render('form/other_traits.html.twig', ['form' => $form->createView()]);
+        }
+
+        public function shadowed() {
+            $form = $this->createForm(\App\Form\ShadowedTraitData::class);
+            return $this->render('form/shadowed_traits.html.twig', ['form' => $form->createView()]);
         }
     }
 }

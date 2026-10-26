@@ -12,6 +12,7 @@ import com.intellij.refactoring.rename.RenameProcessor
 import com.jetbrains.php.lang.PhpFileType
 import com.jetbrains.php.lang.psi.elements.Field
 import com.jetbrains.php.lang.psi.elements.MethodReference
+import com.jetbrains.php.lang.psi.elements.PhpClass
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormFieldNameReference
 import fr.adrienbrault.idea.symfony2plugin.form.usages.FormFieldUsageTypeProvider
@@ -119,6 +120,40 @@ class AttributeFormFieldAccessTest : SymfonyLightCodeInsightFixtureTestCase() {
         val target = literal.references.filterIsInstance<FormFieldNameReference>().single().resolve()
         assertInstanceOf(target, MethodReference::class.java)
         assertEquals("add", (target as MethodReference).name)
+    }
+
+    fun testTraitAccessesCompleteAndNavigateToInheritedProperty() {
+        assertCompletionContains(
+            PhpFileType.INSTANCE, controller("\$form->get('<caret>');", "TraitAccountData"), "displayName", "traitEmail"
+        )
+        assertReferenceMatchOnParent(
+            PhpFileType.INSTANCE, controller("\$form->has('display<caret>Name');", "ChildTraitAccountData"),
+            PlatformPatterns.psiElement(Field::class.java).withName("traitName")
+        )
+        assertReferenceMatchOnParent(
+            PhpFileType.INSTANCE, controller("\$form->get('traitEma<caret>il');", "TraitAccountData"),
+            PlatformPatterns.psiElement(Field::class.java).withName("traitEmail")
+                .inside(PlatformPatterns.psiElement(PhpClass::class.java).withName("ContactFields"))
+        )
+    }
+
+    fun testPrivateTraitAliasFindsPhpUsagesAndRespectsScope() {
+        val calls = myFixture.addFileToProject(
+            "calls.php", controller("\$form->get('displayName'); \$form->has('displayName');", "TraitAccountData")
+        )
+        myFixture.addFileToProject("other.php", """
+            <?php
+            function other(\Symfony\Component\Form\FormFactoryInterface ${'$'}factory) {
+                ${'$'}factory->create(\App\Form\OtherTraitData::class)->get('displayName');
+                ${'$'}factory->create(\App\Form\ShadowedTraitData::class)->get('displayName');
+            }
+        """.trimIndent())
+        val target = PhpElementsUtil.getClassInterface(project, "App\\Form\\ContactFields")!!.findFieldByName("traitName", false)!!
+
+        assertEquals(3, usages(target).size)
+        assertEquals(target, usages(target).first().resolve())
+        assertEquals(2, usages(target, GlobalSearchScope.fileScope(calls)).size)
+        assertEmpty(usages(target, LocalSearchScope(target)))
     }
 
     private fun controller(body: String, type: String = "AccountData"): String = """
