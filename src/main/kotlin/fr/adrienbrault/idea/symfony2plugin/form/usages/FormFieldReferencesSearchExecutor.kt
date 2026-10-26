@@ -21,6 +21,7 @@ import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormFieldNameReference
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeIndex.PhpAttributeIndexer.AS_FORM_TYPE_ATTRIBUTE
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.FormDataClassStubIndex
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormFieldResolver
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil
@@ -129,6 +130,7 @@ internal fun processFormFieldUsages(target: PhpNamedElement, consumer: (StringLi
         val phpFile = manager.findFile(file) as? PhpFile ?: continue
 
         for (form in phpFile.topLevelDefs.values().filterIsInstance<PhpClass>().filter { it.fqn in names }) {
+            if (form.getAttributes(AS_FORM_TYPE_ATTRIBUTE).isNotEmpty()) continue
             val buildForm = form.findMethodByName("buildForm") ?: continue
 
             val dataClass = FormOptionsUtil.getFormPhpClassFromContext(form.firstChild) ?: continue

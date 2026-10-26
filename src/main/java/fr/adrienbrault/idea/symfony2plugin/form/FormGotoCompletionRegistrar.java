@@ -11,9 +11,11 @@ import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
+import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.form.gotoCompletion.TranslationDomainGotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.form.gotoCompletion.TranslationGotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil;
+import fr.adrienbrault.idea.symfony2plugin.form.util.FormAttributeUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -48,6 +50,47 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
     );
 
     public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
+
+        /*
+         * #[AsFormType(options: ['label' => '<caret>', 'translation_domain' => 'forms'])]
+         * #[FormField(options: ['help' => '<caret>', 'choice_translation_domain' => 'forms'])]
+         */
+        registrar.register(PlatformPatterns.psiElement().withParent(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE), element -> {
+            if (!Symfony2ProjectComponent.isEnabled(element)) {
+                return null;
+            }
+
+            StringLiteralExpression literal = (StringLiteralExpression) element.getParent();
+            ArrayHashElement entry = PsiTreeUtil.getParentOfType(literal, ArrayHashElement.class);
+            if (entry == null || !(entry.getParent() instanceof ArrayCreationExpression options)) {
+                return null;
+            }
+
+            String option = PhpElementsUtil.getStringValue(entry.getKey());
+            if (FormAttributeUtil.getOptionsAttribute(options) != null && entry.getValue() == literal) {
+                if ("translation_domain".equals(option) || "choice_translation_domain".equals(option)) {
+                    return new TranslationDomainGotoCompletionProvider(element);
+                }
+                if (Arrays.asList(TRANSLATION_TEXT_OPTIONS).contains(option)) {
+                    String domain = FormOptionsUtil.getTranslationFromScope(options);
+                    return new TranslationGotoCompletionProvider(element, domain == null ? "messages" : domain);
+                }
+            }
+
+            // Choice labels use the field's choice_translation_domain, falling back to translation_domain.
+            if (entry.getKey() == literal && options.getParent().getParent() instanceof ArrayHashElement choices
+                && "choices".equals(PhpElementsUtil.getStringValue(choices.getKey()))
+                && choices.getParent() instanceof ArrayCreationExpression fieldOptions
+                && FormAttributeUtil.getOptionsAttribute(fieldOptions) != null) {
+                String domain = PhpElementsUtil.getArrayHashValue(fieldOptions, "choice_translation_domain");
+                if (domain == null) {
+                    domain = FormOptionsUtil.getTranslationFromScope(fieldOptions);
+                }
+                return new TranslationGotoCompletionProvider(element, domain == null ? "messages" : domain);
+            }
+
+            return null;
+        });
 
         // FormBuilderInterface:add("", "type")
         registrar.register(PlatformPatterns.psiElement().withParent(StringLiteralExpression.class).withLanguage(PhpLanguage.INSTANCE), psiElement -> {

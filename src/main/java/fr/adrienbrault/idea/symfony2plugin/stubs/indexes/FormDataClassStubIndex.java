@@ -26,6 +26,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeIndex.PhpAttributeIndexer.AS_FORM_TYPE_ATTRIBUTE;
+
 /**
  *  public function configureOptions(OptionsResolver $resolver)
  *  {
@@ -59,6 +61,12 @@ public class FormDataClassStubIndex extends FileBasedIndexExtension<String, Set<
 
             for (PhpNamedElement topLevelElement : ((PhpFile) psiFile).getTopLevelDefs().values()) {
                 if (topLevelElement instanceof PhpClass clazz) {
+                    if (!clazz.getAttributes(AS_FORM_TYPE_ATTRIBUTE).isEmpty()) {
+                        String fqn = "\\" + StringUtils.stripStart(clazz.getFQN(), "\\");
+                        map.computeIfAbsent(fqn, ignored -> new HashSet<>()).add(fqn);
+                        continue;
+                    }
+
                     for (Method method : clazz.getOwnMethods()) {
                         Map<String, String> useImports = AnnotationBackportUtil.getUseImportMap(method);
                         PhpControlFlowUtil.processFlow(method.getControlFlow(), new PhpInstructionProcessor() {
@@ -207,6 +215,6 @@ public class FormDataClassStubIndex extends FileBasedIndexExtension<String, Set<
 
     @Override
     public int getVersion() {
-        return 1;
+        return 2;
     }
 }

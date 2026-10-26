@@ -64,6 +64,9 @@ public class PhpLineMarkerProvider implements LineMarkerProvider {
 
         Collection<PhpClass> phpClasses = new HashSet<>();
         for (String clazz: classes) {
+            if (PhpElementsUtil.isEqualClassName(clazz, fqn)) {
+                continue;
+            }
             phpClasses.addAll(PhpElementsUtil.getClassesInterface(project, clazz));
         }
 
@@ -90,7 +93,7 @@ public class PhpLineMarkerProvider implements LineMarkerProvider {
         }
 
         PhpClass formDataClass = FormOptionsUtil.getFormPhpClassFromContext(leaf);
-        if (formDataClass != null) {
+        if (formDataClass != null && !PhpElementsUtil.isEqualClassName(formDataClass.getFQN(), ((PhpClass) phpClassContext).getFQN())) {
             NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(Symfony2Icons.SYMFONY_LINE_MARKER)
                 .setTargets(formDataClass)
                 .setTooltipText("Navigate to data class");
