@@ -11,6 +11,7 @@ import com.intellij.psi.PsiReference
 import com.intellij.psi.PsiReferenceBase
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.PsiSearchHelper
+import com.intellij.psi.search.PsiSearchScopeUtil
 import com.intellij.psi.search.SearchScope
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.util.Processor
@@ -23,9 +24,14 @@ import com.jetbrains.php.lang.psi.elements.PhpNamedElement
 import com.jetbrains.php.lang.psi.elements.PhpClass
 import com.jetbrains.twig.TwigFile
 import com.jetbrains.twig.TwigFileType
+import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeClass
+import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeIndex.PhpAttributeIndexer.FORM_FIELD_ATTRIBUTE
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TemplateMoveRenameUtil
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormFieldResolver
 
 /**
  * Adds Twig usages to Find Usages for PHP symbols that are referenced from Twig.
@@ -55,7 +61,7 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
                 target is Method && (TwigTypeResolveUtil.isTwigAccessibleMethod(target) || TwigExtensionUsageUtil.hasExtensionNames(target)) ->
                     doMethodSearch(target.project, target, queryParameters, consumer)
 
-                target is Field && isTwigAccessibleField(target) ->
+                target is Field && !target.isConstant ->
                     doFieldSearch(target.project, target, queryParameters, consumer)
 
                 target is Field && target.isConstant ->
@@ -125,7 +131,7 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
     }
 
     /**
-     * Searches Twig property usages backed by public PHP fields.
+     * Searches public PHP properties and attributed form fields in Twig.
      */
     private fun doFieldSearch(
         project: Project,
@@ -134,14 +140,21 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
         consumer: Processor<in PsiReference>,
     ) {
         val processed = HashSet<PsiElement>()
-        val searchWords = getTwigFieldSearchWords(targetField)
+        val searchWords = getTwigFieldNames(targetField)
         if (searchWords.isEmpty()) {
             return
         }
 
-        searchTwigFiles(project, queryParameters, searchWords) { twigPsiFile ->
-            findTwigFieldUsages(twigPsiFile, targetField, processed, consumer)
-            true
+        // Form fields can be private in PHP while still being used in Twig.
+        val searchScope = queryParameters.scopeDeterminedByUser
+        val globalScope = searchScope as? GlobalSearchScope ?: GlobalSearchScope.projectScope(project)
+        val twigScope = GlobalSearchScope.getScopeRestrictedByFileTypes(globalScope, TwigFileType.INSTANCE)
+        val scopedConsumer = Processor<PsiReference> { reference ->
+            !PsiSearchScopeUtil.isInScope(searchScope, reference.element) || consumer.process(reference)
+        }
+
+        for (twigPsiFile in collectTwigFiles(project, twigScope, searchWords)) {
+            findTwigFieldUsages(twigPsiFile, targetField, searchWords, processed, scopedConsumer)
         }
     }
 
@@ -424,19 +437,17 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
     private fun findTwigFieldUsages(
         twigFile: TwigFile,
         targetField: Field,
+        fieldNames: Set<String>,
         processed: MutableSet<PsiElement>,
         consumer: Processor<in PsiReference>,
     ) {
-        val fieldNames = getTwigFieldNames(targetField)
-
         twigFile.accept(object : PsiRecursiveElementWalkingVisitor() {
             override fun visitElement(element: PsiElement) {
                 if (fieldNames.isNotEmpty() &&
                     isTwigMethodCandidate(element, fieldNames) &&
-                    processed.add(element) &&
-                    resolvesToTargetField(element, targetField)
+                    processed.add(element)
                 ) {
-                    consumer.process(TwigMethodUsageReference(element, targetField, TextRange(0, element.textLength)))
+                    getFieldUsageReference(element, targetField)?.let { consumer.process(it) }
                 }
 
                 super.visitElement(element)
@@ -491,19 +502,51 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
         return false
     }
 
-    /**
-     * Reuses Twig type resolution so only real, typed field accesses count as usages.
-     */
-    private fun resolvesToTargetField(element: PsiElement, targetField: Field): Boolean {
+    private fun getFieldUsageReference(element: PsiElement, targetField: Field): TwigMethodUsageReference? {
         val beforeLeaf = TwigTypeResolveUtil.formatPsiTypeName(element)
         if (beforeLeaf.isEmpty()) {
-            return false
+            return null
         }
 
         val types = TwigTypeResolveUtil.resolveTwigMethodName(element, beforeLeaf)
         if (types.isEmpty()) {
-            return false
+            return null
         }
+
+        return getFormFieldUsageReference(element, targetField, types)
+            ?: getPropertyUsageReference(element, targetField, types)
+    }
+
+    /**
+     * Form fields resolve through their PHP property declaration, including private fields and aliases.
+     */
+    private fun getFormFieldUsageReference(
+        element: PsiElement,
+        targetField: Field,
+        types: Collection<TwigTypeContainer>,
+    ): TwigMethodUsageReference? {
+        for (twigTypeContainer in types) {
+            val formField = twigTypeContainer.formFieldDataHolder
+            if (formField != null && twigTypeContainer.stringElement == element.text &&
+                formField.propertyName() == targetField.name &&
+                formField.ownerFormTypeFqn() == targetField.containingClass?.fqn
+            ) {
+                return TwigMethodUsageReference(element, targetField, TextRange(0, element.textLength), renameUsage = false)
+            }
+        }
+
+        return null
+    }
+
+    /**
+     * Ordinary Twig properties resolve only to public PHP fields.
+     */
+    private fun getPropertyUsageReference(
+        element: PsiElement,
+        targetField: Field,
+        types: Collection<TwigTypeContainer>,
+    ): TwigMethodUsageReference? {
+        if (!isTwigAccessibleField(targetField)) return null
 
         for (twigTypeContainer in types) {
             for (phpClass in TwigTypeResolveUtil.resolveTwigTypeClasses(element.project, twigTypeContainer)) {
@@ -513,13 +556,13 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
 
                 for (target in TwigTypeResolveUtil.getTwigPhpNameTargets(phpClass, element.text)) {
                     if (isTargetField(target, targetField)) {
-                        return true
+                        return TwigMethodUsageReference(element, targetField, TextRange(0, element.textLength))
                     }
                 }
             }
         }
 
-        return false
+        return null
     }
 
     /**
@@ -564,12 +607,33 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
     }
 
     /**
-     * Collects the Twig-visible property name for a public PHP field.
+     * Collects PHP property names and visible names of attributed form fields.
      */
     private fun getTwigFieldNames(field: Field): Set<String> {
         val names = linkedSetOf<String>()
 
-        names.add(field.name)
+        if (isTwigAccessibleField(field)) names.add(field.name)
+        names.addAll(getFormFieldNames(field))
+
+        return names
+    }
+
+    /**
+     * Form field names come from the shared form collection rather than the PHP property name.
+     */
+    private fun getFormFieldNames(field: Field): Set<String> {
+        if (field.getAttributes(FORM_FIELD_ATTRIBUTE).isEmpty()) return emptySet()
+
+        val owner = field.containingClass ?: return emptySet()
+        val formType = FormUtil.getFormTypeClasses(field.project)[owner.fqn.trimStart('\\')]
+        if (formType?.type != FormTypeClass.Type.ATTRIBUTE) return emptySet()
+
+        val names = linkedSetOf<String>()
+        FormFieldResolver.visitFormFields(field.project, listOf(owner.fqn)) { formField ->
+            if (formField.propertyName() == field.name && formField.ownerFormTypeFqn() == owner.fqn) {
+                names.add(formField.name())
+            }
+        }
 
         return names
     }
@@ -586,23 +650,13 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
     }
 
     /**
-     * Prefetch words for Twig field search paths.
-     */
-    private fun getTwigFieldSearchWords(field: Field): Set<String> {
-        val names = linkedSetOf<String>()
-
-        names.addAll(getTwigFieldNames(field))
-
-        return names.filter { it.isNotBlank() }.toCollection(linkedSetOf())
-    }
-
-    /**
      * Synthetic reference that points a Twig usage back to the originating PHP member declaration.
      */
     class TwigMethodUsageReference(
         sourceElement: PsiElement,
         private val targetElement: PsiElement,
         rangeInElement: TextRange,
+        private val renameUsage: Boolean = true,
     ) : PsiReferenceBase<PsiElement>(sourceElement, rangeInElement, false) {
         /**
          * Resolves the synthetic usage directly to the PHP member under Find Usages.
@@ -618,6 +672,8 @@ class TwigMethodReferencesSearchExecutor : QueryExecutor<PsiReference, Reference
          * Rewrites the matched Twig token, e.g. `test.RestVar` -> `test.RenamedVar`.
          */
         override fun handleElementRename(newElementName: String): PsiElement {
+            if (!renameUsage) return myElement
+
             val renamedUsageText = getRenamedUsageText(newElementName)
             if (renamedUsageText == value) {
                 return myElement
