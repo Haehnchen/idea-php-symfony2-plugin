@@ -7,10 +7,11 @@ import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.psi.elements.ConstantReference;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
+import com.jetbrains.php.lang.psi.elements.ParameterList;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
+import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeClass;
+import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -27,26 +28,21 @@ public class FormCompletionContributor extends CompletionContributor {
                     return;
                 }
 
-                MethodReference methodReference = PhpElementsUtil.findMethodReferenceOnClassConstant(psiElement);
-                if(methodReference == null) {
+                // $builder->add('field', Type::class), $factory->create(Type::class), $this->createForm(type: Type::class)
+                ConstantReference argument = (ConstantReference) completionParameters.getPosition().getParent();
+                if (!(argument.getParent() instanceof ParameterList parameters)
+                    || !(parameters.getParent() instanceof MethodReference method)
+                    || FormUtil.getFormTypeArgument(method) != argument) {
                     return;
                 }
 
-                if (!(
-                    PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "Symfony\\Component\\Form\\FormBuilderInterface", "add") ||
-                        PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "Symfony\\Component\\Form\\FormBuilderInterface", "create") ||
-                        PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "Symfony\\Component\\Form\\FormFactoryInterface", "createNamedBuilder") ||
-                        PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, "Symfony\\Component\\Form\\FormFactoryInterface", "createNamed")
-                )) {
-                    return;
-                }
-
-                for (PhpClass phpClass : PhpIndexUtil.getAllSubclasses(psiElement.getProject(), "\\Symfony\\Component\\Form\\FormTypeInterface")) {
-                    if (phpClass.isAbstract() || phpClass.isInterface()) {
+                for (FormTypeClass formType : FormUtil.getFormTypeClasses(psiElement.getProject()).values()) {
+                    PhpClass phpClass = formType.getPhpClass(psiElement.getProject());
+                    if (phpClass == null || phpClass.isAbstract() || phpClass.isInterface() || phpClass.isTrait() || phpClass.isEnum()) {
                         continue;
                     }
 
-                    LookupElement elementBuilder = new FormClassConstantsLookupElement(phpClass);
+                    LookupElement elementBuilder = new FormClassConstantsLookupElement(phpClass, formType.getType());
 
                     completionResultSet.addElement(
                         PrioritizedLookupElement.withPriority(elementBuilder, 100)
