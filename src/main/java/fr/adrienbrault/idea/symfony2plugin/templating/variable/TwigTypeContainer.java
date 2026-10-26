@@ -28,10 +28,7 @@ public class TwigTypeContainer {
     }
 
     private TwigTypeContainer(@NotNull Collection<String> types, @Nullable FormViewDataHolder formViewDataHolder) {
-        this.types.addAll(types);
-        this.stringElement = null;
-        this.formFieldDataHolder = null;
-        this.formViewDataHolder = formViewDataHolder;
+        this(types, null, null, formViewDataHolder);
     }
 
     public TwigTypeContainer(String stringElement) {
@@ -39,9 +36,24 @@ public class TwigTypeContainer {
     }
 
     public TwigTypeContainer(String stringElement, @Nullable FormFieldDataHolder formFieldDataHolder) {
+        this(Collections.emptySet(), stringElement, formFieldDataHolder, null);
+    }
+
+    private TwigTypeContainer(@NotNull Collection<String> types, @Nullable String stringElement, @Nullable FormFieldDataHolder formFieldDataHolder, @Nullable FormViewDataHolder formViewDataHolder) {
+        this.types.addAll(types);
         this.stringElement = stringElement;
         this.formFieldDataHolder = formFieldDataHolder;
-        this.formViewDataHolder = null;
+        this.formViewDataHolder = formViewDataHolder;
+    }
+
+    @NotNull
+    public static TwigTypeContainer forFormView(@NotNull FormFieldDataHolder field) {
+        return new TwigTypeContainer(Collections.singleton("\\Symfony\\Component\\Form\\FormView"), null, field, null);
+    }
+
+    @NotNull
+    public static TwigTypeContainer forFormChildren(@NotNull FormFieldDataHolder field) {
+        return new TwigTypeContainer(Collections.emptySet(), null, field, null);
     }
 
     @NotNull
@@ -67,7 +79,16 @@ public class TwigTypeContainer {
                 ? null
                 : new FormViewDataHolder(psiVariable.getFormTypeFqns());
 
-            twigTypeContainerList.add(new TwigTypeContainer(psiVariable.getTypes(), formViewDataHolder));
+            Set<String> types = new HashSet<>(psiVariable.getTypes());
+            if (!psiVariable.getFormFields().isEmpty() && formViewDataHolder == null) {
+                types.remove("\\Symfony\\Component\\Form\\FormView");
+            }
+            if (!types.isEmpty()) {
+                twigTypeContainerList.add(new TwigTypeContainer(types, formViewDataHolder));
+            }
+            for (FormFieldDataHolder field : psiVariable.getFormFields()) {
+                twigTypeContainerList.add(forFormView(field));
+            }
         }
 
         return twigTypeContainerList;
