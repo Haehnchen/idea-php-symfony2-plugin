@@ -33,7 +33,7 @@ public class FormVarsResolver implements TwigTypeResolver {
         }
     }
 
-    private void attachVars(Project project, Collection<TwigTypeContainer> targets) {
+    static void attachVars(Project project, Collection<TwigTypeContainer> targets) {
         for(String string: FormOptionsUtil.getFormViewVars(project, "form")) {
             targets.add(new TwigTypeContainer(string));
         }

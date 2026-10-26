@@ -36,7 +36,9 @@ import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.ForLoopVariableResolver;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormFieldResolver;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormVarsResolver;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.NestedFormFieldResolver;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.TwigTypeResolver;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder.FormFieldDataHolder;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
@@ -125,6 +127,7 @@ public class TwigTypeResolveUtil {
     private static final TwigTypeResolver[] TWIG_TYPE_RESOLVERS = new TwigTypeResolver[] {
         new FormVarsResolver(),
         new FormFieldResolver(),
+        new NestedFormFieldResolver(),
         new ForLoopVariableResolver(),
     };
 
@@ -378,24 +381,32 @@ public class TwigTypeResolveUtil {
 
         String rootType = types.iterator().next();
         RootTypeResolve rootTypeResolve = resolveRootTypeContainers(psiElement, rootType);
-        if (types.size() == 1) {
-            Project project = psiElement.getProject();
-            Collection<TwigTypeContainer> twigTypeContainers = rootTypeResolve.containers();
-            if (!rootTypeResolve.extensionContext()) {
-                for(TwigTypeResolver twigTypeResolver: TWIG_TYPE_RESOLVERS) {
-                    twigTypeResolver.resolve(project, twigTypeContainers, twigTypeContainers, rootType, new ArrayList<>(), rootTypeResolve.rootVariables());
-                }
-            }
-
-            return twigTypeContainers;
+        Project project = psiElement.getProject();
+        Collection<TwigTypeContainer> rootTypes = rootTypeResolve.containers();
+        if (!rootTypeResolve.extensionContext() && (types.size() == 1 || hasFormContext(rootTypes))) {
+            attachRootMembers(project, rootTypes, rootType, rootTypeResolve.rootVariables());
         }
 
-        Project project = psiElement.getProject();
-        Collection<TwigTypeContainer> type = rootTypeResolve.containers();
+        return resolveTwigPath(project, rootTypes, types);
+    }
+
+    private static void attachRootMembers(@NotNull Project project, @NotNull Collection<TwigTypeContainer> types, @NotNull String rootName, @NotNull Collection<PsiVariable> variables) {
+        for (TwigTypeResolver resolver : TWIG_TYPE_RESOLVERS) {
+            resolver.resolve(project, types, types, rootName, new ArrayList<>(), variables);
+        }
+    }
+
+    private static boolean hasFormContext(@NotNull Collection<TwigTypeContainer> types) {
+        return types.stream().anyMatch(type -> type.getFormViewDataHolder() != null || type.getFormFieldDataHolder() != null);
+    }
+
+    @NotNull
+    private static Collection<TwigTypeContainer> resolveTwigPath(@NotNull Project project, @NotNull Collection<TwigTypeContainer> rootTypes, @NotNull Collection<String> path) {
+        Collection<TwigTypeContainer> type = rootTypes;
         Collection<List<TwigTypeContainer>> previousElements = new ArrayList<>();
         previousElements.add(new ArrayList<>(type));
 
-        String[] typeNames = types.toArray(new String[0]);
+        String[] typeNames = path.toArray(new String[0]);
         for (int i = 1; i <= typeNames.length - 1; i++ ) {
             type = resolveTwigMethodName(project, type, typeNames[i], previousElements);
             previousElements.add(new ArrayList<>(type));
@@ -817,6 +828,8 @@ public class TwigTypeResolveUtil {
             return;
         }
 
+        // Resolve outer loops first so nested form collections retain their entry metadata.
+        collectForArrayScopeVariables(twigCompositeElement.getParent(), globalVars);
         globalVars.merge("loop", VariableData.fromType(ForLoopVariableResolver.LOOP_VARIABLE_TYPE), VariableData::merge);
 
         PsiElement forTag = twigCompositeElement.getFirstChild();
@@ -827,6 +840,15 @@ public class TwigTypeResolveUtil {
 
         PhpType phpType = new PhpType();
         List<String> forTagInIdentifierString = forTagScope.getSecond();
+
+        VariableData root = globalVars.get(forTagInIdentifierString.getFirst());
+        if (root != null && (!root.formTypeFqns().isEmpty() || !root.formFields().isEmpty())) {
+            Set<FormFieldDataHolder> entries = collectFormEntries(psiElement.getProject(), root, forTagInIdentifierString);
+            if (!entries.isEmpty()) {
+                globalVars.merge(forTagScope.getFirst(), VariableData.fromFormFields(entries), VariableData::merge);
+                return;
+            }
+        }
 
         // {% for coolBar in coolBars.foos %}
         if (forTagInIdentifierString.size() > 1) {
@@ -864,20 +886,49 @@ public class TwigTypeResolveUtil {
         globalVars.merge(scopeVariable, VariableData.fromTypes(types), VariableData::merge);
     }
 
-    private record VariableData(@NotNull Set<String> types, @NotNull Set<String> formTypeFqns) {
+    @NotNull
+    private static Set<FormFieldDataHolder> collectFormEntries(@NotNull Project project, @NotNull VariableData root, @NotNull List<String> path) {
+        List<PsiVariable> variables = List.of(root.toPsiVariable());
+        Collection<TwigTypeContainer> types = TwigTypeContainer.fromCollection(variables);
+        attachRootMembers(project, types, path.getFirst(), variables);
+        Set<FormFieldDataHolder> entries = new LinkedHashSet<>();
+        for (TwigTypeContainer type : resolveTwigPath(project, types, path)) {
+            FormFieldDataHolder field = type.getFormFieldDataHolder();
+            if (field == null) {
+                continue;
+            }
+            if (type.getStringElement() != null) {
+                entries.add(field);
+            } else {
+                FormFieldDataHolder entry = NestedFormFieldResolver.getCollectionEntry(field);
+                if (entry != null) {
+                    entries.add(entry);
+                }
+            }
+        }
+        return entries;
+    }
+
+    private record VariableData(@NotNull Set<String> types, @NotNull Set<String> formTypeFqns, @NotNull Set<FormFieldDataHolder> formFields) {
         private VariableData {
             types = Set.copyOf(types);
             formTypeFqns = Set.copyOf(formTypeFqns);
+            formFields = Set.copyOf(formFields);
         }
 
         @NotNull
         private static VariableData fromPsiVariable(@NotNull PsiVariable psiVariable) {
-            return new VariableData(psiVariable.getTypes(), psiVariable.getFormTypeFqns());
+            return new VariableData(psiVariable.getTypes(), psiVariable.getFormTypeFqns(), psiVariable.getFormFields());
         }
 
         @NotNull
         private static VariableData fromTypes(@NotNull Collection<String> types) {
-            return new VariableData(new HashSet<>(types), Collections.emptySet());
+            return new VariableData(new HashSet<>(types), Collections.emptySet(), Collections.emptySet());
+        }
+
+        @NotNull
+        private static VariableData fromFormFields(@NotNull Set<FormFieldDataHolder> fields) {
+            return new VariableData(Set.of("\\Symfony\\Component\\Form\\FormView"), Collections.emptySet(), fields);
         }
 
         @NotNull
@@ -898,12 +949,14 @@ public class TwigTypeResolveUtil {
             Set<String> formTypeFqns = new HashSet<>(this.formTypeFqns);
             formTypeFqns.addAll(variableData.formTypeFqns);
 
-            return new VariableData(types, formTypeFqns);
+            Set<FormFieldDataHolder> formFields = new HashSet<>(this.formFields);
+            formFields.addAll(variableData.formFields);
+            return new VariableData(types, formTypeFqns, formFields);
         }
 
         @NotNull
         private PsiVariable toPsiVariable() {
-            return new PsiVariable(types, formTypeFqns);
+            return new PsiVariable(types, formTypeFqns, formFields);
         }
     }
 
@@ -923,6 +976,7 @@ public class TwigTypeResolveUtil {
     private static Collection<TwigTypeContainer> resolveTwigMethodName(@NotNull Project project, Collection<TwigTypeContainer> previousElement, String typeName, Collection<List<TwigTypeContainer>> twigTypeContainer) {
 
         ArrayList<TwigTypeContainer> phpNamedElements = new ArrayList<>();
+        boolean formContext = hasFormContext(previousElement);
 
         for(TwigTypeContainer phpNamedElement: previousElement) {
 
@@ -941,12 +995,18 @@ public class TwigTypeResolveUtil {
                 }
             }
 
+            if (!formContext) {
+                for(TwigTypeResolver twigTypeResolver: TWIG_TYPE_RESOLVERS) {
+                    twigTypeResolver.resolve(project, phpNamedElements, previousElement, typeName, twigTypeContainer, null);
+                }
+            }
+        }
+
+        if (formContext) {
             for(TwigTypeResolver twigTypeResolver: TWIG_TYPE_RESOLVERS) {
                 twigTypeResolver.resolve(project, phpNamedElements, previousElement, typeName, twigTypeContainer, null);
             }
-
         }
-
         return phpNamedElements;
     }
 

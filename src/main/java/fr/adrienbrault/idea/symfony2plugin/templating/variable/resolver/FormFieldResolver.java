@@ -39,19 +39,17 @@ import java.util.function.Consumer;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class FormFieldResolver implements TwigTypeResolver {
-
     public void resolve(@NotNull Project project, Collection<TwigTypeContainer> targets, Collection<TwigTypeContainer> previousElement, String typeName, Collection<List<TwigTypeContainer>> previousElements, @Nullable Collection<PsiVariable> psiVariables) {
         if (targets.isEmpty() || previousElements == null || !previousElements.isEmpty()) {
             return;
         }
 
-        TwigTypeContainer twigTypeContainer = targets.iterator().next();
-        FormViewDataHolder formViewDataHolder = twigTypeContainer.getFormViewDataHolder();
-        if (formViewDataHolder == null || formViewDataHolder.formTypeFqns().isEmpty()) {
-            return;
+        for (TwigTypeContainer root : List.copyOf(targets)) {
+            FormViewDataHolder view = root.getFormViewDataHolder();
+            if (view != null) {
+                visitFormFields(project, view.formTypeFqns(), field -> targets.add(toTwigTypeContainer(field)));
+            }
         }
-
-        visitFormFields(project, formViewDataHolder.formTypeFqns(), field -> targets.add(toTwigTypeContainer(field)));
     }
 
     public static boolean isFormView(@NotNull PhpType phpType) {
@@ -200,7 +198,8 @@ public class FormFieldResolver implements TwigTypeResolver {
                 fieldTypeFqn = FormUtil.getFormTypeFqnOnParameter(psiElement);
             }
 
-            twigFormFields.add(new TwigFormField(fieldName, fieldTypeFqn, formTypeClass.getFQN(), null));
+            PsiElement options = PsiElementUtils.getParameterOrNamedArgument(methodReference.getParameters(), "options", 2);
+            twigFormFields.add(new TwigFormField(fieldName, fieldTypeFqn, formTypeClass.getFQN(), null, NestedFormFieldResolver.getFieldOptions(options)));
         }
 
         return twigFormFields;
@@ -336,7 +335,8 @@ public class FormFieldResolver implements TwigTypeResolver {
                         name != null ? name : field.getName(),
                         type != null ? "\\" + StringUtils.stripStart(type, "\\") : null,
                         phpClass.getFQN(),
-                        field.getName()
+                        field.getName(),
+                        NestedFormFieldResolver.getFieldOptions(PhpPsiAttributesUtil.getAttributeValuePsiElement(attribute, 1, "options"))
                     ));
                 }
             }
@@ -347,7 +347,7 @@ public class FormFieldResolver implements TwigTypeResolver {
 
     @NotNull
     private static TwigTypeContainer toTwigTypeContainer(@NotNull TwigFormField field) {
-        return new TwigTypeContainer(field.name(), new FormFieldDataHolder(field.fieldTypeFqn(), field.ownerFormTypeFqn(), field.propertyName()));
+        return new TwigTypeContainer(field.name(), new FormFieldDataHolder(field.fieldTypeFqn(), field.ownerFormTypeFqn(), field.propertyName(), field.options()));
     }
 
     private static void consumeFieldType(@NotNull PhpClass phpClass, @NotNull Consumer<TwigFormField> consumer) {

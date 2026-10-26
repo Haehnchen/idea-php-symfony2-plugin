@@ -7,6 +7,8 @@ import fr.adrienbrault.idea.symfony2plugin.templating.TwigTemplateCompletionCont
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder.FormFieldDataHolder;
 import junit.framework.TestCase;
 
+import java.util.Map;
+
 /**
  * @see TwigTemplateCompletionContributor#decorateFormFieldLookupElement
  */
@@ -14,7 +16,7 @@ public class TwigFormFieldLookupElementTest extends TestCase {
     public void testFormFieldCompletionUsesPrimitiveFormDataHolderPresentation() {
         LookupElement lookupElement = TwigTemplateCompletionContributor.decorateFormFieldLookupElement(
             LookupElementBuilder.create("title"),
-            new FormFieldDataHolder("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\TextType", "\\App\\Form\\ProductType", null)
+            new FormFieldDataHolder("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\TextType", "\\App\\Form\\ProductType", null, Map.of())
         );
 
         LookupElementPresentation presentation = new LookupElementPresentation();
