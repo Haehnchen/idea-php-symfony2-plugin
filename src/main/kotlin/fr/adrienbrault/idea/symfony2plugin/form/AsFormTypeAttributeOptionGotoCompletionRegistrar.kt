@@ -4,7 +4,6 @@ import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.jetbrains.php.lang.PhpLanguage
-import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression
 import com.jetbrains.php.lang.psi.elements.ParameterList
 import com.jetbrains.php.lang.psi.elements.PhpAttribute
 import com.jetbrains.php.lang.psi.elements.PhpClass
@@ -14,9 +13,6 @@ import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter
-import fr.adrienbrault.idea.symfony2plugin.form.dict.FormClass
-import fr.adrienbrault.idea.symfony2plugin.form.dict.FormClassEnum
-import fr.adrienbrault.idea.symfony2plugin.form.dict.FormOptionEnum
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil
 import fr.adrienbrault.idea.symfony2plugin.form.visitor.FormOptionLookupVisitor
 import fr.adrienbrault.idea.symfony2plugin.form.visitor.FormOptionTargetVisitor
@@ -82,35 +78,7 @@ class AsFormTypeAttributeOptionGotoCompletionRegistrar : GotoCompletionRegistrar
                 if (option != "data_class") visitor.visit(target, option, formClass, kind)
             }
 
-            FormOptionsUtil.visitFormOptions(project, DEFAULT_FORM_TYPE, allowedOptions)
-
-            val formTypes = mutableListOf<String>()
-            val visited = mutableSetOf<String>()
-            var current: PhpClass? = phpClass
-            while (current != null && visited.add(current.fqn)) {
-                val attribute = current.getAttributes(AS_FORM_TYPE_ATTRIBUTE).firstOrNull()
-                if (attribute != null) {
-                    formTypes.add(current.fqn)
-                    val defaults = PhpPsiAttributesUtil.getAttributeValuePsiElement(attribute, 0, "options") as? ArrayCreationExpression
-                    if (defaults != null) {
-                        val formClass = FormClass(FormClassEnum.FORM_TYPE, current, false)
-                        for ((option, target) in PhpElementsUtil.getArrayCreationKeyMap(defaults)) {
-                            allowedOptions.visit(target, option, formClass, FormOptionEnum.DEFAULT)
-                        }
-                    }
-                }
-                current = current.superClass
-            }
-
-            for (option in FormOptionsUtil.getFormExtensionKeys(project, *formTypes.toTypedArray()).values) {
-                for (target in option.psiTargets) {
-                    allowedOptions.visit(target, option.option, option.formClass, option.optionEnum.first())
-                }
-            }
+            FormOptionsUtil.visitFormOptions(project, phpClass.fqn, allowedOptions)
         }
-    }
-
-    companion object {
-        private const val DEFAULT_FORM_TYPE = "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\FormType"
     }
 }

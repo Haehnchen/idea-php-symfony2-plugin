@@ -23,6 +23,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeIndex.PhpAttributeIndexer.AS_FORM_TYPE_ATTRIBUTE;
+
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
@@ -210,51 +212,63 @@ public class FormOptionsUtil {
     }
 
     public static void visitFormOptions(@NotNull Project project, @NotNull String formTypeName, @NotNull FormOptionVisitor visitor) {
-        visitFormOptions(project, formTypeName, new HashMap<>(), new FormUtil.FormTypeCollector(project).collect(), 0, visitor);
+        visitFormOptions(formTypeName, new FormUtil.FormTypeCollector(project).collect(), 0, true, visitor);
     }
 
-    private static Map<String, String> visitFormOptions(Project project, String formTypeName, HashMap<String, String> defaultValues, FormUtil.FormTypeCollector collector, int depth, @NotNull FormOptionVisitor visitor) {
-
+    private static void visitFormOptions(@NotNull String formTypeName, @NotNull FormUtil.FormTypeCollector collector, int depth, boolean withExtensions, @NotNull FormOptionVisitor visitor) {
         PhpClass phpClass = collector.getFormTypeToClass(formTypeName);
-        if(phpClass == null) {
-            return defaultValues;
+        if (phpClass == null || depth > 10) {
+            return;
         }
 
+        FormTypeClass formType = collector.getFormTypesMap().get(StringUtils.stripStart(phpClass.getFQN(), "\\"));
+        if (formType != null && formType.getType() == FormTypeClass.Type.ATTRIBUTE) {
+            visitAttributeFormOptions(phpClass, collector, depth, withExtensions, visitor);
+        } else {
+            visitPlainFormOptions(phpClass, formTypeName, collector, depth, withExtensions, visitor);
+        }
+    }
+
+    private static void visitPlainFormOptions(@NotNull PhpClass phpClass, @NotNull String formTypeName, @NotNull FormUtil.FormTypeCollector collector, int depth, boolean withExtensions, @NotNull FormOptionVisitor visitor) {
         getDefaultOptions(phpClass, new FormClass(FormClassEnum.FORM_TYPE, phpClass, false), visitor);
-        for (FormClass formClass : getExtendedTypeClasses(project, formTypeName)) {
-            getDefaultOptions(formClass.getPhpClass(), new FormClass(FormClassEnum.EXTENSION, formClass.getPhpClass(), false), visitor);
+        if (withExtensions) {
+            visitExtensionOptions(phpClass.getProject(), formTypeName, visitor);
         }
 
         // recursive search for parent form types
-        if (depth < 10) {
-            for (String formParent : FormUtil.getFormParentOfPhpClass(phpClass)) {
-                visitFormOptions(project, formParent, defaultValues, collector, ++depth, visitor);
+        for (String formParent : FormUtil.getFormParentOfPhpClass(phpClass)) {
+            visitFormOptions(formParent, collector, depth + 1, withExtensions, visitor);
+        }
+    }
+
+    private static void visitAttributeFormOptions(@NotNull PhpClass phpClass, @NotNull FormUtil.FormTypeCollector collector, int depth, boolean withExtensions, @NotNull FormOptionVisitor visitor) {
+        FormClass formClass = new FormClass(FormClassEnum.FORM_TYPE, phpClass, false);
+        visitor.visit(phpClass, "data_class", formClass, FormOptionEnum.DEFAULT);
+        ArrayCreationExpression defaults = FormAttributeUtil.getDefaultOptions(phpClass);
+        if (defaults != null) {
+            for (Map.Entry<String, PsiElement> entry : PhpElementsUtil.getArrayCreationKeyMap(defaults).entrySet()) {
+                if (!"data_class".equals(entry.getKey())) {
+                    visitor.visit(entry.getValue(), entry.getKey(), formClass, FormOptionEnum.DEFAULT);
+                }
             }
         }
 
-        return defaultValues;
+        if (withExtensions) {
+            visitExtensionOptions(phpClass.getProject(), phpClass.getFQN(), visitor);
+        }
+
+        PhpClass parent = FormAttributeUtil.getParentFormType(phpClass);
+        visitFormOptions(parent != null ? parent.getFQN() : FormAttributeUtil.DEFAULT_FORM_TYPE, collector, depth + 1, withExtensions, visitor);
+    }
+
+    private static void visitExtensionOptions(@NotNull Project project, @NotNull String formTypeName, @NotNull FormOptionVisitor visitor) {
+        for (FormClass formClass : getExtendedTypeClasses(project, formTypeName)) {
+            getDefaultOptions(formClass.getPhpClass(), formClass, visitor);
+        }
     }
 
     private static void getFormDefaultKeys(@NotNull Project project, @NotNull String formTypeName, @NotNull FormOptionVisitor visitor) {
-        getFormDefaultKeys(formTypeName, new HashMap<>(), new FormUtil.FormTypeCollector(project).collect(), 0, visitor);
-    }
-
-    private static Map<String, String> getFormDefaultKeys(String formTypeName, HashMap<String, String> defaultValues, FormUtil.FormTypeCollector collector, int depth, @NotNull FormOptionVisitor visitor) {
-        PhpClass phpClass = collector.getFormTypeToClass(formTypeName);
-        if(phpClass == null) {
-            return defaultValues;
-        }
-
-        getDefaultOptions(phpClass, new FormClass(FormClassEnum.FORM_TYPE, phpClass, false), visitor);
-
-        // recursive search for parent form types
-        if (depth < 10) {
-            for (String formParent : FormUtil.getFormParentOfPhpClass(phpClass)) {
-                getFormDefaultKeys(formParent, defaultValues, collector, ++depth, visitor);
-            }
-        }
-
-        return defaultValues;
+        visitFormOptions(formTypeName, new FormUtil.FormTypeCollector(project).collect(), 0, false, visitor);
     }
 
     @NotNull
@@ -423,6 +437,11 @@ public class FormOptionsUtil {
         // translation_domain in current array block
         String translationDomain = PhpElementsUtil.getArrayHashValue(arrayCreation, "translation_domain");
         if(translationDomain == null) {
+            if (FormAttributeUtil.getOptionsAttribute(arrayCreation) != null) {
+                PhpClass phpClass = getFormPhpClassFromContext(arrayCreation);
+                return phpClass == null ? null : PhpElementsUtil.getStringValue(FormAttributeUtil.getDefaultOptionValue(phpClass, "translation_domain"));
+            }
+
             // find on default options inside FormType
             translationDomain = PhpElementsUtil.getArrayKeyValueInsideSignature(arrayCreation, FormOptionsUtil.FORM_OPTION_METHODS, "setDefaults", "translation_domain");
         }
@@ -476,6 +495,16 @@ public class FormOptionsUtil {
      */
     @Nullable
     public static PhpClass getFormPhpClassFromContext(@NotNull PsiElement psiElement) {
+        PhpClass phpClass = psiElement instanceof PhpClass clazz ? clazz : PsiTreeUtil.getParentOfType(psiElement, PhpClass.class);
+        if (phpClass != null && !phpClass.getAttributes(AS_FORM_TYPE_ATTRIBUTE).isEmpty()) {
+            return phpClass;
+        }
+
+        return getPlainFormDataClass(psiElement);
+    }
+
+    @Nullable
+    private static PhpClass getPlainFormDataClass(@NotNull PsiElement psiElement) {
         Collection<String> classes = new ArrayList<>();
 
         // $resolver->setDefaults(['data_class' => User::class]);

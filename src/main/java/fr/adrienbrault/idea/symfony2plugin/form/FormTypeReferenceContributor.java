@@ -9,6 +9,7 @@ import com.jetbrains.php.lang.psi.elements.*;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.EntityReference;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormFieldNameReference;
+import fr.adrienbrault.idea.symfony2plugin.form.util.FormAttributeUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
@@ -29,6 +30,45 @@ public class FormTypeReferenceContributor extends PsiReferenceContributor {
 
     @Override
     public void registerReferenceProviders(PsiReferenceRegistrar psiReferenceRegistrar) {
+
+        /*
+         * #[FormField(options: ['property_path' => 'displayName', 'entry_type' => 'App\\AddressData'])]
+         * #[AsFormType(options: ['class' => 'App\\Entity\\Account'])]
+         */
+        psiReferenceRegistrar.registerReferenceProvider(
+            PlatformPatterns.psiElement(StringLiteralExpression.class).withParent(PlatformPatterns.psiElement(PhpElementTypes.ARRAY_VALUE)),
+            new PsiReferenceProvider() {
+                @Override
+                public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element, @NotNull ProcessingContext context) {
+                    if (!Symfony2ProjectComponent.isEnabled(element)) {
+                        return PsiReference.EMPTY_ARRAY;
+                    }
+
+                    ArrayHashElement entry = PsiTreeUtil.getParentOfType(element, ArrayHashElement.class);
+                    if (entry == null || !(entry.getParent() instanceof ArrayCreationExpression options)
+                        || FormAttributeUtil.getOptionsAttribute(options) == null) {
+                        return PsiReference.EMPTY_ARRAY;
+                    }
+
+                    StringLiteralExpression literal = (StringLiteralExpression) element;
+                    String option = PhpElementsUtil.getStringValue(entry.getKey());
+                    if ("class".equals(option)) {
+                        return new PsiReference[] {new EntityReference(literal, true)};
+                    }
+                    if ("entry_type".equals(option) || "type".equals(option)) {
+                        return new PsiReference[] {new FormTypeReference(literal)};
+                    }
+                    if ("property_path".equals(option)) {
+                        PhpClass dataClass = FormOptionsUtil.getFormPhpClassFromContext(element);
+                        if (dataClass != null) {
+                            return new PsiReference[] {new FormUnderscoreMethodReference(literal, dataClass)};
+                        }
+                    }
+
+                    return PsiReference.EMPTY_ARRAY;
+                }
+            }
+        );
 
         psiReferenceRegistrar.registerReferenceProvider(
             PlatformPatterns.psiElement(StringLiteralExpression.class)
