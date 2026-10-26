@@ -431,17 +431,14 @@ public class TwigUtil {
     }
 
     /**
-     * "form(form.name)" => "form"
+     * Returns the final identifier of a Twig function's form argument.
      */
     @Nullable
     public static PsiElement getTwigFunctionParameterIdentifierPsi(@NotNull PsiElement psiElement) {
-        // "form(form.name)" => "form"
+        // "form(form.name)" => "name"
         TwigFieldReference childOfType = PsiTreeUtil.findChildOfType(psiElement, TwigFieldReference.class);
         if (childOfType != null) {
-            TwigPsiReference owner = childOfType.getOwner();
-            if (owner != null) {
-                return owner.getFirstChild();
-            }
+            return childOfType.getNameIdentifier();
         }
 
         // "form(form)" => "form"

@@ -11,6 +11,7 @@ import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil;
+import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.FormDataClassStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -85,7 +86,7 @@ public class PhpLineMarkerProvider implements LineMarkerProvider {
             return;
         }
 
-        boolean isFormTypeInstance = PhpElementsUtil.isInstanceOf((PhpClass) phpClassContext, "\\Symfony\\Component\\Form\\FormTypeInterface")
+        boolean isFormTypeInstance = FormUtil.isFormType((PhpClass) phpClassContext)
             || PhpElementsUtil.isInstanceOf((PhpClass) phpClassContext, "\\Symfony\\Component\\Form\\FormExtensionInterface");
 
         if (!isFormTypeInstance) {

@@ -134,6 +134,40 @@ class PhpClassFileIconProviderTest : SymfonyLightCodeInsightFixtureTestCase() {
         assertNotNull("Icon should not be null for Symfony form type class", getIconFromProvider(formTypeFile))
     }
 
+    fun testAsFormTypeAttributeShowsFormBadge() {
+        val formTypeFile = myFixture.addFileToProject(
+            "src/Form/AccountData.php",
+            """
+            <?php
+            namespace App\Form;
+            use Symfony\Component\Form\Attribute\AsFormType as Form;
+
+            #[Form]
+            class AccountData {}
+            """.trimIndent()
+        )
+
+        assertNotNull(getIconFromProvider(formTypeFile))
+    }
+
+    fun testAsFormTypeAttributeIsNotInheritedForFileIcons() {
+        myFixture.addFileToProject(
+            "src/Form/AccountData.php",
+            """
+            <?php
+            namespace App\Form;
+            #[\Symfony\Component\Form\Attribute\AsFormType]
+            class AccountData {}
+            """.trimIndent()
+        )
+        val childFile = myFixture.addFileToProject(
+            "src/Form/ChildData.php",
+            "<?php namespace App\\Form; class ChildData extends AccountData {}"
+        )
+
+        assertNull(getIconFromProvider(childFile))
+    }
+
     fun testRouteAttributeShowsControllerBadge() {
         val controllerFile = myFixture.addFileToProject(
             "src/Controller/DashboardController.php",

@@ -449,6 +449,14 @@ public class FormUtil {
         return map;
     }
 
+    /**
+     * Checks for an own AsFormType declaration or the classic form type interface.
+     */
+    public static boolean isFormType(@NotNull PhpClass phpClass) {
+        return !phpClass.getAttributes(PhpAttributeIndex.PhpAttributeIndexer.AS_FORM_TYPE_ATTRIBUTE).isEmpty()
+            || PhpElementsUtil.isInstanceOf(phpClass, ABSTRACT_FORM_INTERFACE);
+    }
+
     public static boolean isValidFormPhpClass(PhpClass phpClass) {
         return !(phpClass.isAbstract() || phpClass.isInterface() || PhpElementsUtil.isTestClass(phpClass));
     }
