@@ -31,6 +31,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -117,7 +118,13 @@ public class ConfigCompletionProvider extends CompletionProvider<CompletionParam
             if(virtualFile != null) {
                 document = builder.parse(VfsUtil.virtualToIoFile(virtualFile));
             } else {
-                document = builder.parse(ConfigCompletionProvider.class.getResourceAsStream("/symfony2-config.xml"));
+                try (InputStream inputStream = ConfigCompletionProvider.class.getResourceAsStream("/symfony2-config.xml")) {
+                    if (inputStream == null) {
+                        return null;
+                    }
+
+                    document = builder.parse(inputStream);
+                }
             }
 
             return document;

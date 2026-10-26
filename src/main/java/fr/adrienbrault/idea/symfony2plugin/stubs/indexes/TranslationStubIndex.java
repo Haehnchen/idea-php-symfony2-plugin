@@ -23,8 +23,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.psi.YAMLFile;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.ByteArrayInputStream;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -149,14 +148,7 @@ public class TranslationStubIndex extends FileBasedIndexExtension<String, Set<St
                     return Collections.emptyMap();
                 }
 
-                InputStream inputStream;
-                try {
-                    inputStream = inputData.getFile().getInputStream();
-                } catch (IOException e) {
-                    return Collections.emptyMap();
-                }
-
-                Set<String> set = TranslationUtil.getXliffTranslations(inputStream);
+                Set<String> set = TranslationUtil.getXliffTranslations(new ByteArrayInputStream(inputData.getContent()));
                 if (set.isEmpty()) {
                     return Collections.emptyMap();
                 }

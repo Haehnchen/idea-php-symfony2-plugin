@@ -466,9 +466,9 @@ public class TranslationUtil {
                 // visiting on file scope because we dont rely on xlf and xliff registered as XML file
                 // dont visit file twice
                 if(!visitedXlf.contains(virtualFile)) {
-                    try {
+                    try (InputStream inputStream = virtualFile.getInputStream()) {
                         visitXliffTranslations(
-                            element.getContainingFile().getVirtualFile().getInputStream(),
+                            inputStream,
                             new MyXlfTranslationConsumer(placeholder, key)
                         );
                     } catch (IOException ignored) {
