@@ -26,6 +26,7 @@ import java.util.List;
 public class YamlTagCompletionProvider extends CompletionProvider<CompletionParameters> {
 
     private static final String TAG_PHP_CONST = "!php/const";
+    private static final String TAG_PHP_ENUM = "!php/enum";
     private static final String TAG_PHP_OBJECT = "!php/object";
     private static final String TAG_TAGGED = "!tagged";
     private static final String TAG_TAGGED_ITERATOR = "!tagged_iterator";
@@ -36,6 +37,7 @@ public class YamlTagCompletionProvider extends CompletionProvider<CompletionPara
 
     private static final String[] yamlTags = {
         TAG_PHP_CONST,
+        TAG_PHP_ENUM,
         TAG_PHP_OBJECT,
         TAG_TAGGED,
         TAG_TAGGED_ITERATOR,
@@ -126,7 +128,12 @@ public class YamlTagCompletionProvider extends CompletionProvider<CompletionPara
         for (String tag : yamlTags) {
             // in DI YamlFileLoader (services.yml and config.yml) we know for sure we have !php/const
             //  ...yamlParser->parse(..., Yaml::PARSE_CONSTANT | Yaml::PARSE_CUSTOM_TAGS ...
-            if (tag.equals(TAG_PHP_CONST) && !allTags && !isServices && !isConfig) {
+            if ((tag.equals(TAG_PHP_CONST) || tag.equals(TAG_PHP_ENUM)) && !allTags && !isServices && !isConfig) {
+                continue;
+            }
+
+            // !php/enum since Symfony 6.2; all tags invocation shows it regardless of detected version
+            if (tag.equals(TAG_PHP_ENUM) && !allTags && SymfonyUtil.isVersionLessThen(project, "6.2")) {
                 continue;
             }
 

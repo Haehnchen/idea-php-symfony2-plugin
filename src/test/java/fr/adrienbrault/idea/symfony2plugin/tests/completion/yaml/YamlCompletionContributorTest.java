@@ -48,7 +48,7 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
         assertCompletion3rdInvocationContains("" +
                 "root:\n" +
                 "    key: <caret>\n",
-            "!php/const", "!php/object", "!!binary", "!!float", "!!str"
+            "!php/const", "!php/enum", "!php/object", "!!binary", "!!float", "!!str"
         );
     }
 
@@ -63,6 +63,35 @@ public class YamlCompletionContributorTest extends SymfonyLightCodeInsightFixtur
                 "    my_service:\n" +
                 "        key: <caret>\n",
             "!php/const"
+        );
+    }
+
+    public void testTagsCompletionContainsPhpEnumTagInsideConfigAndServices() {
+        assertCompletionContains("config.yaml", "" +
+                "root:\n" +
+                "    key: <caret>\n",
+            "!php/enum"
+        );
+        assertCompletionContains("services.yaml", "" +
+                "services:\n" +
+                "    my_service:\n" +
+                "        key: <caret>\n",
+            "!php/enum"
+        );
+    }
+
+    public void testTagsCompletionNotContainsPhpEnumTagBeforeSymfony62() {
+        myFixture.copyFileToProject("Symfony61.php");
+        assertCompletionNotContains("services.yaml", "" +
+                "services:\n" +
+                "    my_service:\n" +
+                "        key: <caret>\n",
+            "!php/enum"
+        );
+        assertCompletion3rdInvocationContains("" +
+                "root:\n" +
+                "    key: <caret>\n",
+            "!php/enum"
         );
     }
 
