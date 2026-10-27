@@ -127,7 +127,7 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, StubIndexed
 
     @Override
     public int getVersion() {
-        return 6;
+        return 7;
     }
 
     private static boolean isValidForIndex(FileContent inputData, PsiFile psiFile) {

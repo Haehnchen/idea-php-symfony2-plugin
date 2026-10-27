@@ -79,6 +79,51 @@ public class SymfonyImplicitUsageProviderTest extends SymfonyLightCodeInsightFix
         ));
     }
 
+    public void testControllerMethodWithExtendedRouteAttributeImplicitUsage() {
+        myFixture.addFileToProject("RoutePut.php", "<?php\n" +
+            "namespace Symfony\\Component\\Routing\\Attribute { class Route {} }\n" +
+            "namespace Common\\Route {\n" +
+            "    use Symfony\\Component\\Routing\\Attribute\\Route;\n" +
+            "    #[\\Attribute]\n" +
+            "    class RoutePut extends Route {}\n" +
+            "    #[\\Attribute]\n" +
+            "    class RoutePutJson extends RoutePut {}\n" +
+            "    class RouteNoAttribute extends Route {}\n" +
+            "    #[\\Attribute]\n" +
+            "    class NotARoute {}\n" +
+            "}"
+        );
+
+        PsiFile psiFile = myFixture.configureByText(PhpFileType.INSTANCE, "<?php\n" +
+            "namespace App\\Controller;\n" +
+            "\n" +
+            "use Common\\Route\\RoutePut;\n" +
+            "use Common\\Route\\RoutePutJson;\n" +
+            "use Common\\Route\\RouteNoAttribute;\n" +
+            "use Common\\Route\\NotARoute;\n" +
+            "\n" +
+            "class FooController\n" +
+            "{\n" +
+            "    #[RoutePut('/foo')]\n" +
+            "    public function foo() {}\n" +
+            "    #[RoutePutJson('/foo-json')]\n" +
+            "    public function fooJson() {}\n" +
+            "    #[NotARoute]\n" +
+            "    public function bar() {}\n" +
+            "    #[RouteNoAttribute]\n" +
+            "    public function baz() {}\n" +
+            "}"
+        );
+
+        PhpClass phpClass = PhpElementsUtil.getFirstClassFromFile((PhpFile) psiFile.getContainingFile());
+
+        assertImplicitUsage(phpClass);
+        assertImplicitUsage(phpClass.findOwnMethodByName("foo"));
+        assertImplicitUsage(phpClass.findOwnMethodByName("fooJson"));
+        assertNotImplicitUsage(phpClass.findOwnMethodByName("bar"));
+        assertNotImplicitUsage(phpClass.findOwnMethodByName("baz"));
+    }
+
     public void testYamlControllerDefinitionsAreMarkedUsed() {
         assertImplicitUsage(createPhpControllerClassWithRouteContent("" +
             "public function foobarYaml() {}"

@@ -7,6 +7,7 @@ import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.util.SimpleModificationTracker;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -22,6 +23,8 @@ import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.FileBasedIndex;
+import com.jetbrains.php.PhpClassHierarchyUtils;
+import com.jetbrains.php.PhpIndex;
 import com.jetbrains.php.config.PhpLanguageLevel;
 import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
@@ -61,6 +64,7 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -78,9 +82,24 @@ public class RouteHelper {
         "\\Symfony\\Component\\Routing\\Attribute\\Route"
     };
 
-    private static final Key<CachedValue<Map<String, Route>>> ROUTE_CACHE = new Key<>("SYMFONY:ROUTE_CACHE");
+    /**
+     * Vendors whose attributes are never a "Route" subclass; keeps the route index free of e.g. "#[IsGranted('ROLE_ADMIN')]"
+     */
+    private static final String[] NON_ROUTE_ATTRIBUTE_NAMESPACES = new String[] {
+        "Symfony\\",
+        "Sensio\\",
+        "Doctrine\\",
+        "ApiPlatform\\",
+        "OpenApi\\",
+        "Nelmio\\",
+        "PHPUnit\\",
+        "JetBrains\\"
+    };
+
+    private static final Key<CachedValue<IndexedRoutes>> ROUTE_CACHE = new Key<>("SYMFONY:ROUTE_CACHE");
     private static final Key<CachedValue<Map<String, Route>>> ROUTE_UNIQUE_CACHE = new Key<>("SYMFONY:ROUTE_UNIQUE_CACHE");
     private static final Key<CachedValue<Set<String>>> ROUTE_CONTROLLER_RESOLVED_CACHE = new Key<>("ROUTE_CONTROLLER_RESOLVED_CACHE");
+    private static final Key<CachedValue<Map<String, Boolean>>> ROUTE_ATTRIBUTE_CLASS_CACHE = new Key<>("SYMFONY_ROUTE_ATTRIBUTE_CLASS_CACHE");
 
     private static final Key<CachedValue<Map<String, Route>>> SYMFONY_COMPILED_CACHE_ROUTES = new Key<>("SYMFONY_COMPILED_CACHE_ROUTES");
 
@@ -115,7 +134,9 @@ public class RouteHelper {
 
         Collection<VirtualFile> routeFiles = FileBasedIndex.getInstance().getContainingFiles(RoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project));
         for(StubIndexedRoute route: FileBasedIndex.getInstance().getValues(RoutesStubIndex.KEY, routeName, GlobalSearchScope.filesScope(project, routeFiles))) {
-            routes.add(new Route(route));
+            if (isIndexedRouteValid(project, route)) {
+                routes.add(new Route(route));
+            }
         }
 
         return routes;
@@ -2070,6 +2091,10 @@ public class RouteHelper {
             }
 
             for (StubIndexedRoute route: FileBasedIndex.getInstance().getValues(RoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project))) {
+                if (!isIndexedRouteValid(project, route)) {
+                    continue;
+                }
+
                 RouteLookupElement lookupElement = new RouteLookupElement(new Route(route), true);
                 if (escapeRouteName) {
                     lookupElement.withEscape();
@@ -2136,14 +2161,25 @@ public class RouteHelper {
         return cachedValue.contains(fqn);
     }
 
+    /**
+     * @param hasAttributeClassRoutes routes of "class RoutePut extends Route"; they depend on PHP class hierarchy, not only on the index
+     */
+    private record IndexedRoutes(@NotNull Map<String, Route> routes, boolean hasAttributeClassRoutes) {}
+
     @NotNull
     public static Map<String, Route> getAllRoutes(final @NotNull Project project) {
+        return getIndexedRoutes(project).routes();
+    }
+
+    @NotNull
+    private static IndexedRoutes getIndexedRoutes(final @NotNull Project project) {
         return CachedValuesManager.getManager(project).getCachedValue(
             project,
             ROUTE_CACHE,
             () -> {
                 Map<String, Route> routes = new HashMap<>(RouteHelper.getCompiledRoutes(project));
                 Set<String> uniqueKeySet = new HashSet<>(routes.keySet());
+                boolean hasAttributeClassRoutes = false;
 
                 for (String routeName: SymfonyProcessors.createResult(project, RoutesStubIndex.KEY)) {
                     if (uniqueKeySet.contains(routeName)) {
@@ -2151,15 +2187,22 @@ public class RouteHelper {
                     }
 
                     for (StubIndexedRoute route: FileBasedIndex.getInstance().getValues(RoutesStubIndex.KEY, routeName, GlobalSearchScope.allScope(project))) {
+                        if (!isIndexedRouteValid(project, route)) {
+                            continue;
+                        }
+
+                        if (route.getAttributeClass() != null) {
+                            hasAttributeClassRoutes = true;
+                        }
+
                         uniqueKeySet.add(routeName);
                         routes.put(routeName, new Route(route));
                     }
                 }
 
                 return CachedValueProvider.Result.create(
-                    Collections.unmodifiableMap(routes),
-                    FileIndexCaches.getModificationTrackerForIndexId(project, RoutesStubIndex.KEY), // index
-                    getCompiledRoutesTracker(project) // compiled route file changes
+                    new IndexedRoutes(Collections.unmodifiableMap(routes), hasAttributeClassRoutes),
+                    getIndexedRoutesDependencies(project, hasAttributeClassRoutes)
                 );
             },
             false
@@ -2176,16 +2219,35 @@ public class RouteHelper {
             project,
             ROUTE_UNIQUE_CACHE,
             () -> {
-                Map<String, Route> routes = deduplicateRoutesPreferNamed(RouteHelper.getAllRoutes(project));
+                IndexedRoutes indexedRoutes = getIndexedRoutes(project);
+                Map<String, Route> routes = deduplicateRoutesPreferNamed(indexedRoutes.routes());
 
                 return CachedValueProvider.Result.create(
                     Collections.unmodifiableMap(routes),
-                    FileIndexCaches.getModificationTrackerForIndexId(project, RoutesStubIndex.KEY), // index
-                    getCompiledRoutesTracker(project) // compiled route file changes
+                    getIndexedRoutesDependencies(project, indexedRoutes.hasAttributeClassRoutes())
                 );
             },
             false
         );
+    }
+
+    /**
+     * A non-route attribute class becoming a "Route" subclass is only picked up on the next route index change;
+     * tracking all PHP changes would rebuild every route on each keystroke
+     */
+    @NotNull
+    private static List<Object> getIndexedRoutesDependencies(@NotNull Project project, boolean hasAttributeClassRoutes) {
+        List<Object> dependencies = new ArrayList<>(List.of(
+            FileIndexCaches.getModificationTrackerForIndexId(project, RoutesStubIndex.KEY), // index
+            getCompiledRoutesTracker(project) // compiled route file changes
+        ));
+
+        // "class RoutePut extends Route" can change without touching the indexed controller file
+        if (hasAttributeClassRoutes) {
+            dependencies.add(PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE));
+        }
+
+        return dependencies;
     }
 
     @NotNull
@@ -2267,6 +2329,113 @@ public class RouteHelper {
     public static boolean isRouteClassAnnotation(@NotNull String clazz) {
         String myClazz = "\\" + StringUtils.stripStart(clazz, "\\");
         return Arrays.stream(ROUTE_ANNOTATIONS).anyMatch(s -> s.equalsIgnoreCase(myClazz));
+    }
+
+    /**
+     * "#[Route]" or any attribute class extending it: "class RoutePut extends Route"
+     */
+    public static boolean hasRouteAttribute(@NotNull PhpAttributesOwner owner) {
+        for (PhpAttribute attribute : owner.getAttributes()) {
+            if (isRouteAttribute(attribute)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean isRouteAttribute(@NotNull PhpAttribute attribute) {
+        String fqn = attribute.getFQN();
+        if (fqn == null) {
+            return false;
+        }
+
+        return isRouteClassAnnotation(fqn) || isRouteAttributeClass(attribute.getProject(), fqn);
+    }
+
+    /**
+     * Index can only hold "maybe a route" attributes; drop the ones not extending Route on read
+     */
+    public static boolean isIndexedRouteValid(@NotNull Project project, @NotNull StubIndexedRoute route) {
+        String attributeClass = route.getAttributeClass();
+        return attributeClass == null || isRouteAttributeClass(project, attributeClass);
+    }
+
+    /**
+     * Index-safe guess for "#[RoutePut('/foo')]" or "#[RoutePut(name: 'foo')]" without resolving the class;
+     * not a global or well-known vendor attribute. "#[SerializedName('foo')]" is no candidate: path must start with "/"
+     */
+    public static boolean isRouteAttributeCandidate(@NotNull PhpAttribute attribute, @NotNull String fqn) {
+        String clazz = StringUtils.stripStart(fqn, "\\");
+        if (!clazz.contains("\\")) {
+            return false;
+        }
+
+        for (String namespace : NON_ROUTE_ATTRIBUTE_NAMESPACES) {
+            if (StringUtils.startsWithIgnoreCase(clazz, namespace)) {
+                return false;
+            }
+        }
+
+        if (PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, "name") != null) {
+            return true;
+        }
+
+        // plain strings are checked on PSI; only constants like "self::PATH" need the more expensive value resolving
+        PsiElement pathPsi = PhpPsiAttributesUtil.getAttributeValuePsiElement(attribute, 0, "path");
+        if (pathPsi instanceof StringLiteralExpression stringLiteralExpression) {
+            return stringLiteralExpression.getContents().startsWith("/");
+        }
+
+        if (!(pathPsi instanceof ClassConstantReference)) {
+            return false;
+        }
+
+        String path = PhpPsiAttributesUtil.getAttributeValueByNameAsStringWithDefaultParameterFallback(attribute, "path");
+        return path != null && path.startsWith("/");
+    }
+
+    private static boolean isRouteAttributeClass(@NotNull Project project, @NotNull String fqn) {
+        Map<String, Boolean> cache = CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            ROUTE_ATTRIBUTE_CLASS_CACHE,
+            () -> CachedValueProvider.Result.create(
+                new ConcurrentHashMap<>(),
+                PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE)
+            ),
+            false
+        );
+
+        Boolean isRoute = cache.get(fqn);
+        if (isRoute == null) {
+            isRoute = isRouteAttributeClassUncached(project, fqn);
+            cache.put(fqn, isRoute);
+        }
+
+        return isRoute;
+    }
+
+    /**
+     * "#[Attribute] class RoutePut extends Route"; walks the class hierarchy once instead of resolving each route class
+     */
+    private static boolean isRouteAttributeClassUncached(@NotNull Project project, @NotNull String fqn) {
+        for (PhpClass phpClass : PhpIndex.getInstance(project).getAnyByFQN(fqn)) {
+            if (phpClass.getAttributes("\\Attribute").isEmpty()) {
+                continue;
+            }
+
+            Ref<Boolean> isRoute = new Ref<>(false);
+            PhpClassHierarchyUtils.processSupers(phpClass, false, true, superClass -> {
+                isRoute.set(isRouteClassAnnotation(superClass.getFQN()));
+                return !isRoute.get();
+            });
+
+            if (isRoute.get()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

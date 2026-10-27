@@ -44,14 +44,21 @@ public class AnnotationRouteElementVisitor {
     @Nullable
     private ElementPattern<PsiElement> phpDocAttributeListPattern;
 
+    /**
+     * Indexing must stay PSI-local: "class RoutePut extends Route" is then only stored as a candidate
+     */
+    private final boolean indexMode;
+
     public AnnotationRouteElementVisitor(@NotNull Consumer<Pair<String, PsiElement>> consumer) {
         this.consumer = consumer;
         this.map = new HashMap<>();
+        this.indexMode = false;
     }
 
     public AnnotationRouteElementVisitor(@NotNull Map<String, StubIndexedRoute> map) {
         this.map = map;
         this.consumer = c -> {};
+        this.indexMode = true;
     }
 
     public void visitFile(@NotNull PhpClass phpClass) {
@@ -170,8 +177,18 @@ public class AnnotationRouteElementVisitor {
 
         for (PhpAttribute attribute : phpAttributesList.getAttributes()) {
             String fqn = attribute.getFQN();
-            if(fqn == null || !RouteHelper.isRouteClassAnnotation(fqn)) {
+            if(fqn == null) {
                 continue;
+            }
+
+            // "#[RoutePut]" with "class RoutePut extends Route"
+            String attributeClass = null;
+            if (!RouteHelper.isRouteClassAnnotation(fqn)) {
+                if (indexMode ? !RouteHelper.isRouteAttributeCandidate(attribute, fqn) : !RouteHelper.isRouteAttribute(attribute)) {
+                    continue;
+                }
+
+                attributeClass = indexMode ? fqn : null;
             }
 
             String nameAttribute = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, 1, "name");
@@ -188,6 +205,7 @@ public class AnnotationRouteElementVisitor {
             }
 
             StubIndexedRoute route = new StubIndexedRoute(routeNamePrefix + routeName);
+            route.setAttributeClass(attributeClass);
 
             if (classLevel) {
                 route.setController(getController(phpClass));
@@ -207,9 +225,34 @@ public class AnnotationRouteElementVisitor {
                 route.setMethods(new ArrayList<>(methods));
             }
 
+            if (attributeClass != null && !isCandidateReplacingExisting(map.get(route.getName()), route)) {
+                continue;
+            }
+
             map.put(route.getName(), route);
             this.consumer.accept(new Pair<>(route.getName(), attribute));
         }
+    }
+
+    /**
+     * Only one route per name and file: a candidate never shadows a real "#[Route]"; between two candidates
+     * "#[RoutePut('/foo', name: 'foo')]" wins over "#[McpTool(name: 'foo')]" without a "/" path
+     */
+    private static boolean isCandidateReplacingExisting(@Nullable StubIndexedRoute existing, @NotNull StubIndexedRoute candidate) {
+        if (existing == null) {
+            return true;
+        }
+
+        if (existing.getAttributeClass() == null) {
+            return false;
+        }
+
+        // path fallback may pick a named argument as "path", so only a "/" path counts as route-like
+        return !isRoutePath(existing.getPath()) && isRoutePath(candidate.getPath());
+    }
+
+    private static boolean isRoutePath(@Nullable String path) {
+        return path != null && path.startsWith("/");
     }
 
     /**

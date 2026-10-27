@@ -4,6 +4,7 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.lang.PhpFileType;
 import fr.adrienbrault.idea.symfony2plugin.routing.dict.RouteInterface;
+import fr.adrienbrault.idea.symfony2plugin.stubs.dict.StubIndexedRoute;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.RoutesStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
@@ -207,6 +208,87 @@ public class RoutesStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase 
         RouteInterface route2 = getFirstValue("attributeinvoke_noname__invoke");
         assertEquals("/foo-attributes/no-name", route2.getPath());
         assertEquals("AttributeInvoke\\NoNameController::__invoke", route2.getController());
+    }
+
+    public void testThatExtendedRouteAttributesAreIndexedAsCandidates() {
+        myFixture.addFileToProject("src/Controller/PutController.php", "<?php\n" +
+            "namespace App\\Controller;\n" +
+            "\n" +
+            "use Common\\Route\\RoutePut;\n" +
+            "use Common\\Mcp\\McpTool;\n" +
+            "use Common\\Serializer\\SerializedName;\n" +
+            "use Symfony\\Component\\Security\\Http\\Attribute\\IsGranted;\n" +
+            "use Symfony\\Component\\Routing\\Attribute\\Route;\n" +
+            "\n" +
+            "class PutController\n" +
+            "{\n" +
+            "    const PUT_PATH = '/put-const';\n" +
+            "\n" +
+            "    #[RoutePut('/put', name: 'put_named')]\n" +
+            "    public function named() {}\n" +
+            "\n" +
+            "    #[RoutePut('/put/no-name')]\n" +
+            "    public function noName() {}\n" +
+            "\n" +
+            "    #[SerializedName('/no-route', name: 'serialized_named')]\n" +
+            "    #[\\Deprecated(name: 'global_named')]\n" +
+            "    #[IsGranted('ROLE_ADMIN', name: 'symfony_named')]\n" +
+            "    #[SerializedName('no_slash_path')]\n" +
+            "    public function noRoute() {}\n" +
+            "\n" +
+            "    #[Route('/real', name: 'shadow')]\n" +
+            "    #[RoutePut('/candidate', name: 'shadow')]\n" +
+            "    public function realFirst() {}\n" +
+            "\n" +
+            "    #[RoutePut('/candidate', name: 'shadow_last')]\n" +
+            "    #[Route('/real', name: 'shadow_last')]\n" +
+            "    public function realLast() {}\n" +
+            "\n" +
+            "    #[McpTool(name: 'collision')]\n" +
+            "    #[RoutePut('/collision', name: 'collision')]\n" +
+            "    public function collision() {}\n" +
+            "\n" +
+            "    #[RoutePut(self::PUT_PATH)]\n" +
+            "    public function constPath() {}\n" +
+            "\n" +
+            "    #[\\GlobalRoute('/global-path')]\n" +
+            "    public function globalPath() {}\n" +
+            "}\n"
+        );
+
+        StubIndexedRoute named = (StubIndexedRoute) getFirstValue("put_named");
+        assertEquals("/put", named.getPath());
+        assertEquals("App\\Controller\\PutController::named", named.getController());
+        assertEquals("\\Common\\Route\\RoutePut", named.getAttributeClass());
+
+        StubIndexedRoute noName = (StubIndexedRoute) getFirstValue("app_put_noname");
+        assertEquals("/put/no-name", noName.getPath());
+        assertEquals("\\Common\\Route\\RoutePut", noName.getAttributeClass());
+
+        // named argument is a candidate, there is no class hierarchy at index time
+        assertIndexContains(RoutesStubIndex.KEY, "serialized_named");
+        assertIndexNotContains(RoutesStubIndex.KEY, "global_named", "symfony_named", "app_put_noroute");
+
+        // real route must win over a candidate with the same name
+        StubIndexedRoute shadow = (StubIndexedRoute) getFirstValue("shadow");
+        assertEquals("/real", shadow.getPath());
+        assertNull(shadow.getAttributeClass());
+
+        StubIndexedRoute shadowLast = (StubIndexedRoute) getFirstValue("shadow_last");
+        assertEquals("/real", shadowLast.getPath());
+        assertNull(shadowLast.getAttributeClass());
+
+        // candidate with a "/" path wins over another candidate of the same name
+        StubIndexedRoute collision = (StubIndexedRoute) getFirstValue("collision");
+        assertEquals("/collision", collision.getPath());
+        assertEquals("\\Common\\Route\\RoutePut", collision.getAttributeClass());
+
+        // class constant path still needs value resolving
+        StubIndexedRoute constPath = (StubIndexedRoute) getFirstValue("app_put_constpath");
+        assertEquals("/put-const", constPath.getPath());
+
+        // global namespace attributes are never candidates, even with a route like path
+        assertIndexNotContains(RoutesStubIndex.KEY, "app_put_globalpath");
     }
 
     public void testThatPhpFluentRoutesAreIndexed() {
