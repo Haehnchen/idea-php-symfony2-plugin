@@ -12,6 +12,7 @@ import org.jetbrains.yaml.psi.*;
 
 public class YamlReferenceContributor extends PsiReferenceContributor {
     private static final String TAG_PHP_CONST = "!php/const";
+    private static final String TAG_PHP_ENUM = "!php/enum";
 
     @Override
     public void registerReferenceProviders(@NotNull PsiReferenceRegistrar registrar) {
@@ -35,6 +36,37 @@ public class YamlReferenceContributor extends PsiReferenceContributor {
 
                     return new PsiReference[]{
                         new ConstantYamlReference(scalar)
+                    };
+                }
+
+                @Override
+                public boolean acceptsTarget(@NotNull PsiElement target) {
+                    return Symfony2ProjectComponent.isEnabled(target);
+                }
+            }
+        );
+
+        // key: !php/enum Foo\Bar::BAZ
+        registrar.registerReferenceProvider(
+            PlatformPatterns.psiElement(YAMLScalar.class)
+                .withText(StandardPatterns.string()
+                    .contains(TAG_PHP_ENUM)
+                ),
+            new PsiReferenceProvider() {
+                @NotNull
+                @Override
+                public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element, @NotNull ProcessingContext context) {
+                    if (!Symfony2ProjectComponent.isEnabled(element)) {
+                        return PsiReference.EMPTY_ARRAY;
+                    }
+
+                    var scalar = (YAMLScalar) element;
+                    if (scalar.getTextValue().isEmpty()) {
+                        return PsiReference.EMPTY_ARRAY;
+                    }
+
+                    return new PsiReference[]{
+                        new EnumCaseYamlReference(scalar)
                     };
                 }
 

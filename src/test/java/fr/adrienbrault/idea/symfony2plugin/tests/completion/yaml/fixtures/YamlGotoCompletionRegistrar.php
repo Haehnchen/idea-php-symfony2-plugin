@@ -15,4 +15,12 @@ namespace Foo
     {
         public function __construct($arg = null) {}
     }
+
+    enum Suit: string
+    {
+        case Hearts = 'H';
+        case Spades = 'S';
+
+        const WILD = self::Spades;
+    }
 }

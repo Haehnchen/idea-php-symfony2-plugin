@@ -4,6 +4,7 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.PsiElementPattern;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.PhpDefine;
+import com.jetbrains.php.lang.psi.elements.PhpEnumCase;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLFileType;
@@ -37,6 +38,26 @@ public class YamlReferenceContributorTest extends SymfonyLightCodeInsightFixture
             "    arguments:\n" +
             "      - !php/const Foo\\Bar::F<caret>OO\n",
             PlatformPatterns.psiElement(Field.class).withName("FOO")
+        );
+    }
+
+    public void testEnumCaseProvidesReferences() {
+        assertReferenceMatchOnParent(
+            YAMLFileType.YML,
+            "services:\n" +
+            "  app.service.example:\n" +
+            "    arguments:\n" +
+            "      - !php/enum Foo\\Suit::He<caret>arts\n",
+            PlatformPatterns.psiElement(PhpEnumCase.class).withName("Hearts")
+        );
+
+        assertReferenceMatchOnParent(
+            YAMLFileType.YML,
+            "services:\n" +
+            "  app.service.example:\n" +
+            "    arguments:\n" +
+            "      - !php/enum Foo\\Suit::He<caret>arts->value\n",
+            PlatformPatterns.psiElement(PhpEnumCase.class).withName("Hearts")
         );
     }
 

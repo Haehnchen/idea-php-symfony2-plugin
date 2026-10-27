@@ -117,4 +117,55 @@ public class YamlGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixt
             "           - !php/const Foo\\Bar<caret>::BAZ\n"
         );
     }
+
+    public void testThatPhpEnumAreCompleted() {
+        assertCompletionContains(
+            YAMLFileType.YML,
+            "services:\n" +
+            "    foo:\n" +
+            "       arguments: \n" +
+            "           - !php/enum <caret>\n",
+            "Suit"
+        );
+
+        assertCompletionNotContains(
+            YAMLFileType.YML,
+            "services:\n" +
+            "    foo:\n" +
+            "       arguments: \n" +
+            "           - !php/enum <caret>\n",
+            "Bar", "Foobar"
+        );
+
+        assertCompletionContains(
+            YAMLFileType.YML,
+            "services:\n" +
+            "    foo:\n" +
+            "       arguments: \n" +
+            "           - !php/enum Foo\\Suit::<caret>\n",
+            "Hearts", "Spades"
+        );
+
+        assertCompletionNotContains(
+            YAMLFileType.YML,
+            "services:\n" +
+            "    foo:\n" +
+            "       arguments: \n" +
+            "           - !php/enum Foo\\Suit::<caret>\n",
+            "WILD"
+        );
+    }
+
+    public void testThatPhpEnumCasesAreCompletedWithDuplicateNonEnumClass() {
+        myFixture.copyFileToProject("YamlGotoCompletionRegistrarDuplicate.php");
+
+        assertCompletionContains(
+            YAMLFileType.YML,
+            "services:\n" +
+            "    foo:\n" +
+            "       arguments: \n" +
+            "           - !php/enum Foo\\Suit::<caret>\n",
+            "Hearts", "Spades"
+        );
+    }
 }

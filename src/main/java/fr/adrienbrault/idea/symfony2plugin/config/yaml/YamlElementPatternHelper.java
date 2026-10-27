@@ -790,6 +790,22 @@ public class YamlElementPatternHelper {
     }
 
     /**
+     * !php/enum <caret>
+     */
+    public static ElementPattern<PsiElement> getPhpEnumPattern() {
+        return
+            PlatformPatterns
+                .psiElement()
+                .afterLeafSkipping(
+                    PlatformPatterns.or(
+                        PlatformPatterns.psiElement(PsiWhiteSpace.class),
+                        PlatformPatterns.psiElement(YAMLTokenTypes.WHITESPACE)
+                    ),
+                    PlatformPatterns.psiElement().withText("!php/enum")
+                );
+    }
+
+    /**
      * services:
      *  _defaults:
      *      bind:

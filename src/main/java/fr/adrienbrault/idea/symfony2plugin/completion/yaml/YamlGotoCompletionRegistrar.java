@@ -9,6 +9,7 @@ import fr.adrienbrault.idea.symfony2plugin.config.yaml.YamlElementPatternHelper;
 import fr.adrienbrault.idea.symfony2plugin.routing.RouteGotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.templating.TemplateGotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpConstGotoCompletionProvider;
+import fr.adrienbrault.idea.symfony2plugin.util.completion.PhpEnumGotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.util.yaml.YamlHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -46,6 +47,12 @@ public class YamlGotoCompletionRegistrar implements GotoCompletionRegistrar  {
         registrar.register(
             YamlElementPatternHelper.getPhpConstPattern(),
             PhpConstGotoCompletionProvider::new
+        );
+
+        // key: !php/enum <caret>
+        registrar.register(
+            YamlElementPatternHelper.getPhpEnumPattern(),
+            PhpEnumGotoCompletionProvider::new
         );
     }
 

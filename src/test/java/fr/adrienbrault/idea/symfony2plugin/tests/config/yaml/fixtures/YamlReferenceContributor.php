@@ -9,6 +9,11 @@ namespace Foo {
     {
         const FOO = 'foo';
     }
+
+    enum Suit: string
+    {
+        case Hearts = 'H';
+    }
 }
 
 namespace ServiceRef {
