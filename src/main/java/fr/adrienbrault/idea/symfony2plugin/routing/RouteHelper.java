@@ -82,20 +82,6 @@ public class RouteHelper {
         "\\Symfony\\Component\\Routing\\Attribute\\Route"
     };
 
-    /**
-     * Vendors whose attributes are never a "Route" subclass; keeps the route index free of e.g. "#[IsGranted('ROLE_ADMIN')]"
-     */
-    private static final String[] NON_ROUTE_ATTRIBUTE_NAMESPACES = new String[] {
-        "Symfony\\",
-        "Sensio\\",
-        "Doctrine\\",
-        "ApiPlatform\\",
-        "OpenApi\\",
-        "Nelmio\\",
-        "PHPUnit\\",
-        "JetBrains\\"
-    };
-
     private static final Key<CachedValue<IndexedRoutes>> ROUTE_CACHE = new Key<>("SYMFONY:ROUTE_CACHE");
     private static final Key<CachedValue<Map<String, Route>>> ROUTE_UNIQUE_CACHE = new Key<>("SYMFONY:ROUTE_UNIQUE_CACHE");
     private static final Key<CachedValue<Set<String>>> ROUTE_CONTROLLER_RESOLVED_CACHE = new Key<>("ROUTE_CONTROLLER_RESOLVED_CACHE");
@@ -2363,18 +2349,12 @@ public class RouteHelper {
 
     /**
      * Index-safe guess for "#[RoutePut('/foo')]" or "#[RoutePut(name: 'foo')]" without resolving the class;
-     * not a global or well-known vendor attribute. "#[SerializedName('foo')]" is no candidate: path must start with "/"
+     * not a global attribute. "#[SerializedName('foo')]" is no candidate: path must start with "/"
      */
     public static boolean isRouteAttributeCandidate(@NotNull PhpAttribute attribute, @NotNull String fqn) {
         String clazz = StringUtils.stripStart(fqn, "\\");
         if (!clazz.contains("\\")) {
             return false;
-        }
-
-        for (String namespace : NON_ROUTE_ATTRIBUTE_NAMESPACES) {
-            if (StringUtils.startsWithIgnoreCase(clazz, namespace)) {
-                return false;
-            }
         }
 
         if (PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, "name") != null) {

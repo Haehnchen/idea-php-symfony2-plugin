@@ -266,8 +266,8 @@ public class RoutesStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase 
         assertEquals("\\Common\\Route\\RoutePut", noName.getAttributeClass());
 
         // named argument is a candidate, there is no class hierarchy at index time
-        assertIndexContains(RoutesStubIndex.KEY, "serialized_named");
-        assertIndexNotContains(RoutesStubIndex.KEY, "global_named", "symfony_named", "app_put_noroute");
+        assertIndexContains(RoutesStubIndex.KEY, "serialized_named", "symfony_named");
+        assertIndexNotContains(RoutesStubIndex.KEY, "global_named", "app_put_noroute");
 
         // real route must win over a candidate with the same name
         StubIndexedRoute shadow = (StubIndexedRoute) getFirstValue("shadow");
