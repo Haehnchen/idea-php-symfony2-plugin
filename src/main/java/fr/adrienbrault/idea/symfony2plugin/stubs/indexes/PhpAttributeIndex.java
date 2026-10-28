@@ -75,7 +75,7 @@ public class PhpAttributeIndex extends FileBasedIndexExtension<String, List<PhpA
 
     @Override
     public int getVersion() {
-        return 9;
+        return 10;
     }
 
     public static class PhpAttributeIndexer implements DataIndexer<String, List<AttributeTarget>, FileContent> {
@@ -91,6 +91,16 @@ public class PhpAttributeIndex extends FileBasedIndexExtension<String, List<PhpA
 
         // Symfony dependency injection attributes on classes
         public static final String EXCLUDE_ATTRIBUTE = "\\Symfony\\Component\\DependencyInjection\\Attribute\\Exclude";
+
+        // FrameworkBundle adds container.excluded to these classes when autoconfiguration is enabled (Symfony 7.3+).
+        public static final Set<String> AUTOCONFIGURATION_EXCLUDE_ATTRIBUTES = Set.of(
+            "\\Doctrine\\ORM\\Mapping\\Entity",
+            "\\Doctrine\\ORM\\Mapping\\Embeddable",
+            "\\Doctrine\\ORM\\Mapping\\MappedSuperclass",
+            "\\Symfony\\Component\\Messenger\\Attribute\\AsMessage",
+            "\\Symfony\\Component\\JsonStreamer\\Attribute\\JsonStreamable",
+            "\\Attribute"
+        );
 
         public static final String AS_FORM_TYPE_ATTRIBUTE = "\\Symfony\\Component\\Form\\Attribute\\AsFormType";
         public static final String FORM_FIELD_ATTRIBUTE = "\\Symfony\\Component\\Form\\Attribute\\FormField";
@@ -132,7 +142,8 @@ public class PhpAttributeIndex extends FileBasedIndexExtension<String, List<PhpA
                     continue;
                 }
 
-                if (AS_COMMAND_ATTRIBUTE.equals(attributeFqn) || EXCLUDE_ATTRIBUTE.equals(attributeFqn) || AS_FORM_TYPE_ATTRIBUTE.equals(attributeFqn)) {
+                if (AS_COMMAND_ATTRIBUTE.equals(attributeFqn) || EXCLUDE_ATTRIBUTE.equals(attributeFqn) || AS_FORM_TYPE_ATTRIBUTE.equals(attributeFqn)
+                    || AUTOCONFIGURATION_EXCLUDE_ATTRIBUTES.contains(attributeFqn)) {
                     addTarget(result, attributeFqn, new AttributeTarget(TargetScope.PHP_CLASS, classFqn, null, List.of()));
                 }
             }
