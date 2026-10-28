@@ -4,11 +4,14 @@ import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.stubs.StubIndex;
 import com.intellij.psi.util.CachedValue;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.util.indexing.FileBasedIndex;
+import com.jetbrains.php.PhpIndex;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 import fr.adrienbrault.idea.symfony2plugin.config.component.parser.ParameterServiceParser;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerParameter;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerService;
@@ -21,14 +24,18 @@ import fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollectorParameter;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceParameterCollector;
 import fr.adrienbrault.idea.symfony2plugin.extension.ServiceParameterCollectorParameter;
 import com.jetbrains.php.lang.psi.stubs.indexes.PhpClassFqnIndex;
+import com.jetbrains.php.lang.psi.stubs.PhpFileElementType;
 import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerBuilderStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerParameterStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeIndex;
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex;
 import fr.adrienbrault.idea.symfony2plugin.dic.container.util.ServiceContainerUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyVarDirectoryWatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.SymfonyVarDirectoryWatcherKt;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.SymfonyUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.dict.ServiceUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -53,6 +60,7 @@ public class ContainerCollectionResolver {
     private static final Key<CachedValue<Map<String, ResourceBasedService>>> RESOURCE_BASED_SERVICES_CACHE = new Key<>("SYMFONY_RESOURCE_BASED_SERVICES_CACHE");
     private static final Key<CachedValue<ParameterCollector>> SYMFONY_PARAMETER_COLLECTOR_CACHE = new Key<>("SYMFONY_PARAMETER_COLLECTOR_CACHE");
     private static final Key<CachedValue<Set<String>>> EXCLUDED_CLASSES_CACHE = new Key<>("SYMFONY_EXCLUDED_CLASSES_CACHE");
+    private static final Key<CachedValue<AutoconfigurationExcludedClasses>> AUTOCONFIGURATION_EXCLUDED_CLASSES_CACHE = new Key<>("SYMFONY_AUTOCONFIGURATION_EXCLUDED_CLASSES_CACHE");
 
     private static final ExtensionPointName<fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector> EXTENSIONS = new ExtensionPointName<>(
         "fr.adrienbrault.idea.symfony2plugin.extension.ServiceCollector"
@@ -295,6 +303,77 @@ public class ContainerCollectionResolver {
         );
     }
 
+    /**
+     * FrameworkBundle's Symfony 7.3+ exclusions, collected through attribute and inheritance indexes.
+     * Attribute exclusions are kept separate because container.ignore_attributes disables only those.
+     */
+    @NotNull
+    private static AutoconfigurationExcludedClasses getAutoconfigurationExcludedClasses(@NotNull Project project) {
+        return CachedValuesManager.getManager(project).getCachedValue(
+            project,
+            AUTOCONFIGURATION_EXCLUDED_CLASSES_CACHE,
+            () -> {
+                Set<String> attributes = new HashSet<>();
+                for (String attribute : PhpAttributeIndex.PhpAttributeIndexer.AUTOCONFIGURATION_EXCLUDE_ATTRIBUTES) {
+                    for (PhpAttributeIndex.AttributeTarget target : PhpAttributeIndexUtil.getTargetsWithAttributeScope(project, attribute, PhpAttributeIndex.TargetScope.PHP_CLASS)) {
+                        attributes.add(target.classFqn().toLowerCase(Locale.ROOT));
+                    }
+                }
+
+                Set<String> types = new HashSet<>();
+                for (String type : List.of(
+                    "\\Symfony\\Component\\DependencyInjection\\Compiler\\CompilerPassInterface",
+                    "\\Symfony\\Component\\Validator\\Constraint",
+                    "\\PHPUnit\\Framework\\TestCase",
+                    "\\UnitEnum"
+                )) {
+                    types.add(StringUtils.stripStart(type, "\\").toLowerCase(Locale.ROOT));
+                    PhpIndexUtil.getAllSubclasses(project, type).forEach(phpClass ->
+                        types.add(StringUtils.stripStart(phpClass.getFQN(), "\\").toLowerCase(Locale.ROOT))
+                    );
+                }
+
+                return CachedValueProvider.Result.create(
+                    new AutoconfigurationExcludedClasses(Set.copyOf(attributes), Set.copyOf(types)),
+                    FileIndexCaches.getModificationTrackerForIndexId(project, PhpAttributeIndex.KEY),
+                    StubIndex.getInstance().getPerFileElementTypeModificationTracker(PhpFileElementType.FILE)
+                );
+            },
+            false
+        );
+    }
+
+    private record AutoconfigurationExcludedClasses(@NotNull Set<String> attributes, @NotNull Set<String> types) {
+        private boolean contains(@NotNull Project project, @NotNull ContainerService service) {
+            // The compiled container is authoritative and may retain excluded definitions in its debug dump.
+            if (service.hasSourceKind(ContainerServiceMetadata.SourceKind.COMPILED_CONTAINER)) {
+                return service.getMetadata().stream()
+                    .filter(metadata -> metadata.sourceKind() == ContainerServiceMetadata.SourceKind.COMPILED_CONTAINER)
+                    .anyMatch(metadata -> metadata.tags().contains("container.excluded"));
+            }
+
+            List<ContainerServiceMetadata> metadata = service.getMetadata();
+            if (metadata.isEmpty() || !metadata.getFirst().autoconfigure()) {
+                return false;
+            }
+
+            boolean ignoreAttributes = metadata.getFirst().tags().contains("container.ignore_attributes");
+            for (String className : service.getClassNames()) {
+                String fqn = StringUtils.stripStart(className, "\\").toLowerCase(Locale.ROOT);
+                if (types.contains(fqn) || (!ignoreAttributes && attributes.contains(fqn))) {
+                    return true;
+                }
+
+                // PHP's inheritance index does not include enums' implicit UnitEnum implementation.
+                if (PhpIndex.getInstance(project).getClassesByFQN(className).stream().anyMatch(PhpClass::isEnum)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
     public static class ServiceCollector {
 
         @NotNull
@@ -309,6 +388,7 @@ public class ContainerCollectionResolver {
         @Nullable
         private Set<String> serviceNamesCache;
         private Map<String, Set<String>> serviceClassNameCache;
+        private Set<String> autoconfigurationExcludedServiceNames = Collections.emptySet();
 
         private ServiceCollector(@NotNull Project project) {
             this.project = project;
@@ -451,6 +531,19 @@ public class ContainerCollectionResolver {
                 });
             }
 
+            if (SymfonyUtil.isVersionGreaterThenEquals(project, "7.3")) {
+                AutoconfigurationExcludedClasses autoconfigurationExclusions = getAutoconfigurationExcludedClasses(project);
+                Set<String> excludedServiceNames = new HashSet<>();
+                services.entrySet().removeIf(entry -> {
+                    if (autoconfigurationExclusions.contains(project, entry.getValue())) {
+                        excludedServiceNames.add(entry.getKey());
+                        return true;
+                    }
+                    return false;
+                });
+                this.autoconfigurationExcludedServiceNames = Set.copyOf(excludedServiceNames);
+            }
+
             return this.servicesCache = services;
         }
 
@@ -551,6 +644,11 @@ public class ContainerCollectionResolver {
                 serviceNames.removeAll(excludedClasses);
             }
 
+            if (SymfonyUtil.isVersionGreaterThenEquals(project, "7.3")) {
+                getServices();
+                serviceNames.removeAll(this.autoconfigurationExcludedServiceNames);
+            }
+
             return this.serviceNamesCache = serviceNames;
         }
 
@@ -568,6 +666,8 @@ public class ContainerCollectionResolver {
                     // Keep this cache tied to concrete service data sources instead of broad PSI invalidation.
                     FileIndexCaches.getModificationTrackerForIndexId(project, ServicesDefinitionStubIndex.KEY),
                     FileIndexCaches.getModificationTrackerForIndexId(project, PhpAttributeIndex.KEY),
+                    // PHP stubs include inheritance and Kernel::VERSION, both used by autoconfiguration exclusions.
+                    StubIndex.getInstance().getPerFileElementTypeModificationTracker(PhpFileElementType.FILE),
                     SymfonyVarDirectoryWatcherKt.getSymfonyVarDirectoryWatcher(project).getModificationTracker(SymfonyVarDirectoryWatcher.Scope.CONTAINER),
                     VirtualFileManager.VFS_STRUCTURE_MODIFICATIONS
                 ),
