@@ -38,6 +38,32 @@ class RouteActionParameterIntentionTest : SymfonyLightCodeInsightFixtureTestCase
         )
     }
 
+    fun testIntentionIsAvailableForRouteActionWithExtendedRouteAttribute() {
+        myFixture.addFileToProject(
+            "RoutePut.php",
+            "<?php\n" +
+                "namespace Common\\Route;\n" +
+                "#[\\Attribute]\n" +
+                "class RoutePut extends \\Symfony\\Component\\Routing\\Attribute\\Route {}\n"
+        )
+
+        assertIntentionIsAvailable(
+            PhpFileType.INSTANCE,
+            "<?php\n" +
+                "namespace App\\Controller;\n" +
+                "use Common\\Route\\RoutePut;\n" +
+                "\n" +
+                "class TestController\n" +
+                "{\n" +
+                "    #[RoutePut('/test')]\n" +
+                "    public function <caret>index(): void\n" +
+                "    {\n" +
+                "    }\n" +
+                "}\n",
+            "Symfony: Add parameter to route action"
+        )
+    }
+
     fun testIntentionIsAvailableForRouteActionWithAnnotation() {
         assertIntentionIsAvailable(
             PhpFileType.INSTANCE,

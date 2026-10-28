@@ -93,6 +93,48 @@ class DuplicateLocalRouteInspectionTest : SymfonyLightCodeInsightFixtureTestCase
         )
     }
 
+    fun testDuplicateRoutingKeysForExtendedPhpAttribute() {
+        myFixture.addFileToProject("RoutePut.php", "<?php\n" +
+            "namespace Common\\Route;\n" +
+            "#[\\Attribute]\n" +
+            "class RoutePut extends \\Symfony\\Component\\Routing\\Annotation\\Route {}\n" +
+            "#[\\Attribute]\n" +
+            "class NotARoute {}\n"
+        )
+
+        assertLocalInspectionContains(DuplicateLocalRouteInspection::class.java, "controller.php", "<?php\n" +
+            "\n" +
+            "use Symfony\\Component\\Routing\\Annotation\\Route;\n" +
+            "use Common\\Route\\RoutePut;\n" +
+            "\n" +
+            "class FooController\n" +
+            "{\n" +
+            "    #[RoutePut(name: 'foobar<caret>_index')]\n" +
+            "    public function index() {}\n" +
+            "\n" +
+            "    #[Route(name: 'foobar_index')]\n" +
+            "    public function foo() {}\n" +
+            "}\n",
+            "Symfony: Duplicate route name"
+        )
+
+        assertLocalInspectionNotContains(DuplicateLocalRouteInspection::class.java, "controller.php", "<?php\n" +
+            "\n" +
+            "use Common\\Route\\RoutePut;\n" +
+            "use Common\\Route\\NotARoute;\n" +
+            "\n" +
+            "class FooController\n" +
+            "{\n" +
+            "    #[RoutePut(name: 'foobar<caret>_index')]\n" +
+            "    public function index() {}\n" +
+            "\n" +
+            "    #[NotARoute(name: 'foobar_index')]\n" +
+            "    public function foo() {}\n" +
+            "}\n",
+            "Symfony: Duplicate route name"
+        )
+    }
+
     fun testDuplicateRoutingKeysForPhpDocBlocks() {
         assertLocalInspectionContains(DuplicateLocalRouteInspection::class.java, "controller.php", "<?php\n" +
             "\n" +
