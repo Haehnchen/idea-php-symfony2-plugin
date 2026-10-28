@@ -24,6 +24,24 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2026.2.314
+* [#2888](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2888) FrameworkBundle add Auto-exclude DI extensions feature (Daniel Espendiller)
+* [#2902](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/2902) Support !php/enum completion and navigation in yaml (a.dmitryuk)
+* Support trait php properties in attribute form types (Daniel Espendiller)
+* Support php attribute form types in icons and line markers (Daniel Espendiller)
+* Add class completion for php attribute form type (Daniel Espendiller)
+* Support data class and option resolution for php attribute form types (Daniel Espendiller)
+* Support nested form fields php attributes in Twig resolver (Daniel Espendiller)
+* Provide form `get` `has` support of AsFormType attribute property fields (Daniel Espendiller)
+* Support `AsFormType` in Twig find usages (Daniel Espendiller)
+* Support `AsFormType` fields in competition and navigation (Daniel Espendiller)
+* Support navigation and completion for `FormField` `AsFormType` php attributes keys (Daniel Espendiller)
+* [#2890](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2890) fix all leaking streams for WSL (Daniel Espendiller)
+* [#2889](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/2889) Complete Twig function hash keys and values from the PHP parameter array shape (Hugo Alliaume)
+* [#2886](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/2886) Support FOSJsRoutingBundle route names in JavaScript and TypeScript (Youval Teboul)
+* [paid] Add inspection for deprecated Doctrine QueryBuilder sort directions (Daniel Espendiller)
+* [paid] Accept attribute form types in paid form type inspection (Daniel Espendiller)
+
 ## 2026.2.313
 * Support multiple Twig template usage types per file for indexing (Daniel Espendiller)
 * Introduce Twig template usage documentation for PHP and Twig files (Daniel Espendiller)
