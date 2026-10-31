@@ -20,6 +20,8 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigFunctionHashParse
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigFunctionHashParser.FunctionArgument;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigFunctionHashParser.FunctionHash;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.UxCssUtil;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.UxCssUtil.CssValue;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpDocArrayShapeUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpDocArrayShapeUtil.ShapeKey;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -70,6 +72,7 @@ public class TwigFunctionHashCompletionProvider extends CompletionProvider<Compl
         }
 
         int parameterShift = getParameterShift(twigExtension);
+        Map<String, CssValue> colors = UxCssUtil.isCssFunction(twigExtension) ? UxCssUtil.getColors(project) : Map.of();
 
         Map<String, LookupElement> lookupElements = new LinkedHashMap<>();
         for (PhpNamedElement element : PhpElementsUtil.getPsiElementsBySignature(project, twigExtension.getSignature())) {
@@ -82,7 +85,7 @@ public class TwigFunctionHashCompletionProvider extends CompletionProvider<Compl
                 continue;
             }
 
-            List<LookupElement> functionLookupElements = new ArrayList<>(createLookupElements(function, parameterIndex, hash));
+            List<LookupElement> functionLookupElements = new ArrayList<>(createLookupElements(function, parameterIndex, hash, colors));
             functionLookupElements.addAll(createCvaLookupElements(function, parameterIndex, parameterShift, hash));
 
             for (LookupElement lookupElement : functionLookupElements) {
@@ -133,13 +136,13 @@ public class TwigFunctionHashCompletionProvider extends CompletionProvider<Compl
     }
 
     @NotNull
-    private static List<LookupElement> createLookupElements(@NotNull Function function, int parameterIndex, @NotNull FunctionHash hash) {
+    private static List<LookupElement> createLookupElements(@NotNull Function function, int parameterIndex, @NotNull FunctionHash hash, @NotNull Map<String, CssValue> colors) {
         List<LookupElement> lookupElements = new ArrayList<>();
 
         String valueKey = hash.valueKey();
         if (valueKey != null) {
             for (String value : PhpDocArrayShapeUtil.getParameterLiteralValues(function, parameterIndex, hash.keyPath(), valueKey)) {
-                lookupElements.add(createValueLookupElement(value));
+                lookupElements.add(createValueLookupElement(value, colors.get(value)));
             }
 
             return lookupElements;
@@ -241,6 +244,17 @@ public class TwigFunctionHashCompletionProvider extends CompletionProvider<Compl
     @NotNull
     private static LookupElement createValueLookupElement(@NotNull String value) {
         return LookupElementBuilder.create(value).withIcon(Symfony2Icons.SYMFONY);
+    }
+
+    @NotNull
+    private static LookupElement createValueLookupElement(@NotNull String value, @Nullable CssValue color) {
+        if (color == null) {
+            return LookupElementBuilder.create(value).withIcon(Symfony2Icons.SYMFONY);
+        }
+
+        return LookupElementBuilder.create(value)
+            .withIcon(color.color() != null ? UxCssUtil.createColorIcon(16, color.color()) : Symfony2Icons.SYMFONY)
+            .withTypeText(color.value());
     }
 
     @NotNull
