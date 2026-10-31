@@ -1,0 +1,15 @@
+{
+    "tokens": {
+        "colors": {
+            "blue": {
+                "500": { "value": "#3b82f6" }
+            },
+            "red": {
+                "500": { "value": "#ef4444" }
+            }
+        },
+        "spacing": {
+            "4": { "value": "1rem" }
+        }
+    }
+}

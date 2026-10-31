@@ -67,13 +67,21 @@ public final class UxCssUtil {
     }
 
     /**
+     * Removes the {@code !important} flag of a css() hash value, e.g. {@code primary} for {@code primary!}.
+     */
+    @NotNull
+    public static String stripImportant(@NotNull String styleValue) {
+        return StringUtils.removeEnd(StringUtils.removeEnd(styleValue.trim(), "!important"), "!");
+    }
+
+    /**
      * Resolves a value written in a css() hash: a color token, a color token with an opacity, or a raw value between brackets.
      * <p>
      * Examples: {@code blue.500}, {@code primary/50}, {@code [#ff6600]}, {@code primary!}
      */
     @Nullable
     public static CssValue resolveColor(@NotNull Project project, @NotNull String styleValue) {
-        String value = StringUtils.removeEnd(StringUtils.removeEnd(styleValue.trim(), "!important"), "!");
+        String value = stripImportant(styleValue);
 
         if (value.startsWith("[") && value.endsWith("]")) {
             String raw = value.substring(1, value.length() - 1);
