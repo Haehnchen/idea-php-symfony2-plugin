@@ -1,0 +1,5 @@
+when@dev:
+    ux_css:
+        tokens:
+            colors:
+                debug: '#ff00ff'
