@@ -308,6 +308,7 @@
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.config.ServiceLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="PHP" implementationClass="fr.adrienbrault.idea.symfony2plugin.dic.ControllerMethodLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="Twig" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.UxCssColorLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="HTML" implementationClass="fr.adrienbrault.idea.symfony2plugin.templating.TwigHtmlLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="yaml" implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.YamlLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="XML" implementationClass="fr.adrienbrault.idea.symfony2plugin.routing.XmlLineMarkerProvider"/>
@@ -924,6 +925,7 @@
     <depends>com.jetbrains.php</depends>
     <depends>JavaScript</depends>
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.css</depends>
     <depends>org.jetbrains.plugins.yaml</depends>
     <depends config-file="annotation.xml">de.espend.idea.php.annotation</depends>
 
