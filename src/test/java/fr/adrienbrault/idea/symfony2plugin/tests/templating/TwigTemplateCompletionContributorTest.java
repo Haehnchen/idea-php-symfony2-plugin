@@ -1,6 +1,7 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.templating;
 
 import com.intellij.patterns.PlatformPatterns;
+import com.intellij.util.ui.ColorIcon;
 import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
@@ -599,5 +600,24 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         assertCompletionContains(TwigFileType.INSTANCE, "{{ css({ display: 'flex', WebkitAppearance: '<caret>' }) }}", "button", "none");
         assertCompletionContains(TwigFileType.INSTANCE, "{{ css({ zIndex: '<caret>' }) }}", "auto", "inherit");
         assertCompletionNotContains(TwigFileType.INSTANCE, "{{ css({ zIndex: '<caret>' }) }}", "int", "float");
+    }
+
+    public void testCompletionForCssFunctionColorTokensShowsTheirColor() {
+        myFixture.copyFileToProject("TwigFunctionArrayShape.php");
+        myFixture.copyFileToProject("TwigFunctionArrayShapeCss.php");
+        myFixture.copyFileToProject("TwigFunctionArrayShapeCssReference.php");
+
+        assertCompletionLookupContainsPresentableItem(TwigFileType.INSTANCE, "{{ css({ color: '<caret>' }) }}", presentation ->
+            "blue.500".equals(presentation.getItemText()) && "#3b82f6".equals(presentation.getTypeText()) && presentation.getIcon() instanceof ColorIcon
+        );
+        assertCompletionLookupContainsPresentableItem(TwigFileType.INSTANCE, "{{ css({ _hover: { bg: '<caret>' } }) }}", presentation ->
+            "primary".equals(presentation.getItemText()) && "#3b82f6".equals(presentation.getTypeText()) && presentation.getIcon() instanceof ColorIcon
+        );
+        assertCompletionLookupContainsPresentableItem(TwigFileType.INSTANCE, "{{ css({ color: '<caret>' }) }}", presentation ->
+            "current".equals(presentation.getItemText()) && "currentColor".equals(presentation.getTypeText()) && !(presentation.getIcon() instanceof ColorIcon)
+        );
+        assertCompletionLookupContainsPresentableItem(TwigFileType.INSTANCE, "{{ css({ display: '<caret>' }) }}", presentation ->
+            "flex".equals(presentation.getItemText()) && presentation.getTypeText() == null && !(presentation.getIcon() instanceof ColorIcon)
+        );
     }
 }
