@@ -36,6 +36,8 @@ final class CssReference
         ],
         'spacing' => [
             'primary' => '1rem',
+            'md' => '1rem',
+            '-md' => '-1rem',
         ],
     ];
 }

@@ -9,7 +9,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 import com.jetbrains.php.lang.psi.elements.Function;
-import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
@@ -21,10 +20,10 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.UxCssUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.UxCssUtil.CssValue;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpDocArrayShapeUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpDocArrayShapeUtil.ShapeKey;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -64,15 +63,12 @@ public class TwigFunctionHashCompletionProvider extends CompletionProvider<Compl
         }
 
         int parameterIndex = getParameterIndex(twigExtension, hash.argumentIndex());
-        Map<String, CssValue> colors = UxCssUtil.isCssFunction(twigExtension) ? UxCssUtil.getColors(project) : Map.of();
+        List<Function> functions = TwigExtensionParser.getPhpFunctions(project, twigExtension);
+        Map<String, CssValue> tokenValues = UxCssUtil.getTokenValues(project, twigExtension, functions, hash);
 
         Map<String, LookupElement> lookupElements = new LinkedHashMap<>();
-        for (PhpNamedElement element : PhpElementsUtil.getPsiElementsBySignature(project, twigExtension.getSignature())) {
-            if (!(element instanceof Function function)) {
-                continue;
-            }
-
-            for (LookupElement lookupElement : createLookupElements(function, parameterIndex, hash, colors)) {
+        for (Function function : functions) {
+            for (LookupElement lookupElement : createLookupElements(function, parameterIndex, hash, tokenValues)) {
                 lookupElements.putIfAbsent(lookupElement.getLookupString(), lookupElement);
             }
         }
@@ -95,13 +91,13 @@ public class TwigFunctionHashCompletionProvider extends CompletionProvider<Compl
     }
 
     @NotNull
-    private static List<LookupElement> createLookupElements(@NotNull Function function, int parameterIndex, @NotNull FunctionHash hash, @NotNull Map<String, CssValue> colors) {
+    private static List<LookupElement> createLookupElements(@NotNull Function function, int parameterIndex, @NotNull FunctionHash hash, @NotNull Map<String, CssValue> tokenValues) {
         List<LookupElement> lookupElements = new ArrayList<>();
 
         String valueKey = hash.valueKey();
         if (valueKey != null) {
             for (String value : PhpDocArrayShapeUtil.getParameterLiteralValues(function, parameterIndex, hash.keyPath(), valueKey)) {
-                lookupElements.add(createValueLookupElement(value, colors.get(value)));
+                lookupElements.add(createValueLookupElement(value, tokenValues.get(value)));
             }
 
             return lookupElements;
@@ -115,14 +111,12 @@ public class TwigFunctionHashCompletionProvider extends CompletionProvider<Compl
     }
 
     @NotNull
-    private static LookupElement createValueLookupElement(@NotNull String value, @Nullable CssValue color) {
-        if (color == null) {
-            return LookupElementBuilder.create(value).withIcon(Symfony2Icons.SYMFONY);
-        }
+    private static LookupElement createValueLookupElement(@NotNull String value, @Nullable CssValue token) {
+        Color color = token != null ? token.color() : null;
 
         return LookupElementBuilder.create(value)
-            .withIcon(color.color() != null ? UxCssUtil.createColorIcon(16, color.color()) : Symfony2Icons.SYMFONY)
-            .withTypeText(color.value());
+            .withIcon(color != null ? UxCssUtil.createColorIcon(16, color) : Symfony2Icons.SYMFONY)
+            .withTypeText(token != null ? token.value() : null);
     }
 
     @NotNull

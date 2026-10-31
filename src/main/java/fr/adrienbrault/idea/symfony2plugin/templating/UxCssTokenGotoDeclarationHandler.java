@@ -16,8 +16,6 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression;
 import com.jetbrains.php.lang.psi.elements.ArrayHashElement;
-import com.jetbrains.php.lang.psi.elements.Function;
-import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
 import com.jetbrains.php.lang.psi.elements.PhpPsiElement;
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import com.jetbrains.twig.TwigTokenTypes;
@@ -28,7 +26,6 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigFunctionHashParse
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigFunctionHashParser.FunctionHash;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.UxCssConfigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.UxCssUtil;
-import fr.adrienbrault.idea.symfony2plugin.util.PhpDocArrayShapeUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -41,8 +38,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Navigates from a symfony/ux-css token in a css() hash to its declaration in the {@code ux_css} configuration of the
@@ -53,7 +48,6 @@ import java.util.regex.Pattern;
  * @author Hugo Alliaume <hugo@alliau.me>
  */
 public class UxCssTokenGotoDeclarationHandler implements GotoDeclarationHandler {
-    private static final Pattern TOKEN_TYPE = Pattern.compile("([A-Z][A-Za-z]*)Token\\d*");
     private static final List<String> CONFIG_SECTIONS = List.of("tokens", "semantic_tokens");
     private static final String PANDA_TOKENS = "panda-tokens.json";
     private static final String PANDA_TOKENS_PATH = "ux-css/resources/" + PANDA_TOKENS;
@@ -72,7 +66,7 @@ public class UxCssTokenGotoDeclarationHandler implements GotoDeclarationHandler 
 
         Project project = element.getProject();
         TwigExtension twigExtension = TwigExtensionParser.getFunctions(project).get(hash.functionName());
-        String category = UxCssUtil.isCssFunction(twigExtension) ? getTokenCategory(project, twigExtension, hash) : null;
+        String category = UxCssUtil.isCssFunction(twigExtension) ? UxCssUtil.getTokenCategory(project, twigExtension, hash) : null;
         if (category == null) {
             return null;
         }
@@ -84,46 +78,6 @@ public class UxCssTokenGotoDeclarationHandler implements GotoDeclarationHandler 
 
             if (!targets.isEmpty()) {
                 return targets.toArray(PsiElement.EMPTY_ARRAY);
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Reads the category from the type alias of the key in {@code config/reference_css.php}, e.g. {@code spacing} for
-     * <code>p?: SpacingToken|...</code>.
-     */
-    @Nullable
-    private static String getTokenCategory(@NotNull Project project, @NotNull TwigExtension twigExtension, @NotNull FunctionHash hash) {
-        List<String> keyPath = hash.keyPath();
-
-        for (PhpNamedElement element : PhpElementsUtil.getPsiElementsBySignature(project, twigExtension.getSignature())) {
-            if (!(element instanceof Function function)) {
-                continue;
-            }
-
-            String category = getTokenCategory(function, hash.argumentIndex(), keyPath, hash.valueKey());
-
-            // a conditional value, e.g. color: { base: '...' }
-            if (category == null && !keyPath.isEmpty()) {
-                category = getTokenCategory(function, hash.argumentIndex(), keyPath.subList(0, keyPath.size() - 1), keyPath.getLast());
-            }
-
-            if (category != null) {
-                return category;
-            }
-        }
-
-        return null;
-    }
-
-    @Nullable
-    private static String getTokenCategory(@NotNull Function function, int parameterIndex, @NotNull List<String> keyPath, @NotNull String key) {
-        for (String typeName : PhpDocArrayShapeUtil.getParameterValueTypeNames(function, parameterIndex, keyPath, key)) {
-            Matcher matcher = TOKEN_TYPE.matcher(typeName);
-            if (matcher.matches()) {
-                return StringUtils.uncapitalize(matcher.group(1));
             }
         }
 

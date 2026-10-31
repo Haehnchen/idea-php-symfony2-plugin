@@ -620,4 +620,23 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
             "flex".equals(presentation.getItemText()) && presentation.getTypeText() == null && !(presentation.getIcon() instanceof ColorIcon)
         );
     }
+
+    public void testCompletionForCssFunctionTokensShowsTheirValue() {
+        myFixture.copyFileToProject("TwigFunctionArrayShape.php");
+        myFixture.copyFileToProject("TwigFunctionArrayShapeCss.php");
+        myFixture.copyFileToProject("TwigFunctionArrayShapeCssReference.php");
+
+        assertCompletionLookupContainsPresentableItem(TwigFileType.INSTANCE, "{{ css({ p: '<caret>' }) }}", presentation ->
+            "md".equals(presentation.getItemText()) && "1rem".equals(presentation.getTypeText()) && !(presentation.getIcon() instanceof ColorIcon)
+        );
+        assertCompletionLookupContainsPresentableItem(TwigFileType.INSTANCE, "{{ css({ p: '<caret>' }) }}", presentation ->
+            "-md".equals(presentation.getItemText()) && "-1rem".equals(presentation.getTypeText())
+        );
+        assertCompletionLookupContainsPresentableItem(TwigFileType.INSTANCE, "{{ css({ p: '<caret>' }) }}", presentation ->
+            "1.5".equals(presentation.getItemText()) && presentation.getTypeText() == null
+        );
+        assertCompletionLookupContainsPresentableItem(TwigFileType.INSTANCE, "{{ css({ color: '<caret>' }) }}", presentation ->
+            "primary".equals(presentation.getItemText()) && "#3b82f6".equals(presentation.getTypeText()) && presentation.getIcon() instanceof ColorIcon
+        );
+    }
 }
