@@ -1,0 +1,14 @@
+ux_css:
+    default_tokens: panda
+    tokens:
+        colors:
+            blue:
+                500: '#2563eb'
+            brand: '#4f46e5'
+        spacing:
+            md: '1rem'
+            '1.5': '0.375rem'
+    semantic_tokens:
+        colors:
+            primary: '{colors.blue.500}'
+            fg: { base: '{colors.brand}', _dark: '{colors.blue.500}' }
