@@ -509,6 +509,18 @@ public class TwigExtensionParser  {
         return elements.iterator().next();
     }
 
+    @NotNull
+    public static List<Function> getPhpFunctions(@NotNull Project project, @NotNull TwigExtension twigExtension) {
+        List<Function> functions = new ArrayList<>();
+        for (PhpNamedElement element : PhpElementsUtil.getPsiElementsBySignature(project, twigExtension.getSignature())) {
+            if (element instanceof Function function) {
+                functions.add(function);
+            }
+        }
+
+        return functions;
+    }
+
     private static class TwigFilterVisitor {
         private static void visitNewExpression(@NotNull NewExpression element, @NotNull Method method, @NotNull Map<String, TwigExtension> filters, @NotNull PhpClass containingClass) {
             // new \Twig_SimpleFilter('url', array($this, 'getUrl'), array('is_safe_callback' => array($this, 'isUrlGenerationSafe'))),
