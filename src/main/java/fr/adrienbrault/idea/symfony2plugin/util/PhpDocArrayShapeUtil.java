@@ -87,8 +87,7 @@ public final class PhpDocArrayShapeUtil {
         @NotNull List<String> keyPath,
         @NotNull String key
     ) {
-        Integer index = getParameterIndex(function, parameterIndex);
-        PhpDocTag docTag = index != null ? function.getParameters()[index].getDocTag() : null;
+        PhpDocTag docTag = getParameterDocTag(function, parameterIndex);
         if (docTag == null) {
             return Collections.emptyList();
         }
@@ -99,6 +98,38 @@ public final class PhpDocArrayShapeUtil {
         }
 
         return literals;
+    }
+
+    /**
+     * Type names of a shape key value, e.g. {@code SizeValue} and {@code array} for <code>size?: SizeValue|array&lt;string&gt;</code>.
+     */
+    @NotNull
+    public static Collection<String> getParameterValueTypeNames(
+        @NotNull Function function,
+        int parameterIndex,
+        @NotNull List<String> keyPath,
+        @NotNull String key
+    ) {
+        PhpDocTag docTag = getParameterDocTag(function, parameterIndex);
+        if (docTag == null) {
+            return Collections.emptyList();
+        }
+
+        Set<String> names = new LinkedHashSet<>();
+        for (PhpDocType type : getPathValueTypes(docTag, ContainerUtil.append(keyPath, key))) {
+            String name = type.getName();
+            if (StringUtils.isNotBlank(name)) {
+                names.add(name);
+            }
+        }
+
+        return names;
+    }
+
+    @Nullable
+    private static PhpDocTag getParameterDocTag(@NotNull Function function, int parameterIndex) {
+        Integer index = getParameterIndex(function, parameterIndex);
+        return index != null ? function.getParameters()[index].getDocTag() : null;
     }
 
     @NotNull
