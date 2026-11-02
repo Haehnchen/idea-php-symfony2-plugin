@@ -26,9 +26,8 @@ dependencies {
     intellijPlatform {
         val version = providers.gradleProperty("platformVersion")
         val type = providers.gradleProperty("platformType")
-        create(type, version) {
+        create(type = type, version = version) {
             useInstaller.set(true)
-            useCache.set(true)
         }
 
         bundledPlugins("com.intellij.java", "com.intellij.modules.json", "com.intellij.css", "com.jetbrains.plugins.webDeployment", "org.jetbrains.plugins.yaml", "JavaScript", "com.intellij.mcpServer", "com.intellij.microservices.ui", "com.intellij.database", "org.jetbrains.plugins.terminal", "org.intellij.plugins.markdown")
@@ -57,6 +56,14 @@ intellijPlatform {
     val version = providers.gradleProperty("platformVersion")
     val type = providers.gradleProperty("platformType")
 
+    caching {
+        ides {
+            enabled.set(true)
+            // Share extracted IDEs across checkouts and include them in setup-gradle's cache.
+            path.set(gradle.gradleUserHomeDir.resolve("caches/intellij-platform/ides"))
+        }
+    }
+
     pluginConfiguration {
         name = properties("pluginName")
     }
@@ -65,9 +72,8 @@ intellijPlatform {
 
     pluginVerification {
         ides {
-            create(type, version) {
+            create(type = type, version = version) {
                 useInstaller.set(true)
-                useCache.set(true)
             }
         }
     }
