@@ -31,6 +31,7 @@ namespace Twig\Extension
 
 namespace App\Twig
 {
+    use Twig\Attribute\AsTwigFunction;
     use Twig\Environment;
     use Twig\Extension\AbstractExtension;
     use Twig\Extension\RuntimeExtensionInterface;
@@ -52,6 +53,9 @@ namespace App\Twig
                 new TwigFunction('button_alias', [$this, 'alias']),
                 new TwigFunction('button_imported', [ButtonRuntime::class, 'render']),
                 new TwigFunction('button_env', [$this, 'withEnvironment'], ['needs_environment' => true, 'needs_context' => true]),
+                new TwigFunction('button_charset', [$this, 'withCharset'], ['needs_charset' => true]),
+                new TwigFunction('button_sandboxed', [$this, 'withSandboxed'], ['needs_is_sandboxed' => true]),
+                new TwigFunction('button_injected', [$this, 'withInjected'], ['needs_charset' => true, 'needs_environment' => true, 'needs_context' => true, 'needs_is_sandboxed' => true]),
                 new TwigFunction('button_second', [$this, 'second']),
                 new TwigFunction('link', [$this, 'link']),
                 new TwigFunction('badge', [BadgeRuntime::class, 'render']),
@@ -88,6 +92,30 @@ namespace App\Twig
         /**
          * @param ButtonOptions $options
          */
+        public function withCharset(string $charset, array $options): string
+        {
+            return '';
+        }
+
+        /**
+         * @param ButtonOptions $options
+         */
+        public function withSandboxed(bool $isSandboxed, array $options): string
+        {
+            return '';
+        }
+
+        /**
+         * @param ButtonOptions $options
+         */
+        public function withInjected(string $charset, Environment $env, array $context, bool $isSandboxed, array $options): string
+        {
+            return '';
+        }
+
+        /**
+         * @param ButtonOptions $options
+         */
         public function second(string $label, array $options): string
         {
             return '';
@@ -111,6 +139,27 @@ namespace App\Twig
          * @param ButtonOptions $options
          */
         public function render(array $options): string
+        {
+            return '';
+        }
+    }
+
+    final class ButtonAttributeRuntime
+    {
+        /**
+         * @param array{size?: 'sm'|'md'|'lg', variant?: 'primary'|'secondary'} $options
+         */
+        #[AsTwigFunction('button_attribute_env')]
+        public function withEnvironment(Environment $env, array $options): string
+        {
+            return '';
+        }
+
+        /**
+         * @param array{size?: 'sm'|'md'|'lg', variant?: 'primary'|'secondary'} $options
+         */
+        #[AsTwigFunction('button_attribute_injected', needsCharset: true, needsEnvironment: true, needsContext: true, needsIsSandboxed: true)]
+        public function withInjected(string $charset, Environment $env, array $context, bool $isSandboxed, array $options): string
         {
             return '';
         }

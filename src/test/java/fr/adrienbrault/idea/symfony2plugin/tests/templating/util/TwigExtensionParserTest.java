@@ -251,4 +251,37 @@ public class TwigExtensionParserTest extends SymfonyLightCodeInsightFixtureTestC
             "\\Symfony\\Component\\String\\UnicodeString"
         );
     }
+
+    public void testAttributeFunctionInjectedArgumentOptionsAreCollected() {
+        myFixture.addFileToProject(
+            "src/App/Twig/AttributeInjectedExtension.php",
+            "<?php\n" +
+                "namespace App\\Twig;\n" +
+                "use Twig\\Attribute\\AsTwigFunction;\n" +
+                "use Twig\\Environment;\n" +
+                "class AttributeInjectedExtension {\n" +
+                "    #[AsTwigFunction('attribute_injected', needsCharset: true, needsContext: true, needsIsSandboxed: true)]\n" +
+                "    public function injected(string $charset, array $context, bool $isSandboxed) {}\n" +
+                "    #[AsTwigFunction('attribute_environment')]\n" +
+                "    public function environment(Environment $env) {}\n" +
+                "    #[AsTwigFunction('attribute_environment_disabled', needsEnvironment: false)]\n" +
+                "    public function environmentDisabled(Environment $env) {}\n" +
+                "    #[AsTwigFunction('attribute_positional', true)]\n" +
+                "    public function positional(string $charset) {}\n" +
+                "}\n"
+        );
+
+        Map<String, TwigExtension> functions = TwigExtensionParser.getFunctions(getProject());
+
+        TwigExtension injected = functions.get("attribute_injected");
+        assertEquals("true", injected.getOption("needs_charset"));
+        assertEquals("true", injected.getOption("needs_context"));
+        assertEquals("true", injected.getOption("needs_is_sandboxed"));
+        assertNull(injected.getOption("needs_environment"));
+
+        assertEquals("true", functions.get("attribute_environment").getOption("needs_environment"));
+        assertNull(functions.get("attribute_environment_disabled").getOption("needs_environment"));
+
+        assertEquals("true", functions.get("attribute_positional").getOption("needs_charset"));
+    }
 }

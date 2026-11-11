@@ -570,6 +570,23 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         assertCompletionContains(TwigFileType.INSTANCE, "{{ button_env({ size: '<caret>' }) }}", "sm", "md", "lg");
     }
 
+    public void testCompletionForTwigFunctionHashShiftsParameterForCharsetAndSandbox() {
+        myFixture.copyFileToProject("TwigFunctionArrayShape.php");
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ button_charset({ <caret> }) }}", "size", "variant", "icon");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ button_sandboxed({ <caret> }) }}", "size", "variant", "icon");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ button_injected({ <caret> }) }}", "size", "variant", "icon");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ button_injected({ size: '<caret>' }) }}", "sm", "md", "lg");
+    }
+
+    public void testCompletionForTwigFunctionHashShiftsParameterForAttributeFunction() {
+        myFixture.copyFileToProject("TwigFunctionArrayShape.php");
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ button_attribute_env({ <caret> }) }}", "size", "variant");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ button_attribute_injected({ <caret> }) }}", "size", "variant");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ button_attribute_injected({ size: '<caret>' }) }}", "sm", "md", "lg");
+    }
+
     public void testCompletionForTwigFunctionHashAtSecondArgument() {
         myFixture.copyFileToProject("TwigFunctionArrayShape.php");
 
