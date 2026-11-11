@@ -600,4 +600,163 @@ public class TwigTemplateCompletionContributorTest extends SymfonyLightCodeInsig
         assertCompletionContains(TwigFileType.INSTANCE, "{{ css({ zIndex: '<caret>' }) }}", "auto", "inherit");
         assertCompletionNotContains(TwigFileType.INSTANCE, "{{ css({ zIndex: '<caret>' }) }}", "int", "float");
     }
+
+    public void testCompletionForTwigFunctionHashAtNamedArgument() {
+        copyCvaFixtures();
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ button_named(options: { <caret> }) }}", "size", "tone");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ button_named(options = { <caret> }) }}", "size", "tone");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ button_named(options: { size: '<caret>' }) }}", "sm", "lg");
+    }
+
+    public void testCompletionForTwigFunctionHashAtNamedArgumentAfterPositionalArgument() {
+        copyCvaFixtures();
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ button_named('Save', options: { <caret> }) }}", "size", "tone");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ button_named('Save', { <caret> }) }}", "size", "tone");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ button_named(label: { <caret> }) }}", "size", "tone");
+    }
+
+    public void testCompletionForTwigFunctionHashFromMapValueType() {
+        copyCvaFixtures();
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ map_value({ foo: { <caret> } }) }}", "size");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ map_value({ foo: { size: '<caret>' } }) }}", "sm", "lg");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ map_value({ <caret> }) }}", "size");
+    }
+
+    public void testCompletionForTwigFunctionHashFromMapValueTypeAlias() {
+        copyCvaFixtures();
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ map_alias({ foo: { <caret> } }) }}", "size");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ map_alias({ foo: { size: '<caret>' } }) }}", "sm", "lg");
+    }
+
+    public void testCompletionForTwigFunctionHashFromListItemType() {
+        copyCvaFixtures();
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ list_item([{ <caret> }]) }}", "css");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ list_item([{}, { <caret> }]) }}", "css");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ list_item([{ css: { <caret> } }]) }}", "color");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ list_item([{ css: { color: '<caret>' } }]) }}", "red", "blue");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ list_item({ <caret> }) }}", "css");
+    }
+
+    public void testCompletionForTwigFunctionHashFromArrayOfTypeAlias() {
+        copyCvaFixtures();
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ list_alias([{ <caret> }]) }}", "css");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ list_alias([{ css: { color: '<caret>' } }]) }}", "red", "blue");
+    }
+
+    public void testCompletionForTwigFunctionHashCvaStylesFromParameterTypes() {
+        copyCvaFixtures();
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ cva(base: { <caret> }) }}", "display", "zIndex");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ cva(variants: { size: { sm: { <caret> } } }) }}", "display", "zIndex");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ cva(variants: { size: { sm: { display: '<caret>' } } }) }}", "flex", "grid");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ cva(compoundVariants: [{ css: { <caret> } }]) }}", "display", "zIndex");
+    }
+
+    public void testCompletionForTwigFunctionHashCvaDefaultVariantKeys() {
+        copyCvaFixtures();
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ cva(variants: { size: { sm: {} }, 'icon-sm': { yes: {} } }, defaultVariants: { <caret> }) }}", "size", "'icon-sm'");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ cva({}, { size: { sm: {} }, \"tone\": {} }, [], { <caret> }) }}", "size", "tone");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% set button = cva(\n    variants: { size: { sm: {} } },\n    defaultVariants: { <caret> },\n) %}", "size");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ cva(variants: { size: { sm: {} } }, base: { <caret> }) }}", "size");
+    }
+
+    public void testCompletionForTwigFunctionHashCvaDefaultVariantValues() {
+        copyCvaFixtures();
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ cva(variants: { size: { sm: {}, 'x-lg': {}, 1: {} } }, defaultVariants: { size: '<caret>' }) }}", "sm", "x-lg", "1");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ cva(variants: { size: { sm: {} }, tone: { solid: {} } }, defaultVariants: { size: '<caret>' }) }}", "solid");
+    }
+
+    public void testCompletionForTwigFunctionHashCvaCompoundVariantKeys() {
+        copyCvaFixtures();
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ cva(variants: { size: { sm: {} }, tone: { solid: {} } }, compoundVariants: [{ <caret> }]) }}", "size", "tone", "css");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ cva(variants: { size: { sm: {} }, tone: { solid: {} } }, compoundVariants: [{ size: 'sm', <caret> }]) }}", "tone", "css");
+    }
+
+    public void testCompletionForTwigFunctionHashCvaCompoundVariantValues() {
+        copyCvaFixtures();
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ cva(variants: { size: { sm: {}, lg: {} } }, compoundVariants: [{ size: '<caret>' }]) }}", "sm", "lg");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ cva(variants: { size: { sm: {}, lg: {} } }, compoundVariants: [{ size: ['sm', '<caret>'] }]) }}", "sm", "lg");
+    }
+
+    public void testCompletionForTwigFunctionHashHtmlCvaVariants() {
+        copyCvaFixtures();
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ html_cva(variants: { size: { sm: 'p-1' } }, defaultVariant: { <caret> }) }}", "size");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ html_cva(variants: { size: { sm: 'p-1' } }, defaultVariant: { size: '<caret>' }) }}", "sm");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ html_cva(variants: { size: { sm: 'p-1' } }, compoundVariants: [{ <caret> }]) }}", "size", "class");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ html_cva(variants: { size: { sm: 'p-1' } }, compoundVariants: [{ <caret> }]) }}", "css");
+    }
+
+    public void testCompletionForTwigFunctionHashCvaVariantsFromVariableCompletesNoVariantNames() {
+        copyCvaFixtures();
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ cva(variants: sizes, compoundVariants: [{ <caret> }]) }}", "css");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ cva({ foo: {} }, sizes, [{ <caret> }]) }}", "foo");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ cva({ foo: {} }, sizes, [], { <caret> }) }}", "foo");
+    }
+
+    public void testCompletionForTwigFunctionHashFromSingleTypeArgumentArray() {
+        copyCvaFixtures();
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ array_single([{ <caret> }]) }}", "size");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ array_single({ foo: { size: '<caret>' } }) }}", "sm", "lg");
+    }
+
+    public void testCompletionForTwigFunctionHashFromIterableValueType() {
+        copyCvaFixtures();
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ iterable_value({ foo: { <caret> } }) }}", "size");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ iterable_value({ foo: { size: '<caret>' } }) }}", "sm", "lg");
+    }
+
+    public void testCompletionForTwigFunctionHashFromNonEmptyListItemType() {
+        copyCvaFixtures();
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ non_empty_list([{ <caret> }]) }}", "size");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ non_empty_list([{ size: '<caret>' }]) }}", "sm", "lg");
+    }
+
+    public void testCompletionForTwigFunctionHashWithoutCompoundVariantsHasNoCvaRule() {
+        copyCvaFixtures();
+
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ not_cva(variants: { size: { sm: '' } }, defaultVariants: { <caret> }) }}", "size");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ not_cva(variants: { size: { sm: '' } }, defaultVariants: { size: '<caret>' }) }}", "sm");
+    }
+
+    public void testCompletionForTwigFunctionNestedHashFromInlineShapeWithLocalAlias() {
+        copyCvaFixtures();
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ inline_alias({ icon: { <caret> } }) }}", "name", "position");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ inline_alias({ icon: { position: '<caret>' } }) }}", "start", "end");
+    }
+
+    public void testCompletionForTwigFunctionNestedHashFromInlineShapeWithImportedAlias() {
+        copyCvaFixtures();
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ inline_imported({ icon: { <caret> } }) }}", "name", "position");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ inline_imported({ icon: { position: '<caret>' } }) }}", "start", "end");
+    }
+
+    public void testCompletionForTwigFunctionNestedHashFromInlineShapeWithPhpStanAlias() {
+        copyCvaFixtures();
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ inline_phpstan({ icon: { <caret> } }) }}", "name", "position");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ inline_phpstan({ icon: { position: '<caret>' } }) }}", "start", "end");
+    }
+
+    private void copyCvaFixtures() {
+        myFixture.copyFileToProject("TwigFunctionArrayShape.php");
+        myFixture.copyFileToProject("TwigFunctionArrayShapeCssReference.php");
+        myFixture.copyFileToProject("TwigFunctionArrayShapeCva.php");
+    }
 }

@@ -42,13 +42,22 @@ public final class PhpDocArrayShapeUtil {
     private static final Key<CachedValue<List<ParameterShape>>> PARAMETER_SHAPES = new Key<>("SYMFONY_PARAMETER_ARRAY_SHAPES");
     private static final int MAX_DEPTH = 10;
     private static final Pattern ALIAS_NAME = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*");
+    private static final Set<String> COLLECTION_TYPES = Set.of("array", "list", "non-empty-array", "non-empty-list", "iterable");
+    private static final Set<String> NON_SCALAR_PRIMITIVES = Set.of("array", "iterable", "mixed", "object");
+
+    /**
+     * Key path step for an item of a list, e.g. <code>[[], css]</code> for the {@code css} key of the items of
+     * <code>list&lt;array{css?: string}&gt;</code>.
+     */
+    public static final String LIST_ITEM = "[]";
 
     private PhpDocArrayShapeUtil() {
     }
 
     /**
      * Keys of a parameter shape below the given key path, e.g. {@code name} for the path {@code [icon]} of
-     * <code>array{icon?: array{name?: string}}</code>.
+     * <code>array{icon?: array{name?: string}}</code>; a collection like <code>array&lt;string, V&gt;</code>,
+     * <code>list&lt;V&gt;</code> or <code>V[]</code> matches any key and continues with {@code V}.
      */
     @NotNull
     public static Collection<ShapeKey> getParameterKeys(@NotNull Function function, int parameterIndex, @NotNull List<String> keyPath) {
@@ -58,19 +67,36 @@ public final class PhpDocArrayShapeUtil {
         }
 
         ParameterShape shape = getParameterShapes(function).get(index);
-        if (shape.readFromDoc() && !keyPath.isEmpty()) {
-            PhpDocTag docTag = function.getParameters()[index].getDocTag();
-            return docTag != null ? createDocShapeKeys(getPathValueTypes(docTag, keyPath)) : Collections.emptyList();
+        if (!shape.readFromDoc() || keyPath.isEmpty()) {
+            Collection<ShapeKey> keys = getShapeNodeKeys(shape.nodes(), keyPath);
+            if (keys != null) {
+                return keys;
+            }
         }
 
-        Map<String, ShapeNode> nodes = shape.nodes();
+        PhpDocTag docTag = function.getParameters()[index].getDocTag();
+        return docTag != null ? createDocShapeKeys(getPathValueTypes(docTag, keyPath)) : Collections.emptyList();
+    }
+
+    /**
+     * Keys of the registry nodes below a key path, or {@code null} when a key of the path has no node, as for a
+     * {@link #LIST_ITEM} step, or ends on a node without keys whose type may still have some, like an alias the
+     * registry did not follow.
+     */
+    @Nullable
+    private static Collection<ShapeKey> getShapeNodeKeys(@NotNull Map<String, ShapeNode> nodes, @NotNull List<String> keyPath) {
+        ShapeNode node = null;
         for (String key : keyPath) {
-            ShapeNode node = nodes.get(key);
+            node = nodes.get(key);
             if (node == null) {
-                return Collections.emptyList();
+                return null;
             }
 
             nodes = node.children();
+        }
+
+        if (node != null && nodes.isEmpty() && node.mayHaveKeys()) {
+            return null;
         }
 
         return ContainerUtil.map(nodes.values(), ShapeNode::key);
@@ -94,8 +120,10 @@ public final class PhpDocArrayShapeUtil {
         }
 
         Set<String> literals = new LinkedHashSet<>();
-        for (PhpDocType type : getPathValueTypes(docTag, ContainerUtil.append(keyPath, key))) {
-            collectLiterals(type, literals);
+        for (DocType type : getPathValueTypes(docTag, ContainerUtil.append(keyPath, key))) {
+            if (type.arrayDimensions() == 0) {
+                collectLiterals(type.type(), literals);
+            }
         }
 
         return literals;
@@ -123,11 +151,11 @@ public final class PhpDocArrayShapeUtil {
 
             // PhpStorm follows an imported type alias only when both classes share a file
             PhpDocTag docTag = parameters[i].getDocTag();
-            List<ShapeKey> keys = docTag != null ? createDocShapeKeys(getDocTypes(docTag)) : Collections.emptyList();
+            List<ShapeKey> keys = docTag != null ? createDocShapeKeys(DocType.ofAll(getDocTypes(docTag))) : Collections.emptyList();
 
             Map<String, ShapeNode> nodes = new LinkedHashMap<>();
             for (ShapeKey key : keys) {
-                nodes.put(key.name(), new ShapeNode(key, Collections.emptyMap()));
+                nodes.put(key.name(), new ShapeNode(key, Collections.emptyMap(), true));
             }
 
             shapes.add(new ParameterShape(Collections.unmodifiableMap(nodes), true));
@@ -162,20 +190,42 @@ public final class PhpDocArrayShapeUtil {
                 .flatMap(keyEntry -> keyEntry.getChildren().stream())
                 .toList();
 
+            boolean mayHaveKeys = keyEntries.stream().anyMatch(keyEntry -> mayHaveKeys(keyEntry.getType()));
+
             ShapeKey key = new ShapeKey(entry.getKey(), optional);
-            nodes.put(entry.getKey(), new ShapeNode(key, createShapeNodes(children)));
+            nodes.put(entry.getKey(), new ShapeNode(key, createShapeNodes(children), mayHaveKeys));
         }
 
         return Collections.unmodifiableMap(nodes);
     }
 
     /**
+     * Whether a value type may hold keys, e.g. {@code array}, {@code mixed} or a class or alias name, but not
+     * {@code string} or {@code int}.
+     */
+    private static boolean mayHaveKeys(@Nullable PhpType type) {
+        if (type == null || type.isEmpty()) {
+            return true;
+        }
+
+        for (String typeName : type.getTypes()) {
+            String name = StringUtil.toLowerCase(StringUtils.removeStart(typeName, "\\"));
+            boolean isScalar = PhpType.isPrimitiveType(name) && !NON_SCALAR_PRIMITIVES.contains(name);
+            if (!isScalar) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Reads the keys from the PhpDoc PSI; PhpStorm's own shape parser takes over a second on a shape with hundreds of keys.
      */
     @NotNull
-    private static List<ShapeKey> createDocShapeKeys(@NotNull Collection<PhpDocType> types) {
+    private static List<ShapeKey> createDocShapeKeys(@NotNull Collection<DocType> types) {
         Map<String, Boolean> optionalByKey = new LinkedHashMap<>();
-        for (PhpDocType type : types) {
+        for (DocType type : types) {
             PsiElement attributeList = getShapeAttributeList(type, 0);
             if (attributeList == null) {
                 continue;
@@ -196,10 +246,10 @@ public final class PhpDocArrayShapeUtil {
      * Value types at the end of a key path, e.g. the types of {@code position} for the path {@code [icon, position]}.
      */
     @NotNull
-    private static Collection<PhpDocType> getPathValueTypes(@NotNull PhpDocTag docTag, @NotNull List<String> keyPath) {
-        Collection<PhpDocType> types = getDocTypes(docTag);
+    private static Collection<DocType> getPathValueTypes(@NotNull PhpDocTag docTag, @NotNull List<String> keyPath) {
+        Collection<DocType> types = DocType.ofAll(getDocTypes(docTag));
         for (String key : keyPath) {
-            types = getShapeValueTypes(types, key);
+            types = getValueTypes(types, key);
         }
 
         return types;
@@ -227,22 +277,23 @@ public final class PhpDocArrayShapeUtil {
     }
 
     /**
-     * Types of a shape key value, e.g. {@code 'sm'} and {@code SizeValue} for <code>array{size?: 'sm'|SizeValue}</code>.
+     * Types of a key value, e.g. {@code 'sm'} and {@code SizeValue} for the key {@code size} of
+     * <code>array{size?: 'sm'|SizeValue}</code>, or {@code V} for any key of <code>array&lt;string, V&gt;</code>.
      */
     @NotNull
-    private static List<PhpDocType> getShapeValueTypes(@NotNull Collection<PhpDocType> types, @NotNull String key) {
-        List<PhpDocType> valueTypes = new ArrayList<>();
-        for (PhpDocType type : types) {
-            PsiElement attributeList = getShapeAttributeList(type, 0);
-            if (attributeList == null) {
-                continue;
-            }
-
-            for (ShapeEntry entry : readShapeEntries(attributeList)) {
-                if (key.equals(entry.name())) {
-                    valueTypes.addAll(entry.valueTypes());
+    private static List<DocType> getValueTypes(@NotNull Collection<DocType> types, @NotNull String key) {
+        List<DocType> valueTypes = new ArrayList<>();
+        for (DocType type : types) {
+            PsiElement attributeList = LIST_ITEM.equals(key) ? null : getShapeAttributeList(type, 0);
+            if (attributeList != null) {
+                for (ShapeEntry entry : readShapeEntries(attributeList)) {
+                    if (key.equals(entry.name())) {
+                        valueTypes.addAll(DocType.ofAll(entry.valueTypes()));
+                    }
                 }
             }
+
+            valueTypes.addAll(getCollectionValueTypes(type, 0));
         }
 
         return valueTypes;
@@ -252,15 +303,53 @@ public final class PhpDocArrayShapeUtil {
      * Finds the <code>{...}</code> of a shape type, directly or through a type alias.
      */
     @Nullable
-    private static PsiElement getShapeAttributeList(@NotNull PhpDocType type, int depth) {
-        PsiElement attributeList = PhpPsiUtil.getChildOfType(type, PhpDocElementTypes.phpDocAttributeList);
+    private static PsiElement getShapeAttributeList(@NotNull DocType type, int depth) {
+        if (type.arrayDimensions() > 0) {
+            return null;
+        }
+
+        PsiElement attributeList = PhpPsiUtil.getChildOfType(type.type(), PhpDocElementTypes.phpDocAttributeList);
         if (attributeList != null) {
             boolean isShape = PhpPsiUtil.isOfType(attributeList.getFirstChild(), PhpDocTokenTypes.DOC_LBRACE);
             return isShape ? attributeList : null;
         }
 
-        PhpDocType aliasedType = depth < MAX_DEPTH ? getAliasedType(type) : null;
-        return aliasedType != null ? getShapeAttributeList(aliasedType, depth + 1) : null;
+        PhpDocType aliasedType = depth < MAX_DEPTH ? getAliasedType(type.type()) : null;
+        return aliasedType != null ? getShapeAttributeList(DocType.of(aliasedType), depth + 1) : null;
+    }
+
+    /**
+     * Value types of a collection, e.g. {@code V} for <code>array&lt;K, V&gt;</code>, <code>list&lt;V&gt;</code> or
+     * <code>V[]</code>, directly or through a type alias.
+     */
+    @NotNull
+    private static List<DocType> getCollectionValueTypes(@NotNull DocType type, int depth) {
+        if (type.arrayDimensions() > 0) {
+            return List.of(new DocType(type.type(), type.arrayDimensions() - 1));
+        }
+
+        PsiElement attributeList = PhpPsiUtil.getChildOfType(type.type(), PhpDocElementTypes.phpDocAttributeList);
+        if (attributeList != null) {
+            boolean isGeneric = PhpPsiUtil.isOfType(attributeList.getFirstChild(), PhpDocTokenTypes.DOC_LAB);
+            PsiElement name = type.type().getFirstChild();
+            if (!isGeneric || name == null || !COLLECTION_TYPES.contains(StringUtil.toLowerCase(name.getText()))) {
+                return Collections.emptyList();
+            }
+
+            List<PhpDocType> valueTypes = new ArrayList<>();
+            for (PsiElement child = attributeList.getFirstChild(); child != null; child = child.getNextSibling()) {
+                if (PhpPsiUtil.isOfType(child, PhpDocTokenTypes.DOC_COMMA)) {
+                    valueTypes.clear();
+                } else if (child instanceof PhpDocType valueType) {
+                    valueTypes.add(valueType);
+                }
+            }
+
+            return DocType.ofAll(valueTypes);
+        }
+
+        PhpDocType aliasedType = depth < MAX_DEPTH ? getAliasedType(type.type()) : null;
+        return aliasedType != null ? getCollectionValueTypes(DocType.of(aliasedType), depth + 1) : Collections.emptyList();
     }
 
     /**
@@ -504,7 +593,7 @@ public final class PhpDocArrayShapeUtil {
     public record ShapeKey(@NotNull String name, boolean optional) {
     }
 
-    private record ShapeNode(@NotNull ShapeKey key, @NotNull Map<String, ShapeNode> children) {
+    private record ShapeNode(@NotNull ShapeKey key, @NotNull Map<String, ShapeNode> children, boolean mayHaveKeys) {
     }
 
     /**
@@ -514,5 +603,28 @@ public final class PhpDocArrayShapeUtil {
     }
 
     private record ShapeEntry(@NotNull String name, boolean optional, @NotNull List<PhpDocType> valueTypes) {
+    }
+
+    /**
+     * A PhpDoc type with the {@code []} suffixes still to unwrap, e.g. {@code 1} for <code>ItemOptions[]</code>:
+     * PhpStorm keeps the item type of {@code V[]} in the same PSI element.
+     */
+    private record DocType(@NotNull PhpDocType type, int arrayDimensions) {
+        @NotNull
+        static DocType of(@NotNull PhpDocType type) {
+            int arrayDimensions = 0;
+            for (PsiElement child = type.getFirstChild(); child != null; child = child.getNextSibling()) {
+                if (PhpPsiUtil.isOfType(child, PhpDocTokenTypes.DOC_LBRACKET)) {
+                    arrayDimensions++;
+                }
+            }
+
+            return new DocType(type, arrayDimensions);
+        }
+
+        @NotNull
+        static List<DocType> ofAll(@NotNull Collection<PhpDocType> types) {
+            return ContainerUtil.map(types, DocType::of);
+        }
     }
 }
