@@ -17,6 +17,7 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeIndex;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.dict.TwigExtension;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
+import fr.adrienbrault.idea.symfony2plugin.util.PhpPsiAttributesUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -40,6 +41,14 @@ public class TwigExtensionParser  {
     private static final Key<CachedValue<Map<String, TwigExtension>>> FILE_FUNCTIONS_CACHE = new Key<>("TWIG_FILE_FUNCTIONS");
     private static final Key<CachedValue<Map<String, TwigExtension>>> FILE_TESTS_CACHE = new Key<>("TWIG_FILE_TESTS");
     private static final Key<CachedValue<Map<String, TwigExtension>>> FILE_OPERATORS_CACHE = new Key<>("TWIG_FILE_OPERATORS");
+
+    // In constructor order, right after the name argument
+    private static final String[][] ATTRIBUTE_OPTIONS = {
+        {"needsCharset", "needs_charset"},
+        {"needsEnvironment", "needs_environment"},
+        {"needsContext", "needs_context"},
+        {"needsIsSandboxed", "needs_is_sandboxed"},
+    };
 
     public enum TwigExtensionType {
         FUNCTION_METHOD, FUNCTION_NODE, SIMPLE_FUNCTION, FILTER, SIMPLE_TEST, OPERATOR
@@ -178,7 +187,7 @@ public class TwigExtensionParser  {
             if (target.memberName() != null && !target.data().isEmpty()) {
                 String functionName = target.data().get(0);
                 String signature = String.format("#M#C\\%s.%s", target.classFqn(), target.memberName());
-                extensions.put(functionName, new TwigExtension(TwigExtensionType.FUNCTION_METHOD, signature, Collections.emptyMap(), getReturnClassTypes(project, signature)));
+                extensions.put(functionName, new TwigExtension(TwigExtensionType.FUNCTION_METHOD, signature, getAttributeOptions(project, signature, "\\Twig\\Attribute\\AsTwigFunction", functionName), getReturnClassTypes(project, signature)));
             }
         }
 
@@ -365,6 +374,65 @@ public class TwigExtensionParser  {
         }
 
         return types;
+    }
+
+    /**
+     * Mirrors Twig's AttributeExtension: "needs_environment" defaults to a first parameter typed as Environment.
+     */
+    @NotNull
+    private static Map<String, String> getAttributeOptions(@NotNull Project project, @NotNull String signature, @NotNull String attributeFqn, @NotNull String name) {
+        Map<String, String> options = new HashMap<>();
+
+        for (PhpNamedElement phpNamedElement : PhpElementsUtil.getPsiElementsBySignature(project, signature)) {
+            if (!(phpNamedElement instanceof Method method)) {
+                continue;
+            }
+
+            for (PhpAttribute attribute : method.getAttributes(attributeFqn)) {
+                if (!name.equals(PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, 0, "name"))) {
+                    continue;
+                }
+
+                for (int i = 0; i < ATTRIBUTE_OPTIONS.length; i++) {
+                    String option = ATTRIBUTE_OPTIONS[i][1];
+
+                    Boolean value = getBooleanValue(PhpPsiAttributesUtil.getAttributeValuePsiElement(attribute, i + 1, ATTRIBUTE_OPTIONS[i][0]));
+                    if (value == null && "needs_environment".equals(option)) {
+                        value = hasEnvironmentFirstParameter(method);
+                    }
+
+                    if (Boolean.TRUE.equals(value)) {
+                        options.put(option, "true");
+                    }
+                }
+
+                return options;
+            }
+        }
+
+        return options;
+    }
+
+    @Nullable
+    private static Boolean getBooleanValue(@Nullable PsiElement psiElement) {
+        if (!(psiElement instanceof ConstantReference constantReference)) {
+            return null;
+        }
+
+        String name = constantReference.getName();
+        if ("true".equalsIgnoreCase(name)) {
+            return true;
+        }
+
+        return "false".equalsIgnoreCase(name) ? false : null;
+    }
+
+    private static boolean hasEnvironmentFirstParameter(@NotNull Method method) {
+        Parameter[] parameters = method.getParameters();
+
+        return parameters.length > 0
+            && !parameters[0].isVariadic()
+            && parameters[0].getDeclaredType().getTypes().stream().anyMatch("\\Twig\\Environment"::equalsIgnoreCase);
     }
 
     /**
@@ -603,7 +671,7 @@ public class TwigExtensionParser  {
     static private Map<String, String> getOptions(@NotNull ArrayCreationExpression arrayCreationExpression) {
         Map<String, String> options = new HashMap<>();
 
-        for (String optionTrue: new String[] {"needs_environment", "needs_context", "parser_callable", "deprecation_info", "deprecated"}) {
+        for (String optionTrue: new String[] {"needs_charset", "needs_environment", "needs_context", "needs_is_sandboxed", "parser_callable", "deprecation_info", "deprecated"}) {
             PhpPsiElement phpPsiElement = PhpElementsUtil.getArrayValue(arrayCreationExpression, optionTrue);
             if (phpPsiElement == null) {
                 continue;

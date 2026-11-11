@@ -96,19 +96,17 @@ public class TwigFunctionHashCompletionProvider extends CompletionProvider<Compl
 
     private static int getParameterShift(@NotNull TwigExtension twigExtension) {
         int shift = 0;
-        if ("true".equals(twigExtension.getOption("needs_environment"))) {
-            shift++;
-        }
-
-        if ("true".equals(twigExtension.getOption("needs_context"))) {
-            shift++;
+        for (String option : new String[] {"needs_charset", "needs_environment", "needs_context", "needs_is_sandboxed"}) {
+            if ("true".equals(twigExtension.getOption(option))) {
+                shift++;
+            }
         }
 
         return shift;
     }
 
     /**
-     * Resolves a named argument by name, a positional one after the environment and context parameters.
+     * Resolves a named argument by name, a positional one after the injected Twig parameters.
      */
     @Nullable
     private static Integer getParameterIndex(@NotNull Function function, @NotNull FunctionHash hash, int parameterShift) {
