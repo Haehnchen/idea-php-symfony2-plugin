@@ -3,14 +3,20 @@ package fr.adrienbrault.idea.symfony2plugin.tests.translation;
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.PhpFileType;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.translation.TranslationKeyTargetFakePsiNavigationItem;
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
  * @see fr.adrienbrault.idea.symfony2plugin.translation.TranslationNavigationCompletionContributor
  */
 public class TranslationNavigationCompletionContributorTest extends SymfonyLightCodeInsightFixtureTestCase {
+    private static final String HTML_TRANSLATOR = "<?php /** @var \\Symfony\\Component\\Translation\\HtmlTranslator $translator */ ";
+
     public void setUp() throws Exception {
         super.setUp();
+        myFixture.addFileToProject("translations/messages.en.yaml", "default_prompt: 'Hello %name% <link>sign in</link>'");
+        myFixture.addFileToProject("translations/auth+intl-icu.en.yaml", "auth_prompt: 'Hello {name}! <signin_link>Sign in</signin_link>'");
+        myFixture.copyFileToProject("HtmlTranslator.php");
         myFixture.copyFileToProject("PhpTranslationInspection.php");
         myFixture.copyFileToProject("symfony.de.yml", "Resources/translations/symfony.de.yml");
         myFixture.copyFileToProject("messages.de.yml", "Resources/translations/messages.de.yml");
@@ -206,5 +212,19 @@ public class TranslationNavigationCompletionContributorTest extends SymfonyLight
                 "t('symfony<caret>_message');",
             PlatformPatterns.psiElement()
         );
+    }
+
+    public void testPhpHtmlTranslatorKeyAndDomainCompletion() {
+        assertCompletionContains(PhpFileType.INSTANCE, HTML_TRANSLATOR + "$translator->trans('<caret>', [], [], 'auth');", "auth_prompt");
+        assertCompletionContains(PhpFileType.INSTANCE, HTML_TRANSLATOR + "$translator->trans('<caret>', []);", "default_prompt");
+        assertCompletionContains(PhpFileType.INSTANCE, HTML_TRANSLATOR + "$translator->trans(domain: 'auth', tags: [], id: '<caret>');", "auth_prompt");
+        assertCompletionContains(PhpFileType.INSTANCE, HTML_TRANSLATOR + "$translator->trans('auth_prompt', [], [], '<caret>');", "auth");
+        assertCompletionContains(PhpFileType.INSTANCE, HTML_TRANSLATOR + "$translator->trans('auth_prompt', tags: [], domain: '<caret>');", "auth");
+    }
+
+    public void testPhpHtmlTranslatorNavigation() {
+        assertNavigationMatch(PhpFileType.INSTANCE, HTML_TRANSLATOR + "$translator->trans('auth_pro<caret>mpt', [], [], 'auth');", PlatformPatterns.psiElement(TranslationKeyTargetFakePsiNavigationItem.class));
+        assertNavigationContainsFile(PhpFileType.INSTANCE, HTML_TRANSLATOR + "$translator->trans('auth_prompt', [], [], 'au<caret>th');", "auth+intl-icu.en.yaml");
+        assertNavigationMatch(PhpFileType.INSTANCE, HTML_TRANSLATOR + "$translator->trans(domain: 'auth', id: 'auth_pro<caret>mpt', tags: []);", PlatformPatterns.psiElement(TranslationKeyTargetFakePsiNavigationItem.class));
     }
 }

@@ -134,7 +134,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
         // provides support for 'a<xxx>'|transchoice(2, {'%foo%' : bar|default}, 'Domain')
         extend(
             CompletionType.BASIC,
-            TwigPattern.getTranslationKeyPattern("trans", "transchoice"),
+            TwigPattern.getTranslationKeyPattern("trans", "transchoice", "trans_html"),
             new CompletionProvider<>() {
                 public void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet resultSet) {
                     if (!Symfony2ProjectComponent.isEnabled(parameters.getPosition())) {
@@ -162,7 +162,7 @@ public class TwigTemplateCompletionContributor extends CompletionContributor {
                         return;
                     }
 
-                    if (PsiElementUtils.getPrevSiblingOfType(parameters.getPosition(), PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice"))) == null) {
+                    if (PsiElementUtils.getPrevSiblingOfType(parameters.getPosition(), PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice", "trans_html"))) == null) {
                         return;
                     }
 

@@ -56,13 +56,18 @@ import java.util.stream.Collectors;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TranslationUtil {
+    // Capture tag names without attributes, e.g. <signin_link> or <line-break />.
+    private static final Pattern HTML_TRANSLATION_TAG = Pattern.compile("<([a-zA-Z][\\w-]*)\\s*/?>");
     private static final TranslatorProvider[] INTERNAL_TRANSLATOR_PROVIDERS = new TranslatorProvider[]{
         new CompiledContainerTranslatorProvider(),
         new CompiledTranslatorProvider(),
         new IndexTranslatorProvider(),
     };
 
+    public static final String PHP_HTML_TRANSLATOR = "\\Symfony\\Component\\Translation\\HtmlTranslator";
+
     public static final MethodMatcher.CallToSignature[] PHP_TRANSLATION_SIGNATURES = new MethodMatcher.CallToSignature[] {
+        new MethodMatcher.CallToSignature(PHP_HTML_TRANSLATOR, "trans"),
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Translation\\TranslatorInterface", "trans"),
         new MethodMatcher.CallToSignature("\\Symfony\\Component\\Translation\\TranslatorInterface", "transChoice"),
         new MethodMatcher.CallToSignature("\\Symfony\\Contracts\\Translation\\TranslatorInterface", "trans"),
@@ -408,7 +413,7 @@ public class TranslationUtil {
      */
     public static int getDomainParameter(@NotNull PsiElement methodReferenceOrNewExpression) {
         return switch (methodReferenceOrNewExpression) {
-            case MethodReference methodReference when PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, PHP_TRANSLATION_SIGNATURES) -> "transChoice".equals(methodReference.getName()) ? 3 : 2;
+            case MethodReference methodReference when PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, PHP_TRANSLATION_SIGNATURES) -> "transChoice".equals(methodReference.getName()) || PhpElementsUtil.isMethodReferenceInstanceOf(methodReference, PHP_HTML_TRANSLATOR, "trans") ? 3 : 2;
             case NewExpression newExpression when PhpElementsUtil.isNewExpressionPhpClassWithInstance(newExpression, PHP_TRANSLATION_TRANSLATABLE_MESSAGE) -> 2;
             case FunctionReference functionReference when isFunctionReferenceTranslationTFunction(functionReference) -> 2;
             default -> -1;
@@ -447,6 +452,26 @@ public class TranslationUtil {
      */
     @NotNull
     public static Set<String> getPlaceholderFromTranslation(@NotNull Project project, @NotNull String key, @NotNull String domain) {
+        return getTranslationTokens(project, key, domain, TranslationUtil::getPlaceholderFromTranslation);
+    }
+
+    /**
+     * Collect pseudo-tag names for a translation, e.g. {@code <signin_link>Sign in</signin_link>} yields "signin_link".
+     */
+    @NotNull
+    public static Set<String> getHtmlTagsFromTranslation(@NotNull Project project, @NotNull String key, @NotNull String domain) {
+        return getTranslationTokens(project, key, domain, text -> {
+            Set<String> tags = new HashSet<>();
+            Matcher matcher = HTML_TRANSLATION_TAG.matcher(text);
+            while (matcher.find()) {
+                tags.add(matcher.group(1));
+            }
+            return tags;
+        });
+    }
+
+    @NotNull
+    private static Set<String> getTranslationTokens(@NotNull Project project, @NotNull String key, @NotNull String domain, @NotNull Function<String, Set<String>> extractor) {
         Set<String> placeholder = new HashSet<>();
         Set<VirtualFile> visitedXlf = new HashSet<>();
 
@@ -458,7 +483,7 @@ public class TranslationUtil {
                 }
 
                 placeholder.addAll(
-                    TranslationUtil.getPlaceholderFromTranslation(textValue)
+                    extractor.apply(textValue)
                 );
             } else if("xlf".equalsIgnoreCase(element.getContainingFile().getVirtualFile().getExtension()) || "xliff".equalsIgnoreCase(element.getContainingFile().getVirtualFile().getExtension())) {
                 VirtualFile virtualFile = element.getContainingFile().getVirtualFile();
@@ -469,7 +494,7 @@ public class TranslationUtil {
                     try (InputStream inputStream = virtualFile.getInputStream()) {
                         visitXliffTranslations(
                             inputStream,
-                            new MyXlfTranslationConsumer(placeholder, key)
+                            new MyXlfTranslationConsumer(placeholder, key, extractor)
                         );
                     } catch (IOException ignored) {
                     }
@@ -545,7 +570,7 @@ public class TranslationUtil {
      * <target>foo</target>
      * </trans-unit>
      */
-    private record MyXlfTranslationConsumer(@NotNull Set<String> placeholder, @NotNull String key) implements Consumer<Pair<String, Node>> {
+    private record MyXlfTranslationConsumer(@NotNull Set<String> placeholder, @NotNull String key, @NotNull Function<String, Set<String>> extractor) implements Consumer<Pair<String, Node>> {
 
         @Override
         public void consume(Pair<String, Node> pair) {
@@ -572,7 +597,7 @@ public class TranslationUtil {
             String nodeValue = target.getTextContent();
             if (StringUtils.isNotBlank(nodeValue)) {
                 placeholder.addAll(
-                    TranslationUtil.getPlaceholderFromTranslation(nodeValue)
+                    extractor.apply(nodeValue)
                 );
             }
         }

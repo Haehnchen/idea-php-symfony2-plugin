@@ -63,7 +63,7 @@ class TwigTranslationKeyInspection : LocalInspectionTool() {
         }
 
         private fun getTranslationKeyPattern(): ElementPattern<PsiElement> {
-            val pattern = translationKeyPattern ?: TwigPattern.getTranslationKeyPattern("trans", "transchoice")
+            val pattern = translationKeyPattern ?: TwigPattern.getTranslationKeyPattern("trans", "transchoice", "trans_html")
             translationKeyPattern = pattern
             return pattern
         }

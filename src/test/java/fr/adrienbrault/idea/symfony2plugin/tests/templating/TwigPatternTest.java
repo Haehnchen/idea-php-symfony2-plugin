@@ -529,4 +529,21 @@ public class TwigPatternTest extends SymfonyLightCodeInsightFixtureTestCase {
             findElementAt(TwigFileType.INSTANCE, "{{ path('foo', {'bar': 'baz', f<caret>oo: 'qux'}) }}")
         ));
     }
+
+    public void testTwigTransHtmlDomainPatternDoesNotMatchOtherArguments() {
+        assertFalse(TwigPattern.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ 'auth_prompt'|trans_html({}, '<caret>en') }}")));
+        assertFalse(TwigPattern.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ 'auth_prompt'|trans_html({}, {}, 'auth', '<caret>en') }}")));
+        assertFalse(TwigPattern.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ 'auth_prompt'|trans_html(tags: {link: {tag: '<caret>a'}}) }}")));
+        assertFalse(TwigPattern.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ 'auth_prompt'|trans_html(tags: {link: {attr: {domain: '<caret>auth'}}}) }}")));
+    }
+
+    public void testTwigTransHtmlDomainPattern() {
+        assertTrue(TwigPattern.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ 'auth_prompt'|trans_html({}, {}, '<caret>auth') }}")));
+        assertTrue(TwigPattern.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ 'auth_prompt'|trans_html({link: {tag: 'a', attr: {href: path('login')}}}, {}, '<caret>auth') }}")));
+        assertTrue(TwigPattern.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ 'auth_prompt'|trans_html(tags, arguments, '<caret>auth') }}")));
+        assertTrue(TwigPattern.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ 'auth_prompt'|trans_html(tags, {}, '<caret>auth') }}")));
+        assertTrue(TwigPattern.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ 'auth_prompt'|trans_html({}, arguments, '<caret>auth') }}")));
+        assertTrue(TwigPattern.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ 'auth_prompt'|trans_html([], {}, '<caret>auth') }}")));
+        assertTrue(TwigPattern.getTransDomainPattern().accepts(findElementAt(TwigFileType.INSTANCE, "{{ 'auth_prompt'|trans_html({}, [], '<caret>auth') }}")));
+    }
 }

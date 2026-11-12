@@ -61,4 +61,24 @@ class TwigTranslationDomainInspectionTest : SymfonyLightCodeInsightFixtureTestCa
 
         myFixture.checkResult("{{ 'foo'|trans({}, 'symfony')) }}")
     }
+
+    fun testHtmlTranslation() {
+        assertLocalInspectionContains(TwigTranslationDomainInspection::class.java,
+            "test.html.twig",
+            "{{ 'auth_prompt'|trans_html({}, {}, 'miss<caret>ing') }}",
+            TwigTranslationDomainInspection.MESSAGE
+        )
+
+        assertLocalInspectionContains(TwigTranslationDomainInspection::class.java,
+            "test.html.twig",
+            "{{ 'auth_prompt'|trans_html(domain: 'miss<caret>ing', tags: {}) }}",
+            TwigTranslationDomainInspection.MESSAGE
+        )
+
+        assertLocalInspectionNotContains(TwigTranslationDomainInspection::class.java,
+            "test.html.twig",
+            "{{ 'auth_prompt'|trans_html({}, {}, 'symfony', 'e<caret>n') }}",
+            TwigTranslationDomainInspection.MESSAGE
+        )
+    }
 }

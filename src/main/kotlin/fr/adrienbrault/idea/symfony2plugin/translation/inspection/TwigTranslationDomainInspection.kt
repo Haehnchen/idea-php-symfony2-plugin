@@ -49,7 +49,7 @@ class TwigTranslationDomainInspection : LocalInspectionTool() {
                 if (psiElement1.node.elementType == TwigTokenTypes.FILTER) {
                     false
                 } else {
-                    if (PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice")).accepts(psiElement1)) {
+                    if (PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice", "trans_html")).accepts(psiElement1)) {
                         psiElementTrans[0] = psiElement1
                     }
 

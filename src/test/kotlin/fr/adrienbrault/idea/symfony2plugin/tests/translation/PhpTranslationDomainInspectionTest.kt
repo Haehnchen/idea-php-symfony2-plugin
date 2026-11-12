@@ -10,6 +10,7 @@ import fr.adrienbrault.idea.symfony2plugin.translation.PhpTranslationDomainInspe
 class PhpTranslationDomainInspectionTest : SymfonyLightCodeInsightFixtureTestCase() {
     override fun setUp() {
         super.setUp()
+        myFixture.copyFileToProject("HtmlTranslator.php")
         myFixture.copyFileToProject("PhpTranslationInspection.php")
         myFixture.copyFileToProject("symfony.de.yml", "Resources/translations/symfony.de.yml")
     }
@@ -114,6 +115,26 @@ class PhpTranslationDomainInspectionTest : SymfonyLightCodeInsightFixtureTestCas
             "test.php", "<?php\n" +
                 "use function Symfony\\Component\\Translation\\t;\n" +
                 "t(domain: 'sym<caret>fony');",
+            PhpTranslationDomainInspection.MESSAGE
+        )
+    }
+
+    fun testHtmlTranslation() {
+        assertLocalInspectionContains(PhpTranslationDomainInspection::class.java,
+            "test.php",
+            "<?php /** @var \\Symfony\\Component\\Translation\\HtmlTranslator \$translator */ \$translator->trans('symfony.great', [], [], 'miss<caret>ing');",
+            PhpTranslationDomainInspection.MESSAGE
+        )
+
+        assertLocalInspectionContains(PhpTranslationDomainInspection::class.java,
+            "test.php",
+            "<?php /** @var \\Symfony\\Component\\Translation\\HtmlTranslator \$translator */ \$translator->trans('symfony.great', tags: [], domain: 'miss<caret>ing');",
+            PhpTranslationDomainInspection.MESSAGE
+        )
+
+        assertLocalInspectionNotContains(PhpTranslationDomainInspection::class.java,
+            "test.php",
+            "<?php /** @var \\Symfony\\Component\\Translation\\HtmlTranslator \$translator */ \$translator->trans('symfony.great', [], [], 'symfony', 'e<caret>n');",
             PhpTranslationDomainInspection.MESSAGE
         )
     }

@@ -155,4 +155,21 @@ public class TwigTranslationCompletionContributorTest extends TwigTranslationFix
             "{% trans_default_domain \"interchange\" %}"
         );
     }
+
+    public void testTwigTransHtmlKeyCompletion() {
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ '<caret>'|trans_html({}, {}, 'auth') }}", "auth_prompt");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ '<caret>'|trans_html({signin_link: [{tag: 'strong'}, {tag: 'a', attr: {href: path('login', {foo: 'bar'})}}]}, {}, 'auth') }}", "auth_prompt");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ '<caret>'|trans_html(tags, parameters, 'auth') }}", "auth_prompt");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ '<caret>'|trans_html(tags: {}, domain: 'auth') }}", "auth_prompt");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ '<caret>'|trans_html(domain: 'auth', tags: {}) }}", "auth_prompt");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ '<caret>'|trans_html(tags = {}, domain = 'auth') }}", "auth_prompt");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ '<caret>'|trans_html({}) }}", "default_prompt");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% trans_default_domain 'auth' %}{{ '<caret>'|trans_html({}) }}", "auth_prompt");
+    }
+
+    public void testTwigTransHtmlDomainCompletion() {
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ 'auth_prompt'|trans_html({}, {}, '<caret>') }}", "auth");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ 'auth_prompt'|trans_html(domain: '<caret>', tags: {}) }}", "auth");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ 'auth_prompt'|trans_html({link: {tag: 'a', attr: {href: path('login')}}}, {}, '<caret>') }}", "auth");
+    }
 }

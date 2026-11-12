@@ -205,4 +205,15 @@ public class TranslationUtilTest extends SymfonyLightCodeInsightFixtureTestCase 
 
         assertContainsElements(placeholder, "%yaml_foobar%", "%xliff_foobar%");
     }
+
+    public void testGetHtmlTagsFromTranslation() {
+        myFixture.addFileToProject("translations/html+intl-icu.en.yaml", """
+            welcome: 'Hello {name}! <signin_link>Sign in</signin_link><line-break /><b>Bold</b><b>Again</b><span class="bad">Ignored</span>'
+            other: '<unrelated>Other message</unrelated>'
+            """);
+
+        assertEquals(Set.of("signin_link", "line-break", "b"), TranslationUtil.getHtmlTagsFromTranslation(getProject(), "welcome", "html"));
+        assertEmpty(TranslationUtil.getHtmlTagsFromTranslation(getProject(), "missing", "html"));
+        assertEmpty(TranslationUtil.getHtmlTagsFromTranslation(getProject(), "welcome", "other"));
+    }
 }
