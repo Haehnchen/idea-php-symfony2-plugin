@@ -1,14 +1,22 @@
 package fr.adrienbrault.idea.symfony2plugin.form.util
 
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiManager
+import com.intellij.psi.util.CachedValueProvider
+import com.intellij.psi.util.CachedValuesManager
+import com.intellij.psi.util.PsiModificationTracker
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.php.lang.PhpLangUtil
+import com.jetbrains.php.lang.PhpLanguage
 import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression
 import com.jetbrains.php.lang.psi.elements.Field
 import com.jetbrains.php.lang.psi.elements.MethodReference
 import com.jetbrains.php.lang.psi.elements.PhpAttribute
 import com.jetbrains.php.lang.psi.elements.PhpClass
 import com.jetbrains.php.lang.psi.elements.PhpClassFieldsList
+import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil
+import fr.adrienbrault.idea.symfony2plugin.stubs.cache.FileIndexCaches
+import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.DoctrineMetadataFileStubIndex
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil
 import fr.adrienbrault.idea.symfony2plugin.util.PhpPsiAttributesUtil
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils
@@ -81,6 +89,22 @@ fun getFormType(method: MethodReference): String? {
     )
 }
 
+/**
+ * Returns a form type FQN from Doctrine or PHP, or null.
+ * Unknown Doctrine types fall back to TextType when PHP gives no match.
+ *
+ * ```php
+ * public ?int $capacity; // IntegerType
+ *
+ * #[ORM\Column(type: 'date')]
+ * public ?\DateTimeImmutable $day; // DateType
+ *
+ * #[ORM\ManyToOne(targetEntity: Category::class)]
+ * public ?Category $category; // EntityType
+ *
+ * $builder->add('seats', null, ['property_path' => 'capacity']); // IntegerType
+ * ```
+ */
 private fun guessType(dataClass: PhpClass, fieldName: String, options: PsiElement?): String? {
     var propertyName = fieldName
     if (options is ArrayCreationExpression) {
@@ -93,17 +117,61 @@ private fun guessType(dataClass: PhpClass, fieldName: String, options: PsiElemen
         }
     }
 
-    val field = dataClass.findFieldByName(propertyName, false) ?: return null
-    val type = field.declaredType.filterNull().types.singleOrNull() ?: return null
+    val doctrineFields = CachedValuesManager.getCachedValue(dataClass) {
+        val metadata = DoctrineMetadataUtil.getModelFields(dataClass.project, dataClass.fqn)
+        val fields = metadata?.fields?.associateBy { it.name } ?: emptyMap()
 
-    // Symfony creates DateTimeImmutable itself, so a property requiring a subclass would reject the value.
-    return when (type.trimStart('\\').lowercase(Locale.ROOT)) {
-        "int" -> "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\IntegerType"
-        "float" -> "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\NumberType"
-        "bool" -> "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\CheckboxType"
-        "datetime", "datetimeimmutable", "datetimeinterface", "symfony\\component\\clock\\datepoint" ->
-            "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\DateTimeType"
-        "dateinterval" -> "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\DateIntervalType"
+        CachedValueProvider.Result.create(fields, getFormTypeDependencies(dataClass))
+    }
+
+    val doctrineField = doctrineFields[propertyName]
+    if (doctrineField?.relationType != null) {
+        return "\\Symfony\\Bridge\\Doctrine\\Form\\Type\\EntityType"
+    }
+
+    val propertyType = dataClass.findFieldByName(propertyName, false)
+        ?.declaredType?.filterNull()?.types?.singleOrNull()?.trimStart('\\')?.lowercase(Locale.ROOT)
+
+    // Only native types supported by Symfony participate in guessing.
+    // public string $title has no native guess; #[ORM\Column(type: 'string')] gives TextType.
+    val nativeType = when (propertyType) {
+        "int" -> "integer"
+        "bool" -> "boolean"
+        "float", "dateinterval" -> propertyType
+        "datetime", "datetimeimmutable", "datetimeinterface", "symfony\\component\\clock\\datepoint" -> "datetime"
         else -> null
     }
+
+    // Try the mapped column type first: a PHP DateTimeImmutable may store only a date or time.
+    return sequenceOf(doctrineField?.typeName, nativeType).firstNotNullOfOrNull { type ->
+        when (type) {
+            "integer", "bigint", "smallint" -> "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\IntegerType"
+            "float", "decimal" -> "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\NumberType"
+            "boolean" -> "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\CheckboxType"
+            "string" -> "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\TextType"
+            "text" -> "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\TextareaType"
+            "simple_array" -> "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\CollectionType"
+            "date", "date_immutable" -> "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\DateType"
+            "time", "time_immutable" -> "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\TimeType"
+            "datetime", "datetime_immutable", "datetimetz", "datetimetz_immutable", "vardatetime" ->
+                "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\DateTimeType"
+            "dateinterval" -> "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\DateIntervalType"
+            else -> null
+        }
+    } ?: if (doctrineField != null) "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\TextType" else null
+}
+
+/**
+ * Tracks PHP declarations and the class's Doctrine mappings for cached form types.
+ */
+fun getFormTypeDependencies(dataClass: PhpClass): List<Any> {
+    val project = dataClass.project
+    val mappingFiles = DoctrineMetadataUtil.findMetadataFiles(project, dataClass.fqn)
+        .mapNotNull { PsiManager.getInstance(project).findFile(it) }
+
+    return mappingFiles + listOf(
+        // PHP constants, parent classes and traits can live outside the mapped file.
+        PsiModificationTracker.getInstance(project).forLanguage(PhpLanguage.INSTANCE),
+        FileIndexCaches.getModificationTrackerForIndexId(project, DoctrineMetadataFileStubIndex.KEY)
+    )
 }

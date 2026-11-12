@@ -16,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -238,6 +239,19 @@ public class FormFieldResolverTest extends SymfonyLightCodeInsightFixtureTestCas
         assertSize(1, fields);
         assertEquals("capacity", fields.getFirst().name());
         assertEquals("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\IntegerType", fields.getFirst().fieldTypeFqn());
+    }
+
+    public void testAttributeFieldTypesFromDoctrineXmlMapping() {
+        myFixture.copyFileToProject("FormFieldResolverTest.php");
+        myFixture.copyFileToProject("FormFieldResolverTest.orm.xml");
+
+        ArrayList<TwigFormField> fields = new ArrayList<>();
+        FormFieldResolver.visitFormFields(getProject(), Collections.singleton("\\App\\Form\\XmlEventData"), fields::add);
+
+        assertEquals(Map.of(
+            "day", "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\DateType",
+            "startsAt", "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\TimeType"
+        ), fields.stream().collect(Collectors.toMap(TwigFormField::name, TwigFormField::fieldTypeFqn)));
     }
 
     @NotNull

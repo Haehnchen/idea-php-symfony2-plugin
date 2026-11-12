@@ -4,10 +4,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
-import com.intellij.psi.util.PsiModificationTracker;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.php.PhpIndex;
-import com.jetbrains.php.lang.PhpLanguage;
 import com.jetbrains.php.lang.psi.elements.Field;
 import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.MethodReference;
@@ -345,7 +343,14 @@ public class FormFieldResolver implements TwigTypeResolver {
                 }
             }
 
-            return CachedValueProvider.Result.create(List.copyOf(fields), PsiModificationTracker.getInstance(phpClass.getProject()).forLanguage(PhpLanguage.INSTANCE));
+            List<Object> dependencies = new ArrayList<>(FormTypeGuessUtilKt.getFormTypeDependencies(phpClass));
+            properties.values().stream()
+                .map(Field::getContainingClass)
+                .filter(owner -> owner != null && owner != phpClass)
+                .distinct()
+                .forEach(owner -> dependencies.addAll(FormTypeGuessUtilKt.getFormTypeDependencies(owner)));
+
+            return CachedValueProvider.Result.create(List.copyOf(fields), dependencies);
         });
     }
 

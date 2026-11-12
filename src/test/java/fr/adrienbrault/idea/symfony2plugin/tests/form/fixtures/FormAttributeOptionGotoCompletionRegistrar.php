@@ -1,5 +1,10 @@
 <?php
 
+namespace Doctrine\ORM\Mapping {
+    class Entity {}
+    class Column {}
+}
+
 namespace Symfony\Component\Form\Attribute {
     #[\Attribute(\Attribute::TARGET_PROPERTY)]
     class FormField {
@@ -12,6 +17,18 @@ namespace Symfony\Component\Form\Attribute {
 }
 
 namespace Symfony\Component\Form\Extension\Core\Type {
+    class DateType extends \Symfony\Component\Form\AbstractType {
+        public function configureOptions($resolver) {
+            $resolver->setDefaults(['years' => null]);
+        }
+    }
+
+    class TimeType extends \Symfony\Component\Form\AbstractType {
+        public function configureOptions($resolver) {
+            $resolver->setDefaults(['hours' => null]);
+        }
+    }
+
     class EmailType extends \Symfony\Component\Form\AbstractType {
         public function configureOptions($resolver) {
             $resolver->setDefaults([
