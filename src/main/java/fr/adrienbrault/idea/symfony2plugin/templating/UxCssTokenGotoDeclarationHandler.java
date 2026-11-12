@@ -64,6 +64,11 @@ public class UxCssTokenGotoDeclarationHandler implements GotoDeclarationHandler 
             return null;
         }
 
+        Set<String> tokenNames = getTokenNames(element.getText());
+        if (tokenNames.isEmpty()) {
+            return null;
+        }
+
         Project project = element.getProject();
         TwigExtension twigExtension = TwigExtensionParser.getFunctions(project).get(hash.functionName());
         String category = UxCssUtil.isCssFunction(twigExtension) ? UxCssUtil.getTokenCategory(project, twigExtension, hash) : null;
@@ -71,10 +76,22 @@ public class UxCssTokenGotoDeclarationHandler implements GotoDeclarationHandler 
             return null;
         }
 
-        for (String token : getTokenNames(element.getText())) {
+        // Resolve the category roots once, then reuse them for exact names and modifier fallbacks.
+        List<PsiElement> categoryRoots = new ArrayList<>();
+        collectConfigCategoryRoots(project, category, categoryRoots);
+        collectPandaCategoryRoots(project, category, categoryRoots);
+
+        for (String token : tokenNames) {
             List<PsiElement> targets = new ArrayList<>();
-            collectConfigTargets(project, category, token, targets);
-            collectPandaTargets(project, category, token, targets);
+            for (PsiElement root : categoryRoots) {
+                if (root instanceof YAMLMapping mapping) {
+                    collectYamlTargets(mapping, token, targets);
+                } else if (root instanceof ArrayCreationExpression array) {
+                    collectPhpTargets(array, token, targets);
+                } else if (root instanceof JsonObject object) {
+                    collectJsonTargets(object, token, targets);
+                }
+            }
 
             if (!targets.isEmpty()) {
                 return targets.toArray(PsiElement.EMPTY_ARRAY);
@@ -103,7 +120,7 @@ public class UxCssTokenGotoDeclarationHandler implements GotoDeclarationHandler 
         return names;
     }
 
-    private static void collectConfigTargets(@NotNull Project project, @NotNull String category, @NotNull String token, @NotNull List<PsiElement> targets) {
+    private static void collectConfigCategoryRoots(@NotNull Project project, @NotNull String category, @NotNull List<PsiElement> roots) {
         PsiManager psiManager = PsiManager.getInstance(project);
 
         for (VirtualFile virtualFile : UxCssConfigUtil.getConfigFiles(project)) {
@@ -113,7 +130,7 @@ public class UxCssTokenGotoDeclarationHandler implements GotoDeclarationHandler 
                 for (YAMLMapping config : UxCssConfigUtil.getYamlConfigs(yamlFile)) {
                     for (String section : CONFIG_SECTIONS) {
                         if (getYamlMapping(getYamlMapping(config, section), category) instanceof YAMLMapping mapping) {
-                            collectYamlTargets(mapping, token, targets);
+                            roots.add(mapping);
                         }
                     }
                 }
@@ -121,7 +138,7 @@ public class UxCssTokenGotoDeclarationHandler implements GotoDeclarationHandler 
                 for (ArrayCreationExpression config : UxCssConfigUtil.getPhpConfigs(phpFile)) {
                     for (String section : CONFIG_SECTIONS) {
                         if (getPhpArray(getPhpArray(config, section), category) instanceof ArrayCreationExpression array) {
-                            collectPhpTargets(array, token, targets);
+                            roots.add(array);
                         }
                     }
                 }
@@ -170,7 +187,7 @@ public class UxCssTokenGotoDeclarationHandler implements GotoDeclarationHandler 
         }
     }
 
-    private static void collectPandaTargets(@NotNull Project project, @NotNull String category, @NotNull String token, @NotNull List<PsiElement> targets) {
+    private static void collectPandaCategoryRoots(@NotNull Project project, @NotNull String category, @NotNull List<PsiElement> roots) {
         for (VirtualFile virtualFile : FilenameIndex.getVirtualFilesByName(PANDA_TOKENS, GlobalSearchScope.allScope(project))) {
             if (!virtualFile.getPath().endsWith(PANDA_TOKENS_PATH) || !(PsiManager.getInstance(project).findFile(virtualFile) instanceof JsonFile jsonFile)) {
                 continue;
@@ -179,7 +196,7 @@ public class UxCssTokenGotoDeclarationHandler implements GotoDeclarationHandler 
             JsonObject tokens = getObject(jsonFile.getTopLevelValue() instanceof JsonObject root ? root : null, "tokens");
             JsonObject categoryObject = getObject(tokens, category);
             if (categoryObject != null) {
-                collectJsonTargets(categoryObject, token, targets);
+                roots.add(categoryObject);
             }
         }
     }

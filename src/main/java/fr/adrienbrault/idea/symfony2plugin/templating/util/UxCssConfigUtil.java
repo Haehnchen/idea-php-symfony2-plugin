@@ -4,6 +4,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.util.CachedValueProvider;
+import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.jetbrains.php.lang.psi.PhpFile;
@@ -70,30 +72,39 @@ public final class UxCssConfigUtil {
      */
     @NotNull
     public static List<ArrayCreationExpression> getPhpConfigs(@NotNull PhpFile phpFile) {
+        // Shared by navigation, gutter markers and indexing; depend only on this file's PSI.
+        return CachedValuesManager.getCachedValue(phpFile, () ->
+            CachedValueProvider.Result.create(collectPhpConfigs(phpFile), phpFile));
+    }
+
+    @NotNull
+    private static List<ArrayCreationExpression> collectPhpConfigs(@NotNull PhpFile phpFile) {
         List<ArrayCreationExpression> configs = new ArrayList<>();
 
-        for (ArrayHashElement hashElement : PsiTreeUtil.findChildrenOfType(phpFile, ArrayHashElement.class)) {
-            if (hashElement.getKey() instanceof StringLiteralExpression key
+        PsiTreeUtil.processElements(phpFile, element -> {
+            if (element instanceof ArrayHashElement hashElement
+                && hashElement.getKey() instanceof StringLiteralExpression key
                 && ROOT_KEY.equals(key.getContents())
                 && (PhpConfigUtil.isRootConfigKey(key) || PhpConfigUtil.isConditionalConfigKey(key))
                 && hashElement.getValue() instanceof ArrayCreationExpression config
             ) {
                 configs.add(config);
             }
-        }
 
-        for (MethodReference methodReference : PsiTreeUtil.findChildrenOfType(phpFile, MethodReference.class)) {
-            PsiElement[] parameters = methodReference.getParameters();
-            if ("extension".equals(methodReference.getName())
-                && parameters.length >= 2
-                && parameters[0] instanceof StringLiteralExpression name
-                && ROOT_KEY.equals(name.getContents())
-                && parameters[1] instanceof ArrayCreationExpression config
-            ) {
-                configs.add(config);
+            if (element instanceof MethodReference methodReference && "extension".equals(methodReference.getName())) {
+                PsiElement[] parameters = methodReference.getParameters();
+                if (parameters.length >= 2
+                    && parameters[0] instanceof StringLiteralExpression name
+                    && ROOT_KEY.equals(name.getContents())
+                    && parameters[1] instanceof ArrayCreationExpression config
+                ) {
+                    configs.add(config);
+                }
             }
-        }
 
-        return configs;
+            return true;
+        });
+
+        return List.copyOf(configs);
     }
 }

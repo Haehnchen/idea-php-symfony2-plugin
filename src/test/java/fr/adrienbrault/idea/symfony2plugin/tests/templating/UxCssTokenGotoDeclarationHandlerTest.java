@@ -7,6 +7,7 @@ import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.psi.elements.ArrayHashElement;
 import com.jetbrains.twig.TwigFileType;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
+import fr.adrienbrault.idea.symfony2plugin.templating.UxCssTokenGotoDeclarationHandler;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 /**
@@ -59,6 +60,21 @@ public class UxCssTokenGotoDeclarationHandlerTest extends SymfonyLightCodeInsigh
         assertNavigationMatch(TwigFileType.INSTANCE, "{{ css({ p: 'm<caret>d' }) }}", yamlKey("md", "spacing"));
         assertNavigationMatch(TwigFileType.INSTANCE, "{{ css({ p: '1<caret>.5' }) }}", yamlKey("1.5", "spacing"));
         assertNavigationMatch(TwigFileType.INSTANCE, "{{ css({ p: '<caret>4' }) }}", jsonProperty("4", "spacing"));
+    }
+
+    public void testExactTokenNameTakesPriorityOverModifierFallbackAcrossFiles() {
+        myFixture.addFileToProject("config/packages/exact.php", """
+            <?php
+            return ['ux_css' => ['tokens' => ['colors' => ['blue.500/50' => '#123456']]]];
+            """);
+        myFixture.configureByText(TwigFileType.INSTANCE, "{{ css({ color: 'blue.5<caret>00/50' }) }}");
+
+        PsiElement[] targets = new UxCssTokenGotoDeclarationHandler().getGotoDeclarationTargets(
+            myFixture.getFile().findElementAt(myFixture.getCaretOffset()), myFixture.getCaretOffset(), myFixture.getEditor());
+
+        assertNotNull(targets);
+        assertEquals(1, targets.length);
+        assertTrue(phpKey("'blue.500/50'").accepts(targets[0]));
     }
 
     public void testTokenNavigatesToConfigOfAnyYamlFile() {

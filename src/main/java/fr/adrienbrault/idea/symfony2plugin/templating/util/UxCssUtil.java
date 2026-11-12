@@ -30,7 +30,6 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -202,6 +201,7 @@ public final class UxCssUtil {
     @NotNull
     private static Map<String, Map<String, CssValue>> collectTokens(@NotNull Project project) {
         Map<String, Map<String, CssValue>> tokens = new HashMap<>();
+        Map<String, CssValue> colorsByValue = new HashMap<>();
 
         for (PhpClass phpClass : PhpIndex.getInstance(project).getClassesByFQN(CSS_REFERENCE)) {
             Field field = phpClass.findOwnFieldByName("TOKENS", true);
@@ -213,13 +213,16 @@ public final class UxCssUtil {
                 if (values instanceof ArrayCreationExpression arrayCreationExpression) {
                     Map<String, CssValue> categoryTokens = tokens.computeIfAbsent(category, k -> new HashMap<>());
                     PhpElementsUtil.getArrayKeyValueMap(arrayCreationExpression).forEach((name, value) ->
-                        categoryTokens.put(name, new CssValue(value, COLORS_CATEGORY.equals(category) ? parseColor(project, value) : null))
+                        categoryTokens.put(name, COLORS_CATEGORY.equals(category)
+                            ? colorsByValue.computeIfAbsent(value, css -> new CssValue(css, parseColor(project, css)))
+                            : new CssValue(value, null))
                     );
                 }
             });
         }
 
-        return Collections.unmodifiableMap(tokens);
+        tokens.replaceAll((category, values) -> Map.copyOf(values));
+        return Map.copyOf(tokens);
     }
 
     /**

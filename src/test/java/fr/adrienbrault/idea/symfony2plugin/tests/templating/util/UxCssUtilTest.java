@@ -9,6 +9,26 @@ import java.awt.*;
  * @see UxCssUtil
  */
 public class UxCssUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
+    public void testSharedColorValues() {
+        myFixture.addFileToProject("config/reference_css.php", """
+            <?php
+            namespace Symfony\\UX\\Css;
+            final class CssReference {
+                public const TOKENS = [
+                    'colors' => ['blue' => '#123456', 'primary' => '#123456', 'current' => 'currentColor'],
+                    'spacing' => ['primary' => '#123456'],
+                ];
+            }
+            """);
+
+        var tokens = UxCssUtil.getTokens(getProject());
+        assertEquals(new Color(0x123456), tokens.get("colors").get("blue").color());
+        assertEquals(tokens.get("colors").get("blue"), tokens.get("colors").get("primary"));
+        assertEquals("currentColor", tokens.get("colors").get("current").value());
+        assertNull(tokens.get("colors").get("current").color());
+        assertNull(tokens.get("spacing").get("primary").color());
+    }
+
     public void testParseHexColors() {
         assertEquals(new Color(0x3b, 0x82, 0xf6), parseColor("#3b82f6"));
         assertEquals(new Color(0x3b, 0x82, 0xf6), parseColor("#3B82F6"));
