@@ -41,6 +41,21 @@ class TwigTranslationKeyInspectionTest : SymfonyLightCodeInsightFixtureTestCase(
         )
     }
 
+    fun testFileWideDefaultDomainInEmbed() {
+        assertLocalInspectionNotContains(TwigTranslationKeyInspection::class.java,
+            "f.html.twig",
+            "{% trans_default_domain 'symfony' for _self %}" +
+                "{% embed 'card.html.twig' %}{{ 'symfon<caret>y.great'|trans }}{% endembed %}",
+            PhpTranslationKeyInspection.MESSAGE
+        )
+        assertLocalInspectionContains(TwigTranslationKeyInspection::class.java,
+            "f.html.twig",
+            "{% trans_default_domain 'symfony' for _self %}" +
+                "{% embed 'card.html.twig' %}{{ 'unkn<caret>own'|trans }}{% endembed %}",
+            PhpTranslationKeyInspection.MESSAGE
+        )
+    }
+
     fun testThatInterpolatedStringsMustNotInspected() {
         assertLocalInspectionNotContains(TwigTranslationKeyInspection::class.java,
             "f.html.twig",

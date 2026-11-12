@@ -218,6 +218,40 @@ public class TwigUtilTest extends SymfonyLightCodeInsightFixtureTestCase {
         assertFalse(TwigUtil.isStaticTemplateUsage(dynamicTemplateString));
     }
 
+    public void testFileWideTransDefaultDomain() {
+        String declaration = "{% trans_default_domain 'catalog' for _self %}";
+        assertEquals("catalog", TwigUtil.getTransDefaultDomainOnScope(findCaretElement(declaration + "{{ 'k<caret>ey'|trans }}")));
+        assertEquals("catalog", TwigUtil.getTransDefaultDomainOnScope(findCaretElement(declaration
+            + "{% embed 'card.html.twig' %}{% block footer %}{{ 'k<caret>ey'|trans }}{% endblock %}{% endembed %}")));
+        assertEquals("catalog", TwigUtil.getTransDefaultDomainOnScope(findCaretElement(declaration
+            + "{% macro button() %}{{ 'k<caret>ey'|trans }}{% endmacro %}")));
+        assertEquals("catalog", TwigUtil.getTransDefaultDomainOnScope(findCaretElement(declaration
+            + "{% embed 'outer.html.twig' %}{% trans_default_domain 'outer' %}"
+            + "{% embed 'inner.html.twig' %}{{ 'k<caret>ey'|trans }}{% endembed %}{% endembed %}")));
+        assertEquals("catalog", TwigUtil.getTransDefaultDomainOnScope(findCaretElement(
+            "{%- trans_default_domain \"catalog\"\nfor\t_self -%}"
+                + "{% embed 'card.html.twig' %}{{ 'k<caret>ey'|trans }}{% endembed %}")));
+    }
+
+    public void testRegularTransDefaultDomainOverridesFileWideDomain() {
+        String declaration = "{% trans_default_domain 'catalog' for _self %}";
+        assertEquals("local", TwigUtil.getTransDefaultDomainOnScope(findCaretElement(declaration
+            + "{% trans_default_domain 'local' %}{{ 'k<caret>ey'|trans }}")));
+        assertEquals("local", TwigUtil.getTransDefaultDomainOnScope(findCaretElement(
+            "{% trans_default_domain 'local' %}" + declaration + "{{ 'k<caret>ey'|trans }}")));
+        assertEquals("local", TwigUtil.getTransDefaultDomainOnScope(findCaretElement(declaration
+            + "{% embed 'card.html.twig' %}{% trans_default_domain 'local' %}{{ 'k<caret>ey'|trans }}{% endembed %}")));
+    }
+
+    public void testOnlyFileWideLiteralDomainsAreInheritedByEmbeds() {
+        assertNull(TwigUtil.getTransDefaultDomainOnScope(findCaretElement(
+            "{% trans_default_domain 'catalog' %}{% embed 'card.html.twig' %}{{ 'k<caret>ey'|trans }}{% endembed %}")));
+        assertNull(TwigUtil.getTransDefaultDomainOnScope(findCaretElement(
+            "{% trans_default_domain catalog for _self %}{% embed 'card.html.twig' %}{{ 'k<caret>ey'|trans }}{% endembed %}")));
+        assertNull(TwigUtil.getTransDefaultDomainOnScope(findCaretElement(
+            "{% embed 'card.html.twig' %}{% trans_default_domain 'catalog' for _self %}{% endembed %}{{ 'k<caret>ey'|trans }}")));
+    }
+
     public void testTransDefaultDomainCacheDoesNotRetainInvalidPsiScope() {
         String template = "{% embed 'card.html.twig' %}{% trans_default_domain 'first' %}{{ 'key'|trans }}{% endembed %}";
         PsiFile file = myFixture.configureByText(TwigFileType.INSTANCE, template);
