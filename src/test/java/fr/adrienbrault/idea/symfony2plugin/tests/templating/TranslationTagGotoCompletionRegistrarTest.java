@@ -61,4 +61,9 @@ public class TranslationTagGotoCompletionRegistrarTest extends SymfonyLightCodeI
             PlatformPatterns.psiElement()
         );
     }
+
+    public void testFileWideTransDefaultDomainForTransTag() {
+        myFixture.addFileToProject("Resources/translations/catalog.en.yml", "catalog.key: Translated");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% trans_default_domain 'catalog' for _self %}{% embed 'card.html.twig' %}{% trans %}<caret>{% endtrans %}{% endembed %}", "catalog.key");
+    }
 }

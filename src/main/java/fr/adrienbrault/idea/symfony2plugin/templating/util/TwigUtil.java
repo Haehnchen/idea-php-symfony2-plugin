@@ -78,6 +78,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.*;
+import org.jspecify.annotations.NonNull;
 
 import java.io.File;
 import java.text.Collator;
@@ -343,12 +344,13 @@ public class TwigUtil {
     }
 
     /**
-     *  Finds a trans_default_domain definition in twig file
+     * Finds a trans_default_domain definition in twig file
      *
      * "{% trans_default_domain "validators" %}"
+     * "{% trans_default_domain "validators" for _self %}"
      *
      * @param position current scope to search for: Twig file or embed scope
-     * @return file translation domain
+     * @return translation domain, or null if none is defined
      */
     @Nullable
     public static String getTransDefaultDomainOnScope(@NotNull PsiElement position) {
@@ -398,36 +400,69 @@ public class TwigUtil {
     }
 
     /**
-     * Fetches the first default translation domain in a Twig file/embed scope.
+     * Fetches the first regular default translation domain, falling back to "for _self" in the file.
      * Example: {% trans_default_domain "validators" %} resolves to "validators".
      * Embed: {% embed "card.html.twig" %}{% trans_default_domain "admin" %}{% endembed %} resolves to "admin" inside the embed block.
      */
     @Nullable
     private static String computeTransDefaultDomainOnScope(@NotNull PsiElement scope) {
-        for (PsiElement psiElement : scope.getChildren()) {
-            // filter parent trans_default_domain, it should be in file context
-            if (psiElement instanceof TwigCompositeElement && psiElement.getNode().getElementType() == TwigElementTypes.TAG) {
-                final String[] fileTransDomain = {null};
-                psiElement.acceptChildren(new PsiRecursiveElementWalkingVisitor() {
-                    @Override
-                    public void visitElement(PsiElement element) {
-                        if (TwigPattern.getTransDefaultDomainPattern().accepts(element)) {
-                            String text = PsiElementUtils.trimQuote(element.getText());
-                            if (StringUtils.isNotBlank(text)) {
-                                fileTransDomain[0] = text;
-                            }
-                        }
-                        super.visitElement(element);
-                    }
-                });
+        String fileDomain = null;
+        List<PsiElement> scopes = scope instanceof PsiFile ? List.of(scope) : List.of(scope, scope.getContainingFile());
 
-                if (fileTransDomain[0] != null) {
-                    return fileTransDomain[0];
+        // Performance: scan each scope once for both regular and file-wide domains.
+        for (PsiElement currentScope : scopes) {
+            for (PsiElement tag : currentScope.getChildren()) {
+                if (!(tag instanceof TwigCompositeElement) || tag.getNode().getElementType() != TwigElementTypes.TAG) {
+                    continue;
+                }
+
+                for (PsiElement element = tag.getFirstChild(); element != null; element = element.getNextSibling()) {
+                    if (!TwigPattern.getTransDefaultDomainPattern().accepts(element)) {
+                        continue;
+                    }
+
+                    String domain = PsiElementUtils.trimQuote(element.getText());
+                    if (StringUtils.isBlank(domain)) {
+                        continue;
+                    }
+
+                    if (isTransDefaultDomainForSelf(element)) {
+                        if (currentScope instanceof PsiFile && fileDomain == null) {
+                            fileDomain = domain;
+                        }
+                    } else if (currentScope == scope) {
+                        return domain;
+                    }
                 }
             }
         }
 
-        return null;
+        return fileDomain;
+    }
+
+    /**
+     * Symfony 8.2's literal domain followed by "for _self" applies to every template in the file.
+     *
+     * {% trans_default_domain 'cat<caret>alog' for _self %}
+     */
+    private static boolean isTransDefaultDomainForSelf(@NotNull PsiElement domain) {
+        if (domain.getNode().getElementType() != TwigTokenTypes.STRING_TEXT) {
+            return false;
+        }
+
+        PsiElement quote = domain.getNextSibling();
+        if (quote == null || (quote.getNode().getElementType() != TwigTokenTypes.SINGLE_QUOTE
+            && quote.getNode().getElementType() != TwigTokenTypes.DOUBLE_QUOTE)) {
+            return false;
+        }
+
+        PsiElement forKeyword = PsiTreeUtil.skipWhitespacesForward(quote);
+        PsiElement self = forKeyword == null ? null : PsiTreeUtil.skipWhitespacesForward(forKeyword);
+        PsiElement end = self == null ? null : PsiTreeUtil.skipWhitespacesForward(self);
+
+        return forKeyword != null && "for".equals(forKeyword.getText())
+            && self != null && "_self".equals(self.getText())
+            && end != null && end.getNode().getElementType() == TwigTokenTypes.STATEMENT_BLOCK_END;
     }
 
     /**

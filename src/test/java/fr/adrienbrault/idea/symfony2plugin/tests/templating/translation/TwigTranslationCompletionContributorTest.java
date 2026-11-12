@@ -136,6 +136,14 @@ public class TwigTranslationCompletionContributorTest extends TwigTranslationFix
         );
     }
 
+    public void testFileWideTransDefaultDomainCompletion() {
+        assertCompletionContains(TwigFileType.INSTANCE, "{% trans_default_domain '<caret>' for _self %}", "interchange");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% trans_default_domain 'interchange' for _self %}{% embed 'card.html.twig' %}{% block footer %}{{ '<caret>'|trans }}{% endblock %}{% endembed %}", "xlf_weak.symfony.great");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% trans_default_domain 'interchange' for _self %}{% macro button() %}{{ '<caret>'|trans }}{% endmacro %}", "xlf_weak.symfony.great");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% trans_default_domain 'interchange' for _self %}{% embed 'card.html.twig' %}{% trans_default_domain 'foo' %}{{ '<caret>'|trans }}{% endembed %}", "foo.symfony.great");
+        assertCompletionContains(TwigFileType.INSTANCE, "{% trans_default_domain 'interchange' for _self %}{% embed 'card.html.twig' %}{{ '<caret>'|trans({}, 'foo') }}{% endembed %}", "foo.symfony.great");
+    }
+
     public void testTransDefaultDomainCompletionShouldQuotedStringValue() {
         assertCompletionResultEquals(
             TwigFileType.INSTANCE,
