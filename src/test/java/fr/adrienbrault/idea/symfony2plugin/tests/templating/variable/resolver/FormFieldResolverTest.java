@@ -185,6 +185,61 @@ public class FormFieldResolverTest extends SymfonyLightCodeInsightFixtureTestCas
         assertEquals("\\App\\Form\\ShadowedTraitData", fields.getFirst().ownerFormTypeFqn());
     }
 
+    public void testGuessedReadonlyAttributeFieldType() {
+        myFixture.configureByText(PhpFileType.INSTANCE, """
+            <?php
+            use Symfony\\Component\\Form\\Attribute\\AsFormType;
+            use Symfony\\Component\\Form\\Attribute\\FormField;
+
+            #[AsFormType]
+            readonly class EventData {
+                public function __construct(
+                    #[FormField(name: 'minutes')] public ?int $capacity,
+                ) {}
+            }
+            """);
+
+        ArrayList<TwigFormField> fields = new ArrayList<>();
+        FormFieldResolver.visitFormFields(getProject(), Collections.singleton("\\EventData"), fields::add);
+
+        assertSize(1, fields);
+        assertEquals("minutes", fields.getFirst().name());
+        assertEquals("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\IntegerType", fields.getFirst().fieldTypeFqn());
+    }
+
+    public void testGuessedBuilderFieldTypeWithNamedArguments() {
+        myFixture.configureByText(PhpFileType.INSTANCE, """
+            <?php
+            namespace Symfony\\Component\\Form {
+                interface FormTypeInterface {}
+                interface FormBuilderInterface { public function add(); }
+            }
+
+            namespace App {
+                class EventData {
+                    public ?int $capacity;
+                }
+
+                class EventType implements \\Symfony\\Component\\Form\\FormTypeInterface {
+                    public function buildForm(\\Symfony\\Component\\Form\\FormBuilderInterface $builder, array $options) {
+                        $builder->add(options: [], child: 'capacity');
+                    }
+
+                    public function configureOptions($resolver) {
+                        $resolver->setDefaults(['data_class' => EventData::class]);
+                    }
+                }
+            }
+            """);
+
+        ArrayList<TwigFormField> fields = new ArrayList<>();
+        FormFieldResolver.visitFormFields(getProject(), Collections.singleton("\\App\\EventType"), fields::add);
+
+        assertSize(1, fields);
+        assertEquals("capacity", fields.getFirst().name());
+        assertEquals("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\IntegerType", fields.getFirst().fieldTypeFqn());
+    }
+
     @NotNull
     private MethodReference findMethodReference(@NotNull String name) {
         for (PsiElement psiElement : PsiTreeUtil.collectElementsOfType(myFixture.getFile(), MethodReference.class)) {

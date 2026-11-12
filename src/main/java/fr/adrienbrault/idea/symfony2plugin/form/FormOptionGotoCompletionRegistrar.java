@@ -14,6 +14,7 @@ import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarPa
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.utils.GotoCompletionUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
+import fr.adrienbrault.idea.symfony2plugin.form.util.FormTypeGuessUtilKt;
 import fr.adrienbrault.idea.symfony2plugin.form.visitor.FormOptionLookupVisitor;
 import fr.adrienbrault.idea.symfony2plugin.form.visitor.FormOptionTargetVisitor;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
@@ -92,8 +93,7 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
                 if (parameterList instanceof ParameterList) {
                     PsiElement context = parameterList.getContext();
                     if(context instanceof MethodReference) {
-                        ParameterBag currentIndex = PsiElementUtils.getCurrentParameterIndex(arrayCreationExpression);
-                        if(currentIndex != null && currentIndex.getIndex() == 2) {
+                        if (PsiElementUtils.getParameterOrNamedArgument(((MethodReference) context).getParameters(), "options", 2) == arrayCreationExpression) {
                             if (PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) context, FormUtil.PHP_FORM_BUILDER_SIGNATURES)) {
                                 return getMatchingOption((ParameterList) parameterList, psiElement);
                             }
@@ -106,14 +106,11 @@ public class FormOptionGotoCompletionRegistrar implements GotoCompletionRegistra
         }
 
         private GotoCompletionProvider getMatchingOption(ParameterList parameterList, @NotNull PsiElement psiElement) {
-            // form name can be a string alias; also resolve on constants, properties, ...
-            PsiElement psiElementAt = PsiElementUtils.getMethodParameterPsiElementAt(parameterList, 1);
-
             Set<String> formTypeNames = new HashSet<>();
-            if(psiElementAt != null) {
-                PhpClass phpClass = FormUtil.getFormTypeClassOnParameter(psiElementAt);
-                if(phpClass != null) {
-                    formTypeNames.add(phpClass.getFQN());
+            if (parameterList.getParent() instanceof MethodReference method) {
+                String type = FormTypeGuessUtilKt.getFormType(method);
+                if (type != null) {
+                    formTypeNames.add(type);
                 }
             }
 

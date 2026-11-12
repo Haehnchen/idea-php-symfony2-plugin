@@ -88,7 +88,29 @@ class FormAttributeOptionGotoCompletionRegistrarTest : SymfonyLightCodeInsightFi
         )
     }
 
-    private fun attributeCode(attribute: String) = """
+    fun testGuessedOptionsCompleteAndNavigate() {
+        myFixture.addFileToProject("IntegerType.php", """
+            <?php
+            namespace Symfony\Component\Form\Extension\Core\Type;
+
+            class IntegerType extends \Symfony\Component\Form\AbstractType {
+                public function configureOptions(${'$'}resolver) {
+                    ${'$'}resolver->setDefaults(['grouping' => false]);
+                }
+            }
+        """.trimIndent())
+
+        assertCompletionContains(
+            PhpFileType.INSTANCE, attributeCode("FormField(options: ['<caret>'])", "?int"),
+            "grouping"
+        )
+        assertNavigationMatch(
+            PhpFileType.INSTANCE, attributeCode("FormField(null, ['group<caret>ing' => true])", "?int"),
+            PlatformPatterns.psiElement(StringLiteralExpression::class.java).withText("'grouping'")
+        )
+    }
+
+    private fun attributeCode(attribute: String, type: String = "?string") = """
         <?php
         use Symfony\Component\Form\Attribute\FormField;
         use Symfony\Component\Form\Attribute\FormField as Field;
@@ -96,7 +118,7 @@ class FormAttributeOptionGotoCompletionRegistrarTest : SymfonyLightCodeInsightFi
 
         class AccountData {
             #[$attribute]
-            public ?string ${'$'}email = null;
+            public $type ${'$'}email = null;
         }
     """.trimIndent()
 }

@@ -12,8 +12,9 @@ import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter
+import fr.adrienbrault.idea.symfony2plugin.form.util.FormAttributeUtil.DEFAULT_FORM_TYPE
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil
-import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil
+import fr.adrienbrault.idea.symfony2plugin.form.util.getFormType
 import fr.adrienbrault.idea.symfony2plugin.form.visitor.FormOptionLookupVisitor
 import fr.adrienbrault.idea.symfony2plugin.form.visitor.FormOptionTargetVisitor
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeIndex.PhpAttributeIndexer.FORM_FIELD_ATTRIBUTE
@@ -48,8 +49,7 @@ class FormAttributeOptionGotoCompletionRegistrar : GotoCompletionRegistrar {
                 || PhpPsiAttributesUtil.getAttributeValuePsiElement(attribute, 1, "options") !== options
             ) return null
 
-            val type = PhpPsiAttributesUtil.getAttributeValuePsiElement(attribute, 0, "type")
-            val formType = type?.let(FormUtil::getFormTypeFqnOnParameter) ?: DEFAULT_FORM_TYPE
+            val formType = getFormType(attribute) ?: DEFAULT_FORM_TYPE
             return FormAttributeOptionCompletionProvider(psiElement, formType)
         }
     }
@@ -71,9 +71,5 @@ class FormAttributeOptionGotoCompletionRegistrar : GotoCompletionRegistrar {
             FormOptionsUtil.visitFormOptions(project, formType, FormOptionTargetVisitor(literal.contents, targets))
             return targets
         }
-    }
-
-    companion object {
-        private const val DEFAULT_FORM_TYPE = "\\Symfony\\Component\\Form\\Extension\\Core\\Type\\FormType"
     }
 }
