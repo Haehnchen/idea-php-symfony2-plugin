@@ -32,8 +32,8 @@ import java.util.Collection;
  * <p>
  * Supports:
  * - Class-level attributes: #[Route], #[AsController], #[IsGranted], #[AsTwigComponent], #[AsCommand]
- * - Method-level attributes: #[Route], #[IsGranted], #[Cache], #[Template], #[ExposeInTemplate], #[PreMount], #[PostMount]
- * - Property-level attributes: #[ExposeInTemplate]
+ * - Method-level attributes: #[Route], #[IsGranted], #[Cache], #[Lock], #[Template], #[ExposeInTemplate], #[PreMount], #[PostMount]
+ * - Property-level attributes: #[ExposeInTemplate], #[Encrypted]
  * - Twig extension attributes: #[AsTwigFilter], #[AsTwigFunction], #[AsTwigTest]
  *
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -43,6 +43,8 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
     private static final String ROUTE_ATTRIBUTE_FQN = "\\Symfony\\Component\\Routing\\Attribute\\Route";
     private static final String IS_GRANTED_ATTRIBUTE_FQN = "\\Symfony\\Component\\Security\\Http\\Attribute\\IsGranted";
     private static final String CACHE_ATTRIBUTE_FQN = "\\Symfony\\Component\\HttpKernel\\Attribute\\Cache";
+    private static final String LOCK_ATTRIBUTE_FQN = "\\Symfony\\Component\\HttpKernel\\Attribute\\Lock";
+    private static final String ENCRYPTED_ATTRIBUTE_FQN = "\\Symfony\\Component\\KeyManagement\\Bridge\\DoctrineOrm\\Attribute\\Encrypted";
     private static final String TEMPLATE_ATTRIBUTE_FQN = "\\Symfony\\Bridge\\Twig\\Attribute\\Template";
     private static final String AS_CONTROLLER_ATTRIBUTE_FQN = "\\Symfony\\Component\\HttpKernel\\Attribute\\AsController";
     private static final String AS_TWIG_FILTER_ATTRIBUTE_FQN = "\\Twig\\Attribute\\AsTwigFilter";
@@ -212,6 +214,17 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                     .withInsertHandler(new PhpAttributeInsertHandler(CACHE_ATTRIBUTE_FQN, CursorPosition.INSIDE_PARENTHESES));
 
                 lookupElements.add(cacheLookupElement);
+            }
+
+            // Add Lock attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, LOCK_ATTRIBUTE_FQN)) {
+                LookupElement lockLookupElement = LookupElementBuilder
+                    .create("#[Lock]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(LOCK_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpAttributeInsertHandler(LOCK_ATTRIBUTE_FQN, CursorPosition.INSIDE_QUOTES));
+
+                lookupElements.add(lockLookupElement);
             }
 
             // Add Template attribute completion
@@ -455,7 +468,7 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
 
         /**
          * Get attribute completions for properties in Doctrine entity classes
-         * Includes: Column, Id, GeneratedValue, OneToMany, OneToOne, ManyToOne, ManyToMany, JoinColumn
+         * Includes: Column, Encrypted, Id, GeneratedValue, OneToMany, OneToOne, ManyToOne, ManyToMany, JoinColumn
          */
         private Collection<LookupElement> getDoctrineFieldAttributeCompletions(@NotNull Project project) {
             Collection<LookupElement> lookupElements = new ArrayList<>();
@@ -467,6 +480,17 @@ public class PhpAttributeCompletionContributor extends CompletionContributor {
                     .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
                     .withTypeText(StringUtils.stripStart(DOCTRINE_COLUMN_ATTRIBUTE_FQN, "\\"), true)
                     .withInsertHandler(new PhpDoctrineAttributeInsertHandler(DOCTRINE_COLUMN_ATTRIBUTE_FQN, "Column"));
+
+                lookupElements.add(lookupElement);
+            }
+
+            // Add Encrypted attribute completion
+            if (PhpElementsUtil.hasClassOrInterface(project, ENCRYPTED_ATTRIBUTE_FQN)) {
+                LookupElement lookupElement = LookupElementBuilder
+                    .create("#[Encrypted]")
+                    .withIcon(Symfony2Icons.SYMFONY_ATTRIBUTE)
+                    .withTypeText(StringUtils.stripStart(ENCRYPTED_ATTRIBUTE_FQN, "\\"), true)
+                    .withInsertHandler(new PhpAttributeInsertHandler(ENCRYPTED_ATTRIBUTE_FQN, CursorPosition.INSIDE_QUOTES));
 
                 lookupElements.add(lookupElement);
             }

@@ -65,6 +65,15 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
         );
     }
 
+    public void testLockAttributeCompletion() {
+        myFixture.addFileToProject("Lock.php", "<?php namespace Symfony\\Component\\HttpKernel\\Attribute; class Lock {}");
+
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\nclass TestController {\n    #<caret>\n    public function index() { }\n}",
+            "#[Lock]"
+        );
+    }
+
     public void testMethodLevelAttributeInsertion() {
         String cacheResult = insertSelectedCompletion(
             "<?php\n\nnamespace App\\Controller;\n\nclass TestController {\n    #<caret>\n    public function index() { }\n}",
@@ -432,6 +441,15 @@ public class PhpAttributeCompletionContributorTest extends SymfonyLightCodeInsig
             "#[Column]", "#[Id]", "#[GeneratedValue]",
             "#[OneToMany]", "#[OneToOne]", "#[ManyToOne]", "#[ManyToMany]",
             "#[JoinColumn]"
+        );
+    }
+
+    public void testEncryptedAttributeCompletion() {
+        myFixture.addFileToProject("Encrypted.php", "<?php namespace Symfony\\Component\\KeyManagement\\Bridge\\DoctrineOrm\\Attribute; class Encrypted {}");
+
+        assertCompletionContains(PhpFileType.INSTANCE,
+            "<?php\nuse Doctrine\\ORM\\Mapping as ORM;\n#[ORM\\Entity]\nclass Customer {\n    #<caret>\n    private string $phone;\n}",
+            "#[Encrypted]"
         );
     }
 
