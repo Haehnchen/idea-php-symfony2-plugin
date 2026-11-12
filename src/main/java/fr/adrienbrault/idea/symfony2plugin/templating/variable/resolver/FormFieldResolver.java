@@ -20,6 +20,7 @@ import fr.adrienbrault.idea.symfony2plugin.form.dict.FormClass;
 import fr.adrienbrault.idea.symfony2plugin.form.dict.FormTypeClass;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil;
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormUtil;
+import fr.adrienbrault.idea.symfony2plugin.form.util.FormTypeGuessUtilKt;
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeIndex;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.dict.PsiVariable;
@@ -185,32 +186,21 @@ public class FormFieldResolver implements TwigTypeResolver {
         List<TwigFormField> twigFormFields = new ArrayList<>();
 
         for(MethodReference methodReference: FormUtil.getFormBuilderTypes(method)) {
+            String fieldName = PhpElementsUtil.getStringValue(PsiElementUtils.getParameterOrNamedArgument(
+                methodReference.getParameters(), "create".equals(methodReference.getName()) ? "name" : "child", 0
+            ));
 
-            String fieldName = PsiElementUtils.getMethodParameterAt(methodReference, 0);
             if (fieldName == null) {
                 continue;
             }
 
-            PsiElement psiElement = PsiElementUtils.getMethodParameterPsiElementAt(methodReference, 1);
-            String fieldTypeFqn = null;
-
-            // find form field type
-            if(psiElement != null) {
-                fieldTypeFqn = FormUtil.getFormTypeFqnOnParameter(psiElement);
-            }
+            String fieldTypeFqn = FormTypeGuessUtilKt.getFormType(methodReference);
 
             PsiElement options = PsiElementUtils.getParameterOrNamedArgument(methodReference.getParameters(), "options", 2);
             twigFormFields.add(new TwigFormField(fieldName, fieldTypeFqn, formTypeClass.getFQN(), null, NestedFormFieldResolver.getFieldOptions(options)));
         }
 
         return twigFormFields;
-    }
-
-    /**
-     * Search and resolve: "$form->createView()" to its PhpClass which is a form type
-     */
-    public static void visitFormReferencesFields(@NotNull PsiElement formReference, @NotNull Consumer<TwigTypeContainer> consumer) {
-        visitFormFields(formReference.getProject(), getFormTypeFqnsFromFormFactory(formReference), field -> consumer.accept(toTwigTypeContainer(field)));
     }
 
     /**
@@ -344,7 +334,7 @@ public class FormFieldResolver implements TwigTypeResolver {
             for (Field field : properties.values()) {
                 for (PhpAttribute attribute : field.getAttributes(PhpAttributeIndex.PhpAttributeIndexer.FORM_FIELD_ATTRIBUTE)) {
                     String name = PhpElementsUtil.getStringValue(PhpPsiAttributesUtil.getAttributeValuePsiElement(attribute, 2, "name"));
-                    String type = PhpElementsUtil.getStringValue(PhpPsiAttributesUtil.getAttributeValuePsiElement(attribute, 0, "type"));
+                    String type = FormTypeGuessUtilKt.getFormType(attribute);
                     fields.add(new TwigFormField(
                         name != null ? name : field.getName(),
                         type != null ? "\\" + StringUtils.stripStart(type, "\\") : null,

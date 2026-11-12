@@ -2,6 +2,7 @@ package fr.adrienbrault.idea.symfony2plugin.tests.form;
 
 import com.intellij.patterns.PlatformPatterns;
 import com.jetbrains.php.lang.PhpFileType;
+import com.jetbrains.php.lang.psi.elements.StringLiteralExpression;
 import fr.adrienbrault.idea.symfony2plugin.tests.SymfonyLightCodeInsightFixtureTestCase;
 
 /**
@@ -74,6 +75,44 @@ public class FormOptionGotoCompletionRegistrarTest extends SymfonyLightCodeInsig
                 "/** @var $resolver \\Symfony\\Component\\OptionsResolver\\OptionsResolver */\n" +
                 "$resolver->setDefault('configure_<caret>options')",
             PlatformPatterns.psiElement()
+        );
+    }
+
+    public void testGuessedOptionsCompleteAndNavigate() {
+        myFixture.addFileToProject("IntegerType.php", """
+            <?php
+            namespace Symfony\\Component\\Form\\Extension\\Core\\Type;
+
+            class IntegerType extends \\Symfony\\Component\\Form\\AbstractType {
+                public function configureOptions($resolver) {
+                    $resolver->setDefaults(['grouping' => false]);
+                }
+            }
+            """);
+        myFixture.addFileToProject("EventData.php", "<?php class EventData { public ?int $capacity; }");
+
+        String code = """
+            <?php
+            class EventType extends \\Symfony\\Component\\Form\\AbstractType {
+                public function buildForm(\\Symfony\\Component\\Form\\FormBuilderInterface $builder, array $options) {
+                    $builder->add(%s);
+                }
+
+                public function configureOptions(\\Symfony\\Component\\OptionsResolver\\OptionsResolver $resolver) {
+                    $resolver->setDefaults(['data_class' => EventData::class]);
+                }
+            }
+            """;
+
+        assertCompletionContains(
+            PhpFileType.INSTANCE, code.formatted("'capacity', null, ['<caret>']"), "grouping"
+        );
+        assertCompletionContains(
+            PhpFileType.INSTANCE, code.formatted("options: ['<caret>'], child: 'capacity'"), "grouping"
+        );
+        assertNavigationMatch(
+            PhpFileType.INSTANCE, code.formatted("'capacity', null, ['group<caret>ing' => true]"),
+            PlatformPatterns.psiElement(StringLiteralExpression.class).withText("'grouping'")
         );
     }
 }

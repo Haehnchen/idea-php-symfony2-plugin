@@ -232,17 +232,7 @@ public class FormUtil {
             return null;
         }
 
-        PsiElement argument = PsiElementUtils.getParameterOrNamedArgument(methodReference.getParameters(), "type", typeIndex);
-        if (argument == null) {
-            return null;
-        }
-
-        String argumentName = PsiElementUtils.getNamedArgumentName(argument);
-        if (argumentName != null && !"type".equals(argumentName)) {
-            return null;
-        }
-
-        return argument;
+        return PsiElementUtils.getParameterOrNamedArgument(methodReference.getParameters(), "type", typeIndex);
     }
 
     /**

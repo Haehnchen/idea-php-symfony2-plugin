@@ -97,7 +97,12 @@ public class PsiElementUtils {
     }
 
     /**
-     * Resolves "foo($value)" by index first, then falls back to "foo(named: $value)".
+     * Returns a positional or named argument, or null if it is omitted.
+     *
+     * <pre>{@code
+     * foo('value');        // index 0
+     * foo(name: 'value');  // name "name"
+     * }</pre>
      */
     @Nullable
     public static PsiElement getParameterOrNamedArgument(@NotNull PsiElement[] parameters, @NotNull String namedArgument, int parameterIndex) {
@@ -112,7 +117,7 @@ public class PsiElementUtils {
             }
         }
 
-        return getParameterPsiElementAt(parameters, parameterIndex);
+        return null;
     }
 
     @Nullable
@@ -150,16 +155,11 @@ public class PsiElementUtils {
 
     public static boolean isCurrentParameter(@NotNull PsiElement psiElement, @NotNull String namedParameter, int index) {
         PsiElement parameterList = psiElement.getContext();
-        if (!(parameterList instanceof ParameterList)) {
+        if (!(parameterList instanceof ParameterList parameters)) {
             return false;
         }
 
-        if (isNamedArgument(psiElement, namedParameter)) {
-            return true;
-        }
-
-        ParameterBag currentParameterIndex = getCurrentParameterIndex(((ParameterList) parameterList).getParameters(), psiElement);
-        return currentParameterIndex != null && currentParameterIndex.getIndex() == index;
+        return getParameterOrNamedArgument(parameters.getParameters(), namedParameter, index) == psiElement;
     }
 
     private static boolean isNamedArgument(@NotNull PsiElement psiElement, @NotNull String namedArgument) {

@@ -34,6 +34,26 @@ public class PsiElementUtilsTest extends SymfonyLightCodeInsightFixtureTestCase 
         assertContainsElements(PhpElementsUtil.getArrayValuesAsString((ArrayCreationExpression) aliases), "named");
     }
 
+    public void testNamedArgumentCanBeReordered() {
+        NewExpression expression = createNewExpression("<?php new Foo(aliases: ['named'], other: 'last');");
+
+        PsiElement aliases = PsiElementUtils.getParameterOrNamedArgument(expression.getParameters(), "aliases", 1);
+
+        assertSame(expression.getParameters()[0], aliases);
+    }
+
+    public void testIsCurrentParameterMatchesReorderedNamedArgument() {
+        NewExpression expression = createNewExpression("<?php new Foo(options: [], type: 'integer');");
+
+        assertTrue(PsiElementUtils.isCurrentParameter(expression.getParameters()[1], "type", 0));
+    }
+
+    public void testIsCurrentParameterMatchesPositionalArgument() {
+        NewExpression expression = createNewExpression("<?php new Foo('field', 'integer');");
+
+        assertTrue(PsiElementUtils.isCurrentParameter(expression.getParameters()[1], "type", 1));
+    }
+
     private NewExpression createNewExpression(String code) {
         myFixture.configureByText(PhpFileType.INSTANCE, code);
 
