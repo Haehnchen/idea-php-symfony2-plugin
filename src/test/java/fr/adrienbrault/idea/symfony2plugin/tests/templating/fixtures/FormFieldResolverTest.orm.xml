@@ -1,0 +1,6 @@
+<doctrine-mapping>
+    <entity name="App\Form\XmlEventData">
+        <field name="day" type="date"/>
+        <field name="startsAt" type="time"/>
+    </entity>
+</doctrine-mapping>

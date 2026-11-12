@@ -38,6 +38,48 @@ class FormTypeGuessUtilTest : SymfonyLightCodeInsightFixtureTestCase() {
         assertEquals("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\IntegerType", guessedTypeByProperty("promotedCapacity"))
     }
 
+    fun testDoctrineDateColumns() {
+        assertEquals("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\DateType", guessedTypeByProperty("day"))
+        assertEquals("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\DateType", guessedTypeByProperty("immutableDay"))
+    }
+
+    fun testDoctrineTimeColumns() {
+        assertEquals("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\TimeType", guessedTypeByProperty("startTime"))
+        assertEquals("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\TimeType", guessedTypeByProperty("immutableTime"))
+    }
+
+    fun testDoctrineScalarColumns() {
+        assertEquals("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\NumberType", guessedTypeByProperty("amount"))
+        assertEquals("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\IntegerType", guessedTypeByProperty("externalId"))
+        assertEquals("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\CheckboxType", guessedTypeByProperty("enabled"))
+        assertEquals("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\TextType", guessedTypeByProperty("title"))
+        assertEquals("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\TextareaType", guessedTypeByProperty("description"))
+        assertEquals("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\CollectionType", guessedTypeByProperty("tags"))
+    }
+
+    fun testDoctrineAssociations() {
+        assertEquals("\\Symfony\\Bridge\\Doctrine\\Form\\Type\\EntityType", guessedTypeByProperty("parent"))
+        assertEquals("\\Symfony\\Bridge\\Doctrine\\Form\\Type\\EntityType", guessedTypeByProperty("children"))
+    }
+
+    fun testCustomDoctrineColumnUsesNativeType() {
+        assertEquals("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\IntegerType", guessedTypeByProperty("customCapacity"))
+    }
+
+    fun testOtherDoctrineColumnsUseTextType() {
+        assertEquals("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\TextType", guessedTypeByProperty("settings"))
+    }
+
+    fun testExplicitFormTypeOverridesDoctrineColumn() {
+        assertEquals("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\DateTimeType", guessedTypeByProperty("explicitDate"))
+    }
+
+    fun testBuilderPropertyPathUsesDoctrineColumn() {
+        val type = guessedBuilderType("createDay")
+
+        assertEquals("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\DateType", type)
+    }
+
     fun testExplicitTypeTakesPrecedence() {
         assertEquals("\\Symfony\\Component\\Form\\Extension\\Core\\Type\\EmailType", guessedTypeByProperty("explicitType"))
     }

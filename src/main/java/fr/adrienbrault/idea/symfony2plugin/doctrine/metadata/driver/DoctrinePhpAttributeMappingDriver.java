@@ -4,6 +4,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.php.lang.psi.resolve.types.PhpType;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.dict.DoctrineModelField;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.dict.DoctrineMetadataModel;
 import fr.adrienbrault.idea.symfony2plugin.doctrine.metadata.util.DoctrineMetadataUtil;
@@ -15,9 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -55,7 +54,6 @@ public class DoctrinePhpAttributeMappingDriver implements DoctrineMappingDriverI
                 }
             }
 
-            Map<String, Map<String, String>> maps = new HashMap<>();
             for(Field field: phpClass.getFields()) {
                 if (field.isConstant()) {
                     continue;
@@ -79,7 +77,7 @@ public class DoctrinePhpAttributeMappingDriver implements DoctrineMappingDriverI
                             doctrineModelField.setColumn(name);
                         }
 
-                        String type = PhpPsiAttributesUtil.getAttributeValueByNameAsString(attribute, 1, "type");
+                        String type = PhpElementsUtil.getStringValue(PhpPsiAttributesUtil.getAttributeValuePsiElement(attribute, 1, "type"));
                         if (type != null) {
                             doctrineModelField.setTypeName(type);
                         }
@@ -109,19 +107,7 @@ public class DoctrinePhpAttributeMappingDriver implements DoctrineMappingDriverI
                         } else {
                             // #[ORM\ManyToOne]
                             // private ?MyBike $myBike;
-                            PhpTypeDeclaration typeDeclaration = field.getTypeDeclaration();
-                            if (typeDeclaration != null) {
-                                Collection<ClassReference> classReferences = typeDeclaration.getClassReferences().stream()
-                                    .filter(classReference -> !"null".equals(classReference.getCanonicalText()))
-                                    .toList();
-
-                                if (!classReferences.isEmpty()) {
-                                    String fqnClass = classReferences.iterator().next().getFQN();
-                                    if (fqnClass != null) {
-                                        doctrineModelField.setRelation(fqnClass);
-                                    }
-                                }
-                            }
+                            doctrineModelField.setRelation(getDeclaredClass(field));
                         }
                     }
                 }
@@ -173,8 +159,9 @@ public class DoctrinePhpAttributeMappingDriver implements DoctrineMappingDriverI
         }
 
         for (ClassReference classReference : typeDeclaration.getClassReferences()) {
-            if (!"null".equals(classReference.getCanonicalText()) && StringUtils.isNotBlank(classReference.getFQN())) {
-                return classReference.getFQN();
+            String className = classReference.getFQN();
+            if (StringUtils.isNotBlank(className) && !PhpType.isPrimitiveType(classReference.getName())) {
+                return className;
             }
         }
 

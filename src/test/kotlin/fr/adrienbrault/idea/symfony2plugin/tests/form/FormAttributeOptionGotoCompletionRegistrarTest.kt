@@ -110,6 +110,39 @@ class FormAttributeOptionGotoCompletionRegistrarTest : SymfonyLightCodeInsightFi
         )
     }
 
+    fun testDoctrineDateOptionsCompleteAndNavigate() {
+        val code = doctrineFieldCode("date")
+
+        assertCompletionContains(PhpFileType.INSTANCE, code, "years")
+        assertNavigationMatch(
+            PhpFileType.INSTANCE, code.replace("<caret>", "years<caret>"),
+            PlatformPatterns.psiElement(StringLiteralExpression::class.java).withText("'years'")
+        )
+    }
+
+    fun testDoctrineTimeOptionsCompleteAndNavigate() {
+        val code = doctrineFieldCode("time")
+
+        assertCompletionContains(PhpFileType.INSTANCE, code, "hours")
+        assertNavigationMatch(
+            PhpFileType.INSTANCE, code.replace("<caret>", "hours<caret>"),
+            PlatformPatterns.psiElement(StringLiteralExpression::class.java).withText("'hours'")
+        )
+    }
+
+    private fun doctrineFieldCode(columnType: String) = """
+        <?php
+        use Doctrine\ORM\Mapping as ORM;
+        use Symfony\Component\Form\Attribute\FormField;
+
+        #[ORM\Entity]
+        class EventData {
+            #[FormField(options: ['<caret>'])]
+            #[ORM\Column(type: '$columnType')]
+            public ?\DateTimeImmutable ${'$'}startsAt;
+        }
+    """.trimIndent()
+
     private fun attributeCode(attribute: String, type: String = "?string") = """
         <?php
         use Symfony\Component\Form\Attribute\FormField;
