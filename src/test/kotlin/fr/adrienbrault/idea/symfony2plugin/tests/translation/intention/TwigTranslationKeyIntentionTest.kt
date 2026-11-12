@@ -25,4 +25,12 @@ class TwigTranslationKeyIntentionTest : SymfonyLightCodeInsightFixtureTestCase()
             "Symfony: create translation key"
         )
     }
+
+    fun testTransHtmlKeyProvidesIntention() {
+        assertIntentionIsAvailable(
+            TwigFileType.INSTANCE,
+            "{{ 'symfo<caret>ny.great'|trans_html({}, {}, 'symfony') }}",
+            "Symfony: create translation key"
+        )
+    }
 }

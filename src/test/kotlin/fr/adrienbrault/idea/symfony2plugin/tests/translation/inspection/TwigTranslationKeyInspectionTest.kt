@@ -90,4 +90,24 @@ class TwigTranslationKeyInspectionTest : SymfonyLightCodeInsightFixtureTestCase(
 
         myFixture.checkResult("{{ 'symfony.great'|trans({}, 'symfony')) }}")
     }
+
+    fun testHtmlTranslation() {
+        assertLocalInspectionContains(TwigTranslationKeyInspection::class.java,
+            "test.html.twig",
+            "{{ 'miss<caret>ing'|trans_html({}, {}, 'symfony') }}",
+            TwigTranslationKeyInspection.MESSAGE
+        )
+
+        assertLocalInspectionNotContains(TwigTranslationKeyInspection::class.java,
+            "test.html.twig",
+            "{{ 'symfony.gr<caret>eat'|trans_html({}, {}, 'symfony') }}",
+            TwigTranslationKeyInspection.MESSAGE
+        )
+
+        assertLocalInspectionNotContains(TwigTranslationKeyInspection::class.java,
+            "test.html.twig",
+            "{{ 'symfony.gr<caret>eat'|trans_html(tags: {}, domain: 'symfony') }}",
+            TwigTranslationKeyInspection.MESSAGE
+        )
+    }
 }

@@ -10,6 +10,7 @@ import fr.adrienbrault.idea.symfony2plugin.translation.PhpTranslationKeyInspecti
 class PhpTranslationKeyInspectionTest : SymfonyLightCodeInsightFixtureTestCase() {
     override fun setUp() {
         super.setUp()
+        myFixture.copyFileToProject("HtmlTranslator.php")
         myFixture.copyFileToProject("PhpTranslationInspection.php")
         myFixture.copyFileToProject("symfony.de.yml", "Resources/translations/symfony.de.yml")
         myFixture.copyFileToProject("messages.de.yml", "Resources/translations/messages.de.yml")
@@ -175,6 +176,26 @@ class PhpTranslationKeyInspectionTest : SymfonyLightCodeInsightFixtureTestCase()
             "test.php", "<?php\n" +
                 "use function Symfony\\Component\\Translation\\t;\n" +
                 "t('symfon<caret>y.great', 1, [], \$x);",
+            PhpTranslationKeyInspection.MESSAGE
+        )
+    }
+
+    fun testHtmlTranslation() {
+        assertLocalInspectionContains(PhpTranslationKeyInspection::class.java,
+            "test.php",
+            "<?php /** @var \\Symfony\\Component\\Translation\\HtmlTranslator \$translator */ \$translator->trans('miss<caret>ing', [], [], 'symfony');",
+            PhpTranslationKeyInspection.MESSAGE
+        )
+
+        assertLocalInspectionNotContains(PhpTranslationKeyInspection::class.java,
+            "test.php",
+            "<?php /** @var \\Symfony\\Component\\Translation\\HtmlTranslator \$translator */ \$translator->trans('symfony.gr<caret>eat', [], [], 'symfony');",
+            PhpTranslationKeyInspection.MESSAGE
+        )
+
+        assertLocalInspectionNotContains(PhpTranslationKeyInspection::class.java,
+            "test.php",
+            "<?php /** @var \\Symfony\\Component\\Translation\\HtmlTranslator \$translator */ \$translator->trans(domain: 'symfony', id: 'symfony.gr<caret>eat', tags: []);",
             PhpTranslationKeyInspection.MESSAGE
         )
     }

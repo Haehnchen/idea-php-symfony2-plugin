@@ -34,7 +34,7 @@ class TwigTranslationKeyIntention : PsiElementBaseIntentionAction() {
     override fun getText(): String = this.familyName
 
     private fun getKeyAndDomain(psiElement: PsiElement): Pair<String, String>? {
-        if (!TwigPattern.getTranslationKeyPattern("trans", "transchoice").accepts(psiElement)) {
+        if (!TwigPattern.getTranslationKeyPattern("trans", "transchoice", "trans_html").accepts(psiElement)) {
             return null
         }
 

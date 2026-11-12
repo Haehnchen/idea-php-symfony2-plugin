@@ -633,11 +633,16 @@ public class TwigUtil {
         };
 
         String filterNameText = filterName.getText();
-        if("trans".equalsIgnoreCase(filterNameText)) {
+        if ("trans_html".equals(filterNameText)) {
+            PsiElement domain = getTransHtmlDomainElement(filterName.getParent());
+            return domain != null ? domain.getText() : null;
+        }
+
+        if ("trans".equalsIgnoreCase(filterNameText)) {
             PsiElement brace = PsiTreeUtil.nextVisibleLeaf(filterName);
             if (PsiElementAssertUtil.isNotNullAndIsElementType(brace, TwigTokenTypes.LBRACE)) {
                 PsiElement comma = PsiElementUtils.getNextSiblingAndSkip(brace, TwigTokenTypes.COMMA, skipArrayElements);
-                if(comma != null) {
+                if (comma != null) {
                     String text = extractDomainFromParameter(comma);
                     if (text != null) {
                         return text;
@@ -660,9 +665,9 @@ public class TwigUtil {
                 };
 
                 PsiElement comma1 = PsiElementUtils.getNextSiblingAndSkip(brace, TwigTokenTypes.COMMA, skipElements);
-                if(comma1 != null) {
+                if (comma1 != null) {
                     PsiElement comma2 = PsiElementUtils.getNextSiblingAndSkip(comma1, TwigTokenTypes.COMMA, skipArrayElements);
-                    if(comma2 != null) {
+                    if (comma2 != null) {
                         String text = extractDomainFromParameter(comma2);
                         if (text != null) {
                             return text;
@@ -673,6 +678,36 @@ public class TwigUtil {
 
             if (brace != null) {
                 return extractDomainFromNamedParameter(brace);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Extract the domain after tags and arguments.
+     *
+     * trans_html({link: {tag: 'a'}}, {}, 'domain')
+     * trans_html(tags: {}, domain: 'domain')
+     */
+    @Nullable
+    private static PsiElement getTransHtmlDomainElement(@NotNull PsiElement functionCall) {
+        for (TwigFunctionHashParser.FunctionArgument argument : TwigFunctionHashParser.getArguments(functionCall)) {
+            if (argument.name() != null ? !"domain".equals(argument.name()) : argument.index() != 2) {
+                continue;
+            }
+
+            PsiElement quote = argument.value();
+            if (quote.getNode().getElementType() == TwigTokenTypes.SINGLE_QUOTE || quote.getNode().getElementType() == TwigTokenTypes.DOUBLE_QUOTE) {
+                PsiElement text = quote.getNextSibling();
+                PsiElement closingQuote = text != null ? text.getNextSibling() : null;
+                if (text != null && text.getNode().getElementType() == TwigTokenTypes.STRING_TEXT
+                    && closingQuote != null && closingQuote.getNode().getElementType() == quote.getNode().getElementType()) {
+                    PsiElement next = PsiTreeUtil.skipWhitespacesForward(closingQuote);
+                    if (next == null || next.getNode().getElementType() == TwigTokenTypes.COMMA || next.getNode().getElementType() == TwigTokenTypes.RBRACE) {
+                        return text;
+                    }
+                }
             }
         }
 
@@ -2913,7 +2948,7 @@ public class TwigUtil {
         // visit every trans or transchoice to get possible domain names
         PsiTreeUtil.collectElements(psiFile, psiElement -> {
             if (TwigPattern.getTransDomainPattern().accepts(psiElement)) {
-                PsiElement psiElementTrans = PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice")));
+                PsiElement psiElementTrans = PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice", "trans_html")));
                 if (psiElementTrans != null && getTwigMethodString(psiElementTrans) != null) {
                     String text = psiElement.getText();
                     if (StringUtils.isNotBlank(text)) {

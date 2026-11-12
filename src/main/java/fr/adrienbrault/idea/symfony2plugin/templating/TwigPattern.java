@@ -82,7 +82,7 @@ public class TwigPattern {
             }
 
             String text = psiElement1.getText();
-            return ("trans".equals(text) || "transchoice".equals(text));
+            return ("trans".equals(text) || "transchoice".equals(text) || "trans_html".equals(text));
         }
     };
 
@@ -1482,6 +1482,7 @@ public class TwigPattern {
                         )
                     ),
                     // transchoice(2, {}, 'bar')
+                    // trans_html(tags, {}, 'bar')
                     PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
                         PlatformPatterns.or(whitespace),
                         PlatformPatterns.psiElement(TwigTokenTypes.RBRACE_CURL).withParent(
@@ -1491,20 +1492,21 @@ public class TwigPattern {
                                     PlatformPatterns.or(PARAMETER_WHITE_LIST),
                                     PlatformPatterns.psiElement(TwigTokenTypes.LBRACE).afterLeafSkipping(
                                         PlatformPatterns.or(whitespace),
-                                        PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("transchoice"))
+                                        PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("transchoice", "trans_html"))
                                     )
                                 )
                             )
                         )
                     ),
                     // transchoice(2, null, 'bar')
+                    // trans_html(tags, arguments, 'bar')
                     PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
                         PlatformPatterns.or(placeholder),
                         PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
                             PlatformPatterns.or(PARAMETER_WHITE_LIST),
                             PlatformPatterns.psiElement(TwigTokenTypes.LBRACE).afterLeafSkipping(
                                 PlatformPatterns.or(whitespace),
-                                PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("transchoice"))
+                                PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("transchoice", "trans_html"))
                             )
                         )
                     ),
@@ -1529,6 +1531,45 @@ public class TwigPattern {
                         PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("domain"))
                             .withParent(PlatformPatterns.psiElement(TwigVariableReference.class)
                                 .withParent(PlatformPatterns.psiElement().with(PARENTHESIZED_FUNCTION_NAME_WORKAROUND)))
+                    ),
+                    // trans_html({link: {tag: 'a'}}, {}, 'bar')
+                    // trans_html([], {}, 'bar')
+                    PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
+                        PlatformPatterns.or(whitespace),
+                        PlatformPatterns.psiElement(TwigTokenTypes.RBRACE_CURL).withParent(
+                            PlatformPatterns.psiElement(TwigElementTypes.LITERAL).afterLeafSkipping(
+                                PlatformPatterns.or(whitespace),
+                                PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
+                                    PlatformPatterns.or(whitespace),
+                                    PlatformPatterns.psiElement().withElementType(TokenSet.create(TwigTokenTypes.RBRACE_CURL, TwigTokenTypes.RBRACE_SQ)).withParent(
+                                        PlatformPatterns.psiElement().withElementType(TokenSet.create(TwigElementTypes.LITERAL, TwigElementTypes.ARRAY_LITERAL)).afterLeafSkipping(
+                                            PlatformPatterns.or(whitespace),
+                                            PlatformPatterns.psiElement(TwigTokenTypes.LBRACE).afterLeafSkipping(
+                                                PlatformPatterns.or(whitespace),
+                                                PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("trans_html")
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    // trans_html({link: {tag: 'a'}}, arguments, 'bar')
+                    // trans_html({}, [], 'bar')
+                    PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
+                        PlatformPatterns.or(placeholder),
+                        PlatformPatterns.psiElement(TwigTokenTypes.COMMA).afterLeafSkipping(
+                            PlatformPatterns.or(whitespace),
+                            PlatformPatterns.psiElement().withElementType(TokenSet.create(TwigTokenTypes.RBRACE_CURL, TwigTokenTypes.RBRACE_SQ)).withParent(
+                                PlatformPatterns.psiElement().withElementType(TokenSet.create(TwigElementTypes.LITERAL, TwigElementTypes.ARRAY_LITERAL)).afterLeafSkipping(
+                                    PlatformPatterns.or(whitespace),
+                                    PlatformPatterns.psiElement(TwigTokenTypes.LBRACE).afterLeafSkipping(
+                                        PlatformPatterns.or(whitespace),
+                                        PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText("trans_html")
+                                    )
+                                )
+                            )
+                        )
                     )
                 )
             )

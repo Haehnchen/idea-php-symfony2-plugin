@@ -27,8 +27,8 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigIncludeContextPar
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigTypeResolveUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.TwigTypeContainer;
-import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder.FormFieldDataHolder;
 import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.FormFieldResolver;
+import fr.adrienbrault.idea.symfony2plugin.templating.variable.resolver.holder.FormFieldDataHolder;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.twig.utils.TwigBlockUtil;
 import fr.adrienbrault.idea.symfony2plugin.twig.variable.collector.ControllerDocVariableCollector;
@@ -116,7 +116,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
         // find trans('', {}, '|')
         // tricky way to get the function string trans(...)
         if (TwigPattern.getTransDomainPattern().accepts(psiElement)) {
-            PsiElement psiElementTrans = PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice")));
+            PsiElement psiElementTrans = PsiElementUtils.getPrevSiblingOfType(psiElement, PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withText(PlatformPatterns.string().oneOf("trans", "transchoice", "trans_html")));
             if (psiElementTrans != null && TwigUtil.getTwigMethodString(psiElementTrans) != null) {
                 targets.addAll(getTranslationDomainGoto(psiElement));
             }
@@ -128,7 +128,7 @@ public class TwigTemplateGoToDeclarationHandler implements GotoDeclarationHandle
             targets.addAll(getTranslationDomainGoto(psiElement));
         }
 
-        if (TwigPattern.getTranslationKeyPattern("trans", "transchoice").accepts(psiElement)) {
+        if (TwigPattern.getTranslationKeyPattern("trans", "transchoice", "trans_html").accepts(psiElement)) {
             targets.addAll(getTranslationKeyGoTo(psiElement));
         }
 

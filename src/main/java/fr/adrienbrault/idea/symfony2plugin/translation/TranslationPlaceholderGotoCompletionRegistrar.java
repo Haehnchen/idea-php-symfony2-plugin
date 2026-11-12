@@ -6,14 +6,16 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.psi.elements.*;
+import com.jetbrains.twig.TwigLanguage;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
-import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProviderLookupArguments;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrar;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionRegistrarParameter;
+import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigFunctionHashParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
@@ -45,6 +47,18 @@ public class TranslationPlaceholderGotoCompletionRegistrar implements GotoComple
         registrar.register(
             TwigPattern.getFunctionWithSecondParameterAsKeyLiteralPattern("transchoice"),
             new MyTwigTransFilterCompletionContributor("transchoice")
+        );
+
+        // {{ 'auth_prompt'|trans_html(tags: {'<caret>': {tag: 'a'}}, arguments: {'<caret>': user.name}) }}
+        registrar.register(
+            PlatformPatterns.psiElement().withLanguage(TwigLanguage.INSTANCE),
+            new MyTwigHtmlTranslationCompletionContributor()
+        );
+
+        // $htmlTranslator->trans('auth_prompt', ['<caret>' => ['tag' => 'a']], ['<caret>' => $name]);
+        registrar.register(
+            PlatformPatterns.psiElement().withParent(StringLiteralExpression.class),
+            new MyPhpHtmlTranslationCompletionContributor()
         );
 
         // $x->trans('symfony.great', ['%fo<caret>obar%', null], 'symfony')
@@ -79,15 +93,25 @@ public class TranslationPlaceholderGotoCompletionRegistrar implements GotoComple
         @NotNull
         private final String domain;
 
+        private final boolean htmlTags;
+
         MyTranslationPlaceholderGotoCompletionProvider(@NotNull PsiElement psiElement, @NotNull String key, @NotNull String domain) {
+            this(psiElement, key, domain, false);
+        }
+
+        MyTranslationPlaceholderGotoCompletionProvider(@NotNull PsiElement psiElement, @NotNull String key, @NotNull String domain, boolean htmlTags) {
             super(psiElement);
+            this.htmlTags = htmlTags;
             this.key = key;
             this.domain = domain;
         }
 
         @Override
         public void getLookupElements(@NotNull GotoCompletionProviderLookupArguments arguments) {
-            Collection<LookupElement> lookupElements = TranslationUtil.getPlaceholderFromTranslation(getProject(), key, domain).stream()
+            Collection<String> tokens = htmlTags
+                ? TranslationUtil.getHtmlTagsFromTranslation(getProject(), key, domain)
+                : TranslationUtil.getPlaceholderFromTranslation(getProject(), key, domain);
+            Collection<LookupElement> lookupElements = tokens.stream()
                 .map(s -> LookupElementBuilder.create(s).withIcon(Symfony2Icons.TRANSLATION))
                 .collect(Collectors.toList());
 
@@ -99,6 +123,61 @@ public class TranslationPlaceholderGotoCompletionRegistrar implements GotoComple
         @Override
         public Collection<PsiElement> getPsiTargets(PsiElement element) {
             return Arrays.asList(TranslationUtil.getTranslationPsiElements(getProject(), key, domain));
+        }
+    }
+
+    // {{ 'auth_prompt'|trans_html(tags: {'<caret>': {tag: 'a'}}, arguments: {'<caret>': user.name}) }}
+    private static class MyTwigHtmlTranslationCompletionContributor implements GotoCompletionContributor {
+        @Nullable
+        @Override
+        public GotoCompletionProvider getProvider(@NotNull PsiElement element) {
+            TwigFunctionHashParser.FunctionHash hash = TwigFunctionHashParser.parse(element);
+            if (hash == null || !"trans_html".equals(hash.functionName()) || !hash.keyPath().isEmpty() || hash.valueKey() != null) {
+                return null;
+            }
+
+            boolean tags = hash.argumentName() != null ? "tags".equals(hash.argumentName()) : hash.argumentIndex() == 0;
+            boolean arguments = hash.argumentName() != null ? "arguments".equals(hash.argumentName()) : hash.argumentIndex() == 1;
+            if (!tags && !arguments) {
+                return null;
+            }
+
+            PsiElement key = PsiElementUtils.getPrevSiblingOfType(hash.functionCall(), TwigPattern.getTranslationKeyPattern("trans_html"));
+            if (key == null || StringUtils.isBlank(key.getText())) {
+                return null;
+            }
+
+            return new MyTranslationPlaceholderGotoCompletionProvider(element, key.getText(), TwigUtil.getPsiElementTranslationDomain(key), tags);
+        }
+    }
+
+    // $htmlTranslator->trans('auth_prompt', ['<caret>' => ['tag' => 'a']], ['<caret>' => $name]);
+    private static class MyPhpHtmlTranslationCompletionContributor implements GotoCompletionContributor {
+        @Nullable
+        @Override
+        public GotoCompletionProvider getProvider(@NotNull PsiElement element) {
+            PsiElement context = element.getParent();
+            ArrayCreationExpression array = PhpElementsUtil.getCompletableArrayCreationElement(context);
+            if (array == null || !(array.getContext() instanceof ParameterList parameters)
+                || !(parameters.getContext() instanceof MethodReference method)
+                || !PhpElementsUtil.isMethodReferenceInstanceOf(method, TranslationUtil.PHP_HTML_TRANSLATOR, "trans")) {
+                return null;
+            }
+
+            boolean tags = PsiElementUtils.isCurrentParameter(array, "tags", 1);
+            if (!tags && !PsiElementUtils.isCurrentParameter(array, "parameters", 2)) {
+                return null;
+            }
+
+            PsiElement id = parameters.getParameter("id", 0);
+            String key = id != null ? PhpElementsUtil.getStringValue(id) : null;
+            if (key == null) {
+                return null;
+            }
+
+            PsiElement domainElement = parameters.getParameter("domain", 3);
+            String domain = domainElement != null ? PhpElementsUtil.getStringValue(domainElement) : "messages";
+            return domain != null ? new MyTranslationPlaceholderGotoCompletionProvider(element, key, domain, tags) : null;
         }
     }
 
