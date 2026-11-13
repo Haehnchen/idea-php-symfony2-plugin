@@ -88,7 +88,7 @@ public class YamlTranslationVisitor {
     /**
      * Translation key allow quoted values and also space before and after
      */
-    private static String keyNormalizer(@NotNull String keyName) {
+    public static String keyNormalizer(@NotNull String keyName) {
         return StringUtils.trim(StringUtils.strip(StringUtils.strip(keyName, "'"), "\""));
     }
 }
