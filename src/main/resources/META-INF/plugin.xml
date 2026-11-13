@@ -587,6 +587,20 @@
                          language="PHP"
                          implementationClass="fr.adrienbrault.idea.symfony2plugin.translation.PhpTranslationKeyInspection"/>
 
+        <localInspection groupPath="Symfony" shortName="TwigTranslationParameterInspection" displayName="Twig: Unknown translation parameter"
+                         groupName="Translation"
+                         enabledByDefault="true"
+                         level="WEAK WARNING"
+                         language="Twig"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.translation.inspection.TwigTranslationParameterInspection"/>
+
+        <localInspection groupPath="Symfony" shortName="PhpTranslationParameterInspection" displayName="PHP: Unknown translation parameter"
+                         groupName="Translation"
+                         enabledByDefault="true"
+                         level="WEAK WARNING"
+                         language="PHP"
+                         implementationClass="fr.adrienbrault.idea.symfony2plugin.translation.PhpTranslationParameterInspection"/>
+
         <localInspection groupPath="Symfony" shortName="PhpTemplateMissingInspection" displayName="Twig: Template Missing"
                          groupName="Twig"
                          enabledByDefault="true"

@@ -237,6 +237,69 @@ public class TranslationPlaceholderGotoCompletionRegistrarTest extends SymfonyLi
         assertCompletionNotContains(PhpFileType.INSTANCE, HTML_TRANSLATOR + "$translator->trans('auth_prompt', [], ['name' => '<caret>'], 'auth');", "name");
     }
 
+    public void testIcuPlaceholderCompletionUsesArgumentNames() {
+        addIcuTranslations();
+
+        for (String template : new String[] {
+            "{{ 'project_aria_label'|trans({'<caret>'}, 'home') }}",
+            "{{ 'project_aria_label'|trans({<caret>}, 'home') }}",
+            "{{ 'project_aria_label'|trans({sum: 1, <caret>}, 'home') }}",
+            "{{ 'project_aria_label'|trans(domain: 'home', arguments: {<caret>}) }}",
+            "{{ 'project_aria_label'|transchoice(1, {<caret>}, 'home') }}",
+        }) {
+            assertCompletionContains(TwigFileType.INSTANCE, template, "sum", "label", "reviews", "prs");
+            assertCompletionNotContains(TwigFileType.INSTANCE, template, "{sum, number}", "sum, number");
+        }
+
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php new \\Symfony\\Component\\Translation\\TranslatableMessage('project_aria_label', ['<caret>'], 'home');", "sum", "label", "reviews", "prs");
+        assertCompletionContains(PhpFileType.INSTANCE, "<?php\n/** @var $x \\Symfony\\Component\\Translation\\TranslatorInterface */\n$x->trans('project_aria_label', ['<caret>'], 'home');", "sum", "label", "reviews", "prs");
+        assertCompletionNotContains(PhpFileType.INSTANCE, "<?php new \\Symfony\\Component\\Translation\\TranslatableMessage('project_aria_label', ['<caret>'], 'home');", "{sum, number}", "sum, number");
+    }
+
+    public void testIcuPlaceholderCompletionShowsTypeAndSelectValues() {
+        addIcuTranslations();
+
+        assertCompletionLookupContainsPresentableItem(TwigFileType.INSTANCE, "{{ 'project_aria_label'|trans({<caret>}, 'home') }}",
+            presentation -> "sum".equals(presentation.getItemText()) && "number".equals(presentation.getTypeText())
+        );
+        assertCompletionLookupContainsPresentableItem(TwigFileType.INSTANCE, "{{ 'project_aria_label'|trans({<caret>}, 'home') }}",
+            presentation -> "label".equals(presentation.getItemText()) && "string".equals(presentation.getTypeText())
+        );
+        assertCompletionLookupTailEquals(TwigFileType.INSTANCE, "{{ 'invitation'|trans({<caret>}, 'home') }}", "gender", " female|male|other");
+    }
+
+    public void testIcuPlaceholderCompletionMergesLocalesAndFallsBackOnInvalidMessages() {
+        addIcuTranslations();
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ 'invitation'|trans({<caret>}, 'home') }}", "gender", "guest", "host");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ 'broken'|trans({'<caret>'}, 'home') }}", "name", "{name}");
+    }
+
+    public void testIcuPlaceholderCompletionFromPhpAndXliffTranslationFiles() {
+        myFixture.addFileToProject("translations/admin+intl-icu.en.php", "<?php return ['welcome' => 'Welcome {first}, {count, plural, other {# messages}}'];");
+        myFixture.addFileToProject("translations/mails+intl-icu.en.xlf", """
+            <?xml version="1.0"?>
+            <xliff version="1.2"><file source-language="en" datatype="plaintext" original="file.ext"><body>
+            <trans-unit id="w"><source>welcome</source><target>Hello {recipient}, {total, number}</target></trans-unit>
+            </body></file></xliff>
+            """);
+
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ 'welcome'|trans({<caret>}, 'admin') }}", "first", "count");
+        assertCompletionContains(TwigFileType.INSTANCE, "{{ 'welcome'|trans({<caret>}, 'mails') }}", "recipient", "total");
+        assertCompletionNotContains(TwigFileType.INSTANCE, "{{ 'welcome'|trans({<caret>}, 'mails') }}", "{total, number}");
+    }
+
+    private void addIcuTranslations() {
+        myFixture.addFileToProject("translations/home+intl-icu.en.yaml", """
+            project_aria_label: '{sum, number} contributions on {label}: {reviews, number} reviews, {prs, number} pull requests'
+            invitation: '{gender, select, female {She} male {He} other {They}} invited {guest}'
+            broken: 'Hello {name} and {oops'
+            """);
+        myFixture.addFileToProject("translations/home+intl-icu.fr.yaml", """
+            invitation: '{gender, select, female {Elle} male {Il} other {Iel}} a invité {guest} chez {host}'
+            """);
+    }
+
     public void testPhpHtmlTranslatorPlaceholderNavigation() {
         assertNavigationMatch(PhpFileType.INSTANCE, HTML_TRANSLATOR + "$translator->trans('auth_prompt', [], ['na<caret>me' => 'Daniel'], 'auth');", PlatformPatterns.psiElement(TranslationKeyTargetFakePsiNavigationItem.class));
     }
