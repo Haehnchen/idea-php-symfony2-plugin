@@ -24,6 +24,22 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2026.2.315
+* [#2918](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/2918) Add ICU-aware parameter completion and inspections for translations (Hugo Alliaume)
+* [#2917](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/2917) Add find usages for translation keys in YAML, PHP and XLIFF files (Hugo Alliaume)
+* Add Lock and Encrypted attribute completion for controllers and entities (Daniel Espendiller)
+* Support HTML translations in Twig via `trans_html` and PHP `HtmlTranslator` (Daniel Espendiller)
+* Add support for "File-Wide Default Domain in Twig" scope (Daniel Espendiller)
+* Consolidate Doctrine form type guessing into a general guesser (Daniel Espendiller)
+* Support Symfony 8.2 form type guessing (Daniel Espendiller)
+* Avoid repeated UX CSS config traversal and color parsing (Daniel Espendiller)
+* [#2907](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/2907) Show the color of symfony/ux-css color tokens in their configuration (Hugo Alliaume)
+* [#2908](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/2908) Show the value of symfony/ux-css tokens in the css() completion (Hugo Alliaume)
+* [#2906](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/2906) Navigate from symfony/ux-css tokens in Twig to their declaration (Hugo Alliaume)
+* [#2905](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/2905) Show the color of symfony/ux-css color tokens in Twig (Hugo Alliaume)
+* [#2911](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/2911) Skip `needs_charset` and `needs_is_sandboxed` in Twig function hash completion (Hugo Alliaume)
+* [#2910](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/2910) Complete cva() variants in Twig function hashes from the PHP parameter types (Hugo Alliaume)
+
 ## 2026.2.314
 * [#2888](https://github.com/Haehnchen/idea-php-symfony2-plugin/issues/2888) FrameworkBundle add Auto-exclude DI extensions feature (Daniel Espendiller)
 * [#2902](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/2902) Support !php/enum completion and navigation in yaml (a.dmitryuk)
