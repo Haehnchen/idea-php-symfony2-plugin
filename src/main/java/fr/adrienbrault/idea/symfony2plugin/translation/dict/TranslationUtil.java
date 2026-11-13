@@ -7,6 +7,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.Consumer;
@@ -20,6 +21,8 @@ import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.visitor.TranslationArra
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslationKeyTargetFakePsiNavigationItem;
 import fr.adrienbrault.idea.symfony2plugin.translation.TranslatorLookupElement;
 import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationVisitor;
+import fr.adrienbrault.idea.symfony2plugin.translation.icu.IcuMessageParser;
+import fr.adrienbrault.idea.symfony2plugin.translation.icu.TranslationParameter;
 import fr.adrienbrault.idea.symfony2plugin.translation.parser.DomainMappings;
 import fr.adrienbrault.idea.symfony2plugin.translation.provider.CompiledContainerTranslatorProvider;
 import fr.adrienbrault.idea.symfony2plugin.translation.provider.CompiledTranslatorProvider;
@@ -421,6 +424,15 @@ public class TranslationUtil {
     }
 
     /**
+     * Returns the zero-based "parameters" parameter index for supported PHP translation calls, which always precedes the domain.
+     * Example: in {@code $translator->trans($id, $parameters, $domain)}, the second argument has index {@code 1}.
+     */
+    public static int getParametersParameter(@NotNull PsiElement methodReferenceOrNewExpression) {
+        int domainParameter = getDomainParameter(methodReferenceOrNewExpression);
+        return domainParameter < 0 ? -1 : domainParameter - 1;
+    }
+
+    /**
      * Returns the enclosing {@link ParameterListOwner} ({@link FunctionReference} or {@link NewExpression})
      * when {@code psiElement} is a {@link com.jetbrains.php.lang.psi.elements.StringLiteralExpression} directly
      * inside a {@link ParameterList} of such a call, or {@code null} otherwise.
@@ -448,11 +460,31 @@ public class TranslationUtil {
     }
 
     /**
-     * Extract common placeholder pattern from translation content
+     * Parameter names of a translation, see {@link #getTranslationParameters}
      */
     @NotNull
     public static Set<String> getPlaceholderFromTranslation(@NotNull Project project, @NotNull String key, @NotNull String domain) {
-        return getTranslationTokens(project, key, domain, TranslationUtil::getPlaceholderFromTranslation);
+        return getTranslationParameters(project, key, domain).stream().map(TranslationParameter::getName).collect(Collectors.toSet());
+    }
+
+    /**
+     * Parameters of a translation in all locales: the arguments of valid "+intl-icu" messages,
+     * the common placeholder patterns such as "%name%" otherwise
+     */
+    @NotNull
+    public static Collection<TranslationParameter> getTranslationParameters(@NotNull Project project, @NotNull String key, @NotNull String domain) {
+        Map<String, TranslationParameter> parameters = new LinkedHashMap<>();
+
+        for (TranslationMessage message : getTranslationMessages(project, key, domain)) {
+            Map<String, TranslationParameter> icuParameters = message.icuParameters();
+            if (icuParameters != null) {
+                icuParameters.values().forEach(parameter -> parameters.putIfAbsent(parameter.getName(), parameter));
+            } else {
+                getPlaceholderFromTranslation(message.text()).forEach(placeholder -> parameters.putIfAbsent(placeholder, new TranslationParameter(placeholder)));
+            }
+        }
+
+        return parameters.values();
     }
 
     /**
@@ -460,51 +492,103 @@ public class TranslationUtil {
      */
     @NotNull
     public static Set<String> getHtmlTagsFromTranslation(@NotNull Project project, @NotNull String key, @NotNull String domain) {
-        return getTranslationTokens(project, key, domain, text -> {
-            Set<String> tags = new HashSet<>();
-            Matcher matcher = HTML_TRANSLATION_TAG.matcher(text);
+        Set<String> tags = new HashSet<>();
+        for (TranslationMessage message : getTranslationMessages(project, key, domain)) {
+            Matcher matcher = HTML_TRANSLATION_TAG.matcher(message.text());
             while (matcher.find()) {
                 tags.add(matcher.group(1));
             }
-            return tags;
-        });
+        }
+
+        return tags;
     }
 
+    /**
+     * Texts of a translation in all locales: YAML values, PHP array values, XLIFF sources and targets
+     */
     @NotNull
-    private static Set<String> getTranslationTokens(@NotNull Project project, @NotNull String key, @NotNull String domain, @NotNull Function<String, Set<String>> extractor) {
-        Set<String> placeholder = new HashSet<>();
+    public static List<TranslationMessage> getTranslationMessages(@NotNull Project project, @NotNull String key, @NotNull String domain) {
+        List<TranslationMessage> messages = new ArrayList<>();
         Set<VirtualFile> visitedXlf = new HashSet<>();
 
         for (PsiElement element : TranslationUtil.getTranslationPsiElementsOriginPsiElement(project, key, domain)) {
-            if (element instanceof YAMLScalar) {
-                String textValue = ((YAMLScalar) element).getTextValue();
-                if(StringUtils.isBlank(textValue)) {
-                    continue;
-                }
+            VirtualFile virtualFile = element.getContainingFile().getVirtualFile();
 
-                placeholder.addAll(
-                    extractor.apply(textValue)
-                );
-            } else if("xlf".equalsIgnoreCase(element.getContainingFile().getVirtualFile().getExtension()) || "xliff".equalsIgnoreCase(element.getContainingFile().getVirtualFile().getExtension())) {
-                VirtualFile virtualFile = element.getContainingFile().getVirtualFile();
-
+            if (element instanceof YAMLScalar yamlScalar) {
+                addTranslationMessage(messages, yamlScalar.getTextValue(), virtualFile);
+            } else if (element instanceof StringLiteralExpression && PsiTreeUtil.getParentOfType(element, ArrayHashElement.class) instanceof ArrayHashElement hash
+                && hash.getKey() == element && hash.getValue() instanceof StringLiteralExpression value) {
+                addTranslationMessage(messages, value.getContents(), virtualFile);
+            } else if (virtualFile != null && ("xlf".equalsIgnoreCase(virtualFile.getExtension()) || "xliff".equalsIgnoreCase(virtualFile.getExtension()))) {
                 // visiting on file scope because we dont rely on xlf and xliff registered as XML file
                 // dont visit file twice
-                if(!visitedXlf.contains(virtualFile)) {
+                if (visitedXlf.add(virtualFile)) {
                     try (InputStream inputStream = virtualFile.getInputStream()) {
-                        visitXliffTranslations(
-                            inputStream,
-                            new MyXlfTranslationConsumer(placeholder, key, extractor)
-                        );
+                        visitXliffTranslations(inputStream, new MyXlfTranslationConsumer(key, text -> addTranslationMessage(messages, text, virtualFile)));
                     } catch (IOException ignored) {
                     }
                 }
-
-                visitedXlf.add(virtualFile);
             }
         }
 
-        return placeholder;
+        return messages;
+    }
+
+    private static void addTranslationMessage(@NotNull List<TranslationMessage> messages, @Nullable String text, @Nullable VirtualFile virtualFile) {
+        if (StringUtils.isNotBlank(text)) {
+            messages.add(new TranslationMessage(text, virtualFile));
+        }
+    }
+
+    /**
+     * Argument names of a translation in all locales, or null when one of its messages is not a valid "+intl-icu" message
+     */
+    @Nullable
+    public static Set<String> getIcuParameterNames(@NotNull Project project, @NotNull String key, @NotNull String domain) {
+        Set<VirtualFile> files = new HashSet<>();
+        FileBasedIndex.getInstance().processValues(TranslationStubIndex.KEY, domain, null, (virtualFile, keys) -> {
+            if (keys.contains(key)) {
+                files.add(virtualFile);
+            }
+
+            return true;
+        }, GlobalSearchScope.allScope(project));
+
+        // rejects most translations on the index alone, without reading any file
+        if (files.isEmpty() || !files.stream().allMatch(TranslationUtil::isIntlIcuFile)) {
+            return null;
+        }
+
+        Set<String> names = new HashSet<>();
+        for (TranslationMessage message : getTranslationMessages(project, key, domain)) {
+            Map<String, TranslationParameter> parameters = message.icuParameters();
+            if (parameters == null) {
+                return null;
+            }
+
+            names.addAll(parameters.keySet());
+            files.remove(message.file());
+        }
+
+        // a file whose message could not be read may use any argument
+        return files.isEmpty() ? names : null;
+    }
+
+    /**
+     * Translation file read by Symfony's ICU message formatter, e.g. "messages+intl-icu.en.yaml"
+     */
+    public static boolean isIntlIcuFile(@Nullable VirtualFile virtualFile) {
+        return virtualFile != null && virtualFile.getName().contains("+intl-icu.");
+    }
+
+    public record TranslationMessage(@NotNull String text, @Nullable VirtualFile file) {
+        /**
+         * Arguments of the message when it comes from a "+intl-icu" file and is valid ICU MessageFormat
+         */
+        @Nullable
+        public Map<String, TranslationParameter> icuParameters() {
+            return isIntlIcuFile(file) ? IcuMessageParser.getParameters(text) : null;
+        }
     }
 
     /**
@@ -570,7 +654,7 @@ public class TranslationUtil {
      * <target>foo</target>
      * </trans-unit>
      */
-    private record MyXlfTranslationConsumer(@NotNull Set<String> placeholder, @NotNull String key, @NotNull Function<String, Set<String>> extractor) implements Consumer<Pair<String, Node>> {
+    private record MyXlfTranslationConsumer(@NotNull String key, @NotNull java.util.function.Consumer<String> textConsumer) implements Consumer<Pair<String, Node>> {
 
         @Override
         public void consume(Pair<String, Node> pair) {
@@ -578,7 +662,8 @@ public class TranslationUtil {
                 return;
             }
 
-            if (!key.equalsIgnoreCase(source.getTextContent())) {
+            // the key is the source text or the "resname" of the unit
+            if (!key.equalsIgnoreCase(pair.getFirst())) {
                 return;
             }
 
@@ -594,12 +679,7 @@ public class TranslationUtil {
         }
 
         private void visitNodeText(@NotNull Node target) {
-            String nodeValue = target.getTextContent();
-            if (StringUtils.isNotBlank(nodeValue)) {
-                placeholder.addAll(
-                    extractor.apply(nodeValue)
-                );
-            }
+            textConsumer.accept(target.getTextContent());
         }
     }
 }

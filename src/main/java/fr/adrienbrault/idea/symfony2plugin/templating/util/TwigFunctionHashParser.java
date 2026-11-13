@@ -201,6 +201,27 @@ public final class TwigFunctionHashParser {
         return entries;
     }
 
+    /**
+     * Key elements of a hash literal by key, e.g. the identifier {@code size} and the string text {@code icon-sm}
+     * for <code>{ size: {}, 'icon-sm': {} }</code>.
+     */
+    @NotNull
+    public static Map<String, PsiElement> getHashKeys(@NotNull PsiElement hashLiteral) {
+        Map<String, PsiElement> keys = new LinkedHashMap<>();
+        if (!isHashLiteral(hashLiteral)) {
+            return keys;
+        }
+
+        for (PsiElement child = hashLiteral.getFirstChild(); child != null; child = child.getNextSibling()) {
+            PsiElement key = isTwigElementType(child, TwigTokenTypes.COLON) ? getKeyBefore(child) : null;
+            if (key != null) {
+                keys.putIfAbsent(key.getText(), key);
+            }
+        }
+
+        return keys;
+    }
+
     public static boolean isHashLiteral(@NotNull PsiElement element) {
         return isTwigElementType(element, TwigElementTypes.LITERAL) &&
             element.getFirstChild() != null &&
@@ -213,13 +234,22 @@ public final class TwigFunctionHashParser {
      */
     @Nullable
     private static String readKeyBefore(@NotNull PsiElement colon) {
+        PsiElement key = getKeyBefore(colon);
+        return key != null ? key.getText() : null;
+    }
+
+    /**
+     * Same as {@link #readKeyBefore} but returns the key element: the identifier, the number or the string text.
+     */
+    @Nullable
+    private static PsiElement getKeyBefore(@NotNull PsiElement colon) {
         PsiElement key = previousMeaningfulSibling(colon);
         if (key == null) {
             return null;
         }
 
         if (isTwigElementType(key, TwigTokenTypes.IDENTIFIER) || isTwigElementType(key, TwigElementTypes.VARIABLE_REFERENCE) || isTwigElementType(key, TwigTokenTypes.NUMBER)) {
-            return isEntryStartBefore(key) ? key.getText() : null;
+            return isEntryStartBefore(key) ? key : null;
         }
 
         if (!isQuote(key)) {
@@ -234,7 +264,7 @@ public final class TwigFunctionHashParser {
         PsiElement openingQuote = previousMeaningfulSibling(text);
         boolean isClosed = openingQuote != null && openingQuote.getNode().getElementType() == key.getNode().getElementType();
 
-        return isClosed && isEntryStartBefore(openingQuote) ? text.getText() : null;
+        return isClosed && isEntryStartBefore(openingQuote) ? text : null;
     }
 
     private static boolean isEntryStartBefore(@NotNull PsiElement element) {

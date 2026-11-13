@@ -7,6 +7,7 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.twig.TwigLanguage;
+import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2Icons;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionContributor;
@@ -18,6 +19,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigFunctionHashParser;
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
+import fr.adrienbrault.idea.symfony2plugin.translation.icu.TranslationParameter;
 import fr.adrienbrault.idea.symfony2plugin.util.MethodMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.ParameterBag;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
@@ -47,6 +49,13 @@ public class TranslationPlaceholderGotoCompletionRegistrar implements GotoComple
         registrar.register(
             TwigPattern.getFunctionWithSecondParameterAsKeyLiteralPattern("transchoice"),
             new MyTwigTransFilterCompletionContributor("transchoice")
+        );
+
+        // {{ 'symfony.great'|trans({fo<caret>}, 'symfony') }}
+        // {{ 'symfony.great'|transchoice(12, {fo<caret>}, 'symfony') }}
+        registrar.register(
+            PlatformPatterns.psiElement(TwigTokenTypes.IDENTIFIER).withLanguage(TwigLanguage.INSTANCE),
+            new MyTwigTransFilterUnquotedKeyCompletionContributor()
         );
 
         // {{ 'auth_prompt'|trans_html(tags: {'<caret>': {tag: 'a'}}, arguments: {'<caret>': user.name}) }}
@@ -108,11 +117,11 @@ public class TranslationPlaceholderGotoCompletionRegistrar implements GotoComple
 
         @Override
         public void getLookupElements(@NotNull GotoCompletionProviderLookupArguments arguments) {
-            Collection<String> tokens = htmlTags
-                ? TranslationUtil.getHtmlTagsFromTranslation(getProject(), key, domain)
-                : TranslationUtil.getPlaceholderFromTranslation(getProject(), key, domain);
+            Collection<TranslationParameter> tokens = htmlTags
+                ? TranslationUtil.getHtmlTagsFromTranslation(getProject(), key, domain).stream().map(TranslationParameter::new).toList()
+                : TranslationUtil.getTranslationParameters(getProject(), key, domain);
             Collection<LookupElement> lookupElements = tokens.stream()
-                .map(s -> LookupElementBuilder.create(s).withIcon(Symfony2Icons.TRANSLATION))
+                .map(MyTranslationPlaceholderGotoCompletionProvider::createLookupElement)
                 .collect(Collectors.toList());
 
             CompletionResultSet completionResultSet = TwigUtil.withCompletionPrefix(arguments.getParameters(), arguments.getResultSet());
@@ -120,10 +129,54 @@ public class TranslationPlaceholderGotoCompletionRegistrar implements GotoComple
         }
 
         @NotNull
+        private static LookupElement createLookupElement(@NotNull TranslationParameter parameter) {
+            LookupElementBuilder lookupElement = LookupElementBuilder.create(parameter.getName())
+                .withIcon(Symfony2Icons.TRANSLATION)
+                .withTypeText(parameter.getType());
+
+            return parameter.getValues().isEmpty() ? lookupElement : lookupElement.withTailText(" " + String.join("|", parameter.getValues()), true);
+        }
+
+        @NotNull
         @Override
         public Collection<PsiElement> getPsiTargets(PsiElement element) {
             return Arrays.asList(TranslationUtil.getTranslationPsiElements(getProject(), key, domain));
         }
+    }
+
+    // {{ 'symfony.great'|trans({fo<caret>}) }}, quoted keys are handled by MyTwigTransFilterCompletionContributor
+    private static class MyTwigTransFilterUnquotedKeyCompletionContributor implements GotoCompletionContributor {
+        @Nullable
+        @Override
+        public GotoCompletionProvider getProvider(@NotNull PsiElement element) {
+            TwigFunctionHashParser.FunctionHash hash = TwigFunctionHashParser.parse(element);
+            if (hash == null || hash.quoted() || !hash.keyPath().isEmpty() || hash.valueKey() != null) {
+                return null;
+            }
+
+            int argumentsIndex = switch (hash.functionName()) {
+                case "trans" -> 0;
+                case "transchoice" -> 1;
+                default -> -1;
+            };
+
+            boolean arguments = hash.argumentName() != null ? "arguments".equals(hash.argumentName()) : hash.argumentIndex() == argumentsIndex;
+            if (argumentsIndex < 0 || !arguments) {
+                return null;
+            }
+
+            return createTwigHashProvider(element, hash, false);
+        }
+    }
+
+    @Nullable
+    private static GotoCompletionProvider createTwigHashProvider(@NotNull PsiElement element, @NotNull TwigFunctionHashParser.FunctionHash hash, boolean htmlTags) {
+        PsiElement key = PsiElementUtils.getPrevSiblingOfType(hash.functionCall(), TwigPattern.getTranslationKeyPattern(hash.functionName()));
+        if (key == null || StringUtils.isBlank(key.getText())) {
+            return null;
+        }
+
+        return new MyTranslationPlaceholderGotoCompletionProvider(element, key.getText(), TwigUtil.getPsiElementTranslationDomain(key), htmlTags);
     }
 
     // {{ 'auth_prompt'|trans_html(tags: {'<caret>': {tag: 'a'}}, arguments: {'<caret>': user.name}) }}
@@ -142,12 +195,7 @@ public class TranslationPlaceholderGotoCompletionRegistrar implements GotoComple
                 return null;
             }
 
-            PsiElement key = PsiElementUtils.getPrevSiblingOfType(hash.functionCall(), TwigPattern.getTranslationKeyPattern("trans_html"));
-            if (key == null || StringUtils.isBlank(key.getText())) {
-                return null;
-            }
-
-            return new MyTranslationPlaceholderGotoCompletionProvider(element, key.getText(), TwigUtil.getPsiElementTranslationDomain(key), tags);
+            return createTwigHashProvider(element, hash, tags);
         }
     }
 
