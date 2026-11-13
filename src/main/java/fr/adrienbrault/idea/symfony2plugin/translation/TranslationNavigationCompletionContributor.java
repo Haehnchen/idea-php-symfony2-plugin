@@ -110,11 +110,11 @@ public class TranslationNavigationCompletionContributor {
         }
     }
 
-    private interface Domain {
+    public interface Domain {
         void accept(@NotNull StringLiteralExpression stringLiteralExpression);
     }
 
-    private interface Key {
+    public interface Key {
         void accept(@NotNull String domain, @NotNull StringLiteralExpression stringLiteralExpression);
     }
 }

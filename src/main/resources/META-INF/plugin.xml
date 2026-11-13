@@ -831,6 +831,11 @@
         <usageTypeProvider implementation="fr.adrienbrault.idea.symfony2plugin.routing.usages.RouteUsageTypeProvider"/>
         <referencesSearch implementation="fr.adrienbrault.idea.symfony2plugin.routing.usages.RouteNameReferencesSearchExecutor"/>
 
+        <!-- translation key usages from yaml, php and xliff translation files -->
+        <findUsagesHandlerFactory order="first" implementation="fr.adrienbrault.idea.symfony2plugin.translation.usages.TranslationKeyFindUsagesHandlerFactory"/>
+        <referencesSearch implementation="fr.adrienbrault.idea.symfony2plugin.translation.usages.TranslationKeyReferencesSearchExecutor"/>
+        <psi.declarationProvider implementation="fr.adrienbrault.idea.symfony2plugin.translation.usages.TranslationKeySymbolDeclarationProvider"/>
+
         <!-- delegated Find Usages from Twig to resolved php targets: foo.id => getId(), constant('Foo\\Bar::BAZ') => Foo\Bar::BAZ -->
         <usageTargetProvider implementation="fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigFindUsagesHandlerFactory"/>
         <findUsagesHandlerFactory implementation="fr.adrienbrault.idea.symfony2plugin.templating.usages.TwigFindUsagesHandlerFactory"/>
