@@ -60,4 +60,18 @@ public class ContainerBuilderStubIndexTest extends SymfonyLightCodeInsightFixtur
             value.getParameter().contains("register.id")
         );
     }
+
+    public void testThatAliasedTaggedContainerInterfaceIsIndexed() {
+        myFixture.addFileToProject("AliasedTaggedContainer.php", "<?php\n" +
+            "namespace Bar;\n" +
+            "use Symfony\\Component\\DependencyInjection\\TaggedContainerInterface as Tagged;\n" +
+            "class Bar {\n" +
+            "    public function process(Tagged $tagged) { $tagged->findTaggedServiceIds('aliased.tag'); }\n" +
+            "}\n"
+        );
+
+        assertIndexContainsKeyWithValue(ContainerBuilderStubIndex.KEY, "findTaggedServiceIds", value ->
+            value.getParameter().contains("aliased.tag")
+        );
+    }
 }
