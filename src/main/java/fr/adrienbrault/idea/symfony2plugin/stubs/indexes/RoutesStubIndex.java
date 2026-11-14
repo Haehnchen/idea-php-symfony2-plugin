@@ -9,6 +9,7 @@ import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
+import com.intellij.util.text.StringSearcher;
 import com.jetbrains.php.lang.psi.PhpFile;
 import com.jetbrains.php.lang.psi.PhpPsiUtil;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
@@ -34,6 +35,8 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, StubIndexed
     public static final ID<String, StubIndexedRoute> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.routes_object");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
     private static final StubIndexedRouteExternalizer EXTERNALIZER = StubIndexedRouteExternalizer.INSTANCE;
+    private static final StringSearcher ROUTE_SEARCHER = new StringSearcher("route", false, true);
+    private static final StringSearcher ROUTING_CONFIGURATOR_SEARCHER = new StringSearcher("RoutingConfigurator", true, true);
 
     @NotNull
     @Override
@@ -81,6 +84,12 @@ public class RoutesStubIndex extends FileBasedIndexExtension<String, StubIndexed
             } else if(psiFile instanceof PhpFile) {
                 // @Route(), #[Route], RoutingConfigurator fluent routes
                 if(!isValidForIndex(inputData, psiFile)) {
+                    return map;
+                }
+
+                // Route class names are matched case-insensitively, see RouteHelper.isRouteClassAnnotation()
+                CharSequence content = inputData.getContentAsText();
+                if (ROUTE_SEARCHER.scan(content) < 0 && ROUTING_CONFIGURATOR_SEARCHER.scan(content) < 0) {
                     return map;
                 }
 
