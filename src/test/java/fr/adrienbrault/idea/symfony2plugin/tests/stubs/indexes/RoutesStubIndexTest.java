@@ -306,6 +306,32 @@ public class RoutesStubIndexTest extends SymfonyLightCodeInsightFixtureTestCase 
         );
     }
 
+    public void testThatPhpFluentRoutesAreIndexedWhenOnlyRoutingConfiguratorIsMentioned() {
+        myFixture.addFileToProject("config/admin.php", "<?php\n" +
+            "use Symfony\\Component\\Routing\\Loader\\Configurator\\RoutingConfigurator;\n" +
+            "\n" +
+            "return static function (RoutingConfigurator $r): void {\n" +
+            "    $r->add('admin_dashboard', '/admin');\n" +
+            "};");
+
+        assertIndexContainsKeyWithValue(RoutesStubIndex.KEY, "admin_dashboard", value -> "/admin".equals(value.getPath()));
+    }
+
+    public void testThatRouteAttributeIsMatchedCaseInsensitively() {
+        myFixture.addFileToProject("src/UpperCaseController.php", "<?php\n" +
+            "namespace App\\Controller;\n" +
+            "\n" +
+            "use Symfony\\Component\\Routing\\Attribute\\ROUTE;\n" +
+            "\n" +
+            "class UpperCaseController\n" +
+            "{\n" +
+            "    #[ROUTE('/upper', name: 'upper_case_attribute')]\n" +
+            "    public function index() {}\n" +
+            "}\n");
+
+        assertIndexContainsKeyWithValue(RoutesStubIndex.KEY, "upper_case_attribute", value -> "/upper".equals(value.getPath()));
+    }
+
     @NotNull
     private RouteInterface getFirstValue(@NotNull String key) {
         return FileBasedIndex.getInstance().getValues(RoutesStubIndex.KEY, key, GlobalSearchScope.allScope(getProject())).get(0);
