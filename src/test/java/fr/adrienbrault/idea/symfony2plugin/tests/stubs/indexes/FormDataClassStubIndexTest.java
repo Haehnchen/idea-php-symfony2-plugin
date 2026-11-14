@@ -27,4 +27,15 @@ public class FormDataClassStubIndexTest extends SymfonyLightCodeInsightFixtureTe
     public void testTemplateIncludeIndexer() {
         assertIndexContains(FormDataClassStubIndex.KEY, "\\App\\FooDataClass1", "\\App\\FooDataClass2", "\\App\\FooDataClass3");
     }
+
+    public void testAsFormTypeAttributeImportedThroughNamespaceAlias() {
+        myFixture.addFileToProject("AliasedAttributeType.php", "<?php\n" +
+            "namespace App;\n" +
+            "use Symfony\\Component\\Form\\Attribute as Form;\n" +
+            "#[Form\\AsFormType]\n" +
+            "class AliasedAttributeType {}\n"
+        );
+
+        assertIndexContainsKeyWithValue(FormDataClassStubIndex.KEY, "\\App\\AliasedAttributeType", value -> value.contains("\\App\\AliasedAttributeType"));
+    }
 }
