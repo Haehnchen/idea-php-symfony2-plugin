@@ -50,4 +50,31 @@ final class StubIndexValidationUtil {
 
         return inputData.getFile().getLength() <= maxFileByteSize;
     }
+
+    /**
+     * Case-insensitive `String.contains()`: locates the first character with the vectorized `String.indexOf()`,
+     * which is several times faster on whole file contents than a case-insensitive `StringSearcher`.
+     */
+    public static boolean containsIgnoreCase(@NotNull String text, @NotNull String needle) {
+        if (needle.isEmpty()) {
+            return true;
+        }
+
+        char first = needle.charAt(0);
+        char lower = Character.toLowerCase(first);
+        char upper = Character.toUpperCase(first);
+
+        return containsIgnoreCaseFrom(text, needle, lower) || (upper != lower && containsIgnoreCaseFrom(text, needle, upper));
+    }
+
+    private static boolean containsIgnoreCaseFrom(@NotNull String text, @NotNull String needle, char first) {
+        int index = -1;
+        while ((index = text.indexOf(first, index + 1)) >= 0) {
+            if (text.regionMatches(true, index, needle, 0, needle.length())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

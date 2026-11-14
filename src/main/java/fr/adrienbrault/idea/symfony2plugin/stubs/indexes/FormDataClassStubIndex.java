@@ -8,7 +8,6 @@ import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
-import com.intellij.util.text.StringSearcher;
 import com.jetbrains.php.codeInsight.controlFlow.PhpControlFlowUtil;
 import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
 import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpCallInstruction;
@@ -41,8 +40,6 @@ import static fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeInde
 public class FormDataClassStubIndex extends FileBasedIndexExtension<String, Set<String>> {
     public static final ID<String, Set<String>> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.form_data_class");
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
-    private static final StringSearcher DATA_CLASS_SEARCHER = new StringSearcher("data_class", true, true);
-    private static final StringSearcher AS_FORM_TYPE_SEARCHER = new StringSearcher("AsFormType", true, true);
 
     @NotNull
     @Override
@@ -58,8 +55,8 @@ public class FormDataClassStubIndex extends FileBasedIndexExtension<String, Set<
             Map<String, Set<String>> map = new HashMap<>();
 
             // every match below needs one of these literals
-            CharSequence content = inputData.getContentAsText();
-            if (DATA_CLASS_SEARCHER.scan(content) < 0 && AS_FORM_TYPE_SEARCHER.scan(content) < 0) {
+            String content = inputData.getContentAsText().toString();
+            if (!content.contains("data_class") && !content.contains("AsFormType")) {
                 return map;
             }
 

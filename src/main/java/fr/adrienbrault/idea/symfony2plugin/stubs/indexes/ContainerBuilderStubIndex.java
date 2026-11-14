@@ -6,7 +6,6 @@ import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
-import com.intellij.util.text.StringSearcher;
 import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
 import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpAccessVariableInstruction;
 import com.jetbrains.php.codeInsight.controlFlow.instructions.PhpInstruction;
@@ -43,7 +42,6 @@ public class ContainerBuilderStubIndex extends FileBasedIndexExtension<String, C
     private final static ContainerBuilderCallExternalizer EXTERNALIZER = ContainerBuilderCallExternalizer.INSTANCE;
 
     private static final int MAX_FILE_BYTE_SIZE = 2621440;
-    private static final StringSearcher CONTAINER_SEARCHER = new StringSearcher("Container", true, true);
 
     private static final Set<String> SET = new HashSet<>() {{
         add("Symfony\\Component\\DependencyInjection\\Container");
@@ -78,7 +76,7 @@ public class ContainerBuilderStubIndex extends FileBasedIndexExtension<String, C
             }
 
             // every match below needs a parameter typed with one of the SET classes
-            if (CONTAINER_SEARCHER.scan(inputData.getContentAsText()) < 0) {
+            if (!inputData.getContentAsText().toString().contains("Container")) {
                 return map;
             }
 

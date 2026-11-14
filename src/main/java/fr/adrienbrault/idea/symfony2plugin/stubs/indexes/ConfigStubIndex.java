@@ -6,7 +6,6 @@ import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
-import com.intellij.util.text.StringSearcher;
 import com.jetbrains.php.codeInsight.PhpScopeHolder;
 import com.jetbrains.php.codeInsight.controlFlow.PhpControlFlowUtil;
 import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
@@ -40,7 +39,6 @@ public class ConfigStubIndex extends FileBasedIndexExtension<String, ConfigIndex
     private static final int MAX_FILE_BYTE_SIZE = 2097152;
     private static final ConfigIndexExternalizer EXTERNALIZER = ConfigIndexExternalizer.INSTANCE;
     private static final String TWIG_COMPONENT = "twig_component";
-    private static final StringSearcher TWIG_COMPONENT_SEARCHER = new StringSearcher(TWIG_COMPONENT, true, true);
     private static final String TWIG_COMPONENT_DEFAULTS = "twig_component_defaults";
     private static final String ANONYMOUS_TEMPLATE_DIRECTORY = "anonymous_template_directory";
 
@@ -63,8 +61,8 @@ public class ConfigStubIndex extends FileBasedIndexExtension<String, ConfigIndex
                     return Collections.emptyMap();
                 }
 
-                CharSequence content = inputData.getContentAsText();
-                if (TWIG_COMPONENT_SEARCHER.scan(content) < 0) {
+                String content = inputData.getContentAsText().toString();
+                if (!content.contains(TWIG_COMPONENT)) {
                     return Collections.emptyMap();
                 }
 
