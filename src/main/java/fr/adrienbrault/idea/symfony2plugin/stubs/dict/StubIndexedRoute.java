@@ -28,6 +28,12 @@ public class StubIndexedRoute implements RouteInterface, Serializable {
     @NotNull
     private Collection<String> methods = new HashSet<>();
 
+    /**
+     * Attribute class for possible "class RoutePut extends Route" routes; resolved on index read
+     */
+    @Nullable
+    private String attributeClass = null;
+
     public StubIndexedRoute(@NotNull String name) {
         this.name = name;
     }
@@ -68,6 +74,15 @@ public class StubIndexedRoute implements RouteInterface, Serializable {
         this.methods.addAll(Arrays.asList(content));
     }
 
+    @Nullable
+    public String getAttributeClass() {
+        return attributeClass;
+    }
+
+    public void setAttributeClass(@Nullable String attributeClass) {
+        this.attributeClass = attributeClass;
+    }
+
     @Override
     public int hashCode() {
         return new HashCodeBuilder()
@@ -85,7 +100,9 @@ public class StubIndexedRoute implements RouteInterface, Serializable {
              Objects.equals(((RouteInterface) obj).getName(), this.name) &&
              Objects.equals(((RouteInterface) obj).getController(), this.controller) &&
              Objects.equals(((RouteInterface) obj).getPath(), this.path) &&
-             Objects.equals(new HashSet<>(((RouteInterface) obj).getMethods()), new HashSet<>(this.methods))
+             Objects.equals(new HashSet<>(((RouteInterface) obj).getMethods()), new HashSet<>(this.methods)) &&
+             // other RouteInterface implementations have no attribute class; keep equals symmetric with them
+             (!(obj instanceof StubIndexedRoute stubIndexedRoute) || Objects.equals(stubIndexedRoute.attributeClass, this.attributeClass))
         ;
     }
 }

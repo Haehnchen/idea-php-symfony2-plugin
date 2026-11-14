@@ -188,8 +188,7 @@ class RouteUsageUtil private constructor() {
          * Verifies that the PHP attribute under the caret is a supported #[Route] declaration and that the caret belongs to its name string.
          */
         private fun isSupportedPhpAttributeDeclaration(element: PsiElement, phpAttribute: PhpAttribute): Boolean {
-            val fqn = phpAttribute.fqn
-            if (fqn == null || !RouteHelper.isRouteClassAnnotation(fqn)) {
+            if (!RouteHelper.isRouteAttribute(phpAttribute)) {
                 return false
             }
 

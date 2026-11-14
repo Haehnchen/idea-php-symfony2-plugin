@@ -236,11 +236,8 @@ public class SymfonyImplicitUsageProvider implements ImplicitUsageProvider {
             return true;
         }
 
-        for (String route : RouteHelper.ROUTE_ANNOTATIONS) {
-            Collection<@NotNull PhpAttribute> attributes = method.getAttributes(route);
-            if (!attributes.isEmpty()) {
-                return true;
-            }
+        if (RouteHelper.hasRouteAttribute(method)) {
+            return true;
         }
 
         return RouteHelper.isRouteExistingForMethod(method);

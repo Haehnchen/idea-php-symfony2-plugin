@@ -27,6 +27,7 @@ public class StubIndexedRouteExternalizer implements DataExternalizer<StubIndexe
         for (String method : methods) {
             out.writeUTF(method);
         }
+        writeNullableString(out, value.getAttributeClass());
     }
 
     @Override
@@ -40,6 +41,7 @@ public class StubIndexedRouteExternalizer implements DataExternalizer<StubIndexe
             methods.add(in.readUTF());
         }
         route.setMethods(methods);
+        route.setAttributeClass(readNullableString(in));
         return route;
     }
 

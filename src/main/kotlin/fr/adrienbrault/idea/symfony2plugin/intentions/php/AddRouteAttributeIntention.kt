@@ -87,7 +87,7 @@ open class AddRouteAttributeIntention : PsiElementBaseIntentionAction(), Iconabl
         val phpClass = method.containingClass
             ?: return false
 
-        if (hasRouteAttribute(method)) {
+        if (RouteHelper.hasRouteAttribute(method)) {
             return false
         }
 
@@ -96,16 +96,6 @@ open class AddRouteAttributeIntention : PsiElementBaseIntentionAction(), Iconabl
         }
 
         return PhpElementsUtil.hasClassOrInterface(project, ROUTE_ATTRIBUTE_CLASS)
-    }
-
-    private fun hasRouteAttribute(method: Method): Boolean {
-        for (routeAnnotation in RouteHelper.ROUTE_ANNOTATIONS) {
-            val attributes = method.getAttributes(routeAnnotation)
-            if (attributes.isNotEmpty()) {
-                return true
-            }
-        }
-        return false
     }
 
     override fun getFamilyName(): String {

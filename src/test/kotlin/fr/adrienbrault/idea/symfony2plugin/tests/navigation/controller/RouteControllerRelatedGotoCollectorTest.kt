@@ -116,4 +116,30 @@ class RouteControllerRelatedGotoCollectorTest : SymfonyLightCodeInsightFixtureTe
             LineMarker.ToolTipEqualsAssert("_profiler_home"),
         )
     }
+
+    fun testThatControllerProvidesExtendedRouteAttributeNavigation() {
+        myFixture.addFileToProject(
+            "src/Route/RoutePut.php",
+            "<?php\n" +
+                "namespace Symfony\\Component\\Routing\\Attribute { class Route {} }\n" +
+                "namespace Common\\Route {\n" +
+                "    #[\\Attribute]\n" +
+                "    class RoutePut extends \\Symfony\\Component\\Routing\\Attribute\\Route {}\n" +
+                "}\n",
+        )
+
+        assertLineMarker(
+            myFixture.configureByText(
+                PhpFileType.INSTANCE,
+                "<?php\n" +
+                    "namespace App\\Controller;\n" +
+                    "use Common\\Route\\RoutePut;\n" +
+                    "class PutController {\n" +
+                    "   #[RoutePut('/put', name: 'extended_put')]\n" +
+                    "   public function put() {}\n" +
+                    "}\n",
+            ),
+            LineMarker.ToolTipEqualsAssert("extended_put"),
+        )
+    }
 }

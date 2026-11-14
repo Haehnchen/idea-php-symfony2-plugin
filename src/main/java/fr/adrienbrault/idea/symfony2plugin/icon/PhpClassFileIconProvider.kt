@@ -84,16 +84,13 @@ class PhpClassFileIconProvider : FileIconProvider {
     private fun isSymfonyController(phpClass: PhpClass): Boolean =
         PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController") ||
             PhpElementsUtil.isInstanceOf(phpClass, "\\Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller") ||
-            hasRouteAttribute(phpClass) ||
-            phpClass.ownMethods.any { hasRouteAttribute(it) }
+            RouteHelper.hasRouteAttribute(phpClass) ||
+            phpClass.ownMethods.any { isRouteMethod(it) }
 
-    private fun hasRouteAttribute(phpClass: PhpClass): Boolean =
-        RouteHelper.ROUTE_ANNOTATIONS.any { phpClass.getAttributes(it).isNotEmpty() }
-
-    private fun hasRouteAttribute(method: Method): Boolean =
+    private fun isRouteMethod(method: Method): Boolean =
         method.access == PhpModifier.Access.PUBLIC &&
             !method.isStatic &&
-            RouteHelper.ROUTE_ANNOTATIONS.any { method.getAttributes(it).isNotEmpty() }
+            RouteHelper.hasRouteAttribute(method)
 
     private fun isDoctrineEntity(file: PhpFile, phpClass: PhpClass): Boolean {
         val className = phpClass.fqn.trimStart('\\')
