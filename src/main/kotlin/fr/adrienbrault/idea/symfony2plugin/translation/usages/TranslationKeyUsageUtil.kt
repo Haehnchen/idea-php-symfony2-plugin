@@ -7,13 +7,13 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.xml.XmlAttribute
 import com.intellij.psi.xml.XmlAttributeValue
 import com.intellij.psi.xml.XmlTag
-import com.intellij.psi.xml.XmlText
 import com.intellij.util.indexing.FileBasedIndex
 import com.jetbrains.php.lang.psi.PhpFile
 import com.jetbrains.php.lang.psi.elements.ArrayCreationExpression
 import com.jetbrains.php.lang.psi.elements.ArrayHashElement
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
+import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TranslationStubIndex
 import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationVisitor
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil
@@ -22,10 +22,39 @@ import org.apache.commons.lang3.StringUtils
 import org.jetbrains.yaml.psi.YAMLFile
 import org.jetbrains.yaml.psi.YAMLKeyValue
 import org.jetbrains.yaml.psi.YAMLMapping
+import org.jetbrains.yaml.psi.YAMLScalar
 
 data class TranslationKeyDeclaration(val key: String, val domain: String, val element: PsiElement)
 
 object TranslationKeyUsageUtil {
+    /**
+     * Finds translation declarations for a key or PHP usage.
+     */
+    fun getSearchDeclarations(element: PsiElement): List<TranslationKeyDeclaration> {
+        getDeclaration(element)?.let { return listOf(it) }
+        if (!Symfony2ProjectComponent.isEnabled(element) || DumbService.isDumb(element.project)) {
+            return emptyList()
+        }
+
+        val literal = element as? StringLiteralExpression ?: element.parent as? StringLiteralExpression ?: return emptyList()
+        val domain = TranslationUtil.getTranslationDomainForKey(literal)
+            ?: FormOptionsUtil.getTranslationDomainForTextOption(literal)
+            ?: return emptyList()
+
+        return TranslationUtil.getTranslationPsiElementsOriginPsiElement(literal.project, literal.contents, domain).asSequence()
+            .mapNotNull { target ->
+                // Map YAML values and XLIFF units to key declarations.
+                val declarationElement = when (target) {
+                    is YAMLScalar -> PsiTreeUtil.getParentOfType(target, YAMLKeyValue::class.java) ?: target
+                    is XmlTag -> if (target.name == "trans-unit") target.getAttribute("resname") ?: target else target
+                    else -> target
+                }
+                getDeclaration(declarationElement)
+            }
+            .distinctBy { it.key to it.domain }
+            .toList()
+    }
+
     @JvmStatic
     fun getDeclaration(element: PsiElement): TranslationKeyDeclaration? {
         val file = element.containingFile ?: return null
@@ -77,14 +106,11 @@ object TranslationKeyUsageUtil {
     }
 
     private fun getXliffDeclaration(element: PsiElement): TranslationKeyDeclaration? {
-        val sourceTag = when {
-            element is XmlTag -> element
-            element.parent is XmlText -> element.parent.parent as? XmlTag
-            else -> null
-        }
+        val sourceTag = PsiTreeUtil.getParentOfType(element, XmlTag::class.java, false)
 
         if (sourceTag != null && sourceTag.name == "source" && sourceTag.parentTag?.name in setOf("trans-unit", "segment")) {
-            val key = sourceTag.value.text
+            // Decode CDATA and entities to match indexed keys.
+            val key = sourceTag.value.textElements.joinToString("") { it.value }
             return if (StringUtils.isBlank(key)) null else createDeclaration(sourceTag, key)
         }
 

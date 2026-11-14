@@ -23,7 +23,7 @@ import com.jetbrains.twig.TwigFileType
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.utils.GotoCompletionUtil
 import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern
 import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil
-import fr.adrienbrault.idea.symfony2plugin.translation.TranslationNavigationCompletionContributor
+import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil
 
 /**
  * A usage is any PHP or Twig string the plugin already navigates to this translation key in this domain.
@@ -77,11 +77,8 @@ class TranslationKeyReferencesSearchExecutor : QueryExecutorBase<PsiReference, R
         return usages
     }
 
-    private fun isPhpTranslationCall(literal: StringLiteralExpression, declaration: TranslationKeyDeclaration): Boolean {
-        var matches = false
-        TranslationNavigationCompletionContributor.visit(literal, { }, { domain, _ -> matches = domain == declaration.domain })
-        return matches
-    }
+    private fun isPhpTranslationCall(literal: StringLiteralExpression, declaration: TranslationKeyDeclaration): Boolean =
+        TranslationUtil.getTranslationDomainForKey(literal) == declaration.domain
 
     private fun isTwigTranslationFilter(leaf: PsiElement, declaration: TranslationKeyDeclaration): Boolean =
         TwigPattern.getTranslationKeyPattern("trans", "transchoice", "trans_html").accepts(leaf)
