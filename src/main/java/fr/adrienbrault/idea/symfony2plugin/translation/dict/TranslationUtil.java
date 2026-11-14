@@ -411,6 +411,41 @@ public class TranslationUtil {
     }
 
     /**
+     * Returns the translation key's domain, or null for other literals.
+     *
+     * <pre>{@code
+     * $translator->trans('key'); // messages
+     * $translator->trans('key', [], 'forms'); // forms
+     * $translator->trans(id: 'key', domain: 'forms'); // forms
+     * $htmlTranslator->trans('key', [], [], 'forms'); // forms
+     * new TranslatableMessage(message: 'key', domain: 'forms'); // forms
+     * t('key', [], 'forms'); // forms
+     * }</pre>
+     */
+    @Nullable
+    public static String getTranslationDomainForKey(@NotNull StringLiteralExpression literal) {
+        if (!(literal.getContext() instanceof ParameterList parameterList)
+            || !(parameterList.getContext() instanceof ParameterListOwner call)) {
+            return null;
+        }
+
+        // trans(): id; TranslatableMessage/t(): message.
+        String keyParameter = call instanceof MethodReference ? "id" : "message";
+        if (!PsiElementUtils.isCurrentParameter(literal, keyParameter, 0)) {
+            return null;
+        }
+
+        int domainParameter = getDomainParameter(call);
+        if (domainParameter < 0) {
+            return null;
+        }
+
+        PsiElement domain = parameterList.getParameter("domain", domainParameter);
+        String domainName = domain == null ? null : PhpElementsUtil.getStringValue(domain);
+        return domainName == null ? "messages" : domainName;
+    }
+
+    /**
      * Returns the zero-based domain parameter index for supported PHP translation calls.
      * Example: in {@code $translator->trans($id, $parameters, $domain)}, the third argument has index {@code 2}.
      */

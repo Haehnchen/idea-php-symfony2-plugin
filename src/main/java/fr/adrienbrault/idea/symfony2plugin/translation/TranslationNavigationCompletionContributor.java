@@ -84,28 +84,18 @@ public class TranslationNavigationCompletionContributor {
             return;
         };
 
-        if (!TranslationUtil.isTranslationReference(parameterListOwner)) {
+        int domainParameter = TranslationUtil.getDomainParameter(parameterListOwner);
+        if (domainParameter < 0) {
             return;
         }
-
-        int domainParameter = TranslationUtil.getDomainParameter(parameterListOwner);
 
         if (PsiElementUtils.isCurrentParameter(psiElement, "domain", domainParameter)) {
             domain.accept(psiElement);
             return;
         }
 
-        if (PsiElementUtils.isCurrentParameter(psiElement, "id", 0)) {
-            PsiElement domainPsi = parameterList.getParameter("domain", domainParameter);
-
-            String domainName = "messages";
-            if (domainPsi != null) {
-                String stringValue = PhpElementsUtil.getStringValue(domainPsi);
-                if (stringValue != null) {
-                    domainName = stringValue;
-                }
-            }
-
+        String domainName = TranslationUtil.getTranslationDomainForKey(psiElement);
+        if (domainName != null) {
             key.accept(domainName, psiElement);
         }
     }

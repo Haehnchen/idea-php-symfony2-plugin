@@ -15,6 +15,8 @@ import fr.adrienbrault.idea.symfony2plugin.form.visitor.FormOptionVisitor;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpElementsUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PhpIndexUtil;
 import fr.adrienbrault.idea.symfony2plugin.util.PsiElementUtils;
+import fr.adrienbrault.idea.symfony2plugin.util.dict.PhpMethodReferenceCall;
+import fr.adrienbrault.idea.symfony2plugin.util.psi.PhpPsiMatcher;
 import fr.adrienbrault.idea.symfony2plugin.util.service.ServiceXmlParserFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -29,6 +31,10 @@ import static fr.adrienbrault.idea.symfony2plugin.stubs.indexes.PhpAttributeInde
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class FormOptionsUtil {
+    private static final String[] TRANSLATION_TEXT_OPTIONS = {
+        "label", "help", "help_block", "help_inline", "placeholder"
+    };
+
     /**
      * Symfony2 / 3 Form setting options per FormType via method
      */
@@ -430,6 +436,54 @@ public class FormOptionsUtil {
         Collection<LookupElement> lookupElements = new ArrayList<>();
         FormOptionsUtil.getFormDefaultKeys(project, formType, new FormOptionLookupVisitor(lookupElements));
         return lookupElements;
+    }
+
+    /**
+     * Returns the domain for a form text option, or null for other strings.
+     */
+    @Nullable
+    public static String getTranslationDomainForTextOption(@NotNull StringLiteralExpression literal) {
+        ArrayHashElement entry = PsiTreeUtil.getParentOfType(literal, ArrayHashElement.class);
+        if (entry == null || entry.getValue() != literal || !Arrays.asList(TRANSLATION_TEXT_OPTIONS).contains(PhpElementsUtil.getStringValue(entry.getKey()))) {
+            return null;
+        }
+
+        ArrayCreationExpression options = PsiTreeUtil.getParentOfType(entry, ArrayCreationExpression.class);
+        if (options == null) {
+            return null;
+        }
+
+        if (FormAttributeUtil.getOptionsAttribute(options) != null) {
+            String domain = getTranslationFromScope(options);
+            return domain == null ? "messages" : domain;
+        }
+
+        if (PhpPsiMatcher.match(literal, new PhpPsiMatcher.ArrayValueWithKeyAndMethod.Matcher(
+            TRANSLATION_TEXT_OPTIONS,
+            new PhpMethodReferenceCall("Symfony\\Component\\Form\\FormBuilderInterface", 2, "add", "create"),
+            new PhpMethodReferenceCall("Symfony\\Component\\Form\\FormInterface", 2, "add", "create")
+        )) == null) {
+            return null;
+        }
+
+        return getTranslationDomainFromScope(options);
+    }
+
+    /**
+     * Returns the form domain, defaulting to {@code messages}.
+     */
+    @NotNull
+    public static String getTranslationDomainFromScope(@NotNull ArrayCreationExpression arrayCreation) {
+        PhpPsiElement value = PhpElementsUtil.getArrayValue(arrayCreation, "choice_translation_domain");
+        if (value instanceof StringLiteralExpression) {
+            String contents = PhpElementsUtil.getStringValue(value);
+            if (contents != null) {
+                return contents;
+            }
+        }
+
+        String translationDomain = getTranslationFromScope(arrayCreation);
+        return translationDomain == null ? "messages" : translationDomain;
     }
 
     @Nullable
