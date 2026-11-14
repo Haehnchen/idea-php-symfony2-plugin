@@ -80,6 +80,18 @@ public class ServicesDefinitionStubIndexTest extends SymfonyLightCodeInsightFixt
         assertTrue(withParent.isAutowire());
     }
 
+    public void testThatServiceIdOfPhpArrayFileWithoutConfiguratorNamespaceIsIndexed() {
+        myFixture.addFileToProject("config/plain_array_services.php", "<?php\n" +
+            "return [\n" +
+            "    'services' => [\n" +
+            "        'plain_array.service' => ['class' => \\DateTimeImmutable::class],\n" +
+            "    ],\n" +
+            "];\n"
+        );
+
+        assertIndexContains(ServicesDefinitionStubIndex.KEY, "plain_array.service");
+    }
+
     public void testThatServiceIdOfPhpArrayFileIsIndexed() {
         assertIndexContains(ServicesDefinitionStubIndex.KEY, "php_array.service");
         assertIndexContains(ServicesDefinitionStubIndex.KEY, "php_array.alias");

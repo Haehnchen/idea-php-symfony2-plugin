@@ -7,6 +7,7 @@ import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
+import com.jetbrains.php.lang.psi.PhpFile;
 import fr.adrienbrault.idea.symfony2plugin.Settings;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
 import fr.adrienbrault.idea.symfony2plugin.dic.ContainerFile;
@@ -44,6 +45,15 @@ public class ServicesDefinitionStubIndex extends FileBasedIndexExtension<String,
             Map<String, ServiceSerializable> map = new HashMap<>();
 
             PsiFile psiFile = inputData.getPsiFile();
+
+            // PHP services need a "services" array key or a ContainerConfigurator parameter
+            if (psiFile instanceof PhpFile) {
+                String content = inputData.getContentAsText().toString();
+                if (!content.contains("services") && !content.contains("Configurator")) {
+                    return map;
+                }
+            }
+
             if(!Symfony2ProjectComponent.isEnabledForIndex(psiFile.getProject()) || !isValidForIndex(inputData, psiFile)) {
                 return map;
             }
