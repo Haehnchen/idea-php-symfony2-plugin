@@ -282,6 +282,16 @@
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesDefinitionStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ContainerParameterStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TranslationStubIndex"/>
+
+        <!-- ICU MessageFormat injected into the messages of "+intl-icu" translation files -->
+        <fileType name="Symfony ICU Message" language="SymfonyIcuMessage" implementationClass="fr.adrienbrault.idea.symfony2plugin.translation.icu.lang.IcuMessageFileType" fieldName="INSTANCE"/>
+        <lang.parserDefinition language="SymfonyIcuMessage" implementationClass="fr.adrienbrault.idea.symfony2plugin.translation.icu.lang.IcuMessageParserDefinition"/>
+        <lang.syntaxHighlighterFactory language="SymfonyIcuMessage" implementationClass="fr.adrienbrault.idea.symfony2plugin.translation.icu.lang.IcuMessageSyntaxHighlighterFactory"/>
+        <lang.braceMatcher language="SymfonyIcuMessage" implementationClass="fr.adrienbrault.idea.symfony2plugin.translation.icu.lang.IcuMessageBraceMatcher"/>
+        <annotator language="SymfonyIcuMessage" implementationClass="fr.adrienbrault.idea.symfony2plugin.translation.icu.lang.IcuMessageAnnotator"/>
+        <completion.contributor language="SymfonyIcuMessage" implementationClass="fr.adrienbrault.idea.symfony2plugin.translation.icu.lang.IcuMessageCompletionContributor"/>
+        <colorSettingsPage implementation="fr.adrienbrault.idea.symfony2plugin.translation.icu.lang.IcuMessageColorSettingsPage"/>
+        <multiHostInjector implementation="fr.adrienbrault.idea.symfony2plugin.translation.icu.lang.IcuMessageLanguageInjector"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigIncludeStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TwigMacroFunctionStubIndex"/>
         <fileBasedIndex implementation="fr.adrienbrault.idea.symfony2plugin.stubs.indexes.ServicesTagStubIndex"/>
