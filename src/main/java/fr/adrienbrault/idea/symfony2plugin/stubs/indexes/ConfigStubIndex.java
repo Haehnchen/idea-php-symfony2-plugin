@@ -1,12 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
+import com.intellij.util.text.StringSearcher;
 import com.jetbrains.php.codeInsight.PhpScopeHolder;
 import com.jetbrains.php.codeInsight.controlFlow.PhpControlFlowUtil;
 import com.jetbrains.php.codeInsight.controlFlow.PhpInstructionProcessor;
@@ -40,6 +40,7 @@ public class ConfigStubIndex extends FileBasedIndexExtension<String, ConfigIndex
     private static final int MAX_FILE_BYTE_SIZE = 2097152;
     private static final ConfigIndexExternalizer EXTERNALIZER = ConfigIndexExternalizer.INSTANCE;
     private static final String TWIG_COMPONENT = "twig_component";
+    private static final StringSearcher TWIG_COMPONENT_SEARCHER = new StringSearcher(TWIG_COMPONENT, true, true);
     private static final String TWIG_COMPONENT_DEFAULTS = "twig_component_defaults";
     private static final String ANONYMOUS_TEMPLATE_DIRECTORY = "anonymous_template_directory";
 
@@ -63,7 +64,7 @@ public class ConfigStubIndex extends FileBasedIndexExtension<String, ConfigIndex
                 }
 
                 CharSequence content = inputData.getContentAsText();
-                if (!StringUtil.contains(content, TWIG_COMPONENT)) {
+                if (TWIG_COMPONENT_SEARCHER.scan(content) < 0) {
                     return Collections.emptyMap();
                 }
 

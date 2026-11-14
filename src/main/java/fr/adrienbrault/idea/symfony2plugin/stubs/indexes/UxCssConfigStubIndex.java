@@ -1,12 +1,12 @@
 package fr.adrienbrault.idea.symfony2plugin.stubs.indexes;
 
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
 import com.intellij.util.io.EnumeratorStringDescriptor;
 import com.intellij.util.io.KeyDescriptor;
 import com.intellij.util.io.VoidDataExternalizer;
+import com.intellij.util.text.StringSearcher;
 import com.jetbrains.php.lang.PhpFileType;
 import com.jetbrains.php.lang.psi.PhpFile;
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent;
@@ -26,6 +26,7 @@ import java.util.Map;
 public class UxCssConfigStubIndex extends FileBasedIndexExtension<String, Void> {
     public static final ID<String, Void> KEY = ID.create("fr.adrienbrault.idea.symfony2plugin.ux_css_config");
     private static final int MAX_FILE_BYTE_SIZE = 2097152;
+    private static final StringSearcher ROOT_KEY_SEARCHER = new StringSearcher(UxCssConfigUtil.ROOT_KEY, true, true);
     private final KeyDescriptor<String> myKeyDescriptor = new EnumeratorStringDescriptor();
 
     @NotNull
@@ -41,7 +42,7 @@ public class UxCssConfigStubIndex extends FileBasedIndexExtension<String, Void> 
         return inputData -> {
             if (!Symfony2ProjectComponent.isEnabledForIndex(inputData.getProject())
                 || inputData.getFile().getLength() > MAX_FILE_BYTE_SIZE
-                || !StringUtil.contains(inputData.getContentAsText(), UxCssConfigUtil.ROOT_KEY)
+                || ROOT_KEY_SEARCHER.scan(inputData.getContentAsText()) < 0
             ) {
                 return Collections.emptyMap();
             }
