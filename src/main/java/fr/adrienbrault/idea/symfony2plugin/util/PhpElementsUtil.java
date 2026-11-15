@@ -1855,25 +1855,30 @@ public class PhpElementsUtil {
      * #[AsEventListener(method:'onBarEvent')]
      */
     public static boolean isAttributeNamedArgumentString(@NotNull StringLiteralExpression element, @NotNull String fqn, @NotNull String namedArgument) {
+        PhpAttribute phpAttribute = getAttributeOfNamedArgumentString(element, namedArgument);
+        return phpAttribute != null && fqn.equals(phpAttribute.getFQN());
+    }
+
+    /**
+     * "#[Foo(name: '<caret>')]" => Foo attribute
+     */
+    @Nullable
+    public static PhpAttribute getAttributeOfNamedArgumentString(@NotNull StringLiteralExpression element, @NotNull String namedArgument) {
         PsiElement colon = PsiTreeUtil.prevCodeLeaf(element);
         if (colon == null || colon.getNode().getElementType() != PhpTokenTypes.opCOLON) {
-            return false;
+            return null;
         }
 
         PsiElement argumentName = PsiTreeUtil.prevCodeLeaf(colon);
         if (argumentName == null || argumentName.getNode().getElementType() != PhpTokenTypes.IDENTIFIER || !namedArgument.equals(argumentName.getText())) {
-            return false;
+            return null;
         }
 
-
-        if (element.getParent() instanceof ParameterList parameterList) {
-            if (parameterList.getParent() instanceof PhpAttribute phpAttribute) {
-                String attributeFqn = phpAttribute.getFQN();
-                return fqn.equals(attributeFqn);
-            }
+        if (element.getParent() instanceof ParameterList parameterList && parameterList.getParent() instanceof PhpAttribute phpAttribute) {
+            return phpAttribute;
         }
 
-        return false;
+        return null;
     }
 
     /**

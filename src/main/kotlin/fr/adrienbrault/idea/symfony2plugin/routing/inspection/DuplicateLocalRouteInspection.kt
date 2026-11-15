@@ -11,7 +11,6 @@ import com.jetbrains.php.lang.PhpLanguage
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocComment
 import com.jetbrains.php.lang.documentation.phpdoc.psi.tags.PhpDocTag
 import com.jetbrains.php.lang.psi.elements.Method
-import com.jetbrains.php.lang.psi.elements.PhpAttribute
 import com.jetbrains.php.lang.psi.elements.PhpClass
 import com.jetbrains.php.lang.psi.elements.StringLiteralExpression
 import de.espend.idea.php.annotation.dict.PhpDocCommentAnnotation
@@ -27,7 +26,6 @@ import org.jetbrains.yaml.YAMLLanguage
 import org.jetbrains.yaml.psi.YAMLDocument
 import org.jetbrains.yaml.psi.YAMLKeyValue
 import org.jetbrains.yaml.psi.YAMLMapping
-import java.util.ArrayList
 
 /**
  * @author Daniel Espendiller <daniel@espendiller.net>
@@ -88,18 +86,16 @@ open class DuplicateLocalRouteInspection : LocalInspectionTool() {
         }
 
         private fun visitPhp(element: StringLiteralExpression) {
-            if (PhpElementsUtil.isAttributeNamedArgumentString(element, "\\Symfony\\Component\\Routing\\Annotation\\Route", "name") || PhpElementsUtil.isAttributeNamedArgumentString(element, "\\Symfony\\Component\\Routing\\Attribute\\Route", "name")) {
-                val parentOfType = PsiTreeUtil.getParentOfType(element, PhpAttribute::class.java)
-                val owner = parentOfType!!.owner
+            // "#[Route(name: 'foo')]" or "#[RoutePut(name: 'foo')]" with "class RoutePut extends Route"
+            val routeAttribute = PhpElementsUtil.getAttributeOfNamedArgumentString(element, "name")
+            if (routeAttribute != null && RouteHelper.isRouteAttribute(routeAttribute)) {
+                val owner = routeAttribute.owner
                 if (owner is Method && owner.access.isPublic && owner.containingClass != null) {
                     var found = 0
                     val contents = element.contents
 
                     for (ownMethod in owner.containingClass!!.ownMethods) {
-                        val attributes: MutableCollection<PhpAttribute> = ArrayList(ownMethod.getAttributes("\\Symfony\\Component\\Routing\\Annotation\\Route"))
-                        attributes.addAll(ownMethod.getAttributes("\\Symfony\\Component\\Routing\\Attribute\\Route"))
-
-                        for (attribute in attributes) {
+                        for (attribute in ownMethod.attributes.filter { RouteHelper.isRouteAttribute(it) }) {
                             val name = PhpElementsUtil.getAttributeArgumentStringByName(attribute, "name")
                             if (contents == name) {
                                 found++
