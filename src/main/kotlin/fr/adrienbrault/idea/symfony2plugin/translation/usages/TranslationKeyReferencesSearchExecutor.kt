@@ -21,8 +21,6 @@ import com.jetbrains.php.lang.psi.elements.StringLiteralExpression
 import com.jetbrains.twig.TwigFile
 import com.jetbrains.twig.TwigFileType
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.utils.GotoCompletionUtil
-import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern
-import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil
 
 /**
@@ -67,7 +65,7 @@ class TranslationKeyReferencesSearchExecutor : QueryExecutorBase<PsiReference, R
             // {% trans %}key{% endtrans %} lives in the template data language, not in the Twig tree
             for (root in psiFile.viewProvider.allFiles) {
                 for (leaf in SyntaxTraverser.psiTraverser(root).filter { it.firstChild == null && it.textMatches(declaration.key) }) {
-                    if (isTwigTranslationFilter(leaf, declaration) || isNavigationTarget(leaf, declaration)) {
+                    if (TranslationKeyUsageUtil.getTwigTranslationDomain(leaf) == declaration.domain || isNavigationTarget(leaf, declaration)) {
                         usages.add(leaf to TextRange(0, leaf.textLength))
                     }
                 }
@@ -80,11 +78,7 @@ class TranslationKeyReferencesSearchExecutor : QueryExecutorBase<PsiReference, R
     private fun isPhpTranslationCall(literal: StringLiteralExpression, declaration: TranslationKeyDeclaration): Boolean =
         TranslationUtil.getTranslationDomainForKey(literal) == declaration.domain
 
-    private fun isTwigTranslationFilter(leaf: PsiElement, declaration: TranslationKeyDeclaration): Boolean =
-        TwigPattern.getTranslationKeyPattern("trans", "transchoice", "trans_html").accepts(leaf)
-            && TwigUtil.getPsiElementTranslationDomain(leaf) == declaration.domain
-
-    // forms, constraints, {% trans %}: their GotoCompletion targets reach this file only when the domain matches
+    // Other contributors, including forms and constraints, identify the catalogue through navigation.
     private fun isNavigationTarget(leaf: PsiElement, declaration: TranslationKeyDeclaration): Boolean {
         val declarationFile = declaration.element.containingFile.virtualFile ?: return false
 

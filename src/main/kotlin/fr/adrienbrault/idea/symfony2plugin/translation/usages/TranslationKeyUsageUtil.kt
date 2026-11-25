@@ -15,6 +15,9 @@ import com.jetbrains.php.lang.psi.elements.StringLiteralExpression
 import fr.adrienbrault.idea.symfony2plugin.Symfony2ProjectComponent
 import fr.adrienbrault.idea.symfony2plugin.form.util.FormOptionsUtil
 import fr.adrienbrault.idea.symfony2plugin.stubs.indexes.TranslationStubIndex
+import fr.adrienbrault.idea.symfony2plugin.templating.TranslationTagGotoCompletionRegistrar
+import fr.adrienbrault.idea.symfony2plugin.templating.TwigPattern
+import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil
 import fr.adrienbrault.idea.symfony2plugin.translation.collector.YamlTranslationVisitor
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil
 import fr.adrienbrault.idea.symfony2plugin.util.VfsExUtil
@@ -27,21 +30,35 @@ import org.jetbrains.yaml.psi.YAMLScalar
 data class TranslationKeyDeclaration(val key: String, val domain: String, val element: PsiElement)
 
 object TranslationKeyUsageUtil {
+    private val translationFilter = TwigPattern.getTranslationKeyPattern("trans", "transchoice", "trans_html")
+
+    fun getTwigTranslationDomain(element: PsiElement): String? =
+        if (translationFilter.accepts(element)) TwigUtil.getPsiElementTranslationDomain(element)
+        else TranslationTagGotoCompletionRegistrar.getTranslationTagDomain(element)
+
     /**
-     * Finds translation declarations for a key or PHP usage.
+     * Finds the declaration for Find Usages at a translation key or a PHP or Twig usage.
      */
-    fun getSearchDeclarations(element: PsiElement): List<TranslationKeyDeclaration> {
-        getDeclaration(element)?.let { return listOf(it) }
+    fun getSearchDeclaration(element: PsiElement): TranslationKeyDeclaration? {
+        getDeclaration(element)?.let { return it }
         if (!Symfony2ProjectComponent.isEnabled(element) || DumbService.isDumb(element.project)) {
-            return emptyList()
+            return null
         }
 
-        val literal = element as? StringLiteralExpression ?: element.parent as? StringLiteralExpression ?: return emptyList()
-        val domain = TranslationUtil.getTranslationDomainForKey(literal)
-            ?: FormOptionsUtil.getTranslationDomainForTextOption(literal)
-            ?: return emptyList()
+        val literal = element as? StringLiteralExpression ?: element.parent as? StringLiteralExpression
+        val key: String
+        val domain: String
+        if (literal != null) {
+            key = literal.contents
+            domain = TranslationUtil.getTranslationDomainForKey(literal)
+                ?: FormOptionsUtil.getTranslationDomainForTextOption(literal)
+                ?: return null
+        } else {
+            domain = getTwigTranslationDomain(element) ?: return null
+            key = element.text
+        }
 
-        return TranslationUtil.getTranslationPsiElementsOriginPsiElement(literal.project, literal.contents, domain).asSequence()
+        return TranslationUtil.getTranslationPsiElementsOriginPsiElement(element.project, key, domain).asSequence()
             .mapNotNull { target ->
                 // Map YAML values and XLIFF units to key declarations.
                 val declarationElement = when (target) {
@@ -51,8 +68,7 @@ object TranslationKeyUsageUtil {
                 }
                 getDeclaration(declarationElement)
             }
-            .distinctBy { it.key to it.domain }
-            .toList()
+            .firstOrNull { it.key == key && it.domain == domain }
     }
 
     @JvmStatic

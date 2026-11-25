@@ -109,7 +109,7 @@ public class FormGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixt
         assertNavigationMatch(PhpFileType.INSTANCE, template.replace("<caret>", "foo<caret>.symfony.great"));
     }
 
-    public void testFormOptionTranslationsUseChoiceTranslationDomain() {
+    public void testFieldLabelIgnoresChoiceTranslationDomain() {
         String template = "<?php\n" +
             "/** @var $builder \\Symfony\\Component\\Form\\FormBuilderInterface */\n" +
             "$builder->add('foo', null, [\n" +
@@ -117,8 +117,8 @@ public class FormGotoCompletionRegistrarTest extends SymfonyLightCodeInsightFixt
             "  'label' => '<caret>'\n" +
             "]);";
 
-        assertCompletionContains(PhpFileType.INSTANCE, template, "foo.symfony.great");
-        assertNavigationMatch(PhpFileType.INSTANCE, template.replace("<caret>", "foo<caret>.symfony.great"));
+        assertCompletionNotContains(PhpFileType.INSTANCE, template, "foo.symfony.great");
+        assertNavigationMatch(PhpFileType.INSTANCE, template.replace("<caret>", "yaml_<caret>weak.symfony.great"));
     }
 
     public void testFormChoicesTranslations() {

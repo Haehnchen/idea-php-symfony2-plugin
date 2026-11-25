@@ -35,6 +35,12 @@ public class FormOptionsUtil {
         "label", "help", "help_block", "help_inline", "placeholder"
     };
 
+    private static final PhpPsiMatcher.ArrayValueWithKeyAndMethod.Matcher TRANSLATION_TEXT_OPTION_MATCHER = new PhpPsiMatcher.ArrayValueWithKeyAndMethod.Matcher(
+        TRANSLATION_TEXT_OPTIONS,
+        new PhpMethodReferenceCall("Symfony\\Component\\Form\\FormBuilderInterface", 2, "add", "create"),
+        new PhpMethodReferenceCall("Symfony\\Component\\Form\\FormInterface", 2, "add", "create")
+    );
+
     /**
      * Symfony2 / 3 Form setting options per FormType via method
      */
@@ -453,37 +459,17 @@ public class FormOptionsUtil {
             return null;
         }
 
-        if (FormAttributeUtil.getOptionsAttribute(options) != null) {
-            String domain = getTranslationFromScope(options);
-            return domain == null ? "messages" : domain;
-        }
-
-        if (PhpPsiMatcher.match(literal, new PhpPsiMatcher.ArrayValueWithKeyAndMethod.Matcher(
-            TRANSLATION_TEXT_OPTIONS,
-            new PhpMethodReferenceCall("Symfony\\Component\\Form\\FormBuilderInterface", 2, "add", "create"),
-            new PhpMethodReferenceCall("Symfony\\Component\\Form\\FormInterface", 2, "add", "create")
-        )) == null) {
+        if (FormAttributeUtil.getOptionsAttribute(options) == null && PhpPsiMatcher.match(literal, TRANSLATION_TEXT_OPTION_MATCHER) == null) {
             return null;
         }
 
-        return getTranslationDomainFromScope(options);
+        return Objects.requireNonNullElse(getTranslationFromScope(options), "messages");
     }
 
-    /**
-     * Returns the form domain, defaulting to {@code messages}.
-     */
     @NotNull
-    public static String getTranslationDomainFromScope(@NotNull ArrayCreationExpression arrayCreation) {
-        PhpPsiElement value = PhpElementsUtil.getArrayValue(arrayCreation, "choice_translation_domain");
-        if (value instanceof StringLiteralExpression) {
-            String contents = PhpElementsUtil.getStringValue(value);
-            if (contents != null) {
-                return contents;
-            }
-        }
-
-        String translationDomain = getTranslationFromScope(arrayCreation);
-        return translationDomain == null ? "messages" : translationDomain;
+    public static String getChoiceTranslationDomain(@NotNull ArrayCreationExpression options) {
+        String domain = PhpElementsUtil.getArrayHashValue(options, "choice_translation_domain");
+        return domain != null ? domain : Objects.requireNonNullElse(getTranslationFromScope(options), "messages");
     }
 
     @Nullable

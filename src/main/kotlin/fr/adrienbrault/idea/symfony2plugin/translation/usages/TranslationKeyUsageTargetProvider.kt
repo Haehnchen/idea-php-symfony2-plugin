@@ -8,7 +8,7 @@ import com.intellij.usages.UsageTarget
 import com.intellij.usages.UsageTargetProvider
 
 /**
- * Find Usages for translation keys, PHP calls and form labels.
+ * Find Usages for translation keys, Twig translations, PHP calls and form labels.
  *
  * ```php
  * $translator->trans('notification.summary');
@@ -18,14 +18,12 @@ import com.intellij.usages.UsageTargetProvider
  */
 class TranslationKeyUsageTargetProvider : UsageTargetProvider {
     override fun getTargets(element: PsiElement): Array<UsageTarget>? {
-        val declarations = TranslationKeyUsageUtil.getSearchDeclarations(element)
-        return declarations.takeIf { it.isNotEmpty() }
-            ?.map { PsiElement2UsageTargetAdapter(it.element, true) }
-            ?.toTypedArray()
+        val declaration = TranslationKeyUsageUtil.getSearchDeclaration(element) ?: return null
+        return arrayOf(PsiElement2UsageTargetAdapter(declaration.element, true))
     }
 
     override fun getTargets(editor: Editor, file: PsiFile): Array<UsageTarget>? {
-        val element = file.findElementAt(editor.caretModel.offset) ?: return null
+        val element = file.viewProvider.findElementAt(editor.caretModel.offset) ?: return null
         return getTargets(element)
     }
 }

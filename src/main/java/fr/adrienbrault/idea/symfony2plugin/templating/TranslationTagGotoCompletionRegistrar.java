@@ -7,6 +7,7 @@ import com.intellij.patterns.PsiElementPattern;
 import com.intellij.patterns.VirtualFilePattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlToken;
+import com.jetbrains.twig.TwigTokenTypes;
 import com.jetbrains.twig.elements.TwigCompositeElement;
 import com.jetbrains.twig.elements.TwigElementTypes;
 import fr.adrienbrault.idea.symfony2plugin.codeInsight.GotoCompletionProvider;
@@ -16,6 +17,7 @@ import fr.adrienbrault.idea.symfony2plugin.templating.util.TwigUtil;
 import fr.adrienbrault.idea.symfony2plugin.translation.dict.TranslationUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,36 +30,39 @@ import java.util.Collections;
  * @author Daniel Espendiller <daniel@espendiller.net>
  */
 public class TranslationTagGotoCompletionRegistrar implements GotoCompletionRegistrar {
+    private static final PsiElementPattern.Capture<XmlToken> TAG_VALUE = PlatformPatterns.psiElement(XmlToken.class)
+        .inVirtualFile(new VirtualFilePattern().withExtension("twig"))
+        .withLanguage(XMLLanguage.INSTANCE);
+
     @Override
     public void register(@NotNull GotoCompletionRegistrarParameter registrar) {
         // {% trans from "app" %}<caret>{% endtrans %}
-        registrar.register(
-            getTranslationTagValuePattern(), psiElement -> {
-                TwigCompositeElement element = getTagOnTwigViewProvider(psiElement);
-                if(element == null) {
-                    return null;
-                }
-
-                String domain = TwigUtil.getDomainFromTranslationTag(element);
-                if(domain == null) {
-                    domain = TwigUtil.getTransDefaultDomainOnScope(element);
-                }
-
-                // overall fallback if no "trans*" scope was found
-                if(domain == null) {
-                    domain = "messages";
-                }
-
-                return new MyTranslationGotoCompletionProvider(element, domain);
-            }
-        );
+        registrar.register(TAG_VALUE, element -> {
+            String domain = getTranslationTagDomain(element);
+            return domain == null ? null : new MyTranslationGotoCompletionProvider(element, domain);
+        });
     }
 
-    @NotNull
-    private PsiElementPattern.Capture<XmlToken> getTranslationTagValuePattern() {
-        return PlatformPatterns.psiElement(XmlToken.class)
-            .inVirtualFile(new VirtualFilePattern().withExtension("twig"))
-            .withLanguage(XMLLanguage.INSTANCE);
+    @Nullable
+    public static String getTranslationTagDomain(@NotNull PsiElement element) {
+        if (!TAG_VALUE.accepts(element)) {
+            return null;
+        }
+
+        TwigCompositeElement tag = getTagOnTwigViewProvider(element);
+        if (tag == null) {
+            return null;
+        }
+        var name = tag.getNode().findChildByType(TwigTokenTypes.TAG_NAME);
+        if (name == null || !("trans".equals(name.getText()) || "transchoice".equals(name.getText()))) {
+            return null;
+        }
+
+        String domain = TwigUtil.getDomainFromTranslationTag(tag);
+        if (domain == null) {
+            domain = TwigUtil.getTransDefaultDomainOnScope(tag);
+        }
+        return domain == null ? "messages" : domain;
     }
 
     /**

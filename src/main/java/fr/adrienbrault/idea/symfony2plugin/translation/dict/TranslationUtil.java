@@ -212,7 +212,7 @@ public class TranslationUtil {
             XmlTag source = xmlTag.findFirstSubTag("source");
             if (source != null) {
                 String text = source.getValue().getText();
-                if (key.equalsIgnoreCase(text)) {
+                if (key.equals(text)) {
                     psiElements.add(source);
                 }
             }
@@ -698,7 +698,7 @@ public class TranslationUtil {
             }
 
             // the key is the source text or the "resname" of the unit
-            if (!key.equalsIgnoreCase(pair.getFirst())) {
+            if (!key.equals(pair.getFirst())) {
                 return;
             }
 

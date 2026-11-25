@@ -74,11 +74,7 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
                 && "choices".equals(PhpElementsUtil.getStringValue(choices.getKey()))
                 && choices.getParent() instanceof ArrayCreationExpression fieldOptions
                 && FormAttributeUtil.getOptionsAttribute(fieldOptions) != null) {
-                String domain = PhpElementsUtil.getArrayHashValue(fieldOptions, "choice_translation_domain");
-                if (domain == null) {
-                    domain = FormOptionsUtil.getTranslationFromScope(fieldOptions);
-                }
-                return new TranslationGotoCompletionProvider(element, domain == null ? "messages" : domain);
+                return new TranslationGotoCompletionProvider(element, FormOptionsUtil.getChoiceTranslationDomain(fieldOptions));
             }
 
             return null;
@@ -417,7 +413,7 @@ public class FormGotoCompletionRegistrar implements GotoCompletionRegistrar {
                 if(PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) methodReference, "\\Symfony\\Component\\Form\\FormBuilderInterface", "add") ||
                     PhpElementsUtil.isMethodReferenceInstanceOf((MethodReference) methodReference, "\\Symfony\\Component\\Form\\FormBuilderInterface", "create")
                     ) {
-                    return new TranslationGotoCompletionProvider(psiElement, FormOptionsUtil.getTranslationDomainFromScope((ArrayCreationExpression) arrayCreation));
+                    return new TranslationGotoCompletionProvider(psiElement, FormOptionsUtil.getChoiceTranslationDomain((ArrayCreationExpression) arrayCreation));
                 }
             }
         }

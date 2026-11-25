@@ -167,6 +167,7 @@ class TranslationKeyFindUsagesIntegrationTest : SymfonyLightCodeInsightFixtureTe
                 $builder->add('quantity', null, [
                     'label' => 'form.quantity_<caret>label',
                     'translation_domain' => 'forms',
+                    'choice_translation_domain' => 'messages',
                 ]);
                 """.trimIndent()
             )
@@ -194,6 +195,60 @@ class TranslationKeyFindUsagesIntegrationTest : SymfonyLightCodeInsightFixtureTe
             configureByProjectPath("src/Example$index.php", content)
             assertNull(TranslationKeyUsageTargetProvider().getTargets(myFixture.editor, myFixture.file))
         }
+    }
+
+    fun testStartsFindUsagesFromTwigFilterAndTagInTheirDomain() {
+        configureByProjectPath("translations/forms.en.yaml", "form.<caret>title: Title")
+        val declaration = TranslationKeyUsageUtil.getDeclaration(myFixture.file.findElementAt(myFixture.caretOffset)!!)!!.element
+        myFixture.addFileToProject("translations/messages.en.yaml", "form.title: Default")
+        myFixture.addFileToProject("templates/default.html.twig", "{{ 'form.title'|trans }}")
+        addTranslatorFixture()
+        myFixture.addFileToProject(
+            "src/Form.php",
+            $$"""<?php /** @var \Symfony\Contracts\Translation\TranslatorInterface $translator */ $translator->trans('form.title', [], 'forms');"""
+        )
+
+        for ((index, content) in listOf(
+            "{{ 'form.<caret>title'|trans({}, 'forms') }}",
+            "{% trans_default_domain 'forms' %}{{ 'form.<caret>title'|trans_html }}",
+            "{% trans from 'forms' %}form.<caret>title{% endtrans %}",
+        ).withIndex()) {
+            val path = "templates/title$index.html.twig"
+            configureByProjectPath(path, content)
+            val usages = findUsagesFromEditor(declaration)
+            assertContainsUsageFile(usages, path)
+            assertContainsUsageFile(usages, "src/Form.php")
+            assertFalse(usages.any { it.virtualFile?.name == "default.html.twig" })
+        }
+    }
+
+    fun testUntranslatedTwigTextDoesNotStartFindUsages() {
+        myFixture.addFileToProject("translations/messages.en.yaml", "form.title: Title")
+        for ((index, content) in listOf(
+            "{{ 'form.<caret>title'|upper }}",
+            "{% if visible %}form.<caret>title{% endif %}",
+        ).withIndex()) {
+            configureByProjectPath("templates/plain$index.html.twig", content)
+            assertNull(TranslationKeyUsageTargetProvider().getTargets(myFixture.editor, myFixture.file))
+        }
+    }
+
+    fun testPhpUsageMatchesXliffSourceCaseExactly() {
+        addTranslatorFixture()
+        registerLocalizationFileType()
+        configureByProjectPath(
+            "translations/messages.en.xlf",
+            """<xliff version="1.2"><file><body><trans-unit id="1"><source>Form.<caret>Title</source><target>Title</target></trans-unit></body></file></xliff>""",
+        )
+        val declaration = TranslationKeyUsageUtil.getDeclaration(myFixture.file.findElementAt(myFixture.caretOffset)!!)!!.element
+        val call = $$"""<?php /** @var \Symfony\Contracts\Translation\TranslatorInterface $translator */ $translator->trans('Form.<caret>Title');"""
+        configureByProjectPath("src/WrongCase.php", call.replace("Form.<caret>Title", "form.<caret>title"))
+        assertNull(TranslationKeyUsageTargetProvider().getTargets(myFixture.editor, myFixture.file))
+
+        configureByProjectPath("src/ExactCase.php", call)
+        val usages = findUsagesFromEditor(declaration)
+        assertContainsUsageFile(usages, "src/ExactCase.php")
+        assertFalse(usages.any { it.virtualFile?.name == "WrongCase.php" })
     }
 
     fun testLocalizationFileTypeSupportsCtrlClickAndFindUsages() {
