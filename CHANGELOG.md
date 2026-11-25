@@ -24,6 +24,16 @@ Changelog
 * 0.10.x: PhpStorm 7 (no support)
 * 0.9.x: PhpStorm 6 (no support)
 
+## 2026.2.316
+* [#2926](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/2926) Add navigation from UX Translator trans() calls in JavaScript and TypeScript (Hugo Alliaume)
+* [#2919](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/2919) Add ICU MessageFormat language support for +intl-icu translations (Hugo Alliaume)
+* [#2924](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/2924) Use `String.contains()` for the stub index text pre-filters (Hugo Alliaume)
+* [#2925](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/2925) Skip PHP files without a services marker in the services definition index (Hugo Alliaume)
+* [#2920](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/2920) Skip PHP files without routes in the routes index (Hugo Alliaume)
+* [#2921](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/2921) Skip PHP files without `data_class` or `AsFormType` in the form data class index (Hugo Alliaume)
+* [#2922](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/2922) Skip PHP files without a container type in the container builder index (Hugo Alliaume)
+* [#2923](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/2923) Use `StringSearcher` for the text pre-filters of the config and UX CSS indexes (Hugo Alliaume)
+
 ## 2026.2.315
 * [#2918](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/2918) Add ICU-aware parameter completion and inspections for translations (Hugo Alliaume)
 * [#2917](https://github.com/Haehnchen/idea-php-symfony2-plugin/pull/2917) Add find usages for translation keys in YAML, PHP and XLIFF files (Hugo Alliaume)
