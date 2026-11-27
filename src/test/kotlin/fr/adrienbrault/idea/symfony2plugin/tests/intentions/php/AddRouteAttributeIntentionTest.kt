@@ -115,6 +115,37 @@ class AddRouteAttributeIntentionTest : SymfonyLightCodeInsightFixtureTestCase() 
         )
     }
 
+    fun testIntentionNotAvailableForMethodHavingExtendedRouteAttribute() {
+        myFixture.addFileToProject(
+            "RoutePut.php",
+            "<?php\n" +
+                "namespace Common\\Route;\n" +
+                "#[\\Attribute]\n" +
+                "class RoutePut extends \\Symfony\\Component\\Routing\\Attribute\\Route {}\n"
+        )
+
+        myFixture.configureByText(
+            PhpFileType.INSTANCE,
+            "<?php\n" +
+                "namespace App\\Controller;\n" +
+                "use Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController;\n" +
+                "use Common\\Route\\RoutePut;\n" +
+                "\n" +
+                "class TestController extends AbstractController\n" +
+                "{\n" +
+                "    #[RoutePut('/foo')]\n" +
+                "    public function <caret>indexAction()\n" +
+                "    {\n" +
+                "    }\n" +
+                "}\n"
+        )
+
+        assertFalse(
+            myFixture.filterAvailableIntentions("Symfony: Add Route attribute")
+                .any { action -> action.text == "Symfony: Add Route attribute" }
+        )
+    }
+
     fun testIntentionNotAvailableForPrivateMethod() {
         myFixture.configureByText(
             PhpFileType.INSTANCE,

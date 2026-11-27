@@ -90,11 +90,9 @@ private fun isMethodARouteAction(method: Method): Boolean {
 }
 
 private fun hasRouteAnnotationOrAttribute(method: PhpAttributesOwner): Boolean {
-    // Check for Route attributes
-    for (route in RouteHelper.ROUTE_ANNOTATIONS) {
-        if (method.getAttributes(route).isNotEmpty()) {
-            return true
-        }
+    // Check for Route attributes, including subclasses like "class RoutePut extends Route"
+    if (RouteHelper.hasRouteAttribute(method)) {
+        return true
     }
 
     // Check for Route annotations in PHPDoc

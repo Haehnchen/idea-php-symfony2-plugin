@@ -1,6 +1,10 @@
 package fr.adrienbrault.idea.symfony2plugin.tests.routing;
 
 import com.intellij.ide.highlighter.XmlFileType;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiDocumentManager;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.util.Condition;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFileFactory;
@@ -828,6 +832,101 @@ public class RouteHelperTest extends SymfonyLightCodeInsightFixtureTestCase {
     /**
      * @see fr.adrienbrault.idea.symfony2plugin.routing.RouteHelper#getRoute
      */
+    public void testExtendedRouteAttributeCandidatesAreFilteredByClassHierarchy() {
+        myFixture.addFileToProject("src/Route/RoutePut.php", "<?php\n" +
+            "namespace Symfony\\Component\\Routing\\Attribute { class Route {} }\n" +
+            "namespace Common\\Route {\n" +
+            "    #[\\Attribute]\n" +
+            "    class RoutePut extends \\Symfony\\Component\\Routing\\Attribute\\Route {}\n" +
+            "    #[\\Attribute]\n" +
+            "    class RoutePutJson extends RoutePut {}\n" +
+            "    #[\\Attribute]\n" +
+            "    class NotARoute {}\n" +
+            "}\n"
+        );
+
+        myFixture.addFileToProject("src/Controller/PutController.php", "<?php\n" +
+            "namespace App\\Controller;\n" +
+            "\n" +
+            "use Common\\Route\\RoutePut;\n" +
+            "use Common\\Route\\RoutePutJson;\n" +
+            "use Common\\Route\\NotARoute;\n" +
+            "\n" +
+            "class PutController\n" +
+            "{\n" +
+            "    #[RoutePut('/put', name: 'extended_put')]\n" +
+            "    public function put() {}\n" +
+            "\n" +
+            "    #[RoutePutJson('/put-json', name: 'extended_put_json')]\n" +
+            "    public function putJson() {}\n" +
+            "\n" +
+            "    #[NotARoute('/not-a-route', name: 'not_a_route')]\n" +
+            "    public function notARoute() {}\n" +
+            "}\n"
+        );
+
+        Collection<Route> routes = RouteHelper.getRoute(getProject(), "extended_put");
+        assertEquals(1, routes.size());
+        assertEquals("/put", routes.iterator().next().getPath());
+        assertEquals("App\\Controller\\PutController::put", routes.iterator().next().getController());
+
+        assertFalse(RouteHelper.getRoute(getProject(), "extended_put_json").isEmpty());
+        assertTrue(RouteHelper.getRoute(getProject(), "not_a_route").isEmpty());
+
+        Map<String, Route> allRoutes = RouteHelper.getAllRoutes(getProject());
+        assertTrue(allRoutes.containsKey("extended_put"));
+        assertTrue(allRoutes.containsKey("extended_put_json"));
+        assertFalse(allRoutes.containsKey("not_a_route"));
+
+        assertTrue(RouteHelper.getAllRoutesUnique(getProject()).containsKey("extended_put"));
+
+        assertTrue(RouteHelper.getRoutesLookupElements(getProject()).stream().anyMatch(l -> "extended_put".equals(l.getLookupString())));
+        assertFalse(RouteHelper.getRoutesLookupElements(getProject()).stream().anyMatch(l -> "not_a_route".equals(l.getLookupString())));
+
+        // navigation target is the "name" argument of the extended attribute
+        Collection<PsiElement> targets = RouteHelper.getRouteNameTarget(getProject(), "extended_put");
+        assertEquals(1, targets.size());
+        assertEquals("'extended_put'", targets.iterator().next().getText());
+        assertTrue(RouteHelper.getRouteNameTarget(getProject(), "not_a_route").isEmpty());
+    }
+
+    public void testExtendedRouteAttributeRoutesFollowClassHierarchyChanges() {
+        PsiFile routePutFile = myFixture.addFileToProject("src/Route/RoutePut.php", "<?php\n" +
+            "namespace Symfony\\Component\\Routing\\Attribute { class Route {} }\n" +
+            "namespace Common\\Route {\n" +
+            "    #[\\Attribute]\n" +
+            "    class RoutePut extends \\Symfony\\Component\\Routing\\Attribute\\Route {}\n" +
+            "}\n"
+        );
+
+        myFixture.addFileToProject("src/Controller/PutController.php", "<?php\n" +
+            "namespace App\\Controller;\n" +
+            "\n" +
+            "use Common\\Route\\RoutePut;\n" +
+            "\n" +
+            "class PutController\n" +
+            "{\n" +
+            "    #[RoutePut('/put', name: 'extended_put')]\n" +
+            "    public function put() {}\n" +
+            "}\n"
+        );
+
+        assertTrue(RouteHelper.getAllRoutes(getProject()).containsKey("extended_put"));
+        assertTrue(RouteHelper.getAllRoutesUnique(getProject()).containsKey("extended_put"));
+
+        // controller file is untouched, so the route index does not change
+        Document document = PsiDocumentManager.getInstance(getProject()).getDocument(routePutFile);
+        assertNotNull(document);
+        WriteCommandAction.runWriteCommandAction(getProject(), () -> {
+            document.setText(document.getText().replace(" extends \\Symfony\\Component\\Routing\\Attribute\\Route", ""));
+            PsiDocumentManager.getInstance(getProject()).commitDocument(document);
+        });
+
+        assertFalse(RouteHelper.getAllRoutes(getProject()).containsKey("extended_put"));
+        assertFalse(RouteHelper.getAllRoutesUnique(getProject()).containsKey("extended_put"));
+        assertTrue(RouteHelper.getRoute(getProject(), "extended_put").isEmpty());
+    }
+
     public void testGetRoute() {
         assertTrue(!RouteHelper.getRoute(getProject(), "my_car_foo_stuff").isEmpty());
     }

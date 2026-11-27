@@ -191,6 +191,43 @@ class PhpClassFileIconProviderTest : SymfonyLightCodeInsightFixtureTestCase() {
         assertNotNull("Icon should not be null for Symfony controller route attribute", getIconFromProvider(controllerFile))
     }
 
+    fun testExtendedRouteAttributeShowsControllerBadge() {
+        myFixture.addFileToProject(
+            "src/Route/RoutePut.php",
+            """
+            <?php
+
+            namespace Symfony\Component\Routing\Attribute { class Route {} }
+
+            namespace Common\Route {
+                #[\Attribute]
+                class RoutePut extends \Symfony\Component\Routing\Attribute\Route {}
+            }
+            """.trimIndent()
+        )
+
+        val controllerFile = myFixture.addFileToProject(
+            "src/Controller/PutController.php",
+            """
+            <?php
+
+            namespace App\Controller;
+
+            use Common\Route\RoutePut;
+
+            #[RoutePut('/put')]
+            class PutController
+            {
+                public function __invoke()
+                {
+                }
+            }
+            """.trimIndent()
+        )
+
+        assertNotNull("Icon should not be null for extended route attribute", getIconFromProvider(controllerFile))
+    }
+
     fun testSymfonyAbstractControllerShowsControllerBadge() {
         myFixture.addFileToProject(
             "vendor/symfony/framework-bundle/Controller/AbstractController.php",
